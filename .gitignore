@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Virtual environments (keep venv out of git)
+back/venv/
+back/.venv/
+.venv/
+venv/
+
+# Local config (copy from config.env.example)
+config.env
+
+# Node / Angular (front has its own .gitignore too, this is just extra safety)
+node_modules/
+dist/
+.angular/cache/
+
+# IDEs
+.idea/
+

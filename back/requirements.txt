@@ -1,0 +1,12 @@
+fastapi>=0.110
+uvicorn[standard]>=0.27
+
+# ORM (Pydantic + SQLAlchemy)
+sqlmodel>=0.0.22
+
+# Postgres driver (SQLAlchemy "postgresql+psycopg://")
+psycopg[binary]>=3.1
+
+# Settings (already present in your venv, but make it explicit)
+pydantic-settings>=2.0
+
