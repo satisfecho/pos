@@ -1,5 +1,10 @@
+from pathlib import Path
+
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 class Settings(BaseSettings):
@@ -11,7 +16,14 @@ class Settings(BaseSettings):
     """
 
     model_config = SettingsConfigDict(
-        env_file=("config.env", ".env"),
+        # Prefer reading env files from the repository root, regardless of CWD.
+        # Also allow local relative paths for flexibility.
+        env_file=(
+            str(_PROJECT_ROOT / "config.env"),
+            str(_PROJECT_ROOT / ".env"),
+            "config.env",
+            ".env",
+        ),
         env_file_encoding="utf-8",
         extra="ignore",
     )
@@ -21,6 +33,10 @@ class Settings(BaseSettings):
     db_user: str = Field(default="pos", validation_alias="DB_USER")
     db_password: str = Field(default="pos", validation_alias="DB_PASSWORD")
     db_name: str = Field(default="pos", validation_alias="DB_NAME")
+
+    secret_key: str = Field(default="CHANGE_THIS_IN_PRODUCTION", validation_alias="SECRET_KEY")
+    algorithm: str = Field(default="HS256", validation_alias="ALGORITHM")
+    access_token_expire_minutes: int = Field(default=30, validation_alias="ACCESS_TOKEN_EXPIRE_MINUTES")
 
     @property
     def database_url(self) -> str:

@@ -1,1 +1,88 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --primary-color: #3f51b5;
+  --primary-dark: #303f9f;
+  --accent-color: #ff4081;
+  --text-color: #333;
+  --bg-light: #f5f5f5;
+  --border-color: #ddd;
+  --error-color: #f44336;
+  --success-color: #4caf50;
+}
+
+body {
+  font-family: 'Roboto', 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-light);
+  color: var(--text-color);
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 2rem;
+  margin-bottom: 1rem;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+
+  &.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    &:hover { background-color: var(--primary-dark); }
+  }
+
+  &.btn-secondary {
+    background-color: #e0e0e0;
+    color: #333;
+    &:hover { background-color: #d5d5d5; }
+  }
+}
+
+.form-group {
+  margin-bottom: 1rem;
+  
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+  
+  input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+    
+    &:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+  }
+}
+
+.error-msg {
+  color: var(--error-color);
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}

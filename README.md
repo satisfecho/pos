@@ -24,15 +24,17 @@ A Point of Sale system with Angular frontend and FastAPI backend using PostgreSQ
 
    This will:
    - Start PostgreSQL 18 (Alpine 3.23) in Docker on port 5433
-   - Start FastAPI backend on port 8011
-   - Enable hot reload for development
+   - Start Angular frontend on port 4200
+   - Start FastAPI backend on port 8020
+   - Enable hot reload for both frontend and backend development
 
 ### Access Points
 
-- **API**: http://localhost:8011
-- **Health Check**: http://localhost:8011/health
-- **DB Health Check**: http://localhost:8011/health/db
-- **API Docs**: http://localhost:8011/docs
+- **Frontend**: http://localhost:4200
+- **API**: http://localhost:8020
+- **Health Check**: http://localhost:8020/health
+- **DB Health Check**: http://localhost:8020/health/db
+- **API Docs**: http://localhost:8020/docs
 
 ### Manual Setup (Alternative)
 
@@ -46,7 +48,7 @@ docker compose --env-file config.env up -d
 cd back
 source venv/bin/activate
 export $(grep -v '^#' ../config.env | xargs)
-uvicorn app.main:app --host 0.0.0.0 --port 8011 --reload
+uvicorn app.main:app --host 0.0.0.0 --port 8020 --reload
 ```
 
 ### Frontend Development

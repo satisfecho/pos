@@ -58,6 +58,14 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "development-no-ssr": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "server": false,
+              "ssr": false,
+              "outputMode": "static"
             }
           },
           "defaultConfiguration": "production"
@@ -70,6 +78,9 @@
             },
             "development": {
               "buildTarget": "front:build:development"
+            },
+            "development-no-ssr": {
+              "buildTarget": "front:build:development-no-ssr"
             }
           },
           "defaultConfiguration": "development"

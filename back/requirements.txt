@@ -10,3 +10,8 @@ psycopg[binary]>=3.1
 # Settings (already present in your venv, but make it explicit)
 pydantic-settings>=2.0
 
+# Auth
+passlib[bcrypt]
+bcrypt<4.1.0  # passlib incompatible with bcrypt>=4.1
+python-jose[cryptography]
+python-multipart
