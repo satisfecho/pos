@@ -101,11 +101,38 @@ interface PlacedOrder {
                   <div class="product-card">
                     @if (product.image_filename) {
                       <img [src]="getProductImageUrl(product)" class="product-img" alt="">
+                    } @else {
+                      <div class="product-img-placeholder">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                          <rect x="3" y="3" width="18" height="18" rx="2"/>
+                          <circle cx="8.5" cy="8.5" r="1.5"/>
+                          <path d="M21 15l-5-5L5 21"/>
+                        </svg>
+                      </div>
                     }
                     <div class="product-info">
-                      <h3>{{ product.name }}</h3>
-                      @if (product.ingredients) {
-                        <p class="product-ingredients">{{ product.ingredients }}</p>
+                      <div class="product-title-row">
+                        <h3>{{ product.name }}</h3>
+                        @if (product.ingredients) {
+                          <button class="info-btn" (click)="toggleIngredients(product.id!); $event.stopPropagation()" [class.active]="showIngredientsFor() === product.id" title="View ingredients">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                            </svg>
+                          </button>
+                        }
+                      </div>
+                      @if (showIngredientsFor() === product.id && product.ingredients) {
+                        <div class="ingredients-popup">
+                          <div class="ingredients-header">
+                            <span>Ingredients</span>
+                            <button class="close-ingredients" (click)="showIngredientsFor.set(null); $event.stopPropagation()">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 6L6 18M6 6l12 12"/>
+                              </svg>
+                            </button>
+                          </div>
+                          <p>{{ product.ingredients }}</p>
+                        </div>
                       }
                       <span class="product-price">\${{ (product.price_cents / 100) | number:'1.2-2' }}</span>
                     </div>
@@ -330,19 +357,73 @@ interface PlacedOrder {
     .product-card {
       display: flex;
       gap: 12px;
-      align-items: center;
+      align-items: flex-start;
       padding: 12px;
       background: var(--color-bg);
       border-radius: var(--radius-md);
       margin-bottom: 8px;
+      position: relative;
     }
 
     .product-card:last-child { margin-bottom: 0; }
     .product-img { width: 60px; height: 60px; object-fit: cover; border-radius: var(--radius-sm); flex-shrink: 0; }
-    .product-info { flex: 1; }
+    .product-img-placeholder {
+      width: 60px;
+      height: 60px;
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+      background: var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-muted);
+    }
+    .product-info { flex: 1; min-width: 0; }
+    .product-title-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
     .product-info h3 { margin: 0; font-size: 0.9375rem; font-weight: 500; color: var(--color-text); }
-    .product-ingredients { margin: 4px 0; font-size: 0.8125rem; color: var(--color-text-muted); }
-    .product-price { font-size: 0.9375rem; font-weight: 600; color: var(--color-primary); }
+    .info-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      flex-shrink: 0;
+      transition: all 0.15s;
+      &:hover, &.active { color: var(--color-primary); }
+    }
+    .ingredients-popup {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      margin: 8px 0;
+      box-shadow: var(--shadow-md);
+      animation: fadeIn 0.15s ease;
+    }
+    .ingredients-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      span { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-muted); }
+    }
+    .close-ingredients {
+      background: none;
+      border: none;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      padding: 2px;
+      &:hover { color: var(--color-text); }
+    }
+    .ingredients-popup p { margin: 0; font-size: 0.875rem; color: var(--color-text); line-height: 1.4; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+    .product-price { font-size: 0.9375rem; font-weight: 600; color: var(--color-primary); display: block; margin-top: 4px; }
 
     .add-btn {
       width: 40px;
@@ -509,6 +590,7 @@ export class MenuComponent implements OnInit {
   lastOrderId = signal(0);
   ordersExpanded = signal(true);
   menuExpanded = signal(true);
+  showIngredientsFor = signal<number | null>(null);
   private tableToken = '';
   private tenantId = 0;
   private ws: WebSocket | null = null;
@@ -560,6 +642,10 @@ export class MenuComponent implements OnInit {
   getProductImageUrl(product: Product): string | null {
     if (!product.image_filename || !product.tenant_id) return null;
     return `http://192.168.1.98:8020/uploads/${product.tenant_id}/products/${product.image_filename}`;
+  }
+
+  toggleIngredients(productId: number) {
+    this.showIngredientsFor.update(current => current === productId ? null : productId);
   }
 
   addToCart(product: Product) {

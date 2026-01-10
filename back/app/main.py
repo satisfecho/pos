@@ -340,7 +340,17 @@ def get_menu(
         "table_id": table.id,
         "tenant_id": table.tenant_id,  # For WebSocket connection
         "tenant_name": tenant.name if tenant else "Unknown",
-        "products": [{"id": p.id, "name": p.name, "price_cents": p.price_cents} for p in products]
+        "products": [
+            {
+                "id": p.id,
+                "name": p.name,
+                "price_cents": p.price_cents,
+                "image_filename": p.image_filename,
+                "tenant_id": p.tenant_id,
+                "ingredients": p.ingredients,
+            }
+            for p in products
+        ],
     }
 
 

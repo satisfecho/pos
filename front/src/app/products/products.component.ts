@@ -116,20 +116,23 @@ import { ApiService, Product, User } from '../services/api.service';
                   <label for="ingredients">Ingredients (comma-separated)</label>
                   <input id="ingredients" type="text" [(ngModel)]="formData.ingredients" name="ingredients" placeholder="e.g. Tomato, Mozzarella, Basil">
                 </div>
-                @if (editingProduct()?.id) {
-                  <div class="form-group">
-                    <label>Product Image</label>
-                    <div class="image-upload-row">
-                      @if (editingProduct()?.image_filename) {
-                        <img [src]="getImageUrl(editingProduct()!)" class="product-thumb" alt="">
-                      }
-                      <input type="file" #fileInput accept="image/jpeg,image/png,image/webp" (change)="uploadImage($event)" style="display:none">
-                      <button type="button" class="btn btn-secondary" (click)="fileInput.click()" [disabled]="uploading()">
-                        {{ uploading() ? 'Uploading...' : 'Upload Image' }}
-                      </button>
-                    </div>
+                <div class="form-group">
+                  <label>Product Image</label>
+                  <div class="image-upload-row">
+                    @if (editingProduct()?.image_filename) {
+                      <img [src]="getImageUrl(editingProduct()!)" class="product-thumb" alt="">
+                    } @else if (pendingImagePreview()) {
+                      <img [src]="pendingImagePreview()" class="product-thumb" alt="">
+                    }
+                    <input type="file" #fileInput accept="image/jpeg,image/png,image/webp" (change)="handleImageSelect($event)" style="display:none">
+                    <button type="button" class="btn btn-secondary" (click)="fileInput.click()" [disabled]="uploading()">
+                      {{ uploading() ? 'Uploading...' : (pendingImageFile() ? 'Change Image' : 'Upload Image') }}
+                    </button>
+                    @if (pendingImageFile()) {
+                      <span class="pending-file-name">{{ pendingImageFile()?.name }}</span>
+                    }
                   </div>
-                }
+                </div>
                 <div class="form-actions">
                   <button type="button" class="btn btn-secondary" (click)="cancelForm()">Cancel</button>
                   <button type="submit" class="btn btn-primary" [disabled]="saving()">
@@ -405,10 +408,11 @@ import { ApiService, Product, User } from '../services/api.service';
     .price { font-weight: 600; color: var(--color-success); }
     .actions { display: flex; gap: var(--space-2); justify-content: flex-end; }
 
-    .image-upload-row { display: flex; align-items: center; gap: var(--space-3); }
+    .image-upload-row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
     .product-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--color-border); }
     .table-thumb { width: 48px; height: 48px; object-fit: cover; border-radius: var(--radius-sm); }
     .no-image { width: 48px; height: 48px; background: var(--color-bg); border-radius: var(--radius-sm); border: 1px dashed var(--color-border); }
+    .pending-file-name { font-size: 0.8125rem; color: var(--color-text-muted); font-style: italic; }
     .ingredients { color: var(--color-text-muted); font-size: 0.8125rem; display: block; margin-top: 2px; }
 
     .empty-state {
@@ -517,6 +521,8 @@ export class ProductsComponent implements OnInit {
 
   formData = { name: '', price: 0, ingredients: '' };
   uploading = signal(false);
+  pendingImageFile = signal<File | null>(null);
+  pendingImagePreview = signal<string | null>(null);
 
   ngOnInit() {
     this.api.user$.subscribe(user => this.user.set(user));
@@ -549,6 +555,15 @@ export class ProductsComponent implements OnInit {
     this.showAddForm.set(false);
     this.editingProduct.set(null);
     this.formData = { name: '', price: 0, ingredients: '' };
+    this.clearPendingImage();
+  }
+
+  clearPendingImage() {
+    this.pendingImageFile.set(null);
+    if (this.pendingImagePreview()) {
+      URL.revokeObjectURL(this.pendingImagePreview()!);
+      this.pendingImagePreview.set(null);
+    }
   }
 
   saveProduct(event: Event) {
@@ -566,7 +581,30 @@ export class ProductsComponent implements OnInit {
       });
     } else {
       this.api.createProduct(productData as Product).subscribe({
-        next: (product) => { this.products.update(list => [...list, product]); this.cancelForm(); this.saving.set(false); },
+        next: (product) => {
+          this.products.update(list => [...list, product]);
+          // Upload pending image if one was selected
+          const pendingFile = this.pendingImageFile();
+          if (pendingFile && product.id) {
+            this.uploading.set(true);
+            this.api.uploadProductImage(product.id, pendingFile).subscribe({
+              next: (updated) => {
+                this.products.update(list => list.map(p => p.id === updated.id ? updated : p));
+                this.clearPendingImage();
+                this.uploading.set(false);
+              },
+              error: (err) => {
+                this.error.set(err.error?.detail || 'Product created but image upload failed');
+                this.clearPendingImage();
+                this.uploading.set(false);
+              }
+            });
+          } else {
+            this.clearPendingImage();
+          }
+          this.cancelForm();
+          this.saving.set(false);
+        },
         error: (err) => { this.error.set(err.error?.detail || 'Failed to create'); this.saving.set(false); }
       });
     }
@@ -589,23 +627,33 @@ export class ProductsComponent implements OnInit {
     return this.api.getProductImageUrl(product);
   }
 
-  uploadImage(event: Event) {
+  handleImageSelect(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
-    const product = this.editingProduct();
-    if (!product?.id) return;
-    this.uploading.set(true);
-    this.api.uploadProductImage(product.id, file).subscribe({
-      next: (updated) => {
-        this.products.update(list => list.map(p => p.id === updated.id ? updated : p));
-        this.editingProduct.set(updated);
-        this.uploading.set(false);
-      },
-      error: (err) => {
-        this.error.set(err.error?.detail || 'Failed to upload image');
-        this.uploading.set(false);
-      }
-    });
+
+    const editing = this.editingProduct();
+    if (editing?.id) {
+      // Direct upload for existing products
+      this.uploading.set(true);
+      this.api.uploadProductImage(editing.id, file).subscribe({
+        next: (updated) => {
+          this.products.update(list => list.map(p => p.id === updated.id ? updated : p));
+          this.editingProduct.set(updated);
+          this.uploading.set(false);
+        },
+        error: (err) => {
+          this.error.set(err.error?.detail || 'Failed to upload image');
+          this.uploading.set(false);
+        }
+      });
+    } else {
+      // Store file for upload after product creation
+      this.clearPendingImage();
+      this.pendingImageFile.set(file);
+      this.pendingImagePreview.set(URL.createObjectURL(file));
+    }
+    // Reset input to allow selecting the same file again
+    input.value = '';
   }
 }
