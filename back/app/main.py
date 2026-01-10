@@ -354,6 +354,62 @@ def get_menu(
     }
 
 
+@app.get("/menu/{table_token}/order")
+def get_current_order(
+    table_token: str,
+    session: Session = Depends(get_session)
+) -> dict:
+    """Public endpoint - get current active order for a table (if any)."""
+    table = session.exec(select(models.Table).where(models.Table.token == table_token)).first()
+    
+    if not table:
+        raise HTTPException(status_code=404, detail="Table not found")
+    
+    # Find active order: not paid AND no [PAID:] in notes
+    potential_orders = session.exec(
+        select(models.Order).where(
+            models.Order.table_id == table.id,
+            models.Order.status != "paid"
+        ).order_by(models.Order.created_at.desc())
+    ).all()
+    
+    # Filter out orders with payment confirmation in notes
+    active_order = None
+    for order in potential_orders:
+        if "[PAID:" not in (order.notes or ""):
+            active_order = order
+            break
+    
+    if not active_order:
+        return {"order": None}
+    
+    # Get order items
+    items = session.exec(
+        select(models.OrderItem).where(models.OrderItem.order_id == active_order.id)
+    ).all()
+    
+    return {
+        "order": {
+            "id": active_order.id,
+            "status": active_order.status.value if hasattr(active_order.status, 'value') else str(active_order.status),
+            "notes": active_order.notes,
+            "created_at": active_order.created_at.isoformat(),
+            "items": [
+                {
+                    "id": item.id,
+                    "product_id": item.product_id,
+                    "product_name": item.product_name,
+                    "quantity": item.quantity,
+                    "price_cents": item.price_cents,
+                    "notes": item.notes
+                }
+                for item in items
+            ],
+            "total_cents": sum(item.price_cents * item.quantity for item in items)
+        }
+    }
+
+
 @app.post("/menu/{table_token}/order")
 def create_order(
     table_token: str,
@@ -369,13 +425,42 @@ def create_order(
     if not order_data.items:
         raise HTTPException(status_code=400, detail="Order must have at least one item")
     
-    # Check for existing active (non-paid, non-completed) order for this table
-    existing_order = session.exec(
+    # DEBUG: Log all orders for this table
+    all_orders = session.exec(
+        select(models.Order).where(models.Order.table_id == table.id)
+    ).all()
+    print(f"\n{'='*60}")
+    print(f"[DEBUG] POST /menu/{table_token}/order")
+    print(f"[DEBUG] Table: id={table.id}, name={table.name}")
+    print(f"[DEBUG] All orders for this table:")
+    for o in all_orders:
+        has_paid_note = "[PAID:" in (o.notes or "")
+        print(f"  - Order #{o.id}: status={o.status!r}, has_paid_note={has_paid_note}")
+    
+    # Check for existing unpaid order for this table (reuse until paid)
+    # Get all non-paid orders, then filter out ones with payment confirmation in notes
+    potential_orders = session.exec(
         select(models.Order).where(
             models.Order.table_id == table.id,
-            models.Order.status.not_in([models.OrderStatus.completed, models.OrderStatus.paid])
-        )
-    ).first()
+            models.Order.status != "paid"
+        ).order_by(models.Order.created_at.desc())
+    ).all()
+    
+    # Filter out orders that have payment confirmation in notes (edge case for corrupted data)
+    existing_order = None
+    for order in potential_orders:
+        has_paid_note = "[PAID:" in (order.notes or "")
+        if not has_paid_note:
+            existing_order = order
+            break
+        else:
+            print(f"[DEBUG] Skipping order #{order.id} - has [PAID:] in notes despite status={order.status!r}")
+    
+    print(f"[DEBUG] Query result after filtering: {existing_order}")
+    if existing_order:
+        print(f"[DEBUG] Found existing order #{existing_order.id} with status={existing_order.status!r}")
+    else:
+        print(f"[DEBUG] No existing unpaid order found - will create new one")
     
     is_new_order = existing_order is None
     
@@ -389,11 +474,20 @@ def create_order(
         session.add(order)
         session.commit()
         session.refresh(order)
+        print(f"[DEBUG] Created NEW order #{order.id}")
     else:
         order = existing_order
+        print(f"[DEBUG] REUSING existing order #{order.id}")
+        # If the order was completed, reset it to pending since new items were added
+        if str(order.status) == "completed" or order.status == models.OrderStatus.completed:
+            order.status = models.OrderStatus.pending
+            print(f"[DEBUG] Reset order status from completed to pending")
         # Append notes if provided
         if order_data.notes:
             order.notes = f"{order.notes or ''}\n{order_data.notes}".strip()
+    
+    print(f"[DEBUG] Final order #{order.id}, status={order.status!r}")
+    print(f"{'='*60}\n")
     
     # Add order items
     for item in order_data.items:

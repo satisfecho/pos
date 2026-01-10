@@ -209,6 +209,10 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/menu/${tableToken}/order`, order);
   }
 
+  getCurrentOrder(tableToken: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/menu/${tableToken}/order`);
+  }
+
   // Payments
   createPaymentIntent(orderId: number, tableToken: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/orders/${orderId}/create-payment-intent?table_token=${tableToken}`, {});
