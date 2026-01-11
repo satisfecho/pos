@@ -768,12 +768,10 @@ async def list_catalog(
                 select(models.Provider).where(models.Provider.id == pp.provider_id)
             ).first()
             if provider:
-                # Construct image URL - prefer local image if available
+                # Construct image URL - only use local images, never external URLs
                 image_url = None
                 if pp.image_filename:
                     image_url = f"/uploads/providers/{provider.token}/products/{pp.image_filename}"
-                elif pp.image_url:
-                    image_url = pp.image_url
                 
                 providers_data.append({
                     "provider_id": provider.id,
@@ -901,12 +899,10 @@ async def get_catalog_item(
             select(models.Provider).where(models.Provider.id == pp.provider_id)
         ).first()
         if provider:
-            # Construct image URL - prefer local image if available
+            # Construct image URL - only use local images, never external URLs
             image_url = None
             if pp.image_filename:
                 image_url = f"/uploads/providers/{provider.token}/products/{pp.image_filename}"
-            elif pp.image_url:
-                image_url = pp.image_url
             
             providers_data.append({
                 "provider_id": provider.id,
