@@ -121,3 +121,82 @@ def extract_wine_by_glass_code(subcategory_string: str | None) -> str | None:
     if subcategory_string and "Wine by Glass" in subcategory_string:
         return "WINE_BY_GLASS"
     return None
+
+
+def get_all_subcategory_codes(subcategory_string: str | None) -> list[str]:
+    """
+    Extract all subcategory codes from a subcategory string.
+    Returns list of codes (e.g., ["WINE_RED", "WINE_BY_GLASS"])
+    """
+    if not subcategory_string:
+        return []
+    
+    codes = []
+    
+    # Extract wine type code
+    wine_type_code = extract_wine_type_code(subcategory_string)
+    if wine_type_code:
+        codes.append(wine_type_code)
+    
+    # Check for Wine by Glass
+    wine_by_glass_code = extract_wine_by_glass_code(subcategory_string)
+    if wine_by_glass_code:
+        codes.append(wine_by_glass_code)
+    
+    # Check for other subcategory codes (non-wine)
+    # Map common subcategory strings to codes
+    subcat_lower = subcategory_string.lower()
+    if "appetizers" in subcat_lower or subcategory_string == "Appetizers":
+        codes.append("APPETIZERS")
+    elif "salads" in subcat_lower or subcategory_string == "Salads":
+        codes.append("SALADS")
+    elif "soups" in subcat_lower or subcategory_string == "Soups":
+        codes.append("SOUPS")
+    elif "bread" in subcat_lower and "dips" in subcat_lower:
+        codes.append("BREAD_DIPS")
+    elif subcategory_string == "Meat":
+        codes.append("MEAT")
+    elif subcategory_string == "Fish":
+        codes.append("FISH")
+    elif subcategory_string == "Poultry":
+        codes.append("POULTRY")
+    elif subcategory_string == "Vegetarian":
+        codes.append("VEGETARIAN")
+    elif subcategory_string == "Vegan":
+        codes.append("VEGAN")
+    elif subcategory_string == "Pasta":
+        codes.append("PASTA")
+    elif subcategory_string == "Rice":
+        codes.append("RICE")
+    elif subcategory_string == "Pizza":
+        codes.append("PIZZA")
+    elif subcategory_string == "Cakes":
+        codes.append("CAKES")
+    elif subcategory_string == "Ice Cream":
+        codes.append("ICE_CREAM")
+    elif subcategory_string == "Fruit":
+        codes.append("FRUIT")
+    elif subcategory_string == "Cheese":
+        codes.append("CHEESE")
+    elif subcategory_string == "Hot Drinks":
+        codes.append("HOT_DRINKS")
+    elif subcategory_string == "Cold Drinks":
+        codes.append("COLD_DRINKS")
+    elif subcategory_string == "Alcoholic":
+        codes.append("ALCOHOLIC")
+    elif subcategory_string == "Non-Alcoholic":
+        codes.append("NON_ALCOHOLIC")
+    elif subcategory_string == "Beer":
+        codes.append("BEER")
+    elif subcategory_string == "Cocktails":
+        codes.append("COCKTAILS")
+    elif subcategory_string == "Soft Drinks":
+        codes.append("SOFT_DRINKS")
+    elif subcategory_string == "Vegetables":
+        codes.append("VEGETABLES")
+    elif subcategory_string == "Potatoes":
+        codes.append("POTATOES")
+    elif subcategory_string == "Bread":
+        codes.append("BREAD")
+    
+    return codes

@@ -1093,13 +1093,32 @@ export class MenuComponent implements OnInit {
             if (product.subcategory.includes('Wine by Glass')) {
               subcategoryCodes.add('WINE_BY_GLASS');
             }
+            // Extract other subcategory codes (non-wine)
+            const otherCodes = this.extractOtherSubcategoryCodes(product.subcategory);
+            otherCodes.forEach(code => subcategoryCodes.add(code));
           }
         }
       }
     });
     
-    // Build ordered subcategory list
-    const orderedCodes = ['WINE_RED', 'WINE_WHITE', 'WINE_SPARKLING', 'WINE_ROSE', 'WINE_SWEET', 'WINE_FORTIFIED', 'WINE_BY_GLASS'];
+    // Build ordered subcategory list (wine types first, then others, then Wine by Glass)
+    const orderedCodes = [
+      // Wine types
+      'WINE_RED', 'WINE_WHITE', 'WINE_SPARKLING', 'WINE_ROSE', 'WINE_SWEET', 'WINE_FORTIFIED',
+      // Other beverage subcategories
+      'HOT_DRINKS', 'COLD_DRINKS', 'ALCOHOLIC', 'NON_ALCOHOLIC', 'BEER', 'COCKTAILS', 'SOFT_DRINKS',
+      // Starter subcategories
+      'APPETIZERS', 'SALADS', 'SOUPS', 'BREAD_DIPS',
+      // Main course subcategories
+      'MEAT', 'FISH', 'POULTRY', 'VEGETARIAN', 'VEGAN', 'PASTA', 'RICE', 'PIZZA',
+      // Dessert subcategories
+      'CAKES', 'ICE_CREAM', 'FRUIT', 'CHEESE',
+      // Side subcategories
+      'VEGETABLES', 'POTATOES', 'BREAD',
+      // Wine by Glass (always last)
+      'WINE_BY_GLASS'
+    ];
+    
     const subcategories: string[] = [];
     
     orderedCodes.forEach(code => {
@@ -1109,6 +1128,41 @@ export class MenuComponent implements OnInit {
     });
     
     this.availableSubcategories.set(subcategories);
+  }
+
+  extractOtherSubcategoryCodes(subcategory: string): string[] {
+    const codes: string[] = [];
+    const subcatLower = subcategory.toLowerCase();
+    
+    // Map common subcategory strings to codes
+    if (subcategory === 'Appetizers' || 'appetizers' in subcatLower) codes.push('APPETIZERS');
+    if (subcategory === 'Salads' || 'salads' in subcatLower) codes.push('SALADS');
+    if (subcategory === 'Soups' || 'soups' in subcatLower) codes.push('SOUPS');
+    if (subcategory === 'Bread & Dips' || ('bread' in subcatLower && 'dips' in subcatLower)) codes.push('BREAD_DIPS');
+    if (subcategory === 'Meat') codes.push('MEAT');
+    if (subcategory === 'Fish') codes.push('FISH');
+    if (subcategory === 'Poultry') codes.push('POULTRY');
+    if (subcategory === 'Vegetarian') codes.push('VEGETARIAN');
+    if (subcategory === 'Vegan') codes.push('VEGAN');
+    if (subcategory === 'Pasta') codes.push('PASTA');
+    if (subcategory === 'Rice') codes.push('RICE');
+    if (subcategory === 'Pizza') codes.push('PIZZA');
+    if (subcategory === 'Cakes') codes.push('CAKES');
+    if (subcategory === 'Ice Cream') codes.push('ICE_CREAM');
+    if (subcategory === 'Fruit') codes.push('FRUIT');
+    if (subcategory === 'Cheese') codes.push('CHEESE');
+    if (subcategory === 'Hot Drinks') codes.push('HOT_DRINKS');
+    if (subcategory === 'Cold Drinks') codes.push('COLD_DRINKS');
+    if (subcategory === 'Alcoholic') codes.push('ALCOHOLIC');
+    if (subcategory === 'Non-Alcoholic') codes.push('NON_ALCOHOLIC');
+    if (subcategory === 'Beer') codes.push('BEER');
+    if (subcategory === 'Cocktails') codes.push('COCKTAILS');
+    if (subcategory === 'Soft Drinks') codes.push('SOFT_DRINKS');
+    if (subcategory === 'Vegetables') codes.push('VEGETABLES');
+    if (subcategory === 'Potatoes') codes.push('POTATOES');
+    if (subcategory === 'Bread') codes.push('BREAD');
+    
+    return codes;
   }
 
   getWineTypeCodeFromString(wineType: string | undefined): string | null {
@@ -1158,6 +1212,7 @@ export class MenuComponent implements OnInit {
   getSubcategoryLabel(subcategoryCode: string): string {
     // Map subcategory codes to Spanish labels (can be extended for i18n)
     const labels: Record<string, string> = {
+      // Wine types
       'WINE_RED': 'Tinto',
       'WINE_WHITE': 'Blanco',
       'WINE_SPARKLING': 'Espumoso',
@@ -1165,14 +1220,37 @@ export class MenuComponent implements OnInit {
       'WINE_SWEET': 'Dulce',
       'WINE_FORTIFIED': 'Generoso',
       'WINE_BY_GLASS': 'Por Copas',
-      // Add more subcategory labels as needed
+      // Beverages
+      'HOT_DRINKS': 'Bebidas Calientes',
+      'COLD_DRINKS': 'Bebidas Frías',
+      'ALCOHOLIC': 'Alcohólicas',
+      'NON_ALCOHOLIC': 'Sin Alcohol',
+      'BEER': 'Cerveza',
+      'COCKTAILS': 'Cócteles',
+      'SOFT_DRINKS': 'Refrescos',
+      // Starters
       'APPETIZERS': 'Aperitivos',
       'SALADS': 'Ensaladas',
       'SOUPS': 'Sopas',
+      'BREAD_DIPS': 'Pan y Salsas',
+      // Main Course
       'MEAT': 'Carne',
       'FISH': 'Pescado',
+      'POULTRY': 'Aves',
       'VEGETARIAN': 'Vegetariano',
       'VEGAN': 'Vegano',
+      'PASTA': 'Pasta',
+      'RICE': 'Arroz',
+      'PIZZA': 'Pizza',
+      // Desserts
+      'CAKES': 'Pasteles',
+      'ICE_CREAM': 'Helados',
+      'FRUIT': 'Fruta',
+      'CHEESE': 'Queso',
+      // Sides
+      'VEGETABLES': 'Verduras',
+      'POTATOES': 'Patatas',
+      'BREAD': 'Pan',
     };
     return labels[subcategoryCode] || subcategoryCode;
   }

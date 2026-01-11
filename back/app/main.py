@@ -1274,14 +1274,11 @@ def get_menu(
                 product_data["category_code"] = get_category_code(catalog_item.category)
             if catalog_item.subcategory:
                 product_data["subcategory"] = catalog_item.subcategory
-                # Extract subcategory codes (wine type + wine by glass if applicable)
-                from .category_codes import extract_wine_type_code, extract_wine_by_glass_code
-                wine_type_code = extract_wine_type_code(catalog_item.subcategory)
-                wine_by_glass_code = extract_wine_by_glass_code(catalog_item.subcategory)
-                if wine_type_code:
-                    product_data["subcategory_codes"] = [wine_type_code]
-                    if wine_by_glass_code:
-                        product_data["subcategory_codes"].append(wine_by_glass_code)
+                # Extract all subcategory codes (wine type, wine by glass, and other subcategories)
+                from .category_codes import get_all_subcategory_codes
+                subcategory_codes = get_all_subcategory_codes(catalog_item.subcategory)
+                if subcategory_codes:
+                    product_data["subcategory_codes"] = subcategory_codes
             if catalog_item.description:
                 product_data["description"] = catalog_item.description
         
