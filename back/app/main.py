@@ -782,6 +782,12 @@ async def list_catalog(
                     "grape_variety": pp.grape_variety,
                     "volume_ml": pp.volume_ml,
                     "unit": pp.unit,
+                    "detailed_description": pp.detailed_description,
+                    "wine_style": pp.wine_style,
+                    "vintage": pp.vintage,
+                    "winery": pp.winery,
+                    "aromas": pp.aromas,
+                    "elaboration": pp.elaboration,
                 })
         
         # Sort providers by price (lowest first)
@@ -792,18 +798,34 @@ async def list_catalog(
         if providers_data and providers_data[0].get("image_url"):
             main_image_url = providers_data[0]["image_url"]
         
-        # Get origin (country/region) from first provider - this is product-level info, not provider-level
+        # Get origin (country/region) and detailed info from first provider - this is product-level info
         origin_country = None
         origin_region = None
+        detailed_description = None
+        wine_style = None
+        vintage = None
+        winery = None
+        grape_variety = None
+        aromas = None
+        elaboration = None
+        
         if providers_data:
-            # Use first provider's origin (most common case)
+            # Use first provider's data (most common case)
             origin_country = providers_data[0].get("country")
             origin_region = providers_data[0].get("region")
+            detailed_description = providers_data[0].get("detailed_description")
+            wine_style = providers_data[0].get("wine_style")
+            vintage = providers_data[0].get("vintage")
+            winery = providers_data[0].get("winery")
+            grape_variety = providers_data[0].get("grape_variety")
+            aromas = providers_data[0].get("aromas")
+            elaboration = providers_data[0].get("elaboration")
         
         result.append({
             "id": item.id,
             "name": item.name,
             "description": item.description,
+            "detailed_description": detailed_description,
             "category": item.category,
             "subcategory": item.subcategory,
             "barcode": item.barcode,
@@ -811,6 +833,12 @@ async def list_catalog(
             "image_url": main_image_url,
             "country": origin_country,
             "region": origin_region,
+            "wine_style": wine_style,
+            "vintage": vintage,
+            "winery": winery,
+            "grape_variety": grape_variety,
+            "aromas": aromas,
+            "elaboration": elaboration,
             "providers": providers_data,
             "min_price_cents": min([p["price_cents"] for p in providers_data if p["price_cents"]], default=None),
             "max_price_cents": max([p["price_cents"] for p in providers_data if p["price_cents"]], default=None),
@@ -895,17 +923,33 @@ async def get_catalog_item(
     if providers_data and providers_data[0].get("image_url"):
         main_image_url = providers_data[0]["image_url"]
     
-    # Get origin (country/region) from first provider - this is product-level info, not provider-level
+    # Get origin (country/region) and detailed info from first provider - this is product-level info
     origin_country = None
     origin_region = None
+    detailed_description = None
+    wine_style = None
+    vintage = None
+    winery = None
+    grape_variety = None
+    aromas = None
+    elaboration = None
+    
     if providers_data:
         origin_country = providers_data[0].get("country")
         origin_region = providers_data[0].get("region")
+        detailed_description = providers_data[0].get("detailed_description")
+        wine_style = providers_data[0].get("wine_style")
+        vintage = providers_data[0].get("vintage")
+        winery = providers_data[0].get("winery")
+        grape_variety = providers_data[0].get("grape_variety")
+        aromas = providers_data[0].get("aromas")
+        elaboration = providers_data[0].get("elaboration")
     
     return {
         "id": catalog_item.id,
         "name": catalog_item.name,
         "description": catalog_item.description,
+        "detailed_description": detailed_description,
         "category": catalog_item.category,
         "subcategory": catalog_item.subcategory,
         "barcode": catalog_item.barcode,
@@ -913,6 +957,12 @@ async def get_catalog_item(
         "image_url": main_image_url,
         "country": origin_country,
         "region": origin_region,
+        "wine_style": wine_style,
+        "vintage": vintage,
+        "winery": winery,
+        "grape_variety": grape_variety,
+        "aromas": aromas,
+        "elaboration": elaboration,
         "providers": providers_data,
         "min_price_cents": min([p["price_cents"] for p in providers_data if p["price_cents"]], default=None),
         "max_price_cents": max([p["price_cents"] for p in providers_data if p["price_cents"]], default=None),

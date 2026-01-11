@@ -86,8 +86,37 @@ import { environment } from '../../environments/environment';
                   </div>
                 }
                 
-                @if (item.description) {
-                  <p class="catalog-description">{{ item.description }}</p>
+                @if (item.detailed_description || item.description) {
+                  <p class="catalog-description">{{ item.detailed_description || item.description }}</p>
+                }
+                
+                @if (item.wine_style || item.vintage || item.winery || item.grape_variety) {
+                  <div class="catalog-details">
+                    @if (item.wine_style) {
+                      <span class="detail-badge">{{ item.wine_style }}</span>
+                    }
+                    @if (item.vintage) {
+                      <span class="detail-badge">Vintage {{ item.vintage }}</span>
+                    }
+                    @if (item.winery) {
+                      <span class="detail-badge">{{ item.winery }}</span>
+                    }
+                    @if (item.grape_variety) {
+                      <span class="detail-badge">{{ item.grape_variety }}</span>
+                    }
+                  </div>
+                }
+                
+                @if (item.aromas) {
+                  <div class="catalog-aromas">
+                    <strong>Aromas:</strong> {{ item.aromas }}
+                  </div>
+                }
+                
+                @if (item.elaboration) {
+                  <div class="catalog-elaboration">
+                    <strong>Elaboration:</strong> {{ item.elaboration }}
+                  </div>
                 }
 
                 <!-- Price Comparison -->
@@ -288,6 +317,37 @@ import { environment } from '../../environments/environment';
       color: #666;
       font-size: 0.9rem;
       margin: 0;
+      line-height: 1.5;
+    }
+
+    .catalog-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0.75rem 0;
+    }
+
+    .detail-badge {
+      background: #f0f0f0;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      color: #555;
+      font-weight: 500;
+    }
+
+    .catalog-aromas,
+    .catalog-elaboration {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 0.5rem;
+      line-height: 1.4;
+    }
+
+    .catalog-aromas strong,
+    .catalog-elaboration strong {
+      color: #333;
+      font-weight: 600;
     }
 
     .price-comparison {

@@ -133,6 +133,7 @@ export interface CatalogItem {
   id: number;
   name: string;
   description?: string | null;
+  detailed_description?: string | null;
   category?: string | null;
   subcategory?: string | null;
   barcode?: string | null;
@@ -140,6 +141,12 @@ export interface CatalogItem {
   image_url?: string | null;
   country?: string | null;
   region?: string | null;
+  wine_style?: string | null;
+  vintage?: number | null;
+  winery?: string | null;
+  grape_variety?: string | null;
+  aromas?: string | null;
+  elaboration?: string | null;
   providers: ProviderInfo[];
   min_price_cents?: number | null;
   max_price_cents?: number | null;

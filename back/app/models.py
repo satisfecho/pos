@@ -118,6 +118,13 @@ class ProviderProduct(SQLModel, table=True):
     grape_variety: str | None = None  # For wines
     volume_ml: int | None = None  # For beverages
     unit: str | None = None  # e.g., "bottle", "case", "kg"
+    # Detailed wine information
+    detailed_description: str | None = None  # Full detailed description from provider
+    wine_style: str | None = None  # e.g., "Afrutados", "Crianza", etc.
+    vintage: int | None = None  # Vintage year (anada)
+    winery: str | None = None  # Winery/Bodega name
+    aromas: str | None = None  # Aromas/flavors (comma-separated)
+    elaboration: str | None = None  # Elaboration details (e.g., "Inox", "Barrica")
     # Timestamps for sync
     last_synced_at: datetime | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
