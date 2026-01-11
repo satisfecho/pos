@@ -767,7 +767,7 @@ async def list_catalog(
                 # Construct image URL - prefer local image if available
                 image_url = None
                 if pp.image_filename:
-                    image_url = f"/uploads/providers/{provider.id}/products/{pp.image_filename}"
+                    image_url = f"/uploads/providers/{provider.token}/products/{pp.image_filename}"
                 elif pp.image_url:
                     image_url = pp.image_url
                 
@@ -1175,7 +1175,7 @@ def get_menu(
                 ).first()
                 if provider:
                     # Construct path to provider image
-                    image_filename = f"providers/{provider.id}/products/{provider_product.image_filename}"
+                    image_filename = f"providers/{provider.token}/products/{provider_product.image_filename}"
         
         products_list.append({
             "id": tp.id,

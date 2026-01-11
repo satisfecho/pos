@@ -337,8 +337,17 @@ def download_and_store_image(
             else:
                 ext = ".jpg"
         
-        # Create provider upload directory
-        provider_dir = UPLOADS_DIR / "providers" / str(provider_id) / "products"
+        # Get provider to access token
+        from app.models import Provider
+        with Session(engine) as session:
+            provider = session.exec(select(Provider).where(Provider.id == provider_id)).first()
+            if not provider:
+                print(f"  Error: Provider {provider_id} not found")
+                return None
+            provider_token = provider.token
+        
+        # Create provider upload directory using token instead of ID
+        provider_dir = UPLOADS_DIR / "providers" / provider_token / "products"
         provider_dir.mkdir(parents=True, exist_ok=True)
         
         # Generate filename
@@ -480,7 +489,7 @@ def import_wines(clear_existing: bool = False) -> dict[str, int]:
                 
                 # Delete old image file if it exists
                 if pp.image_filename:
-                    old_path = UPLOADS_DIR / "providers" / str(provider.id) / "products" / pp.image_filename
+                    old_path = UPLOADS_DIR / "providers" / provider.token / "products" / pp.image_filename
                     if old_path.exists():
                         old_path.unlink()
                 
@@ -655,7 +664,7 @@ def import_wines(clear_existing: bool = False) -> dict[str, int]:
                 if image_filename and existing.image_filename != image_filename:
                     # Delete old image if it exists
                     if existing.image_filename:
-                        old_path = UPLOADS_DIR / "providers" / str(provider.id) / "products" / existing.image_filename
+                        old_path = UPLOADS_DIR / "providers" / provider.token / "products" / existing.image_filename
                         if old_path.exists():
                             old_path.unlink()
                     existing.image_filename = image_filename

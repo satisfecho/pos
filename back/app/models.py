@@ -73,6 +73,7 @@ class Provider(SQLModel, table=True):
     """Product providers (wine suppliers, food distributors, etc.)"""
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(unique=True, index=True)  # e.g., "Tusumiller", "Sysco"
+    token: str = Field(default_factory=lambda: str(uuid4()), unique=True, index=True)  # Unique hash for secure URL access
     url: str | None = None
     api_endpoint: str | None = None
     is_active: bool = Field(default=True, index=True)
