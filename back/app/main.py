@@ -809,6 +809,28 @@ async def list_catalog(
     return result
 
 
+@app.get("/catalog/categories")
+async def get_catalog_categories(
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session)
+) -> dict:
+    """Get all categories and subcategories from catalog."""
+    catalog_items = session.exec(select(models.ProductCatalog)).all()
+    
+    categories = {}
+    for item in catalog_items:
+        if item.category:
+            if item.category not in categories:
+                categories[item.category] = set()
+            if item.subcategory:
+                categories[item.category].add(item.subcategory)
+    
+    return {
+        cat: sorted(list(subcats)) 
+        for cat, subcats in categories.items()
+    }
+
+
 @app.get("/catalog/{catalog_id}")
 async def get_catalog_item(
     catalog_id: int,
@@ -840,7 +862,7 @@ async def get_catalog_item(
             # Construct image URL - prefer local image if available
             image_url = None
             if pp.image_filename:
-                image_url = f"/uploads/providers/{provider.id}/products/{pp.image_filename}"
+                image_url = f"/uploads/providers/{provider.token}/products/{pp.image_filename}"
             elif pp.image_url:
                 image_url = pp.image_url
             
@@ -875,28 +897,6 @@ async def get_catalog_item(
         "providers": providers_data,
         "min_price_cents": min([p["price_cents"] for p in providers_data if p["price_cents"]], default=None),
         "max_price_cents": max([p["price_cents"] for p in providers_data if p["price_cents"]], default=None),
-    }
-
-
-@app.get("/catalog/categories")
-async def get_catalog_categories(
-    current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
-) -> dict:
-    """Get all categories and subcategories from catalog."""
-    catalog_items = session.exec(select(models.ProductCatalog)).all()
-    
-    categories = {}
-    for item in catalog_items:
-        if item.category:
-            if item.category not in categories:
-                categories[item.category] = set()
-            if item.subcategory:
-                categories[item.category].add(item.subcategory)
-    
-    return {
-        cat: sorted(list(subcats)) 
-        for cat, subcats in categories.items()
     }
 
 
