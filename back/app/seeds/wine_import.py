@@ -192,6 +192,9 @@ def parse_wine_data(api_data: dict[str, Any], fetch_details: bool = False) -> li
             # Use wine type as subcategory (e.g., "Red Wine", "White Wine")
             subcategory = wine_type
         
+        # Check if wine is available by glass (copa)
+        is_by_glass = product.get("copa") == 1 or product.get("copa") == "1" or bool(product.get("pricecopa"))
+        
         # Try to get additional subcategory info from tags (e.g., "d.o. cava", "d.o. rioja")
         tags = product.get("tag", [])
         if tags and isinstance(tags, list):
@@ -204,6 +207,15 @@ def parse_wine_data(api_data: dict[str, Any], fetch_details: bool = False) -> li
                     elif not subcategory:
                         subcategory = tag.title()
                     break
+        
+        # Add "Wine by Glass" subcategory if available by glass
+        if is_by_glass:
+            if subcategory:
+                # Append to existing subcategory
+                if "Wine by Glass" not in subcategory:
+                    subcategory = f"{subcategory} - Wine by Glass"
+            else:
+                subcategory = "Wine by Glass"
         
         # Extract image - img field contains product number + extension (e.g., "25504.png")
         img_field = product.get("img") or ""
