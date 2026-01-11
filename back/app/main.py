@@ -955,11 +955,11 @@ def list_tenant_products(
 @app.post("/tenant-products")
 def create_tenant_product(
     catalog_id: int,
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session),
     provider_product_id: int | None = None,
     name: str | None = None,
-    price_cents: int | None = None,
-    current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    price_cents: int | None = None
 ) -> models.TenantProduct:
     """Add a product from catalog to tenant's menu."""
     # Get catalog item

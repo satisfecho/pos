@@ -486,7 +486,7 @@ export class CatalogComponent implements OnInit {
     this.selectedItem.set(item);
     this.addFormData = {
       name: item.name,
-      providerProductId: item.providers.length > 0 ? this.getProviderProductId(item.id, item.providers[0].provider_id) : null,
+      providerProductId: item.providers.length > 0 ? (item.providers[0].provider_product_id || null) : null,
       price: item.min_price_cents ? (item.min_price_cents / 100).toFixed(2) : ''
     };
   }
