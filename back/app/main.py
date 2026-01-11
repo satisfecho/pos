@@ -1278,11 +1278,6 @@ def get_menu(
                 product_data["category_code"] = get_category_code(catalog_item.category)
             if catalog_item.subcategory:
                 product_data["subcategory"] = catalog_item.subcategory
-                # Extract all subcategory codes (wine type, wine by glass, and other subcategories)
-                from .category_codes import get_all_subcategory_codes
-                subcategory_codes = get_all_subcategory_codes(catalog_item.subcategory)
-                if subcategory_codes:
-                    product_data["subcategory_codes"] = subcategory_codes
             if catalog_item.description:
                 product_data["description"] = catalog_item.description
         
@@ -1352,17 +1347,31 @@ def get_menu(
             elif "Rosé" in first_part or "Rosado" in first_part:
                 wine_type = "Rosé Wine"
         
+        # Now build subcategory_codes AFTER wine_type is determined
+        # This ensures wine_type takes precedence over subcategory string
+        subcategory_codes = []
+        
+        # First, extract all non-wine-type codes from subcategory (e.g., WINE_BY_GLASS)
+        if catalog_item and catalog_item.subcategory:
+            from .category_codes import get_all_subcategory_codes, extract_wine_type_code
+            all_codes = get_all_subcategory_codes(catalog_item.subcategory)
+            # Remove wine type codes - we'll add the correct one based on wine_type
+            wine_type_codes = ["WINE_RED", "WINE_WHITE", "WINE_SPARKLING", "WINE_ROSE", "WINE_SWEET", "WINE_FORTIFIED"]
+            for code in all_codes:
+                if code not in wine_type_codes:
+                    subcategory_codes.append(code)
+        
+        # Add the correct wine type code based on determined wine_type
         if wine_type:
             product_data["wine_type"] = wine_type
-            # Also add wine type code for filtering
             from .category_codes import extract_wine_type_code
             wine_type_code = extract_wine_type_code(wine_type)
-            if wine_type_code and "subcategory_codes" not in product_data:
-                product_data["subcategory_codes"] = []
-            if wine_type_code and wine_type_code not in product_data.get("subcategory_codes", []):
-                if "subcategory_codes" not in product_data:
-                    product_data["subcategory_codes"] = []
-                product_data["subcategory_codes"].append(wine_type_code)
+            if wine_type_code and wine_type_code not in subcategory_codes:
+                subcategory_codes.append(wine_type_code)
+        
+        # Set subcategory_codes if we have any
+        if subcategory_codes:
+            product_data["subcategory_codes"] = subcategory_codes
         
         # Add detailed wine information from provider product
         if provider_product:
