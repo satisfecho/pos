@@ -3,6 +3,7 @@ import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService, Product, OrderItemCreate } from '../services/api.service';
+import { environment } from '../../environments/environment';
 
 interface CartItem {
   product: Product;
@@ -663,7 +664,8 @@ export class MenuComponent implements OnInit {
 
   connectWebSocket() {
     if (this.ws || this.tenantId === 0) return;
-    this.ws = new WebSocket(`ws://192.168.1.98:8021/ws/${this.tenantId}`);
+    const wsUrl = environment.wsUrl.replace(/^http/, 'ws').replace(/^https/, 'wss');
+    this.ws = new WebSocket(`${wsUrl}/ws/${this.tenantId}`);
     this.ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
@@ -692,7 +694,7 @@ export class MenuComponent implements OnInit {
 
   getProductImageUrl(product: Product): string | null {
     if (!product.image_filename || !product.tenant_id) return null;
-    return `http://192.168.1.98:8020/uploads/${product.tenant_id}/products/${product.image_filename}`;
+    return `${environment.apiUrl}/uploads/${product.tenant_id}/products/${product.image_filename}`;
   }
 
   toggleIngredients(productId: number) {

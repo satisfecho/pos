@@ -6,6 +6,11 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script>
+    // Runtime configuration from environment variables
+    window.__API_URL__ = window.__API_URL__ || 'http://localhost:8020';
+    window.__WS_URL__ = window.__WS_URL__ || 'ws://localhost:8021';
+  </script>
 </head>
 <body>
   <app-root></app-root>

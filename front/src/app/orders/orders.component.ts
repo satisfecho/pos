@@ -1,5 +1,5 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
-import { DecimalPipe, DatePipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { ApiService, Order, User } from '../services/api.service';
 import { Subscription } from 'rxjs';
@@ -25,7 +25,7 @@ ModuleRegistry.registerModules([
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [DecimalPipe, DatePipe, RouterLink, RouterLinkActive, AgGridAngular],
+  imports: [DecimalPipe, RouterLink, RouterLinkActive, AgGridAngular],
   template: `
     <div class="layout" [class.sidebar-open]="sidebarOpen()">
       <header class="mobile-header">

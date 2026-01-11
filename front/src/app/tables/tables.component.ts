@@ -294,7 +294,7 @@ export class TablesComponent implements OnInit {
   }
 
   getMenuUrl(table: Table): string {
-    return `http://192.168.1.98:4200/menu/${table.token}`;
+    return `${window.location.origin}/menu/${table.token}`;
   }
 
   copyLink(table: Table) {

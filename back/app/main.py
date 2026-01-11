@@ -23,9 +23,19 @@ stripe.api_key = settings.stripe_secret_key
 
 app = FastAPI(title="POS API")
 
+# Parse CORS origins from environment (comma-separated)
+cors_origins_list = [
+    origin.strip() 
+    for origin in settings.cors_origins.split(",") 
+    if origin.strip()
+]
+# Add wildcard for public menu access if not already present
+if "*" not in cors_origins_list:
+    cors_origins_list.append("*")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200", "*"],  # Allow public menu access
+    allow_origins=cors_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
