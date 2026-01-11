@@ -112,15 +112,15 @@ def fetch_wines_from_api(page: int = 1) -> dict[str, Any]:
 
 
 def get_category_name(category_id: str, filter_data: dict[str, Any] | None = None) -> str:
-    """Map category ID to name. Use tag-based mapping as fallback."""
-    # Category ID to name mapping (based on common wine categories)
+    """Map category ID to wine type name (used as subcategory under Beverages)."""
+    # Category ID to wine type mapping
     category_map = {
-        "18010": "Tintos",
-        "18011": "Blancos", 
-        "18013": "Espumosos",
-        "18014": "Rosados",
-        "18015": "Dulces",
-        "18016": "Generosos",
+        "18010": "Red Wine",  # Tintos
+        "18011": "White Wine",  # Blancos
+        "18013": "Sparkling Wine",  # Espumosos
+        "18014": "Rosé Wine",  # Rosados
+        "18015": "Sweet Wine",  # Dulces
+        "18016": "Fortified Wine",  # Generosos
     }
     
     # Remove quotes if present
@@ -173,21 +173,27 @@ def parse_wine_data(api_data: dict[str, Any]) -> list[dict[str, Any]]:
         
         # Extract category from categories array or tags
         categories = product.get("categories", [])
-        category = "Wine"
+        category = "Beverages"  # Main category for all wines
         subcategory = None
         
         if categories and isinstance(categories, list) and len(categories) > 0:
-            # Use first category ID
+            # Use first category ID to get wine type as subcategory
             cat_id = str(categories[0]).strip("'\"")
-            category = get_category_name(cat_id, filter_data)
+            wine_type = get_category_name(cat_id, filter_data)
+            # Use wine type as subcategory (e.g., "Red Wine", "White Wine")
+            subcategory = wine_type
         
-        # Try to get subcategory from tags (e.g., "d.o. cava", "d.o. rioja")
+        # Try to get additional subcategory info from tags (e.g., "d.o. cava", "d.o. rioja")
         tags = product.get("tag", [])
         if tags and isinstance(tags, list):
             # Look for D.O. (Denominación de Origen) in tags
             for tag in tags:
                 if isinstance(tag, str) and tag.lower().startswith("d.o."):
-                    subcategory = tag.title()
+                    # Append D.O. to subcategory if not already there
+                    if subcategory and tag.title() not in subcategory:
+                        subcategory = f"{subcategory} - {tag.title()}"
+                    elif not subcategory:
+                        subcategory = tag.title()
                     break
         
         # Extract image - img field contains product number + extension (e.g., "25504.png")
@@ -405,7 +411,7 @@ def get_or_create_catalog_item(
         catalog_item = ProductCatalog(
             name=name,
             normalized_name=normalized_name,
-            category=category or "Wine",
+            category=category or "Beverages",
             subcategory=subcategory,
             barcode=barcode,
             brand=brand,
