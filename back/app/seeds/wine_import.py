@@ -11,13 +11,17 @@ import json
 import re
 import sys
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin
+from uuid import uuid4
 
 try:
     import requests
+    from PIL import Image
+    from io import BytesIO
 except ImportError:
-    print("Error: 'requests' library is required. Install it with: pip install requests")
+    print("Error: 'requests' and 'Pillow' libraries are required. Install with: pip install requests Pillow")
     sys.exit(1)
 
 from sqlmodel import Session, select
@@ -28,6 +32,10 @@ from app.models import Provider, ProductCatalog, ProviderProduct
 # API configuration from the curl commands
 API_BASE_URL = "https://tusumiller.isumi.es"
 API_ENDPOINT = f"{API_BASE_URL}/jsonsearch"
+IMAGE_BASE_URL = "https://cartas.wineissocial.com/uploads/products/medium"
+
+# Uploads directory (relative to back directory)
+UPLOADS_DIR = Path(__file__).parent.parent.parent / "uploads"
 
 # Headers and cookies from the curl command
 HEADERS = {
@@ -182,12 +190,21 @@ def parse_wine_data(api_data: dict[str, Any]) -> list[dict[str, Any]]:
                     subcategory = tag.title()
                     break
         
-        # Extract image - img field contains filename
-        image_filename = product.get("img") or ""
+        # Extract image - img field contains product number + extension (e.g., "25504.png")
+        img_field = product.get("img") or ""
         image_url = None
-        if image_filename:
-            # Construct full URL
-            image_url = f"{API_BASE_URL}/uploads/{image_filename}"
+        product_image_number = None
+        
+        if img_field:
+            # Extract product number from filename (e.g., "25504.png" -> "25504")
+            # Remove extension and any prefix like "img_"
+            img_clean = img_field.replace("img_", "").strip()
+            # Extract number before extension
+            match = re.search(r'(\d+)', img_clean)
+            if match:
+                product_image_number = match.group(1)
+                # Construct full URL using the wine image service
+                image_url = f"{IMAGE_BASE_URL}/{product_image_number}.png"
         
         # Extract country, region, grape variety from tags or specific fields
         country = None
@@ -231,6 +248,7 @@ def parse_wine_data(api_data: dict[str, Any]) -> list[dict[str, Any]]:
             "name": wine_name,
             "price_cents": price_cents,
             "image_url": image_url,
+            "image_product_number": product_image_number,  # Store for downloading
             "category": category,
             "subcategory": subcategory,
             "country": country,
@@ -244,6 +262,98 @@ def parse_wine_data(api_data: dict[str, Any]) -> list[dict[str, Any]]:
         wines.append(wine_data)
     
     return wines
+
+
+def download_and_store_image(
+    image_url: str,
+    provider_id: int,
+    product_number: str | None = None
+) -> str | None:
+    """
+    Download image from URL and store it locally.
+    
+    Args:
+        image_url: URL of the image to download
+        provider_id: ID of the provider
+        product_number: Product number for filename (optional, uses UUID if not provided)
+        
+    Returns:
+        Local filename if successful, None otherwise
+    """
+    if not image_url:
+        return None
+    
+    try:
+        # Download image
+        response = requests.get(image_url, timeout=30, stream=True)
+        response.raise_for_status()
+        
+        # Check content type
+        content_type = response.headers.get("content-type", "")
+        if not content_type.startswith("image/"):
+            print(f"  Warning: {image_url} is not an image (content-type: {content_type})")
+            return None
+        
+        # Read image data
+        image_data = response.content
+        
+        # Optimize image if possible
+        try:
+            image = Image.open(BytesIO(image_data))
+            # Convert to RGB if needed
+            if image.mode in ("RGBA", "LA", "P"):
+                background = Image.new("RGB", image.size, (255, 255, 255))
+                if image.mode == "P":
+                    image = image.convert("RGBA")
+                background.paste(image, mask=image.split()[-1] if image.mode == "RGBA" else None)
+                image = background
+            elif image.mode not in ("RGB", "L"):
+                image = image.convert("RGB")
+            
+            # Resize if too large (max 1920x1920)
+            max_size = 1920
+            if image.width > max_size or image.height > max_size:
+                image.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
+            
+            # Save as optimized JPEG
+            output = BytesIO()
+            image.save(output, format="JPEG", quality=85, optimize=True)
+            image_data = output.getvalue()
+            ext = ".jpg"
+        except Exception as e:
+            # If optimization fails, use original
+            print(f"  Warning: Could not optimize image: {e}")
+            # Determine extension from URL or content type
+            if image_url.endswith(".png"):
+                ext = ".png"
+            elif image_url.endswith(".webp"):
+                ext = ".webp"
+            else:
+                ext = ".jpg"
+        
+        # Create provider upload directory
+        provider_dir = UPLOADS_DIR / "providers" / str(provider_id) / "products"
+        provider_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Generate filename
+        if product_number:
+            # Use product number as base, but ensure uniqueness
+            filename = f"{product_number}{ext}"
+            # Check if file exists, if so add UUID
+            if (provider_dir / filename).exists():
+                filename = f"{product_number}_{uuid4().hex[:8]}{ext}"
+        else:
+            filename = f"{uuid4()}{ext}"
+        
+        # Save file
+        file_path = provider_dir / filename
+        file_path.write_bytes(image_data)
+        
+        return filename
+        
+    except Exception as e:
+        print(f"  Error downloading image from {image_url}: {e}")
+        return None
 
 
 def get_or_create_provider(session: Session, provider_name: str) -> Provider:
@@ -491,6 +601,21 @@ def import_wines(clear_existing: bool = False) -> dict[str, int]:
                 )
             ).first()
             
+            # Download and store image if URL is available
+            image_filename = None
+            if wine_data.get("image_url"):
+                product_number = wine_data.get("image_product_number")
+                print(f"  Downloading image for {wine_data['name']}...", end=" ")
+                image_filename = download_and_store_image(
+                    wine_data["image_url"],
+                    provider.id,
+                    product_number
+                )
+                if image_filename:
+                    print(f"✓ Saved as {image_filename}")
+                else:
+                    print("✗ Failed")
+            
             if existing:
                 # Update existing provider product
                 updated = False
@@ -499,6 +624,14 @@ def import_wines(clear_existing: bool = False) -> dict[str, int]:
                     updated = True
                 if wine_data.get("image_url") and existing.image_url != wine_data["image_url"]:
                     existing.image_url = wine_data["image_url"]
+                    updated = True
+                if image_filename and existing.image_filename != image_filename:
+                    # Delete old image if it exists
+                    if existing.image_filename:
+                        old_path = UPLOADS_DIR / "providers" / str(provider.id) / "products" / existing.image_filename
+                        if old_path.exists():
+                            old_path.unlink()
+                    existing.image_filename = image_filename
                     updated = True
                 if wine_data.get("country") and existing.country != wine_data["country"]:
                     existing.country = wine_data["country"]
@@ -529,6 +662,7 @@ def import_wines(clear_existing: bool = False) -> dict[str, int]:
                     name=wine_data["name"],
                     price_cents=wine_data.get("price_cents"),
                     image_url=wine_data.get("image_url"),
+                    image_filename=image_filename,
                     country=wine_data.get("country"),
                     region=wine_data.get("region"),
                     grape_variety=wine_data.get("grape_variety"),

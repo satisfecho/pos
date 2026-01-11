@@ -108,7 +108,8 @@ class ProviderProduct(SQLModel, table=True):
     external_id: str = Field(index=True)  # ID from provider's system
     name: str  # Provider's name for this product (may differ from catalog)
     price_cents: int | None = None  # Provider's price
-    image_url: str | None = None
+    image_url: str | None = None  # Original remote URL
+    image_filename: str | None = None  # Local filename stored in uploads/providers/{provider_id}/products/
     availability: bool = Field(default=True, index=True)
     # Additional provider-specific metadata
     country: str | None = None
