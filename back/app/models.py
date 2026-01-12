@@ -155,10 +155,27 @@ class TenantProduct(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+class Floor(TenantMixin, table=True):
+    """Restaurant floor/zone for canvas layout (e.g., Main Floor, Terrace, VIP)"""
+    id: int | None = Field(default=None, primary_key=True)
+    name: str  # e.g., "Main Floor", "Terrace"
+    sort_order: int = Field(default=0)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 class Table(TenantMixin, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str  # e.g., "Table 5"
     token: str = Field(default_factory=lambda: str(uuid4()), unique=True, index=True)
+    # Canvas layout properties
+    floor_id: int | None = Field(default=None, foreign_key="floor.id")
+    x_position: float = Field(default=0)
+    y_position: float = Field(default=0)
+    rotation: float = Field(default=0)
+    shape: str = Field(default="rectangle")  # rectangle, circle, oval
+    width: float = Field(default=100)
+    height: float = Field(default=60)
+    seat_count: int = Field(default=4)
 
 
 class Order(TenantMixin, table=True):
@@ -201,6 +218,29 @@ class ProductUpdate(SQLModel):
 
 class TableCreate(SQLModel):
     name: str
+    floor_id: int | None = None
+
+
+class TableUpdate(SQLModel):
+    name: str | None = None
+    floor_id: int | None = None
+    x_position: float | None = None
+    y_position: float | None = None
+    rotation: float | None = None
+    shape: str | None = None
+    width: float | None = None
+    height: float | None = None
+    seat_count: int | None = None
+
+
+class FloorCreate(SQLModel):
+    name: str
+    sort_order: int | None = None
+
+
+class FloorUpdate(SQLModel):
+    name: str | None = None
+    sort_order: int | None = None
 
 
 class OrderItemCreate(SQLModel):

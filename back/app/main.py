@@ -1053,7 +1053,12 @@ def create_tenant_product(
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session)
 ) -> models.TenantProduct:
-    """Add a product from catalog to tenant's menu."""
+    """Add a product from catalog to tenant's menu.
+    
+    This creates BOTH:
+    1. A Product entry (shows on /products page)
+    2. A TenantProduct entry (links to catalog for metadata)
+    """
     # Get catalog item
     catalog_item = session.exec(
         select(models.ProductCatalog).where(models.ProductCatalog.id == product_data.catalog_id)
@@ -1061,7 +1066,8 @@ def create_tenant_product(
     if not catalog_item:
         raise HTTPException(status_code=404, detail="Catalog item not found")
     
-    # If provider_product_id is provided, validate it
+    # Get provider product for additional info if specified
+    provider_product = None
     if product_data.provider_product_id:
         provider_product = session.exec(
             select(models.ProviderProduct).where(
@@ -1075,24 +1081,45 @@ def create_tenant_product(
     # Use catalog name if name not provided
     product_name = product_data.name or catalog_item.name
     
-    # Use provider price if price not provided and provider_product_id is set
+    # Determine price
     price_cents = product_data.price_cents
-    if price_cents is None and product_data.provider_product_id:
-        provider_product = session.exec(
-            select(models.ProviderProduct).where(models.ProviderProduct.id == product_data.provider_product_id)
-        ).first()
-        if provider_product and provider_product.price_cents:
-            price_cents = provider_product.price_cents
-        else:
-            raise HTTPException(status_code=400, detail="Price is required")
-    
+    if price_cents is None and provider_product:
+        price_cents = provider_product.price_cents
     if price_cents is None:
         raise HTTPException(status_code=400, detail="Price is required")
     
+    # Determine category and subcategory from catalog
+    category = catalog_item.category
+    subcategory = catalog_item.subcategory
+    
+    # Get image from provider product if available
+    image_filename = None
+    if provider_product and provider_product.image_filename:
+        provider = session.exec(
+            select(models.Provider).where(models.Provider.id == provider_product.provider_id)
+        ).first()
+        if provider:
+            image_filename = f"providers/{provider.token}/products/{provider_product.image_filename}"
+    
+    # 1. Create the actual Product (shows on /products page)
+    product = models.Product(
+        tenant_id=current_user.tenant_id,
+        name=product_name,
+        price_cents=price_cents,
+        image_filename=image_filename,
+        category=category,
+        subcategory=subcategory,
+    )
+    session.add(product)
+    session.commit()
+    session.refresh(product)
+    
+    # 2. Create TenantProduct (links to catalog for metadata tracking)
     tenant_product = models.TenantProduct(
         tenant_id=current_user.tenant_id,
         catalog_id=product_data.catalog_id,
         provider_product_id=product_data.provider_product_id,
+        product_id=product.id,  # Link to the actual Product
         name=product_name,
         price_cents=price_cents,
     )
@@ -1156,6 +1183,100 @@ def delete_tenant_product(
     return {"status": "deleted", "id": tenant_product_id}
 
 
+# ============ FLOORS ============
+
+@app.get("/floors")
+def list_floors(
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session)
+) -> list[models.Floor]:
+    """List all floors for this tenant."""
+    return session.exec(
+        select(models.Floor)
+        .where(models.Floor.tenant_id == current_user.tenant_id)
+        .order_by(models.Floor.sort_order, models.Floor.name)
+    ).all()
+
+
+@app.post("/floors")
+def create_floor(
+    floor_data: models.FloorCreate,
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session)
+) -> models.Floor:
+    """Create a new floor/zone."""
+    # Auto-assign sort_order if not provided
+    sort_order = floor_data.sort_order
+    if sort_order is None:
+        max_order = session.exec(
+            select(models.Floor.sort_order)
+            .where(models.Floor.tenant_id == current_user.tenant_id)
+            .order_by(models.Floor.sort_order.desc())
+        ).first()
+        sort_order = (max_order or 0) + 1
+    
+    floor = models.Floor(
+        name=floor_data.name,
+        sort_order=sort_order,
+        tenant_id=current_user.tenant_id
+    )
+    session.add(floor)
+    session.commit()
+    session.refresh(floor)
+    return floor
+
+
+@app.put("/floors/{floor_id}")
+def update_floor(
+    floor_id: int,
+    floor_update: models.FloorUpdate,
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session)
+) -> models.Floor:
+    """Update a floor."""
+    floor = session.exec(
+        select(models.Floor).where(
+            models.Floor.id == floor_id,
+            models.Floor.tenant_id == current_user.tenant_id
+        )
+    ).first()
+    
+    if not floor:
+        raise HTTPException(status_code=404, detail="Floor not found")
+    
+    if floor_update.name is not None:
+        floor.name = floor_update.name
+    if floor_update.sort_order is not None:
+        floor.sort_order = floor_update.sort_order
+    
+    session.add(floor)
+    session.commit()
+    session.refresh(floor)
+    return floor
+
+
+@app.delete("/floors/{floor_id}")
+def delete_floor(
+    floor_id: int,
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session)
+) -> dict:
+    """Delete a floor. Tables on this floor will have floor_id set to null."""
+    floor = session.exec(
+        select(models.Floor).where(
+            models.Floor.id == floor_id,
+            models.Floor.tenant_id == current_user.tenant_id
+        )
+    ).first()
+    
+    if not floor:
+        raise HTTPException(status_code=404, detail="Floor not found")
+    
+    session.delete(floor)
+    session.commit()
+    return {"status": "deleted", "id": floor_id}
+
+
 # ============ TABLES ============
 
 @app.get("/tables")
@@ -1166,13 +1287,102 @@ def list_tables(
     return session.exec(select(models.Table).where(models.Table.tenant_id == current_user.tenant_id)).all()
 
 
+@app.get("/tables/with-status")
+def list_tables_with_status(
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session)
+) -> list[dict]:
+    """List tables with computed status based on active orders."""
+    tables = session.exec(
+        select(models.Table).where(models.Table.tenant_id == current_user.tenant_id)
+    ).all()
+    
+    result = []
+    for table in tables:
+        # Check for active orders (pending, preparing, ready)
+        active_order = session.exec(
+            select(models.Order).where(
+                models.Order.table_id == table.id,
+                models.Order.status.in_(["pending", "preparing", "ready"])
+            )
+        ).first()
+        
+        status = "occupied" if active_order else "available"
+        
+        result.append({
+            "id": table.id,
+            "name": table.name,
+            "token": table.token,
+            "tenant_id": table.tenant_id,
+            "floor_id": table.floor_id,
+            "x_position": table.x_position,
+            "y_position": table.y_position,
+            "rotation": table.rotation,
+            "shape": table.shape,
+            "width": table.width,
+            "height": table.height,
+            "seat_count": table.seat_count,
+            "status": status
+        })
+    
+    return result
+
+
 @app.post("/tables")
 def create_table(
     table_data: models.TableCreate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session)
 ) -> models.Table:
-    table = models.Table(name=table_data.name, tenant_id=current_user.tenant_id)
+    table = models.Table(
+        name=table_data.name,
+        tenant_id=current_user.tenant_id,
+        floor_id=table_data.floor_id
+    )
+    session.add(table)
+    session.commit()
+    session.refresh(table)
+    return table
+
+
+@app.put("/tables/{table_id}")
+def update_table(
+    table_id: int,
+    table_update: models.TableUpdate,
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session)
+) -> models.Table:
+    """Update table properties including canvas layout."""
+    table = session.exec(
+        select(models.Table).where(
+            models.Table.id == table_id,
+            models.Table.tenant_id == current_user.tenant_id
+        )
+    ).first()
+    
+    if not table:
+        raise HTTPException(status_code=404, detail="Table not found")
+    
+    # Update all provided fields
+    if table_update.name is not None:
+        table.name = table_update.name
+    if table_update.floor_id is not None:
+        table.floor_id = table_update.floor_id
+    if table_update.x_position is not None:
+        table.x_position = table_update.x_position
+    if table_update.y_position is not None:
+        table.y_position = table_update.y_position
+    if table_update.rotation is not None:
+        table.rotation = table_update.rotation
+    if table_update.shape is not None:
+        table.shape = table_update.shape
+    if table_update.width is not None:
+        table.width = table_update.width
+    if table_update.height is not None:
+        table.height = table_update.height
+    if table_update.seat_count is not None:
+        table.seat_count = table_update.seat_count
+    
     session.add(table)
     session.commit()
     session.refresh(table)
@@ -1572,21 +1782,37 @@ def create_order(
     
     # Add order items
     for item in order_data.items:
-        product = session.exec(
-            select(models.Product).where(
-                models.Product.id == item.product_id,
-                models.Product.tenant_id == table.tenant_id
+        # First try TenantProduct (catalog system), then fallback to legacy Product
+        tenant_product = session.exec(
+            select(models.TenantProduct).where(
+                models.TenantProduct.id == item.product_id,
+                models.TenantProduct.tenant_id == table.tenant_id
             )
         ).first()
         
-        if not product:
-            raise HTTPException(status_code=400, detail=f"Product {item.product_id} not found")
+        if tenant_product:
+            product_name = tenant_product.name
+            price_cents = tenant_product.price_cents
+        else:
+            # Fallback to legacy Product table
+            product = session.exec(
+                select(models.Product).where(
+                    models.Product.id == item.product_id,
+                    models.Product.tenant_id == table.tenant_id
+                )
+            ).first()
+            
+            if not product:
+                raise HTTPException(status_code=400, detail=f"Product {item.product_id} not found")
+            
+            product_name = product.name
+            price_cents = product.price_cents
         
         # Check if this product already exists in the order
         existing_item = session.exec(
             select(models.OrderItem).where(
                 models.OrderItem.order_id == order.id,
-                models.OrderItem.product_id == product.id
+                models.OrderItem.product_id == item.product_id
             )
         ).first()
         
@@ -1600,10 +1826,10 @@ def create_order(
             # Create new order item
             order_item = models.OrderItem(
                 order_id=order.id,
-                product_id=product.id,
-                product_name=product.name,
+                product_id=item.product_id,
+                product_name=product_name,
                 quantity=item.quantity,
-                price_cents=product.price_cents,
+                price_cents=price_cents,
                 notes=item.notes
             )
             session.add(order_item)

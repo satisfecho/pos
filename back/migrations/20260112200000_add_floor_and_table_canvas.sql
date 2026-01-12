@@ -1,0 +1,21 @@
+-- Floor model (multi-floor support for restaurant dining zones)
+CREATE TABLE IF NOT EXISTS floor (
+    id SERIAL PRIMARY KEY,
+    tenant_id INTEGER NOT NULL REFERENCES tenant(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    sort_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_floor_tenant ON floor(tenant_id);
+
+-- Table canvas properties for visual layout
+ALTER TABLE "table" ADD COLUMN IF NOT EXISTS floor_id INTEGER REFERENCES floor(id) ON DELETE SET NULL;
+ALTER TABLE "table" ADD COLUMN IF NOT EXISTS x_position FLOAT DEFAULT 0;
+ALTER TABLE "table" ADD COLUMN IF NOT EXISTS y_position FLOAT DEFAULT 0;
+ALTER TABLE "table" ADD COLUMN IF NOT EXISTS rotation FLOAT DEFAULT 0;
+ALTER TABLE "table" ADD COLUMN IF NOT EXISTS shape VARCHAR(20) DEFAULT 'rectangle';
+ALTER TABLE "table" ADD COLUMN IF NOT EXISTS width FLOAT DEFAULT 100;
+ALTER TABLE "table" ADD COLUMN IF NOT EXISTS height FLOAT DEFAULT 60;
+ALTER TABLE "table" ADD COLUMN IF NOT EXISTS seat_count INTEGER DEFAULT 4;
+
+CREATE INDEX IF NOT EXISTS idx_table_floor ON "table"(floor_id);

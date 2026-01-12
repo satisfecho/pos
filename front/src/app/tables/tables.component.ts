@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { ApiService, Table, TenantSettings } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
@@ -8,11 +8,21 @@ import { SidebarComponent } from '../shared/sidebar.component';
 @Component({
   selector: 'app-tables',
   standalone: true,
-  imports: [FormsModule, QRCodeComponent, SidebarComponent],
+  imports: [FormsModule, QRCodeComponent, SidebarComponent, RouterLink],
   template: `
     <app-sidebar>
         <div class="page-header">
-          <h1>Tables</h1>
+          <div class="header-left">
+            <h1>Tables</h1>
+            <a routerLink="/tables/canvas" class="btn btn-ghost btn-sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>
+                <line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/>
+              </svg>
+              Canvas View
+            </a>
+          </div>
           @if (!showForm()) {
             <button class="btn btn-primary" (click)="showForm.set(true)">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -116,6 +126,7 @@ import { SidebarComponent } from '../shared/sidebar.component';
   `,
   styles: [`
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); }
+    .header-left { display: flex; align-items: center; gap: var(--space-4); }
     .page-header h1 { font-size: 1.5rem; font-weight: 600; color: var(--color-text); margin: 0; }
 
     .btn { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4); border: none; border-radius: var(--radius-md); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.15s ease; text-decoration: none; }

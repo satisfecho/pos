@@ -52,11 +52,30 @@ export interface CatalogCategories {
   [category: string]: string[]; // category -> list of subcategories
 }
 
+export interface Floor {
+  id?: number;
+  name: string;
+  sort_order: number;
+  tenant_id?: number;
+}
+
 export interface Table {
   id?: number;
   name: string;
   token?: string;
   tenant_id?: number;
+  floor_id?: number;
+  x_position?: number;
+  y_position?: number;
+  rotation?: number;
+  shape?: 'rectangle' | 'circle' | 'oval';
+  width?: number;
+  height?: number;
+  seat_count?: number;
+}
+
+export interface CanvasTable extends Table {
+  status?: 'available' | 'occupied' | 'reserved';
 }
 
 export interface OrderItem {
@@ -314,8 +333,33 @@ export class ApiService {
   }
 
   getProductImageUrl(product: Product): string | null {
-    if (!product.image_filename || !product.tenant_id) return null;
+    if (!product.image_filename) return null;
+    // Provider images have full path like "providers/{token}/products/{filename}"
+    if (product.image_filename.startsWith('providers/')) {
+      return `${this.apiUrl}/uploads/${product.image_filename}`;
+    }
+    // Regular product images are in tenant folder
+    if (!product.tenant_id) return null;
     return `${this.apiUrl}/uploads/${product.tenant_id}/products/${product.image_filename}`;
+  }
+
+  // Floors
+  getFloors(): Observable<Floor[]> {
+    return this.http.get<Floor[]>(`${this.apiUrl}/floors`);
+  }
+
+  createFloor(name: string, sortOrder?: number): Observable<Floor> {
+    const body: { name: string; sort_order?: number } = { name };
+    if (sortOrder !== undefined) body.sort_order = sortOrder;
+    return this.http.post<Floor>(`${this.apiUrl}/floors`, body);
+  }
+
+  updateFloor(id: number, data: Partial<Floor>): Observable<Floor> {
+    return this.http.put<Floor>(`${this.apiUrl}/floors/${id}`, data);
+  }
+
+  deleteFloor(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/floors/${id}`);
   }
 
   // Tables
@@ -323,8 +367,18 @@ export class ApiService {
     return this.http.get<Table[]>(`${this.apiUrl}/tables`);
   }
 
-  createTable(name: string): Observable<Table> {
-    return this.http.post<Table>(`${this.apiUrl}/tables`, { name });
+  getTablesWithStatus(): Observable<CanvasTable[]> {
+    return this.http.get<CanvasTable[]>(`${this.apiUrl}/tables/with-status`);
+  }
+
+  createTable(name: string, floorId?: number): Observable<Table> {
+    const body: { name: string; floor_id?: number } = { name };
+    if (floorId !== undefined) body.floor_id = floorId;
+    return this.http.post<Table>(`${this.apiUrl}/tables`, body);
+  }
+
+  updateTable(id: number, data: Partial<Table>): Observable<Table> {
+    return this.http.put<Table>(`${this.apiUrl}/tables/${id}`, data);
   }
 
   deleteTable(id: number): Observable<void> {
