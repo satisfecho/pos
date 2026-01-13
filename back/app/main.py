@@ -20,6 +20,8 @@ from sqlmodel import Session, select
 from . import models, security
 from .db import check_db_connection, create_db_and_tables, get_session
 from .settings import settings
+from .inventory_routes import router as inventory_router
+from .inventory_service import deduct_inventory_for_order
 
 # Configure logging
 logging.basicConfig(
@@ -134,6 +136,9 @@ STATIC_DIR.mkdir(exist_ok=True)
 
 # Mount static files for serving images
 app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
+
+# Register Inventory API router
+app.include_router(inventory_router, prefix="/inventory", tags=["Inventory"])
 
 
 # ============ IMAGE OPTIMIZATION ============
@@ -1863,6 +1868,17 @@ def create_order(
     
     session.commit()
     session.refresh(order)
+    
+    # Auto-deduct inventory if enabled for tenant
+    tenant = session.get(models.Tenant, table.tenant_id)
+    if tenant and tenant.inventory_tracking_enabled:
+        try:
+            deduct_inventory_for_order(session, order, tenant)
+            session.commit()
+            logger.info(f"Inventory deducted for order #{order.id}")
+        except Exception as e:
+            # Log but don't fail the order - inventory can go negative
+            logger.warning(f"Inventory deduction warning for order #{order.id}: {e}")
     
     # Publish to Redis for real-time updates
     publish_order_update(table.tenant_id, {
