@@ -50,12 +50,12 @@ export interface InventoryItem {
     sku: string;
     name: string;
     description?: string | null;
-    unit: UnitOfMeasure;
+    unit: string;  // Serialized as string from backend
     reorder_level: number;
     reorder_quantity: number;
     current_quantity: number;
     average_cost_cents: number;
-    category: InventoryCategory;
+    category: string;  // Serialized as string from backend
     default_supplier_id?: number | null;
     is_active: boolean;
     is_low_stock: boolean;
@@ -263,20 +263,20 @@ export interface StockLevel {
     id: number;
     sku: string;
     name: string;
-    unit: UnitOfMeasure;
+    unit: string;  // Serialized as string from backend
     current_quantity: number;
     reorder_level: number;
     average_cost_cents: number;
     total_value_cents: number;
     is_low_stock: boolean;
-    category: InventoryCategory;
+    category: string;  // Serialized as string from backend
 }
 
 export interface LowStockItem {
     id: number;
     sku: string;
     name: string;
-    unit: UnitOfMeasure;
+    unit: string;  // Serialized as string from backend
     current_quantity: number;
     reorder_level: number;
     reorder_quantity: number;

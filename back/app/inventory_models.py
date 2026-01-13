@@ -597,12 +597,12 @@ class InventoryItemResponse(SQLModel):
     sku: str
     name: str
     description: str | None
-    unit: UnitOfMeasure
-    reorder_level: Decimal
-    reorder_quantity: Decimal
-    current_quantity: Decimal
+    unit: str  # Serialize as string, not Enum
+    reorder_level: float  # Use float for proper JSON serialization
+    reorder_quantity: float
+    current_quantity: float
     average_cost_cents: int
-    category: InventoryCategory
+    category: str  # Serialize as string, not Enum
     default_supplier_id: int | None
     is_active: bool
     is_low_stock: bool  # Calculated: current_quantity <= reorder_level
@@ -615,13 +615,13 @@ class StockLevelResponse(SQLModel):
     id: int
     sku: str
     name: str
-    unit: UnitOfMeasure
-    current_quantity: Decimal
-    reorder_level: Decimal
+    unit: str  # Serialize as string
+    current_quantity: float  # Use float for proper JSON serialization
+    reorder_level: float
     average_cost_cents: int
     total_value_cents: int  # current_quantity * average_cost
     is_low_stock: bool
-    category: InventoryCategory
+    category: str  # Serialize as string
 
 
 class ProductCostResponse(SQLModel):

@@ -22,6 +22,7 @@ from .db import check_db_connection, create_db_and_tables, get_session
 from .settings import settings
 from .inventory_routes import router as inventory_router
 from .inventory_service import deduct_inventory_for_order
+from . import inventory_models
 
 # Configure logging
 logging.basicConfig(
@@ -1159,6 +1160,84 @@ def create_tenant_product(
     session.add(tenant_product)
     session.commit()
     session.refresh(tenant_product)
+    
+    # 3. Create or find inventory Supplier from Provider (if provider selected)
+    inventory_supplier_id = None
+    if provider_product:
+        provider = session.exec(
+            select(models.Provider).where(models.Provider.id == provider_product.provider_id)
+        ).first()
+        if provider:
+            # Check if Supplier already exists for this provider+tenant
+            existing_supplier = session.exec(
+                select(inventory_models.Supplier).where(
+                    inventory_models.Supplier.tenant_id == current_user.tenant_id,
+                    inventory_models.Supplier.code == f"PROV-{provider.id}",
+                    inventory_models.Supplier.is_deleted == False
+                )
+            ).first()
+            
+            if existing_supplier:
+                inventory_supplier_id = existing_supplier.id
+            else:
+                # Create new Supplier from Provider
+                new_supplier = inventory_models.Supplier(
+                    tenant_id=current_user.tenant_id,
+                    name=provider.name,
+                    code=f"PROV-{provider.id}",
+                    notes=f"Auto-created from catalog provider: {provider.name}",
+                )
+                session.add(new_supplier)
+                session.commit()
+                session.refresh(new_supplier)
+                inventory_supplier_id = new_supplier.id
+    
+    # 4. Create InventoryItem for this product (if inventory tracking enabled)
+    tenant = session.exec(
+        select(models.Tenant).where(models.Tenant.id == current_user.tenant_id)
+    ).first()
+    
+    if tenant:
+        # Generate SKU from catalog info
+        sku_base = catalog_item.name[:20].upper().replace(" ", "-").replace(".", "")
+        sku = f"CAT-{catalog_item.id}-{sku_base}"
+        
+        # Check if InventoryItem already exists (by SKU)
+        existing_item = session.exec(
+            select(inventory_models.InventoryItem).where(
+                inventory_models.InventoryItem.tenant_id == current_user.tenant_id,
+                inventory_models.InventoryItem.sku == sku,
+                inventory_models.InventoryItem.is_deleted == False
+            )
+        ).first()
+        
+        if not existing_item:
+            # Map catalog category to inventory category
+            inv_category = "other"
+            if category:
+                cat_lower = category.lower()
+                if "wine" in cat_lower or "beverage" in cat_lower or "drink" in cat_lower:
+                    inv_category = "beverages"
+                elif "food" in cat_lower or "main" in cat_lower or "starter" in cat_lower:
+                    inv_category = "ingredients"
+            
+            # Create InventoryItem
+            inventory_item = inventory_models.InventoryItem(
+                tenant_id=current_user.tenant_id,
+                sku=sku,
+                name=product_name,
+                description=catalog_item.description,
+                unit="piece",  # Default to piece for catalog items
+                category=inv_category,
+                reorder_level=5,  # Default reorder level
+                reorder_quantity=10,  # Default reorder quantity
+                default_supplier_id=inventory_supplier_id,
+                current_quantity=0,  # Start with 0 stock
+                average_cost_cents=provider_product.price_cents if provider_product and provider_product.price_cents else 0,
+            )
+            session.add(inventory_item)
+            session.commit()
+    
     return tenant_product
 
 

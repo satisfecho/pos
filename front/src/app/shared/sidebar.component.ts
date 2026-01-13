@@ -422,6 +422,10 @@ export class SidebarComponent implements OnInit {
 
   ngOnInit() {
     this.api.user$.subscribe(user => this.user.set(user));
+    // Auto-open inventory submenu if on an inventory route
+    if (this.router.url.startsWith('/inventory')) {
+      this.inventoryOpen.set(true);
+    }
   }
 
   toggleSidebar() {

@@ -123,20 +123,20 @@ import {
               <tbody>
                 @for (item of filteredItems(); track item.id) {
                   <tr [class.low-stock-row]="item.is_low_stock">
-                    <td class="sku-cell">{{ item.sku }}</td>
+                    <td class="sku-cell">{{ item.sku || '-' }}</td>
                     <td>
-                      <div>{{ item.name }}</div>
+                      <div>{{ item.name || '-' }}</div>
                       @if (item.description) {
                         <small class="text-muted">{{ item.description }}</small>
                       }
                     </td>
-                    <td>{{ formatCategory(item.category) }}</td>
-                    <td [class.negative]="item.current_quantity < 0">
-                      {{ item.current_quantity.toFixed(2) }} {{ item.unit }}
+                    <td>{{ item.category ? formatCategory(item.category) : '-' }}</td>
+                    <td [class.negative]="(item.current_quantity || 0) < 0">
+                      {{ (item.current_quantity || 0).toFixed(2) }} {{ item.unit || '' }}
                     </td>
-                    <td>{{ item.reorder_level.toFixed(2) }}</td>
-                    <td>{{ formatCurrency(item.average_cost_cents) }}</td>
-                    <td>{{ formatCurrency(item.current_quantity * item.average_cost_cents) }}</td>
+                    <td>{{ (item.reorder_level || 0).toFixed(2) }}</td>
+                    <td>{{ formatCurrency(item.average_cost_cents || 0) }}</td>
+                    <td>{{ formatCurrency((item.current_quantity || 0) * (item.average_cost_cents || 0)) }}</td>
                     <td>
                       @if (item.is_low_stock) {
                         <span class="status-badge warning">Low Stock</span>
@@ -755,6 +755,6 @@ export class InventoryItemsComponent implements OnInit {
   }
 
   formatCurrency(cents: number): string { return this.inventoryService.formatCurrency(cents); }
-  formatCategory(cat: InventoryCategory): string { return cat.charAt(0).toUpperCase() + cat.slice(1); }
-  formatUnit(unit: UnitOfMeasure): string { return unit.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); }
+  formatCategory(cat: string): string { return cat ? cat.charAt(0).toUpperCase() + cat.slice(1) : '-'; }
+  formatUnit(unit: string): string { return unit ? unit.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : ''; }
 }

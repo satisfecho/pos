@@ -360,7 +360,7 @@ export class StockDashboardComponent implements OnInit {
     return this.inventoryService.formatCurrency(cents);
   }
 
-  formatCategory(cat: InventoryCategory): string {
-    return cat.charAt(0).toUpperCase() + cat.slice(1);
+  formatCategory(cat: string): string {
+    return cat ? cat.charAt(0).toUpperCase() + cat.slice(1) : '-';
   }
 }
