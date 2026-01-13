@@ -12,6 +12,7 @@ import redis
 import stripe
 from fastapi import Depends, FastAPI, HTTPException, UploadFile, File, status, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
@@ -102,8 +103,9 @@ cors_origins_list = [
     if origin.strip()
 ]
 # Add wildcard for public menu access if not already present
-if "*" not in cors_origins_list:
-    cors_origins_list.append("*")
+# Add wildcard for public menu access if not already present
+# if "*" not in cors_origins_list:
+#     cors_origins_list.append("*")
 
 app.add_middleware(
     CORSMiddleware,
@@ -362,7 +364,32 @@ def login_for_access_token(
         data={"sub": user.email, "tenant_id": user.tenant_id},
         expires_delta=security.timedelta(minutes=settings.access_token_expire_minutes)
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    
+    response = JSONResponse(content={"status": "success", "message": "Logged in"})
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=settings.is_production,  # Only enforce HTTPS in production
+        samesite="lax",
+        path="/",  # Ensure cookie is sent with all API requests
+        max_age=settings.access_token_expire_minutes * 60
+    )
+    return response
+
+
+@app.post("/logout")
+def logout():
+    response = JSONResponse(content={"status": "success", "message": "Logged out"})
+    response.delete_cookie(key="access_token", path="/")  # Must match path used in set_cookie
+    return response
+
+
+@app.get("/users/me")
+def read_users_me(
+    current_user: Annotated[models.User, Depends(security.get_current_user)]
+) -> models.User:
+    return current_user
 
 
 # ============ TENANT SETTINGS ============

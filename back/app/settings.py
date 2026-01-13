@@ -47,6 +47,9 @@ class Settings(BaseSettings):
         default="http://localhost:4200",
         validation_alias="CORS_ORIGINS"
     )
+    
+    # Production mode (enables secure cookies, stricter CORS, etc.)
+    is_production: bool = Field(default=False, validation_alias="PRODUCTION")
 
     @property
     def database_url(self) -> str:
