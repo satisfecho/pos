@@ -1,5 +1,4 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService, Order } from '../services/api.service';
@@ -28,7 +27,7 @@ ModuleRegistry.registerModules([
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [DecimalPipe, AgGridAngular, SidebarComponent, FormsModule],
+  imports: [AgGridAngular, SidebarComponent, FormsModule],
   template: `
     <app-sidebar>
         <div class="page-header">
@@ -991,7 +990,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private router = inject(Router);
   private audio = inject(AudioService);
-  
+
   // Get browser's timezone automatically
   private getBrowserTimezone(): string {
     try {
@@ -1083,7 +1082,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
           if (params.value == null) return '';
           return `${currencySymbol}${(params.value / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         },
-        },
+      },
       {
         field: 'status',
         headerName: 'Status',
@@ -1162,7 +1161,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.warn('WebSocket connection failed, continuing without real-time updates:', error);
     }
-    
+
     // Close dropdowns when clicking outside
     document.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
@@ -1218,8 +1217,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
     const date = new Date(dateStr);
     // Use browser's local timezone for display
     const timeZone = this.getBrowserTimezone();
-    return date.toLocaleTimeString(undefined, { 
-      hour: '2-digit', 
+    return date.toLocaleTimeString(undefined, {
+      hour: '2-digit',
       minute: '2-digit',
       timeZone: timeZone
     });
@@ -1244,19 +1243,19 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   formatExactTime(dateString: string): string {
     if (!dateString) return 'Unknown';
-    
+
     try {
       // Parse as UTC if it has timezone indicator, otherwise assume UTC
       // Backend sends ISO format without timezone, so we treat it as UTC
-      const dateStr = dateString.endsWith('Z') || dateString.includes('+') || dateString.includes('-', 10) 
-        ? dateString 
+      const dateStr = dateString.endsWith('Z') || dateString.includes('+') || dateString.includes('-', 10)
+        ? dateString
         : dateString + 'Z';
       const date = new Date(dateStr);
-      
+
       if (isNaN(date.getTime())) {
         return 'Invalid date';
       }
-      
+
       // Explicitly use browser's timezone for display
       const timeZone = this.getBrowserTimezone();
       return date.toLocaleString(undefined, {
@@ -1276,33 +1275,33 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   formatOrderTime(dateString: string): string {
     if (!dateString) return 'Unknown';
-    
+
     // Parse the date string - ensure it's treated as UTC if no timezone is specified
     let date: Date;
     try {
       // If the string doesn't end with Z or timezone, assume it's UTC
-      const dateStr = dateString.endsWith('Z') || dateString.includes('+') || dateString.includes('-', 10) 
-        ? dateString 
+      const dateStr = dateString.endsWith('Z') || dateString.includes('+') || dateString.includes('-', 10)
+        ? dateString
         : dateString + 'Z';
       date = new Date(dateStr);
     } catch {
       date = new Date(dateString);
     }
-    
+
     // Check if date is valid
     if (isNaN(date.getTime())) {
       console.warn('Invalid date string:', dateString);
       return 'Invalid date';
     }
-    
+
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
-    
+
     // Handle negative differences (future dates) - shouldn't happen but just in case
     if (diffMs < 0) {
       return 'Just now';
     }
-    
+
     // Calculate time differences
     const diffSeconds = Math.floor(diffMs / 1000);
     const diffMins = Math.floor(diffMs / 60000);
@@ -1327,8 +1326,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
     }
     // Otherwise show formatted date and time in local timezone
     const timeZone = this.getBrowserTimezone();
-    return date.toLocaleString(undefined, { 
-      month: 'short', 
+    return date.toLocaleString(undefined, {
+      month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
@@ -1441,7 +1440,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   removeItemStaff(orderId: number, itemId: number, itemStatus: string) {
     let reason: string | null = null;
-    
+
     // If item is ready, require reason
     if (itemStatus === 'ready') {
       reason = prompt('Reason for removal (required for tax reporting):');
@@ -1450,11 +1449,11 @@ export class OrdersComponent implements OnInit, OnDestroy {
         return;
       }
     }
-    
+
     if (!confirm('Are you sure you want to remove this item?')) {
       return;
     }
-    
+
     this.api.removeOrderItemStaff(orderId, itemId, reason || undefined).subscribe({
       next: () => {
         this.loadOrders();
@@ -1480,7 +1479,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   confirmMarkAsPaid() {
     const order = this.orderToMarkPaid();
     if (!order || !this.paymentMethod) return;
-    
+
     this.processingPayment.set(true);
     this.api.markOrderPaid(order.id, this.paymentMethod).subscribe({
       next: () => {

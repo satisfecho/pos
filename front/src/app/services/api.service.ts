@@ -392,9 +392,9 @@ export class ApiService {
   }
 
   updateOrderItemStatus(orderId: number, itemId: number, status: string, userId?: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/orders/${orderId}/items/${itemId}/status`, { 
-      status, 
-      user_id: userId 
+    return this.http.put(`${this.apiUrl}/orders/${orderId}/items/${itemId}/status`, {
+      status,
+      user_id: userId
     });
   }
 
@@ -535,8 +535,7 @@ export class ApiService {
   // WebSocket for real-time updates (restaurant owners only)
   connectWebSocket(): void {
     const user = this.getCurrentUser();
-    const token = this.getToken();
-    if (!user || !token || this.ws) return;
+    if (!user || this.ws) return;
 
     // Normalize WebSocket URL - handle both http/https and ws/wss formats
     let wsUrl = this.wsUrl;
@@ -549,9 +548,9 @@ export class ApiService {
       wsUrl = `ws://${wsUrl}`;
     }
 
-    // Use tenant endpoint with JWT authentication
-    const wsEndpoint = `${wsUrl}/ws/tenant/${user.tenant_id}?token=${encodeURIComponent(token)}`;
-    
+    // Use tenant endpoint - auth via HttpOnly cookie
+    const wsEndpoint = `${wsUrl}/ws/tenant/${user.tenant_id}`;
+
     try {
       this.ws = new WebSocket(wsEndpoint);
 
@@ -567,7 +566,7 @@ export class ApiService {
       this.ws.onclose = (event) => {
         this.ws = null;
         console.log(`WebSocket closed: code=${event.code}, reason="${event.reason || 'none'}", wasClean=${event.wasClean}`);
-        
+
         // Only reconnect if it wasn't a normal closure (code 1000)
         // Don't reconnect on authentication errors (code 1008)
         if (event.code !== 1000 && event.code !== 1008) {
@@ -585,8 +584,6 @@ export class ApiService {
         console.error('WebSocket error:', error);
         console.error('WebSocket URL attempted:', wsEndpoint);
         console.error('User tenant_id:', user.tenant_id);
-        console.error('Token present:', !!token);
-        console.error('Token (first 20 chars):', token ? token.substring(0, 20) + '...' : 'none');
         // Try to get more error details
         if (this.ws) {
           console.error('WebSocket readyState:', this.ws.readyState);
@@ -595,7 +592,7 @@ export class ApiService {
         }
         this.ws?.close();
       };
-      
+
       this.ws.onopen = () => {
         console.log('WebSocket connection opened successfully');
         console.log('WebSocket URL:', wsEndpoint);
