@@ -4,164 +4,393 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService, TenantSettings } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent],
-  template: `
-    <app-sidebar>
-        <div class="settings-container">
-      <div class="page-header">
-        <h1>Business Profile Settings</h1>
-        <p class="subtitle">Manage your business information and branding</p>
-      </div>
+  imports: [CommonModule, FormsModule, SidebarComponent, TranslateModule],
+   template: `
+     <app-sidebar>
+       <div class="settings-container">
+         <div class="page-header">
+           <h1>{{ 'SETTINGS.BUSINESS_PROFILE' | translate }}</h1>
+           <p class="subtitle">{{ 'SETTINGS.SUBTITLE' | translate }}</p>
+         </div>
 
-      @if (loading()) {
-        <div class="loading">Loading settings...</div>
-      } @else {
-        <form (ngSubmit)="saveSettings()" class="settings-form">
-          <!-- Logo Upload -->
-          <div class="form-section">
-            <h2>Logo</h2>
-            <div class="logo-upload">
-              @if (logoPreview() || settings()?.logo_filename) {
-                <div class="logo-preview">
-                  <div class="logo-image-wrapper">
-                    <img [src]="logoPreview() || getLogoUrl()" alt="Business Logo" />
-                    @if (settings()?.logo_size_formatted && !logoPreview()) {
-                      <div class="file-size">{{ settings()!.logo_size_formatted }}</div>
-                    } @else if (logoFile) {
-                      <div class="file-size">{{ formatFileSize(logoFile.size) }}</div>
-                    }
-                  </div>
-                  <button type="button" class="remove-logo" (click)="removeLogo()">Remove</button>
-                </div>
-              }
-              <div class="upload-area">
-                <input
-                  type="file"
-                  id="logo-upload"
-                  accept="image/*"
-                  (change)="onLogoSelected($event)"
-                  style="display: none"
-                />
-                <label for="logo-upload" class="upload-button">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                    <polyline points="17,8 12,3 7,8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
-                  </svg>
-                  Upload Logo
-                </label>
-                <p class="upload-hint">Recommended: Square image, max 2MB (JPG, PNG, WebP)</p>
-              </div>
-            </div>
-          </div>
+         @if (loading()) {
+           <div class="loading">{{ 'SETTINGS.LOADING_SETTINGS' | translate }}</div>
+         } @else {
+           <form (ngSubmit)="saveSettings()" class="settings-form">
+             <!-- Logo Upload -->
+             <div class="form-section">
+               <h2>{{ 'SETTINGS.LOGO' | translate }}</h2>
+               <div class="logo-upload">
+                 @if (logoPreview() || settings()?.logo_filename) {
+                   <div class="logo-preview">
+                     <div class="logo-image-wrapper">
+                       <img [src]="logoPreview() || getLogoUrl()" alt="Business Logo" />
+                       @if (settings()?.logo_size_formatted && !logoPreview()) {
+                         <div class="file-size">{{ settings()!.logo_size_formatted }}</div>
+                       } @else if (logoFile) {
+                         <div class="file-size">{{ formatFileSize(logoFile.size) }}</div>
+                       }
+                     </div>
+                     <button type="button" class="remove-logo" (click)="removeLogo()">{{ 'SETTINGS.REMOVE_LOGO' | translate }}</button>
+                   </div>
+                 }
+                 <div class="upload-area">
+                   <input
+                     type="file"
+                     id="logo-upload"
+                     accept="image/*"
+                     (change)="onLogoSelected($event)"
+                     style="display: none"
+                   />
+                   <label for="logo-upload" class="upload-button">
+                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                       <polyline points="17,8 12,3 7,8"/>
+                       <line x1="12" y1="3" x2="12" y2="15"/>
+                     </svg>
+                     {{ 'SETTINGS.UPLOAD_LOGO' | translate }}
+                   </label>
+                   <p class="upload-hint">{{ 'SETTINGS.UPLOAD_LOGO_HINT' | translate }}</p>
+                 </div>
+               </div>
+             </div>
 
-          <!-- Basic Information -->
-          <div class="form-section">
-            <h2>Basic Information</h2>
-            <div class="form-group">
-              <label for="name">Business Name *</label>
-              <input
-                type="text"
-                id="name"
-                [(ngModel)]="formData.name"
-                name="name"
-                required
-                placeholder="Your Business Name"
-              />
-            </div>
+             <!-- Basic Information -->
+             <div class="form-section">
+               <h2>{{ 'SETTINGS.BASIC_INFO' | translate }}</h2>
+               <div class="form-group">
+                 <label for="name">{{ 'SETTINGS.BUSINESS_NAME' | translate }} *</label>
+                 <input
+                   type="text"
+                   id="name"
+                   [(ngModel)]="formData.name"
+                   name="name"
+                   required
+                   [placeholder]="'SETTINGS.BUSINESS_NAME_PLACEHOLDER' | translate"
+                 />
+               </div>
 
-            <div class="form-group">
-              <label for="business_type">Business Type</label>
-              <select id="business_type" [(ngModel)]="formData.business_type" name="business_type">
-                <option [value]="null">Select type...</option>
-                <option value="restaurant">Restaurant</option>
-                <option value="bar">Bar</option>
-                <option value="cafe">Café</option>
-                <option value="retail">Retail Store</option>
-                <option value="service">Service Business</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
+               <div class="form-group">
+                 <label for="business_type">{{ 'SETTINGS.BUSINESS_TYPE' | translate }}</label>
+                 <select id="business_type" [(ngModel)]="formData.business_type" name="business_type">
+                   <option [value]="null">{{ 'SETTINGS.SELECT_BUSINESS_TYPE' | translate }}</option>
+                   <option value="restaurant">{{ 'SETTINGS.BUSINESS_TYPE_RESTAURANT' | translate }}</option>
+                   <option value="bar">{{ 'SETTINGS.BUSINESS_TYPE_BAR' | translate }}</option>
+                   <option value="cafe">{{ 'SETTINGS.BUSINESS_TYPE_CAFE' | translate }}</option>
+                   <option value="retail">{{ 'SETTINGS.BUSINESS_TYPE_RETAIL' | translate }}</option>
+                   <option value="service">{{ 'SETTINGS.BUSINESS_TYPE_SERVICE' | translate }}</option>
+                   <option value="other">{{ 'SETTINGS.BUSINESS_TYPE_OTHER' | translate }}</option>
+                 </select>
+               </div>
 
-            <div class="form-group">
-              <label for="description">Description</label>
-              <textarea
-                id="description"
-                [(ngModel)]="formData.description"
-                name="description"
-                rows="4"
-                placeholder="A brief description of your business..."
-              ></textarea>
-            </div>
-          </div>
+               <div class="form-group">
+                 <label for="description">{{ 'SETTINGS.DESCRIPTION' | translate }}</label>
+                 <textarea
+                   id="description"
+                   [(ngModel)]="formData.description"
+                   name="description"
+                   rows="4"
+                   [placeholder]="'SETTINGS.DESCRIPTION_PLACEHOLDER' | translate"
+                 ></textarea>
+               </div>
+             </div>
 
-          <!-- Contact Information -->
-          <div class="form-section">
-            <h2>Contact Information</h2>
-            <div class="form-group">
-              <label for="phone">Phone Number</label>
-              <input
-                type="tel"
-                id="phone"
-                [(ngModel)]="formData.phone"
-                name="phone"
-                placeholder="+1 234 567 8900"
-              />
-            </div>
+             <!-- Contact Information -->
+             <div class="form-section">
+               <h2>{{ 'SETTINGS.CONTACT_INFO' | translate }}</h2>
+               <div class="form-group">
+                 <label for="phone">{{ 'SETTINGS.PHONE' | translate }}</label>
+                 <input
+                   type="tel"
+                   id="phone"
+                   [(ngModel)]="formData.phone"
+                   name="phone"
+                   [placeholder]="'SETTINGS.PHONE_PLACEHOLDER' | translate"
+                 />
+               </div>
 
-            <div class="form-group">
-              <label for="whatsapp">WhatsApp Number</label>
-              <input
-                type="tel"
-                id="whatsapp"
-                [(ngModel)]="formData.whatsapp"
-                name="whatsapp"
-                placeholder="+1 234 567 8900"
-              />
-            </div>
+               <div class="form-group">
+                 <label for="whatsapp">{{ 'SETTINGS.WHATSAPP' | translate }}</label>
+                 <input
+                   type="tel"
+                   id="whatsapp"
+                   [(ngModel)]="formData.whatsapp"
+                   name="whatsapp"
+                   [placeholder]="'SETTINGS.WHATSAPP_PLACEHOLDER' | translate"
+                 />
+               </div>
 
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                [(ngModel)]="formData.email"
-                name="email"
-                placeholder="contact@yourbusiness.com"
-              />
-            </div>
+               <div class="form-group">
+                 <label for="email">{{ 'SETTINGS.EMAIL' | translate }}</label>
+                 <input
+                   type="email"
+                   id="email"
+                   [(ngModel)]="formData.email"
+                   name="email"
+                   [placeholder]="'SETTINGS.EMAIL_PLACEHOLDER' | translate"
+                 />
+               </div>
 
-            <div class="form-group">
-              <label for="address">Address</label>
-              <input
-                type="text"
-                id="address"
-                [(ngModel)]="formData.address"
-                name="address"
-                placeholder="123 Main St, City, State 12345"
-              />
-            </div>
+               <div class="form-group">
+                 <label for="address">{{ 'SETTINGS.ADDRESS' | translate }}</label>
+                 <input
+                   type="text"
+                   id="address"
+                   [(ngModel)]="formData.address"
+                   name="address"
+                   [placeholder]="'SETTINGS.ADDRESS_PLACEHOLDER' | translate"
+                 />
+               </div>
 
-            <div class="form-group">
-              <label for="website">Website</label>
-              <input
-                type="url"
-                id="website"
-                [(ngModel)]="formData.website"
-                name="website"
-                placeholder="https://www.yourbusiness.com"
-              />
-            </div>
-          </div>
+               <div class="form-group">
+                 <label for="website">{{ 'SETTINGS.WEBSITE' | translate }}</label>
+                 <input
+                   type="url"
+                   id="website"
+                   [(ngModel)]="formData.website"
+                   name="website"
+                   [placeholder]="'SETTINGS.WEBSITE_PLACEHOLDER' | translate"
+                 />
+               </div>
+             </div>
 
-          <!-- Opening Hours -->
-          <div class="form-section">
-            <h2>Opening Hours</h2>
-            <p class="section-hint">Set your business hours for each day of the week. You can add a break between shifts.</p>
+         @if (loading()) {
+           <div class="loading">{{ 'SETTINGS.LOADING_SETTINGS' | translate }}</div>
+         } @else {
+           <form (ngSubmit)="saveSettings()" class="settings-form">
+           <!-- Logo Upload -->
+           <div class="form-section">
+             <h2>{{ 'SETTINGS.LOGO' | translate }}</h2>
+             <div class="logo-upload">
+               @if (logoPreview() || settings()?.logo_filename) {
+                 <div class="logo-preview">
+                   <div class="logo-image-wrapper">
+                     <img [src]="logoPreview() || getLogoUrl()" alt="Business Logo" />
+                     @if (settings()?.logo_size_formatted && !logoPreview()) {
+                       <div class="file-size">{{ settings()!.logo_size_formatted }}</div>
+                     } @else if (logoFile) {
+                       <div class="file-size">{{ formatFileSize(logoFile.size) }}</div>
+                     }
+                   </div>
+                   <button type="button" class="remove-logo" (click)="removeLogo()">{{ 'SETTINGS.REMOVE_LOGO' | translate }}</button>
+                 </div>
+               }
+               <div class="upload-area">
+                 <input
+                   type="file"
+                   id="logo-upload"
+                   accept="image/*"
+                   (change)="onLogoSelected($event)"
+                   style="display: none"
+                 />
+                 <label for="logo-upload" class="upload-button">
+                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                     <polyline points="17,8 12,3 7,8"/>
+                     <line x1="12" y1="3" x2="12" y2="15"/>
+                   </svg>
+                   {{ 'SETTINGS.UPLOAD_LOGO' | translate }}
+                 </label>
+                 <p class="upload-hint">{{ 'SETTINGS.UPLOAD_LOGO_HINT' | translate }}</p>
+               </div>
+             </div>
+           </div>
+
+           <!-- Contact Information -->
+           <div class="form-section">
+             <h2>{{ 'SETTINGS.CONTACT_INFO' | translate }}</h2>
+             <div class="form-group">
+               <label for="phone">{{ 'SETTINGS.PHONE' | translate }}</label>
+               <input
+                 type="tel"
+                 id="phone"
+                 [(ngModel)]="formData.phone"
+                 name="phone"
+                 [placeholder]="'SETTINGS.PHONE_PLACEHOLDER' | translate"
+               />
+             </div>
+
+             <div class="form-group">
+               <label for="whatsapp">{{ 'SETTINGS.WHATSAPP' | translate }}</label>
+               <input
+                 type="tel"
+                 id="whatsapp"
+                 [(ngModel)]="formData.whatsapp"
+                 name="whatsapp"
+                 [placeholder]="'SETTINGS.WHATSAPP_PLACEHOLDER' | translate"
+               />
+             </div>
+
+             <div class="form-group">
+               <label for="email">{{ 'SETTINGS.EMAIL' | translate }}</label>
+               <input
+                 type="email"
+                 id="email"
+                 [(ngModel)]="formData.email"
+                 name="email"
+                 [placeholder]="'SETTINGS.EMAIL_PLACEHOLDER' | translate"
+               />
+             </div>
+
+             <div class="form-group">
+               <label for="address">{{ 'SETTINGS.ADDRESS' | translate }}</label>
+               <input
+                 type="text"
+                 id="address"
+                 [(ngModel)]="formData.address"
+                 name="address"
+                 [placeholder]="'SETTINGS.ADDRESS_PLACEHOLDER' | translate"
+               />
+             </div>
+
+             <div class="form-group">
+               <label for="website">{{ 'SETTINGS.WEBSITE' | translate }}</label>
+               <input
+                 type="url"
+                 id="website"
+                 [(ngModel)]="formData.website"
+                 name="website"
+                 [placeholder]="'SETTINGS.WEBSITE_PLACEHOLDER' | translate"
+               />
+             </div>
+           </div>
+             <div class="form-group">
+               <label for="name">{{ 'SETTINGS.BUSINESS_NAME' | translate }} *</label>
+               <input
+                 type="text"
+                 id="name"
+                 [(ngModel)]="formData.name"
+                 name="name"
+                 required
+                 [placeholder]="'SETTINGS.BUSINESS_NAME_PLACEHOLDER' | translate"
+               />
+             </div>
+
+             <div class="form-group">
+               <label for="business_type">{{ 'SETTINGS.BUSINESS_TYPE' | translate }}</label>
+               <select id="business_type" [(ngModel)]="formData.business_type" name="business_type">
+                 <option [value]="null">{{ 'SETTINGS.SELECT_BUSINESS_TYPE' | translate }}</option>
+                 <option value="restaurant">{{ 'SETTINGS.BUSINESS_TYPE_RESTAURANT' | translate }}</option>
+                 <option value="bar">{{ 'SETTINGS.BUSINESS_TYPE_BAR' | translate }}</option>
+                 <option value="cafe">{{ 'SETTINGS.BUSINESS_TYPE_CAFE' | translate }}</option>
+                 <option value="retail">{{ 'SETTINGS.BUSINESS_TYPE_RETAIL' | translate }}</option>
+                 <option value="service">{{ 'SETTINGS.BUSINESS_TYPE_SERVICE' | translate }}</option>
+                 <option value="other">{{ 'SETTINGS.BUSINESS_TYPE_OTHER' | translate }}</option>
+               </select>
+             </div>
+
+             <div class="form-group">
+               <label for="description">{{ 'SETTINGS.DESCRIPTION' | translate }}</label>
+               <textarea
+                 id="description"
+                 [(ngModel)]="formData.description"
+                 name="description"
+                 rows="4"
+                 [placeholder]="'SETTINGS.DESCRIPTION_PLACEHOLDER' | translate"
+               ></textarea>
+             </div>
+           </div>
+                 id="name"
+                 [(ngModel)]="formData.name"
+                 name="name"
+                 required
+                 [placeholder]="'SETTINGS.BUSINESS_NAME_PLACEHOLDER' | translate"
+               />
+             </div>
+
+             <div class="form-group">
+               <label for="business_type">{{ 'SETTINGS.BUSINESS_TYPE' | translate }}</label>
+               <select id="business_type" [(ngModel)]="formData.business_type" name="business_type">
+                 <option [value]="null">{{ 'SETTINGS.SELECT_BUSINESS_TYPE' | translate }}</option>
+                 <option value="restaurant">{{ 'SETTINGS.BUSINESS_TYPE_RESTAURANT' | translate }}</option>
+                 <option value="bar">{{ 'SETTINGS.BUSINESS_TYPE_BAR' | translate }}</option>
+                 <option value="cafe">{{ 'SETTINGS.BUSINESS_TYPE_CAFE' | translate }}</option>
+                 <option value="retail">{{ 'SETTINGS.BUSINESS_TYPE_RETAIL' | translate }}</option>
+                 <option value="service">{{ 'SETTINGS.BUSINESS_TYPE_SERVICE' | translate }}</option>
+                 <option value="other">{{ 'SETTINGS.BUSINESS_TYPE_OTHER' | translate }}</option>
+               </select>
+             </div>
+
+             <div class="form-group">
+               <label for="description">{{ 'SETTINGS.DESCRIPTION' | translate }}</label>
+               <textarea
+                 id="description"
+                 [(ngModel)]="formData.description"
+                 name="description"
+                 rows="4"
+                 [placeholder]="'SETTINGS.DESCRIPTION_PLACEHOLDER' | translate"
+               ></textarea>
+             </div>
+           </div>
+
+           <!-- Contact Information -->
+           <div class="form-section">
+             <h2>{{ 'SETTINGS.CONTACT_INFO' | translate }}</h2>
+             <div class="form-group">
+               <label for="phone">{{ 'SETTINGS.PHONE' | translate }}</label>
+               <input
+                 type="tel"
+                 id="phone"
+                 [(ngModel)]="formData.phone"
+                 name="phone"
+                 [placeholder]="'SETTINGS.PHONE_PLACEHOLDER' | translate"
+               />
+             </div>
+
+             <div class="form-group">
+               <label for="whatsapp">{{ 'SETTINGS.WHATSAPP' | translate }}</label>
+               <input
+                 type="tel"
+                 id="whatsapp"
+                 [(ngModel)]="formData.whatsapp"
+                 name="whatsapp"
+                 [placeholder]="'SETTINGS.WHATSAPP_PLACEHOLDER' | translate"
+               />
+             </div>
+
+             <div class="form-group">
+               <label for="email">{{ 'SETTINGS.EMAIL' | translate }}</label>
+               <input
+                 type="email"
+                 id="email"
+                 [(ngModel)]="formData.email"
+                 name="email"
+                 [placeholder]="'SETTINGS.EMAIL_PLACEHOLDER' | translate"
+               />
+             </div>
+
+             <div class="form-group">
+               <label for="address">{{ 'SETTINGS.ADDRESS' | translate }}</label>
+               <input
+                 type="text"
+                 id="address"
+                 [(ngModel)]="formData.address"
+                 name="address"
+                 [placeholder]="'SETTINGS.ADDRESS_PLACEHOLDER' | translate"
+               />
+             </div>
+
+             <div class="form-group">
+               <label for="website">{{ 'SETTINGS.WEBSITE' | translate }}</label>
+               <input
+                 type="url"
+                 id="website"
+                 [(ngModel)]="formData.website"
+                 name="website"
+                 [placeholder]="'SETTINGS.WEBSITE_PLACEHOLDER' | translate"
+               />
+             </div>
+           </div>
+
+           <!-- Opening Hours -->
+           <div class="form-section">
+             <h2>{{ 'SETTINGS.OPENING_HOURS' | translate }}</h2>
+             <p class="section-hint">{{ 'SETTINGS.OPENING_HOURS_HINT' | translate }}</p>
             <div class="opening-hours-container">
               @for (day of daysOfWeek; track day.key) {
                 <div class="opening-hours-row">
@@ -172,7 +401,7 @@ import { SidebarComponent } from '../shared/sidebar.component';
                         [checked]="!openingHours[day.key]?.closed"
                         (change)="toggleDayClosed(day.key, $event)"
                       />
-                      <span>{{ day.label }}</span>
+                       <span>{{ day.label | translate }}</span>
                     </label>
                   </div>
                   @if (!openingHours[day.key]?.closed) {
@@ -180,7 +409,7 @@ import { SidebarComponent } from '../shared/sidebar.component';
                       @if (!openingHours[day.key]?.hasBreak) {
                         <div class="time-inputs">
                           <div class="time-group">
-                            <label [for]="'open-' + day.key">Open</label>
+                             <label [for]="'open-' + day.key">{{ 'SETTINGS.OPEN_LABEL' | translate }}</label>
                             <input
                               type="time"
                               [id]="'open-' + day.key"
@@ -188,9 +417,9 @@ import { SidebarComponent } from '../shared/sidebar.component';
                               (change)="updateOpeningHours(day.key, 'open', $event)"
                             />
                           </div>
-                          <span class="time-separator">to</span>
+                           <span class="time-separator">{{ 'COMMON.NEXT' | translate }}</span>
                           <div class="time-group">
-                            <label [for]="'close-' + day.key">Close</label>
+                             <label [for]="'close-' + day.key">{{ 'SETTINGS.CLOSE_LABEL' | translate }}</label>
                             <input
                               type="time"
                               [id]="'close-' + day.key"
@@ -207,16 +436,16 @@ import { SidebarComponent } from '../shared/sidebar.component';
                             [checked]="openingHours[day.key]?.hasBreak || false"
                             (change)="toggleBreak(day.key, $event)"
                           />
-                          <span>Has break</span>
+                           <span>{{ 'SETTINGS.HAS_BREAK' | translate }}</span>
                         </label>
                       </div>
                       @if (openingHours[day.key]?.hasBreak) {
                         <div class="break-shifts">
                           <div class="shift-group">
-                            <div class="shift-label">Morning</div>
+                             <div class="shift-label">{{ 'SETTINGS.MORNING_SHIFT' | translate }}</div>
                             <div class="time-inputs">
                               <div class="time-group">
-                                <label [for]="'morning-open-' + day.key">Open</label>
+                                 <label [for]="'morning-open-' + day.key">{{ 'SETTINGS.OPEN_LABEL' | translate }}</label>
                                 <input
                                   type="time"
                                   [id]="'morning-open-' + day.key"
@@ -224,9 +453,9 @@ import { SidebarComponent } from '../shared/sidebar.component';
                                   (change)="updateOpeningHours(day.key, 'morningOpen', $event)"
                                 />
                               </div>
-                              <span class="time-separator">to</span>
-                              <div class="time-group">
-                                <label [for]="'morning-close-' + day.key">Close</label>
+                               <span class="time-separator">{{ 'COMMON.NEXT' | translate }}</span>
+                               <div class="time-group">
+                                 <label [for]="'morning-close-' + day.key">{{ 'SETTINGS.CLOSE_LABEL' | translate }}</label>
                                 <input
                                   type="time"
                                   [id]="'morning-close-' + day.key"
@@ -237,10 +466,10 @@ import { SidebarComponent } from '../shared/sidebar.component';
                             </div>
                           </div>
                           <div class="shift-group">
-                            <div class="shift-label">Evening</div>
+                             <div class="shift-label">{{ 'SETTINGS.EVENING_SHIFT' | translate }}</div>
                             <div class="time-inputs">
-                              <div class="time-group">
-                                <label [for]="'evening-open-' + day.key">Open</label>
+                               <div class="time-group">
+                                 <label [for]="'evening-open-' + day.key">{{ 'SETTINGS.OPEN_LABEL' | translate }}</label>
                                 <input
                                   type="time"
                                   [id]="'evening-open-' + day.key"
@@ -248,9 +477,9 @@ import { SidebarComponent } from '../shared/sidebar.component';
                                   (change)="updateOpeningHours(day.key, 'eveningOpen', $event)"
                                 />
                               </div>
-                              <span class="time-separator">to</span>
-                              <div class="time-group">
-                                <label [for]="'evening-close-' + day.key">Close</label>
+                               <span class="time-separator">{{ 'COMMON.NEXT' | translate }}</span>
+                               <div class="time-group">
+                                 <label [for]="'evening-close-' + day.key">{{ 'SETTINGS.CLOSE_LABEL' | translate }}</label>
                                 <input
                                   type="time"
                                   [id]="'evening-close-' + day.key"
@@ -264,91 +493,98 @@ import { SidebarComponent } from '../shared/sidebar.component';
                       }
                     </div>
                   } @else {
-                    <div class="closed-indicator">Closed</div>
+                    <div class="closed-indicator">{{ 'SETTINGS.CLOSED' | translate }}</div>
                   }
                 </div>
               }
             </div>
           </div>
 
-          <!-- Payment Settings -->
-          <div class="form-section">
-            <div class="section-header-with-link">
-              <h2>Payment Settings</h2>
-              <a href="https://dashboard.stripe.com/" target="_blank" rel="noopener noreferrer" class="external-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
-                  <polyline points="15,3 21,3 21,9"/>
-                  <line x1="10" y1="14" x2="21" y2="3"/>
-                </svg>
-                Stripe Dashboard
-              </a>
-            </div>
-            <div class="form-group">
-              <label for="currency">Currency</label>
-              <input
-                type="text"
-                id="currency"
-                [(ngModel)]="formData.currency"
-                name="currency"
-                placeholder="€, $, £, ¥, etc."
-                maxlength="10"
-              />
-              <p class="field-hint">Enter the currency symbol used for pricing (e.g., €, $, £, ¥)</p>
-            </div>
-            <div class="form-group">
-              <label for="stripe_publishable_key">Stripe Publishable Key</label>
-              <input
-                type="text"
-                id="stripe_publishable_key"
-                [(ngModel)]="formData.stripe_publishable_key"
-                name="stripe_publishable_key"
-                placeholder="pk_test_..."
-              />
-              <p class="field-hint">Your Stripe publishable key (starts with pk_test_ or pk_live_)</p>
-            </div>
-            <div class="form-group">
-              <label for="stripe_secret_key">Stripe Secret Key</label>
-              <input
-                type="password"
-                id="stripe_secret_key"
-                [(ngModel)]="formData.stripe_secret_key"
-                name="stripe_secret_key"
-                placeholder="sk_test_... or leave blank to keep current"
-              />
-              <p class="field-hint">Your Stripe secret key (starts with sk_test_ or sk_live_). Leave blank to keep current value.</p>
-            </div>
-            <div class="form-group">
-              <label class="checkbox-label">
-                <input
-                  type="checkbox"
-                  id="immediate_payment_required"
-                  [(ngModel)]="formData.immediate_payment_required"
-                  name="immediate_payment_required"
-                />
-                <span>Immediate payment required</span>
-              </label>
-              <p class="field-hint">When enabled, customers must pay to place an order.</p>
-            </div>
-          </div>
+           <!-- Payment Settings -->
+           <div class="form-section">
+             <h2>{{ 'SETTINGS.PAYMENT_SETTINGS' | translate }}</h2>
+             <div class="form-group">
+               <label for="currency_code">{{ 'SETTINGS.CURRENCY' | translate }}</label>
+               <select
+                 id="currency_code"
+                 [(ngModel)]="formData.currency_code"
+                 name="currency_code"
+               >
+                 <option [ngValue]="null">{{ 'SETTINGS.SELECT_CURRENCY' | translate }}</option>
+                 @for (option of currencyOptions; track option.code) {
+                   <option [value]="option.code">{{ option.label }}</option>
+                 }
+               </select>
+               <p class="field-hint">{{ 'SETTINGS.CURRENCY_HINT' | translate }}</p>
+             </div>
+             <div class="form-group">
+               <label for="default_language">{{ 'SETTINGS.DEFAULT_LANGUAGE' | translate }}</label>
+               <select
+                 id="default_language"
+                 [(ngModel)]="formData.default_language"
+                 name="default_language"
+               >
+                 <option [ngValue]="null">{{ 'SETTINGS.SELECT_LANGUAGE' | translate }}</option>
+                 @for (option of languageOptions; track option.code) {
+                   <option [value]="option.code">{{ option.label }}</option>
+                 }
+               </select>
+               <p class="field-hint">{{ 'SETTINGS.LANGUAGE_HINT' | translate }}</p>
+             </div>
+             <div class="form-group">
+               <label for="stripe_publishable_key">{{ 'SETTINGS.STRIPE_PUBLISHABLE_KEY' | translate }}</label>
+               <input
+                 type="text"
+                 id="stripe_publishable_key"
+                 [(ngModel)]="formData.stripe_publishable_key"
+                 name="stripe_publishable_key"
+                 [placeholder]="'SETTINGS.STRIPE_PUBLISHABLE_PLACEHOLDER' | translate"
+               />
+               <p class="field-hint">{{ 'SETTINGS.STRIPE_PUBLISHABLE_HINT' | translate }}</p>
+             </div>
+             <div class="form-group">
+               <label for="stripe_secret_key">{{ 'SETTINGS.STRIPE_SECRET_KEY' | translate }}</label>
+               <input
+                 type="password"
+                 id="stripe_secret_key"
+                 [(ngModel)]="formData.stripe_secret_key"
+                 name="stripe_secret_key"
+                 [placeholder]="'SETTINGS.STRIPE_SECRET_PLACEHOLDER' | translate"
+               />
+               <p class="field-hint">{{ 'SETTINGS.STRIPE_SECRET_HINT' | translate }}</p>
+             </div>
+             <div class="form-group">
+               <label class="checkbox-label">
+                 <input
+                   type="checkbox"
+                   id="immediate_payment_required"
+                   [(ngModel)]="formData.immediate_payment_required"
+                   name="immediate_payment_required"
+                 />
+                 <span>{{ 'SETTINGS.IMMEDIATE_PAYMENT' | translate }}</span>
+               </label>
+               <p class="field-hint">{{ 'SETTINGS.IMMEDIATE_PAYMENT_HINT' | translate }}</p>
+             </div>
+           </div>
 
-          <!-- Actions -->
-          <div class="form-actions">
-            <button type="button" class="btn-secondary" (click)="cancel()">Cancel</button>
-            <button type="submit" class="btn-primary" [disabled]="saving()">
-              {{ saving() ? 'Saving...' : 'Save Changes' }}
-            </button>
-          </div>
+           <!-- Actions -->
+           <div class="form-actions">
+             <button type="button" class="btn-secondary" (click)="cancel()">{{ 'SETTINGS.CANCEL' | translate }}</button>
+             <button type="submit" class="btn-primary" [disabled]="saving()">
+               {{ saving() ? ('SETTINGS.SAVING' | translate) : ('SETTINGS.SAVE_CHANGES' | translate) }}
+             </button>
+           </div>
 
           @if (error()) {
             <div class="error-message">{{ error() }}</div>
           }
           @if (success()) {
             <div class="success-message">{{ success() }}</div>
+          @if (error()) {
+            <div class="error-message">{{ error() }}</div>
           }
-        </form>
-      }
         </div>
+      }
     </app-sidebar>
   `,
   styles: [`
@@ -845,13 +1081,13 @@ export class SettingsComponent implements OnInit {
   logoFile: File | null = null;
 
   daysOfWeek = [
-    { key: 'monday', label: 'Monday' },
-    { key: 'tuesday', label: 'Tuesday' },
-    { key: 'wednesday', label: 'Wednesday' },
-    { key: 'thursday', label: 'Thursday' },
-    { key: 'friday', label: 'Friday' },
-    { key: 'saturday', label: 'Saturday' },
-    { key: 'sunday', label: 'Sunday' }
+    { key: 'monday', label: 'SETTINGS.DAY_MONDAY' },
+    { key: 'tuesday', label: 'SETTINGS.DAY_TUESDAY' },
+    { key: 'wednesday', label: 'SETTINGS.DAY_WEDNESDAY' },
+    { key: 'thursday', label: 'SETTINGS.DAY_THURSDAY' },
+    { key: 'friday', label: 'SETTINGS.DAY_FRIDAY' },
+    { key: 'saturday', label: 'SETTINGS.DAY_SATURDAY' },
+    { key: 'sunday', label: 'SETTINGS.DAY_SUNDAY' }
   ];
 
   openingHours: Record<string, { 
@@ -876,10 +1112,30 @@ export class SettingsComponent implements OnInit {
     website: null,
     opening_hours: null,
     currency: null,
+    currency_code: null,
+    default_language: null,
     stripe_secret_key: null,
     stripe_publishable_key: null,
     immediate_payment_required: false,
   };
+
+  currencyOptions = [
+    { code: 'EUR', label: 'EUR (€)' },
+    { code: 'MXN', label: 'MXN ($)' },
+    { code: 'USD', label: 'USD ($)' },
+    { code: 'INR', label: 'INR (₹)' },
+    { code: 'CNY', label: 'CNY (¥)' },
+    { code: 'TWD', label: 'TWD (NT$)' },
+  ];
+
+  languageOptions = [
+    { code: 'en', label: 'English' },
+    { code: 'es', label: 'Español' },
+    { code: 'ca', label: 'Català' },
+    { code: 'de', label: 'Deutsch' },
+    { code: 'zh-CN', label: '中文（简体）' },
+    { code: 'hi', label: 'हिन्दी' },
+  ];
 
   ngOnInit() {
     this.loadSettings();
@@ -901,6 +1157,8 @@ export class SettingsComponent implements OnInit {
           website: settings.website || null,
           opening_hours: settings.opening_hours || null,
           currency: settings.currency || null,
+          currency_code: settings.currency_code || null,
+          default_language: settings.default_language || null,
           // Don't load masked secret key - user must enter new one to update
           stripe_secret_key: null,
           stripe_publishable_key: settings.stripe_publishable_key || null,

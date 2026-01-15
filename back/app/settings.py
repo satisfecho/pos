@@ -34,18 +34,23 @@ class Settings(BaseSettings):
     db_password: str = Field(default="pos", validation_alias="DB_PASSWORD")
     db_name: str = Field(default="pos", validation_alias="DB_NAME")
 
-    secret_key: str = Field(default="CHANGE_THIS_IN_PRODUCTION", validation_alias="SECRET_KEY")
+    secret_key: str = Field(
+        default="CHANGE_THIS_IN_PRODUCTION", validation_alias="SECRET_KEY"
+    )
     algorithm: str = Field(default="HS256", validation_alias="ALGORITHM")
-    access_token_expire_minutes: int = Field(default=30, validation_alias="ACCESS_TOKEN_EXPIRE_MINUTES")
+    access_token_expire_minutes: int = Field(
+        default=30, validation_alias="ACCESS_TOKEN_EXPIRE_MINUTES"
+    )
 
     stripe_secret_key: str = Field(default="", validation_alias="STRIPE_SECRET_KEY")
-    stripe_publishable_key: str = Field(default="", validation_alias="STRIPE_PUBLISHABLE_KEY")
-    stripe_currency: str = Field(default="mxn", validation_alias="STRIPE_CURRENCY")
-    
+    stripe_publishable_key: str = Field(
+        default="", validation_alias="STRIPE_PUBLISHABLE_KEY"
+    )
+    stripe_currency: str = Field(default="eur", validation_alias="STRIPE_CURRENCY")
+
     # CORS configuration
     cors_origins: str = Field(
-        default="http://localhost:4200",
-        validation_alias="CORS_ORIGINS"
+        default="http://localhost:4200", validation_alias="CORS_ORIGINS"
     )
     
     # Email configuration
@@ -70,4 +75,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-

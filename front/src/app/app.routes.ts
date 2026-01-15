@@ -13,8 +13,9 @@ export const routes: Routes = [
   { path: 'catalog', canActivate: [authGuard], loadComponent: () => import('./catalog/catalog.component').then(m => m.CatalogComponent) },
   { path: 'tables', canActivate: [authGuard], loadComponent: () => import('./tables/tables.component').then(m => m.TablesComponent) },
   { path: 'tables/canvas', canActivate: [authGuard], loadComponent: () => import('./tables/tables-canvas.component').then(m => m.TablesCanvasComponent) },
-  { path: 'orders', canActivate: [authGuard], loadComponent: () => import('./orders/orders.component').then(m => m.OrdersComponent) },
-  { path: 'settings', canActivate: [authGuard], loadComponent: () => import('./settings/settings.component').then(m => m.SettingsComponent) },
+   { path: 'orders', canActivate: [authGuard], loadComponent: () => import('./orders/orders.component').then(m => m.OrdersComponent) },
+   { path: 'translations', canActivate: [authGuard], loadComponent: () => import('./translations/translations.component').then(m => m.TranslationsComponent) },
+   { path: 'settings', canActivate: [authGuard], loadComponent: () => import('./settings/settings.component').then(m => m.SettingsComponent) },
 
   // Inventory module (lazy loaded)
   { path: 'inventory', canActivate: [authGuard], loadChildren: () => import('./inventory/inventory.routes').then(m => m.INVENTORY_ROUTES) },

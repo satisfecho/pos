@@ -1010,6 +1010,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   orders = signal<Order[]>([]);
   loading = signal(true);
   currency = signal<string>('$');
+  currencyCode = signal<string | null>(null);
   showRemovedItems = false;
   viewMode = signal<'active' | 'not_paid'>('active');
   orderToMarkPaid = signal<Order | null>(null);
@@ -1047,6 +1048,18 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   get columnDefs(): ColDef[] {
     const currencySymbol = this.currency();
+    const currencyCode = this.currencyCode();
+    const locale = navigator.language || 'en-US';
+    const formatCurrency = (value: number) => {
+      if (currencyCode) {
+        return new Intl.NumberFormat(locale, {
+          style: 'currency',
+          currency: currencyCode,
+          currencyDisplay: 'symbol'
+        }).format(value / 100);
+      }
+      return `${currencySymbol}${(value / 100).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    };
     return [
       {
         field: 'id',
@@ -1080,7 +1093,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
         width: 110,
         valueFormatter: (params) => {
           if (params.value == null) return '';
-          return `${currencySymbol}${(params.value / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+          return formatCurrency(params.value);
         },
       },
       {
@@ -1228,6 +1241,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.api.getTenantSettings().subscribe({
       next: (settings) => {
         this.currency.set(settings.currency || '$');
+        this.currencyCode.set(settings.currency_code || null);
       },
       error: (err) => {
         console.error('Failed to load tenant settings:', err);
@@ -1238,6 +1252,15 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   formatPrice(priceCents: number): string {
     const currencySymbol = this.currency();
+    const currencyCode = this.currencyCode();
+    const locale = navigator.language || 'en-US';
+    if (currencyCode) {
+      return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: currencyCode,
+        currencyDisplay: 'symbol'
+      }).format(priceCents / 100);
+    }
     return `${currencySymbol}${(priceCents / 100).toFixed(2)}`;
   }
 

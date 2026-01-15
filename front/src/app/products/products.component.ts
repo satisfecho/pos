@@ -4,107 +4,108 @@ import { Router } from '@angular/router';
 import { ApiService, Product } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [FormsModule, SidebarComponent, CommonModule],
+  imports: [FormsModule, SidebarComponent, CommonModule, TranslateModule],
   template: `
     <app-sidebar>
         <div class="page-header">
-          <h1>Products</h1>
-          @if (!showAddForm() && !editingProduct()) {
-            <button class="btn btn-primary" (click)="showAddForm.set(true)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-              Add Product
-            </button>
-          }
-        </div>
+           <h1>{{ 'PRODUCTS.TITLE' | translate }}</h1>
+           @if (!showAddForm() && !editingProduct()) {
+             <button class="btn btn-primary" (click)="showAddForm.set(true)">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+               </svg>
+               {{ 'PRODUCTS.ADD_PRODUCT' | translate }}
+             </button>
+           }
+         </div>
 
         <div class="content">
           @if (showAddForm() || editingProduct()) {
             <div class="form-card">
-              <div class="form-header">
-                <h3>{{ editingProduct() ? 'Edit Product' : 'New Product' }}</h3>
-                <button class="icon-btn" (click)="cancelForm()">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 6L6 18M6 6l12 12"/>
-                  </svg>
-                </button>
-              </div>
+               <div class="form-header">
+                 <h3>{{ editingProduct() ? ('PRODUCTS.EDIT_PRODUCT' | translate) : ('PRODUCTS.NEW_PRODUCT' | translate) }}</h3>
+                 <button class="icon-btn" (click)="cancelForm()">
+                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                     <path d="M18 6L6 18M6 6l12 12"/>
+                   </svg>
+                 </button>
+               </div>
               <form (submit)="saveProduct($event)">
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="name">Product Name</label>
-                    <input id="name" type="text" [(ngModel)]="formData.name" name="name" required placeholder="e.g. Margherita Pizza">
-                  </div>
-                  <div class="form-group form-group-sm">
-                    <label for="price">Price</label>
-                    <div class="price-input">
-                      <span class="currency">{{ currency() }}</span>
-                      <input id="price" type="number" step="0.01" [(ngModel)]="formData.price" name="price" required placeholder="0.00">
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label for="ingredients">Ingredients (comma-separated)</label>
-                  <input id="ingredients" type="text" [(ngModel)]="formData.ingredients" name="ingredients" placeholder="e.g. Tomato, Mozzarella, Basil">
-                </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="category">Category</label>
-                    <select id="category" [(ngModel)]="formData.category" name="category" (change)="onCategoryChange()">
-                      <option value="">Select Category</option>
-                      @for (category of getCategoryKeys(); track category) {
-                        <option [value]="category">{{ category }}</option>
-                      }
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label for="subcategory">Subcategory</label>
-                    <select id="subcategory" [(ngModel)]="formData.subcategory" name="subcategory" [disabled]="!formData.category || availableSubcategories().length === 0">
-                      <option value="">Select Subcategory</option>
-                      @for (subcat of availableSubcategories(); track subcat) {
-                        <option [value]="subcat">{{ subcat }}</option>
-                      }
-                    </select>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label>Product Image</label>
-                  <div class="image-upload-row">
-                    @if (editingProduct()?.image_filename) {
-                      <div class="image-preview-wrapper">
-                        <img [src]="getImageUrl(editingProduct()!)" class="product-thumb" alt="">
-                        @if (editingProduct()?.image_size_formatted) {
-                          <div class="file-size">{{ editingProduct()!.image_size_formatted }}</div>
-                        }
-                      </div>
-                    } @else if (pendingImagePreview()) {
-                      <div class="image-preview-wrapper">
-                        <img [src]="pendingImagePreview()" class="product-thumb" alt="">
-                        @if (pendingImageFile()?.size) {
-                          <div class="file-size">{{ formatFileSize(pendingImageFile()!.size) }}</div>
-                        }
-                      </div>
-                    }
-                    <input type="file" #fileInput accept="image/jpeg,image/png,image/webp" (change)="handleImageSelect($event)" style="display:none">
-                    <button type="button" class="btn btn-secondary" (click)="fileInput.click()" [disabled]="uploading()">
-                      {{ uploading() ? 'Uploading...' : (pendingImageFile() ? 'Change Image' : 'Upload Image') }}
-                    </button>
-                    @if (pendingImageFile()) {
-                      <span class="pending-file-name">{{ pendingImageFile()?.name }}</span>
-                    }
-                  </div>
-                </div>
-                <div class="form-actions">
-                  <button type="button" class="btn btn-secondary" (click)="cancelForm()">Cancel</button>
-                  <button type="submit" class="btn btn-primary" [disabled]="saving()">
-                    {{ saving() ? 'Saving...' : (editingProduct() ? 'Update' : 'Add Product') }}
-                  </button>
-                </div>
+                 <div class="form-row">
+                   <div class="form-group">
+                     <label for="name">{{ 'PRODUCTS.PRODUCT_NAME' | translate }}</label>
+                     <input id="name" type="text" [(ngModel)]="formData.name" name="name" required [placeholder]="'PRODUCTS.NAME_PLACEHOLDER' | translate">
+                   </div>
+                   <div class="form-group form-group-sm">
+                     <label for="price">{{ 'PRODUCTS.PRODUCT_PRICE' | translate }}</label>
+                     <div class="price-input">
+                       <span class="currency">{{ currency() }}</span>
+                       <input id="price" type="number" step="0.01" [(ngModel)]="formData.price" name="price" required [placeholder]="'PRODUCTS.PRICE_PLACEHOLDER' | translate">
+                     </div>
+                   </div>
+                 </div>
+                 <div class="form-group">
+                   <label for="ingredients">{{ 'PRODUCTS.INGREDIENTS_LABEL' | translate }}</label>
+                   <input id="ingredients" type="text" [(ngModel)]="formData.ingredients" name="ingredients" [placeholder]="'PRODUCTS.INGREDIENTS_PLACEHOLDER' | translate">
+                 </div>
+                 <div class="form-row">
+                   <div class="form-group">
+                     <label for="category">{{ 'PRODUCTS.CATEGORY_LABEL' | translate }}</label>
+                     <select id="category" [(ngModel)]="formData.category" name="category" (change)="onCategoryChange()">
+                       <option value="">{{ 'PRODUCTS.SELECT_CATEGORY' | translate }}</option>
+                       @for (category of getCategoryKeys(); track category) {
+                         <option [value]="category">{{ category }}</option>
+                       }
+                     </select>
+                   </div>
+                   <div class="form-group">
+                     <label for="subcategory">{{ 'PRODUCTS.SUBCATEGORY_LABEL' | translate }}</label>
+                     <select id="subcategory" [(ngModel)]="formData.subcategory" name="subcategory" [disabled]="!formData.category || availableSubcategories().length === 0">
+                       <option value="">{{ 'PRODUCTS.SELECT_SUBCATEGORY' | translate }}</option>
+                       @for (subcat of availableSubcategories(); track subcat) {
+                         <option [value]="subcat">{{ subcat }}</option>
+                       }
+                     </select>
+                   </div>
+                 </div>
+                 <div class="form-group">
+                   <label>{{ 'PRODUCTS.PRODUCT_IMAGE' | translate }}</label>
+                   <div class="image-upload-row">
+                     @if (editingProduct()?.image_filename) {
+                       <div class="image-preview-wrapper">
+                         <img [src]="getImageUrl(editingProduct()!)" class="product-thumb" alt="">
+                         @if (editingProduct()?.image_size_formatted) {
+                           <div class="file-size">{{ editingProduct()!.image_size_formatted }}</div>
+                         }
+                       </div>
+                     } @else if (pendingImagePreview()) {
+                       <div class="image-preview-wrapper">
+                         <img [src]="pendingImagePreview()" class="product-thumb" alt="">
+                         @if (pendingImageFile()?.size) {
+                           <div class="file-size">{{ formatFileSize(pendingImageFile()!.size) }}</div>
+                         }
+                       </div>
+                     }
+                     <input type="file" #fileInput accept="image/jpeg,image/png,image/webp" (change)="handleImageSelect($event)" style="display:none">
+                     <button type="button" class="btn btn-secondary" (click)="fileInput.click()" [disabled]="uploading()">
+                       {{ uploading() ? ('PRODUCTS.UPLOADING' | translate) : (pendingImageFile() ? ('PRODUCTS.CHANGE_IMAGE' | translate) : ('PRODUCTS.UPLOAD_IMAGE' | translate)) }}
+                     </button>
+                     @if (pendingImageFile()) {
+                       <span class="pending-file-name">{{ pendingImageFile()?.name }}</span>
+                     }
+                   </div>
+                 </div>
+                 <div class="form-actions">
+                   <button type="button" class="btn btn-secondary" (click)="cancelForm()">{{ 'PRODUCTS.CANCEL' | translate }}</button>
+                   <button type="submit" class="btn btn-primary" [disabled]="saving()">
+                     {{ saving() ? ('PRODUCTS.SAVING' | translate) : (editingProduct() ? ('PRODUCTS.UPDATE' | translate) : ('PRODUCTS.ADD_PRODUCT_BUTTON' | translate)) }}
+                   </button>
+                 </div>
               </form>
             </div>
           }
@@ -120,32 +121,21 @@ import { CommonModule } from '@angular/common';
             </div>
           }
 
-          @if (loading()) {
-            <div class="empty-state">
-              <p>Loading products...</p>
-            </div>
-          } @else if (products().length === 0) {
-            <div class="empty-state">
-              <div class="empty-icon">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
-                </svg>
-              </div>
-              <h3>No products yet</h3>
-              <p>Add your first product to get started</p>
-              <button class="btn btn-primary" (click)="showAddForm.set(true)">Add Product</button>
-            </div>
-          } @else if (filteredProducts().length === 0) {
-            <div class="empty-state">
-              <div class="empty-icon">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
-                </svg>
-              </div>
-              <h3>No products match the selected filters</h3>
-              <p>Try selecting a different category or subcategory</p>
-              <button class="btn btn-secondary" (click)="selectCategory(null)">Clear Filters</button>
-            </div>
+           @if (loading()) {
+             <div class="empty-state">
+               <p>{{ 'PRODUCTS.LOADING_PRODUCTS' | translate }}</p>
+             </div>
+           } @else if (products().length === 0) {
+             <div class="empty-state">
+               <div class="empty-icon">
+                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                   <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                 </svg>
+               </div>
+               <h3>{{ 'PRODUCTS.NO_PRODUCTS' | translate }}</h3>
+               <p>{{ 'PRODUCTS.NO_PRODUCTS_DESC' | translate }}</p>
+               <button class="btn btn-primary" (click)="showAddForm.set(true)">{{ 'PRODUCTS.ADD_PRODUCT' | translate }}</button>
+             </div>
           } @else {
             <!-- Filter Buttons -->
             <div class="filters-section">
@@ -191,17 +181,17 @@ import { CommonModule } from '@angular/common';
             </div>
 
             <div class="table-card">
-              <table>
-                <thead>
-                  <tr>
-                    <th style="width:60px"></th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Subcategory</th>
-                    <th>Price</th>
-                    <th></th>
-                  </tr>
-                </thead>
+               <table>
+                 <thead>
+                   <tr>
+                     <th style="width:60px"></th>
+                     <th>{{ 'PRODUCTS.NAME_HEADER' | translate }}</th>
+                     <th>{{ 'PRODUCTS.CATEGORY_HEADER' | translate }}</th>
+                     <th>{{ 'PRODUCTS.SUBCATEGORY_HEADER' | translate }}</th>
+                     <th>{{ 'PRODUCTS.PRICE_HEADER' | translate }}</th>
+                     <th></th>
+                   </tr>
+                 </thead>
                 <tbody>
                   @for (product of filteredProducts(); track product.id) {
                     <tr>
@@ -283,18 +273,18 @@ import { CommonModule } from '@angular/common';
             </div>
           }
 
-          @if (productToDelete()) {
-            <div class="modal-overlay" (click)="productToDelete.set(null)">
-              <div class="modal" (click)="$event.stopPropagation()">
-                <h3>Delete Product</h3>
-                <p>Are you sure you want to delete "{{ productToDelete()?.name }}"?</p>
-                <div class="modal-actions">
-                  <button class="btn btn-secondary" (click)="productToDelete.set(null)">Cancel</button>
-                  <button class="btn btn-danger" (click)="deleteProduct()">Delete</button>
-                </div>
-              </div>
-            </div>
-          }
+           @if (productToDelete()) {
+             <div class="modal-overlay" (click)="productToDelete.set(null)">
+               <div class="modal" (click)="$event.stopPropagation()">
+                 <h3>{{ 'PRODUCTS.DELETE_PRODUCT_TITLE' | translate }}</h3>
+                 <p>{{ 'PRODUCTS.DELETE_PRODUCT_CONFIRM' | translate:{name: productToDelete()?.name} }}</p>
+                 <div class="modal-actions">
+                   <button class="btn btn-secondary" (click)="productToDelete.set(null)">{{ 'PRODUCTS.CANCEL' | translate }}</button>
+                   <button class="btn btn-danger" (click)="deleteProduct()">{{ 'PRODUCTS.DELETE_PRODUCT' | translate }}</button>
+                 </div>
+               </div>
+             </div>
+           }
         </div>
     </app-sidebar>
   `,
@@ -696,6 +686,7 @@ export class ProductsComponent implements OnInit {
   pendingImageFile = signal<File | null>(null);
   pendingImagePreview = signal<string | null>(null);
   currency = signal<string>('$');
+  currencyCode = signal<string | null>(null);
   categories = signal<Record<string, string[]>>({});
   availableSubcategories = signal<string[]>([]);
   editingCategoryProductId = signal<number | null>(null);
@@ -820,7 +811,9 @@ export class ProductsComponent implements OnInit {
   loadTenantSettings() {
     this.api.getTenantSettings().subscribe({
       next: (settings) => {
-        this.currency.set(settings.currency || '$');
+        const code = settings.currency_code || null;
+        this.currencyCode.set(code);
+        this.currency.set(settings.currency || (code ? this.getCurrencySymbol(code) : '$'));
       },
       error: (err) => {
         console.error('Failed to load tenant settings:', err);
@@ -829,7 +822,26 @@ export class ProductsComponent implements OnInit {
     });
   }
 
+  private getCurrencySymbol(code: string): string {
+    const locale = navigator.language || 'en-US';
+    const parts = new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: code,
+      currencyDisplay: 'symbol'
+    }).formatToParts(0);
+    return parts.find(part => part.type === 'currency')?.value || code;
+  }
+
   formatPrice(priceCents: number): string {
+    const currencyCode = this.currencyCode();
+    const locale = navigator.language || 'en-US';
+    if (currencyCode) {
+      return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: currencyCode,
+        currencyDisplay: 'symbol'
+      }).format(priceCents / 100);
+    }
     const currencySymbol = this.currency();
     return `${currencySymbol}${(priceCents / 100).toFixed(2)}`;
   }

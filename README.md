@@ -27,21 +27,33 @@ A Point of Sale system with Angular frontend and FastAPI backend using PostgreSQ
    docker compose --env-file config.env up -d
    ```
 
-   This will start:
-   - PostgreSQL 18 (Alpine 3.23) on port 5433
-   - Redis 7 on port 6379
-   - FastAPI backend on port 8020
-   - Angular frontend on port 4200
-   - WebSocket bridge on port 8021
+    This will start:
+    - PostgreSQL 18 (Alpine 3.23) on port 5433
+    - Redis 7 on port 6379
+    - FastAPI backend on port 8020
+    - Angular frontend on port 4200
+    - WebSocket bridge on port 8021
+    - HAProxy load balancer on port 4202
 
-### Access Points
+ ### Access Points
 
-- **Frontend**: http://localhost:4200
-- **API**: http://localhost:8020
-- **WebSocket Bridge**: ws://localhost:8021
-- **Health Check**: http://localhost:8020/health
-- **DB Health Check**: http://localhost:8020/health/db
-- **API Docs**: http://localhost:8020/docs
+ - **Unified Frontend & API**: http://localhost:4202 (recommended)
+ - **Direct Frontend**: http://localhost:4200
+ - **Direct API**: http://localhost:8020
+ - **Direct WebSocket Bridge**: ws://localhost:8021
+ - **Health Check**: http://localhost:4202/api/health
+ - **DB Health Check**: http://localhost:4202/api/health/db
+ - **API Docs**: http://localhost:4202/api/docs
+
+ ### Internationalization (i18n)
+
+ The system supports multiple languages and currencies:
+
+ - **Supported Languages**: English, Spanish, Catalan, German, Chinese (Simplified), Hindi
+ - **Currency Support**: EUR, USD, MXN, INR, CNY, TWD (ISO 4217 codes)
+ - **Language Picker**: Available in admin sidebar and public menu
+ - **Translation Management**: Admin → Settings → Translations
+ - **API Language Parameter**: Add `?lang=es` to API requests for localized content
 
 ### Viewing Logs
 
@@ -163,6 +175,17 @@ docker compose exec back python -m app.migrate
 - Use `IF NOT EXISTS` clauses where possible for idempotency
 
 See `back/migrations/README.md` for more details.
+
+### Seeding Translations (Optional)
+
+The system supports translations for menu items and business information. To populate some basic global translations for catalog items:
+
+```bash
+# Run the seeding script (requires catalog data to exist first)
+docker compose exec back python seed_translations.py
+```
+
+Translations can also be managed through the admin interface at `/translations`.
 
 ### Hot Reload
 

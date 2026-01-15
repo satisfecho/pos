@@ -1,12 +1,15 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { ApiService, User } from '../services/api.service';
 import { environment } from '../../environments/environment';
+import { LanguagePickerComponent } from './language-picker.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, LanguagePickerComponent, TranslateModule],
   template: `
     <div class="layout" [class.sidebar-open]="sidebarOpen()">
       <header class="mobile-header">
@@ -32,100 +35,112 @@ import { environment } from '../../environments/environment';
         </div>
         
         <nav class="nav">
-          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link" (click)="closeSidebar()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-              <polyline points="9,22 9,12 15,12 15,22"/>
-            </svg>
-            <span>Home</span>
-          </a>
-          <a routerLink="/products" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
-            </svg>
-            <span>Products</span>
-          </a>
-          <a routerLink="/catalog" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
-            </svg>
-            <span>Catalog</span>
-          </a>
-          <a routerLink="/tables" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="7" height="7"/>
-              <rect x="14" y="3" width="7" height="7"/>
-              <rect x="14" y="14" width="7" height="7"/>
-              <rect x="3" y="14" width="7" height="7"/>
-            </svg>
-            <span>Tables</span>
-          </a>
-          <a routerLink="/orders" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-              <polyline points="14,2 14,8 20,8"/>
-              <line x1="16" y1="13" x2="8" y2="13"/>
-              <line x1="16" y1="17" x2="8" y2="17"/>
-              <polyline points="10,9 9,9 8,9"/>
-            </svg>
-            <span>Orders</span>
-          </a>
-          <!-- Inventory Module -->
-          <div class="nav-section">
-            <button class="nav-section-header" (click)="toggleInventory()">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-              </svg>
-              <span>Inventory</span>
-              <svg class="chevron" [class.open]="inventoryOpen()" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </button>
-            @if (inventoryOpen()) {
-              <div class="nav-submenu">
-                <a routerLink="/inventory/items" routerLinkActive="active" class="nav-sublink" (click)="closeSidebar()">
-                  <span>Items</span>
-                </a>
-                <a routerLink="/inventory/suppliers" routerLinkActive="active" class="nav-sublink" (click)="closeSidebar()">
-                  <span>Suppliers</span>
-                </a>
-                <a routerLink="/inventory/purchase-orders" routerLinkActive="active" class="nav-sublink" (click)="closeSidebar()">
-                  <span>Purchase Orders</span>
-                </a>
-                <a routerLink="/inventory/stock" routerLinkActive="active" class="nav-sublink" (click)="closeSidebar()">
-                  <span>Stock Dashboard</span>
-                </a>
-                <a routerLink="/inventory/reports" routerLinkActive="active" class="nav-sublink" (click)="closeSidebar()">
-                  <span>Reports</span>
-                </a>
-              </div>
-            }
-          </div>
+           <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link" (click)="closeSidebar()">
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+               <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+               <polyline points="9,22 9,12 15,12 15,22"/>
+             </svg>
+             <span>{{ 'NAV.HOME' | translate }}</span>
+           </a>
+           <a routerLink="/products" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+               <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+             </svg>
+             <span>{{ 'NAV.PRODUCTS' | translate }}</span>
+           </a>
+           <a routerLink="/catalog" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+               <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+             </svg>
+             <span>{{ 'NAV.CATALOG' | translate }}</span>
+           </a>
+           <a routerLink="/tables" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+               <rect x="3" y="3" width="7" height="7"/>
+               <rect x="14" y="3" width="7" height="7"/>
+               <rect x="14" y="14" width="7" height="7"/>
+               <rect x="3" y="14" width="7" height="7"/>
+             </svg>
+             <span>{{ 'NAV.TABLES' | translate }}</span>
+           </a>
+           <a routerLink="/orders" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+               <polyline points="14,2 14,8 20,8"/>
+               <line x1="16" y1="13" x2="8" y2="13"/>
+               <line x1="16" y1="17" x2="8" y2="17"/>
+               <polyline points="10,9 9,9 8,9"/>
+             </svg>
+             <span>{{ 'NAV.ORDERS' | translate }}</span>
+           </a>
+           <!-- Inventory Module -->
+           <div class="nav-section">
+             <button class="nav-section-header" (click)="toggleInventory()">
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+               </svg>
+               <span>{{ 'NAV.INVENTORY' | translate }}</span>
+               <svg class="chevron" [class.open]="inventoryOpen()" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <polyline points="6 9 12 15 18 9"/>
+               </svg>
+             </button>
+             @if (inventoryOpen()) {
+               <div class="nav-submenu">
+                 <a routerLink="/inventory/items" routerLinkActive="active" class="nav-sublink" (click)="closeSidebar()">
+                   <span>{{ 'NAV.ITEMS' | translate }}</span>
+                 </a>
+                 <a routerLink="/inventory/suppliers" routerLinkActive="active" class="nav-sublink" (click)="closeSidebar()">
+                   <span>{{ 'NAV.SUPPLIERS' | translate }}</span>
+                 </a>
+                 <a routerLink="/inventory/purchase-orders" routerLinkActive="active" class="nav-sublink" (click)="closeSidebar()">
+                   <span>{{ 'NAV.PURCHASE_ORDERS' | translate }}</span>
+                 </a>
+                 <a routerLink="/inventory/stock" routerLinkActive="active" class="nav-sublink" (click)="closeSidebar()">
+                   <span>{{ 'NAV.STOCK_DASHBOARD' | translate }}</span>
+                 </a>
+                 <a routerLink="/inventory/reports" routerLinkActive="active" class="nav-sublink" (click)="closeSidebar()">
+                   <span>{{ 'NAV.REPORTS' | translate }}</span>
+                 </a>
+               </div>
+             }
+           </div>
 
-          <a routerLink="/settings" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="3"/>
-              <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/>
-            </svg>
-            <span>Settings</span>
-          </a>
+            <a routerLink="/translations" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                <polyline points="7.5 4.27 16.5 9.42"/>
+                <polyline points="16.5 14.58 7.5 19.73"/>
+                <polyline points="16.5 9.42 7.5 4.27"/>
+                <polyline points="7.5 19.73 16.5 14.58"/>
+              </svg>
+              <span>{{ 'NAV.TRANSLATIONS' | translate }}</span>
+            </a>
+
+            <a routerLink="/settings" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/>
+              </svg>
+              <span>{{ 'NAV.SETTINGS' | translate }}</span>
+            </a>
         </nav>
 
         <div class="sidebar-footer">
+          <app-language-picker></app-language-picker>
           @if (user()) {
             <div class="user-info">
               <span class="user-email">{{ user()?.email }}</span>
             </div>
           }
-          <button class="logout-btn" (click)="logout()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
-              <polyline points="16,17 21,12 16,7"/>
-              <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            <span>Sign out</span>
-          </button>
+           <button class="logout-btn" (click)="logout()">
+             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+               <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+               <polyline points="16,17 21,12 16,7"/>
+               <line x1="21" y1="12" x2="9" y2="12"/>
+             </svg>
+             <span>{{ 'NAV.LOGOUT' | translate }}</span>
+           </button>
         </div>
       </aside>
 
@@ -304,6 +319,7 @@ import { environment } from '../../environments/environment';
     }
 
     .user-info {
+      margin-top: var(--space-4);
       margin-bottom: var(--space-3);
     }
 

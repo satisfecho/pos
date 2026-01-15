@@ -4,16 +4,17 @@ import { FormsModule } from '@angular/forms';
 import { ApiService, CatalogItem, TenantProduct } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { environment } from '../../environments/environment';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-catalog',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent, TranslateModule],
   template: `
     <app-sidebar>
       <div class="page-header">
-        <h1>Product Catalog</h1>
-        <p class="subtitle">Browse products from providers and add them to your menu</p>
+        <h1>{{ 'CATALOG.TITLE' | translate }}</h1>
+        <p class="subtitle">{{ 'CATALOG.SUBTITLE' | translate }}</p>
       </div>
 
       <div class="content">
@@ -21,33 +22,33 @@ import { environment } from '../../environments/environment';
         <div class="filters-card">
           <div class="form-row">
             <div class="form-group">
-              <label for="category">Category</label>
+              <label for="category">{{ 'CATALOG.CATEGORY_LABEL' | translate }}</label>
               <select id="category" [(ngModel)]="selectedCategory" (change)="onFilterChange()">
-                <option value="">All Categories</option>
+                <option value="">{{ 'CATALOG.ALL_CATEGORIES' | translate }}</option>
                 @for (cat of categories(); track cat) {
                   <option [value]="cat">{{ cat }}</option>
                 }
               </select>
             </div>
             <div class="form-group">
-              <label for="subcategory">Subcategory</label>
+              <label for="subcategory">{{ 'CATALOG.SUBCATEGORY_LABEL' | translate }}</label>
               <select id="subcategory" [(ngModel)]="selectedSubcategory" (change)="onFilterChange()" [disabled]="!selectedCategory">
-                <option value="">All Subcategories</option>
+                <option value="">{{ 'CATALOG.ALL_SUBCATEGORIES' | translate }}</option>
                 @for (subcat of getSubcategories(); track subcat) {
                   <option [value]="subcat">{{ subcat }}</option>
                 }
               </select>
             </div>
             <div class="form-group">
-              <label for="search">Search</label>
-              <input id="search" type="text" [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Search products...">
+              <label for="search">{{ 'CATALOG.SEARCH_LABEL' | translate }}</label>
+              <input id="search" type="text" [(ngModel)]="searchTerm" (input)="onSearch()" [placeholder]="'CATALOG.SEARCH_PLACEHOLDER' | translate">
             </div>
           </div>
         </div>
 
         <!-- Loading -->
         @if (loading()) {
-          <div class="loading">Loading catalog...</div>
+          <div class="loading">{{ 'CATALOG.LOADING_CATALOG' | translate }}</div>
         }
 
         <!-- Error -->
@@ -107,32 +108,32 @@ import { environment } from '../../environments/environment';
                   </div>
                 }
                 
-                @if (item.aromas) {
-                  <div class="catalog-aromas">
-                    <strong>Aromas:</strong> {{ item.aromas }}
-                  </div>
-                }
-                
-                @if (item.elaboration) {
-                  <div class="catalog-elaboration">
-                    <strong>Elaboration:</strong> {{ item.elaboration }}
-                  </div>
-                }
+                 @if (item.aromas) {
+                   <div class="catalog-aromas">
+                     <strong>{{ 'CATALOG.AROMAS_LABEL' | translate }}</strong> {{ item.aromas }}
+                   </div>
+                 }
 
-                <!-- Price Comparison -->
-                @if (item.providers.length > 0) {
-                  <div class="price-comparison">
-                    <div class="price-header">
-                      <span class="price-label">Provider Prices:</span>
-                      @if (item.min_price_cents && item.max_price_cents) {
-                        <span class="price-range">
-                          {{ formatPrice(item.min_price_cents) }}
-                          @if (item.min_price_cents !== item.max_price_cents) {
-                            - {{ formatPrice(item.max_price_cents) }}
-                          }
-                        </span>
-                      }
-                    </div>
+                 @if (item.elaboration) {
+                   <div class="catalog-elaboration">
+                     <strong>{{ 'CATALOG.ELABORATION_LABEL' | translate }}</strong> {{ item.elaboration }}
+                   </div>
+                 }
+
+                 <!-- Price Comparison -->
+                 @if (item.providers.length > 0) {
+                   <div class="price-comparison">
+                     <div class="price-header">
+                       <span class="price-label">{{ 'CATALOG.PROVIDER_PRICES_LABEL' | translate }}</span>
+                       @if (item.min_price_cents && item.max_price_cents) {
+                         <span class="price-range">
+                           {{ formatPrice(item.min_price_cents) }}
+                           @if (item.min_price_cents !== item.max_price_cents) {
+                             - {{ formatPrice(item.max_price_cents) }}
+                           }
+                         </span>
+                       }
+                     </div>
                     <div class="providers-list">
                       @for (provider of item.providers; track provider.provider_id) {
                         <div class="provider-item">
@@ -146,85 +147,85 @@ import { environment } from '../../environments/environment';
                       }
                     </div>
                   </div>
-                } @else {
-                  <div class="no-providers">No providers available</div>
-                }
+                 } @else {
+                   <div class="no-providers">{{ 'CATALOG.NO_PROVIDERS_AVAILABLE' | translate }}</div>
+                 }
 
-                <!-- Add to Menu Button -->
-                <div class="catalog-actions">
-                  @if (isInMenu(item.id)) {
-                    <button class="btn btn-danger" (click)="removeFromMenu(item.id)" [disabled]="removing()">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 6L6 18M6 6l12 12"/>
-                      </svg>
-                      {{ removing() ? 'Removing...' : 'Remove from Menu' }}
-                    </button>
-                  } @else {
-                    <button class="btn btn-primary" (click)="openAddDialog(item)" [disabled]="adding()">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                      </svg>
-                      Add to Menu
-                    </button>
-                  }
-                </div>
+                 <!-- Add to Menu Button -->
+                 <div class="catalog-actions">
+                   @if (isInMenu(item.id)) {
+                     <button class="btn btn-danger" (click)="removeFromMenu(item.id)" [disabled]="removing()">
+                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                         <path d="M18 6L6 18M6 6l12 12"/>
+                       </svg>
+                       {{ removing() ? ('CATALOG.REMOVING' | translate) : ('CATALOG.REMOVE_FROM_MENU' | translate) }}
+                     </button>
+                   } @else {
+                     <button class="btn btn-primary" (click)="openAddDialog(item)" [disabled]="adding()">
+                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                       </svg>
+                       {{ 'CATALOG.ADD_TO_MENU' | translate }}
+                     </button>
+                   }
+                 </div>
               </div>
             }
           </div>
-        } @else if (!loading() && catalogItems().length === 0) {
-          <div class="empty-state">
-            <p>No products found. Try adjusting your filters.</p>
-          </div>
-        }
+         } @else if (!loading() && catalogItems().length === 0) {
+           <div class="empty-state">
+             <p>{{ 'CATALOG.NO_PRODUCTS_DESC' | translate }}</p>
+           </div>
+         }
 
         <!-- Add Product Dialog -->
         @if (selectedItem()) {
           <div class="modal-overlay" (click)="closeAddDialog()">
             <div class="modal-content" (click)="$event.stopPropagation()">
-              <div class="modal-header">
-                <h3>Add to Menu</h3>
-                <button class="icon-btn" (click)="closeAddDialog()">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 6L6 18M6 6l12 12"/>
-                  </svg>
-                </button>
-              </div>
-              <div class="modal-body">
-                <div class="form-group">
-                  <label>Product Name</label>
-                  <input type="text" [(ngModel)]="addFormData.name" placeholder="Product name">
-                </div>
-                <div class="form-group">
-                  <label>Select Provider</label>
-                  <select [(ngModel)]="addFormData.providerProductId">
-                    <option [value]="null">No specific provider</option>
-                    @for (provider of selectedItem()!.providers; track provider.provider_id) {
-                      <option [value]="provider.provider_product_id || null">
-                        {{ provider.provider_name }}
-                        @if (provider.price_cents) {
-                          - {{ formatPrice(provider.price_cents) }}
-                        }
-                      </option>
-                    }
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Your Price</label>
-                  <div class="price-input">
-                    <span class="currency">{{ currency() }}</span>
-                    <input type="number" step="0.01" [(ngModel)]="addFormData.price" placeholder="0.00" required>
-                  </div>
-                  @if (getSelectedProviderPrice()) {
-                    <small class="hint">Provider price: {{ formatPrice(getSelectedProviderPrice()!) }}</small>
-                  }
-                </div>
-              </div>
-              <div class="modal-actions">
-                <button class="btn btn-secondary" (click)="closeAddDialog()">Cancel</button>
-                <button class="btn btn-primary" (click)="addToMenu()" [disabled]="adding()">
-                  {{ adding() ? 'Adding...' : 'Add to Menu' }}
-                </button>
-              </div>
+               <div class="modal-header">
+                 <h3>{{ 'CATALOG.ADD_TO_MENU_TITLE' | translate }}</h3>
+                 <button class="icon-btn" (click)="closeAddDialog()">
+                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                     <path d="M18 6L6 18M6 6l12 12"/>
+                   </svg>
+                 </button>
+               </div>
+               <div class="modal-body">
+                 <div class="form-group">
+                   <label>{{ 'CATALOG.PRODUCT_NAME_LABEL' | translate }}</label>
+                   <input type="text" [(ngModel)]="addFormData.name" [placeholder]="'CATALOG.PRODUCT_NAME_PLACEHOLDER' | translate">
+                 </div>
+                 <div class="form-group">
+                   <label>{{ 'CATALOG.SELECT_PROVIDER' | translate }}</label>
+                   <select [(ngModel)]="addFormData.providerProductId">
+                     <option [value]="null">{{ 'CATALOG.NO_PROVIDERS_AVAILABLE' | translate }}</option>
+                     @for (provider of selectedItem()!.providers; track provider.provider_id) {
+                       <option [value]="provider.provider_product_id || null">
+                         {{ provider.provider_name }}
+                         @if (provider.price_cents) {
+                           - {{ formatPrice(provider.price_cents) }}
+                         }
+                       </option>
+                     }
+                   </select>
+                 </div>
+                 <div class="form-group">
+                   <label>{{ 'CATALOG.SET_PRICE' | translate }}</label>
+                   <div class="price-input">
+                     <span class="currency">{{ currency() }}</span>
+                     <input type="number" step="0.01" [(ngModel)]="addFormData.price" [placeholder]="'CATALOG.PRICE_PLACEHOLDER' | translate" required>
+                   </div>
+                   @if (getSelectedProviderPrice()) {
+                     <small class="hint">{{ 'CATALOG.PROVIDER_PRICES_LABEL' | translate }} {{ formatPrice(getSelectedProviderPrice()!) }}</small>
+                   }
+                 </div>
+               </div>
+               <div class="modal-actions">
+                 <button class="btn btn-secondary" (click)="closeAddDialog()">{{ 'COMMON.CANCEL' | translate }}</button>
+                 <button class="btn btn-primary" (click)="addToMenu()" [disabled]="adding()">
+                   {{ adding() ? ('COMMON.LOADING' | translate) : ('CATALOG.ADD_TO_MENU' | translate) }}
+                 </button>
+               </div>
             </div>
           </div>
         }
@@ -511,12 +512,11 @@ export class CatalogComponent implements OnInit {
     price: ''
   };
 
-  currency = computed(() => {
-    // Get currency from tenant settings or default
-    return '€'; // TODO: Get from tenant settings
-  });
+  currency = signal<string>('€');
+  currencyCode = signal<string | null>(null);
 
   ngOnInit() {
+    this.loadTenantSettings();
     this.loadCatalog();
     this.loadCategories();
     this.loadTenantProducts();
@@ -563,6 +563,29 @@ export class CatalogComponent implements OnInit {
         console.error('Failed to load tenant products:', err);
       }
     });
+  }
+
+  loadTenantSettings() {
+    this.apiService.getTenantSettings().subscribe({
+      next: (settings) => {
+        const code = settings.currency_code || null;
+        this.currencyCode.set(code);
+        this.currency.set(settings.currency || (code ? this.getCurrencySymbol(code) : '€'));
+      },
+      error: (err) => {
+        console.error('Failed to load tenant settings:', err);
+      }
+    });
+  }
+
+  private getCurrencySymbol(code: string): string {
+    const locale = navigator.language || 'en-US';
+    const parts = new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: code,
+      currencyDisplay: 'symbol'
+    }).formatToParts(0);
+    return parts.find(part => part.type === 'currency')?.value || code;
   }
 
   getSubcategories(): string[] {
@@ -675,6 +698,15 @@ export class CatalogComponent implements OnInit {
   }
 
   formatPrice(cents: number): string {
+    const currencyCode = this.currencyCode();
+    const locale = navigator.language || 'en-US';
+    if (currencyCode) {
+      return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: currencyCode,
+        currencyDisplay: 'symbol'
+      }).format(cents / 100);
+    }
     return `${this.currency()}${(cents / 100).toFixed(2)}`;
   }
 

@@ -4,7 +4,7 @@ import os
 from datetime import timedelta, datetime, timezone
 from io import BytesIO
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Dict
 from uuid import uuid4
 
 from PIL import Image
@@ -23,17 +23,19 @@ from .settings import settings
 from .inventory_routes import router as inventory_router
 from .inventory_service import deduct_inventory_for_order
 from . import inventory_models
+from .translation_service import TranslationService
+from .messages import get_message
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
 # Configure Stripe (global fallback - will be overridden by tenant-specific keys)
 # Note: stripe.api_key is set globally but individual API calls use api_key parameter
 stripe.api_key = settings.stripe_secret_key or ""
+
 
 def _get_stripe_currency_code(currency_symbol: str | None) -> str | None:
     """
@@ -42,51 +44,88 @@ def _get_stripe_currency_code(currency_symbol: str | None) -> str | None:
     """
     if not currency_symbol:
         return None
-    
+
     # Common currency symbol to Stripe currency code mapping
     currency_map = {
-        '€': 'eur',
-        '$': 'usd',
-        '£': 'gbp',
-        '¥': 'jpy',
-        '₹': 'inr',
-        '₽': 'rub',
-        '₩': 'krw',
-        '₨': 'pkr',
-        '₦': 'ngn',
-        '₴': 'uah',
-        '₫': 'vnd',
-        '₪': 'ils',
-        '₡': 'crc',
-        '₱': 'php',
-        '₨': 'lkr',
-        '₦': 'ngn',
-        '₨': 'npr',
-        '₨': 'mru',
-        'MXN': 'mxn',
-        'mxn': 'mxn',
-        'EUR': 'eur',
-        'eur': 'eur',
-        'USD': 'usd',
-        'usd': 'usd',
-        'GBP': 'gbp',
-        'gbp': 'gbp',
+        "€": "eur",
+        "$": "usd",
+        "£": "gbp",
+        "¥": "jpy",
+        "₹": "inr",
+        "₽": "rub",
+        "₩": "krw",
+        "₨": "pkr",
+        "₦": "ngn",
+        "₴": "uah",
+        "₫": "vnd",
+        "₪": "ils",
+        "₡": "crc",
+        "₱": "php",
+        "₨": "lkr",
+        "₦": "ngn",
+        "₨": "npr",
+        "₨": "mru",
+        "MXN": "mxn",
+        "mxn": "mxn",
+        "EUR": "eur",
+        "eur": "eur",
+        "USD": "usd",
+        "usd": "usd",
+        "GBP": "gbp",
+        "gbp": "gbp",
     }
-    
+
     # Try direct lookup
     if currency_symbol in currency_map:
         return currency_map[currency_symbol]
-    
+
     # Try case-insensitive lookup for 3-letter codes
     currency_upper = currency_symbol.upper()
     if currency_upper in currency_map:
         return currency_map[currency_upper]
-    
+
     # If it's already a 3-letter code, return as-is (Stripe will validate)
     if len(currency_symbol) == 3:
         return currency_symbol.lower()
-    
+
     return None
+
+
+def _get_requested_language(
+    lang: str | None = Query(None, description="Language code (e.g. en, es, zh-CN)"),
+    accept_language: str | None = Query(
+        None, alias="accept-language", description="Accept-Language header"
+    ),
+) -> str:
+    """
+    Determine the requested language based on query param or Accept-Language header.
+    Returns normalized language code or 'en' as fallback.
+    """
+    from .language_service import normalize_language_code
+
+    # 1. Check explicit lang query parameter
+    if lang:
+        normalized = normalize_language_code(lang)
+        if normalized:
+            return normalized
+
+    # 2. Parse Accept-Language header
+    if accept_language:
+        # Simple parsing - take the first language with highest quality
+        # Format: "en-US,en;q=0.9,es;q=0.8"
+        languages = []
+        for part in accept_language.split(","):
+            lang_part = part.strip().split(";")[0].strip()
+            if lang_part:
+                normalized = normalize_language_code(lang_part)
+                if normalized:
+                    languages.append(normalized)
+
+        if languages:
+            return languages[0]  # Return highest priority
+
+    # 3. Fallback to English
+    return "en"
 
 
 app = FastAPI(
@@ -94,16 +133,12 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
-    swagger_ui_parameters={
-        "faviconUrl": "/favicon.ico"
-    }
+    swagger_ui_parameters={"faviconUrl": "/favicon.ico"},
 )
 
 # Parse CORS origins from environment (comma-separated)
 cors_origins_list = [
-    origin.strip() 
-    for origin in settings.cors_origins.split(",") 
-    if origin.strip()
+    origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()
 ]
 # Add wildcard for public menu access if not already present
 # Add wildcard for public menu access if not already present
@@ -144,6 +179,7 @@ app.include_router(inventory_router, prefix="/inventory", tags=["Inventory"])
 
 # ============ IMAGE OPTIMIZATION ============
 
+
 def get_file_size(file_path: Path) -> int | None:
     """Get file size in bytes. Returns None if file doesn't exist."""
     try:
@@ -152,6 +188,7 @@ def get_file_size(file_path: Path) -> int | None:
     except Exception:
         pass
     return None
+
 
 def format_file_size(size_bytes: int | None) -> str:
     """Format file size in human-readable format."""
@@ -163,6 +200,7 @@ def format_file_size(size_bytes: int | None) -> str:
         return f"{size_bytes / 1024:.1f} KB"
     else:
         return f"{size_bytes / (1024 * 1024):.1f} MB"
+
 
 def optimize_image(image_data: bytes, content_type: str) -> bytes:
     """
@@ -177,18 +215,22 @@ def optimize_image(image_data: bytes, content_type: str) -> bytes:
         image = Image.open(BytesIO(image_data))
         original_format = image.format
         original_size = len(image_data)
-        
+
         # Convert RGBA to RGB for JPEG (JPEG doesn't support transparency)
-        if (content_type == "image/jpeg" or original_format == "JPEG") and image.mode in ("RGBA", "LA", "P"):
+        if (
+            content_type == "image/jpeg" or original_format == "JPEG"
+        ) and image.mode in ("RGBA", "LA", "P"):
             # Create white background
             background = Image.new("RGB", image.size, (255, 255, 255))
             if image.mode == "P":
                 image = image.convert("RGBA")
-            background.paste(image, mask=image.split()[-1] if image.mode == "RGBA" else None)
+            background.paste(
+                image, mask=image.split()[-1] if image.mode == "RGBA" else None
+            )
             image = background
         elif image.mode not in ("RGB", "L"):
             image = image.convert("RGB")
-        
+
         # Resize if image is too large
         width, height = image.size
         if width > MAX_IMAGE_WIDTH or height > MAX_IMAGE_HEIGHT:
@@ -198,10 +240,10 @@ def optimize_image(image_data: bytes, content_type: str) -> bytes:
             new_height = int(height * ratio)
             image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
             logger.info(f"Image resized: {width}x{height} -> {new_width}x{new_height}")
-        
+
         # Save optimized image to bytes
         output = BytesIO()
-        
+
         if content_type == "image/jpeg" or original_format == "JPEG":
             image.save(output, format="JPEG", quality=JPEG_QUALITY, optimize=True)
         elif content_type == "image/webp" or original_format == "WEBP":
@@ -212,39 +254,42 @@ def optimize_image(image_data: bytes, content_type: str) -> bytes:
         else:
             # Default to JPEG
             image.save(output, format="JPEG", quality=JPEG_QUALITY, optimize=True)
-        
+
         optimized_data = output.getvalue()
         optimized_size = len(optimized_data)
         reduction = ((original_size - optimized_size) / original_size) * 100
-        
+
         logger.info(
             f"Image optimized: {original_size / 1024:.1f}KB -> "
             f"{optimized_size / 1024:.1f}KB ({reduction:.1f}% reduction)"
         )
-        
+
         return optimized_data
-        
+
     except Exception as e:
         logger.warning(f"Error optimizing image: {e}, using original image")
         return image_data
+
 
 # Serve favicon for API docs (blue icon to distinguish from frontend)
 @app.get("/favicon.ico", include_in_schema=False)
 @app.head("/favicon.ico", include_in_schema=False)
 async def favicon():
     from fastapi.responses import FileResponse, Response
+
     favicon_path = STATIC_DIR / "favicon.svg"
     if favicon_path.exists():
         response = FileResponse(
-            str(favicon_path), 
+            str(favicon_path),
             media_type="image/svg+xml",
             headers={
                 "Cache-Control": "public, max-age=3600",
-                "X-Favicon-Source": "backend"
-            }
+                "X-Favicon-Source": "backend",
+            },
         )
         return response
     raise HTTPException(status_code=404)
+
 
 # Redis client for pub/sub
 redis_client: redis.Redis | None = None
@@ -290,6 +335,7 @@ def on_startup() -> None:
     try:
         from .migrate import MigrationRunner
         from pathlib import Path
+
         migrations_dir = Path(__file__).parent.parent / "migrations"
         runner = MigrationRunner(migrations_dir)
         db_version = runner.run_migrations()
@@ -309,27 +355,25 @@ def health_db(session: Session = Depends(get_session)) -> dict:
     """Check database connection and version."""
     try:
         check_db_connection()
-        
+
         # Get database schema version
         try:
             from .migrate import MigrationRunner
             from pathlib import Path
+
             migrations_dir = Path(__file__).parent.parent / "migrations"
             runner = MigrationRunner(migrations_dir)
             db_version = runner.get_current_version(session)
         except Exception:
             db_version = None
-        
-        return {
-            "status": "ok",
-            "database": "connected",
-            "schema_version": db_version
-        }
+
+        return {"status": "ok", "database": "connected", "schema_version": db_version}
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Database error: {e}")
 
 
 # ============ AUTH ============
+
 
 @app.post("/register")
 def register(
@@ -337,11 +381,16 @@ def register(
     email: str,
     password: str,
     full_name: str | None = None,
-    session: Session = Depends(get_session)
+    lang: str = Depends(_get_requested_language),
+    session: Session = Depends(get_session),
 ) -> dict:
-    existing_user = session.exec(select(models.User).where(models.User.email == email)).first()
+    existing_user = session.exec(
+        select(models.User).where(models.User.email == email)
+    ).first()
     if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(
+            status_code=400, detail=get_message("email_already_registered", lang)
+        )
 
     tenant = models.Tenant(name=tenant_name)
     session.add(tenant)
@@ -353,34 +402,37 @@ def register(
         email=email,
         hashed_password=hashed_password,
         full_name=full_name,
-        tenant_id=tenant.id
+        tenant_id=tenant.id,
     )
     session.add(user)
     session.commit()
-    
+
     return {"status": "created", "tenant_id": tenant.id, "email": email}
 
 
 @app.post("/token")
 def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    session: Session = Depends(get_session)
+    lang: str = Depends(_get_requested_language),
+    session: Session = Depends(get_session),
 ) -> dict:
     statement = select(models.User).where(models.User.email == form_data.username)
     user = session.exec(statement).first()
-    
-    if not user or not security.verify_password(form_data.password, user.hashed_password):
+
+    if not user or not security.verify_password(
+        form_data.password, user.hashed_password
+    ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail=get_message("incorrect_username_or_password", lang),
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     access_token = security.create_access_token(
         data={"sub": user.email, "tenant_id": user.tenant_id},
-        expires_delta=security.timedelta(minutes=settings.access_token_expire_minutes)
+        expires_delta=security.timedelta(minutes=settings.access_token_expire_minutes),
     )
-    
+
     response = JSONResponse(content={"status": "success", "message": "Logged in"})
     response.set_cookie(
         key="access_token",
@@ -389,7 +441,7 @@ def login_for_access_token(
         secure=settings.is_production,  # Only enforce HTTPS in production
         samesite="lax",
         path="/",  # Ensure cookie is sent with all API requests
-        max_age=settings.access_token_expire_minutes * 60
+        max_age=settings.access_token_expire_minutes * 60,
     )
     return response
 
@@ -397,48 +449,165 @@ def login_for_access_token(
 @app.post("/logout")
 def logout():
     response = JSONResponse(content={"status": "success", "message": "Logged out"})
-    response.delete_cookie(key="access_token", path="/")  # Must match path used in set_cookie
+    response.delete_cookie(
+        key="access_token", path="/"
+    )  # Must match path used in set_cookie
     return response
 
 
 @app.get("/users/me")
 def read_users_me(
-    current_user: Annotated[models.User, Depends(security.get_current_user)]
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
 ) -> models.User:
     return current_user
 
 
+# ============ TRANSLATIONS ============
+
+
+@app.get("/i18n/{entity_type}/{entity_id}")
+def get_translations_for_entity(
+    entity_type: str,
+    entity_id: int,
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Get all translations for a specific entity."""
+    # Validate entity type and ensure user has access
+    allowed_types = ["tenant", "product", "tenant_product", "product_catalog"]
+    if entity_type not in allowed_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid entity type. Allowed: {', '.join(allowed_types)}",
+        )
+
+    # Check tenant ownership for tenant-scoped entities
+    if entity_type in ["tenant", "product", "tenant_product"]:
+        # For tenant entity, entity_id should match current tenant
+        if entity_type == "tenant" and entity_id != current_user.tenant_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+        # For products, check tenant ownership
+        elif entity_type == "product":
+            product = session.exec(
+                select(models.Product).where(models.Product.id == entity_id)
+            ).first()
+            if not product or product.tenant_id != current_user.tenant_id:
+                raise HTTPException(status_code=404, detail="Product not found")
+        elif entity_type == "tenant_product":
+            tp = session.exec(
+                select(models.TenantProduct).where(models.TenantProduct.id == entity_id)
+            ).first()
+            if not tp or tp.tenant_id != current_user.tenant_id:
+                raise HTTPException(status_code=404, detail="Product not found")
+
+    # Get all translations for this entity
+    translations = TranslationService.get_all_translations_for_entity(
+        session, current_user.tenant_id, entity_type, entity_id
+    )
+
+    return {
+        "entity_type": entity_type,
+        "entity_id": entity_id,
+        "translations": translations,
+    }
+
+
+@app.put("/i18n/{entity_type}/{entity_id}")
+def update_translations_for_entity(
+    entity_type: str,
+    entity_id: int,
+    translations: Dict[str, Dict[str, str]],  # {field: {lang: text}}
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Update translations for a specific entity."""
+    # Validate entity type
+    allowed_types = ["tenant", "product", "tenant_product", "product_catalog"]
+    if entity_type not in allowed_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid entity type. Allowed: {', '.join(allowed_types)}",
+        )
+
+    # Check tenant ownership for tenant-scoped entities
+    if entity_type in ["tenant", "product", "tenant_product"]:
+        if entity_type == "tenant" and entity_id != current_user.tenant_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+        elif entity_type == "product":
+            product = session.exec(
+                select(models.Product).where(models.Product.id == entity_id)
+            ).first()
+            if not product or product.tenant_id != current_user.tenant_id:
+                raise HTTPException(status_code=404, detail="Product not found")
+        elif entity_type == "tenant_product":
+            tp = session.exec(
+                select(models.TenantProduct).where(models.TenantProduct.id == entity_id)
+            ).first()
+            if not tp or tp.tenant_id != current_user.tenant_id:
+                raise HTTPException(status_code=404, detail="Product not found")
+
+    # Update translations
+    updated_fields = []
+    for field, lang_translations in translations.items():
+        for lang, text in lang_translations.items():
+            # Skip empty strings (use None to delete)
+            if text.strip() == "":
+                continue
+
+            TranslationService.set_translation(
+                session,
+                current_user.tenant_id,
+                entity_type,
+                entity_id,
+                field,
+                lang,
+                text.strip(),
+            )
+            updated_fields.append(f"{field}.{lang}")
+
+    session.commit()
+    return {
+        "message": f"Updated {len(updated_fields)} translations",
+        "updated": updated_fields,
+    }
+
+
 # ============ TENANT SETTINGS ============
+
 
 @app.get("/tenant/settings")
 def get_tenant_settings(
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> dict:
     """Get tenant/business profile settings."""
     tenant = session.exec(
         select(models.Tenant).where(models.Tenant.id == current_user.tenant_id)
     ).first()
-    
+
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
-    
+
     # Get logo file size if exists
     logo_size = None
     if tenant.logo_filename:
-        logo_path = UPLOADS_DIR / str(current_user.tenant_id) / "logo" / tenant.logo_filename
+        logo_path = (
+            UPLOADS_DIR / str(current_user.tenant_id) / "logo" / tenant.logo_filename
+        )
         logo_size = get_file_size(logo_path)
-    
+
     # Convert tenant to dict and add file size
     tenant_dict = tenant.model_dump()
     tenant_dict["logo_size_bytes"] = logo_size
     tenant_dict["logo_size_formatted"] = format_file_size(logo_size)
-    
+
     # Don't expose full secret key - only show last 4 characters for verification
     if tenant_dict.get("stripe_secret_key"):
         secret_key = tenant_dict["stripe_secret_key"]
-        tenant_dict["stripe_secret_key"] = f"{secret_key[:7]}...{secret_key[-4:]}" if len(secret_key) > 11 else "***"
-    
+        tenant_dict["stripe_secret_key"] = (
+            f"{secret_key[:7]}...{secret_key[-4:]}" if len(secret_key) > 11 else "***"
+        )
+
     return tenant_dict
 
 
@@ -446,68 +615,129 @@ def get_tenant_settings(
 def update_tenant_settings(
     tenant_update: models.TenantUpdate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> dict:
     """Update tenant/business profile settings."""
     tenant = session.exec(
         select(models.Tenant).where(models.Tenant.id == current_user.tenant_id)
     ).first()
-    
+
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
-    
+
     # Update fields if provided (convert empty strings to None)
     if tenant_update.name is not None:
-        tenant.name = tenant_update.name.strip() if isinstance(tenant_update.name, str) else tenant_update.name
+        tenant.name = (
+            tenant_update.name.strip()
+            if isinstance(tenant_update.name, str)
+            else tenant_update.name
+        )
     if tenant_update.business_type is not None:
-        tenant.business_type = tenant_update.business_type if tenant_update.business_type else None
+        tenant.business_type = (
+            tenant_update.business_type if tenant_update.business_type else None
+        )
     if tenant_update.description is not None:
-        tenant.description = tenant_update.description.strip() if tenant_update.description else None
+        tenant.description = (
+            tenant_update.description.strip() if tenant_update.description else None
+        )
     if tenant_update.phone is not None:
         tenant.phone = tenant_update.phone.strip() if tenant_update.phone else None
     if tenant_update.whatsapp is not None:
-        tenant.whatsapp = tenant_update.whatsapp.strip() if tenant_update.whatsapp else None
+        tenant.whatsapp = (
+            tenant_update.whatsapp.strip() if tenant_update.whatsapp else None
+        )
     if tenant_update.email is not None:
         tenant.email = tenant_update.email.strip() if tenant_update.email else None
     if tenant_update.address is not None:
-        tenant.address = tenant_update.address.strip() if tenant_update.address else None
+        tenant.address = (
+            tenant_update.address.strip() if tenant_update.address else None
+        )
     if tenant_update.website is not None:
-        tenant.website = tenant_update.website.strip() if tenant_update.website else None
+        tenant.website = (
+            tenant_update.website.strip() if tenant_update.website else None
+        )
     if tenant_update.opening_hours is not None:
-        tenant.opening_hours = tenant_update.opening_hours.strip() if tenant_update.opening_hours else None
+        tenant.opening_hours = (
+            tenant_update.opening_hours.strip() if tenant_update.opening_hours else None
+        )
     if tenant_update.immediate_payment_required is not None:
         tenant.immediate_payment_required = tenant_update.immediate_payment_required
+
+    if tenant_update.currency_code is not None:
+        currency_code = (
+            tenant_update.currency_code.strip().upper()
+            if isinstance(tenant_update.currency_code, str)
+            else None
+        )
+        if currency_code:
+            if len(currency_code) != 3 or not currency_code.isalpha():
+                raise HTTPException(
+                    status_code=400,
+                    detail="currency_code must be a 3-letter ISO code (e.g. EUR)",
+                )
+            tenant.currency_code = currency_code
+        else:
+            tenant.currency_code = None
+
+    # Legacy currency symbol (still accepted; not used for Stripe anymore if currency_code is set)
     if tenant_update.currency is not None:
-        tenant.currency = tenant_update.currency.strip() if isinstance(tenant_update.currency, str) and tenant_update.currency.strip() else None
+        tenant.currency = (
+            tenant_update.currency.strip()
+            if isinstance(tenant_update.currency, str)
+            and tenant_update.currency.strip()
+            else None
+        )
+
+    if tenant_update.default_language is not None:
+        lang = (
+            tenant_update.default_language.strip()
+            if isinstance(tenant_update.default_language, str)
+            else None
+        )
+        tenant.default_language = lang or None
+
     if tenant_update.stripe_secret_key is not None:
         # Only update if a non-empty value is provided
         # Empty string or None means don't change the existing value
-        if tenant_update.stripe_secret_key and isinstance(tenant_update.stripe_secret_key, str) and tenant_update.stripe_secret_key.strip():
+        if (
+            tenant_update.stripe_secret_key
+            and isinstance(tenant_update.stripe_secret_key, str)
+            and tenant_update.stripe_secret_key.strip()
+        ):
             tenant.stripe_secret_key = tenant_update.stripe_secret_key.strip()
         # If empty/None, we don't update (keep existing value)
     if tenant_update.stripe_publishable_key is not None:
-        tenant.stripe_publishable_key = tenant_update.stripe_publishable_key.strip() if isinstance(tenant_update.stripe_publishable_key, str) and tenant_update.stripe_publishable_key.strip() else None
-    
+        tenant.stripe_publishable_key = (
+            tenant_update.stripe_publishable_key.strip()
+            if isinstance(tenant_update.stripe_publishable_key, str)
+            and tenant_update.stripe_publishable_key.strip()
+            else None
+        )
+
     session.add(tenant)
     session.commit()
     session.refresh(tenant)
-    
+
     # Get logo file size if exists
     logo_size = None
     if tenant.logo_filename:
-        logo_path = UPLOADS_DIR / str(current_user.tenant_id) / "logo" / tenant.logo_filename
+        logo_path = (
+            UPLOADS_DIR / str(current_user.tenant_id) / "logo" / tenant.logo_filename
+        )
         logo_size = get_file_size(logo_path)
-    
+
     # Convert tenant to dict and add file size
     tenant_dict = tenant.model_dump()
     tenant_dict["logo_size_bytes"] = logo_size
     tenant_dict["logo_size_formatted"] = format_file_size(logo_size)
-    
+
     # Don't expose full secret key - only show last 4 characters for verification
     if tenant_dict.get("stripe_secret_key"):
         secret_key = tenant_dict["stripe_secret_key"]
-        tenant_dict["stripe_secret_key"] = f"{secret_key[:7]}...{secret_key[-4:]}" if len(secret_key) > 11 else "***"
-    
+        tenant_dict["stripe_secret_key"] = (
+            f"{secret_key[:7]}...{secret_key[-4:]}" if len(secret_key) > 11 else "***"
+        )
+
     return tenant_dict
 
 
@@ -515,75 +745,76 @@ def update_tenant_settings(
 async def upload_tenant_logo(
     file: Annotated[UploadFile, File()],
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> models.Tenant:
     """Upload a logo for the tenant/business."""
     tenant = session.exec(
         select(models.Tenant).where(models.Tenant.id == current_user.tenant_id)
     ).first()
-    
+
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
-    
+
     # Validate content type
     if file.content_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_TYPES)}"
+            detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_TYPES)}",
         )
-    
+
     # Read file and check size
     contents = await file.read()
     if len(contents) > MAX_IMAGE_SIZE:
         raise HTTPException(
             status_code=400,
-            detail=f"File too large. Max size: {MAX_IMAGE_SIZE // (1024*1024)}MB"
+            detail=f"File too large. Max size: {MAX_IMAGE_SIZE // (1024 * 1024)}MB",
         )
-    
+
     # Optimize image locally
     contents = optimize_image(contents, file.content_type)
-    
+
     # Create tenant logo directory
     tenant_dir = UPLOADS_DIR / str(current_user.tenant_id) / "logo"
     tenant_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Delete old logo if exists
     if tenant.logo_filename:
         old_path = tenant_dir / tenant.logo_filename
         if old_path.exists():
             old_path.unlink()
-    
+
     # Generate unique filename
     ext = Path(file.filename or "logo.jpg").suffix.lower()
     if ext not in [".jpg", ".jpeg", ".png", ".webp"]:
         ext = ".jpg"
     new_filename = f"{uuid4()}{ext}"
-    
+
     # Save file
     file_path = tenant_dir / new_filename
     file_path.write_bytes(contents)
-    
+
     # Update tenant
     tenant.logo_filename = new_filename
     session.add(tenant)
     session.commit()
     session.refresh(tenant)
-    
+
     # Get file size for response
     logo_size = get_file_size(file_path)
     tenant_dict = tenant.model_dump()
     tenant_dict["logo_size_bytes"] = logo_size
     tenant_dict["logo_size_formatted"] = format_file_size(logo_size)
-    
+
     return tenant_dict
 
 
 # ============ PRODUCTS ============
 
+
 @app.get("/products")
 def list_products(
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> list[models.Product]:
     """List all products for the tenant.
     
@@ -687,7 +918,7 @@ def list_products(
 def create_product(
     product: models.Product,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> models.Product:
     product.tenant_id = current_user.tenant_id
     session.add(product)
@@ -701,18 +932,18 @@ def update_product(
     product_id: int,
     product_update: models.ProductUpdate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> models.Product:
     product = session.exec(
         select(models.Product).where(
             models.Product.id == product_id,
-            models.Product.tenant_id == current_user.tenant_id
+            models.Product.tenant_id == current_user.tenant_id,
         )
     ).first()
-    
+
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    
+
     if product_update.name is not None:
         product.name = product_update.name
     if product_update.price_cents is not None:
@@ -723,7 +954,7 @@ def update_product(
         product.category = product_update.category
     if product_update.subcategory is not None:
         product.subcategory = product_update.subcategory
-    
+
     session.add(product)
     session.commit()
     session.refresh(product)
@@ -734,18 +965,18 @@ def update_product(
 def delete_product(
     product_id: int,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> dict:
     product = session.exec(
         select(models.Product).where(
             models.Product.id == product_id,
-            models.Product.tenant_id == current_user.tenant_id
+            models.Product.tenant_id == current_user.tenant_id,
         )
     ).first()
-    
+
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    
+
     session.delete(product)
     session.commit()
     return {"status": "deleted", "id": product_id}
@@ -756,79 +987,80 @@ async def upload_product_image(
     product_id: int,
     file: Annotated[UploadFile, File()],
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> models.Product:
     """Upload an image for a product. Validates file type and size."""
     product = session.exec(
         select(models.Product).where(
             models.Product.id == product_id,
-            models.Product.tenant_id == current_user.tenant_id
+            models.Product.tenant_id == current_user.tenant_id,
         )
     ).first()
-    
+
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    
+
     # Validate content type
     if file.content_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_TYPES)}"
+            detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_TYPES)}",
         )
-    
+
     # Read file and check size
     contents = await file.read()
     if len(contents) > MAX_IMAGE_SIZE:
         raise HTTPException(
             status_code=400,
-            detail=f"File too large. Max size: {MAX_IMAGE_SIZE // (1024*1024)}MB"
+            detail=f"File too large. Max size: {MAX_IMAGE_SIZE // (1024 * 1024)}MB",
         )
-    
+
     # Optimize image locally
     contents = optimize_image(contents, file.content_type)
-    
+
     # Create tenant upload directory
     tenant_dir = UPLOADS_DIR / str(current_user.tenant_id) / "products"
     tenant_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Delete old image if exists
     if product.image_filename:
         old_path = tenant_dir / product.image_filename
         if old_path.exists():
             old_path.unlink()
-    
+
     # Generate unique filename
     ext = Path(file.filename or "image.jpg").suffix.lower()
     if ext not in [".jpg", ".jpeg", ".png", ".webp"]:
         ext = ".jpg"
     new_filename = f"{uuid4()}{ext}"
-    
+
     # Save file
     file_path = tenant_dir / new_filename
     file_path.write_bytes(contents)
-    
+
     # Update product
     product.image_filename = new_filename
     session.add(product)
     session.commit()
     session.refresh(product)
-    
+
     # Get file size for response
     image_size = get_file_size(file_path)
     product_dict = product.model_dump()
     product_dict["image_size_bytes"] = image_size
     product_dict["image_size_formatted"] = format_file_size(image_size)
-    
+
     return product_dict
 
 
 # ============ PROVIDERS ============
 
+
 @app.get("/providers")
 def list_providers(
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
-    active_only: bool = True
+    active_only: bool = True,
 ) -> list[models.Provider]:
     """List all product providers."""
     query = select(models.Provider)
@@ -841,10 +1073,12 @@ def list_providers(
 def get_provider(
     provider_id: int,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> models.Provider:
     """Get a specific provider."""
-    provider = session.exec(select(models.Provider).where(models.Provider.id == provider_id)).first()
+    provider = session.exec(
+        select(models.Provider).where(models.Provider.id == provider_id)
+    ).first()
     if not provider:
         raise HTTPException(status_code=404, detail="Provider not found")
     return provider
@@ -854,7 +1088,7 @@ def get_provider(
 def create_provider(
     provider: models.Provider,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> models.Provider:
     """Create a new provider (admin function)."""
     session.add(provider)
@@ -865,17 +1099,18 @@ def create_provider(
 
 # ============ PRODUCT CATALOG ============
 
+
 @app.get("/catalog")
 async def list_catalog(
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
     category: str | None = None,
     subcategory: str | None = None,
-    search: str | None = None
+    search: str | None = None,
 ) -> list[dict]:
     """List products from catalog with price comparison across providers."""
     query = select(models.ProductCatalog)
-    
+
     if category:
         query = query.where(models.ProductCatalog.category == category)
     if subcategory:
@@ -883,22 +1118,22 @@ async def list_catalog(
     if search:
         search_term = f"%{search.lower()}%"
         query = query.where(
-            (models.ProductCatalog.name.ilike(search_term)) |
-            (models.ProductCatalog.description.ilike(search_term))
+            (models.ProductCatalog.name.ilike(search_term))
+            | (models.ProductCatalog.description.ilike(search_term))
         )
-    
+
     catalog_items = session.exec(query.order_by(models.ProductCatalog.name)).all()
-    
+
     result = []
     for item in catalog_items:
         # Get all provider products for this catalog item
         provider_products = session.exec(
             select(models.ProviderProduct).where(
                 models.ProviderProduct.catalog_id == item.id,
-                models.ProviderProduct.availability == True
+                models.ProviderProduct.availability == True,
             )
         ).all()
-        
+
         # Get provider info
         providers_data = []
         for pp in provider_products:
@@ -910,34 +1145,38 @@ async def list_catalog(
                 image_url = None
                 if pp.image_filename:
                     image_url = f"/uploads/providers/{provider.token}/products/{pp.image_filename}"
-                
-                providers_data.append({
-                    "provider_id": provider.id,
-                    "provider_name": provider.name,
-                    "provider_product_id": pp.id,
-                    "price_cents": pp.price_cents,
-                    "image_url": image_url,
-                    "country": pp.country,
-                    "region": pp.region,
-                    "grape_variety": pp.grape_variety,
-                    "volume_ml": pp.volume_ml,
-                    "unit": pp.unit,
-                    "detailed_description": pp.detailed_description,
-                    "wine_style": pp.wine_style,
-                    "vintage": pp.vintage,
-                    "winery": pp.winery,
-                    "aromas": pp.aromas,
-                    "elaboration": pp.elaboration,
-                })
-        
+
+                providers_data.append(
+                    {
+                        "provider_id": provider.id,
+                        "provider_name": provider.name,
+                        "provider_product_id": pp.id,
+                        "price_cents": pp.price_cents,
+                        "image_url": image_url,
+                        "country": pp.country,
+                        "region": pp.region,
+                        "grape_variety": pp.grape_variety,
+                        "volume_ml": pp.volume_ml,
+                        "unit": pp.unit,
+                        "detailed_description": pp.detailed_description,
+                        "wine_style": pp.wine_style,
+                        "vintage": pp.vintage,
+                        "winery": pp.winery,
+                        "aromas": pp.aromas,
+                        "elaboration": pp.elaboration,
+                    }
+                )
+
         # Sort providers by price (lowest first)
-        providers_data.sort(key=lambda x: x["price_cents"] if x["price_cents"] else float('inf'))
-        
+        providers_data.sort(
+            key=lambda x: x["price_cents"] if x["price_cents"] else float("inf")
+        )
+
         # Get main image from first provider (if available)
         main_image_url = None
         if providers_data and providers_data[0].get("image_url"):
             main_image_url = providers_data[0]["image_url"]
-        
+
         # Get origin (country/region) and detailed info from first provider - this is product-level info
         origin_country = None
         origin_region = None
@@ -948,7 +1187,7 @@ async def list_catalog(
         grape_variety = None
         aromas = None
         elaboration = None
-        
+
         if providers_data:
             # Use first provider's data (most common case)
             origin_country = providers_data[0].get("country")
@@ -960,41 +1199,49 @@ async def list_catalog(
             grape_variety = providers_data[0].get("grape_variety")
             aromas = providers_data[0].get("aromas")
             elaboration = providers_data[0].get("elaboration")
-        
-        result.append({
-            "id": item.id,
-            "name": item.name,
-            "description": item.description,
-            "detailed_description": detailed_description,
-            "category": item.category,
-            "subcategory": item.subcategory,
-            "barcode": item.barcode,
-            "brand": item.brand,
-            "image_url": main_image_url,
-            "country": origin_country,
-            "region": origin_region,
-            "wine_style": wine_style,
-            "vintage": vintage,
-            "winery": winery,
-            "grape_variety": grape_variety,
-            "aromas": aromas,
-            "elaboration": elaboration,
-            "providers": providers_data,
-            "min_price_cents": min([p["price_cents"] for p in providers_data if p["price_cents"]], default=None),
-            "max_price_cents": max([p["price_cents"] for p in providers_data if p["price_cents"]], default=None),
-        })
-    
+
+        result.append(
+            {
+                "id": item.id,
+                "name": item.name,
+                "description": item.description,
+                "detailed_description": detailed_description,
+                "category": item.category,
+                "subcategory": item.subcategory,
+                "barcode": item.barcode,
+                "brand": item.brand,
+                "image_url": main_image_url,
+                "country": origin_country,
+                "region": origin_region,
+                "wine_style": wine_style,
+                "vintage": vintage,
+                "winery": winery,
+                "grape_variety": grape_variety,
+                "aromas": aromas,
+                "elaboration": elaboration,
+                "providers": providers_data,
+                "min_price_cents": min(
+                    [p["price_cents"] for p in providers_data if p["price_cents"]],
+                    default=None,
+                ),
+                "max_price_cents": max(
+                    [p["price_cents"] for p in providers_data if p["price_cents"]],
+                    default=None,
+                ),
+            }
+        )
+
     return result
 
 
 @app.get("/catalog/categories")
 async def get_catalog_categories(
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> dict:
     """Get all categories and subcategories from catalog."""
     catalog_items = session.exec(select(models.ProductCatalog)).all()
-    
+
     categories = {}
     for item in catalog_items:
         if item.category:
@@ -1002,35 +1249,32 @@ async def get_catalog_categories(
                 categories[item.category] = set()
             if item.subcategory:
                 categories[item.category].add(item.subcategory)
-    
-    return {
-        cat: sorted(list(subcats)) 
-        for cat, subcats in categories.items()
-    }
+
+    return {cat: sorted(list(subcats)) for cat, subcats in categories.items()}
 
 
 @app.get("/catalog/{catalog_id}")
 async def get_catalog_item(
     catalog_id: int,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> dict:
     """Get a specific catalog item with price comparison."""
     catalog_item = session.exec(
         select(models.ProductCatalog).where(models.ProductCatalog.id == catalog_id)
     ).first()
-    
+
     if not catalog_item:
         raise HTTPException(status_code=404, detail="Catalog item not found")
-    
+
     # Get all provider products
     provider_products = session.exec(
         select(models.ProviderProduct).where(
             models.ProviderProduct.catalog_id == catalog_id,
-            models.ProviderProduct.availability == True
+            models.ProviderProduct.availability == True,
         )
     ).all()
-    
+
     providers_data = []
     for pp in provider_products:
         provider = session.exec(
@@ -1040,27 +1284,33 @@ async def get_catalog_item(
             # Construct image URL - only use local images, never external URLs
             image_url = None
             if pp.image_filename:
-                image_url = f"/uploads/providers/{provider.token}/products/{pp.image_filename}"
-            
-            providers_data.append({
-                "provider_id": provider.id,
-                "provider_name": provider.name,
-                "price_cents": pp.price_cents,
-                "image_url": image_url,
-                "country": pp.country,
-                "region": pp.region,
-                "grape_variety": pp.grape_variety,
-                "volume_ml": pp.volume_ml,
-                "unit": pp.unit,
-            })
-    
-    providers_data.sort(key=lambda x: x["price_cents"] if x["price_cents"] else float('inf'))
-    
+                image_url = (
+                    f"/uploads/providers/{provider.token}/products/{pp.image_filename}"
+                )
+
+            providers_data.append(
+                {
+                    "provider_id": provider.id,
+                    "provider_name": provider.name,
+                    "price_cents": pp.price_cents,
+                    "image_url": image_url,
+                    "country": pp.country,
+                    "region": pp.region,
+                    "grape_variety": pp.grape_variety,
+                    "volume_ml": pp.volume_ml,
+                    "unit": pp.unit,
+                }
+            )
+
+    providers_data.sort(
+        key=lambda x: x["price_cents"] if x["price_cents"] else float("inf")
+    )
+
     # Get main image from first provider (if available)
     main_image_url = None
     if providers_data and providers_data[0].get("image_url"):
         main_image_url = providers_data[0]["image_url"]
-    
+
     # Get origin (country/region) and detailed info from first provider - this is product-level info
     origin_country = None
     origin_region = None
@@ -1071,7 +1321,7 @@ async def get_catalog_item(
     grape_variety = None
     aromas = None
     elaboration = None
-    
+
     if providers_data:
         origin_country = providers_data[0].get("country")
         origin_region = providers_data[0].get("region")
@@ -1082,7 +1332,7 @@ async def get_catalog_item(
         grape_variety = providers_data[0].get("grape_variety")
         aromas = providers_data[0].get("aromas")
         elaboration = providers_data[0].get("elaboration")
-    
+
     return {
         "id": catalog_item.id,
         "name": catalog_item.name,
@@ -1102,24 +1352,31 @@ async def get_catalog_item(
         "aromas": aromas,
         "elaboration": elaboration,
         "providers": providers_data,
-        "min_price_cents": min([p["price_cents"] for p in providers_data if p["price_cents"]], default=None),
-        "max_price_cents": max([p["price_cents"] for p in providers_data if p["price_cents"]], default=None),
+        "min_price_cents": min(
+            [p["price_cents"] for p in providers_data if p["price_cents"]], default=None
+        ),
+        "max_price_cents": max(
+            [p["price_cents"] for p in providers_data if p["price_cents"]], default=None
+        ),
     }
 
 
 # ============ PROVIDER PRODUCTS ============
 
+
 @app.get("/providers/{provider_id}/products")
 def list_provider_products(
     provider_id: int,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> list[models.ProviderProduct]:
     """List all products from a specific provider."""
-    provider = session.exec(select(models.Provider).where(models.Provider.id == provider_id)).first()
+    provider = session.exec(
+        select(models.Provider).where(models.Provider.id == provider_id)
+    ).first()
     if not provider:
         raise HTTPException(status_code=404, detail="Provider not found")
-    
+
     return session.exec(
         select(models.ProviderProduct)
         .where(models.ProviderProduct.provider_id == provider_id)
@@ -1129,38 +1386,45 @@ def list_provider_products(
 
 # ============ TENANT PRODUCTS ============
 
+
 @app.get("/tenant-products")
 def list_tenant_products(
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
-    active_only: bool = True
+    active_only: bool = True,
 ) -> list[dict]:
     """List products selected by the tenant (restaurant)."""
     query = select(models.TenantProduct).where(
         models.TenantProduct.tenant_id == current_user.tenant_id
     )
-    
+
     if active_only:
         query = query.where(models.TenantProduct.is_active == True)
-    
+
     tenant_products = session.exec(query.order_by(models.TenantProduct.name)).all()
-    
+
     result = []
     for tp in tenant_products:
         # Get catalog item info
         catalog_item = session.exec(
-            select(models.ProductCatalog).where(models.ProductCatalog.id == tp.catalog_id)
+            select(models.ProductCatalog).where(
+                models.ProductCatalog.id == tp.catalog_id
+            )
         ).first()
-        
+
         # Get provider product info if linked
         provider_info = None
         if tp.provider_product_id:
             provider_product = session.exec(
-                select(models.ProviderProduct).where(models.ProviderProduct.id == tp.provider_product_id)
+                select(models.ProviderProduct).where(
+                    models.ProviderProduct.id == tp.provider_product_id
+                )
             ).first()
             if provider_product:
                 provider = session.exec(
-                    select(models.Provider).where(models.Provider.id == provider_product.provider_id)
+                    select(models.Provider).where(
+                        models.Provider.id == provider_product.provider_id
+                    )
                 ).first()
                 if provider:
                     provider_info = {
@@ -1168,20 +1432,22 @@ def list_tenant_products(
                         "provider_name": provider.name,
                         "provider_price_cents": provider_product.price_cents,
                     }
-        
-        result.append({
-            "id": tp.id,
-            "name": tp.name,
-            "price_cents": tp.price_cents,
-            "image_filename": tp.image_filename,
-            "ingredients": tp.ingredients,
-            "is_active": tp.is_active,
-            "catalog_id": tp.catalog_id,
-            "catalog_name": catalog_item.name if catalog_item else None,
-            "provider_info": provider_info,
-            "product_id": tp.product_id,  # For backward compatibility
-        })
-    
+
+        result.append(
+            {
+                "id": tp.id,
+                "name": tp.name,
+                "price_cents": tp.price_cents,
+                "image_filename": tp.image_filename,
+                "ingredients": tp.ingredients,
+                "is_active": tp.is_active,
+                "catalog_id": tp.catalog_id,
+                "catalog_name": catalog_item.name if catalog_item else None,
+                "provider_info": provider_info,
+                "product_id": tp.product_id,  # For backward compatibility
+            }
+        )
+
     return result
 
 
@@ -1189,56 +1455,65 @@ def list_tenant_products(
 def create_tenant_product(
     product_data: models.TenantProductCreate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> models.TenantProduct:
     """Add a product from catalog to tenant's menu.
-    
+
     This creates BOTH:
     1. A Product entry (shows on /products page)
     2. A TenantProduct entry (links to catalog for metadata)
     """
     # Get catalog item
     catalog_item = session.exec(
-        select(models.ProductCatalog).where(models.ProductCatalog.id == product_data.catalog_id)
+        select(models.ProductCatalog).where(
+            models.ProductCatalog.id == product_data.catalog_id
+        )
     ).first()
     if not catalog_item:
         raise HTTPException(status_code=404, detail="Catalog item not found")
-    
+
     # Get provider product for additional info if specified
     provider_product = None
     if product_data.provider_product_id:
         provider_product = session.exec(
             select(models.ProviderProduct).where(
                 models.ProviderProduct.id == product_data.provider_product_id,
-                models.ProviderProduct.catalog_id == product_data.catalog_id
+                models.ProviderProduct.catalog_id == product_data.catalog_id,
             )
         ).first()
         if not provider_product:
-            raise HTTPException(status_code=404, detail="Provider product not found or doesn't match catalog")
-    
+            raise HTTPException(
+                status_code=404,
+                detail="Provider product not found or doesn't match catalog",
+            )
+
     # Use catalog name if name not provided
     product_name = product_data.name or catalog_item.name
-    
+
     # Determine price
     price_cents = product_data.price_cents
     if price_cents is None and provider_product:
         price_cents = provider_product.price_cents
     if price_cents is None:
         raise HTTPException(status_code=400, detail="Price is required")
-    
+
     # Determine category and subcategory from catalog
     category = catalog_item.category
     subcategory = catalog_item.subcategory
-    
+
     # Get image from provider product if available
     image_filename = None
     if provider_product and provider_product.image_filename:
         provider = session.exec(
-            select(models.Provider).where(models.Provider.id == provider_product.provider_id)
+            select(models.Provider).where(
+                models.Provider.id == provider_product.provider_id
+            )
         ).first()
         if provider:
-            image_filename = f"providers/{provider.token}/products/{provider_product.image_filename}"
-    
+            image_filename = (
+                f"providers/{provider.token}/products/{provider_product.image_filename}"
+            )
+
     # 1. Create the actual Product (shows on /products page)
     product = models.Product(
         tenant_id=current_user.tenant_id,
@@ -1251,7 +1526,7 @@ def create_tenant_product(
     session.add(product)
     session.commit()
     session.refresh(product)
-    
+
     # 2. Create TenantProduct (links to catalog for metadata tracking)
     tenant_product = models.TenantProduct(
         tenant_id=current_user.tenant_id,
@@ -1261,16 +1536,18 @@ def create_tenant_product(
         name=product_name,
         price_cents=price_cents,
     )
-    
+
     session.add(tenant_product)
     session.commit()
     session.refresh(tenant_product)
-    
+
     # 3. Create or find inventory Supplier from Provider (if provider selected)
     inventory_supplier_id = None
     if provider_product:
         provider = session.exec(
-            select(models.Provider).where(models.Provider.id == provider_product.provider_id)
+            select(models.Provider).where(
+                models.Provider.id == provider_product.provider_id
+            )
         ).first()
         if provider:
             # Check if Supplier already exists for this provider+tenant
@@ -1278,10 +1555,10 @@ def create_tenant_product(
                 select(inventory_models.Supplier).where(
                     inventory_models.Supplier.tenant_id == current_user.tenant_id,
                     inventory_models.Supplier.code == f"PROV-{provider.id}",
-                    inventory_models.Supplier.is_deleted == False
+                    inventory_models.Supplier.is_deleted == False,
                 )
             ).first()
-            
+
             if existing_supplier:
                 inventory_supplier_id = existing_supplier.id
             else:
@@ -1296,36 +1573,42 @@ def create_tenant_product(
                 session.commit()
                 session.refresh(new_supplier)
                 inventory_supplier_id = new_supplier.id
-    
+
     # 4. Create InventoryItem for this product (if inventory tracking enabled)
     tenant = session.exec(
         select(models.Tenant).where(models.Tenant.id == current_user.tenant_id)
     ).first()
-    
+
     if tenant:
         # Generate SKU from catalog info
         sku_base = catalog_item.name[:20].upper().replace(" ", "-").replace(".", "")
         sku = f"CAT-{catalog_item.id}-{sku_base}"
-        
+
         # Check if InventoryItem already exists (by SKU)
         existing_item = session.exec(
             select(inventory_models.InventoryItem).where(
                 inventory_models.InventoryItem.tenant_id == current_user.tenant_id,
                 inventory_models.InventoryItem.sku == sku,
-                inventory_models.InventoryItem.is_deleted == False
+                inventory_models.InventoryItem.is_deleted == False,
             )
         ).first()
-        
+
         if not existing_item:
             # Map catalog category to inventory category
             inv_category = "other"
             if category:
                 cat_lower = category.lower()
-                if "wine" in cat_lower or "beverage" in cat_lower or "drink" in cat_lower:
+                if (
+                    "wine" in cat_lower
+                    or "beverage" in cat_lower
+                    or "drink" in cat_lower
+                ):
                     inv_category = "beverages"
-                elif "food" in cat_lower or "main" in cat_lower or "starter" in cat_lower:
+                elif (
+                    "food" in cat_lower or "main" in cat_lower or "starter" in cat_lower
+                ):
                     inv_category = "ingredients"
-            
+
             # Create InventoryItem
             inventory_item = inventory_models.InventoryItem(
                 tenant_id=current_user.tenant_id,
@@ -1338,11 +1621,13 @@ def create_tenant_product(
                 reorder_quantity=10,  # Default reorder quantity
                 default_supplier_id=inventory_supplier_id,
                 current_quantity=0,  # Start with 0 stock
-                average_cost_cents=provider_product.price_cents if provider_product and provider_product.price_cents else 0,
+                average_cost_cents=provider_product.price_cents
+                if provider_product and provider_product.price_cents
+                else 0,
             )
             session.add(inventory_item)
             session.commit()
-    
+
     return tenant_product
 
 
@@ -1351,26 +1636,26 @@ def update_tenant_product(
     tenant_product_id: int,
     product_update: models.TenantProductUpdate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> models.TenantProduct:
     """Update a tenant product."""
     tenant_product = session.exec(
         select(models.TenantProduct).where(
             models.TenantProduct.id == tenant_product_id,
-            models.TenantProduct.tenant_id == current_user.tenant_id
+            models.TenantProduct.tenant_id == current_user.tenant_id,
         )
     ).first()
-    
+
     if not tenant_product:
         raise HTTPException(status_code=404, detail="Tenant product not found")
-    
+
     if product_update.name is not None:
         tenant_product.name = product_update.name
     if product_update.price_cents is not None:
         tenant_product.price_cents = product_update.price_cents
     if product_update.is_active is not None:
         tenant_product.is_active = product_update.is_active
-    
+
     session.add(tenant_product)
     session.commit()
     session.refresh(tenant_product)
@@ -1381,19 +1666,19 @@ def update_tenant_product(
 def delete_tenant_product(
     tenant_product_id: int,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> dict:
     """Delete a tenant product."""
     tenant_product = session.exec(
         select(models.TenantProduct).where(
             models.TenantProduct.id == tenant_product_id,
-            models.TenantProduct.tenant_id == current_user.tenant_id
+            models.TenantProduct.tenant_id == current_user.tenant_id,
         )
     ).first()
-    
+
     if not tenant_product:
         raise HTTPException(status_code=404, detail="Tenant product not found")
-    
+
     session.delete(tenant_product)
     session.commit()
     return {"status": "deleted", "id": tenant_product_id}
@@ -1401,10 +1686,11 @@ def delete_tenant_product(
 
 # ============ FLOORS ============
 
+
 @app.get("/floors")
 def list_floors(
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> list[models.Floor]:
     """List all floors for this tenant."""
     return session.exec(
@@ -1418,7 +1704,7 @@ def list_floors(
 def create_floor(
     floor_data: models.FloorCreate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> models.Floor:
     """Create a new floor/zone."""
     # Auto-assign sort_order if not provided
@@ -1430,11 +1716,9 @@ def create_floor(
             .order_by(models.Floor.sort_order.desc())
         ).first()
         sort_order = (max_order or 0) + 1
-    
+
     floor = models.Floor(
-        name=floor_data.name,
-        sort_order=sort_order,
-        tenant_id=current_user.tenant_id
+        name=floor_data.name, sort_order=sort_order, tenant_id=current_user.tenant_id
     )
     session.add(floor)
     session.commit()
@@ -1447,24 +1731,24 @@ def update_floor(
     floor_id: int,
     floor_update: models.FloorUpdate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> models.Floor:
     """Update a floor."""
     floor = session.exec(
         select(models.Floor).where(
             models.Floor.id == floor_id,
-            models.Floor.tenant_id == current_user.tenant_id
+            models.Floor.tenant_id == current_user.tenant_id,
         )
     ).first()
-    
+
     if not floor:
         raise HTTPException(status_code=404, detail="Floor not found")
-    
+
     if floor_update.name is not None:
         floor.name = floor_update.name
     if floor_update.sort_order is not None:
         floor.sort_order = floor_update.sort_order
-    
+
     session.add(floor)
     session.commit()
     session.refresh(floor)
@@ -1475,19 +1759,19 @@ def update_floor(
 def delete_floor(
     floor_id: int,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> dict:
     """Delete a floor. Tables on this floor will have floor_id set to null."""
     floor = session.exec(
         select(models.Floor).where(
             models.Floor.id == floor_id,
-            models.Floor.tenant_id == current_user.tenant_id
+            models.Floor.tenant_id == current_user.tenant_id,
         )
     ).first()
-    
+
     if not floor:
         raise HTTPException(status_code=404, detail="Floor not found")
-    
+
     session.delete(floor)
     session.commit()
     return {"status": "deleted", "id": floor_id}
@@ -1495,52 +1779,57 @@ def delete_floor(
 
 # ============ TABLES ============
 
+
 @app.get("/tables")
 def list_tables(
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> list[models.Table]:
-    return session.exec(select(models.Table).where(models.Table.tenant_id == current_user.tenant_id)).all()
+    return session.exec(
+        select(models.Table).where(models.Table.tenant_id == current_user.tenant_id)
+    ).all()
 
 
 @app.get("/tables/with-status")
 def list_tables_with_status(
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> list[dict]:
     """List tables with computed status based on active orders."""
     tables = session.exec(
         select(models.Table).where(models.Table.tenant_id == current_user.tenant_id)
     ).all()
-    
+
     result = []
     for table in tables:
         # Check for active orders (pending, preparing, ready)
         active_order = session.exec(
             select(models.Order).where(
                 models.Order.table_id == table.id,
-                models.Order.status.in_(["pending", "preparing", "ready"])
+                models.Order.status.in_(["pending", "preparing", "ready"]),
             )
         ).first()
-        
+
         status = "occupied" if active_order else "available"
-        
-        result.append({
-            "id": table.id,
-            "name": table.name,
-            "token": table.token,
-            "tenant_id": table.tenant_id,
-            "floor_id": table.floor_id,
-            "x_position": table.x_position,
-            "y_position": table.y_position,
-            "rotation": table.rotation,
-            "shape": table.shape,
-            "width": table.width,
-            "height": table.height,
-            "seat_count": table.seat_count,
-            "status": status
-        })
-    
+
+        result.append(
+            {
+                "id": table.id,
+                "name": table.name,
+                "token": table.token,
+                "tenant_id": table.tenant_id,
+                "floor_id": table.floor_id,
+                "x_position": table.x_position,
+                "y_position": table.y_position,
+                "rotation": table.rotation,
+                "shape": table.shape,
+                "width": table.width,
+                "height": table.height,
+                "seat_count": table.seat_count,
+                "status": status,
+            }
+        )
+
     return result
 
 
@@ -1548,12 +1837,12 @@ def list_tables_with_status(
 def create_table(
     table_data: models.TableCreate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> models.Table:
     table = models.Table(
         name=table_data.name,
         tenant_id=current_user.tenant_id,
-        floor_id=table_data.floor_id
+        floor_id=table_data.floor_id,
     )
     session.add(table)
     session.commit()
@@ -1566,19 +1855,19 @@ def update_table(
     table_id: int,
     table_update: models.TableUpdate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> models.Table:
     """Update table properties including canvas layout."""
     table = session.exec(
         select(models.Table).where(
             models.Table.id == table_id,
-            models.Table.tenant_id == current_user.tenant_id
+            models.Table.tenant_id == current_user.tenant_id,
         )
     ).first()
-    
+
     if not table:
         raise HTTPException(status_code=404, detail="Table not found")
-    
+
     # Update all provided fields
     if table_update.name is not None:
         table.name = table_update.name
@@ -1598,7 +1887,7 @@ def update_table(
         table.height = table_update.height
     if table_update.seat_count is not None:
         table.seat_count = table_update.seat_count
-    
+
     session.add(table)
     session.commit()
     session.refresh(table)
@@ -1609,18 +1898,18 @@ def update_table(
 def delete_table(
     table_id: int,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> dict:
     table = session.exec(
         select(models.Table).where(
             models.Table.id == table_id,
-            models.Table.tenant_id == current_user.tenant_id
+            models.Table.tenant_id == current_user.tenant_id,
         )
     ).first()
-    
+
     if not table:
         raise HTTPException(status_code=404, detail="Table not found")
-    
+
     session.delete(table)
     session.commit()
     return {"status": "deleted", "id": table_id}
@@ -1648,93 +1937,173 @@ def validate_table_token(
 
 # ============ PUBLIC MENU ============
 
+
 @app.get("/menu/{table_token}")
 def get_menu(
     table_token: str,
-    session: Session = Depends(get_session)
+    lang: str = Depends(_get_requested_language),
+    session: Session = Depends(get_session),
 ) -> dict:
     """Public endpoint - get menu for a table by its token."""
-    table = session.exec(select(models.Table).where(models.Table.token == table_token)).first()
-    
-    if not table:
+    print(f"[DEBUG] Menu request for token: {table_token}")
+    # Use raw SQL to avoid SQLAlchemy model issues
+    from sqlalchemy import text
+
+    try:
+        result = session.execute(
+            text("""
+            SELECT id, tenant_id, name, token
+            FROM "table"
+            WHERE token = :token
+        """),
+            {"token": table_token},
+        )
+        table_row = result.fetchone()
+        print(f"[DEBUG] Query result: {table_row}")
+    except Exception as e:
+        print(f"[DEBUG] Query error: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+    if not table_row:
+        print(f"[DEBUG] Table not found for token: {table_token}")
         raise HTTPException(status_code=404, detail="Table not found")
-    
+
+    # Create a simple object with the needed attributes
+    class TableData:
+        def __init__(self, id, tenant_id, name, token):
+            self.id = id
+            self.tenant_id = tenant_id
+            self.name = name
+            self.token = token
+
+    table = TableData(table_row[0], table_row[1], table_row[2], table_row[3])
+
     # Get products from TenantProduct (new catalog system) and Product (legacy)
     tenant_products = session.exec(
         select(models.TenantProduct).where(
             models.TenantProduct.tenant_id == table.tenant_id,
-            models.TenantProduct.is_active == True
+            models.TenantProduct.is_active == True,
         )
     ).all()
-    
+
     legacy_products = session.exec(
         select(models.Product).where(models.Product.tenant_id == table.tenant_id)
     ).all()
-    
-    tenant = session.exec(select(models.Tenant).where(models.Tenant.id == table.tenant_id)).first()
-    
+
+    tenant = session.exec(
+        select(models.Tenant).where(models.Tenant.id == table.tenant_id)
+    ).first()
+
     # Combine products from both sources
     products_list = []
-    
+
     # Add TenantProducts (from catalog)
     for tp in tenant_products:
         # Get image from provider product if available, otherwise use tenant product image
         image_filename = tp.image_filename
         provider_product = None
         catalog_item = None
-        
+
         # Get catalog item for description
         catalog_item = session.exec(
-            select(models.ProductCatalog).where(models.ProductCatalog.id == tp.catalog_id)
+            select(models.ProductCatalog).where(
+                models.ProductCatalog.id == tp.catalog_id
+            )
         ).first()
-        
+
         # Get provider product for detailed wine info
         if tp.provider_product_id:
             provider_product = session.exec(
-                select(models.ProviderProduct).where(models.ProviderProduct.id == tp.provider_product_id)
+                select(models.ProviderProduct).where(
+                    models.ProviderProduct.id == tp.provider_product_id
+                )
             ).first()
             if provider_product and provider_product.image_filename:
                 provider = session.exec(
-                    select(models.Provider).where(models.Provider.id == provider_product.provider_id)
+                    select(models.Provider).where(
+                        models.Provider.id == provider_product.provider_id
+                    )
                 ).first()
                 if provider:
                     # Construct path to provider image
                     image_filename = f"providers/{provider.token}/products/{provider_product.image_filename}"
-        
+
         # Build product data with detailed wine information
         product_data = {
             "id": tp.id,
-            "name": tp.name,
+            "name": tp.name or "",
             "price_cents": tp.price_cents,
             "image_filename": image_filename,
             "tenant_id": tp.tenant_id,
             "ingredients": tp.ingredients,
             "_source": "tenant_product",  # Indicate this is from TenantProduct table
         }
-        
+
+        # Add translations for tenant product
+        if lang != "en":  # Only add if different from default
+            display_name = TranslationService.get_translated_field(
+                session,
+                table.tenant_id,
+                "tenant_product",
+                tp.id,
+                "name",
+                lang,
+                tp.name or "",
+            )
+            if display_name != (tp.name or ""):
+                product_data["display_name"] = display_name
+
+            if tp.ingredients:
+                display_ingredients = TranslationService.get_translated_field(
+                    session,
+                    table.tenant_id,
+                    "tenant_product",
+                    tp.id,
+                    "ingredients",
+                    lang,
+                    tp.ingredients,
+                )
+                if display_ingredients != tp.ingredients:
+                    product_data["display_ingredients"] = display_ingredients
+
         # Add catalog category, subcategory and description
         # Use codes for internationalization
         if catalog_item:
             if catalog_item.category:
                 from .category_codes import get_category_code
+
                 product_data["category"] = catalog_item.category
                 product_data["category_code"] = get_category_code(catalog_item.category)
             if catalog_item.subcategory:
                 product_data["subcategory"] = catalog_item.subcategory
             if catalog_item.description:
                 product_data["description"] = catalog_item.description
-        
+
+                # Add translated description if available
+                if lang != "en":
+                    display_description = TranslationService.get_translated_field(
+                        session,
+                        table.tenant_id,
+                        "product_catalog",
+                        catalog_item.id,
+                        "description",
+                        lang,
+                        catalog_item.description,
+                    )
+                    if display_description != catalog_item.description:
+                        product_data["display_description"] = display_description
+
         # Extract wine type - use API category ID first, but check description for conflicts
         wine_type = None
         description_wine_type = None
-        
+
         # Get description text first to check for conflicts
         description_text = ""
         if provider_product and provider_product.detailed_description:
             description_text = provider_product.detailed_description.lower()
         elif catalog_item and catalog_item.description:
             description_text = catalog_item.description.lower()
-        
+
         # Extract wine type from description
         if description_text:
             if "vino blanco" in description_text:
@@ -1745,16 +2114,19 @@ def get_menu(
                 description_wine_type = "Sparkling Wine"
             elif "rosado" in description_text or "rosé" in description_text:
                 description_wine_type = "Rosé Wine"
-        
+
         # First, use the category ID from provider product (direct from API)
         category_wine_type = None
         if provider_product and provider_product.wine_category_id:
             from app.seeds.wine_import import get_category_name
-            category_wine_type = get_category_name(provider_product.wine_category_id, None)
+
+            category_wine_type = get_category_name(
+                provider_product.wine_category_id, None
+            )
             # If we got a valid wine type, use it
             if category_wine_type and category_wine_type == "Wine":
                 category_wine_type = None
-        
+
         # If description explicitly contradicts category, trust description (more reliable)
         if description_wine_type and category_wine_type:
             if description_wine_type != category_wine_type:
@@ -1769,7 +2141,7 @@ def get_menu(
         elif category_wine_type:
             # Only category available
             wine_type = category_wine_type
-        
+
         # If still no wine type, try subcategory as last resort
         if not wine_type and catalog_item and catalog_item.subcategory:
             # Subcategory format: "Red Wine - D.O. Empordà - Wine by Glass"
@@ -1777,49 +2149,78 @@ def get_menu(
             subcategory_parts = catalog_item.subcategory.split(" - ")
             first_part = subcategory_parts[0].strip()
             # Check if it's a known wine type
-            wine_types = ["Red Wine", "White Wine", "Sparkling Wine", "Rosé Wine", "Sweet Wine", "Fortified Wine"]
+            wine_types = [
+                "Red Wine",
+                "White Wine",
+                "Sparkling Wine",
+                "Rosé Wine",
+                "Sweet Wine",
+                "Fortified Wine",
+            ]
             if first_part in wine_types:
                 wine_type = first_part
             # Also check for Spanish terms
             elif "Red" in first_part or "Tinto" in first_part or "Tintos" in first_part:
                 wine_type = "Red Wine"
-            elif "White" in first_part or "Blanco" in first_part or "Blancos" in first_part:
+            elif (
+                "White" in first_part
+                or "Blanco" in first_part
+                or "Blancos" in first_part
+            ):
                 wine_type = "White Wine"
-            elif "Sparkling" in first_part or "Espumoso" in first_part or "Cava" in first_part:
+            elif (
+                "Sparkling" in first_part
+                or "Espumoso" in first_part
+                or "Cava" in first_part
+            ):
                 wine_type = "Sparkling Wine"
             elif "Rosé" in first_part or "Rosado" in first_part:
                 wine_type = "Rosé Wine"
-        
+
         # Now build subcategory_codes AFTER wine_type is determined
         # This ensures wine_type takes precedence over subcategory string
         subcategory_codes = []
-        
+
         # First, extract all non-wine-type codes from subcategory (e.g., WINE_BY_GLASS)
         if catalog_item and catalog_item.subcategory:
-            from .category_codes import get_all_subcategory_codes, extract_wine_type_code
+            from .category_codes import (
+                get_all_subcategory_codes,
+                extract_wine_type_code,
+            )
+
             all_codes = get_all_subcategory_codes(catalog_item.subcategory)
             # Remove wine type codes - we'll add the correct one based on wine_type
-            wine_type_codes = ["WINE_RED", "WINE_WHITE", "WINE_SPARKLING", "WINE_ROSE", "WINE_SWEET", "WINE_FORTIFIED"]
+            wine_type_codes = [
+                "WINE_RED",
+                "WINE_WHITE",
+                "WINE_SPARKLING",
+                "WINE_ROSE",
+                "WINE_SWEET",
+                "WINE_FORTIFIED",
+            ]
             for code in all_codes:
                 if code not in wine_type_codes:
                     subcategory_codes.append(code)
-        
+
         # Add the correct wine type code based on determined wine_type
         if wine_type:
             product_data["wine_type"] = wine_type
             from .category_codes import extract_wine_type_code
+
             wine_type_code = extract_wine_type_code(wine_type)
             if wine_type_code and wine_type_code not in subcategory_codes:
                 subcategory_codes.append(wine_type_code)
-        
+
         # Set subcategory_codes if we have any
         if subcategory_codes:
             product_data["subcategory_codes"] = subcategory_codes
-        
+
         # Add detailed wine information from provider product
         if provider_product:
             if provider_product.detailed_description:
-                product_data["detailed_description"] = provider_product.detailed_description
+                product_data["detailed_description"] = (
+                    provider_product.detailed_description
+                )
             if provider_product.country:
                 product_data["country"] = provider_product.country
             if provider_product.region:
@@ -1836,37 +2237,61 @@ def get_menu(
                 product_data["aromas"] = provider_product.aromas
             if provider_product.elaboration:
                 product_data["elaboration"] = provider_product.elaboration
-        
+
         products_list.append(product_data)
-    
+
     # Add legacy Products (for backward compatibility)
     for p in legacy_products:
         product_data = {
             "id": p.id,
-            "name": p.name,
+            "name": p.name or "",
             "price_cents": p.price_cents,
             "image_filename": p.image_filename,
             "tenant_id": p.tenant_id,
             "ingredients": p.ingredients,
             "_source": "product",  # Indicate this is from legacy Product table
         }
-        
+
+        # Add translations for legacy product
+        if lang != "en":
+            display_name = TranslationService.get_translated_field(
+                session, table.tenant_id, "product", p.id, "name", lang, p.name or ""
+            )
+            if display_name != (p.name or ""):
+                product_data["display_name"] = display_name
+
+            if p.ingredients:
+                display_ingredients = TranslationService.get_translated_field(
+                    session,
+                    table.tenant_id,
+                    "product",
+                    p.id,
+                    "ingredients",
+                    lang,
+                    p.ingredients,
+                )
+                if display_ingredients != p.ingredients:
+                    product_data["display_ingredients"] = display_ingredients
+
         # Add category and subcategory if they exist
         if p.category:
             product_data["category"] = p.category
             from .category_codes import get_category_code
+
             product_data["category_code"] = get_category_code(p.category)
-        
+
         if p.subcategory:
             product_data["subcategory"] = p.subcategory
             from .category_codes import get_all_subcategory_codes
+
             subcategory_codes = get_all_subcategory_codes(p.subcategory)
             if subcategory_codes:
                 product_data["subcategory_codes"] = subcategory_codes
-        
+
         products_list.append(product_data)
-    
-    return {
+
+    # Build tenant response data
+    tenant_data = {
         "table_name": table.name,
         "table_id": table.id,
         "tenant_id": table.tenant_id,  # For WebSocket connection
@@ -1878,9 +2303,45 @@ def get_menu(
         "tenant_address": tenant.address if tenant else None,
         "tenant_website": tenant.website if tenant else None,
         "tenant_currency": tenant.currency if tenant else None,
-        "tenant_stripe_publishable_key": tenant.stripe_publishable_key if tenant else None,
+        "tenant_currency_code": tenant.currency_code if tenant else None,
+        "tenant_stripe_publishable_key": tenant.stripe_publishable_key
+        if tenant
+        else None,
         "products": products_list,
     }
+
+    # Add translations for tenant fields if requested language differs from default
+    if tenant and lang != "en":
+        # Translate tenant name
+        display_name = TranslationService.get_translated_field(
+            session, tenant.id, "tenant", tenant.id, "name", lang, tenant.name or ""
+        )
+        if display_name != (tenant.name or ""):
+            tenant_data["display_tenant_name"] = display_name
+
+        # Translate tenant description
+        if tenant.description:
+            display_description = TranslationService.get_translated_field(
+                session,
+                tenant.id,
+                "tenant",
+                tenant.id,
+                "description",
+                lang,
+                tenant.description,
+            )
+            if display_description != tenant.description:
+                tenant_data["display_tenant_description"] = display_description
+
+        # Translate tenant address
+        if tenant.address:
+            display_address = TranslationService.get_translated_field(
+                session, tenant.id, "tenant", tenant.id, "address", lang, tenant.address
+            )
+            if display_address != tenant.address:
+                tenant_data["display_tenant_address"] = display_address
+
+    return tenant_data
 
 
 @app.get("/menu/{table_token}/order")
@@ -1890,8 +2351,10 @@ def get_current_order(
     session: Session = Depends(get_session)
 ) -> dict:
     """Public endpoint - get current active order for a table (if any)."""
-    table = session.exec(select(models.Table).where(models.Table.token == table_token)).first()
-    
+    table = session.exec(
+        select(models.Table).where(models.Table.token == table_token)
+    ).first()
+
     if not table:
         raise HTTPException(status_code=404, detail="Table not found")
     
@@ -1923,7 +2386,7 @@ def get_current_order(
         if "[PAID:" not in (order.notes or ""):
             active_order = order
             break
-    
+
     if not active_order:
         return {"order": None}
     
@@ -1960,7 +2423,7 @@ def get_current_order(
                 }
                 for item in items
             ],
-            "total_cents": sum(item.price_cents * item.quantity for item in items)
+            "total_cents": sum(item.price_cents * item.quantity for item in items),
         }
     }
 
@@ -1969,22 +2432,24 @@ def get_current_order(
 def create_order(
     table_token: str,
     order_data: models.OrderCreate,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> dict:
     """Public endpoint - create or add to order for a table."""
-    table = session.exec(select(models.Table).where(models.Table.token == table_token)).first()
-    
+    table = session.exec(
+        select(models.Table).where(models.Table.token == table_token)
+    ).first()
+
     if not table:
         raise HTTPException(status_code=404, detail="Table not found")
-    
+
     if not order_data.items:
         raise HTTPException(status_code=400, detail="Order must have at least one item")
-    
+
     # DEBUG: Log all orders for this table
     all_orders = session.exec(
         select(models.Order).where(models.Order.table_id == table.id)
     ).all()
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"[DEBUG] POST /menu/{table_token}/order")
     print(f"[DEBUG] Table: id={table.id}, name={table.name}")
     print(f"[DEBUG] All orders for this table:")
@@ -2028,8 +2493,10 @@ def create_order(
             existing_order = order
             break
         else:
-            print(f"[DEBUG] Skipping order #{order.id} - has [PAID:] in notes despite status={order.status!r}")
-    
+            print(
+                f"[DEBUG] Skipping order #{order.id} - has [PAID:] in notes despite status={order.status!r}"
+            )
+
     print(f"[DEBUG] Query result after filtering: {existing_order}")
     if existing_order:
         # Final safety check: never reuse a paid order
@@ -2040,9 +2507,9 @@ def create_order(
             print(f"[DEBUG] Found existing order #{existing_order.id} with status={existing_order.status!r}")
     else:
         print(f"[DEBUG] No existing unpaid order found - will create new one")
-    
+
     is_new_order = existing_order is None
-    
+
     if is_new_order:
         # Generate session_id if not provided (for backward compatibility)
         session_id = order_data.session_id
@@ -2068,10 +2535,10 @@ def create_order(
         # Append notes if provided
         if order_data.notes:
             order.notes = f"{order.notes or ''}\n{order_data.notes}".strip()
-    
+
     print(f"[DEBUG] Final order #{order.id}, status={order.status!r}")
-    print(f"{'='*60}\n")
-    
+    print(f"{'=' * 60}\n")
+
     # Add order items
     for item in order_data.items:
         # Use source indicator if provided, otherwise try TenantProduct first, then legacy Product
@@ -2095,7 +2562,7 @@ def create_order(
             product = session.exec(
                 select(models.Product).where(
                     models.Product.id == item.product_id,
-                    models.Product.tenant_id == table.tenant_id
+                    models.Product.tenant_id == table.tenant_id,
                 )
             ).first()
             if not product:
@@ -2140,12 +2607,14 @@ def create_order(
                 models.OrderItem.status != models.OrderItemStatus.delivered  # Don't merge with delivered items
             )
         ).first()
-        
+
         if existing_item:
             # Increment quantity (item is active and not delivered)
             existing_item.quantity += item.quantity
             if item.notes:
-                existing_item.notes = f"{existing_item.notes or ''}, {item.notes}".strip(", ")
+                existing_item.notes = (
+                    f"{existing_item.notes or ''}, {item.notes}".strip(", ")
+                )
             session.add(existing_item)
         else:
             # Create new order item with default status
@@ -2173,10 +2642,10 @@ def create_order(
     
     session.commit()
     session.refresh(order)
-    
+
     # Auto-deduct inventory if enabled for tenant
     tenant = session.get(models.Tenant, table.tenant_id)
-    if tenant and tenant.inventory_tracking_enabled:
+    if tenant and getattr(tenant, "inventory_tracking_enabled", False):
         try:
             deduct_inventory_for_order(session, order, tenant)
             session.commit()
@@ -2184,7 +2653,7 @@ def create_order(
         except Exception as e:
             # Log but don't fail the order - inventory can go negative
             logger.warning(f"Inventory deduction warning for order #{order.id}: {e}")
-    
+
     # Publish to Redis for real-time updates
     publish_order_update(table.tenant_id, {
         "type": "new_order" if is_new_order else "items_added",
@@ -2248,9 +2717,11 @@ def list_orders(
     session: Session = Depends(get_session)
 ) -> list[dict]:
     orders = session.exec(
-        select(models.Order).where(models.Order.tenant_id == current_user.tenant_id).order_by(models.Order.created_at.desc())
+        select(models.Order)
+        .where(models.Order.tenant_id == current_user.tenant_id)
+        .order_by(models.Order.created_at.desc())
     ).all()
-    
+
     result = []
     for order in orders:
         table = session.exec(select(models.Table).where(models.Table.id == order.table_id)).first()
@@ -2321,15 +2792,15 @@ def update_order_status(
     order_id: int,
     status_update: models.OrderStatusUpdate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> dict:
     order = session.exec(
         select(models.Order).where(
             models.Order.id == order_id,
-            models.Order.tenant_id == current_user.tenant_id
+            models.Order.tenant_id == current_user.tenant_id,
         )
     ).first()
-    
+
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     
@@ -2365,7 +2836,7 @@ def update_order_status(
     
     session.add(order)
     session.commit()
-    
+
     # Publish status update
     table = session.exec(select(models.Table).where(models.Table.id == order.table_id)).first()
     publish_order_update(current_user.tenant_id, {
@@ -3075,55 +3546,67 @@ def cancel_order(
 
 # ============ PAYMENTS (Public - for customer checkout) ============
 
+
 @app.post("/orders/{order_id}/create-payment-intent")
 def create_payment_intent(
-    order_id: int,
-    table_token: str,
-    session: Session = Depends(get_session)
+    order_id: int, table_token: str, session: Session = Depends(get_session)
 ) -> dict:
     """Create a Stripe PaymentIntent for an order."""
     # Verify table token matches the order
-    table = session.exec(select(models.Table).where(models.Table.token == table_token)).first()
-    
+    table = session.exec(
+        select(models.Table).where(models.Table.token == table_token)
+    ).first()
+
     if not table:
         raise HTTPException(status_code=404, detail="Invalid table")
-    
+
     order = session.exec(
         select(models.Order).where(
-            models.Order.id == order_id,
-            models.Order.table_id == table.id
+            models.Order.id == order_id, models.Order.table_id == table.id
         )
     ).first()
-    
+
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    
+
     # Calculate total from order items
     items = session.exec(
         select(models.OrderItem).where(models.OrderItem.order_id == order_id)
     ).all()
-    
+
     total_cents = sum(item.price_cents * item.quantity for item in items)
-    
+
     if total_cents <= 0:
         raise HTTPException(status_code=400, detail="Order has no items")
-    
+
     # Get tenant for description, currency, and Stripe keys
-    tenant = session.exec(select(models.Tenant).where(models.Tenant.id == order.tenant_id)).first()
-    
+    tenant = session.exec(
+        select(models.Tenant).where(models.Tenant.id == order.tenant_id)
+    ).first()
+
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
-    
+
     # Use tenant-specific Stripe keys, fallback to global config
     stripe_secret_key = tenant.stripe_secret_key or settings.stripe_secret_key
     if not stripe_secret_key:
-        raise HTTPException(status_code=400, detail="Stripe not configured for this tenant")
-    
-    # Map currency symbol to Stripe currency code
-    # Default to settings.stripe_currency if tenant currency is not set
-    currency_symbol = tenant.currency if tenant.currency else None
-    stripe_currency = _get_stripe_currency_code(currency_symbol) or settings.stripe_currency
-    
+        raise HTTPException(
+            status_code=400, detail="Stripe not configured for this tenant"
+        )
+
+    # Resolve Stripe currency:
+    # 1) tenant.currency_code (ISO 4217) if set
+    # 2) legacy tenant.currency symbol mapping
+    # 3) global default settings.stripe_currency
+    tenant_currency_code = tenant.currency_code
+    if tenant_currency_code and isinstance(tenant_currency_code, str):
+        stripe_currency = tenant_currency_code.strip().lower()
+    else:
+        currency_symbol = tenant.currency if tenant.currency else None
+        stripe_currency = (
+            _get_stripe_currency_code(currency_symbol) or settings.stripe_currency
+        ).lower()
+
     try:
         # Use tenant-specific Stripe key
         intent = stripe.PaymentIntent.create(
@@ -3133,15 +3616,15 @@ def create_payment_intent(
             metadata={
                 "order_id": str(order.id),
                 "table_id": str(table.id),
-                "tenant_id": str(order.tenant_id)
+                "tenant_id": str(order.tenant_id),
             },
-            description=f"Order #{order.id} at {tenant.name} - {table.name}"
+            description=f"Order #{order.id} at {tenant.name} - {table.name}",
         )
-        
+
         return {
             "client_secret": intent.client_secret,
             "payment_intent_id": intent.id,
-            "amount": total_cents
+            "amount": total_cents,
         }
     except stripe.error.StripeError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -3152,46 +3635,53 @@ def confirm_payment(
     order_id: int,
     table_token: str,
     payment_intent_id: str,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> dict:
     """Mark order as paid after successful Stripe payment."""
-    table = session.exec(select(models.Table).where(models.Table.token == table_token)).first()
-    
+    table = session.exec(
+        select(models.Table).where(models.Table.token == table_token)
+    ).first()
+
     if not table:
         raise HTTPException(status_code=404, detail="Invalid table")
-    
+
     order = session.exec(
         select(models.Order).where(
-            models.Order.id == order_id,
-            models.Order.table_id == table.id
+            models.Order.id == order_id, models.Order.table_id == table.id
         )
     ).first()
-    
+
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    
+
     # Get tenant for Stripe keys
-    tenant = session.exec(select(models.Tenant).where(models.Tenant.id == order.tenant_id)).first()
+    tenant = session.exec(
+        select(models.Tenant).where(models.Tenant.id == order.tenant_id)
+    ).first()
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
-    
+
     # Use tenant-specific Stripe keys, fallback to global config
     stripe_secret_key = tenant.stripe_secret_key or settings.stripe_secret_key
     if not stripe_secret_key:
-        raise HTTPException(status_code=400, detail="Stripe not configured for this tenant")
-    
+        raise HTTPException(
+            status_code=400, detail="Stripe not configured for this tenant"
+        )
+
     # Verify payment with Stripe
     try:
-        intent = stripe.PaymentIntent.retrieve(payment_intent_id, api_key=stripe_secret_key)
+        intent = stripe.PaymentIntent.retrieve(
+            payment_intent_id, api_key=stripe_secret_key
+        )
         if intent.status != "succeeded":
             raise HTTPException(status_code=400, detail="Payment not completed")
-        
+
         # Mark order as paid
         order.status = models.OrderStatus.paid
         order.notes = f"{order.notes or ''}\n[PAID: {payment_intent_id}]".strip()
         session.add(order)
         session.commit()
-        
+
         # Notify tenant
         publish_order_update(order.tenant_id, {
             "type": "order_paid",
