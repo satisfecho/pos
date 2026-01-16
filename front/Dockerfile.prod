@@ -32,6 +32,9 @@ FROM nginx:alpine
 # Angular 17+ outputs to dist/front/browser for static builds
 COPY --from=builder /app/dist/front/browser /usr/share/nginx/html
 
+# Copy custom Nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 # Copy entrypoint script
 COPY docker-entrypoint-prod.sh /docker-entrypoint-prod.sh
 RUN chmod +x /docker-entrypoint-prod.sh

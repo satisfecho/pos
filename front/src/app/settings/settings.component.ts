@@ -4,848 +4,724 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService, TenantSettings } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
+import { TranslationsComponent } from '../translations/translations.component';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, TranslateModule],
-   template: `
-     <app-sidebar>
-       <div class="settings-container">
-         <div class="page-header">
-           <h1>{{ 'SETTINGS.BUSINESS_PROFILE' | translate }}</h1>
-           <p class="subtitle">{{ 'SETTINGS.SUBTITLE' | translate }}</p>
-         </div>
+  imports: [CommonModule, FormsModule, SidebarComponent, TranslateModule, TranslationsComponent],
+  template: `
+    <app-sidebar>
+      <div class="page-header">
+        <h1>{{ 'SETTINGS.TITLE' | translate }}</h1>
+      </div>
 
-         @if (loading()) {
-           <div class="loading">{{ 'SETTINGS.LOADING_SETTINGS' | translate }}</div>
-         } @else {
-           <form (ngSubmit)="saveSettings()" class="settings-form">
-             <!-- Logo Upload -->
-             <div class="form-section">
-               <h2>{{ 'SETTINGS.LOGO' | translate }}</h2>
-               <div class="logo-upload">
-                 @if (logoPreview() || settings()?.logo_filename) {
-                   <div class="logo-preview">
-                     <div class="logo-image-wrapper">
-                       <img [src]="logoPreview() || getLogoUrl()" alt="Business Logo" />
-                       @if (settings()?.logo_size_formatted && !logoPreview()) {
-                         <div class="file-size">{{ settings()!.logo_size_formatted }}</div>
-                       } @else if (logoFile) {
-                         <div class="file-size">{{ formatFileSize(logoFile.size) }}</div>
-                       }
-                     </div>
-                     <button type="button" class="remove-logo" (click)="removeLogo()">{{ 'SETTINGS.REMOVE_LOGO' | translate }}</button>
-                   </div>
-                 }
-                 <div class="upload-area">
-                   <input
-                     type="file"
-                     id="logo-upload"
-                     accept="image/*"
-                     (change)="onLogoSelected($event)"
-                     style="display: none"
-                   />
-                   <label for="logo-upload" class="upload-button">
-                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                       <polyline points="17,8 12,3 7,8"/>
-                       <line x1="12" y1="3" x2="12" y2="15"/>
-                     </svg>
-                     {{ 'SETTINGS.UPLOAD_LOGO' | translate }}
-                   </label>
-                   <p class="upload-hint">{{ 'SETTINGS.UPLOAD_LOGO_HINT' | translate }}</p>
-                 </div>
-               </div>
-             </div>
+      <!-- Tab Navigation - Mobile First (horizontal scrollable tabs) -->
+      <div class="tabs-container">
+        <div class="tabs">
+          <button 
+            type="button" 
+            class="tab" 
+            [class.active]="activeSection() === 'general'"
+            (click)="activeSection.set('general')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"/>
+              <rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            <span>{{ 'SETTINGS.BUSINESS_PROFILE' | translate }}</span>
+          </button>
+          
+          <button 
+            type="button" 
+            class="tab" 
+            [class.active]="activeSection() === 'contact'"
+            (click)="activeSection.set('contact')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+            </svg>
+            <span>{{ 'SETTINGS.CONTACT_INFO' | translate }}</span>
+          </button>
+          
+          <button 
+            type="button" 
+            class="tab" 
+            [class.active]="activeSection() === 'hours'"
+            (click)="activeSection.set('hours')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span>{{ 'SETTINGS.OPENING_HOURS' | translate }}</span>
+          </button>
+          
+          <button 
+            type="button" 
+            class="tab" 
+            [class.active]="activeSection() === 'payments'"
+            (click)="activeSection.set('payments')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+              <line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+            <span>{{ 'SETTINGS.PAYMENT_SETTINGS' | translate }}</span>
+          </button>
+          
+          <button 
+            type="button" 
+            class="tab" 
+            [class.active]="activeSection() === 'translations'"
+            (click)="activeSection.set('translations')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+            </svg>
+            <span>{{ 'SETTINGS.TRANSLATIONS_TITLE' | translate }}</span>
+          </button>
+        </div>
+      </div>
 
-             <!-- Basic Information -->
-             <div class="form-section">
-               <h2>{{ 'SETTINGS.BASIC_INFO' | translate }}</h2>
-               <div class="form-group">
-                 <label for="name">{{ 'SETTINGS.BUSINESS_NAME' | translate }} *</label>
-                 <input
-                   type="text"
-                   id="name"
-                   [(ngModel)]="formData.name"
-                   name="name"
-                   required
-                   [placeholder]="'SETTINGS.BUSINESS_NAME_PLACEHOLDER' | translate"
-                 />
-               </div>
+      <div class="content">
+        @if (loading()) {
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>{{ 'SETTINGS.LOADING_SETTINGS' | translate }}</p>
+          </div>
+        } @else {
+          <!-- Translations Section (Independent) -->
+          @if (activeSection() === 'translations') {
+            <div class="section">
+              <div class="section-header">
+                <h2>{{ 'SETTINGS.TRANSLATIONS_TITLE' | translate }}</h2>
+                <p>{{ 'SETTINGS.TRANSLATIONS_SUBTITLE' | translate }}</p>
+              </div>
+              <app-translations></app-translations>
+            </div>
+          } @else {
+            <!-- Tenant Settings Sections (Shared Form) -->
+            <form (ngSubmit)="saveSettings()" class="settings-form">
 
-               <div class="form-group">
-                 <label for="business_type">{{ 'SETTINGS.BUSINESS_TYPE' | translate }}</label>
-                 <select id="business_type" [(ngModel)]="formData.business_type" name="business_type">
-                   <option [value]="null">{{ 'SETTINGS.SELECT_BUSINESS_TYPE' | translate }}</option>
-                   <option value="restaurant">{{ 'SETTINGS.BUSINESS_TYPE_RESTAURANT' | translate }}</option>
-                   <option value="bar">{{ 'SETTINGS.BUSINESS_TYPE_BAR' | translate }}</option>
-                   <option value="cafe">{{ 'SETTINGS.BUSINESS_TYPE_CAFE' | translate }}</option>
-                   <option value="retail">{{ 'SETTINGS.BUSINESS_TYPE_RETAIL' | translate }}</option>
-                   <option value="service">{{ 'SETTINGS.BUSINESS_TYPE_SERVICE' | translate }}</option>
-                   <option value="other">{{ 'SETTINGS.BUSINESS_TYPE_OTHER' | translate }}</option>
-                 </select>
-               </div>
-
-               <div class="form-group">
-                 <label for="description">{{ 'SETTINGS.DESCRIPTION' | translate }}</label>
-                 <textarea
-                   id="description"
-                   [(ngModel)]="formData.description"
-                   name="description"
-                   rows="4"
-                   [placeholder]="'SETTINGS.DESCRIPTION_PLACEHOLDER' | translate"
-                 ></textarea>
-               </div>
-             </div>
-
-             <!-- Contact Information -->
-             <div class="form-section">
-               <h2>{{ 'SETTINGS.CONTACT_INFO' | translate }}</h2>
-               <div class="form-group">
-                 <label for="phone">{{ 'SETTINGS.PHONE' | translate }}</label>
-                 <input
-                   type="tel"
-                   id="phone"
-                   [(ngModel)]="formData.phone"
-                   name="phone"
-                   [placeholder]="'SETTINGS.PHONE_PLACEHOLDER' | translate"
-                 />
-               </div>
-
-               <div class="form-group">
-                 <label for="whatsapp">{{ 'SETTINGS.WHATSAPP' | translate }}</label>
-                 <input
-                   type="tel"
-                   id="whatsapp"
-                   [(ngModel)]="formData.whatsapp"
-                   name="whatsapp"
-                   [placeholder]="'SETTINGS.WHATSAPP_PLACEHOLDER' | translate"
-                 />
-               </div>
-
-               <div class="form-group">
-                 <label for="email">{{ 'SETTINGS.EMAIL' | translate }}</label>
-                 <input
-                   type="email"
-                   id="email"
-                   [(ngModel)]="formData.email"
-                   name="email"
-                   [placeholder]="'SETTINGS.EMAIL_PLACEHOLDER' | translate"
-                 />
-               </div>
-
-               <div class="form-group">
-                 <label for="address">{{ 'SETTINGS.ADDRESS' | translate }}</label>
-                 <input
-                   type="text"
-                   id="address"
-                   [(ngModel)]="formData.address"
-                   name="address"
-                   [placeholder]="'SETTINGS.ADDRESS_PLACEHOLDER' | translate"
-                 />
-               </div>
-
-               <div class="form-group">
-                 <label for="website">{{ 'SETTINGS.WEBSITE' | translate }}</label>
-                 <input
-                   type="url"
-                   id="website"
-                   [(ngModel)]="formData.website"
-                   name="website"
-                   [placeholder]="'SETTINGS.WEBSITE_PLACEHOLDER' | translate"
-                 />
-               </div>
-             </div>
-
-         @if (loading()) {
-           <div class="loading">{{ 'SETTINGS.LOADING_SETTINGS' | translate }}</div>
-         } @else {
-           <form (ngSubmit)="saveSettings()" class="settings-form">
-           <!-- Logo Upload -->
-           <div class="form-section">
-             <h2>{{ 'SETTINGS.LOGO' | translate }}</h2>
-             <div class="logo-upload">
-               @if (logoPreview() || settings()?.logo_filename) {
-                 <div class="logo-preview">
-                   <div class="logo-image-wrapper">
-                     <img [src]="logoPreview() || getLogoUrl()" alt="Business Logo" />
-                     @if (settings()?.logo_size_formatted && !logoPreview()) {
-                       <div class="file-size">{{ settings()!.logo_size_formatted }}</div>
-                     } @else if (logoFile) {
-                       <div class="file-size">{{ formatFileSize(logoFile.size) }}</div>
-                     }
-                   </div>
-                   <button type="button" class="remove-logo" (click)="removeLogo()">{{ 'SETTINGS.REMOVE_LOGO' | translate }}</button>
-                 </div>
-               }
-               <div class="upload-area">
-                 <input
-                   type="file"
-                   id="logo-upload"
-                   accept="image/*"
-                   (change)="onLogoSelected($event)"
-                   style="display: none"
-                 />
-                 <label for="logo-upload" class="upload-button">
-                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                     <polyline points="17,8 12,3 7,8"/>
-                     <line x1="12" y1="3" x2="12" y2="15"/>
-                   </svg>
-                   {{ 'SETTINGS.UPLOAD_LOGO' | translate }}
-                 </label>
-                 <p class="upload-hint">{{ 'SETTINGS.UPLOAD_LOGO_HINT' | translate }}</p>
-               </div>
-             </div>
-           </div>
-
-           <!-- Contact Information -->
-           <div class="form-section">
-             <h2>{{ 'SETTINGS.CONTACT_INFO' | translate }}</h2>
-             <div class="form-group">
-               <label for="phone">{{ 'SETTINGS.PHONE' | translate }}</label>
-               <input
-                 type="tel"
-                 id="phone"
-                 [(ngModel)]="formData.phone"
-                 name="phone"
-                 [placeholder]="'SETTINGS.PHONE_PLACEHOLDER' | translate"
-               />
-             </div>
-
-             <div class="form-group">
-               <label for="whatsapp">{{ 'SETTINGS.WHATSAPP' | translate }}</label>
-               <input
-                 type="tel"
-                 id="whatsapp"
-                 [(ngModel)]="formData.whatsapp"
-                 name="whatsapp"
-                 [placeholder]="'SETTINGS.WHATSAPP_PLACEHOLDER' | translate"
-               />
-             </div>
-
-             <div class="form-group">
-               <label for="email">{{ 'SETTINGS.EMAIL' | translate }}</label>
-               <input
-                 type="email"
-                 id="email"
-                 [(ngModel)]="formData.email"
-                 name="email"
-                 [placeholder]="'SETTINGS.EMAIL_PLACEHOLDER' | translate"
-               />
-             </div>
-
-             <div class="form-group">
-               <label for="address">{{ 'SETTINGS.ADDRESS' | translate }}</label>
-               <input
-                 type="text"
-                 id="address"
-                 [(ngModel)]="formData.address"
-                 name="address"
-                 [placeholder]="'SETTINGS.ADDRESS_PLACEHOLDER' | translate"
-               />
-             </div>
-
-             <div class="form-group">
-               <label for="website">{{ 'SETTINGS.WEBSITE' | translate }}</label>
-               <input
-                 type="url"
-                 id="website"
-                 [(ngModel)]="formData.website"
-                 name="website"
-                 [placeholder]="'SETTINGS.WEBSITE_PLACEHOLDER' | translate"
-               />
-             </div>
-           </div>
-             <div class="form-group">
-               <label for="name">{{ 'SETTINGS.BUSINESS_NAME' | translate }} *</label>
-               <input
-                 type="text"
-                 id="name"
-                 [(ngModel)]="formData.name"
-                 name="name"
-                 required
-                 [placeholder]="'SETTINGS.BUSINESS_NAME_PLACEHOLDER' | translate"
-               />
-             </div>
-
-             <div class="form-group">
-               <label for="business_type">{{ 'SETTINGS.BUSINESS_TYPE' | translate }}</label>
-               <select id="business_type" [(ngModel)]="formData.business_type" name="business_type">
-                 <option [value]="null">{{ 'SETTINGS.SELECT_BUSINESS_TYPE' | translate }}</option>
-                 <option value="restaurant">{{ 'SETTINGS.BUSINESS_TYPE_RESTAURANT' | translate }}</option>
-                 <option value="bar">{{ 'SETTINGS.BUSINESS_TYPE_BAR' | translate }}</option>
-                 <option value="cafe">{{ 'SETTINGS.BUSINESS_TYPE_CAFE' | translate }}</option>
-                 <option value="retail">{{ 'SETTINGS.BUSINESS_TYPE_RETAIL' | translate }}</option>
-                 <option value="service">{{ 'SETTINGS.BUSINESS_TYPE_SERVICE' | translate }}</option>
-                 <option value="other">{{ 'SETTINGS.BUSINESS_TYPE_OTHER' | translate }}</option>
-               </select>
-             </div>
-
-             <div class="form-group">
-               <label for="description">{{ 'SETTINGS.DESCRIPTION' | translate }}</label>
-               <textarea
-                 id="description"
-                 [(ngModel)]="formData.description"
-                 name="description"
-                 rows="4"
-                 [placeholder]="'SETTINGS.DESCRIPTION_PLACEHOLDER' | translate"
-               ></textarea>
-             </div>
-           </div>
-                 id="name"
-                 [(ngModel)]="formData.name"
-                 name="name"
-                 required
-                 [placeholder]="'SETTINGS.BUSINESS_NAME_PLACEHOLDER' | translate"
-               />
-             </div>
-
-             <div class="form-group">
-               <label for="business_type">{{ 'SETTINGS.BUSINESS_TYPE' | translate }}</label>
-               <select id="business_type" [(ngModel)]="formData.business_type" name="business_type">
-                 <option [value]="null">{{ 'SETTINGS.SELECT_BUSINESS_TYPE' | translate }}</option>
-                 <option value="restaurant">{{ 'SETTINGS.BUSINESS_TYPE_RESTAURANT' | translate }}</option>
-                 <option value="bar">{{ 'SETTINGS.BUSINESS_TYPE_BAR' | translate }}</option>
-                 <option value="cafe">{{ 'SETTINGS.BUSINESS_TYPE_CAFE' | translate }}</option>
-                 <option value="retail">{{ 'SETTINGS.BUSINESS_TYPE_RETAIL' | translate }}</option>
-                 <option value="service">{{ 'SETTINGS.BUSINESS_TYPE_SERVICE' | translate }}</option>
-                 <option value="other">{{ 'SETTINGS.BUSINESS_TYPE_OTHER' | translate }}</option>
-               </select>
-             </div>
-
-             <div class="form-group">
-               <label for="description">{{ 'SETTINGS.DESCRIPTION' | translate }}</label>
-               <textarea
-                 id="description"
-                 [(ngModel)]="formData.description"
-                 name="description"
-                 rows="4"
-                 [placeholder]="'SETTINGS.DESCRIPTION_PLACEHOLDER' | translate"
-               ></textarea>
-             </div>
-           </div>
-
-           <!-- Contact Information -->
-           <div class="form-section">
-             <h2>{{ 'SETTINGS.CONTACT_INFO' | translate }}</h2>
-             <div class="form-group">
-               <label for="phone">{{ 'SETTINGS.PHONE' | translate }}</label>
-               <input
-                 type="tel"
-                 id="phone"
-                 [(ngModel)]="formData.phone"
-                 name="phone"
-                 [placeholder]="'SETTINGS.PHONE_PLACEHOLDER' | translate"
-               />
-             </div>
-
-             <div class="form-group">
-               <label for="whatsapp">{{ 'SETTINGS.WHATSAPP' | translate }}</label>
-               <input
-                 type="tel"
-                 id="whatsapp"
-                 [(ngModel)]="formData.whatsapp"
-                 name="whatsapp"
-                 [placeholder]="'SETTINGS.WHATSAPP_PLACEHOLDER' | translate"
-               />
-             </div>
-
-             <div class="form-group">
-               <label for="email">{{ 'SETTINGS.EMAIL' | translate }}</label>
-               <input
-                 type="email"
-                 id="email"
-                 [(ngModel)]="formData.email"
-                 name="email"
-                 [placeholder]="'SETTINGS.EMAIL_PLACEHOLDER' | translate"
-               />
-             </div>
-
-             <div class="form-group">
-               <label for="address">{{ 'SETTINGS.ADDRESS' | translate }}</label>
-               <input
-                 type="text"
-                 id="address"
-                 [(ngModel)]="formData.address"
-                 name="address"
-                 [placeholder]="'SETTINGS.ADDRESS_PLACEHOLDER' | translate"
-               />
-             </div>
-
-             <div class="form-group">
-               <label for="website">{{ 'SETTINGS.WEBSITE' | translate }}</label>
-               <input
-                 type="url"
-                 id="website"
-                 [(ngModel)]="formData.website"
-                 name="website"
-                 [placeholder]="'SETTINGS.WEBSITE_PLACEHOLDER' | translate"
-               />
-             </div>
-           </div>
-
-           <!-- Opening Hours -->
-           <div class="form-section">
-             <h2>{{ 'SETTINGS.OPENING_HOURS' | translate }}</h2>
-             <p class="section-hint">{{ 'SETTINGS.OPENING_HOURS_HINT' | translate }}</p>
-            <div class="opening-hours-container">
-              @for (day of daysOfWeek; track day.key) {
-                <div class="opening-hours-row">
-                  <div class="day-label">
-                    <label class="checkbox-label">
-                      <input
-                        type="checkbox"
-                        [checked]="!openingHours[day.key]?.closed"
-                        (change)="toggleDayClosed(day.key, $event)"
-                      />
-                       <span>{{ day.label | translate }}</span>
-                    </label>
+              <!-- General Section -->
+              @if (activeSection() === 'general') {
+                <div class="section">
+                  <div class="section-header">
+                    <h2>{{ 'SETTINGS.BUSINESS_PROFILE' | translate }}</h2>
+                    <p>{{ 'SETTINGS.SUBTITLE' | translate }}</p>
                   </div>
-                  @if (!openingHours[day.key]?.closed) {
-                    <div class="time-inputs-wrapper">
-                      @if (!openingHours[day.key]?.hasBreak) {
-                        <div class="time-inputs">
-                          <div class="time-group">
-                             <label [for]="'open-' + day.key">{{ 'SETTINGS.OPEN_LABEL' | translate }}</label>
-                            <input
-                              type="time"
-                              [id]="'open-' + day.key"
-                              [value]="openingHours[day.key]?.open || '09:00'"
-                              (change)="updateOpeningHours(day.key, 'open', $event)"
-                            />
-                          </div>
-                           <span class="time-separator">{{ 'COMMON.NEXT' | translate }}</span>
-                          <div class="time-group">
-                             <label [for]="'close-' + day.key">{{ 'SETTINGS.CLOSE_LABEL' | translate }}</label>
-                            <input
-                              type="time"
-                              [id]="'close-' + day.key"
-                              [value]="openingHours[day.key]?.close || '22:00'"
-                              (change)="updateOpeningHours(day.key, 'close', $event)"
-                            />
-                          </div>
+                  
+                  <!-- Logo -->
+                  <div class="form-group">
+                    <label>{{ 'SETTINGS.LOGO' | translate }}</label>
+                    <div class="logo-upload-wrapper">
+                      @if (logoPreview() || settings()?.logo_filename) {
+                        <div class="current-logo">
+                          <img [src]="logoPreview() || getLogoUrl()" alt="Logo" />
+                          <button type="button" class="btn-icon-danger" (click)="removeLogo()" title="{{ 'SETTINGS.REMOVE_LOGO' | translate }}">✕</button>
                         </div>
                       }
-                      <div class="break-toggle">
-                        <label class="checkbox-label small">
-                          <input
-                            type="checkbox"
-                            [checked]="openingHours[day.key]?.hasBreak || false"
-                            (change)="toggleBreak(day.key, $event)"
-                          />
-                           <span>{{ 'SETTINGS.HAS_BREAK' | translate }}</span>
+                      <div class="upload-controls">
+                        <input
+                          type="file"
+                          id="logo-upload"
+                          accept="image/*"
+                          (change)="onLogoSelected($event)"
+                          hidden
+                        />
+                        <label for="logo-upload" class="btn btn-secondary">
+                          {{ 'SETTINGS.UPLOAD_LOGO' | translate }}
                         </label>
+                        <span class="hint">{{ 'SETTINGS.UPLOAD_LOGO_HINT' | translate }}</span>
                       </div>
-                      @if (openingHours[day.key]?.hasBreak) {
-                        <div class="break-shifts">
-                          <div class="shift-group">
-                             <div class="shift-label">{{ 'SETTINGS.MORNING_SHIFT' | translate }}</div>
-                            <div class="time-inputs">
-                              <div class="time-group">
-                                 <label [for]="'morning-open-' + day.key">{{ 'SETTINGS.OPEN_LABEL' | translate }}</label>
-                                <input
-                                  type="time"
-                                  [id]="'morning-open-' + day.key"
-                                  [value]="openingHours[day.key]?.morningOpen || '09:00'"
-                                  (change)="updateOpeningHours(day.key, 'morningOpen', $event)"
-                                />
-                              </div>
-                               <span class="time-separator">{{ 'COMMON.NEXT' | translate }}</span>
-                               <div class="time-group">
-                                 <label [for]="'morning-close-' + day.key">{{ 'SETTINGS.CLOSE_LABEL' | translate }}</label>
-                                <input
-                                  type="time"
-                                  [id]="'morning-close-' + day.key"
-                                  [value]="openingHours[day.key]?.morningClose || '14:00'"
-                                  (change)="updateOpeningHours(day.key, 'morningClose', $event)"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                          <div class="shift-group">
-                             <div class="shift-label">{{ 'SETTINGS.EVENING_SHIFT' | translate }}</div>
-                            <div class="time-inputs">
-                               <div class="time-group">
-                                 <label [for]="'evening-open-' + day.key">{{ 'SETTINGS.OPEN_LABEL' | translate }}</label>
-                                <input
-                                  type="time"
-                                  [id]="'evening-open-' + day.key"
-                                  [value]="openingHours[day.key]?.eveningOpen || '17:00'"
-                                  (change)="updateOpeningHours(day.key, 'eveningOpen', $event)"
-                                />
-                              </div>
-                               <span class="time-separator">{{ 'COMMON.NEXT' | translate }}</span>
-                               <div class="time-group">
-                                 <label [for]="'evening-close-' + day.key">{{ 'SETTINGS.CLOSE_LABEL' | translate }}</label>
-                                <input
-                                  type="time"
-                                  [id]="'evening-close-' + day.key"
-                                  [value]="openingHours[day.key]?.eveningClose || '22:00'"
-                                  (change)="updateOpeningHours(day.key, 'eveningClose', $event)"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      }
                     </div>
-                  } @else {
-                    <div class="closed-indicator">{{ 'SETTINGS.CLOSED' | translate }}</div>
-                  }
+                  </div>
+
+                  <!-- Basic Info -->
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="name">{{ 'SETTINGS.BUSINESS_NAME' | translate }} *</label>
+                      <input type="text" id="name" [(ngModel)]="formData.name" name="name" required />
+                    </div>
+
+                    <div class="form-group">
+                      <label for="business_type">{{ 'SETTINGS.BUSINESS_TYPE' | translate }}</label>
+                      <select id="business_type" [(ngModel)]="formData.business_type" name="business_type">
+                        <option [value]="null">{{ 'SETTINGS.SELECT_BUSINESS_TYPE' | translate }}</option>
+                        <option value="restaurant">{{ 'SETTINGS.BUSINESS_TYPE_RESTAURANT' | translate }}</option>
+                        <option value="bar">{{ 'SETTINGS.BUSINESS_TYPE_BAR' | translate }}</option>
+                        <option value="cafe">{{ 'SETTINGS.BUSINESS_TYPE_CAFE' | translate }}</option>
+                        <option value="retail">{{ 'SETTINGS.BUSINESS_TYPE_RETAIL' | translate }}</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="description">{{ 'SETTINGS.DESCRIPTION' | translate }}</label>
+                    <textarea id="description" [(ngModel)]="formData.description" name="description" rows="3"></textarea>
+                  </div>
                 </div>
               }
-            </div>
-          </div>
 
-           <!-- Payment Settings -->
-           <div class="form-section">
-             <h2>{{ 'SETTINGS.PAYMENT_SETTINGS' | translate }}</h2>
-             <div class="form-group">
-               <label for="currency_code">{{ 'SETTINGS.CURRENCY' | translate }}</label>
-               <select
-                 id="currency_code"
-                 [(ngModel)]="formData.currency_code"
-                 name="currency_code"
-               >
-                 <option [ngValue]="null">{{ 'SETTINGS.SELECT_CURRENCY' | translate }}</option>
-                 @for (option of currencyOptions; track option.code) {
-                   <option [value]="option.code">{{ option.label }}</option>
-                 }
-               </select>
-               <p class="field-hint">{{ 'SETTINGS.CURRENCY_HINT' | translate }}</p>
-             </div>
-             <div class="form-group">
-               <label for="default_language">{{ 'SETTINGS.DEFAULT_LANGUAGE' | translate }}</label>
-               <select
-                 id="default_language"
-                 [(ngModel)]="formData.default_language"
-                 name="default_language"
-               >
-                 <option [ngValue]="null">{{ 'SETTINGS.SELECT_LANGUAGE' | translate }}</option>
-                 @for (option of languageOptions; track option.code) {
-                   <option [value]="option.code">{{ option.label }}</option>
-                 }
-               </select>
-               <p class="field-hint">{{ 'SETTINGS.LANGUAGE_HINT' | translate }}</p>
-             </div>
-             <div class="form-group">
-               <label for="stripe_publishable_key">{{ 'SETTINGS.STRIPE_PUBLISHABLE_KEY' | translate }}</label>
-               <input
-                 type="text"
-                 id="stripe_publishable_key"
-                 [(ngModel)]="formData.stripe_publishable_key"
-                 name="stripe_publishable_key"
-                 [placeholder]="'SETTINGS.STRIPE_PUBLISHABLE_PLACEHOLDER' | translate"
-               />
-               <p class="field-hint">{{ 'SETTINGS.STRIPE_PUBLISHABLE_HINT' | translate }}</p>
-             </div>
-             <div class="form-group">
-               <label for="stripe_secret_key">{{ 'SETTINGS.STRIPE_SECRET_KEY' | translate }}</label>
-               <input
-                 type="password"
-                 id="stripe_secret_key"
-                 [(ngModel)]="formData.stripe_secret_key"
-                 name="stripe_secret_key"
-                 [placeholder]="'SETTINGS.STRIPE_SECRET_PLACEHOLDER' | translate"
-               />
-               <p class="field-hint">{{ 'SETTINGS.STRIPE_SECRET_HINT' | translate }}</p>
-             </div>
-             <div class="form-group">
-               <label class="checkbox-label">
-                 <input
-                   type="checkbox"
-                   id="immediate_payment_required"
-                   [(ngModel)]="formData.immediate_payment_required"
-                   name="immediate_payment_required"
-                 />
-                 <span>{{ 'SETTINGS.IMMEDIATE_PAYMENT' | translate }}</span>
-               </label>
-               <p class="field-hint">{{ 'SETTINGS.IMMEDIATE_PAYMENT_HINT' | translate }}</p>
-             </div>
-           </div>
+              <!-- Contact Section -->
+              @if (activeSection() === 'contact') {
+                <div class="section">
+                  <div class="section-header">
+                    <h2>{{ 'SETTINGS.CONTACT_INFO' | translate }}</h2>
+                    <p>{{ 'SETTINGS.CONTACT_INFO_SUBTITLE' | translate }}</p>
+                  </div>
+                  
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="phone">{{ 'SETTINGS.PHONE' | translate }}</label>
+                      <input type="tel" id="phone" [(ngModel)]="formData.phone" name="phone" />
+                    </div>
+                    <div class="form-group">
+                      <label for="whatsapp">{{ 'SETTINGS.WHATSAPP' | translate }}</label>
+                      <input type="tel" id="whatsapp" [(ngModel)]="formData.whatsapp" name="whatsapp" />
+                    </div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="email">{{ 'SETTINGS.EMAIL' | translate }}</label>
+                    <input type="email" id="email" [(ngModel)]="formData.email" name="email" />
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="address">{{ 'SETTINGS.ADDRESS' | translate }}</label>
+                    <input type="text" id="address" [(ngModel)]="formData.address" name="address" />
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="website">{{ 'SETTINGS.WEBSITE' | translate }}</label>
+                    <input type="url" id="website" [(ngModel)]="formData.website" name="website" />
+                  </div>
+                </div>
+              }
 
-           <!-- Actions -->
-           <div class="form-actions">
-             <button type="button" class="btn-secondary" (click)="cancel()">{{ 'SETTINGS.CANCEL' | translate }}</button>
-             <button type="submit" class="btn-primary" [disabled]="saving()">
-               {{ saving() ? ('SETTINGS.SAVING' | translate) : ('SETTINGS.SAVE_CHANGES' | translate) }}
-             </button>
-           </div>
+              <!-- Hours Section -->
+              @if (activeSection() === 'hours') {
+                <div class="section">
+                  <div class="section-header">
+                    <h2>{{ 'SETTINGS.OPENING_HOURS' | translate }}</h2>
+                    <p>{{ 'SETTINGS.OPENING_HOURS_SUBTITLE' | translate }}</p>
+                  </div>
+                  
+                  <div class="hours-grid">
+                    @for (day of daysOfWeek; track day.key) {
+                      <div class="day-row" [class.closed]="openingHours[day.key]?.closed">
+                        <div class="day-header">
+                          <label class="switch">
+                            <input
+                              type="checkbox"
+                              [checked]="!openingHours[day.key]?.closed"
+                              (change)="toggleDayClosed(day.key, $event)"
+                            />
+                            <span class="slider round"></span>
+                          </label>
+                          <span class="day-name">{{ day.label | translate }}</span>
+                        </div>
 
-          @if (error()) {
-            <div class="error-message">{{ error() }}</div>
+                        @if (!openingHours[day.key]?.closed) {
+                          <div class="hours-inputs">
+                            @if (!openingHours[day.key]?.hasBreak) {
+                              <div class="time-range">
+                                <input type="time" [value]="openingHours[day.key]?.open || '09:00'" (change)="updateOpeningHours(day.key, 'open', $event)">
+                                <span>-</span>
+                                <input type="time" [value]="openingHours[day.key]?.close || '22:00'" (change)="updateOpeningHours(day.key, 'close', $event)">
+                              </div>
+                            } @else {
+                              <div class="split-shifts">
+                                <div class="shift">
+                                  <span class="shift-label">Morning</span>
+                                  <input type="time" [value]="openingHours[day.key]?.morningOpen" (change)="updateOpeningHours(day.key, 'morningOpen', $event)">
+                                  <span>-</span>
+                                  <input type="time" [value]="openingHours[day.key]?.morningClose" (change)="updateOpeningHours(day.key, 'morningClose', $event)">
+                                </div>
+                                <div class="shift">
+                                  <span class="shift-label">Evening</span>
+                                  <input type="time" [value]="openingHours[day.key]?.eveningOpen" (change)="updateOpeningHours(day.key, 'eveningOpen', $event)">
+                                  <span>-</span>
+                                  <input type="time" [value]="openingHours[day.key]?.eveningClose" (change)="updateOpeningHours(day.key, 'eveningClose', $event)">
+                                </div>
+                              </div>
+                            }
+                            <div class="break-option">
+                              <label class="checkbox-small">
+                                <input type="checkbox" [checked]="openingHours[day.key]?.hasBreak" (change)="toggleBreak(day.key, $event)">
+                                {{ 'SETTINGS.HAS_BREAK' | translate }}
+                              </label>
+                            </div>
+                          </div>
+                        } @else {
+                          <span class="closed-badge">{{ 'SETTINGS.CLOSED' | translate }}</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Payments Section -->
+              @if (activeSection() === 'payments') {
+                <div class="section">
+                  <div class="section-header">
+                    <h2>{{ 'SETTINGS.PAYMENT_SETTINGS' | translate }}</h2>
+                    <p>{{ 'SETTINGS.PAYMENT_SETTINGS_SUBTITLE' | translate }}</p>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="currency">{{ 'SETTINGS.CURRENCY' | translate }}</label>
+                    <input type="text" id="currency" [(ngModel)]="formData.currency" name="currency" placeholder="€" class="input-short" />
+                  </div>
+                  
+                  <div class="divider"></div>
+                  
+                  <h3>Stripe Integration</h3>
+                  <div class="form-group">
+                    <label>{{ 'SETTINGS.STRIPE_PUBLISHABLE_KEY' | translate }}</label>
+                    <input type="text" [(ngModel)]="formData.stripe_publishable_key" name="stripe_publishable_key" class="code-input" />
+                  </div>
+                  <div class="form-group">
+                    <label>{{ 'SETTINGS.STRIPE_SECRET_KEY' | translate }}</label>
+                    <input type="password" [(ngModel)]="formData.stripe_secret_key" name="stripe_secret_key" placeholder="••••••••••••••••" />
+                  </div>
+                  
+                  <div class="form-group checkbox-row">
+                    <label class="switch">
+                      <input type="checkbox" [(ngModel)]="formData.immediate_payment_required" name="immediate_payment_required">
+                      <span class="slider round"></span>
+                    </label>
+                    <div>
+                      <label class="check-label">{{ 'SETTINGS.IMMEDIATE_PAYMENT' | translate }}</label>
+                      <p class="hint">{{ 'SETTINGS.IMMEDIATE_PAYMENT_HINT' | translate }}</p>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              <!-- Form Actions -->
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary" (click)="cancel()">{{ 'SETTINGS.CANCEL' | translate }}</button>
+                <button type="submit" class="btn btn-primary" [disabled]="saving()">
+                  {{ saving() ? ('SETTINGS.SAVING' | translate) : ('SETTINGS.SAVE_CHANGES' | translate) }}
+                </button>
+              </div>
+              
+              @if (error()) { <div class="toast error">{{ error() }}</div> }
+              @if (success()) { <div class="toast success">{{ success() }}</div> }
+              
+            </form>
           }
-          @if (success()) {
-            <div class="success-message">{{ success() }}</div>
-          @if (error()) {
-            <div class="error-message">{{ error() }}</div>
-          }
-        </div>
-      }
+        }
+      </div>
     </app-sidebar>
   `,
   styles: [`
-    .settings-container {
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
+    /* Page Header - Same as Products/Catalog */
     .page-header {
-      margin-bottom: var(--space-6);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-4);
 
       h1 {
-        font-size: 1.75rem;
+        font-size: 1.5rem;
         font-weight: 600;
         color: var(--color-text);
-        margin-bottom: var(--space-2);
-      }
-
-      .subtitle {
-        color: var(--color-text-muted);
-        font-size: 0.9375rem;
+        margin: 0;
       }
     }
 
-    .loading {
-      text-align: center;
-      padding: var(--space-8);
-      color: var(--color-text-muted);
+    /* Tabs - Mobile First (Horizontal Scrollable) */
+    .tabs-container {
+      margin-bottom: var(--space-4);
+      margin-left: calc(-1 * var(--space-4));
+      margin-right: calc(-1 * var(--space-4));
+      padding: 0 var(--space-4);
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .tabs-container::-webkit-scrollbar {
+      display: none;
     }
 
-    .settings-form {
+    .tabs {
+      display: flex;
+      gap: var(--space-2);
+      padding-bottom: var(--space-2);
+      min-width: max-content;
+    }
+
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
       background: var(--color-surface);
       border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      padding: var(--space-6);
+      border-radius: var(--radius-md);
+      color: var(--color-text-muted);
+      font-size: 0.875rem;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.15s ease;
     }
 
-    .form-section {
-      margin-bottom: var(--space-8);
+    .tab:hover {
+      color: var(--color-text);
+      border-color: var(--color-primary);
+    }
 
-      &:last-of-type {
-        margin-bottom: var(--space-6);
-      }
+    .tab.active {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: white;
+    }
+
+    .tab-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    /* Content Area */
+    .content {
+      /* Full width, no constraints */
+    }
+
+    /* Section Styling */
+    .section {
+      margin-bottom: var(--space-6);
+    }
+
+    .section-header {
+      margin-bottom: var(--space-5);
+      padding-bottom: var(--space-4);
+      border-bottom: 1px solid var(--color-border);
 
       h2 {
         font-size: 1.25rem;
         font-weight: 600;
+        margin: 0 0 var(--space-1) 0;
         color: var(--color-text);
-        margin-bottom: var(--space-4);
-        padding-bottom: var(--space-2);
-        border-bottom: 1px solid var(--color-border);
       }
 
-      .section-header-with-link {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--space-4);
-        padding-bottom: var(--space-2);
-        border-bottom: 1px solid var(--color-border);
-
-        h2 {
-          margin-bottom: 0;
-          padding-bottom: 0;
-          border-bottom: none;
-        }
-      }
-
-      .external-link {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-2);
-        font-size: 0.875rem;
-        color: var(--color-primary);
-        text-decoration: none;
-        font-weight: 500;
-        transition: color 0.15s ease;
-
-        &:hover {
-          color: var(--color-primary-hover);
-        }
-
-        svg {
-          flex-shrink: 0;
-        }
-      }
-
-      .section-hint {
-        font-size: 0.875rem;
+      p {
         color: var(--color-text-muted);
-        margin-bottom: var(--space-3);
+        font-size: 0.875rem;
+        margin: 0;
+      }
+    }
+
+    /* Forms */
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    @media (min-width: 640px) {
+      .form-row {
+        flex-direction: row;
+      }
+      
+      .form-row .form-group {
+        flex: 1;
       }
     }
 
     .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
       margin-bottom: var(--space-4);
 
       label {
-        display: block;
-        font-size: 0.9375rem;
+        font-size: 0.875rem;
         font-weight: 500;
         color: var(--color-text);
-        margin-bottom: var(--space-2);
       }
 
-      input[type="text"],
-      input[type="tel"],
-      input[type="email"],
-      input[type="url"],
-      select,
-      textarea {
+      input, select, textarea {
         width: 100%;
         padding: var(--space-3);
         border: 1px solid var(--color-border);
         border-radius: var(--radius-md);
         font-size: 0.9375rem;
+        background: var(--color-surface);
         color: var(--color-text);
-        background: var(--color-bg);
-        transition: border-color 0.15s ease;
 
         &:focus {
           outline: none;
           border-color: var(--color-primary);
-        }
-
-        &::placeholder {
-          color: var(--color-text-muted);
+          box-shadow: 0 0 0 3px var(--color-primary-light);
         }
       }
 
       textarea {
-        font-family: inherit;
         resize: vertical;
+        min-height: 80px;
       }
 
-      .checkbox-label {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-        cursor: pointer;
-        font-weight: 500;
-
-        input[type="checkbox"] {
-          width: 18px;
-          height: 18px;
-          cursor: pointer;
-          accent-color: var(--color-primary);
-        }
+      .input-short {
+        max-width: 120px;
       }
 
-      .field-hint {
-        font-size: 0.8125rem;
-        color: var(--color-text-muted);
-        margin-top: var(--space-1);
-        margin-left: calc(18px + var(--space-2));
+      .code-input {
+        font-family: monospace;
       }
     }
 
-    .logo-upload {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-4);
-    }
-
-    .logo-preview {
-      display: flex;
-      align-items: center;
-      gap: var(--space-4);
-      padding: var(--space-4);
-      background: var(--color-bg);
-    }
-
-    .logo-image-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--space-1);
-    }
-
-    .logo-image-wrapper img {
-      max-width: 200px;
-      max-height: 200px;
-      width: auto;
-      height: auto;
-      object-fit: contain;
-      border-radius: var(--radius-md);
-      background: white;
-      padding: var(--space-2);
-      border: 1px solid var(--color-border);
-    }
-
-    .file-size {
-      font-size: 0.6875rem;
+    .hint {
+      font-size: 0.8125rem;
       color: var(--color-text-muted);
-      text-align: center;
-      margin-top: var(--space-1);
+    }
 
-      .remove-logo {
-        padding: var(--space-2) var(--space-4);
+    /* Logo Upload */
+    .logo-upload-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      align-items: flex-start;
+    }
+    
+    @media (min-width: 640px) {
+      .logo-upload-wrapper {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
+
+    .current-logo {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-surface);
+
+      img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+
+      .btn-icon-danger {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
         background: var(--color-error);
         color: white;
         border: none;
-        border-radius: var(--radius-md);
         cursor: pointer;
-        font-size: 0.875rem;
-        transition: opacity 0.15s ease;
-
-        &:hover {
-          opacity: 0.9;
-        }
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
       }
     }
 
-    .upload-area {
+    .upload-controls {
       display: flex;
       flex-direction: column;
       gap: var(--space-2);
     }
 
-    .upload-button {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-2);
-      padding: var(--space-3) var(--space-4);
-      background: var(--color-primary);
-      color: white;
-      border: none;
-      border-radius: var(--radius-md);
-      cursor: pointer;
-      font-size: 0.9375rem;
-      font-weight: 500;
-      transition: opacity 0.15s ease;
-      width: fit-content;
+    /* Hours Grid */
+    .hours-grid {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
 
-      &:hover {
-        opacity: 0.9;
+    .day-row {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+
+      &.closed {
+        opacity: 0.7;
       }
     }
 
-    .upload-hint {
+    .day-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+
+    .day-name {
+      font-weight: 500;
+    }
+
+    .hours-inputs {
+      padding-left: 52px; /* Switch width + gap */
+    }
+
+    .time-range {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+
+      input {
+        width: 110px;
+        padding: var(--space-2);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+      }
+    }
+
+    .split-shifts {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+
+      .shift {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        flex-wrap: wrap;
+
+        .shift-label {
+          width: 60px;
+          font-size: 0.75rem;
+          color: var(--color-text-muted);
+        }
+
+        input {
+          width: 100px;
+          padding: var(--space-2);
+          border: 1px solid var(--color-border);
+          border-radius: var(--radius-sm);
+        }
+      }
+    }
+
+    .break-option {
+      margin-top: var(--space-3);
+    }
+    
+    .checkbox-small {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
       font-size: 0.875rem;
+      cursor: pointer;
+    }
+
+    .closed-badge {
+      display: inline-block;
+      padding: var(--space-1) var(--space-3);
+      background: var(--color-bg);
+      border-radius: var(--radius-sm);
+      font-size: 0.8125rem;
       color: var(--color-text-muted);
     }
 
-    .form-actions {
-      display: flex;
-      gap: var(--space-3);
-      justify-content: flex-end;
-      padding-top: var(--space-4);
-      border-top: 1px solid var(--color-border);
+    /* Switches */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 24px;
+      flex-shrink: 0;
+
+      input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e1;
+        transition: .3s;
+
+        &:before {
+          position: absolute;
+          content: "";
+          height: 18px;
+          width: 18px;
+          left: 3px;
+          bottom: 3px;
+          background-color: white;
+          transition: .3s;
+        }
+      }
+
+      input:checked + .slider {
+        background-color: var(--color-primary);
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(16px);
+      }
+
+      .slider.round {
+        border-radius: 34px;
+      }
+
+      .slider.round:before {
+        border-radius: 50%;
+      }
     }
 
-    .btn-primary,
-    .btn-secondary {
-      padding: var(--space-3) var(--space-5);
+    .checkbox-row {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: var(--space-3);
+    }
+
+    .check-label {
+      font-weight: 500;
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--color-border);
+      margin: var(--space-5) 0;
+    }
+
+    h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0 0 var(--space-4) 0;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+      border: none;
       border-radius: var(--radius-md);
-      font-size: 0.9375rem;
+      font-size: 0.875rem;
       font-weight: 500;
       cursor: pointer;
       transition: all 0.15s ease;
-      border: none;
 
       &:disabled {
         opacity: 0.6;
@@ -858,7 +734,7 @@ import { TranslateModule } from '@ngx-translate/core';
       color: white;
 
       &:hover:not(:disabled) {
-        opacity: 0.9;
+        background: var(--color-primary-hover);
       }
     }
 
@@ -872,199 +748,86 @@ import { TranslateModule } from '@ngx-translate/core';
       }
     }
 
-    .error-message {
-      margin-top: var(--space-4);
-      padding: var(--space-3);
-      background: #fee;
-      color: #c33;
-      border-radius: var(--radius-md);
-      font-size: 0.875rem;
-    }
-
-    .success-message {
-      margin-top: var(--space-4);
-      padding: var(--space-3);
-      background: #efe;
-      color: #3c3;
-      border-radius: var(--radius-md);
-      font-size: 0.875rem;
-    }
-
-    .opening-hours-container {
+    /* Form Actions */
+    .form-actions {
       display: flex;
-      flex-direction: column;
-      gap: var(--space-4);
-    }
-
-    .opening-hours-row {
-      display: flex;
-      align-items: flex-start;
-      gap: var(--space-6);
-      padding: var(--space-5);
-      background: var(--color-bg);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      transition: all 0.2s ease;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-
-      &:hover {
-        background: var(--color-surface);
-        border-color: var(--color-primary);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-      }
-    }
-
-    .day-label {
-      min-width: 140px;
-      flex-shrink: 0;
-      padding-top: var(--space-3);
-      padding-left: var(--space-2);
-
-      .checkbox-label {
-        margin: 0;
-        font-weight: 600;
-        font-size: 1rem;
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-
-        input[type="checkbox"] {
-          margin: 0;
-          flex-shrink: 0;
-        }
-
-        span {
-          flex: 1;
-        }
-      }
-    }
-
-    .time-inputs-wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-4);
-      flex: 1;
-    }
-
-    .time-inputs {
-      display: flex;
-      align-items: flex-end;
-      gap: var(--space-4);
-      flex-wrap: wrap;
-    }
-
-    .break-toggle {
-      margin-top: var(--space-1);
-      padding: var(--space-2) 0;
-
-      .checkbox-label.small {
-        font-size: 0.9375rem;
-        font-weight: 500;
-        color: var(--color-text);
-
-        input[type="checkbox"] {
-          width: 18px;
-          height: 18px;
-          margin-right: var(--space-2);
-        }
-      }
-    }
-
-    .break-shifts {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-4);
-      margin-top: var(--space-3);
-      padding: var(--space-5);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
-    }
-
-    .shift-group {
-      display: flex;
-      flex-direction: column;
+      flex-direction: column-reverse;
       gap: var(--space-3);
+      padding-top: var(--space-5);
+      border-top: 1px solid var(--color-border);
+      margin-top: var(--space-5);
     }
 
-    .shift-label {
-      font-size: 0.9375rem;
-      font-weight: 600;
-      color: var(--color-text);
-      margin-bottom: var(--space-1);
-      text-transform: capitalize;
-      letter-spacing: 0.01em;
+    @media (min-width: 640px) {
+      .form-actions {
+        flex-direction: row;
+        justify-content: flex-end;
+      }
     }
 
-    .time-group {
+    /* Loading */
+    .loading-state {
       display: flex;
       flex-direction: column;
-      gap: var(--space-2);
-      min-width: 160px;
-
-      label {
-        font-size: 0.875rem;
-        color: var(--color-text-muted);
-        margin: 0;
-        font-weight: 500;
-        letter-spacing: 0.01em;
-      }
-
-      input[type="time"] {
-        padding: var(--space-3) var(--space-4);
-        border: 2px solid var(--color-border);
-        border-radius: var(--radius-md);
-        font-size: 1rem;
-        color: var(--color-text);
-        background: white;
-        transition: all 0.2s ease;
-        width: 180px;
-        min-height: 44px;
-        font-weight: 500;
-        cursor: pointer;
-
-        &:hover {
-          border-color: var(--color-primary);
-          background: var(--color-bg);
-        }
-
-        &:focus {
-          outline: none;
-          border-color: var(--color-primary);
-          background: white;
-          box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 59, 130, 246), 0.1);
-        }
-
-        &::-webkit-calendar-picker-indicator {
-          cursor: pointer;
-          opacity: 0.6;
-          padding: var(--space-2);
-          margin-left: var(--space-2);
-
-          &:hover {
-            opacity: 1;
-          }
-        }
-      }
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-8);
+      color: var(--color-text-muted);
     }
 
-    .time-separator {
-      color: var(--color-text-muted);
-      font-size: 0.9375rem;
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--color-border);
+      border-top-color: var(--color-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: var(--space-4);
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Toasts */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      left: 20px;
+      padding: var(--space-4);
+      border-radius: var(--radius-md);
+      color: white;
       font-weight: 500;
-      margin-bottom: var(--space-5);
-      padding: 0 var(--space-1);
-      align-self: flex-end;
-      user-select: none;
+      animation: slideUp 0.3s ease;
+      z-index: 100;
+      text-align: center;
+
+      &.success {
+        background: var(--color-success);
+      }
+
+      &.error {
+        background: var(--color-error);
+      }
     }
 
-    .closed-indicator {
-      color: var(--color-text-muted);
-      font-style: italic;
-      padding: var(--space-3) 0;
-      flex: 1;
-      font-size: 0.9375rem;
+    @media (min-width: 640px) {
+      .toast {
+        left: auto;
+        max-width: 400px;
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
   `]
 })
@@ -1073,8 +836,9 @@ export class SettingsComponent implements OnInit {
   private router = inject(Router);
 
   settings = signal<TenantSettings | null>(null);
-  loading = signal(true);
-  saving = signal(false);
+  activeSection = signal<'general' | 'contact' | 'hours' | 'payments' | 'translations'>('general');
+  loading = signal<boolean>(false);
+  saving = signal<boolean>(false);
   error = signal<string | null>(null);
   success = signal<string | null>(null);
   logoPreview = signal<string | null>(null);
@@ -1090,9 +854,9 @@ export class SettingsComponent implements OnInit {
     { key: 'sunday', label: 'SETTINGS.DAY_SUNDAY' }
   ];
 
-  openingHours: Record<string, { 
-    open: string; 
-    close: string; 
+  openingHours: Record<string, {
+    open: string;
+    close: string;
     closed: boolean;
     hasBreak?: boolean;
     morningOpen?: string;
@@ -1112,30 +876,10 @@ export class SettingsComponent implements OnInit {
     website: null,
     opening_hours: null,
     currency: null,
-    currency_code: null,
-    default_language: null,
     stripe_secret_key: null,
     stripe_publishable_key: null,
     immediate_payment_required: false,
   };
-
-  currencyOptions = [
-    { code: 'EUR', label: 'EUR (€)' },
-    { code: 'MXN', label: 'MXN ($)' },
-    { code: 'USD', label: 'USD ($)' },
-    { code: 'INR', label: 'INR (₹)' },
-    { code: 'CNY', label: 'CNY (¥)' },
-    { code: 'TWD', label: 'TWD (NT$)' },
-  ];
-
-  languageOptions = [
-    { code: 'en', label: 'English' },
-    { code: 'es', label: 'Español' },
-    { code: 'ca', label: 'Català' },
-    { code: 'de', label: 'Deutsch' },
-    { code: 'zh-CN', label: '中文（简体）' },
-    { code: 'hi', label: 'हिन्दी' },
-  ];
 
   ngOnInit() {
     this.loadSettings();
@@ -1157,8 +901,6 @@ export class SettingsComponent implements OnInit {
           website: settings.website || null,
           opening_hours: settings.opening_hours || null,
           currency: settings.currency || null,
-          currency_code: settings.currency_code || null,
-          default_language: settings.default_language || null,
           // Don't load masked secret key - user must enter new one to update
           stripe_secret_key: null,
           stripe_publishable_key: settings.stripe_publishable_key || null,
@@ -1345,15 +1087,15 @@ export class SettingsComponent implements OnInit {
   private updateSettings() {
     // Ensure opening hours are serialized before saving
     this.serializeOpeningHours();
-    
+
     // Prepare update data - only include stripe_secret_key if it was actually changed
     const updateData = { ...this.formData };
-    
+
     // If stripe_secret_key is empty string, don't send it (backend will keep existing value)
     if (updateData.stripe_secret_key === '') {
       delete updateData.stripe_secret_key;
     }
-    
+
     this.api.updateTenantSettings(updateData).subscribe({
       next: (updatedSettings) => {
         this.settings.set(updatedSettings);

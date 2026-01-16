@@ -11,11 +11,11 @@ import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { SidebarComponent } from '../../shared/sidebar.component';
 import { InventoryService } from '../inventory.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   PurchaseOrder,
   PurchaseOrderStatus,
   PurchaseOrderCreate,
-  PurchaseOrderItemCreate,
   Supplier,
   InventoryItem,
   UnitOfMeasure,
@@ -24,17 +24,17 @@ import {
 @Component({
   selector: 'app-purchase-orders',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, SidebarComponent],
+  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, SidebarComponent, TranslateModule],
   template: `
     <app-sidebar>
       <div class="page-header">
-        <h1>Purchase Orders</h1>
+        <h1>{{ 'INVENTORY.PURCHASE_ORDERS.TITLE' | translate }}</h1>
         <div class="header-actions">
           <button class="btn btn-primary" (click)="openCreateModal()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
-            Create PO
+            {{ 'INVENTORY.PURCHASE_ORDERS.CREATE_PO' | translate }}
           </button>
         </div>
       </div>
@@ -43,13 +43,13 @@ import {
         <!-- Filters -->
         <div class="filters-bar">
           <select [(ngModel)]="statusFilter" (change)="loadOrders()">
-            <option value="">All Statuses</option>
+            <option value="">{{ 'INVENTORY.PURCHASE_ORDERS.ALL_STATUSES' | translate }}</option>
             @for (status of statuses; track status) {
-              <option [value]="status">{{ formatStatus(status) }}</option>
+              <option [value]="status">{{ 'INVENTORY.PURCHASE_ORDERS.STATUS_' + status.toUpperCase() | translate }}</option>
             }
           </select>
           <select [(ngModel)]="supplierFilter" (change)="loadOrders()">
-            <option value="">All Suppliers</option>
+            <option value="">{{ 'INVENTORY.PURCHASE_ORDERS.ALL_SUPPLIERS' | translate }}</option>
             @for (supplier of suppliers(); track supplier.id) {
               <option [value]="supplier.id">{{ supplier.name }}</option>
             }
@@ -57,7 +57,7 @@ import {
         </div>
 
         @if (loading()) {
-          <div class="empty-state"><p>Loading orders...</p></div>
+          <div class="empty-state"><p>{{ 'INVENTORY.PURCHASE_ORDERS.LOADING' | translate }}</p></div>
         } @else if (orders().length === 0) {
           <div class="empty-state">
             <div class="empty-icon">
@@ -66,21 +66,21 @@ import {
                 <polyline points="14,2 14,8 20,8"/>
               </svg>
             </div>
-            <h3>No purchase orders found</h3>
-            <p>Create your first purchase order to get started</p>
-            <button class="btn btn-primary" (click)="openCreateModal()">Create PO</button>
+            <h3>{{ 'INVENTORY.PURCHASE_ORDERS.NO_ORDERS' | translate }}</h3>
+            <p>{{ 'INVENTORY.PURCHASE_ORDERS.NO_ORDERS_DESC' | translate }}</p>
+            <button class="btn btn-primary" (click)="openCreateModal()">{{ 'INVENTORY.PURCHASE_ORDERS.CREATE_PO' | translate }}</button>
           </div>
         } @else {
           <div class="table-card">
             <table>
               <thead>
                 <tr>
-                  <th>Order #</th>
-                  <th>Supplier</th>
-                  <th>Date</th>
-                  <th>Expected</th>
-                  <th>Total</th>
-                  <th>Status</th>
+                  <th>{{ 'INVENTORY.PURCHASE_ORDERS.ORDER_NUMBER' | translate }}</th>
+                  <th>{{ 'INVENTORY.SUPPLIERS.SUPPLIER' | translate }}</th>
+                  <th>{{ 'INVENTORY.REPORTS.DATE' | translate }}</th>
+                  <th>{{ 'INVENTORY.PURCHASE_ORDERS.EXPECTED_DATE' | translate }}</th>
+                  <th>{{ 'INVENTORY.COMMON.TOTAL' | translate }}</th>
+                  <th>{{ 'INVENTORY.ITEMS.STATUS' | translate }}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -94,25 +94,25 @@ import {
                     <td class="price">{{ formatCurrency(po.total_cents) }}</td>
                     <td>
                       <span class="status-badge" [class]="po.status">
-                        {{ formatStatus(po.status) }}
+                        {{ 'INVENTORY.PURCHASE_ORDERS.STATUS_' + po.status.toUpperCase() | translate }}
                       </span>
                     </td>
                     <td class="actions">
-                      <button class="icon-btn" title="Print PDF" (click)="downloadPdf(po)">
+                      <button class="icon-btn" [title]="'INVENTORY.PURCHASE_ORDERS.PRINT_PDF' | translate" (click)="downloadPdf(po)">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                           <polyline points="6 9 6 2 18 2 18 9"/>
                           <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
                           <rect x="6" y="14" width="12" height="8"/>
                         </svg>
                       </button>
-                      <a [routerLink]="['/inventory/purchase-orders', po.id]" class="icon-btn" title="View">
+                      <a [routerLink]="['/inventory/purchase-orders', po.id]" class="icon-btn" [title]="'INVENTORY.COMMON.VIEW' | translate">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                           <circle cx="12" cy="12" r="3"/>
                         </svg>
                       </a>
                       @if (po.status === 'draft') {
-                        <button class="icon-btn icon-btn-danger" title="Cancel" (click)="cancelOrder(po)">
+                        <button class="icon-btn icon-btn-danger" [title]="'INVENTORY.COMMON.CANCEL' | translate" (click)="cancelOrder(po)">
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M18 6L6 18M6 6l12 12"/>
                           </svg>
@@ -132,7 +132,7 @@ import {
         <div class="modal-overlay" (click)="closeModal()">
           <div class="modal modal-lg" (click)="$event.stopPropagation()">
             <div class="form-header">
-              <h3>Create Purchase Order</h3>
+              <h3>{{ 'INVENTORY.PURCHASE_ORDERS.CREATE_TITLE' | translate }}</h3>
               <button class="icon-btn" (click)="closeModal()">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M18 6L6 18M6 6l12 12"/>
@@ -142,59 +142,59 @@ import {
             <form [formGroup]="createForm" (ngSubmit)="submitCreateForm()">
               <div class="form-row">
                 <div class="form-group">
-                  <label for="supplier_id">Supplier *</label>
+                  <label for="supplier_id">{{ 'INVENTORY.SUPPLIERS.SUPPLIER' | translate }} *</label>
                   <select id="supplier_id" formControlName="supplier_id" (change)="onSupplierChange()">
-                    <option value="">-- Select Supplier --</option>
+                    <option value="">-- {{ 'INVENTORY.COMMON.SELECT' | translate }} --</option>
                     @for (supplier of suppliers(); track supplier.id) {
                       <option [value]="supplier.id">{{ supplier.name }}</option>
                     }
                   </select>
                 </div>
                 <div class="form-group">
-                  <label for="expected_date">Expected Delivery Date</label>
+                  <label for="expected_date">{{ 'INVENTORY.PURCHASE_ORDERS.EXPECTED_DELIVERY' | translate }}</label>
                   <input type="date" id="expected_date" formControlName="expected_date" />
                 </div>
               </div>
               <div class="form-group">
-                <label for="notes">Notes</label>
-                <textarea id="notes" formControlName="notes" rows="2" placeholder="Optional notes for this order"></textarea>
+                <label for="notes">{{ 'INVENTORY.ITEMS.NOTES' | translate }}</label>
+                <textarea id="notes" formControlName="notes" rows="2" [placeholder]="'INVENTORY.PURCHASE_ORDERS.NOTES_PLACEHOLDER' | translate"></textarea>
               </div>
 
               <!-- Items Section -->
               <div class="items-section">
                 <div class="section-header">
-                  <h4>Order Items</h4>
+                  <h4>{{ 'INVENTORY.PURCHASE_ORDERS.ORDER_ITEMS' | translate }}</h4>
                   <button type="button" class="btn btn-secondary btn-sm" (click)="addItem()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                     </svg>
-                    Add Item
+                    {{ 'INVENTORY.ITEMS.ADD_ITEM' | translate }}
                   </button>
                 </div>
 
                 @if (itemsArray.length === 0) {
                   <div class="empty-items">
-                    <p>No items added yet. Click "Add Item" to start.</p>
+                    <p>{{ 'INVENTORY.PURCHASE_ORDERS.NO_ITEMS' | translate }}</p>
                   </div>
                 } @else {
                   <div class="items-list" formArrayName="items">
                     @for (item of itemsArray.controls; track $index; let i = $index) {
                       <div class="item-row" [formGroupName]="i">
                         <div class="item-select">
-                          <label>Item</label>
+                          <label>{{ 'INVENTORY.ITEMS.NAME' | translate }}</label>
                           <select formControlName="inventory_item_id" (change)="onItemSelected(i)">
-                            <option value="">-- Select --</option>
+                            <option value="">-- {{ 'INVENTORY.COMMON.SELECT' | translate }} --</option>
                             @for (invItem of filteredInventoryItems(); track invItem.id) {
                               <option [value]="invItem.id">{{ invItem.name }} ({{ invItem.sku }})</option>
                             }
                           </select>
                         </div>
                         <div class="item-qty">
-                          <label>Qty</label>
+                          <label>{{ 'INVENTORY.ITEMS.QUANTITY' | translate }}</label>
                           <input type="number" formControlName="quantity_ordered" min="0.01" step="0.01" />
                         </div>
                         <div class="item-unit">
-                          <label>Unit</label>
+                          <label>{{ 'INVENTORY.ITEMS.UNIT' | translate }}</label>
                           <select formControlName="unit">
                             @for (unit of units; track unit) {
                               <option [value]="unit">{{ formatUnit(unit) }}</option>
@@ -202,11 +202,11 @@ import {
                           </select>
                         </div>
                         <div class="item-cost">
-                          <label>Unit Cost ($)</label>
+                          <label>{{ 'INVENTORY.PURCHASE_ORDERS.UNIT_COST' | translate }}</label>
                           <input type="number" formControlName="unit_cost_dollars" min="0" step="0.01" placeholder="0.00" />
                         </div>
                         <div class="item-total">
-                          <label>Total</label>
+                          <label>{{ 'INVENTORY.COMMON.TOTAL' | translate }}</label>
                           <span>{{ formatCurrency(getItemTotal(i)) }}</span>
                         </div>
                         <button type="button" class="icon-btn icon-btn-danger" (click)="removeItem(i)">
@@ -220,15 +220,15 @@ import {
                 }
 
                 <div class="order-total">
-                  <span>Order Total:</span>
+                  <span>{{ 'INVENTORY.PURCHASE_ORDERS.ORDER_TOTAL' | translate }}</span>
                   <strong>{{ formatCurrency(orderTotal()) }}</strong>
                 </div>
               </div>
 
               <div class="form-actions">
-                <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+                <button type="button" class="btn btn-secondary" (click)="closeModal()">{{ 'INVENTORY.COMMON.CANCEL' | translate }}</button>
                 <button type="submit" class="btn btn-primary" [disabled]="!createForm.valid || itemsArray.length === 0 || saving()">
-                  {{ saving() ? 'Creating...' : 'Create Order' }}
+                  {{ saving() ? ('INVENTORY.COMMON.SAVING' | translate) : ('INVENTORY.PURCHASE_ORDERS.CREATE_TITLE' | translate) }}
                 </button>
               </div>
             </form>
@@ -473,6 +473,7 @@ import {
 export class PurchaseOrdersComponent implements OnInit {
   private inventoryService = inject(InventoryService);
   private fb = inject(FormBuilder);
+  private translate = inject(TranslateService);
 
   orders = signal<PurchaseOrder[]>([]);
   suppliers = signal<Supplier[]>([]);
@@ -634,7 +635,7 @@ export class PurchaseOrdersComponent implements OnInit {
   }
 
   cancelOrder(po: PurchaseOrder) {
-    if (!confirm(`Cancel order ${po.order_number}?`)) return;
+    if (!confirm(this.translate.instant('INVENTORY.PURCHASE_ORDERS.CANCEL_CONFIRM', { number: po.order_number }))) return;
     this.inventoryService.cancelPurchaseOrder(po.id).subscribe({
       next: () => this.loadOrders(),
       error: () => { }
@@ -653,7 +654,7 @@ export class PurchaseOrdersComponent implements OnInit {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
       },
-      error: () => alert('Failed to download PDF')
+      error: () => alert(this.translate.instant('INVENTORY.PURCHASE_ORDERS.PDF_ERROR'))
     });
   }
 
@@ -663,10 +664,6 @@ export class PurchaseOrdersComponent implements OnInit {
 
   formatCurrency(cents: number): string {
     return this.inventoryService.formatCurrency(cents);
-  }
-
-  formatStatus(status: PurchaseOrderStatus): string {
-    return status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   }
 
   formatUnit(unit: string): string {

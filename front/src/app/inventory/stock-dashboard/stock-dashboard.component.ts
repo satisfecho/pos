@@ -12,20 +12,21 @@ import { RouterModule } from '@angular/router';
 import { SidebarComponent } from '../../shared/sidebar.component';
 import { InventoryService } from '../inventory.service';
 import { StockLevel, LowStockItem, InventoryCategory } from '../inventory.types';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-stock-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, RouterModule, SidebarComponent, TranslateModule],
   template: `
     <app-sidebar>
       <div class="page-header">
-        <h1>Stock Dashboard</h1>
+        <h1>{{ 'INVENTORY.DASHBOARD.TITLE' | translate }}</h1>
         <button class="btn btn-secondary" (click)="loadData()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="23,4 23,10 17,10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
           </svg>
-          Refresh
+          {{ 'INVENTORY.COMMON.REFRESH' | translate }}
         </button>
       </div>
 
@@ -34,15 +35,15 @@ import { StockLevel, LowStockItem, InventoryCategory } from '../inventory.types'
         <div class="stats-row">
           <div class="stat-card">
             <span class="stat-value">{{ totalItems() }}</span>
-            <span class="stat-label">Total Items</span>
+            <span class="stat-label">{{ 'INVENTORY.ITEMS.TOTAL_ITEMS' | translate }}</span>
           </div>
           <div class="stat-card stat-warning">
             <span class="stat-value">{{ lowStockCount() }}</span>
-            <span class="stat-label">Low Stock Alerts</span>
+            <span class="stat-label">{{ 'INVENTORY.DASHBOARD.LOW_STOCK_ALERTS' | translate }}</span>
           </div>
           <div class="stat-card">
             <span class="stat-value">{{ formatCurrency(totalValue()) }}</span>
-            <span class="stat-label">Total Inventory Value</span>
+            <span class="stat-label">{{ 'INVENTORY.ITEMS.TOTAL_VALUE' | translate }}</span>
           </div>
         </div>
 
@@ -50,7 +51,7 @@ import { StockLevel, LowStockItem, InventoryCategory } from '../inventory.types'
         @if (lowStockItems().length > 0) {
           <div class="section">
             <div class="section-header">
-              <h2>Low Stock Alerts</h2>
+              <h2>{{ 'INVENTORY.DASHBOARD.LOW_STOCK_ALERTS' | translate }}</h2>
               <span class="badge warning">{{ lowStockItems().length }}</span>
             </div>
             <div class="alert-cards">
@@ -62,20 +63,20 @@ import { StockLevel, LowStockItem, InventoryCategory } from '../inventory.types'
                   </div>
                   <div class="alert-details">
                     <div class="alert-stat">
-                      <span class="label">Current</span>
+                      <span class="label">{{ 'INVENTORY.ITEMS.CURRENT' | translate }}</span>
                       <span class="value negative">{{ item.current_quantity.toFixed(2) }}</span>
                     </div>
                     <div class="alert-stat">
-                      <span class="label">Reorder</span>
+                      <span class="label">{{ 'INVENTORY.ITEMS.REORDER' | translate }}</span>
                       <span class="value">{{ item.reorder_level.toFixed(2) }}</span>
                     </div>
                     <div class="alert-stat">
-                      <span class="label">Suggest</span>
+                      <span class="label">{{ 'INVENTORY.DASHBOARD.SUGGEST' | translate }}</span>
                       <span class="value primary">{{ item.suggested_order_quantity.toFixed(2) }}</span>
                     </div>
                   </div>
                   <a routerLink="/inventory/purchase-orders" class="btn btn-primary btn-sm">
-                    Create PO
+                    {{ 'INVENTORY.DASHBOARD.CREATE_PO' | translate }}
                   </a>
                 </div>
               }
@@ -86,9 +87,9 @@ import { StockLevel, LowStockItem, InventoryCategory } from '../inventory.types'
         <!-- Stock Levels Table -->
         <div class="section">
           <div class="section-header">
-            <h2>Stock Levels</h2>
+            <h2>{{ 'INVENTORY.DASHBOARD.STOCK_LEVELS' | translate }}</h2>
             <select [(ngModel)]="categoryFilter" (change)="applyFilter()">
-              <option value="">All Categories</option>
+              <option value="">{{ 'INVENTORY.ITEMS.ALL_CATEGORIES' | translate }}</option>
               @for (cat of categories; track cat) {
                 <option [value]="cat">{{ formatCategory(cat) }}</option>
               }
@@ -96,7 +97,7 @@ import { StockLevel, LowStockItem, InventoryCategory } from '../inventory.types'
           </div>
 
           @if (loading()) {
-            <div class="empty-state"><p>Loading stock levels...</p></div>
+            <div class="empty-state"><p>{{ 'INVENTORY.DASHBOARD.LOADING' | translate }}</p></div>
           } @else if (filteredStockLevels().length === 0) {
             <div class="empty-state">
               <div class="empty-icon">
@@ -104,22 +105,22 @@ import { StockLevel, LowStockItem, InventoryCategory } from '../inventory.types'
                   <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                 </svg>
               </div>
-              <h3>No inventory items</h3>
-              <p>Add items from the inventory page</p>
-              <a routerLink="/inventory/items" class="btn btn-primary">Go to Items</a>
+              <h3>{{ 'INVENTORY.ITEMS.NO_ITEMS_YET' | translate }}</h3>
+              <p>{{ 'INVENTORY.ITEMS.NO_ITEMS_DESC' | translate }}</p>
+              <a routerLink="/inventory/items" class="btn btn-primary">{{ 'INVENTORY.DASHBOARD.GO_TO_ITEMS' | translate }}</a>
             </div>
           } @else {
             <div class="table-card">
               <table>
                 <thead>
                   <tr>
-                    <th>SKU</th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Current Stock</th>
-                    <th>Reorder Level</th>
-                    <th>Value</th>
-                    <th>Status</th>
+                    <th>{{ 'INVENTORY.ITEMS.SKU' | translate }}</th>
+                    <th>{{ 'INVENTORY.ITEMS.NAME' | translate }}</th>
+                    <th>{{ 'INVENTORY.ITEMS.CATEGORY' | translate }}</th>
+                    <th>{{ 'INVENTORY.ITEMS.STOCK' | translate }}</th>
+                    <th>{{ 'INVENTORY.ITEMS.REORDER_LEVEL' | translate }}</th>
+                    <th>{{ 'INVENTORY.ITEMS.VALUE' | translate }}</th>
+                    <th>{{ 'INVENTORY.ITEMS.STATUS' | translate }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -135,9 +136,9 @@ import { StockLevel, LowStockItem, InventoryCategory } from '../inventory.types'
                       <td>{{ formatCurrency(item.total_value_cents) }}</td>
                       <td>
                         @if (item.is_low_stock) {
-                          <span class="status-badge warning">Low</span>
+                          <span class="status-badge warning">{{ 'INVENTORY.ITEMS.STATUS_LOW_STOCK' | translate }}</span>
                         } @else {
-                          <span class="status-badge success">OK</span>
+                          <span class="status-badge success">{{ 'INVENTORY.ITEMS.STATUS_OK' | translate }}</span>
                         }
                       </td>
                     </tr>

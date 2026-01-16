@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ApiService } from '../services/api.service';
 import { LanguageService, SUPPORTED_LANGUAGES, LanguageCode } from '../services/language.service';
-import { SidebarComponent } from '../shared/sidebar.component';
+
 
 interface TranslationEntity {
   id: number;
@@ -22,19 +22,13 @@ interface TranslationData {
 @Component({
   selector: 'app-translations',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, TranslateModule],
   template: `
-    <app-sidebar>
-    <div class="translations-page">
-      <div class="page-header">
-        <h1>{{ 'SETTINGS.TITLE' | translate }}</h1>
-        <p>Manage translations for your menu items and business information</p>
-      </div>
-
+    <div class="translations-content">
       <div class="content">
         <!-- Entity Selection -->
-        <div class="section">
-          <h2>Select Item to Translate</h2>
+        <div class="subsection">
+          <h3>Select Item to Translate</h3>
 
           <div class="entity-selector">
             <div class="form-group">
@@ -61,8 +55,8 @@ interface TranslationData {
 
         <!-- Translation Editor -->
         @if (selectedEntityId() !== null) {
-          <div class="section">
-            <h2>Edit Translations</h2>
+          <div class="subsection">
+            <h3>Edit Translations</h3>
 
             <div class="translation-editor">
               @for (field of getFields(); track field) {
@@ -113,7 +107,6 @@ interface TranslationData {
         <div class="error-message">{{ error() }}</div>
       }
     </div>
-    </app-sidebar>
   `,
   styles: [`
     .translations-page {
@@ -144,17 +137,14 @@ interface TranslationData {
       gap: 2rem;
     }
 
-    .section {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      padding: 1.5rem;
+    .subsection {
+      margin-bottom: var(--space-5);
 
-      h2 {
-        font-size: 1.25rem;
+      h3 {
+        font-size: 1rem;
         font-weight: 600;
         color: var(--color-text);
-        margin-bottom: 1rem;
+        margin-bottom: var(--space-4);
       }
     }
 

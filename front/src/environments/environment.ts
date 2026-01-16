@@ -1,3 +1,5 @@
+import { commitHash } from './commit-hash';
+
 // Helper to get window config, treating empty string as valid (for relative URLs via HAProxy)
 const getWindowConfig = (key: string, fallback: string): string => {
   if (typeof window === 'undefined') return fallback;

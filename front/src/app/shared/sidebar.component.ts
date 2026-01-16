@@ -106,17 +106,6 @@ import { TranslateModule } from '@ngx-translate/core';
              }
            </div>
 
-            <a routerLink="/translations" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
-                <polyline points="7.5 4.27 16.5 9.42"/>
-                <polyline points="16.5 14.58 7.5 19.73"/>
-                <polyline points="16.5 9.42 7.5 4.27"/>
-                <polyline points="7.5 19.73 16.5 14.58"/>
-              </svg>
-              <span>{{ 'NAV.TRANSLATIONS' | translate }}</span>
-            </a>
-
             <a routerLink="/settings" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="3"/>

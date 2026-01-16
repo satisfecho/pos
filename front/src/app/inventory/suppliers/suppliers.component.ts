@@ -11,21 +11,22 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { SidebarComponent } from '../../shared/sidebar.component';
 import { InventoryService } from '../inventory.service';
 import { Supplier, SupplierCreate, SupplierUpdate } from '../inventory.types';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-suppliers',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, SidebarComponent, TranslateModule],
   template: `
     <app-sidebar>
       <div class="page-header">
-        <h1>Suppliers</h1>
+        <h1>{{ 'INVENTORY.SUPPLIERS.TITLE' | translate }}</h1>
         @if (!showModal()) {
           <button class="btn btn-primary" (click)="openCreateModal()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
-            Add Supplier
+            {{ 'INVENTORY.SUPPLIERS.ADD_SUPPLIER' | translate }}
           </button>
         }
       </div>
@@ -44,7 +45,7 @@ import { Supplier, SupplierCreate, SupplierUpdate } from '../inventory.types';
 
         @if (loading()) {
           <div class="empty-state">
-            <p>Loading suppliers...</p>
+            <p>{{ 'INVENTORY.SUPPLIERS.LOADING_SUPPLIERS' | translate }}</p>
           </div>
         } @else if (suppliers().length === 0) {
           <div class="empty-state">
@@ -56,22 +57,22 @@ import { Supplier, SupplierCreate, SupplierUpdate } from '../inventory.types';
                 <path d="M16 3.13a4 4 0 010 7.75"/>
               </svg>
             </div>
-            <h3>No suppliers yet</h3>
-            <p>Add your first supplier to get started</p>
-            <button class="btn btn-primary" (click)="openCreateModal()">Add Supplier</button>
+            <h3>{{ 'INVENTORY.SUPPLIERS.NO_SUPPLIERS_YET' | translate }}</h3>
+            <p>{{ 'INVENTORY.SUPPLIERS.NO_SUPPLIERS_DESC' | translate }}</p>
+            <button class="btn btn-primary" (click)="openCreateModal()">{{ 'INVENTORY.SUPPLIERS.ADD_SUPPLIER' | translate }}</button>
           </div>
         } @else {
           <div class="table-card">
             <table>
               <thead>
                 <tr>
-                  <th>Code</th>
-                  <th>Name</th>
-                  <th>Contact</th>
-                  <th>Phone</th>
-                  <th>Email</th>
-                  <th>Terms</th>
-                  <th>Status</th>
+                  <th>{{ 'INVENTORY.SUPPLIERS.CODE' | translate }}</th>
+                  <th>{{ 'INVENTORY.SUPPLIERS.NAME' | translate }}</th>
+                  <th>{{ 'INVENTORY.SUPPLIERS.CONTACT' | translate }}</th>
+                  <th>{{ 'INVENTORY.SUPPLIERS.PHONE' | translate }}</th>
+                  <th>{{ 'INVENTORY.SUPPLIERS.EMAIL' | translate }}</th>
+                  <th>{{ 'INVENTORY.SUPPLIERS.TERMS' | translate }}</th>
+                  <th>{{ 'INVENTORY.SUPPLIERS.STATUS' | translate }}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -86,17 +87,17 @@ import { Supplier, SupplierCreate, SupplierUpdate } from '../inventory.types';
                     <td>{{ supplier.payment_terms || '-' }}</td>
                     <td>
                       <span class="status-badge" [class.success]="supplier.is_active">
-                        {{ supplier.is_active ? 'Active' : 'Inactive' }}
+                        {{ supplier.is_active ? ('INVENTORY.SUPPLIERS.ACTIVE' | translate) : ('INVENTORY.SUPPLIERS.INACTIVE' | translate) }}
                       </span>
                     </td>
                     <td class="actions">
-                      <button class="icon-btn" title="Edit" (click)="openEditModal(supplier)">
+                      <button class="icon-btn" [title]="'INVENTORY.COMMON.EDIT' | translate" (click)="openEditModal(supplier)">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                           <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
                           <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
                       </button>
-                      <button class="icon-btn icon-btn-danger" title="Delete" (click)="confirmDelete(supplier)">
+                      <button class="icon-btn icon-btn-danger" [title]="'INVENTORY.COMMON.DELETE' | translate" (click)="confirmDelete(supplier)">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                           <polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
                         </svg>
@@ -115,7 +116,7 @@ import { Supplier, SupplierCreate, SupplierUpdate } from '../inventory.types';
         <div class="modal-overlay" (click)="closeModal()">
           <div class="modal" (click)="$event.stopPropagation()">
             <div class="form-header">
-              <h3>{{ editingSupplier() ? 'Edit Supplier' : 'New Supplier' }}</h3>
+              <h3>{{ editingSupplier() ? ('INVENTORY.SUPPLIERS.EDIT_SUPPLIER' | translate) : ('INVENTORY.SUPPLIERS.NEW_SUPPLIER' | translate) }}</h3>
               <button class="icon-btn" (click)="closeModal()">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M18 6L6 18M6 6l12 12"/>
@@ -125,58 +126,58 @@ import { Supplier, SupplierCreate, SupplierUpdate } from '../inventory.types';
             <form [formGroup]="form" (ngSubmit)="saveSupplier()">
               <div class="form-row">
                 <div class="form-group form-group-sm">
-                  <label for="code">Code</label>
+                  <label for="code">{{ 'INVENTORY.SUPPLIERS.CODE' | translate }}</label>
                   <input type="text" id="code" formControlName="code" placeholder="SUP001" />
                 </div>
                 <div class="form-group">
-                  <label for="name">Name</label>
+                  <label for="name">{{ 'INVENTORY.SUPPLIERS.NAME' | translate }}</label>
                   <input type="text" id="name" formControlName="name" required />
                 </div>
               </div>
               <div class="form-row">
                 <div class="form-group">
-                  <label for="contact_name">Contact Name</label>
+                  <label for="contact_name">{{ 'INVENTORY.SUPPLIERS.CONTACT_NAME' | translate }}</label>
                   <input type="text" id="contact_name" formControlName="contact_name" />
                 </div>
                 <div class="form-group">
-                  <label for="phone">Phone</label>
+                  <label for="phone">{{ 'INVENTORY.SUPPLIERS.PHONE' | translate }}</label>
                   <input type="text" id="phone" formControlName="phone" />
                 </div>
               </div>
               <div class="form-group">
-                <label for="email">Email</label>
+                <label for="email">{{ 'INVENTORY.SUPPLIERS.EMAIL' | translate }}</label>
                 <input type="email" id="email" formControlName="email" />
               </div>
               <div class="form-group">
-                <label for="address">Address</label>
+                <label for="address">{{ 'INVENTORY.SUPPLIERS.ADDRESS' | translate }}</label>
                 <input type="text" id="address" formControlName="address" />
               </div>
               <div class="form-row">
                 <div class="form-group">
-                  <label for="payment_terms">Payment Terms</label>
-                  <input type="text" id="payment_terms" formControlName="payment_terms" placeholder="e.g., Net 30" />
+                  <label for="payment_terms">{{ 'INVENTORY.SUPPLIERS.PAYMENT_TERMS' | translate }}</label>
+                  <input type="text" id="payment_terms" formControlName="payment_terms" [placeholder]="'INVENTORY.SUPPLIERS.PAYMENT_TERMS_PLACEHOLDER' | translate" />
                 </div>
                 <div class="form-group form-group-sm">
-                  <label for="lead_time_days">Lead Time (Days)</label>
+                  <label for="lead_time_days">{{ 'INVENTORY.SUPPLIERS.LEAD_TIME' | translate }}</label>
                   <input type="number" id="lead_time_days" formControlName="lead_time_days" min="0" />
                 </div>
               </div>
               <div class="form-group">
-                <label for="notes">Notes</label>
+                <label for="notes">{{ 'INVENTORY.SUPPLIERS.NOTES' | translate }}</label>
                 <input type="text" id="notes" formControlName="notes" />
               </div>
               @if (editingSupplier()) {
                 <div class="form-group">
                   <label class="checkbox-label">
                     <input type="checkbox" formControlName="is_active" />
-                    <span>Supplier is Active</span>
+                    <span>{{ 'INVENTORY.SUPPLIERS.SUPPLIER_IS_ACTIVE' | translate }}</span>
                   </label>
                 </div>
               }
               <div class="form-actions">
-                <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+                <button type="button" class="btn btn-secondary" (click)="closeModal()">{{ 'INVENTORY.COMMON.CANCEL' | translate }}</button>
                 <button type="submit" class="btn btn-primary" [disabled]="!form.valid || saving()">
-                  {{ saving() ? 'Saving...' : (editingSupplier() ? 'Update' : 'Create') }}
+                  {{ saving() ? ('INVENTORY.COMMON.SAVING' | translate) : (editingSupplier() ? ('INVENTORY.COMMON.UPDATE' | translate) : ('INVENTORY.COMMON.CREATE' | translate)) }}
                 </button>
               </div>
             </form>
@@ -188,12 +189,12 @@ import { Supplier, SupplierCreate, SupplierUpdate } from '../inventory.types';
       @if (showDeleteModal()) {
         <div class="modal-overlay" (click)="showDeleteModal.set(false)">
           <div class="modal modal-sm" (click)="$event.stopPropagation()">
-            <h3>Delete Supplier</h3>
-            <p>Are you sure you want to delete "{{ deletingSupplier()?.name }}"?</p>
+            <h3>{{ 'INVENTORY.SUPPLIERS.DELETE_SUPPLIER' | translate }}</h3>
+            <p>{{ 'INVENTORY.SUPPLIERS.DELETE_CONFIRM' | translate:{ name: deletingSupplier()?.name } }}</p>
             <div class="modal-actions">
-              <button class="btn btn-secondary" (click)="showDeleteModal.set(false)">Cancel</button>
+              <button class="btn btn-secondary" (click)="showDeleteModal.set(false)">{{ 'INVENTORY.COMMON.CANCEL' | translate }}</button>
               <button class="btn btn-danger" (click)="deleteSupplier()" [disabled]="saving()">
-                {{ saving() ? 'Deleting...' : 'Delete' }}
+                {{ saving() ? ('INVENTORY.ITEMS.DELETING' | translate) : ('INVENTORY.COMMON.DELETE' | translate) }}
               </button>
             </div>
           </div>

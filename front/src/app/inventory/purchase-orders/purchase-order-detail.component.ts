@@ -12,15 +12,16 @@ import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../../shared/sidebar.component';
 import { InventoryService } from '../inventory.service';
 import { PurchaseOrder, ReceiveGoodsInput, ReceivedItemInput } from '../inventory.types';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-purchase-order-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, SidebarComponent],
+  imports: [CommonModule, RouterModule, FormsModule, SidebarComponent, TranslateModule],
   template: `
     <app-sidebar>
       @if (loading()) {
-        <div class="empty-state"><p>Loading order...</p></div>
+        <div class="empty-state"><p>{{ 'INVENTORY.PURCHASE_ORDERS.LOADING_ORDER' | translate }}</p></div>
       } @else if (order()) {
         <div class="page-header">
           <div>
@@ -28,7 +29,7 @@ import { PurchaseOrder, ReceiveGoodsInput, ReceivedItemInput } from '../inventor
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M19 12H5M12 19l-7-7 7-7"/>
               </svg>
-              Back to Orders
+              {{ 'INVENTORY.PURCHASE_ORDERS.BACK' | translate }}
             </a>
             <h1>{{ order()!.order_number }}</h1>
           </div>
@@ -38,7 +39,7 @@ import { PurchaseOrder, ReceiveGoodsInput, ReceivedItemInput } from '../inventor
                 <polyline points="22 2 13.5 11 9 8"/>
                 <path d="M22 2L15 22l-4-9-9-4z"/>
               </svg>
-              Receive Goods
+              {{ 'INVENTORY.PURCHASE_ORDERS.RECEIVE_GOODS' | translate }}
             </button>
           }
         </div>
@@ -47,39 +48,39 @@ import { PurchaseOrder, ReceiveGoodsInput, ReceivedItemInput } from '../inventor
           <!-- Order Info Cards -->
           <div class="info-row">
             <div class="info-card">
-              <span class="info-label">Supplier</span>
+              <span class="info-label">{{ 'INVENTORY.SUPPLIERS.SUPPLIER' | translate }}</span>
               <span class="info-value">{{ order()!.supplier?.name || order()!.supplier_name || '-' }}</span>
             </div>
             <div class="info-card">
-              <span class="info-label">Order Date</span>
+              <span class="info-label">{{ 'INVENTORY.PURCHASE_ORDERS.ORDER_DATE' | translate }}</span>
               <span class="info-value">{{ formatDate(order()!.order_date) }}</span>
             </div>
             <div class="info-card">
-              <span class="info-label">Expected Date</span>
+              <span class="info-label">{{ 'INVENTORY.PURCHASE_ORDERS.EXPECTED_DATE' | translate }}</span>
               <span class="info-value">{{ order()!.expected_date ? formatDate(order()!.expected_date!) : '-' }}</span>
             </div>
             <div class="info-card">
-              <span class="info-label">Total</span>
+              <span class="info-label">{{ 'INVENTORY.COMMON.TOTAL' | translate }}</span>
               <span class="info-value price">{{ formatCurrency(order()!.total_cents) }}</span>
             </div>
             <div class="info-card">
-              <span class="info-label">Status</span>
-              <span class="status-badge" [class]="order()!.status">{{ formatStatus(order()!.status) }}</span>
+              <span class="info-label">{{ 'INVENTORY.ITEMS.STATUS' | translate }}</span>
+              <span class="status-badge" [class]="order()!.status">{{ 'INVENTORY.PURCHASE_ORDERS.STATUS_' + order()!.status.toUpperCase() | translate }}</span>
             </div>
           </div>
 
           <!-- Line Items -->
           <div class="section">
-            <h2>Line Items</h2>
+            <h2>{{ 'INVENTORY.PURCHASE_ORDERS.LINE_ITEMS' | translate }}</h2>
             <div class="table-card">
               <table>
                 <thead>
                   <tr>
-                    <th>Item</th>
-                    <th>Ordered</th>
-                    <th>Received</th>
-                    <th>Unit Cost</th>
-                    <th>Total</th>
+                    <th>{{ 'INVENTORY.ITEMS.NAME' | translate }}</th>
+                    <th>{{ 'INVENTORY.PURCHASE_ORDERS.ORDERED' | translate }}</th>
+                    <th>{{ 'INVENTORY.PURCHASE_ORDERS.RECEIVED' | translate }}</th>
+                    <th>{{ 'INVENTORY.PURCHASE_ORDERS.UNIT_COST' | translate }}</th>
+                    <th>{{ 'INVENTORY.COMMON.TOTAL' | translate }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -106,7 +107,7 @@ import { PurchaseOrder, ReceiveGoodsInput, ReceivedItemInput } from '../inventor
 
           @if (order()!.notes) {
             <div class="notes-section">
-              <h3>Notes</h3>
+              <h3>{{ 'INVENTORY.ITEMS.NOTES' | translate }}</h3>
               <p>{{ order()!.notes }}</p>
             </div>
           }
@@ -117,7 +118,7 @@ import { PurchaseOrder, ReceiveGoodsInput, ReceivedItemInput } from '../inventor
           <div class="modal-overlay" (click)="showReceiveModal.set(false)">
             <div class="modal modal-lg" (click)="$event.stopPropagation()">
               <div class="form-header">
-                <h3>Receive Goods</h3>
+                <h3>{{ 'INVENTORY.PURCHASE_ORDERS.RECEIVE_GOODS' | translate }}</h3>
                 <button class="icon-btn" (click)="showReceiveModal.set(false)">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M18 6L6 18M6 6l12 12"/>
@@ -128,10 +129,10 @@ import { PurchaseOrder, ReceiveGoodsInput, ReceivedItemInput } from '../inventor
                 <table class="receive-table">
                   <thead>
                     <tr>
-                      <th>Item</th>
-                      <th>Ordered</th>
-                      <th>Already Received</th>
-                      <th>Receive Now</th>
+                      <th>{{ 'INVENTORY.ITEMS.NAME' | translate }}</th>
+                      <th>{{ 'INVENTORY.PURCHASE_ORDERS.ORDERED' | translate }}</th>
+                      <th>{{ 'INVENTORY.PURCHASE_ORDERS.ALREADY_RECEIVED' | translate }}</th>
+                      <th>{{ 'INVENTORY.PURCHASE_ORDERS.RECEIVE_NOW' | translate }}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -155,13 +156,13 @@ import { PurchaseOrder, ReceiveGoodsInput, ReceivedItemInput } from '../inventor
                 </table>
               </div>
               <div class="form-group">
-                <label for="receive_notes">Notes</label>
-                <input type="text" id="receive_notes" [(ngModel)]="receiveNotes" placeholder="Optional notes" />
+                <label for="receive_notes">{{ 'INVENTORY.ITEMS.NOTES' | translate }}</label>
+                <input type="text" id="receive_notes" [(ngModel)]="receiveNotes" [placeholder]="'INVENTORY.ITEMS.NOTES_PLACEHOLDER' | translate" />
               </div>
               <div class="form-actions">
-                <button class="btn btn-secondary" (click)="showReceiveModal.set(false)">Cancel</button>
+                <button class="btn btn-secondary" (click)="showReceiveModal.set(false)">{{ 'INVENTORY.COMMON.CANCEL' | translate }}</button>
                 <button class="btn btn-primary" (click)="submitReceive()" [disabled]="receiving()">
-                  {{ receiving() ? 'Processing...' : 'Confirm Receipt' }}
+                  {{ receiving() ? ('INVENTORY.COMMON.PROCESSING' | translate) : ('INVENTORY.PURCHASE_ORDERS.CONFIRM_RECEIPT' | translate) }}
                 </button>
               </div>
             </div>
@@ -338,6 +339,7 @@ import { PurchaseOrder, ReceiveGoodsInput, ReceivedItemInput } from '../inventor
 export class PurchaseOrderDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private inventoryService = inject(InventoryService);
+  private translate = inject(TranslateService);
 
   order = signal<PurchaseOrder | null>(null);
   loading = signal(true);
@@ -378,7 +380,7 @@ export class PurchaseOrderDetailComponent implements OnInit {
       .filter(r => r.quantity_received > 0);
 
     if (items.length === 0) {
-      alert('Enter quantities to receive');
+      alert(this.translate.instant('INVENTORY.PURCHASE_ORDERS.ENTER_QUANTITY_ERROR'));
       return;
     }
 

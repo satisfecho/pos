@@ -19,10 +19,10 @@ COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 # Expose port
-EXPOSE 4200
+EXPOSE 80
 
 # Use entrypoint to inject environment variables
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
 # Start dev server with host binding for Docker (no SSR in dev mode)
-CMD ["npx", "ng", "serve", "--host", "0.0.0.0", "--port", "4200", "--configuration", "development-no-ssr"]
+CMD ["npx", "ng", "serve", "--host", "0.0.0.0", "--port", "80", "--configuration", "development-no-ssr"]
