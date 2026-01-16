@@ -459,7 +459,8 @@
       "FAILED_TO_LOAD": "Error al cargar proveedores",
       "FAILED_TO_CREATE": "Error al crear",
       "FAILED_TO_UPDATE": "Error al actualizar",
-      "FAILED_TO_DELETE": "Error al eliminar"
+      "FAILED_TO_DELETE": "Error al eliminar",
+      "SUPPLIER": "Proveedor"
     },
     "CATEGORIES": {
       "INGREDIENTS": "Ingredientes",

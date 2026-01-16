@@ -267,7 +267,12 @@
     "IMMEDIATE_PAYMENT_HINT": "Quan està activat, els clients han de pagar per fer la comanda.",
     "LOADING_SETTINGS": "Carregant la configuració...",
     "CANCEL": "Cancel·lar",
-    "SAVING": "Desant..."
+    "SAVING": "Desant...",
+    "CONTACT_INFO_SUBTITLE": "Com els clients poden contactar amb el teu negoci",
+    "OPENING_HOURS_SUBTITLE": "Configura els horaris d'obertura del teu negoci",
+    "PAYMENT_SETTINGS_SUBTITLE": "Configura la moneda i el processament de pagaments",
+    "TRANSLATIONS_TITLE": "Traduccions",
+    "TRANSLATIONS_SUBTITLE": "Gestiona les traduccions del teu menú i informació del negoci"
   },
   "PAYMENTS": {
     "PAYMENT": "Pagament",
@@ -470,7 +475,12 @@
       "UPDATE": "Actualitzar",
       "DELETE": "Eliminar",
       "EDIT": "Editar",
-      "REFRESH": "Recarregar"
+      "REFRESH": "Recarregar",
+      "APPLY": "Aplicar",
+      "DELETING": "Eliminant...",
+      "PROCESSING": "Processant...",
+      "TOTAL": "Total",
+      "VIEW": "Veure"
     }
   }
 }

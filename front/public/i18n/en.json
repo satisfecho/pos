@@ -269,7 +269,10 @@
     "LOADING_SETTINGS": "Loading settings...",
     "CANCEL": "Cancel",
     "SAVE_CHANGES": "Save Changes",
-    "SAVING": "Saving..."
+    "SAVING": "Saving...",
+    "STRIPE_KEYS": "Stripe Keys",
+    "TRANSLATIONS_TITLE": "Translations",
+    "TRANSLATIONS_SUBTITLE": "Manage translations for your menu and business info"
   },
   "PAYMENTS": {
     "PAYMENT": "Payment",
@@ -472,7 +475,12 @@
       "UPDATE": "Update",
       "DELETE": "Delete",
       "EDIT": "Edit",
-      "REFRESH": "Refresh"
+      "REFRESH": "Refresh",
+      "APPLY": "Apply",
+      "DELETING": "Deleting...",
+      "PROCESSING": "Processing...",
+      "TOTAL": "Total",
+      "VIEW": "View"
     }
   }
 }

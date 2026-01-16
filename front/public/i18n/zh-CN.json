@@ -127,7 +127,9 @@
     "FAILED_TO_LOAD": "加载产品失败",
     "FAILED_TO_UPDATE_CATEGORY": "更新类别失败",
     "FAILED_TO_UPLOAD_IMAGE": "上传图片失败",
-    "PRODUCT_CREATED_BUT_IMAGE_FAILED": "产品已创建但图片上传失败"
+    "PRODUCT_CREATED_BUT_IMAGE_FAILED": "产品已创建但图片上传失败",
+    "NO_PRODUCTS": "暂无产品",
+    "UPLOAD_IMAGE": "上传图片"
   },
   "CATALOG": {
     "TITLE": "产品目录",
@@ -265,7 +267,12 @@
     "IMMEDIATE_PAYMENT_HINT": "启用后，客户必须支付后才能下单。",
     "LOADING_SETTINGS": "设置加载中...",
     "CANCEL": "取消",
-    "SAVING": "保存中..."
+    "SAVING": "保存中...",
+    "CONTACT_INFO_SUBTITLE": "客户如何联系您的业务",
+    "OPENING_HOURS_SUBTITLE": "设置您的营业时间",
+    "PAYMENT_SETTINGS_SUBTITLE": "配置货币和支付处理",
+    "TRANSLATIONS_TITLE": "翻译",
+    "TRANSLATIONS_SUBTITLE": "管理菜单和商家信息的翻译"
   },
   "PAYMENTS": {
     "PAYMENT": "支付",
@@ -468,7 +475,12 @@
       "UPDATE": "更新",
       "DELETE": "删除",
       "EDIT": "编辑",
-      "REFRESH": "刷新"
+      "REFRESH": "刷新",
+      "APPLY": "应用",
+      "DELETING": "删除中...",
+      "PROCESSING": "处理中...",
+      "TOTAL": "总计",
+      "VIEW": "查看"
     }
   }
 }

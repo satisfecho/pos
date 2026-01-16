@@ -267,7 +267,12 @@
     "IMMEDIATE_PAYMENT_HINT": "Wenn aktiviert, müssen Kunden bezahlen, um eine Bestellung aufzugeben.",
     "LOADING_SETTINGS": "Einstellungen werden geladen...",
     "CANCEL": "Abbrechen",
-    "SAVING": "Wird gespeichert..."
+    "SAVING": "Wird gespeichert...",
+    "CONTACT_INFO_SUBTITLE": "Wie Kunden Ihr Geschäft erreichen können",
+    "OPENING_HOURS_SUBTITLE": "Legen Sie die Öffnungszeiten Ihres Unternehmens fest",
+    "PAYMENT_SETTINGS_SUBTITLE": "Währung und Zahlungsabwicklung konfigurieren",
+    "TRANSLATIONS_TITLE": "Übersetzungen",
+    "TRANSLATIONS_SUBTITLE": "Verwalten Sie Übersetzungen für Ihr Menü und Ihre Geschäftsinformationen"
   },
   "PAYMENTS": {
     "PAYMENT": "Zahlung",
@@ -470,7 +475,12 @@
       "UPDATE": "Aktualisieren",
       "DELETE": "Löschen",
       "EDIT": "Bearbeiten",
-      "REFRESH": "Aktualisieren"
+      "REFRESH": "Aktualisieren",
+      "APPLY": "Anwenden",
+      "DELETING": "Löschen...",
+      "PROCESSING": "Verarbeiten...",
+      "TOTAL": "Gesamt",
+      "VIEW": "Ansicht"
     }
   }
 }
