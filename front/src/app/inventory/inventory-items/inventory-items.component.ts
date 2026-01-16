@@ -54,7 +54,7 @@ import {
           <select [(ngModel)]="categoryFilter" (change)="filterItems()">
             <option value="">{{ 'INVENTORY.ITEMS.ALL_CATEGORIES' | translate }}</option>
             @for (cat of categories; track cat) {
-              <option [value]="cat">{{ formatCategory(cat) }}</option>
+              <option [value]="cat">{{ ('INVENTORY.CATEGORIES.' + cat.toUpperCase()) | translate }}</option>
             }
           </select>
           <label class="checkbox-filter">
@@ -131,9 +131,9 @@ import {
                         <small class="text-muted">{{ item.description }}</small>
                       }
                     </td>
-                    <td>{{ item.category ? formatCategory(item.category) : '-' }}</td>
+                    <td>{{ item.category ? (('INVENTORY.CATEGORIES.' + item.category.toUpperCase()) | translate) : '-' }}</td>
                     <td [class.negative]="(item.current_quantity || 0) < 0">
-                      {{ (item.current_quantity || 0).toFixed(2) }} {{ item.unit || '' }}
+                      {{ (item.current_quantity || 0).toFixed(2) }} {{ item.unit ? (('INVENTORY.UNITS.' + item.unit.toUpperCase()) | translate) : '' }}
                     </td>
                     <td>{{ (item.reorder_level || 0).toFixed(2) }}</td>
                     <td>{{ formatCurrency(item.average_cost_cents || 0) }}</td>
@@ -205,7 +205,7 @@ import {
                   <label for="unit">{{ 'INVENTORY.ITEMS.UNIT' | translate }}</label>
                   <select id="unit" formControlName="unit">
                     @for (unit of units; track unit) {
-                      <option [value]="unit">{{ formatUnit(unit) }}</option>
+                      <option [value]="unit">{{ ('INVENTORY.UNITS.' + unit.toUpperCase()) | translate }}</option>
                     }
                   </select>
                 </div>
@@ -213,7 +213,7 @@ import {
                   <label for="category">{{ 'INVENTORY.ITEMS.CATEGORY' | translate }}</label>
                   <select id="category" formControlName="category">
                     @for (cat of categories; track cat) {
-                      <option [value]="cat">{{ formatCategory(cat) }}</option>
+                      <option [value]="cat">{{ ('INVENTORY.CATEGORIES.' + cat.toUpperCase()) | translate }}</option>
                     }
                   </select>
                 </div>
@@ -271,7 +271,7 @@ import {
             <form [formGroup]="adjustForm" (ngSubmit)="submitAdjustment()">
               <div class="adjust-item-info">
                 <strong>{{ adjustingItem()?.name }}</strong>
-                <span>{{ 'INVENTORY.ITEMS.CURRENT' | translate }}: {{ adjustingItem()?.current_quantity?.toFixed(2) }} {{ adjustingItem()?.unit }}</span>
+                <span>{{ 'INVENTORY.ITEMS.CURRENT' | translate }}: {{ adjustingItem()?.current_quantity?.toFixed(2) }} {{ adjustingItem()?.unit ? (('INVENTORY.UNITS.' + adjustingItem()!.unit.toUpperCase()) | translate) : '' }}</span>
               </div>
               <div class="form-group">
                 <label>{{ 'INVENTORY.ITEMS.ADJUSTMENT_TYPE' | translate }}</label>
@@ -299,7 +299,7 @@ import {
                   <label for="adjust_unit">{{ 'INVENTORY.ITEMS.UNIT' | translate }}</label>
                   <select id="adjust_unit" formControlName="unit">
                     @for (unit of units; track unit) {
-                      <option [value]="unit">{{ formatUnit(unit) }}</option>
+                      <option [value]="unit">{{ ('INVENTORY.UNITS.' + unit.toUpperCase()) | translate }}</option>
                     }
                   </select>
                 </div>
@@ -756,6 +756,4 @@ export class InventoryItemsComponent implements OnInit {
   }
 
   formatCurrency(cents: number): string { return this.inventoryService.formatCurrency(cents); }
-  formatCategory(cat: string): string { return cat ? cat.charAt(0).toUpperCase() + cat.slice(1) : '-'; }
-  formatUnit(unit: string): string { return unit ? unit.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : ''; }
 }

@@ -25,6 +25,7 @@ from .inventory_service import deduct_inventory_for_order
 from . import inventory_models
 from .translation_service import TranslationService
 from .messages import get_message
+from .language_service import get_requested_language
 
 # Configure logging
 logging.basicConfig(
@@ -91,41 +92,7 @@ def _get_stripe_currency_code(currency_symbol: str | None) -> str | None:
     return None
 
 
-def _get_requested_language(
-    lang: str | None = Query(None, description="Language code (e.g. en, es, zh-CN)"),
-    accept_language: str | None = Query(
-        None, alias="accept-language", description="Accept-Language header"
-    ),
-) -> str:
-    """
-    Determine the requested language based on query param or Accept-Language header.
-    Returns normalized language code or 'en' as fallback.
-    """
-    from .language_service import normalize_language_code
-
-    # 1. Check explicit lang query parameter
-    if lang:
-        normalized = normalize_language_code(lang)
-        if normalized:
-            return normalized
-
-    # 2. Parse Accept-Language header
-    if accept_language:
-        # Simple parsing - take the first language with highest quality
-        # Format: "en-US,en;q=0.9,es;q=0.8"
-        languages = []
-        for part in accept_language.split(","):
-            lang_part = part.strip().split(";")[0].strip()
-            if lang_part:
-                normalized = normalize_language_code(lang_part)
-                if normalized:
-                    languages.append(normalized)
-
-        if languages:
-            return languages[0]  # Return highest priority
-
-    # 3. Fallback to English
-    return "en"
+# get_requested_language replaced by import from language_service
 
 
 app = FastAPI(
@@ -351,7 +318,10 @@ def health() -> dict:
 
 
 @app.get("/health/db")
-def health_db(session: Session = Depends(get_session)) -> dict:
+def health_db(
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
+) -> dict:
     """Check database connection and version."""
     try:
         check_db_connection()
@@ -369,7 +339,10 @@ def health_db(session: Session = Depends(get_session)) -> dict:
 
         return {"status": "ok", "database": "connected", "schema_version": db_version}
     except Exception as e:
-        raise HTTPException(status_code=503, detail=f"Database error: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail=get_message("database_error", lang, e=str(e)),
+        )
 
 
 # ============ AUTH ============
@@ -381,7 +354,7 @@ def register(
     email: str,
     password: str,
     full_name: str | None = None,
-    lang: str = Depends(_get_requested_language),
+    lang: str = Depends(get_requested_language),
     session: Session = Depends(get_session),
 ) -> dict:
     existing_user = session.exec(
@@ -413,7 +386,7 @@ def register(
 @app.post("/token")
 def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    lang: str = Depends(_get_requested_language),
+    lang: str = Depends(get_requested_language),
     session: Session = Depends(get_session),
 ) -> dict:
     statement = select(models.User).where(models.User.email == form_data.username)
@@ -471,6 +444,7 @@ def get_translations_for_entity(
     entity_id: int,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Get all translations for a specific entity."""
     # Validate entity type and ensure user has access
@@ -478,27 +452,35 @@ def get_translations_for_entity(
     if entity_type not in allowed_types:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid entity type. Allowed: {', '.join(allowed_types)}",
+            detail=get_message(
+                "invalid_entity_type", lang, allowed=", ".join(allowed_types)
+            ),
         )
 
     # Check tenant ownership for tenant-scoped entities
     if entity_type in ["tenant", "product", "tenant_product"]:
         # For tenant entity, entity_id should match current tenant
         if entity_type == "tenant" and entity_id != current_user.tenant_id:
-            raise HTTPException(status_code=403, detail="Access denied")
+            raise HTTPException(
+                status_code=403, detail=get_message("access_denied", lang)
+            )
         # For products, check tenant ownership
         elif entity_type == "product":
             product = session.exec(
                 select(models.Product).where(models.Product.id == entity_id)
             ).first()
             if not product or product.tenant_id != current_user.tenant_id:
-                raise HTTPException(status_code=404, detail="Product not found")
+                raise HTTPException(
+                    status_code=404, detail=get_message("product_not_found", lang)
+                )
         elif entity_type == "tenant_product":
             tp = session.exec(
                 select(models.TenantProduct).where(models.TenantProduct.id == entity_id)
             ).first()
             if not tp or tp.tenant_id != current_user.tenant_id:
-                raise HTTPException(status_code=404, detail="Product not found")
+                raise HTTPException(
+                    status_code=404, detail=get_message("product_not_found", lang)
+                )
 
     # Get all translations for this entity
     translations = TranslationService.get_all_translations_for_entity(
@@ -519,6 +501,7 @@ def update_translations_for_entity(
     translations: Dict[str, Dict[str, str]],  # {field: {lang: text}}
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Update translations for a specific entity."""
     # Validate entity type
@@ -526,25 +509,33 @@ def update_translations_for_entity(
     if entity_type not in allowed_types:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid entity type. Allowed: {', '.join(allowed_types)}",
+            detail=get_message(
+                "invalid_entity_type", lang, allowed=", ".join(allowed_types)
+            ),
         )
 
     # Check tenant ownership for tenant-scoped entities
     if entity_type in ["tenant", "product", "tenant_product"]:
         if entity_type == "tenant" and entity_id != current_user.tenant_id:
-            raise HTTPException(status_code=403, detail="Access denied")
+            raise HTTPException(
+                status_code=403, detail=get_message("access_denied", lang)
+            )
         elif entity_type == "product":
             product = session.exec(
                 select(models.Product).where(models.Product.id == entity_id)
             ).first()
             if not product or product.tenant_id != current_user.tenant_id:
-                raise HTTPException(status_code=404, detail="Product not found")
+                raise HTTPException(
+                    status_code=404, detail=get_message("product_not_found", lang)
+                )
         elif entity_type == "tenant_product":
             tp = session.exec(
                 select(models.TenantProduct).where(models.TenantProduct.id == entity_id)
             ).first()
             if not tp or tp.tenant_id != current_user.tenant_id:
-                raise HTTPException(status_code=404, detail="Product not found")
+                raise HTTPException(
+                    status_code=404, detail=get_message("product_not_found", lang)
+                )
 
     # Update translations
     updated_fields = []
@@ -579,6 +570,7 @@ def update_translations_for_entity(
 def get_tenant_settings(
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Get tenant/business profile settings."""
     tenant = session.exec(
@@ -586,7 +578,9 @@ def get_tenant_settings(
     ).first()
 
     if not tenant:
-        raise HTTPException(status_code=404, detail="Tenant not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("tenant_not_found", lang)
+        )
 
     # Get logo file size if exists
     logo_size = None
@@ -616,6 +610,7 @@ def update_tenant_settings(
     tenant_update: models.TenantUpdate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Update tenant/business profile settings."""
     tenant = session.exec(
@@ -623,7 +618,9 @@ def update_tenant_settings(
     ).first()
 
     if not tenant:
-        raise HTTPException(status_code=404, detail="Tenant not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("tenant_not_found", lang)
+        )
 
     # Update fields if provided (convert empty strings to None)
     if tenant_update.name is not None:
@@ -673,7 +670,7 @@ def update_tenant_settings(
             if len(currency_code) != 3 or not currency_code.isalpha():
                 raise HTTPException(
                     status_code=400,
-                    detail="currency_code must be a 3-letter ISO code (e.g. EUR)",
+                    detail=get_message("invalid_currency_code", lang),
                 )
             tenant.currency_code = currency_code
         else:
@@ -746,6 +743,7 @@ async def upload_tenant_logo(
     file: Annotated[UploadFile, File()],
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> models.Tenant:
     """Upload a logo for the tenant/business."""
     tenant = session.exec(
@@ -753,13 +751,17 @@ async def upload_tenant_logo(
     ).first()
 
     if not tenant:
-        raise HTTPException(status_code=404, detail="Tenant not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("tenant_not_found", lang)
+        )
 
     # Validate content type
     if file.content_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_TYPES)}",
+            detail=get_message(
+                "invalid_file_type", lang, allowed=", ".join(ALLOWED_IMAGE_TYPES)
+            ),
         )
 
     # Read file and check size
@@ -767,7 +769,9 @@ async def upload_tenant_logo(
     if len(contents) > MAX_IMAGE_SIZE:
         raise HTTPException(
             status_code=400,
-            detail=f"File too large. Max size: {MAX_IMAGE_SIZE // (1024 * 1024)}MB",
+            detail=get_message(
+                "file_too_large", lang, max_size=MAX_IMAGE_SIZE // (1024 * 1024)
+            ),
         )
 
     # Optimize image locally
@@ -933,6 +937,7 @@ def update_product(
     product_update: models.ProductUpdate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> models.Product:
     product = session.exec(
         select(models.Product).where(
@@ -942,7 +947,9 @@ def update_product(
     ).first()
 
     if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("product_not_found", lang)
+        )
 
     if product_update.name is not None:
         product.name = product_update.name
@@ -966,6 +973,7 @@ def delete_product(
     product_id: int,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     product = session.exec(
         select(models.Product).where(
@@ -975,7 +983,9 @@ def delete_product(
     ).first()
 
     if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("product_not_found", lang)
+        )
 
     session.delete(product)
     session.commit()
@@ -988,6 +998,7 @@ async def upload_product_image(
     file: Annotated[UploadFile, File()],
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> models.Product:
     """Upload an image for a product. Validates file type and size."""
     product = session.exec(
@@ -998,13 +1009,17 @@ async def upload_product_image(
     ).first()
 
     if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("product_not_found", lang)
+        )
 
     # Validate content type
     if file.content_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_TYPES)}",
+            detail=get_message(
+                "invalid_file_type", lang, allowed=", ".join(ALLOWED_IMAGE_TYPES)
+            ),
         )
 
     # Read file and check size
@@ -1012,7 +1027,9 @@ async def upload_product_image(
     if len(contents) > MAX_IMAGE_SIZE:
         raise HTTPException(
             status_code=400,
-            detail=f"File too large. Max size: {MAX_IMAGE_SIZE // (1024 * 1024)}MB",
+            detail=get_message(
+                "file_too_large", lang, max_size=MAX_IMAGE_SIZE // (1024 * 1024)
+            ),
         )
 
     # Optimize image locally
@@ -1074,13 +1091,16 @@ def get_provider(
     provider_id: int,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> models.Provider:
     """Get a specific provider."""
     provider = session.exec(
         select(models.Provider).where(models.Provider.id == provider_id)
     ).first()
     if not provider:
-        raise HTTPException(status_code=404, detail="Provider not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("provider_not_found", lang)
+        )
     return provider
 
 
@@ -1258,6 +1278,7 @@ async def get_catalog_item(
     catalog_id: int,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Get a specific catalog item with price comparison."""
     catalog_item = session.exec(
@@ -1265,7 +1286,9 @@ async def get_catalog_item(
     ).first()
 
     if not catalog_item:
-        raise HTTPException(status_code=404, detail="Catalog item not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("catalog_item_not_found", lang)
+        )
 
     # Get all provider products
     provider_products = session.exec(
@@ -1369,13 +1392,16 @@ def list_provider_products(
     provider_id: int,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> list[models.ProviderProduct]:
     """List all products from a specific provider."""
     provider = session.exec(
         select(models.Provider).where(models.Provider.id == provider_id)
     ).first()
     if not provider:
-        raise HTTPException(status_code=404, detail="Provider not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("provider_not_found", lang)
+        )
 
     return session.exec(
         select(models.ProviderProduct)
@@ -1456,6 +1482,7 @@ def create_tenant_product(
     product_data: models.TenantProductCreate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> models.TenantProduct:
     """Add a product from catalog to tenant's menu.
 
@@ -1470,7 +1497,9 @@ def create_tenant_product(
         )
     ).first()
     if not catalog_item:
-        raise HTTPException(status_code=404, detail="Catalog item not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("catalog_item_not_found", lang)
+        )
 
     # Get provider product for additional info if specified
     provider_product = None
@@ -1484,7 +1513,7 @@ def create_tenant_product(
         if not provider_product:
             raise HTTPException(
                 status_code=404,
-                detail="Provider product not found or doesn't match catalog",
+                detail=get_message("provider_product_not_found", lang),
             )
 
     # Use catalog name if name not provided
@@ -1495,7 +1524,9 @@ def create_tenant_product(
     if price_cents is None and provider_product:
         price_cents = provider_product.price_cents
     if price_cents is None:
-        raise HTTPException(status_code=400, detail="Price is required")
+        raise HTTPException(
+            status_code=400, detail=get_message("price_required", lang)
+        )
 
     # Determine category and subcategory from catalog
     category = catalog_item.category
@@ -1637,6 +1668,7 @@ def update_tenant_product(
     product_update: models.TenantProductUpdate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> models.TenantProduct:
     """Update a tenant product."""
     tenant_product = session.exec(
@@ -1647,7 +1679,9 @@ def update_tenant_product(
     ).first()
 
     if not tenant_product:
-        raise HTTPException(status_code=404, detail="Tenant product not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("tenant_product_not_found", lang)
+        )
 
     if product_update.name is not None:
         tenant_product.name = product_update.name
@@ -1667,6 +1701,7 @@ def delete_tenant_product(
     tenant_product_id: int,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Delete a tenant product."""
     tenant_product = session.exec(
@@ -1677,7 +1712,9 @@ def delete_tenant_product(
     ).first()
 
     if not tenant_product:
-        raise HTTPException(status_code=404, detail="Tenant product not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("tenant_product_not_found", lang)
+        )
 
     session.delete(tenant_product)
     session.commit()
@@ -1732,6 +1769,7 @@ def update_floor(
     floor_update: models.FloorUpdate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> models.Floor:
     """Update a floor."""
     floor = session.exec(
@@ -1742,7 +1780,9 @@ def update_floor(
     ).first()
 
     if not floor:
-        raise HTTPException(status_code=404, detail="Floor not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("floor_not_found", lang)
+        )
 
     if floor_update.name is not None:
         floor.name = floor_update.name
@@ -1760,6 +1800,7 @@ def delete_floor(
     floor_id: int,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Delete a floor. Tables on this floor will have floor_id set to null."""
     floor = session.exec(
@@ -1770,7 +1811,9 @@ def delete_floor(
     ).first()
 
     if not floor:
-        raise HTTPException(status_code=404, detail="Floor not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("floor_not_found", lang)
+        )
 
     session.delete(floor)
     session.commit()
@@ -1856,6 +1899,7 @@ def update_table(
     table_update: models.TableUpdate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> models.Table:
     """Update table properties including canvas layout."""
     table = session.exec(
@@ -1866,7 +1910,9 @@ def update_table(
     ).first()
 
     if not table:
-        raise HTTPException(status_code=404, detail="Table not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("table_not_found", lang)
+        )
 
     # Update all provided fields
     if table_update.name is not None:
@@ -1899,6 +1945,7 @@ def delete_table(
     table_id: int,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     table = session.exec(
         select(models.Table).where(
@@ -1908,7 +1955,9 @@ def delete_table(
     ).first()
 
     if not table:
-        raise HTTPException(status_code=404, detail="Table not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("table_not_found", lang)
+        )
 
     session.delete(table)
     session.commit()
@@ -1920,19 +1969,20 @@ def delete_table(
 @app.get("/internal/validate-table/{table_token}")
 def validate_table_token(
     table_token: str,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Internal endpoint for ws-bridge to validate table tokens."""
-    table = session.exec(select(models.Table).where(models.Table.token == table_token)).first()
-    
+    table = session.exec(
+        select(models.Table).where(models.Table.token == table_token)
+    ).first()
+
     if not table:
-        raise HTTPException(status_code=404, detail="Table not found")
-    
-    return {
-        "table_id": table.id,
-        "tenant_id": table.tenant_id,
-        "valid": True
-    }
+        raise HTTPException(
+            status_code=404, detail=get_message("table_not_found", lang)
+        )
+
+    return {"table_id": table.id, "tenant_id": table.tenant_id, "valid": True}
 
 
 # ============ PUBLIC MENU ============
@@ -1941,7 +1991,7 @@ def validate_table_token(
 @app.get("/menu/{table_token}")
 def get_menu(
     table_token: str,
-    lang: str = Depends(_get_requested_language),
+    lang: str = Depends(get_requested_language),
     session: Session = Depends(get_session),
 ) -> dict:
     """Public endpoint - get menu for a table by its token."""
@@ -2347,8 +2397,11 @@ def get_menu(
 @app.get("/menu/{table_token}/order")
 def get_current_order(
     table_token: str,
-    session_id: str | None = Query(None, description="Session identifier for order isolation"),
-    session: Session = Depends(get_session)
+    session_id: str | None = Query(
+        None, description="Session identifier for order isolation"
+    ),
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Public endpoint - get current active order for a table (if any)."""
     table = session.exec(
@@ -2356,7 +2409,9 @@ def get_current_order(
     ).first()
 
     if not table:
-        raise HTTPException(status_code=404, detail="Table not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("table_not_found", lang)
+        )
     
     # If session_id provided, look for order with matching session_id
     if session_id:
@@ -2433,6 +2488,7 @@ def create_order(
     table_token: str,
     order_data: models.OrderCreate,
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Public endpoint - create or add to order for a table."""
     table = session.exec(
@@ -2440,10 +2496,15 @@ def create_order(
     ).first()
 
     if not table:
-        raise HTTPException(status_code=404, detail="Table not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("table_not_found", lang)
+        )
 
     if not order_data.items:
-        raise HTTPException(status_code=400, detail="Order must have at least one item")
+        raise HTTPException(
+            status_code=400,
+            detail=get_message("order_must_have_at_least_one_item", lang),
+        )
 
     # DEBUG: Log all orders for this table
     all_orders = session.exec(
@@ -2550,11 +2611,16 @@ def create_order(
             tenant_product = session.exec(
                 select(models.TenantProduct).where(
                     models.TenantProduct.id == item.product_id,
-                    models.TenantProduct.tenant_id == table.tenant_id
+                    models.TenantProduct.tenant_id == table.tenant_id,
                 )
             ).first()
             if not tenant_product:
-                raise HTTPException(status_code=400, detail=f"TenantProduct {item.product_id} not found")
+                raise HTTPException(
+                    status_code=400,
+                    detail=get_message(
+                        "tenant_product_id_not_found", lang, id=item.product_id
+                    ),
+                )
             product_name = tenant_product.name
             price_cents = tenant_product.price_cents
         elif item.source == "product":
@@ -2566,7 +2632,12 @@ def create_order(
                 )
             ).first()
             if not product:
-                raise HTTPException(status_code=400, detail=f"Product {item.product_id} not found")
+                raise HTTPException(
+                    status_code=400,
+                    detail=get_message(
+                        "product_id_not_found", lang, id=item.product_id
+                    ),
+                )
             product_name = product.name
             price_cents = product.price_cents
         else:
@@ -2575,10 +2646,10 @@ def create_order(
             tenant_product = session.exec(
                 select(models.TenantProduct).where(
                     models.TenantProduct.id == item.product_id,
-                    models.TenantProduct.tenant_id == table.tenant_id
+                    models.TenantProduct.tenant_id == table.tenant_id,
                 )
             ).first()
-            
+
             if tenant_product:
                 product_name = tenant_product.name
                 price_cents = tenant_product.price_cents
@@ -2587,13 +2658,18 @@ def create_order(
                 product = session.exec(
                     select(models.Product).where(
                         models.Product.id == item.product_id,
-                        models.Product.tenant_id == table.tenant_id
+                        models.Product.tenant_id == table.tenant_id,
                     )
                 ).first()
-                
+
                 if not product:
-                    raise HTTPException(status_code=400, detail=f"Product {item.product_id} not found")
-                
+                    raise HTTPException(
+                        status_code=400,
+                        detail=get_message(
+                            "product_id_not_found", lang, id=item.product_id
+                        ),
+                    )
+
                 product_name = product.name
                 price_cents = product.price_cents
         
@@ -2793,6 +2869,7 @@ def update_order_status(
     status_update: models.OrderStatusUpdate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     order = session.exec(
         select(models.Order).where(
@@ -2802,8 +2879,10 @@ def update_order_status(
     ).first()
 
     if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("order_not_found", lang)
+        )
+
     # Update order status
     order.status = status_update.status
     
@@ -2854,24 +2933,29 @@ def mark_order_paid(
     order_id: int,
     payment_data: models.OrderMarkPaid,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Mark order as paid manually (for cash/terminal payments)."""
     order = session.exec(
         select(models.Order).where(
             models.Order.id == order_id,
-            models.Order.tenant_id == current_user.tenant_id
+            models.Order.tenant_id == current_user.tenant_id,
         )
     ).first()
-    
+
     if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("order_not_found", lang)
+        )
+
     # Validation: Order must be completed (all items delivered) before marking as paid
     if order.status != models.OrderStatus.completed:
         raise HTTPException(
-            status_code=400, 
-            detail=f"Order must be completed before marking as paid. Current status: {order.status.value}"
+            status_code=400,
+            detail=get_message(
+                "order_must_be_completed", lang, status=order.status.value
+            ),
         )
     
     # Mark as paid
@@ -2906,28 +2990,32 @@ def update_order_item_status(
     item_id: int,
     status_update: models.OrderItemStatusUpdate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Update individual order item status (restaurant staff)."""
     order = session.exec(
         select(models.Order).where(
             models.Order.id == order_id,
-            models.Order.tenant_id == current_user.tenant_id
+            models.Order.tenant_id == current_user.tenant_id,
         )
     ).first()
-    
+
     if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("order_not_found", lang)
+        )
+
     item = session.exec(
         select(models.OrderItem).where(
-            models.OrderItem.id == item_id,
-            models.OrderItem.order_id == order_id
+            models.OrderItem.id == item_id, models.OrderItem.order_id == order_id
         )
     ).first()
-    
+
     if not item:
-        raise HTTPException(status_code=404, detail="Order item not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("order_item_not_found", lang)
+        )
     
     # Update item status
     old_status = item.status
@@ -2976,34 +3064,38 @@ def reset_item_status(
     order_id: int,
     item_id: int,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Reset item status from preparing to pending (restaurant staff only)."""
     order = session.exec(
         select(models.Order).where(
             models.Order.id == order_id,
-            models.Order.tenant_id == current_user.tenant_id
+            models.Order.tenant_id == current_user.tenant_id,
         )
     ).first()
-    
+
     if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("order_not_found", lang)
+        )
+
     item = session.exec(
         select(models.OrderItem).where(
-            models.OrderItem.id == item_id,
-            models.OrderItem.order_id == order_id
+            models.OrderItem.id == item_id, models.OrderItem.order_id == order_id
         )
     ).first()
-    
+
     if not item:
-        raise HTTPException(status_code=404, detail="Order item not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("order_item_not_found", lang)
+        )
+
     # Validation: Can only reset from preparing to pending
     if item.status != models.OrderItemStatus.preparing:
         raise HTTPException(
             status_code=400,
-            detail=f"Cannot reset status from {item.status.value}. Only 'preparing' items can be reset to 'pending'."
+            detail=get_message("cannot_reset_status", lang, status=item.status.value),
         )
     
     # Reset status
@@ -3050,38 +3142,43 @@ def cancel_order_item_staff(
     item_id: int,
     cancel_data: models.OrderItemCancel,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Cancel order item (restaurant staff) - requires reason if item is ready."""
     order = session.exec(
         select(models.Order).where(
             models.Order.id == order_id,
-            models.Order.tenant_id == current_user.tenant_id
+            models.Order.tenant_id == current_user.tenant_id,
         )
     ).first()
-    
+
     if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("order_not_found", lang)
+        )
+
     item = session.exec(
         select(models.OrderItem).where(
-            models.OrderItem.id == item_id,
-            models.OrderItem.order_id == order_id
+            models.OrderItem.id == item_id, models.OrderItem.order_id == order_id
         )
     ).first()
-    
+
     if not item:
-        raise HTTPException(status_code=404, detail="Order item not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("order_item_not_found", lang)
+        )
+
     # Validation: Cannot cancel delivered items
     if item.status == models.OrderItemStatus.delivered:
-        raise HTTPException(status_code=400, detail="Cannot cancel delivered items")
-    
+        raise HTTPException(
+            status_code=400, detail=get_message("cannot_cancel_delivered_items", lang)
+        )
+
     # Validation: If item is ready, reason is required (for tax authorities)
     if item.status == models.OrderItemStatus.ready and not cancel_data.reason:
         raise HTTPException(
-            status_code=400,
-            detail="Reason is required when cancelling ready items (required for tax reporting)"
+            status_code=400, detail=get_message("reason_required_cancelling", lang)
         )
     
     # Cancel item (soft delete)
@@ -3131,32 +3228,38 @@ def update_order_item_staff(
     item_id: int,
     item_update: models.OrderItemStaffUpdate,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Update order item (restaurant staff) - can modify any item except delivered."""
     order = session.exec(
         select(models.Order).where(
             models.Order.id == order_id,
-            models.Order.tenant_id == current_user.tenant_id
+            models.Order.tenant_id == current_user.tenant_id,
         )
     ).first()
-    
+
     if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("order_not_found", lang)
+        )
+
     item = session.exec(
         select(models.OrderItem).where(
-            models.OrderItem.id == item_id,
-            models.OrderItem.order_id == order_id
+            models.OrderItem.id == item_id, models.OrderItem.order_id == order_id
         )
     ).first()
-    
+
     if not item:
-        raise HTTPException(status_code=404, detail="Order item not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("order_item_not_found", lang)
+        )
+
     # Validation: Cannot modify delivered items
     if item.status == models.OrderItemStatus.delivered:
-        raise HTTPException(status_code=400, detail="Cannot modify delivered items")
+        raise HTTPException(
+            status_code=400, detail=get_message("cannot_modify_delivered_items", lang)
+        )
     
     # Update item
     if item_update.quantity is not None:
@@ -3215,40 +3318,47 @@ def remove_order_item_staff(
     order_id: int,
     item_id: int,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
-    reason: str | None = Query(None, description="Required reason when removing ready items"),
-    session: Session = Depends(get_session)
+    reason: str | None = Query(
+        None, description="Required reason when removing ready items"
+    ),
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Remove order item (restaurant staff) - requires reason if item is ready."""
     order = session.exec(
         select(models.Order).where(
             models.Order.id == order_id,
-            models.Order.tenant_id == current_user.tenant_id
+            models.Order.tenant_id == current_user.tenant_id,
         )
     ).first()
-    
+
     if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("order_not_found", lang)
+        )
+
     item = session.exec(
         select(models.OrderItem).where(
-            models.OrderItem.id == item_id,
-            models.OrderItem.order_id == order_id
+            models.OrderItem.id == item_id, models.OrderItem.order_id == order_id
         )
     ).first()
-    
+
     if not item:
-        raise HTTPException(status_code=404, detail="Order item not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("order_item_not_found", lang)
+        )
+
     # Validation: Cannot remove delivered items
     if item.status == models.OrderItemStatus.delivered:
-        raise HTTPException(status_code=400, detail="Cannot remove delivered items")
-    
+        raise HTTPException(
+            status_code=400, detail=get_message("cannot_remove_delivered_items", lang)
+        )
+
     # Validation: If item is ready, reason is required
     if item.status == models.OrderItemStatus.ready:
         if not reason:
             raise HTTPException(
-                status_code=400,
-                detail="Reason is required when removing ready items (required for tax reporting)"
+                status_code=400, detail=get_message("reason_required_removing", lang)
             )
     
     # Soft delete
@@ -3299,50 +3409,67 @@ def remove_order_item(
     table_token: str,
     order_id: int,
     item_id: int,
-    session_id: str | None = Query(None, description="Session identifier for order validation"),
+    session_id: str | None = Query(
+        None, description="Session identifier for order validation"
+    ),
     reason: str | None = Query(None, description="Optional reason for removal"),
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Remove item from order (soft delete - customer)."""
-    table = session.exec(select(models.Table).where(models.Table.token == table_token)).first()
+    table = session.exec(
+        select(models.Table).where(models.Table.token == table_token)
+    ).first()
     if not table:
-        raise HTTPException(status_code=404, detail="Table not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("table_not_found", lang)
+        )
+
     order = session.exec(
         select(models.Order).where(
-            models.Order.id == order_id,
-            models.Order.table_id == table.id
+            models.Order.id == order_id, models.Order.table_id == table.id
         )
     ).first()
-    
+
     if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("order_not_found", lang)
+        )
+
     # Security: Validate that order belongs to this session
     # If order has a session_id, request must provide matching session_id
     if order.session_id and order.session_id != session_id:
-        raise HTTPException(status_code=403, detail="Order does not belong to this session")
-    
+        raise HTTPException(
+            status_code=403, detail=get_message("order_session_mismatch", lang)
+        )
+
     item = session.exec(
         select(models.OrderItem).where(
-            models.OrderItem.id == item_id,
-            models.OrderItem.order_id == order_id
+            models.OrderItem.id == item_id, models.OrderItem.order_id == order_id
         )
     ).first()
-    
+
     if not item:
-        raise HTTPException(status_code=404, detail="Order item not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("order_item_not_found", lang)
+        )
+
     # Validation: Cannot remove items that are already being prepared or delivered
-    if item.status in [models.OrderItemStatus.delivered, models.OrderItemStatus.preparing, models.OrderItemStatus.ready]:
+    if item.status in [
+        models.OrderItemStatus.delivered,
+        models.OrderItemStatus.preparing,
+        models.OrderItemStatus.ready,
+    ]:
         status_label = {
             models.OrderItemStatus.delivered: "delivered",
             models.OrderItemStatus.preparing: "being prepared",
-            models.OrderItemStatus.ready: "ready"
+            models.OrderItemStatus.ready: "ready",
         }.get(item.status, "in progress")
         raise HTTPException(
-            status_code=400, 
-            detail=f"Cannot remove items that are {status_label}. Only pending items can be removed."
+            status_code=400,
+            detail=get_message(
+                "cannot_remove_items_status", lang, status=status_label
+            ),
         )
     
     # Soft delete: Mark as removed (NEVER actually delete)
@@ -3389,49 +3516,66 @@ def update_order_item_quantity(
     order_id: int,
     item_id: int,
     item_update: models.OrderItemUpdate,
-    session_id: str | None = Query(None, description="Session identifier for order validation"),
-    session: Session = Depends(get_session)
+    session_id: str | None = Query(
+        None, description="Session identifier for order validation"
+    ),
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Update order item quantity (customer)."""
-    table = session.exec(select(models.Table).where(models.Table.token == table_token)).first()
+    table = session.exec(
+        select(models.Table).where(models.Table.token == table_token)
+    ).first()
     if not table:
-        raise HTTPException(status_code=404, detail="Table not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("table_not_found", lang)
+        )
+
     order = session.exec(
         select(models.Order).where(
-            models.Order.id == order_id,
-            models.Order.table_id == table.id
+            models.Order.id == order_id, models.Order.table_id == table.id
         )
     ).first()
-    
+
     if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("order_not_found", lang)
+        )
+
     # Security: Validate that order belongs to this session
     # If order has a session_id, request must provide matching session_id
     if order.session_id and order.session_id != session_id:
-        raise HTTPException(status_code=403, detail="Order does not belong to this session")
-    
+        raise HTTPException(
+            status_code=403, detail=get_message("order_session_mismatch", lang)
+        )
+
     item = session.exec(
         select(models.OrderItem).where(
-            models.OrderItem.id == item_id,
-            models.OrderItem.order_id == order_id
+            models.OrderItem.id == item_id, models.OrderItem.order_id == order_id
         )
     ).first()
-    
+
     if not item:
-        raise HTTPException(status_code=404, detail="Order item not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("order_item_not_found", lang)
+        )
+
     # Validation: Cannot modify items that are already being prepared or delivered
-    if item.status in [models.OrderItemStatus.delivered, models.OrderItemStatus.preparing, models.OrderItemStatus.ready]:
+    if item.status in [
+        models.OrderItemStatus.delivered,
+        models.OrderItemStatus.preparing,
+        models.OrderItemStatus.ready,
+    ]:
         status_label = {
             models.OrderItemStatus.delivered: "delivered",
             models.OrderItemStatus.preparing: "being prepared",
-            models.OrderItemStatus.ready: "ready"
+            models.OrderItemStatus.ready: "ready",
         }.get(item.status, "in progress")
         raise HTTPException(
-            status_code=400, 
-            detail=f"Cannot modify items that are {status_label}. Only pending items can be modified."
+            status_code=400,
+            detail=get_message(
+                "cannot_modify_items_status", lang, status=status_label
+            ),
         )
     
     # If quantity is 0, remove item (soft delete)
@@ -3479,44 +3623,71 @@ def update_order_item_quantity(
 def cancel_order(
     table_token: str,
     order_id: int,
-    session_id: str | None = Query(None, description="Session identifier for order validation"),
-    session: Session = Depends(get_session)
+    session_id: str | None = Query(
+        None, description="Session identifier for order validation"
+    ),
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Cancel entire order (soft delete - customer)."""
-    table = session.exec(select(models.Table).where(models.Table.token == table_token)).first()
+    table = session.exec(
+        select(models.Table).where(models.Table.token == table_token)
+    ).first()
     if not table:
-        raise HTTPException(status_code=404, detail="Table not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("table_not_found", lang)
+        )
+
     order = session.exec(
         select(models.Order).where(
-            models.Order.id == order_id,
-            models.Order.table_id == table.id
+            models.Order.id == order_id, models.Order.table_id == table.id
         )
     ).first()
-    
+
     if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("order_not_found", lang)
+        )
+
     # Security: Validate that order belongs to this session
     # If order has a session_id, request must provide matching session_id
     if order.session_id and order.session_id != session_id:
-        raise HTTPException(status_code=403, detail="Order does not belong to this session")
-    
+        raise HTTPException(
+            status_code=403, detail=get_message("order_session_mismatch", lang)
+        )
+
     # Validation: Cannot cancel if any items are being prepared, ready, or delivered
-    items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order_id)).all()
+    items = session.exec(
+        select(models.OrderItem).where(models.OrderItem.order_id == order_id)
+    ).all()
     active_items = [item for item in items if not item.removed_by_customer]
     in_progress_items = [
-        item for item in active_items 
-        if item.status in [models.OrderItemStatus.preparing, models.OrderItemStatus.ready, models.OrderItemStatus.delivered]
+        item
+        for item in active_items
+        if item.status
+        in [
+            models.OrderItemStatus.preparing,
+            models.OrderItemStatus.ready,
+            models.OrderItemStatus.delivered,
+        ]
     ]
     if in_progress_items:
         statuses = [item.status.value for item in in_progress_items]
         if models.OrderItemStatus.delivered.value in statuses:
-            raise HTTPException(status_code=400, detail="Cannot cancel order with delivered items")
+            raise HTTPException(
+                status_code=400,
+                detail=get_message("cannot_cancel_order_delivered_items", lang),
+            )
         elif models.OrderItemStatus.ready.value in statuses:
-            raise HTTPException(status_code=400, detail="Cannot cancel order with items that are ready. Only pending items can be cancelled.")
+            raise HTTPException(
+                status_code=400,
+                detail=get_message("cannot_cancel_order_ready_items", lang),
+            )
         else:
-            raise HTTPException(status_code=400, detail="Cannot cancel order with items that are being prepared. Only pending items can be cancelled.")
+            raise HTTPException(
+                status_code=400,
+                detail=get_message("cannot_cancel_order_preparing_items", lang),
+            )
     
     # Soft delete: Mark order and all items as cancelled
     order.status = models.OrderStatus.cancelled
@@ -3552,7 +3723,10 @@ def cancel_order(
 
 @app.post("/orders/{order_id}/create-payment-intent")
 def create_payment_intent(
-    order_id: int, table_token: str, session: Session = Depends(get_session)
+    order_id: int,
+    table_token: str,
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Create a Stripe PaymentIntent for an order."""
     # Verify table token matches the order
@@ -3561,7 +3735,9 @@ def create_payment_intent(
     ).first()
 
     if not table:
-        raise HTTPException(status_code=404, detail="Invalid table")
+        raise HTTPException(
+            status_code=404, detail=get_message("invalid_table", lang)
+        )
 
     order = session.exec(
         select(models.Order).where(
@@ -3570,7 +3746,9 @@ def create_payment_intent(
     ).first()
 
     if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("order_not_found", lang)
+        )
 
     # Calculate total from order items
     items = session.exec(
@@ -3580,7 +3758,9 @@ def create_payment_intent(
     total_cents = sum(item.price_cents * item.quantity for item in items)
 
     if total_cents <= 0:
-        raise HTTPException(status_code=400, detail="Order has no items")
+        raise HTTPException(
+            status_code=400, detail=get_message("order_has_no_items", lang)
+        )
 
     # Get tenant for description, currency, and Stripe keys
     tenant = session.exec(
@@ -3588,13 +3768,16 @@ def create_payment_intent(
     ).first()
 
     if not tenant:
-        raise HTTPException(status_code=404, detail="Tenant not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("tenant_not_found", lang)
+        )
 
     # Use tenant-specific Stripe keys, fallback to global config
     stripe_secret_key = tenant.stripe_secret_key or settings.stripe_secret_key
     if not stripe_secret_key:
         raise HTTPException(
-            status_code=400, detail="Stripe not configured for this tenant"
+            status_code=400,
+            detail=get_message("stripe_not_configured", lang),
         )
 
     # Resolve Stripe currency:
@@ -3639,6 +3822,7 @@ def confirm_payment(
     table_token: str,
     payment_intent_id: str,
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ) -> dict:
     """Mark order as paid after successful Stripe payment."""
     table = session.exec(
@@ -3646,7 +3830,9 @@ def confirm_payment(
     ).first()
 
     if not table:
-        raise HTTPException(status_code=404, detail="Invalid table")
+        raise HTTPException(
+            status_code=404, detail=get_message("invalid_table", lang)
+        )
 
     order = session.exec(
         select(models.Order).where(
@@ -3655,20 +3841,25 @@ def confirm_payment(
     ).first()
 
     if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("order_not_found", lang)
+        )
 
     # Get tenant for Stripe keys
     tenant = session.exec(
         select(models.Tenant).where(models.Tenant.id == order.tenant_id)
     ).first()
     if not tenant:
-        raise HTTPException(status_code=404, detail="Tenant not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("tenant_not_found", lang)
+        )
 
     # Use tenant-specific Stripe keys, fallback to global config
     stripe_secret_key = tenant.stripe_secret_key or settings.stripe_secret_key
     if not stripe_secret_key:
         raise HTTPException(
-            status_code=400, detail="Stripe not configured for this tenant"
+            status_code=400,
+            detail=get_message("stripe_not_configured", lang),
         )
 
     # Verify payment with Stripe
@@ -3677,7 +3868,9 @@ def confirm_payment(
             payment_intent_id, api_key=stripe_secret_key
         )
         if intent.status != "succeeded":
-            raise HTTPException(status_code=400, detail="Payment not completed")
+            raise HTTPException(
+                status_code=400, detail=get_message("payment_not_completed", lang)
+            )
 
         # Validation: Verify intent matches order
         # 1. Check order ID in metadata
@@ -3685,7 +3878,7 @@ def confirm_payment(
         if not intent_order_id or str(intent_order_id) != str(order.id):
             raise HTTPException(
                 status_code=400,
-                detail="Payment mismatch: Payment does not belong to this order",
+                detail=get_message("payment_mismatch_order", lang),
             )
 
         # 2. Check amount
@@ -3697,7 +3890,12 @@ def confirm_payment(
         if intent.amount != total_cents:
             raise HTTPException(
                 status_code=400,
-                detail=f"Payment mismatch: Amount {intent.amount} does not match order total {total_cents}",
+                detail=get_message(
+                    "payment_mismatch_amount",
+                    lang,
+                    amount=intent.amount,
+                    total=total_cents,
+                ),
             )
 
         # Mark order as paid

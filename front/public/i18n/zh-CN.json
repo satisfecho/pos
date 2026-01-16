@@ -25,7 +25,9 @@
     "NAME": "名称",
     "DESCRIPTION": "描述",
     "CATEGORY": "类别",
-    "SUBCATEGORY": "子类别"
+    "SUBCATEGORY": "子类别",
+    "ALL_CATEGORIES": "所有类别",
+    "ALL_SUBCATEGORIES": "所有 {{category}}"
   },
   "NAV": {
     "HOME": "首页",
@@ -102,6 +104,7 @@
     "SUBCATEGORY_LABEL": "子类别",
     "SELECT_CATEGORY": "选择类别",
     "SELECT_SUBCATEGORY": "选择子类别",
+    "NONE": "无",
     "CHANGE_IMAGE": "更换图片",
     "CANCEL": "取消",
     "UPDATE": "更新",
@@ -124,7 +127,7 @@
     "FAILED_TO_LOAD": "加载产品失败",
     "FAILED_TO_UPDATE_CATEGORY": "更新类别失败",
     "FAILED_TO_UPLOAD_IMAGE": "上传图片失败",
-    "PRODUCT_CREATED_BUT_IMAGE_FAILED": "产品已创建，但图片上传失败"
+    "PRODUCT_CREATED_BUT_IMAGE_FAILED": "产品已创建但图片上传失败"
   },
   "CATALOG": {
     "TITLE": "产品目录",
@@ -141,7 +144,7 @@
     "SEARCH_LABEL": "搜索",
     "SEARCH_PLACEHOLDER": "搜索产品...",
     "ALL_CATEGORIES": "所有类别",
-    "ALL_SUBCATEGORIES": "所有子类别",
+    "ALL_SUBCATEGORIES": "所有 {{category}}",
     "LOADING_CATALOG": "目录加载中...",
     "PRICE_PLACEHOLDER": "0.00",
     "ADD_PRODUCT": "添加产品",
@@ -438,22 +441,22 @@
       "NOTES": "备注"
     },
     "CATEGORIES": {
-      "INGREDIENTS": "原料",
-      "BEVERAGES": "饮品",
+      "INGREDIENTS": "配料",
+      "BEVERAGES": "饮料",
       "PACKAGING": "包装",
       "CLEANING": "清洁",
       "EQUIPMENT": "设备",
       "OTHER": "其他"
     },
     "UNITS": {
-      "PIECE": "件/个",
+      "PIECE": "件",
       "GRAM": "克",
       "KILOGRAM": "千克",
       "OUNCE": "盎司",
       "POUND": "磅",
       "MILLILITER": "毫升",
       "LITER": "升",
-      "FLUID_OUNCE": "液量盎司",
+      "FLUID_OUNCE": "液盎司",
       "CUP": "杯",
       "GALLON": "加仑"
     },

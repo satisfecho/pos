@@ -21,6 +21,8 @@ from sqlmodel import Session, select
 from .db import get_session
 from .security import get_current_user
 from . import models
+from .messages import get_message
+from .language_service import get_requested_language
 from .inventory_models import (
     InventoryBatch,
     InventoryCategory,
@@ -124,6 +126,7 @@ def create_inventory_item(
     item_create: InventoryItemCreate,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Create a new inventory item"""
     # Check for duplicate SKU
@@ -133,10 +136,13 @@ def create_inventory_item(
         .where(InventoryItem.sku == item_create.sku)
         .where(InventoryItem.is_deleted == False)
     ).first()
-    
+
     if existing:
-        raise HTTPException(status_code=400, detail=f"SKU '{item_create.sku}' already exists")
-    
+        raise HTTPException(
+            status_code=400,
+            detail=get_message("sku_exists", lang, sku=item_create.sku),
+        )
+
     item = InventoryItem(
         tenant_id=current_user.tenant_id,
         **item_create.model_dump()
@@ -169,13 +175,16 @@ def get_inventory_item(
     item_id: int,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Get a single inventory item with details"""
     item = session.get(InventoryItem, item_id)
-    
+
     if not item or item.tenant_id != current_user.tenant_id or item.is_deleted:
-        raise HTTPException(status_code=404, detail="Inventory item not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("inventory_item_not_found", lang)
+        )
+
     return InventoryItemResponse(
         id=item.id,
         sku=item.sku,
@@ -201,13 +210,16 @@ def update_inventory_item(
     item_update: InventoryItemUpdate,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Update an inventory item"""
     item = session.get(InventoryItem, item_id)
-    
+
     if not item or item.tenant_id != current_user.tenant_id or item.is_deleted:
-        raise HTTPException(status_code=404, detail="Inventory item not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("inventory_item_not_found", lang)
+        )
+
     # Check for duplicate SKU if changing
     if item_update.sku and item_update.sku != item.sku:
         existing = session.exec(
@@ -217,9 +229,12 @@ def update_inventory_item(
             .where(InventoryItem.is_deleted == False)
             .where(InventoryItem.id != item_id)
         ).first()
-        
+
         if existing:
-            raise HTTPException(status_code=400, detail=f"SKU '{item_update.sku}' already exists")
+            raise HTTPException(
+                status_code=400,
+                detail=get_message("sku_exists", lang, sku=item_update.sku),
+            )
     
     # Apply updates
     update_data = item_update.model_dump(exclude_unset=True)
@@ -255,13 +270,16 @@ def delete_inventory_item(
     item_id: int,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Soft delete an inventory item"""
     item = session.get(InventoryItem, item_id)
-    
+
     if not item or item.tenant_id != current_user.tenant_id or item.is_deleted:
-        raise HTTPException(status_code=404, detail="Inventory item not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("inventory_item_not_found", lang)
+        )
+
     item.is_deleted = True
     item.is_active = False
     item.updated_at = datetime.now(timezone.utc)
@@ -277,23 +295,30 @@ def adjust_inventory_stock(
     adjustment: StockAdjustment,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Manual stock adjustment (add, subtract, or waste)"""
     item = session.get(InventoryItem, item_id)
-    
+
     if not item or item.tenant_id != current_user.tenant_id or item.is_deleted:
-        raise HTTPException(status_code=404, detail="Inventory item not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("inventory_item_not_found", lang)
+        )
+
     # Validate adjustment type
     valid_types = [
         TransactionType.adjustment_add,
         TransactionType.adjustment_subtract,
-        TransactionType.waste
+        TransactionType.waste,
     ]
     if adjustment.adjustment_type not in valid_types:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid adjustment type. Must be one of: {[t.value for t in valid_types]}"
+            detail=get_message(
+                "invalid_adjustment_type",
+                lang,
+                allowed=[t.value for t in valid_types],
+            ),
         )
     
     transaction = adjust_stock(
@@ -344,6 +369,7 @@ def create_supplier(
     supplier_create: SupplierCreate,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Create a new supplier"""
     supplier = Supplier(
@@ -361,13 +387,20 @@ def get_supplier(
     supplier_id: int,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Get a single supplier"""
     supplier = session.get(Supplier, supplier_id)
-    
-    if not supplier or supplier.tenant_id != current_user.tenant_id or supplier.is_deleted:
-        raise HTTPException(status_code=404, detail="Supplier not found")
-    
+
+    if (
+        not supplier
+        or supplier.tenant_id != current_user.tenant_id
+        or supplier.is_deleted
+    ):
+        raise HTTPException(
+            status_code=404, detail=get_message("supplier_not_found", lang)
+        )
+
     return supplier
 
 
@@ -377,12 +410,19 @@ def update_supplier(
     supplier_update: SupplierUpdate,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Update a supplier"""
     supplier = session.get(Supplier, supplier_id)
-    
-    if not supplier or supplier.tenant_id != current_user.tenant_id or supplier.is_deleted:
-        raise HTTPException(status_code=404, detail="Supplier not found")
+
+    if (
+        not supplier
+        or supplier.tenant_id != current_user.tenant_id
+        or supplier.is_deleted
+    ):
+        raise HTTPException(
+            status_code=404, detail=get_message("supplier_not_found", lang)
+        )
     
     update_data = supplier_update.model_dump(exclude_unset=True)
     for key, value in update_data.items():
@@ -400,12 +440,19 @@ def delete_supplier(
     supplier_id: int,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Soft delete a supplier"""
     supplier = session.get(Supplier, supplier_id)
-    
-    if not supplier or supplier.tenant_id != current_user.tenant_id or supplier.is_deleted:
-        raise HTTPException(status_code=404, detail="Supplier not found")
+
+    if (
+        not supplier
+        or supplier.tenant_id != current_user.tenant_id
+        or supplier.is_deleted
+    ):
+        raise HTTPException(
+            status_code=404, detail=get_message("supplier_not_found", lang)
+        )
     
     supplier.is_deleted = True
     supplier.is_active = False
@@ -472,12 +519,19 @@ def create_purchase_order(
     po_create: PurchaseOrderCreate,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Create a new purchase order"""
     # Validate supplier
     supplier = session.get(Supplier, po_create.supplier_id)
-    if not supplier or supplier.tenant_id != current_user.tenant_id or supplier.is_deleted:
-        raise HTTPException(status_code=404, detail="Supplier not found")
+    if (
+        not supplier
+        or supplier.tenant_id != current_user.tenant_id
+        or supplier.is_deleted
+    ):
+        raise HTTPException(
+            status_code=404, detail=get_message("supplier_not_found", lang)
+        )
     
     # Generate PO number
     order_number = generate_po_number(session, current_user.tenant_id)
@@ -502,7 +556,11 @@ def create_purchase_order(
         if not inv_item or inv_item.tenant_id != current_user.tenant_id:
             raise HTTPException(
                 status_code=404,
-                detail=f"Inventory item {item_data.inventory_item_id} not found"
+                detail=get_message(
+                    "inventory_item_id_not_found",
+                    lang,
+                    id=item_data.inventory_item_id,
+                ),
             )
         
         line_total = int(item_data.quantity_ordered * item_data.unit_cost_cents)
@@ -538,12 +596,15 @@ def get_purchase_order(
     po_id: int,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Get a purchase order with full details"""
     po = session.get(PurchaseOrder, po_id)
-    
+
     if not po or po.tenant_id != current_user.tenant_id:
-        raise HTTPException(status_code=404, detail="Purchase order not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("purchase_order_not_found", lang)
+        )
     
     supplier = session.get(Supplier, po.supplier_id)
     
@@ -591,17 +652,20 @@ def update_purchase_order(
     po_update: PurchaseOrderUpdate,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Update a purchase order (only while in draft status)"""
     po = session.get(PurchaseOrder, po_id)
-    
+
     if not po or po.tenant_id != current_user.tenant_id:
-        raise HTTPException(status_code=404, detail="Purchase order not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("purchase_order_not_found", lang)
+        )
+
     if po.status != PurchaseOrderStatus.draft:
         raise HTTPException(
             status_code=400,
-            detail="Can only update purchase orders in draft status"
+            detail=get_message("po_update_draft_only", lang),
         )
     
     update_data = po_update.model_dump(exclude_unset=True)
@@ -622,27 +686,48 @@ def update_purchase_order_status(
     new_status: PurchaseOrderStatus,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Change purchase order status"""
     po = session.get(PurchaseOrder, po_id)
-    
+
     if not po or po.tenant_id != current_user.tenant_id:
-        raise HTTPException(status_code=404, detail="Purchase order not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("purchase_order_not_found", lang)
+        )
+
     # Validate status transitions
     valid_transitions = {
-        PurchaseOrderStatus.draft: [PurchaseOrderStatus.submitted, PurchaseOrderStatus.cancelled],
-        PurchaseOrderStatus.submitted: [PurchaseOrderStatus.approved, PurchaseOrderStatus.cancelled],
-        PurchaseOrderStatus.approved: [PurchaseOrderStatus.partially_received, PurchaseOrderStatus.received, PurchaseOrderStatus.cancelled],
-        PurchaseOrderStatus.partially_received: [PurchaseOrderStatus.received, PurchaseOrderStatus.cancelled],
+        PurchaseOrderStatus.draft: [
+            PurchaseOrderStatus.submitted,
+            PurchaseOrderStatus.cancelled,
+        ],
+        PurchaseOrderStatus.submitted: [
+            PurchaseOrderStatus.approved,
+            PurchaseOrderStatus.cancelled,
+        ],
+        PurchaseOrderStatus.approved: [
+            PurchaseOrderStatus.partially_received,
+            PurchaseOrderStatus.received,
+            PurchaseOrderStatus.cancelled,
+        ],
+        PurchaseOrderStatus.partially_received: [
+            PurchaseOrderStatus.received,
+            PurchaseOrderStatus.cancelled,
+        ],
         PurchaseOrderStatus.received: [],  # Terminal state
         PurchaseOrderStatus.cancelled: [],  # Terminal state
     }
-    
+
     if new_status not in valid_transitions.get(po.status, []):
         raise HTTPException(
             status_code=400,
-            detail=f"Cannot transition from {po.status.value} to {new_status.value}"
+            detail=get_message(
+                "po_invalid_transition",
+                lang,
+                from_status=po.status.value,
+                to_status=new_status.value,
+            ),
         )
     
     po.status = new_status
@@ -659,18 +744,24 @@ def receive_purchase_order(
     receive_input: ReceiveGoodsInput,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Receive goods against a purchase order (GRN)"""
     po = session.get(PurchaseOrder, po_id)
-    
+
     if not po or po.tenant_id != current_user.tenant_id:
-        raise HTTPException(status_code=404, detail="Purchase order not found")
-    
+        raise HTTPException(
+            status_code=404, detail=get_message("purchase_order_not_found", lang)
+        )
+
     # Must be approved or partially received to receive goods
-    if po.status not in [PurchaseOrderStatus.approved, PurchaseOrderStatus.partially_received]:
+    if po.status not in [
+        PurchaseOrderStatus.approved,
+        PurchaseOrderStatus.partially_received,
+    ]:
         raise HTTPException(
             status_code=400,
-            detail=f"Cannot receive goods for order in {po.status.value} status"
+            detail=get_message("po_receive_invalid_status", lang, status=po.status.value),
         )
     
     # Convert input to dict format for service
@@ -705,17 +796,23 @@ def cancel_purchase_order(
     po_id: int,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Cancel a purchase order (only if not yet received)"""
     po = session.get(PurchaseOrder, po_id)
-    
+
     if not po or po.tenant_id != current_user.tenant_id:
-        raise HTTPException(status_code=404, detail="Purchase order not found")
-    
-    if po.status in [PurchaseOrderStatus.received, PurchaseOrderStatus.partially_received]:
+        raise HTTPException(
+            status_code=404, detail=get_message("purchase_order_not_found", lang)
+        )
+
+    if po.status in [
+        PurchaseOrderStatus.received,
+        PurchaseOrderStatus.partially_received,
+    ]:
         raise HTTPException(
             status_code=400,
-            detail="Cannot cancel a purchase order that has received goods"
+            detail=get_message("po_cancel_received", lang),
         )
     
     po.status = PurchaseOrderStatus.cancelled
@@ -731,14 +828,17 @@ def get_purchase_order_pdf(
     po_id: int,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Generate a professional PDF for a purchase order"""
     from .pdf_generator import generate_purchase_order_pdf
-    
+
     po = session.get(PurchaseOrder, po_id)
-    
+
     if not po or po.tenant_id != current_user.tenant_id:
-        raise HTTPException(status_code=404, detail="Purchase order not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("purchase_order_not_found", lang)
+        )
     
     try:
         # Get supplier details
@@ -802,12 +902,16 @@ def get_purchase_order_pdf(
             media_type="application/pdf",
             headers={
                 "Content-Disposition": f'attachment; filename="{filename}"',
-            }
+            },
         )
     except Exception as e:
         import traceback
+
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"PDF generation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=get_message("pdf_generation_failed", lang, error=str(e)),
+        )
 
 
 # ============ PRODUCT RECIPES ============
@@ -817,12 +921,15 @@ def get_product_recipe(
     product_id: int,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Get recipe (BOM) for a product"""
     # Verify product exists and belongs to tenant
     product = session.get(models.Product, product_id)
     if not product or product.tenant_id != current_user.tenant_id:
-        raise HTTPException(status_code=404, detail="Product not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("product_not_found", lang)
+        )
     
     # Get recipe items
     statement = (
@@ -860,12 +967,15 @@ def update_product_recipe(
     recipe_update: ProductRecipeUpdate,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Replace entire recipe for a product"""
     # Verify product exists and belongs to tenant
     product = session.get(models.Product, product_id)
     if not product or product.tenant_id != current_user.tenant_id:
-        raise HTTPException(status_code=404, detail="Product not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("product_not_found", lang)
+        )
     
     # Delete existing recipe items
     statement = (
@@ -884,7 +994,11 @@ def update_product_recipe(
         if not inv_item or inv_item.tenant_id != current_user.tenant_id:
             raise HTTPException(
                 status_code=404,
-                detail=f"Inventory item {item_data.inventory_item_id} not found"
+                detail=get_message(
+                    "inventory_item_id_not_found",
+                    lang,
+                    id=item_data.inventory_item_id,
+                ),
             )
         
         recipe_item = ProductRecipe(
@@ -908,12 +1022,15 @@ def get_product_cost(
     product_id: int,
     current_user: Annotated[models.User, Depends(get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(get_requested_language),
 ):
     """Calculate theoretical cost for a product based on its recipe"""
     # Verify product exists
     product = session.get(models.Product, product_id)
     if not product or product.tenant_id != current_user.tenant_id:
-        raise HTTPException(status_code=404, detail="Product not found")
+        raise HTTPException(
+            status_code=404, detail=get_message("product_not_found", lang)
+        )
     
     cost_data = calculate_product_cost(session, product_id, current_user.tenant_id)
     

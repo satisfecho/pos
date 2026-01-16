@@ -25,7 +25,9 @@
     "NAME": "Name",
     "DESCRIPTION": "Beschreibung",
     "CATEGORY": "Kategorie",
-    "SUBCATEGORY": "Unterkategorie"
+    "SUBCATEGORY": "Unterkategorie",
+    "ALL_CATEGORIES": "Alle Kategorien",
+    "ALL_SUBCATEGORIES": "Alle {{category}}"
   },
   "NAV": {
     "HOME": "Startseite",
@@ -104,6 +106,7 @@
     "SUBCATEGORY_LABEL": "Unterkategorie",
     "SELECT_CATEGORY": "Kategorie auswählen",
     "SELECT_SUBCATEGORY": "Unterkategorie auswählen",
+    "NONE": "Keine",
     "CHANGE_IMAGE": "Bild ändern",
     "CANCEL": "Abbrechen",
     "UPDATE": "Aktualisieren",
@@ -123,8 +126,8 @@
     "FAILED_TO_UPDATE": "Aktualisierung fehlgeschlagen",
     "FAILED_TO_CREATE": "Erstellung fehlgeschlagen",
     "FAILED_TO_DELETE": "Löschen fehlgeschlagen",
-    "FAILED_TO_LOAD": "Fehler beim Laden der Produkte",
-    "FAILED_TO_UPDATE_CATEGORY": "Kategorie-Update fehlgeschlagen",
+    "FAILED_TO_LOAD": "Produkte konnten nicht geladen werden",
+    "FAILED_TO_UPDATE_CATEGORY": "Kategorie konnte nicht aktualisiert werden",
     "FAILED_TO_UPLOAD_IMAGE": "Bild-Upload fehlgeschlagen",
     "PRODUCT_CREATED_BUT_IMAGE_FAILED": "Produkt erstellt, aber Bild-Upload fehlgeschlagen"
   },
@@ -143,7 +146,7 @@
     "SEARCH_LABEL": "Suche",
     "SEARCH_PLACEHOLDER": "Produkte suchen...",
     "ALL_CATEGORIES": "Alle Kategorien",
-    "ALL_SUBCATEGORIES": "Alle Unterkategorien",
+    "ALL_SUBCATEGORIES": "Alle {{category}}",
     "LOADING_CATALOG": "Katalog wird geladen...",
     "PRICE_PLACEHOLDER": "0.00",
     "ADD_PRODUCT": "Produkt hinzufügen",
@@ -445,7 +448,7 @@
       "PACKAGING": "Verpackung",
       "CLEANING": "Reinigung",
       "EQUIPMENT": "Ausrüstung",
-      "OTHER": "Sonstiges"
+      "OTHER": "Andere"
     },
     "UNITS": {
       "PIECE": "Stück",

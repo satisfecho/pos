@@ -25,7 +25,9 @@
     "NAME": "Nom",
     "DESCRIPTION": "Descripció",
     "CATEGORY": "Categoria",
-    "SUBCATEGORY": "Subcategoria"
+    "SUBCATEGORY": "Subcategoria",
+    "ALL_CATEGORIES": "Totes les Categories",
+    "ALL_SUBCATEGORIES": "Tot {{category}}"
   },
   "NAV": {
     "HOME": "Inici",
@@ -104,6 +106,7 @@
     "SUBCATEGORY_LABEL": "Subcategoria",
     "SELECT_CATEGORY": "Seleccionar Categoria",
     "SELECT_SUBCATEGORY": "Seleccionar Subcategoria",
+    "NONE": "Cap",
     "CHANGE_IMAGE": "Canviar Imatge",
     "CANCEL": "Cancel·lar",
     "UPDATE": "Actualitzar",
@@ -123,10 +126,10 @@
     "FAILED_TO_UPDATE": "Error en actualitzar",
     "FAILED_TO_CREATE": "Error en crear",
     "FAILED_TO_DELETE": "Error en eliminar",
-    "FAILED_TO_LOAD": "Error en carregar els productes",
-    "FAILED_TO_UPDATE_CATEGORY": "Error en actualitzar la categoria",
-    "FAILED_TO_UPLOAD_IMAGE": "Error en pujar la imatge",
-    "PRODUCT_CREATED_BUT_IMAGE_FAILED": "Producte creat però la pujada de la imatge ha fallat"
+    "FAILED_TO_LOAD": "Error en carregar productes",
+    "FAILED_TO_UPDATE_CATEGORY": "Error en actualitzar categoria",
+    "FAILED_TO_UPLOAD_IMAGE": "Error en pujar imatge",
+    "PRODUCT_CREATED_BUT_IMAGE_FAILED": "Producte creat però la pujada d'imatge ha fallat"
   },
   "CATALOG": {
     "TITLE": "Catàleg de productes",
@@ -143,7 +146,7 @@
     "SEARCH_LABEL": "Cerca",
     "SEARCH_PLACEHOLDER": "Cerca productes...",
     "ALL_CATEGORIES": "Totes les Categories",
-    "ALL_SUBCATEGORIES": "Totes les Subcategories",
+    "ALL_SUBCATEGORIES": "Tot {{category}}",
     "LOADING_CATALOG": "Carregant catàleg...",
     "PRICE_PLACEHOLDER": "0.00",
     "ADD_PRODUCT": "Afegir Producte",
@@ -448,15 +451,15 @@
       "OTHER": "Altres"
     },
     "UNITS": {
-      "PIECE": "Unitat",
+      "PIECE": "Peça",
       "GRAM": "Gram",
-      "KILOGRAM": "Quilogram",
-      "OUNCE": "Onça",
+      "KILOGRAM": "Kilogram",
+      "OUNCE": "Unça",
       "POUND": "Lliura",
       "MILLILITER": "Mil·lilitre",
       "LITER": "Litre",
-      "FLUID_OUNCE": "Onça líquida",
-      "CUP": "Taça",
+      "FLUID_OUNCE": "Unça líquida",
+      "CUP": "Tassa",
       "GALLON": "Galó"
     },
     "COMMON": {
