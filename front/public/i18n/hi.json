@@ -25,7 +25,9 @@
     "NAME": "नाम",
     "DESCRIPTION": "विवरण",
     "CATEGORY": "श्रेणी",
-    "SUBCATEGORY": "उपश्रेणी"
+    "SUBCATEGORY": "उपश्रेणी",
+    "ALL_CATEGORIES": "सभी श्रेणियां",
+    "ALL_SUBCATEGORIES": "सभी {{category}}"
   },
   "NAV": {
     "HOME": "होम",
@@ -104,6 +106,7 @@
     "SUBCATEGORY_LABEL": "उपश्रेणी",
     "SELECT_CATEGORY": "श्रेणी चुनें",
     "SELECT_SUBCATEGORY": "उपश्रेणी चुनें",
+    "NONE": "कोई नहीं",
     "CHANGE_IMAGE": "छवि बदलें",
     "CANCEL": "रद्द करें",
     "UPDATE": "अपडेट करें",
@@ -123,10 +126,10 @@
     "FAILED_TO_UPDATE": "अपडेट करने में विफल",
     "FAILED_TO_CREATE": "बनाने में विफल",
     "FAILED_TO_DELETE": "हटाने में विफल",
-    "FAILED_TO_LOAD": "उत्पाद लोड करने में विफल",
+    "FAILED_TO_LOAD": "उत्पादों को लोड करने में विफल",
     "FAILED_TO_UPDATE_CATEGORY": "श्रेणी अपडेट करने में विफल",
     "FAILED_TO_UPLOAD_IMAGE": "छवि अपलोड करने में विफल",
-    "PRODUCT_CREATED_BUT_IMAGE_FAILED": "उत्पाद बन गया लेकिन छवि अपलोड विफल रही"
+    "PRODUCT_CREATED_BUT_IMAGE_FAILED": "उत्पाद बनाया गया लेकिन छवि अपलोड विफल"
   },
   "CATALOG": {
     "TITLE": "उत्पाद कैटलॉग",
@@ -143,7 +146,7 @@
     "SEARCH_LABEL": "खोजें",
     "SEARCH_PLACEHOLDER": "उत्पाद खोजें...",
     "ALL_CATEGORIES": "सभी श्रेणियां",
-    "ALL_SUBCATEGORIES": "सभी उपश्रेणियां",
+    "ALL_SUBCATEGORIES": "सभी {{category}}",
     "LOADING_CATALOG": "कैटलॉग लोड हो रहा है...",
     "PRICE_PLACEHOLDER": "0.00",
     "ADD_PRODUCT": "उत्पाद जोड़ें",
@@ -448,14 +451,14 @@
       "OTHER": "अन्य"
     },
     "UNITS": {
-      "PIECE": "पीस",
+      "PIECE": "टुकड़ा",
       "GRAM": "ग्राम",
       "KILOGRAM": "किलोग्राम",
       "OUNCE": "औंस",
       "POUND": "पाउंड",
       "MILLILITER": "मिलीलीटर",
       "LITER": "लीटर",
-      "FLUID_OUNCE": "द्रव औंस",
+      "FLUID_OUNCE": "तरल औंस",
       "CUP": "कप",
       "GALLON": "गैलन"
     },

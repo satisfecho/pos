@@ -25,7 +25,9 @@
     "NAME": "Name",
     "DESCRIPTION": "Description",
     "CATEGORY": "Category",
-    "SUBCATEGORY": "Subcategory"
+    "SUBCATEGORY": "Subcategory",
+    "ALL_CATEGORIES": "All Categories",
+    "ALL_SUBCATEGORIES": "All {{category}}"
   },
   "NAV": {
     "HOME": "Home",
@@ -102,6 +104,7 @@
     "SUBCATEGORY_LABEL": "Subcategory",
     "SELECT_CATEGORY": "Select Category",
     "SELECT_SUBCATEGORY": "Select Subcategory",
+    "NONE": "None",
     "UPLOAD_IMAGE": "Upload Image",
     "CHANGE_IMAGE": "Change Image",
     "CANCEL": "Cancel",
@@ -136,7 +139,7 @@
     "SEARCH_LABEL": "Search",
     "SEARCH_PLACEHOLDER": "Search products...",
     "ALL_CATEGORIES": "All Categories",
-    "ALL_SUBCATEGORIES": "All Subcategories",
+    "ALL_SUBCATEGORIES": "All {{category}}",
     "LOADING_CATALOG": "Loading catalog...",
     "ADD_TO_MENU": "Add to Menu",
     "REMOVE_FROM_MENU": "Remove from Menu",

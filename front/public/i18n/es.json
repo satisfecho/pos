@@ -25,7 +25,9 @@
     "NAME": "Nombre",
     "DESCRIPTION": "Descripción",
     "CATEGORY": "Categoría",
-    "SUBCATEGORY": "Subcategoría"
+    "SUBCATEGORY": "Subcategoría",
+    "ALL_CATEGORIES": "Todas las Categorías",
+    "ALL_SUBCATEGORIES": "Todo {{category}}"
   },
   "NAV": {
     "HOME": "Inicio",
@@ -104,6 +106,7 @@
     "SUBCATEGORY_LABEL": "Subcategoría",
     "SELECT_CATEGORY": "Seleccionar Categoría",
     "SELECT_SUBCATEGORY": "Seleccionar Subcategoría",
+    "NONE": "Ninguno",
     "CHANGE_IMAGE": "Cambiar Imagen",
     "CANCEL": "Cancelar",
     "UPDATE": "Actualizar",
@@ -143,7 +146,7 @@
     "SEARCH_LABEL": "Buscar",
     "SEARCH_PLACEHOLDER": "Buscar productos...",
     "ALL_CATEGORIES": "Todas las Categorías",
-    "ALL_SUBCATEGORIES": "Todas las Subcategorías",
+    "ALL_SUBCATEGORIES": "Todo {{category}}",
     "LOADING_CATALOG": "Cargando catálogo...",
     "PRICE_PLACEHOLDER": "0.00",
     "ADD_PRODUCT": "Añadir Producto",
@@ -467,7 +470,7 @@
       "OTHER": "Otros"
     },
     "UNITS": {
-      "PIECE": "Unidad",
+      "PIECE": "Pieza",
       "GRAM": "Gramo",
       "KILOGRAM": "Kilogramo",
       "OUNCE": "Onza",

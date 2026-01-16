@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { ApiService, Product } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-products',
@@ -146,7 +146,7 @@ import { TranslateModule } from '@ngx-translate/core';
                     class="filter-btn" 
                     [class.active]="selectedCategory() === null"
                     (click)="selectCategory(null)">
-                    All Categories
+                    {{ 'CATALOG.ALL_CATEGORIES' | translate }}
                   </button>
                   @for (category of availableCategories(); track category) {
                     <button 
@@ -166,7 +166,7 @@ import { TranslateModule } from '@ngx-translate/core';
                     class="filter-btn filter-btn-sub" 
                     [class.active]="selectedSubcategory() === null"
                     (click)="selectSubcategory(null)">
-                    All {{ selectedCategory() }}
+                    {{ 'CATALOG.ALL_SUBCATEGORIES' | translate: {category: selectedCategory()} }}
                   </button>
                   @for (subcategory of availableSubcategoriesForFilter(); track subcategory) {
                     <button 
@@ -222,7 +222,7 @@ import { TranslateModule } from '@ngx-translate/core';
                             (blur)="saveCategoryInline(product)"
                             (keydown.escape)="cancelCategoryEdit()"
                             [attr.data-product-id]="product.id">
-                            <option value="">None</option>
+                            <option value="">{{ 'COMMON.NONE' | translate }}</option>
                             @for (category of getCategoryKeys(); track category) {
                               <option [value]="category">{{ category }}</option>
                             }
@@ -241,7 +241,7 @@ import { TranslateModule } from '@ngx-translate/core';
                             [disabled]="!editingCategory || getSubcategoriesForCategory(editingCategory || '').length === 0"
                             (blur)="saveCategoryInline(product)"
                             (keydown.escape)="cancelCategoryEdit()">
-                            <option value="">None</option>
+                            <option value="">{{ 'COMMON.NONE' | translate }}</option>
                             @for (subcat of getSubcategoriesForCategory(editingCategory); track subcat) {
                               <option [value]="subcat">{{ subcat }}</option>
                             }
@@ -671,6 +671,7 @@ import { TranslateModule } from '@ngx-translate/core';
 export class ProductsComponent implements OnInit {
   private api = inject(ApiService);
   private router = inject(Router);
+  private translateService = inject(TranslateService);
 
   products = signal<Product[]>([]);
   filteredProducts = signal<Product[]>([]);
@@ -801,7 +802,7 @@ export class ProductsComponent implements OnInit {
           this.saving.set(false);
         },
       error: (err) => {
-        this.error.set(err.error?.detail || 'Failed to update category');
+        this.error.set(err.error?.detail || this.translate('PRODUCTS.FAILED_TO_UPDATE_CATEGORY'));
         this.cancelCategoryEdit();
         this.saving.set(false);
       }
@@ -857,10 +858,14 @@ export class ProductsComponent implements OnInit {
       },
       error: (err) => {
         if (err.status === 401) { this.router.navigate(['/login']); }
-        else { this.error.set(err.error?.detail || 'Failed to load products'); }
+        else { this.error.set(err.error?.detail || this.translate('PRODUCTS.FAILED_TO_LOAD')); }
         this.loading.set(false);
       }
     });
+  }
+
+  private translate(key: string): string {
+    return this.translateService.instant(key);
   }
 
   updateAvailableCategories() {
@@ -972,7 +977,7 @@ export class ProductsComponent implements OnInit {
           this.cancelForm(); 
           this.saving.set(false); 
         },
-        error: (err) => { this.error.set(err.error?.detail || 'Failed to update'); this.saving.set(false); }
+        error: (err) => { this.error.set(err.error?.detail || this.translate('PRODUCTS.FAILED_TO_UPDATE')); this.saving.set(false); }
       });
     } else {
       this.api.createProduct(productData as Product).subscribe({
@@ -991,7 +996,7 @@ export class ProductsComponent implements OnInit {
                 this.uploading.set(false);
               },
               error: (err) => {
-                this.error.set(err.error?.detail || 'Product created but image upload failed');
+                this.error.set(err.error?.detail || this.translate('PRODUCTS.PRODUCT_CREATED_BUT_IMAGE_FAILED'));
                 this.clearPendingImage();
                 this.uploading.set(false);
               }
@@ -1002,7 +1007,7 @@ export class ProductsComponent implements OnInit {
           this.cancelForm();
           this.saving.set(false);
         },
-        error: (err) => { this.error.set(err.error?.detail || 'Failed to create'); this.saving.set(false); }
+        error: (err) => { this.error.set(err.error?.detail || this.translate('PRODUCTS.FAILED_TO_CREATE')); this.saving.set(false); }
       });
     }
   }
@@ -1021,7 +1026,7 @@ export class ProductsComponent implements OnInit {
         this.applyFilters();
         this.deleting.set(null); 
       },
-      error: (err) => { this.error.set(err.error?.detail || 'Failed to delete'); this.deleting.set(null); }
+      error: (err) => { this.error.set(err.error?.detail || this.translate('PRODUCTS.FAILED_TO_DELETE')); this.deleting.set(null); }
     });
   }
 
@@ -1072,7 +1077,7 @@ export class ProductsComponent implements OnInit {
           this.uploading.set(false);
         },
         error: (err) => {
-          this.error.set(err.error?.detail || 'Failed to upload image');
+          this.error.set(err.error?.detail || this.translate('PRODUCTS.FAILED_TO_UPLOAD_IMAGE'));
           this.uploading.set(false);
         }
       });
