@@ -1403,7 +1403,8 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     if (!this.selectedShape || !this.selectedFloorId() || this.floors().length === 0) return;
 
     const shape = this.selectedShape;
-    const tableName = `Table ${this.tables().length + 1}`;
+    const tableNumber = this.tables().length + 1;
+    const tableName = this.translate.instant('TABLES.DEFAULT_TABLE_NAME', { number: tableNumber });
 
     // Position in center of canvas
     const x = this.canvasWidth / 2;

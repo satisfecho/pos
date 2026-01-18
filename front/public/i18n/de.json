@@ -271,7 +271,8 @@
     "SHAPE_ROUND_4": "Rund (4)",
     "SHAPE_OVAL_6": "Oval (6)",
     "SHAPE_BOOTH_4": "Nische (4)",
-    "SHAPE_BAR_6": "Bar (6)"
+    "SHAPE_BAR_6": "Bar (6)",
+    "DEFAULT_TABLE_NAME": "Tisch {{number}}"
   },
   "TABLE_STATUS": {
     "available": "Verfügbar",
