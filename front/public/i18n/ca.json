@@ -25,7 +25,10 @@
     "NAME": "Nom",
     "DESCRIPTION": "Descripció",
     "CATEGORY": "Categoria",
-    "SUBCATEGORY": "Subcategoria"
+    "SUBCATEGORY": "Subcategoria",
+    "AROMAS": "Aromes",
+    "WHATS_YOUR_NAME": "Com et dius?",
+    "STRIPE_INTEGRATION": "Integració de Stripe"
   },
   "NAV": {
     "HOME": "Inici",
@@ -64,7 +67,19 @@
     "LOGIN_BUTTON": "Entrar",
     "REGISTER_BUTTON": "Crear compte",
     "NO_ACCOUNT": "No tens compte?",
-    "HAVE_ACCOUNT": "Ja tens compte?"
+    "HAVE_ACCOUNT": "Ja tens compte?",
+    "WELCOME_BACK": "Benvingut de nou",
+    "SIGN_IN_ACCOUNT": "Inicia sessió al teu compte",
+    "SIGN_IN": "Iniciar sessió",
+    "SIGNING_IN": "Iniciant sessió...",
+    "DONT_HAVE_ACCOUNT": "No tens compte?",
+    "CREATE_ACCOUNT": "Crear compte",
+    "SET_UP_ORGANIZATION": "Configura la teva organització",
+    "ORGANIZATION_NAME": "Nom de l'organització",
+    "FULL_NAME": "Nom complet",
+    "CREATING_ACCOUNT": "Creant compte...",
+    "ALREADY_HAVE_ACCOUNT": "Ja tens compte?",
+    "SIGN_IN_LINK": "Iniciar sessió"
   },
   "MENU": {
     "TITLE": "Menú",
@@ -567,5 +582,30 @@
     "ready": "Llest",
     "delivered": "Lliurat",
     "cancelled": "Cancel·lat"
+  },
+  "TRANSLATIONS": {
+    "SELECT_ITEM_TO_TRANSLATE": "Selecciona element per traduir",
+    "ENTITY_TYPE": "Tipus d'entitat",
+    "BUSINESS_INFORMATION": "Informació del negoci",
+    "LEGACY_PRODUCTS": "Productes heretats",
+    "MENU_PRODUCTS": "Productes del menú",
+    "CATALOG_ITEMS": "Articles del catàleg",
+    "SELECT_ITEM": "Selecciona element",
+    "CHOOSE_AN_ITEM": "-- Tria un element --",
+    "EDIT_TRANSLATIONS": "Editar traduccions",
+    "ORIGINAL": "Original",
+    "ENTER_TRANSLATION": "Introdueix traducció...",
+    "SAVING": "Desant...",
+    "SAVE_TRANSLATIONS": "Desar traduccions",
+    "FIELD_NAME": "Nom",
+    "FIELD_DESCRIPTION": "Descripció",
+    "FIELD_INGREDIENTS": "Ingredients",
+    "FIELD_ADDRESS": "Adreça",
+    "ORIGINAL_NOT_LOADED": "[Text original no carregat]",
+    "FAILED_TO_LOAD_TENANT": "Error en carregar la informació del negoci",
+    "FAILED_TO_LOAD_PRODUCTS": "Error en carregar els productes",
+    "FAILED_TO_LOAD_TRANSLATIONS": "Error en carregar les traduccions",
+    "FAILED_TO_SAVE": "Error en desar les traduccions",
+    "SAVED_SUCCESS": "Traduccions desades correctament"
   }
 }

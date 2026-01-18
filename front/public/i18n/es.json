@@ -25,7 +25,10 @@
     "NAME": "Nombre",
     "DESCRIPTION": "Descripción",
     "CATEGORY": "Categoría",
-    "SUBCATEGORY": "Subcategoría"
+    "SUBCATEGORY": "Subcategoría",
+    "AROMAS": "Aromas",
+    "WHATS_YOUR_NAME": "¿Cuál es tu nombre?",
+    "STRIPE_INTEGRATION": "Integración de Stripe"
   },
   "NAV": {
     "HOME": "Inicio",
@@ -64,7 +67,19 @@
     "LOGIN_BUTTON": "Entrar",
     "REGISTER_BUTTON": "Crear cuenta",
     "NO_ACCOUNT": "¿No tienes cuenta?",
-    "HAVE_ACCOUNT": "¿Ya tienes cuenta?"
+    "HAVE_ACCOUNT": "¿Ya tienes cuenta?",
+    "WELCOME_BACK": "Bienvenido de nuevo",
+    "SIGN_IN_ACCOUNT": "Inicia sesión en tu cuenta",
+    "SIGN_IN": "Iniciar sesión",
+    "SIGNING_IN": "Iniciando sesión...",
+    "DONT_HAVE_ACCOUNT": "¿No tienes cuenta?",
+    "CREATE_ACCOUNT": "Crear cuenta",
+    "SET_UP_ORGANIZATION": "Configura tu organización",
+    "ORGANIZATION_NAME": "Nombre de la organización",
+    "FULL_NAME": "Nombre completo",
+    "CREATING_ACCOUNT": "Creando cuenta...",
+    "ALREADY_HAVE_ACCOUNT": "¿Ya tienes cuenta?",
+    "SIGN_IN_LINK": "Iniciar sesión"
   },
   "MENU": {
     "TITLE": "Menú",
@@ -567,5 +582,30 @@
       "CUP": "Taza",
       "GALLON": "Galón"
     }
+  },
+  "TRANSLATIONS": {
+    "SELECT_ITEM_TO_TRANSLATE": "Seleccionar elemento para traducir",
+    "ENTITY_TYPE": "Tipo de entidad",
+    "BUSINESS_INFORMATION": "Información del negocio",
+    "LEGACY_PRODUCTS": "Productos heredados",
+    "MENU_PRODUCTS": "Productos del menú",
+    "CATALOG_ITEMS": "Artículos del catálogo",
+    "SELECT_ITEM": "Seleccionar elemento",
+    "CHOOSE_AN_ITEM": "-- Elegir un elemento --",
+    "EDIT_TRANSLATIONS": "Editar traducciones",
+    "ORIGINAL": "Original",
+    "ENTER_TRANSLATION": "Introducir traducción...",
+    "SAVING": "Guardando...",
+    "SAVE_TRANSLATIONS": "Guardar traducciones",
+    "FIELD_NAME": "Nombre",
+    "FIELD_DESCRIPTION": "Descripción",
+    "FIELD_INGREDIENTS": "Ingredientes",
+    "FIELD_ADDRESS": "Dirección",
+    "ORIGINAL_NOT_LOADED": "[Texto original no cargado]",
+    "FAILED_TO_LOAD_TENANT": "Error al cargar la información del inquilino",
+    "FAILED_TO_LOAD_PRODUCTS": "Error al cargar los productos",
+    "FAILED_TO_LOAD_TRANSLATIONS": "Error al cargar las traducciones",
+    "FAILED_TO_SAVE": "Error al guardar las traducciones",
+    "SAVED_SUCCESS": "Traducciones guardadas correctamente"
   }
 }

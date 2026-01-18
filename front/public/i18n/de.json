@@ -25,7 +25,10 @@
     "NAME": "Name",
     "DESCRIPTION": "Beschreibung",
     "CATEGORY": "Kategorie",
-    "SUBCATEGORY": "Unterkategorie"
+    "SUBCATEGORY": "Unterkategorie",
+    "AROMAS": "Aromen",
+    "WHATS_YOUR_NAME": "Wie heißen Sie?",
+    "STRIPE_INTEGRATION": "Stripe-Integration"
   },
   "NAV": {
     "HOME": "Startseite",
@@ -64,7 +67,19 @@
     "LOGIN_BUTTON": "Einloggen",
     "REGISTER_BUTTON": "Konto erstellen",
     "NO_ACCOUNT": "Noch kein Konto?",
-    "HAVE_ACCOUNT": "Bereits ein Konto?"
+    "HAVE_ACCOUNT": "Bereits ein Konto?",
+    "WELCOME_BACK": "Willkommen zurück",
+    "SIGN_IN_ACCOUNT": "Melden Sie sich bei Ihrem Konto an",
+    "SIGN_IN": "Anmelden",
+    "SIGNING_IN": "Anmeldung...",
+    "DONT_HAVE_ACCOUNT": "Kein Konto?",
+    "CREATE_ACCOUNT": "Konto erstellen",
+    "SET_UP_ORGANIZATION": "Richten Sie Ihre Organisation ein",
+    "ORGANIZATION_NAME": "Organisationsname",
+    "FULL_NAME": "Vollständiger Name",
+    "CREATING_ACCOUNT": "Konto wird erstellt...",
+    "ALREADY_HAVE_ACCOUNT": "Haben Sie bereits ein Konto?",
+    "SIGN_IN_LINK": "Anmelden"
   },
   "MENU": {
     "TITLE": "Speisekarte",
@@ -567,5 +582,30 @@
     "ready": "Fertig",
     "delivered": "Geliefert",
     "cancelled": "Storniert"
+  },
+  "TRANSLATIONS": {
+    "SELECT_ITEM_TO_TRANSLATE": "Element zum Übersetzen auswählen",
+    "ENTITY_TYPE": "Entitätstyp",
+    "BUSINESS_INFORMATION": "Geschäftsinformationen",
+    "LEGACY_PRODUCTS": "Legacy-Produkte",
+    "MENU_PRODUCTS": "Menüprodukte",
+    "CATALOG_ITEMS": "Katalogartikel",
+    "SELECT_ITEM": "Element auswählen",
+    "CHOOSE_AN_ITEM": "-- Element wählen --",
+    "EDIT_TRANSLATIONS": "Übersetzungen bearbeiten",
+    "ORIGINAL": "Original",
+    "ENTER_TRANSLATION": "Übersetzung eingeben...",
+    "SAVING": "Speichern...",
+    "SAVE_TRANSLATIONS": "Übersetzungen speichern",
+    "FIELD_NAME": "Name",
+    "FIELD_DESCRIPTION": "Beschreibung",
+    "FIELD_INGREDIENTS": "Zutaten",
+    "FIELD_ADDRESS": "Adresse",
+    "ORIGINAL_NOT_LOADED": "[Originaltext nicht geladen]",
+    "FAILED_TO_LOAD_TENANT": "Mieterinformationen konnten nicht geladen werden",
+    "FAILED_TO_LOAD_PRODUCTS": "Produkte konnten nicht geladen werden",
+    "FAILED_TO_LOAD_TRANSLATIONS": "Übersetzungen konnten nicht geladen werden",
+    "FAILED_TO_SAVE": "Übersetzungen konnten nicht gespeichert werden",
+    "SAVED_SUCCESS": "Übersetzungen erfolgreich gespeichert"
   }
 }

@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../services/api.service';
 import { LanguageService, SUPPORTED_LANGUAGES, LanguageCode } from '../services/language.service';
 
@@ -28,23 +28,23 @@ interface TranslationData {
       <div class="content">
         <!-- Entity Selection -->
         <div class="subsection">
-          <h3>Select Item to Translate</h3>
+          <h3>{{ 'TRANSLATIONS.SELECT_ITEM_TO_TRANSLATE' | translate }}</h3>
 
           <div class="entity-selector">
             <div class="form-group">
-              <label for="entity-type">Entity Type</label>
+              <label for="entity-type">{{ 'TRANSLATIONS.ENTITY_TYPE' | translate }}</label>
               <select id="entity-type" [(ngModel)]="selectedEntityType" (change)="loadEntities()">
-                <option value="tenant">Business Information</option>
-                <option value="product">Legacy Products</option>
-                <option value="tenant_product">Menu Products</option>
-                <option value="product_catalog">Catalog Items</option>
+                <option value="tenant">{{ 'TRANSLATIONS.BUSINESS_INFORMATION' | translate }}</option>
+                <option value="product">{{ 'TRANSLATIONS.LEGACY_PRODUCTS' | translate }}</option>
+                <option value="tenant_product">{{ 'TRANSLATIONS.MENU_PRODUCTS' | translate }}</option>
+                <option value="product_catalog">{{ 'TRANSLATIONS.CATALOG_ITEMS' | translate }}</option>
               </select>
             </div>
 
             <div class="form-group">
-              <label for="entity-select">Select Item</label>
+              <label for="entity-select">{{ 'TRANSLATIONS.SELECT_ITEM' | translate }}</label>
               <select id="entity-select" [(ngModel)]="selectedEntityId" (change)="loadTranslations()">
-                <option [ngValue]="null">-- Choose an item --</option>
+                <option [ngValue]="null">{{ 'TRANSLATIONS.CHOOSE_AN_ITEM' | translate }}</option>
                 @for (entity of entities(); track entity.id) {
                   <option [value]="entity.id">{{ entity.name }}</option>
                 }
@@ -56,7 +56,7 @@ interface TranslationData {
         <!-- Translation Editor -->
         @if (selectedEntityId() !== null) {
           <div class="subsection">
-            <h3>Edit Translations</h3>
+            <h3>{{ 'TRANSLATIONS.EDIT_TRANSLATIONS' | translate }}</h3>
 
             <div class="translation-editor">
               @for (field of getFields(); track field) {
@@ -75,7 +75,7 @@ interface TranslationData {
                           <textarea
                             [value]="getTranslation(field, lang.code)"
                             (input)="updateTranslation(field, lang.code, $event)"
-                            [placeholder]="'Enter ' + lang.label + ' translation...'"
+                            [placeholder]="('TRANSLATIONS.ENTER_TRANSLATION' | translate)"
                             rows="3"
                           ></textarea>
                         </div>
@@ -91,7 +91,7 @@ interface TranslationData {
                   (click)="saveTranslations()"
                   [disabled]="saving()"
                 >
-                  {{ saving() ? 'Saving...' : 'Save Translations' }}
+                  {{ saving() ? ('TRANSLATIONS.SAVING' | translate) : ('TRANSLATIONS.SAVE_TRANSLATIONS' | translate) }}
                 </button>
               </div>
             </div>
@@ -305,6 +305,7 @@ interface TranslationData {
 export class TranslationsComponent {
   private api = inject(ApiService);
   private languageService = inject(LanguageService);
+  private translate = inject(TranslateService);
 
   entities = signal<TranslationEntity[]>([]);
   translations = signal<TranslationData | null>(null);
@@ -350,7 +351,7 @@ export class TranslationsComponent {
           this.loading.set(false);
         },
         error: (err) => {
-          this.error.set('Failed to load tenant information');
+          this.error.set(this.translate.instant('TRANSLATIONS.FAILED_TO_LOAD_TENANT'));
           this.loading.set(false);
         }
       });
@@ -367,7 +368,7 @@ export class TranslationsComponent {
           this.loading.set(false);
         },
         error: (err) => {
-          this.error.set('Failed to load products');
+          this.error.set(this.translate.instant('TRANSLATIONS.FAILED_TO_LOAD_PRODUCTS'));
           this.loading.set(false);
         }
       });
@@ -384,7 +385,7 @@ export class TranslationsComponent {
           this.loading.set(false);
         },
         error: (err) => {
-          this.error.set('Failed to load menu products');
+          this.error.set(this.translate.instant('TRANSLATIONS.FAILED_TO_LOAD_PRODUCTS'));
           this.loading.set(false);
         }
       });
@@ -401,7 +402,7 @@ export class TranslationsComponent {
           this.loading.set(false);
         },
         error: (err) => {
-          this.error.set('Failed to load catalog items');
+          this.error.set(this.translate.instant('TRANSLATIONS.FAILED_TO_LOAD_PRODUCTS'));
           this.loading.set(false);
         }
       });
@@ -427,7 +428,7 @@ export class TranslationsComponent {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set('Failed to load translations');
+        this.error.set(this.translate.instant('TRANSLATIONS.FAILED_TO_LOAD_TRANSLATIONS'));
         this.loading.set(false);
       }
     });
@@ -447,19 +448,20 @@ export class TranslationsComponent {
   }
 
   getFieldLabel(field: string): string {
-    const labels: Record<string, string> = {
-      name: 'Name',
-      description: 'Description',
-      ingredients: 'Ingredients',
-      address: 'Address'
+    const labelKeys: Record<string, string> = {
+      name: 'TRANSLATIONS.FIELD_NAME',
+      description: 'TRANSLATIONS.FIELD_DESCRIPTION',
+      ingredients: 'TRANSLATIONS.FIELD_INGREDIENTS',
+      address: 'TRANSLATIONS.FIELD_ADDRESS'
     };
-    return labels[field] || field;
+    const key = labelKeys[field];
+    return key ? this.translate.instant(key) : field;
   }
 
   getOriginalText(field: string): string {
     // For now, return empty - in a real implementation you'd fetch the original values
     // This would require additional API calls or storing originals in the component
-    return '[Original text not loaded]';
+    return this.translate.instant('TRANSLATIONS.ORIGINAL_NOT_LOADED');
   }
 
   getTranslation(field: string, lang: string): string {
@@ -503,7 +505,7 @@ export class TranslationsComponent {
 
     this.api.updateTranslations(entityType, entityId, changes).subscribe({
       next: (response) => {
-        this.success.set(response.message || 'Translations saved successfully');
+        this.success.set(response.message || this.translate.instant('TRANSLATIONS.SAVED_SUCCESS'));
         this.pendingChanges.set({}); // Clear pending changes
         this.loadTranslations(); // Reload to get updated translations
         this.saving.set(false);
@@ -512,7 +514,7 @@ export class TranslationsComponent {
         setTimeout(() => this.success.set(''), 5000);
       },
       error: (err) => {
-        this.error.set('Failed to save translations');
+        this.error.set(this.translate.instant('TRANSLATIONS.FAILED_TO_SAVE'));
         this.saving.set(false);
       }
     });

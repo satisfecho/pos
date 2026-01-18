@@ -1,23 +1,24 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { ApiService } from '../services/api.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, TranslateModule],
   template: `
     <div class="auth-page">
       <div class="auth-card">
         <div class="auth-header">
-          <h1>Welcome back</h1>
-          <p>Sign in to your account</p>
+          <h1>{{ 'AUTH.WELCOME_BACK' | translate }}</h1>
+          <p>{{ 'AUTH.SIGN_IN_ACCOUNT' | translate }}</p>
         </div>
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
           <div class="form-group">
-            <label for="email">Email</label>
+            <label for="email">{{ 'AUTH.EMAIL' | translate }}</label>
             <input 
               id="email" 
               type="email" 
@@ -29,7 +30,7 @@ import { ApiService } from '../services/api.service';
           </div>
 
           <div class="form-group">
-            <label for="password">Password</label>
+            <label for="password">{{ 'AUTH.PASSWORD' | translate }}</label>
             <input 
               id="password" 
               type="password" 
@@ -45,13 +46,13 @@ import { ApiService } from '../services/api.service';
           }
 
           <button type="submit" class="btn-submit" [disabled]="form.invalid || loading()">
-            {{ loading() ? 'Signing in...' : 'Sign in' }}
+            {{ loading() ? ('AUTH.SIGNING_IN' | translate) : ('AUTH.SIGN_IN' | translate) }}
           </button>
         </form>
 
         <div class="auth-footer">
-          <span>Don't have an account?</span>
-          <a routerLink="/register">Create account</a>
+          <span>{{ 'AUTH.DONT_HAVE_ACCOUNT' | translate }}</span>
+          <a routerLink="/register">{{ 'AUTH.CREATE_ACCOUNT' | translate }}</a>
         </div>
       </div>
     </div>

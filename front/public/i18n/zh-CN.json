@@ -25,7 +25,10 @@
     "NAME": "名称",
     "DESCRIPTION": "描述",
     "CATEGORY": "类别",
-    "SUBCATEGORY": "子类别"
+    "SUBCATEGORY": "子类别",
+    "AROMAS": "香气",
+    "WHATS_YOUR_NAME": "您叫什么名字？",
+    "STRIPE_INTEGRATION": "Stripe 集成"
   },
   "NAV": {
     "HOME": "首页",
@@ -64,7 +67,19 @@
     "LOGIN_BUTTON": "登录",
     "REGISTER_BUTTON": "创建账户",
     "NO_ACCOUNT": "还没有账户？",
-    "HAVE_ACCOUNT": "已有账户？"
+    "HAVE_ACCOUNT": "已有账户？",
+    "WELCOME_BACK": "欢迎回来",
+    "SIGN_IN_ACCOUNT": "登录您的账户",
+    "SIGN_IN": "登录",
+    "SIGNING_IN": "登录中...",
+    "DONT_HAVE_ACCOUNT": "没有账户？",
+    "CREATE_ACCOUNT": "创建账户",
+    "SET_UP_ORGANIZATION": "设置您的组织",
+    "ORGANIZATION_NAME": "组织名称",
+    "FULL_NAME": "全名",
+    "CREATING_ACCOUNT": "创建账户中...",
+    "ALREADY_HAVE_ACCOUNT": "已有账户？",
+    "SIGN_IN_LINK": "登录"
   },
   "MENU": {
     "TITLE": "菜单",
@@ -567,5 +582,30 @@
     "ready": "就绪",
     "delivered": "已送达",
     "cancelled": "已取消"
+  },
+  "TRANSLATIONS": {
+    "SELECT_ITEM_TO_TRANSLATE": "选择要翻译的项目",
+    "ENTITY_TYPE": "实体类型",
+    "BUSINESS_INFORMATION": "商业信息",
+    "LEGACY_PRODUCTS": "旧版产品",
+    "MENU_PRODUCTS": "菜单产品",
+    "CATALOG_ITEMS": "目录项目",
+    "SELECT_ITEM": "选择项目",
+    "CHOOSE_AN_ITEM": "-- 选择一个项目 --",
+    "EDIT_TRANSLATIONS": "编辑翻译",
+    "ORIGINAL": "原文",
+    "ENTER_TRANSLATION": "输入翻译...",
+    "SAVING": "保存中...",
+    "SAVE_TRANSLATIONS": "保存翻译",
+    "FIELD_NAME": "名称",
+    "FIELD_DESCRIPTION": "描述",
+    "FIELD_INGREDIENTS": "配料",
+    "FIELD_ADDRESS": "地址",
+    "ORIGINAL_NOT_LOADED": "[原文未加载]",
+    "FAILED_TO_LOAD_TENANT": "加载租户信息失败",
+    "FAILED_TO_LOAD_PRODUCTS": "加载产品失败",
+    "FAILED_TO_LOAD_TRANSLATIONS": "加载翻译失败",
+    "FAILED_TO_SAVE": "保存翻译失败",
+    "SAVED_SUCCESS": "翻译保存成功"
   }
 }

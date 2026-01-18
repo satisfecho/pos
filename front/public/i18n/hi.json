@@ -25,7 +25,10 @@
     "NAME": "नाम",
     "DESCRIPTION": "विवरण",
     "CATEGORY": "श्रेणी",
-    "SUBCATEGORY": "उपश्रेणी"
+    "SUBCATEGORY": "उपश्रेणी",
+    "AROMAS": "सुगंध",
+    "WHATS_YOUR_NAME": "आपका नाम क्या है?",
+    "STRIPE_INTEGRATION": "Stripe एकीकरण"
   },
   "NAV": {
     "HOME": "होम",
@@ -64,7 +67,19 @@
     "LOGIN_BUTTON": "साइन इन करें",
     "REGISTER_BUTTON": "खाता बनाएं",
     "NO_ACCOUNT": "खाता नहीं है?",
-    "HAVE_ACCOUNT": "पहले से खाता है?"
+    "HAVE_ACCOUNT": "पहले से खाता है?",
+    "WELCOME_BACK": "वापसी पर स्वागत है",
+    "SIGN_IN_ACCOUNT": "अपने खाते में साइन इन करें",
+    "SIGN_IN": "साइन इन करें",
+    "SIGNING_IN": "साइन इन हो रहा है...",
+    "DONT_HAVE_ACCOUNT": "खाता नहीं है?",
+    "CREATE_ACCOUNT": "खाता बनाएं",
+    "SET_UP_ORGANIZATION": "अपना संगठन सेट करें",
+    "ORGANIZATION_NAME": "संगठन का नाम",
+    "FULL_NAME": "पूरा नाम",
+    "CREATING_ACCOUNT": "खाता बना रहा है...",
+    "ALREADY_HAVE_ACCOUNT": "पहले से खाता है?",
+    "SIGN_IN_LINK": "साइन इन करें"
   },
   "MENU": {
     "TITLE": "मेनू",
@@ -567,5 +582,30 @@
     "ready": "तैयार",
     "delivered": "डिलीवर किया गया",
     "cancelled": "रद्द"
+  },
+  "TRANSLATIONS": {
+    "SELECT_ITEM_TO_TRANSLATE": "अनुवाद के लिए आइटम चुनें",
+    "ENTITY_TYPE": "इकाई प्रकार",
+    "BUSINESS_INFORMATION": "व्यापार जानकारी",
+    "LEGACY_PRODUCTS": "विरासत उत्पाद",
+    "MENU_PRODUCTS": "मेनू उत्पाद",
+    "CATALOG_ITEMS": "कैटलॉग आइटम",
+    "SELECT_ITEM": "आइटम चुनें",
+    "CHOOSE_AN_ITEM": "-- एक आइटम चुनें --",
+    "EDIT_TRANSLATIONS": "अनुवाद संपादित करें",
+    "ORIGINAL": "मूल",
+    "ENTER_TRANSLATION": "अनुवाद दर्ज करें...",
+    "SAVING": "सहेज रहा है...",
+    "SAVE_TRANSLATIONS": "अनुवाद सहेजें",
+    "FIELD_NAME": "नाम",
+    "FIELD_DESCRIPTION": "विवरण",
+    "FIELD_INGREDIENTS": "सामग्री",
+    "FIELD_ADDRESS": "पता",
+    "ORIGINAL_NOT_LOADED": "[मूल पाठ लोड नहीं हुआ]",
+    "FAILED_TO_LOAD_TENANT": "किरायेदार जानकारी लोड करने में विफल",
+    "FAILED_TO_LOAD_PRODUCTS": "उत्पाद लोड करने में विफल",
+    "FAILED_TO_LOAD_TRANSLATIONS": "अनुवाद लोड करने में विफल",
+    "FAILED_TO_SAVE": "अनुवाद सहेजने में विफल",
+    "SAVED_SUCCESS": "अनुवाद सफलतापूर्वक सहेजे गए"
   }
 }

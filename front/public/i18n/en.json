@@ -25,7 +25,10 @@
     "NAME": "Name",
     "DESCRIPTION": "Description",
     "CATEGORY": "Category",
-    "SUBCATEGORY": "Subcategory"
+    "SUBCATEGORY": "Subcategory",
+    "AROMAS": "Aromas",
+    "WHATS_YOUR_NAME": "What's your name?",
+    "STRIPE_INTEGRATION": "Stripe Integration"
   },
   "NAV": {
     "HOME": "Home",
@@ -64,7 +67,19 @@
     "LOGIN_BUTTON": "Sign in",
     "REGISTER_BUTTON": "Create account",
     "NO_ACCOUNT": "Don't have an account?",
-    "HAVE_ACCOUNT": "Already have an account?"
+    "HAVE_ACCOUNT": "Already have an account?",
+    "WELCOME_BACK": "Welcome back",
+    "SIGN_IN_ACCOUNT": "Sign in to your account",
+    "SIGN_IN": "Sign In",
+    "SIGNING_IN": "Signing in...",
+    "DONT_HAVE_ACCOUNT": "Don't have an account?",
+    "CREATE_ACCOUNT": "Create account",
+    "SET_UP_ORGANIZATION": "Set up your organization",
+    "ORGANIZATION_NAME": "Organization Name",
+    "FULL_NAME": "Full Name",
+    "CREATING_ACCOUNT": "Creating account...",
+    "ALREADY_HAVE_ACCOUNT": "Already have an account?",
+    "SIGN_IN_LINK": "Sign in"
   },
   "MENU": {
     "TITLE": "Menu",
@@ -567,5 +582,30 @@
       "TOTAL": "Total",
       "VIEW": "View"
     }
+  },
+  "TRANSLATIONS": {
+    "SELECT_ITEM_TO_TRANSLATE": "Select Item to Translate",
+    "ENTITY_TYPE": "Entity Type",
+    "BUSINESS_INFORMATION": "Business Information",
+    "LEGACY_PRODUCTS": "Legacy Products",
+    "MENU_PRODUCTS": "Menu Products",
+    "CATALOG_ITEMS": "Catalog Items",
+    "SELECT_ITEM": "Select Item",
+    "CHOOSE_AN_ITEM": "-- Choose an item --",
+    "EDIT_TRANSLATIONS": "Edit Translations",
+    "ORIGINAL": "Original",
+    "ENTER_TRANSLATION": "Enter translation...",
+    "SAVING": "Saving...",
+    "SAVE_TRANSLATIONS": "Save Translations",
+    "FIELD_NAME": "Name",
+    "FIELD_DESCRIPTION": "Description",
+    "FIELD_INGREDIENTS": "Ingredients",
+    "FIELD_ADDRESS": "Address",
+    "ORIGINAL_NOT_LOADED": "[Original text not loaded]",
+    "FAILED_TO_LOAD_TENANT": "Failed to load tenant information",
+    "FAILED_TO_LOAD_PRODUCTS": "Failed to load products",
+    "FAILED_TO_LOAD_TRANSLATIONS": "Failed to load translations",
+    "FAILED_TO_SAVE": "Failed to save translations",
+    "SAVED_SUCCESS": "Translations saved successfully"
   }
 }

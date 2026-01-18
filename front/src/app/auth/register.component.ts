@@ -1,23 +1,24 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { ApiService } from '../services/api.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, TranslateModule],
   template: `
     <div class="auth-page">
       <div class="auth-card">
         <div class="auth-header">
-          <h1>Create account</h1>
-          <p>Set up your organization</p>
+          <h1>{{ 'AUTH.CREATE_ACCOUNT' | translate }}</h1>
+          <p>{{ 'AUTH.SET_UP_ORGANIZATION' | translate }}</p>
         </div>
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
           <div class="form-group">
-            <label for="tenant">Organization Name</label>
+            <label for="tenant">{{ 'AUTH.ORGANIZATION_NAME' | translate }}</label>
             <input 
               id="tenant" 
               type="text" 
@@ -27,7 +28,7 @@ import { ApiService } from '../services/api.service';
           </div>
           
           <div class="form-group">
-            <label for="name">Full Name</label>
+            <label for="name">{{ 'AUTH.FULL_NAME' | translate }}</label>
             <input 
               id="name" 
               type="text" 
@@ -37,7 +38,7 @@ import { ApiService } from '../services/api.service';
           </div>
 
           <div class="form-group">
-            <label for="email">Email</label>
+            <label for="email">{{ 'AUTH.EMAIL' | translate }}</label>
             <input 
               id="email" 
               type="email" 
@@ -48,7 +49,7 @@ import { ApiService } from '../services/api.service';
           </div>
 
           <div class="form-group">
-            <label for="password">Password</label>
+            <label for="password">{{ 'AUTH.PASSWORD' | translate }}</label>
             <input 
               id="password" 
               type="password" 
@@ -72,8 +73,8 @@ import { ApiService } from '../services/api.service';
         </form>
 
         <div class="auth-footer">
-          <span>Already have an account?</span>
-          <a routerLink="/login">Sign in</a>
+          <span>{{ 'AUTH.ALREADY_HAVE_ACCOUNT' | translate }}</span>
+          <a routerLink="/login">{{ 'AUTH.SIGN_IN_LINK' | translate }}</a>
         </div>
       </div>
     </div>
