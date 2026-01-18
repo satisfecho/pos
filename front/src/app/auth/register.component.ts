@@ -178,7 +178,7 @@ export class RegisterComponent {
   private fb = inject(FormBuilder);
   private api = inject(ApiService);
   private router = inject(Router);
-  private translate = inject(TranslateService);
+  translate = inject(TranslateService);
 
   error = signal<string>('');
   success = signal<string>('');

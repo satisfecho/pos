@@ -147,7 +147,7 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private api = inject(ApiService);
   private router = inject(Router);
-  private translate = inject(TranslateService);
+  translate = inject(TranslateService);
 
   error = signal<string>('');
   loading = signal(false);
