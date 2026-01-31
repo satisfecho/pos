@@ -458,14 +458,14 @@ def login_for_access_token(
         max_age=settings.access_token_expire_minutes * 60,
     )
     
-    # Set refresh token (long-lived, restricted to /refresh path for security)
+    # Set refresh token (long-lived)
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
         secure=settings.is_production,
         samesite="lax",
-        path="/refresh",  # Only sent to refresh endpoint
+        path="/",  # Send to all paths so it works with proxy prefixes like /api/refresh
         max_age=settings.refresh_token_expire_days * 24 * 60 * 60,
     )
     
@@ -477,7 +477,7 @@ def logout():
     response = JSONResponse(content={"status": "success", "message": "Logged out"})
     # Clear both access and refresh tokens
     response.delete_cookie(key="access_token", path="/")
-    response.delete_cookie(key="refresh_token", path="/refresh")
+    response.delete_cookie(key="refresh_token", path="/")
     return response
 
 
@@ -2806,7 +2806,7 @@ def list_orders(
             items = session.exec(
                 select(models.OrderItem)
                 .where(models.OrderItem.order_id == order.id)
-                .order_by(models.OrderItem.removed_by_customer.asc(), models.OrderItem.created_at.asc())
+                .order_by(models.OrderItem.removed_by_customer.asc(), models.OrderItem.id.asc())
             ).all()
         else:
             items = session.exec(

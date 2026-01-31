@@ -563,7 +563,8 @@ export class ApiService {
     }
 
     // Use tenant endpoint - auth via HttpOnly cookie
-    const wsEndpoint = `${wsUrl}/ws/tenant/${user.tenant_id}`;
+    // wsUrl already contains /ws base path
+    const wsEndpoint = `${wsUrl}/tenant/${user.tenant_id}`;
 
     try {
       this.ws = new WebSocket(wsEndpoint);

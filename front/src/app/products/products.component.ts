@@ -5,16 +5,17 @@ import { ApiService, Product } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { CategoriesComponent } from './categories.component';
 
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [FormsModule, SidebarComponent, CommonModule, TranslateModule],
+  imports: [FormsModule, SidebarComponent, CommonModule, TranslateModule, CategoriesComponent],
   template: `
     <app-sidebar>
         <div class="page-header">
            <h1>{{ 'PRODUCTS.TITLE' | translate }}</h1>
-           @if (!showAddForm() && !editingProduct()) {
+           @if (activeTab() === 'products' && !showAddForm() && !editingProduct()) {
              <button class="btn btn-primary" (click)="showAddForm.set(true)">
                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -24,253 +25,290 @@ import { TranslateModule } from '@ngx-translate/core';
            }
          </div>
 
+        <!-- Main Tab Navigation (Button Style like Settings) -->
+        <div class="main-tabs-container">
+          <div class="main-tabs">
+            <button 
+              type="button" 
+              class="main-tab" 
+              [class.active]="activeTab() === 'products'"
+              (click)="activeTab.set('products')">
+              <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              <span>{{ 'NAV.PRODUCTS' | translate }}</span>
+            </button>
+            
+            <button 
+              type="button" 
+              class="main-tab" 
+              [class.active]="activeTab() === 'categories'"
+              (click)="activeTab.set('categories')">
+              <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span>{{ 'PRODUCTS.PRODUCT_CATEGORIES' | translate }}</span>
+            </button>
+          </div>
+        </div>
+
         <div class="content">
-          @if (showAddForm() || editingProduct()) {
-            <div class="form-card">
-               <div class="form-header">
-                 <h3>{{ editingProduct() ? ('PRODUCTS.EDIT_PRODUCT' | translate) : ('PRODUCTS.NEW_PRODUCT' | translate) }}</h3>
-                 <button class="icon-btn" (click)="cancelForm()">
-                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                     <path d="M18 6L6 18M6 6l12 12"/>
-                   </svg>
-                 </button>
-               </div>
-              <form (submit)="saveProduct($event)">
-                 <div class="form-row">
-                   <div class="form-group">
-                     <label for="name">{{ 'PRODUCTS.PRODUCT_NAME' | translate }}</label>
-                     <input id="name" type="text" [(ngModel)]="formData.name" name="name" required [placeholder]="'PRODUCTS.NAME_PLACEHOLDER' | translate">
-                   </div>
-                   <div class="form-group form-group-sm">
-                     <label for="price">{{ 'PRODUCTS.PRODUCT_PRICE' | translate }}</label>
-                     <div class="price-input">
-                       <span class="currency">{{ currency() }}</span>
-                       <input id="price" type="number" step="0.01" [(ngModel)]="formData.price" name="price" required [placeholder]="'PRODUCTS.PRICE_PLACEHOLDER' | translate">
-                     </div>
-                   </div>
-                 </div>
-                 <div class="form-group">
-                   <label for="ingredients">{{ 'PRODUCTS.INGREDIENTS_LABEL' | translate }}</label>
-                   <input id="ingredients" type="text" [(ngModel)]="formData.ingredients" name="ingredients" [placeholder]="'PRODUCTS.INGREDIENTS_PLACEHOLDER' | translate">
-                 </div>
-                 <div class="form-row">
-                   <div class="form-group">
-                     <label for="category">{{ 'PRODUCTS.CATEGORY_LABEL' | translate }}</label>
-                     <select id="category" [(ngModel)]="formData.category" name="category" (change)="onCategoryChange()">
-                       <option value="">{{ 'PRODUCTS.SELECT_CATEGORY' | translate }}</option>
-                       @for (category of getCategoryKeys(); track category) {
-                         <option [value]="category">{{ category }}</option>
-                       }
-                     </select>
-                   </div>
-                   <div class="form-group">
-                     <label for="subcategory">{{ 'PRODUCTS.SUBCATEGORY_LABEL' | translate }}</label>
-                     <select id="subcategory" [(ngModel)]="formData.subcategory" name="subcategory" [disabled]="!formData.category || availableSubcategories().length === 0">
-                       <option value="">{{ 'PRODUCTS.SELECT_SUBCATEGORY' | translate }}</option>
-                       @for (subcat of availableSubcategories(); track subcat) {
-                         <option [value]="subcat">{{ subcat }}</option>
-                       }
-                     </select>
-                   </div>
-                 </div>
-                 <div class="form-group">
-                   <label>{{ 'PRODUCTS.PRODUCT_IMAGE' | translate }}</label>
-                   <div class="image-upload-row">
-                     @if (editingProduct()?.image_filename) {
-                       <div class="image-preview-wrapper">
-                         <img [src]="getImageUrl(editingProduct()!)" class="product-thumb" alt="">
-                         @if (editingProduct()?.image_size_formatted) {
-                           <div class="file-size">{{ editingProduct()!.image_size_formatted }}</div>
-                         }
-                       </div>
-                     } @else if (pendingImagePreview()) {
-                       <div class="image-preview-wrapper">
-                         <img [src]="pendingImagePreview()" class="product-thumb" alt="">
-                         @if (pendingImageFile()?.size) {
-                           <div class="file-size">{{ formatFileSize(pendingImageFile()!.size) }}</div>
-                         }
-                       </div>
-                     }
-                     <input type="file" #fileInput accept="image/jpeg,image/png,image/webp" (change)="handleImageSelect($event)" style="display:none">
-                     <button type="button" class="btn btn-secondary" (click)="fileInput.click()" [disabled]="uploading()">
-                       {{ uploading() ? ('PRODUCTS.UPLOADING' | translate) : (pendingImageFile() ? ('PRODUCTS.CHANGE_IMAGE' | translate) : ('PRODUCTS.UPLOAD_IMAGE' | translate)) }}
-                     </button>
-                     @if (pendingImageFile()) {
-                       <span class="pending-file-name">{{ pendingImageFile()?.name }}</span>
-                     }
-                   </div>
-                 </div>
-                 <div class="form-actions">
-                   <button type="button" class="btn btn-secondary" (click)="cancelForm()">{{ 'PRODUCTS.CANCEL' | translate }}</button>
-                   <button type="submit" class="btn btn-primary" [disabled]="saving()">
-                     {{ saving() ? ('PRODUCTS.SAVING' | translate) : (editingProduct() ? ('PRODUCTS.UPDATE' | translate) : ('PRODUCTS.ADD_PRODUCT_BUTTON' | translate)) }}
+          @if (activeTab() === 'categories') {
+            <app-categories></app-categories>
+          } @else {
+            @if (showAddForm() || editingProduct()) {
+              <div class="form-card">
+                 <div class="form-header">
+                   <h3>{{ editingProduct() ? ('PRODUCTS.EDIT_PRODUCT' | translate) : ('PRODUCTS.NEW_PRODUCT' | translate) }}</h3>
+                   <button class="icon-btn" (click)="cancelForm()">
+                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                       <path d="M18 6L6 18M6 6l12 12"/>
+                     </svg>
                    </button>
                  </div>
-              </form>
-            </div>
-          }
+                <form (submit)="saveProduct($event)">
+                   <div class="form-row">
+                     <div class="form-group">
+                       <label for="name">{{ 'PRODUCTS.PRODUCT_NAME' | translate }}</label>
+                       <input id="name" type="text" [(ngModel)]="formData.name" name="name" required [placeholder]="'PRODUCTS.NAME_PLACEHOLDER' | translate">
+                     </div>
+                     <div class="form-group form-group-sm">
+                       <label for="price">{{ 'PRODUCTS.PRODUCT_PRICE' | translate }}</label>
+                       <div class="price-input">
+                         <span class="currency">{{ currency() }}</span>
+                         <input id="price" type="number" step="0.01" [(ngModel)]="formData.price" name="price" required [placeholder]="'PRODUCTS.PRICE_PLACEHOLDER' | translate">
+                       </div>
+                     </div>
+                   </div>
+                   <div class="form-group">
+                     <label for="ingredients">{{ 'PRODUCTS.INGREDIENTS_LABEL' | translate }}</label>
+                     <input id="ingredients" type="text" [(ngModel)]="formData.ingredients" name="ingredients" [placeholder]="'PRODUCTS.INGREDIENTS_PLACEHOLDER' | translate">
+                   </div>
+                   <div class="form-row">
+                     <div class="form-group">
+                       <label for="category">{{ 'PRODUCTS.CATEGORY_LABEL' | translate }}</label>
+                       <select id="category" [(ngModel)]="formData.category" name="category" (change)="onCategoryChange()">
+                         <option value="">{{ 'PRODUCTS.SELECT_CATEGORY' | translate }}</option>
+                         @for (category of getCategoryKeys(); track category) {
+                           <option [value]="category">{{ category }}</option>
+                         }
+                       </select>
+                     </div>
+                     <div class="form-group">
+                       <label for="subcategory">{{ 'PRODUCTS.SUBCATEGORY_LABEL' | translate }}</label>
+                       <select id="subcategory" [(ngModel)]="formData.subcategory" name="subcategory" [disabled]="!formData.category || availableSubcategories().length === 0">
+                         <option value="">{{ 'PRODUCTS.SELECT_SUBCATEGORY' | translate }}</option>
+                         @for (subcat of availableSubcategories(); track subcat) {
+                           <option [value]="subcat">{{ subcat }}</option>
+                         }
+                       </select>
+                     </div>
+                   </div>
+                   <div class="form-group">
+                     <label>{{ 'PRODUCTS.PRODUCT_IMAGE' | translate }}</label>
+                     <div class="image-upload-row">
+                       @if (editingProduct()?.image_filename) {
+                         <div class="image-preview-wrapper">
+                           <img [src]="getImageUrl(editingProduct()!)" class="product-thumb" alt="">
+                           @if (editingProduct()?.image_size_formatted) {
+                             <div class="file-size">{{ editingProduct()!.image_size_formatted }}</div>
+                           }
+                         </div>
+                       } @else if (pendingImagePreview()) {
+                         <div class="image-preview-wrapper">
+                           <img [src]="pendingImagePreview()" class="product-thumb" alt="">
+                           @if (pendingImageFile()?.size) {
+                             <div class="file-size">{{ formatFileSize(pendingImageFile()!.size) }}</div>
+                           }
+                         </div>
+                       }
+                       <input type="file" #fileInput accept="image/jpeg,image/png,image/webp" (change)="handleImageSelect($event)" style="display:none">
+                       <button type="button" class="btn btn-secondary" (click)="fileInput.click()" [disabled]="uploading()">
+                         {{ uploading() ? ('PRODUCTS.UPLOADING' | translate) : (pendingImageFile() ? ('PRODUCTS.CHANGE_IMAGE' | translate) : ('PRODUCTS.UPLOAD_IMAGE' | translate)) }}
+                       </button>
+                       @if (pendingImageFile()) {
+                         <span class="pending-file-name">{{ pendingImageFile()?.name }}</span>
+                       }
+                     </div>
+                   </div>
+                   <div class="form-actions">
+                     <button type="button" class="btn btn-secondary" (click)="cancelForm()">{{ 'PRODUCTS.CANCEL' | translate }}</button>
+                     <button type="submit" class="btn btn-primary" [disabled]="saving()">
+                       {{ saving() ? ('PRODUCTS.SAVING' | translate) : (editingProduct() ? ('PRODUCTS.UPDATE' | translate) : ('PRODUCTS.ADD_PRODUCT_BUTTON' | translate)) }}
+                     </button>
+                   </div>
+                </form>
+              </div>
+            }
 
-          @if (error()) {
-            <div class="error-banner">
-              <span>{{ error() }}</span>
-              <button class="icon-btn" (click)="error.set('')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M18 6L6 18M6 6l12 12"/>
-                </svg>
-              </button>
-            </div>
-          }
+            @if (error()) {
+              <div class="error-banner">
+                <span>{{ error() }}</span>
+                <button class="icon-btn" (click)="error.set('')">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+            }
 
-           @if (loading()) {
-             <div class="empty-state">
-               <p>{{ 'PRODUCTS.LOADING_PRODUCTS' | translate }}</p>
-             </div>
-           } @else if (products().length === 0) {
-             <div class="empty-state">
-               <div class="empty-icon">
-                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                   <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
-                 </svg>
+             @if (loading()) {
+               <div class="empty-state">
+                 <p>{{ 'PRODUCTS.LOADING_PRODUCTS' | translate }}</p>
                </div>
-               <h3>{{ 'PRODUCTS.NO_PRODUCTS' | translate }}</h3>
-               <p>{{ 'PRODUCTS.NO_PRODUCTS_DESC' | translate }}</p>
-               <button class="btn btn-primary" (click)="showAddForm.set(true)">{{ 'PRODUCTS.ADD_PRODUCT' | translate }}</button>
-             </div>
-          } @else {
-            <!-- Filter Buttons -->
-            <div class="filters-section">
-              <!-- Category Filters -->
-              @if (availableCategories().length > 0) {
-                <div class="category-filters">
-                  <button 
-                    class="filter-btn" 
-                    [class.active]="selectedCategory() === null"
-                    (click)="selectCategory(null)">
-                    All Categories
-                  </button>
-                  @for (category of availableCategories(); track category) {
-                    <button 
-                      class="filter-btn" 
-                      [class.active]="selectedCategory() === category"
-                      (click)="selectCategory(category)">
-                      {{ category }}
-                    </button>
-                  }
-                </div>
-              }
-              
-              <!-- Subcategory Filters (shown when category is selected) -->
-              @if (selectedCategory() && availableSubcategoriesForFilter().length > 0) {
-                <div class="subcategory-filters">
-                  <button 
-                    class="filter-btn filter-btn-sub" 
-                    [class.active]="selectedSubcategory() === null"
-                    (click)="selectSubcategory(null)">
-                    All {{ selectedCategory() }}
-                  </button>
-                  @for (subcategory of availableSubcategoriesForFilter(); track subcategory) {
-                    <button 
-                      class="filter-btn filter-btn-sub" 
-                      [class.active]="selectedSubcategory() === subcategory"
-                      (click)="selectSubcategory(subcategory)">
-                      {{ subcategory }}
-                    </button>
-                  }
-                </div>
-              }
-            </div>
+             } @else if (products().length === 0) {
+               <div class="empty-state">
+                 <div class="empty-icon">
+                   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                     <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                   </svg>
+                 </div>
+                 <h3>{{ 'PRODUCTS.NO_PRODUCTS' | translate }}</h3>
+                 <p>{{ 'PRODUCTS.NO_PRODUCTS_DESC' | translate }}</p>
+                 <button class="btn btn-primary" (click)="showAddForm.set(true)">{{ 'PRODUCTS.ADD_PRODUCT' | translate }}</button>
+               </div>
+            } @else {
+              <!-- Category Filters (Ribbon Style) -->
+              <div class="filters-section">
+                @if (availableCategories().length > 0) {
+                  <div class="ribbon-container">
+                    <div class="ribbon">
+                      <button 
+                        class="ribbon-tab" 
+                        [class.active]="selectedCategory() === null"
+                        (click)="selectCategory(null)">
+                        {{ 'CATALOG.ALL_CATEGORIES' | translate }}
+                      </button>
+                      @for (category of availableCategories(); track category) {
+                        <button 
+                          class="ribbon-tab" 
+                          [class.active]="selectedCategory() === category"
+                          (click)="selectCategory(category)">
+                          {{ category }}
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+                
+                <!-- Subcategory Filters (Ribbon Style - Smaller) -->
+                @if (selectedCategory() && availableSubcategoriesForFilter().length > 0) {
+                  <div class="ribbon-container subribbon">
+                    <div class="ribbon">
+                      <button 
+                        class="ribbon-tab tab-sm" 
+                        [class.active]="selectedSubcategory() === null"
+                        (click)="selectSubcategory(null)">
+                        {{ 'PRODUCTS.ALL_ITEMS_IN' | translate:{category: selectedCategory()} }}
+                      </button>
+                      @for (subcategory of availableSubcategoriesForFilter(); track subcategory) {
+                        <button 
+                          class="ribbon-tab tab-sm" 
+                          [class.active]="selectedSubcategory() === subcategory"
+                          (click)="selectSubcategory(subcategory)">
+                          {{ subcategory }}
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
 
-            <div class="table-card">
-               <table>
-                 <thead>
-                   <tr>
-                     <th style="width:60px"></th>
-                     <th>{{ 'PRODUCTS.NAME_HEADER' | translate }}</th>
-                     <th>{{ 'PRODUCTS.CATEGORY_HEADER' | translate }}</th>
-                     <th>{{ 'PRODUCTS.SUBCATEGORY_HEADER' | translate }}</th>
-                     <th>{{ 'PRODUCTS.PRICE_HEADER' | translate }}</th>
-                     <th></th>
-                   </tr>
-                 </thead>
-                <tbody>
-                  @for (product of filteredProducts(); track product.id) {
-                    <tr>
-                      <td>
-                        @if (product.image_filename) {
-                          <div class="image-preview-wrapper">
-                            <img [src]="getImageUrl(product)" class="table-thumb" alt="" (error)="handleImageError($event)">
-                            @if (product.image_size_formatted) {
-                              <div class="file-size">{{ product.image_size_formatted }}</div>
-                            }
-                          </div>
-                        } @else {
-                          <div class="no-image"></div>
-                        }
-                      </td>
-                      <td>
-                        <div>{{ product.name }}</div>
-                        @if (product.ingredients) {
-                          <small class="ingredients">{{ product.ingredients }}</small>
-                        }
-                      </td>
-                      <td>
-                        @if (editingCategoryProductId() === product.id) {
-                          <select 
-                            class="inline-select" 
-                            [(ngModel)]="editingCategory" 
-                            (change)="onCategoryChangeInline()"
-                            (blur)="saveCategoryInline(product)"
-                            (keydown.escape)="cancelCategoryEdit()"
-                            [attr.data-product-id]="product.id">
-                            <option value="">None</option>
-                            @for (category of getCategoryKeys(); track category) {
-                              <option [value]="category">{{ category }}</option>
-                            }
-                          </select>
-                        } @else {
-                          <span class="category-cell" (click)="startCategoryEdit(product, $event)">
-                            {{ product.category || '—' }}
-                          </span>
-                        }
-                      </td>
-                      <td>
-                        @if (editingCategoryProductId() === product.id) {
-                          <select 
-                            class="inline-select" 
-                            [(ngModel)]="editingSubcategory"
-                            [disabled]="!editingCategory || getSubcategoriesForCategory(editingCategory || '').length === 0"
-                            (blur)="saveCategoryInline(product)"
-                            (keydown.escape)="cancelCategoryEdit()">
-                            <option value="">None</option>
-                            @for (subcat of getSubcategoriesForCategory(editingCategory); track subcat) {
-                              <option [value]="subcat">{{ subcat }}</option>
-                            }
-                          </select>
-                        } @else {
-                          <span class="category-cell" (click)="startCategoryEdit(product, $event)">
-                            {{ product.subcategory || '—' }}
-                          </span>
-                        }
-                      </td>
-                      <td class="price">{{ formatPrice(product.price_cents) }}</td>
-                      <td class="actions">
-                        <button class="icon-btn" (click)="startEdit(product)" title="Edit">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                          </svg>
-                        </button>
-                        <button class="icon-btn icon-btn-danger" (click)="confirmDelete(product)" title="Delete" [disabled]="deleting() === product.id">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
-                          </svg>
-                        </button>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+              <div class="table-card">
+                 <table>
+                   <thead>
+                     <tr>
+                       <th style="width:60px"></th>
+                       <th>{{ 'PRODUCTS.NAME_HEADER' | translate }}</th>
+                       <th>{{ 'PRODUCTS.CATEGORY_HEADER' | translate }}</th>
+                       <th>{{ 'PRODUCTS.SUBCATEGORY_HEADER' | translate }}</th>
+                       <th>{{ 'PRODUCTS.PRICE_HEADER' | translate }}</th>
+                       <th></th>
+                     </tr>
+                   </thead>
+                  <tbody>
+                    @for (product of filteredProducts(); track product.id) {
+                      <tr>
+                        <td>
+                          @if (product.image_filename) {
+                            <div class="image-preview-wrapper">
+                              <img [src]="getImageUrl(product)" class="table-thumb" alt="" (error)="handleImageError($event)">
+                              @if (product.image_size_formatted) {
+                                <div class="file-size">{{ product.image_size_formatted }}</div>
+                              }
+                            </div>
+                          } @else {
+                            <div class="no-image"></div>
+                          }
+                        </td>
+                        <td>
+                          <div>{{ product.name }}</div>
+                          @if (product.ingredients) {
+                            <small class="ingredients">{{ product.ingredients }}</small>
+                          }
+                        </td>
+                        <td>
+                          @if (editingCategoryProductId() === product.id) {
+                            <select 
+                              class="inline-select" 
+                              [(ngModel)]="editingCategory" 
+                              (change)="onCategoryChangeInline()"
+                              (blur)="saveCategoryInline(product)"
+                              (keydown.escape)="cancelCategoryEdit()"
+                              [attr.data-product-id]="product.id">
+                              <option value="">None</option>
+                              @for (category of getCategoryKeys(); track category) {
+                                <option [value]="category">{{ category }}</option>
+                              }
+                            </select>
+                          } @else {
+                            <span class="category-cell" (click)="startCategoryEdit(product, $event)">
+                              {{ product.category || '—' }}
+                            </span>
+                          }
+                        </td>
+                        <td>
+                          @if (editingCategoryProductId() === product.id) {
+                            <select 
+                              class="inline-select" 
+                              [(ngModel)]="editingSubcategory" 
+                              [disabled]="!editingCategory || getSubcategoriesForCategory(editingCategory || '').length === 0"
+                              (blur)="saveCategoryInline(product)"
+                              (keydown.escape)="cancelCategoryEdit()">
+                              <option value="">None</option>
+                              @for (subcat of getSubcategoriesForCategory(editingCategory); track subcat) {
+                                <option [value]="subcat">{{ subcat }}</option>
+                              }
+                            </select>
+                          } @else {
+                            <span class="category-cell" (click)="startCategoryEdit(product, $event)">
+                              {{ product.subcategory || '—' }}
+                            </span>
+                          }
+                        </td>
+                        <td class="price">{{ formatPrice(product.price_cents) }}</td>
+                        <td class="actions">
+                          <button class="icon-btn" (click)="startEdit(product)" title="Edit">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                          </button>
+                          <button class="icon-btn icon-btn-danger" (click)="confirmDelete(product)" title="Delete" [disabled]="deleting() === product.id">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                            </svg>
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
           }
 
            @if (productToDelete()) {
@@ -290,6 +328,135 @@ import { TranslateModule } from '@ngx-translate/core';
   `,
   styles: [`
     .layout { display: flex; min-height: 100vh; background: var(--color-bg); }
+
+    /* ==========================================
+       MAIN TABS - Button Style (like Settings)
+       ========================================== */
+    .main-tabs-container {
+      margin-bottom: var(--space-4);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .main-tabs {
+      display: flex;
+      gap: var(--space-2);
+      padding-bottom: var(--space-2);
+      width: max-content;
+      min-width: 100%;
+    }
+
+    .main-tab {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      color: var(--color-text-muted);
+      font-size: 0.875rem;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      min-height: 44px;
+      flex-shrink: 0;
+    }
+
+    .main-tab:hover {
+      color: var(--color-text);
+      border-color: var(--color-primary);
+    }
+
+    .main-tab.active {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: white;
+    }
+
+    .tab-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    /* ==========================================
+       RIBBON TABS - Previous Style (for Filters)
+       ========================================== */
+    .ribbon-container {
+      margin-bottom: var(--space-4);
+      border-bottom: 1px solid var(--color-border);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .ribbon {
+      display: flex;
+      gap: var(--space-1);
+      width: max-content;
+      min-width: 100%;
+    }
+
+    .ribbon-tab {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-5);
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: var(--color-text-muted);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      
+      &:hover {
+        color: var(--color-text);
+        background: var(--color-bg);
+      }
+
+      &.active {
+        color: var(--color-primary);
+        border-bottom-color: var(--color-primary);
+        background: var(--color-primary-light);
+      }
+
+      &:first-child {
+        border-left: 1px solid var(--color-border);
+      }
+
+      &:last-child {
+        border-right: 1px solid var(--color-border);
+      }
+    }
+
+    .tab-sm {
+      padding: var(--space-2) var(--space-4);
+      font-size: 0.8125rem;
+    }
+
+    .subribbon {
+      margin-top: calc(-1 * var(--space-2));
+      border-bottom: none;
+      padding: var(--space-2) 0;
+      .ribbon {
+        padding: var(--space-1);
+        background: var(--color-bg);
+        border-radius: var(--radius-md);
+      }
+      .ribbon-tab {
+        border-radius: var(--radius-md);
+        border-bottom: none;
+        &.active {
+          background: var(--color-primary);
+          color: white;
+        }
+      }
+    }
 
     .sidebar {
       width: 240px;
@@ -456,52 +623,6 @@ import { TranslateModule } from '@ngx-translate/core';
       margin-bottom: var(--space-4);
     }
 
-    .category-filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-      margin-bottom: var(--space-3);
-    }
-
-    .subcategory-filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-      padding: var(--space-3);
-      background: var(--color-bg);
-      border-radius: var(--radius-md);
-      border: 1px solid var(--color-border);
-    }
-
-    .filter-btn {
-      padding: var(--space-2) var(--space-3);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: var(--color-text);
-      cursor: pointer;
-      transition: all 0.15s ease;
-      white-space: nowrap;
-    }
-
-    .filter-btn:hover {
-      background: var(--color-bg);
-      border-color: var(--color-primary);
-    }
-
-    .filter-btn.active {
-      background: var(--color-primary);
-      color: white;
-      border-color: var(--color-primary);
-    }
-
-    .filter-btn-sub {
-      font-size: 0.8125rem;
-      padding: var(--space-1) var(--space-3);
-    }
-
     .table-card {
       background: var(--color-surface);
       border: 1px solid var(--color-border);
@@ -646,10 +767,7 @@ import { TranslateModule } from '@ngx-translate/core';
       display: flex;
       flex-direction: column;
       gap: 4px;
-      background: none;
-      border: none;
-      padding: var(--space-2);
-      cursor: pointer;
+      background: none; border: none; padding: var(--space-2); cursor: pointer;
       span { display: block; width: 20px; height: 2px; background: var(--color-text); border-radius: 1px; }
     }
 
@@ -673,6 +791,7 @@ export class ProductsComponent implements OnInit {
   private api = inject(ApiService);
   private router = inject(Router);
 
+  activeTab = signal<'products' | 'categories'>('products');
   products = signal<Product[]>([]);
   filteredProducts = signal<Product[]>([]);
   loading = signal(true);

@@ -93,7 +93,7 @@ ModuleRegistry.registerModules([
                     <div class="order-items">
                       @for (item of getSortedItems(order.items); track item.id) {
                         <div class="order-item" [class.removed]="item.removed_by_customer">
-                          <div class="item-main">
+                          <div class="item-name-row">
                             <span class="item-qty">
                               @if (!item.removed_by_customer && item.status !== 'delivered') {
                                 <input type="number" 
@@ -107,62 +107,71 @@ ModuleRegistry.registerModules([
                               }
                             </span>
                             <span class="item-name">{{ item.product_name }}</span>
-                            <span class="item-price">{{ formatPrice(item.price_cents * item.quantity) }}</span>
-                            @if (!item.removed_by_customer && item.status !== 'delivered') {
-                              <button class="btn-remove-item" (click)="removeItemStaff(order.id, item.id!, item.status ?? 'pending')" [title]="'ORDERS.REMOVE_ITEM' | translate">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                  <path d="M18 6L6 18M6 6l12 12"/>
-                                </svg>
-                              </button>
-                            }
-                            @if (item.status && !item.removed_by_customer) {
-                              <div class="item-status-control">
-                                <button 
-                                  class="item-status-badge clickable" 
-                                  [class]="'status-' + item.status"
-                                  (click)="toggleItemStatusDropdown(order.id, item.id!)"
-                                  [title]="'ORDERS.CLICK_TO_CHANGE_STATUS' | translate">
-                                  {{ getItemStatusLabel(item.status) }}
-                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="6,9 12,15 18,9"/>
+                          </div>
+                          <div class="item-details-row">
+                            <span class="item-price">
+                              {{ formatPrice(item.price_cents) }}
+                              @if (item.quantity > 1) {
+                                <span class="price-total">({{ formatPrice(item.price_cents * item.quantity) }} total)</span>
+                              }
+                            </span>
+                            <div class="item-actions">
+                              @if (!item.removed_by_customer && item.status !== 'delivered') {
+                                <button class="btn-remove-item" (click)="removeItemStaff(order.id, item.id!, item.status ?? 'pending')" [title]="'ORDERS.REMOVE_ITEM' | translate">
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 6L6 18M6 6l12 12"/>
                                   </svg>
                                 </button>
-                                @if (itemStatusDropdownOpen() === order.id + '-' + item.id) {
-                                  <div class="status-dropdown item-status-dropdown" (click)="$event.stopPropagation()">
-                                    @if (getItemStatusTransitions(item.status).backward.length > 0) {
-                                      <div class="dropdown-section">
-                                        <div class="dropdown-label">{{ 'ORDERS.GO_BACK' | translate }}</div>
-                                        @for (status of getItemStatusTransitions(item.status).backward; track status) {
-                                          <button 
-                                            class="dropdown-item backward"
-                                            (click)="updateItemStatus(order.id, item.id!, status); itemStatusDropdownOpen.set(null)">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                              <polyline points="15,18 9,12 15,6"/>
-                                            </svg>
-                                            {{ getItemStatusLabel(status) }}
-                                          </button>
-                                        }
-                                      </div>
-                                    }
-                                    @if (getItemStatusTransitions(item.status).forward.length > 0) {
-                                      <div class="dropdown-section">
-                                        <div class="dropdown-label">{{ 'ORDERS.MOVE_FORWARD' | translate }}</div>
-                                        @for (status of getItemStatusTransitions(item.status).forward; track status) {
-                                          <button 
-                                            class="dropdown-item forward"
-                                            (click)="updateItemStatus(order.id, item.id!, status); itemStatusDropdownOpen.set(null)">
-                                            {{ getItemStatusLabel(status) }}
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                              <polyline points="9,18 15,12 9,6"/>
-                                            </svg>
-                                          </button>
-                                        }
-                                      </div>
-                                    }
-                                  </div>
-                                }
-                              </div>
-                            }
+                              }
+                              @if (item.status && !item.removed_by_customer) {
+                                <div class="item-status-control">
+                                  <button 
+                                    class="item-status-badge clickable" 
+                                    [class]="'status-' + item.status"
+                                    (click)="toggleItemStatusDropdown(order.id, item.id!)"
+                                    [title]="'ORDERS.CLICK_TO_CHANGE_STATUS' | translate">
+                                    {{ getItemStatusLabel(item.status) }}
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                      <polyline points="6,9 12,15 18,9"/>
+                                    </svg>
+                                  </button>
+                                  @if (itemStatusDropdownOpen() === order.id + '-' + item.id) {
+                                    <div class="status-dropdown item-status-dropdown" (click)="$event.stopPropagation()">
+                                      @if (getItemStatusTransitions(item.status).backward.length > 0) {
+                                        <div class="dropdown-section">
+                                          <div class="dropdown-label">{{ 'ORDERS.GO_BACK' | translate }}</div>
+                                          @for (status of getItemStatusTransitions(item.status).backward; track status) {
+                                            <button 
+                                              class="dropdown-item backward"
+                                              (click)="updateItemStatus(order.id, item.id!, status); itemStatusDropdownOpen.set(null)">
+                                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="15,18 9,12 15,6"/>
+                                              </svg>
+                                              {{ getItemStatusLabel(status) }}
+                                            </button>
+                                          }
+                                        </div>
+                                      }
+                                      @if (getItemStatusTransitions(item.status).forward.length > 0) {
+                                        <div class="dropdown-section">
+                                          <div class="dropdown-label">{{ 'ORDERS.MOVE_FORWARD' | translate }}</div>
+                                          @for (status of getItemStatusTransitions(item.status).forward; track status) {
+                                            <button 
+                                              class="dropdown-item forward"
+                                              (click)="updateItemStatus(order.id, item.id!, status); itemStatusDropdownOpen.set(null)">
+                                              {{ getItemStatusLabel(status) }}
+                                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="9,18 15,12 9,6"/>
+                                              </svg>
+                                            </button>
+                                          }
+                                        </div>
+                                      }
+                                    </div>
+                                  }
+                                </div>
+                              }
+                            </div>
                           </div>
                           @if (item.removed_by_customer) {
                             <div class="removed-indicator">
@@ -281,10 +290,17 @@ ModuleRegistry.registerModules([
                       <div class="order-items">
                         @for (item of order.items; track item.id) {
                           <div class="order-item" [class.removed]="item.removed_by_customer">
-                            <div class="item-main">
+                            <div class="item-name-row">
                               <span class="item-qty">{{ item.quantity }}x</span>
                               <span class="item-name">{{ item.product_name }}</span>
-                              <span class="item-price">{{ formatPrice(item.price_cents * item.quantity) }}</span>
+                            </div>
+                            <div class="item-details-row">
+                              <span class="item-price">
+                                {{ formatPrice(item.price_cents) }}
+                                @if (item.quantity > 1) {
+                                  <span class="price-total">({{ formatPrice(item.price_cents * item.quantity) }} total)</span>
+                                }
+                              </span>
                               @if (item.status && !item.removed_by_customer) {
                                 <span class="item-status-badge" [class]="'status-' + item.status">
                                   {{ getItemStatusLabel(item.status) }}
@@ -544,8 +560,9 @@ ModuleRegistry.registerModules([
 
     .order-grid { 
       display: grid; 
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); /* Reduced from 320px for better mobile */
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: var(--space-4); 
+      align-items: start;
     }
     
     .grid-container {
@@ -559,7 +576,7 @@ ModuleRegistry.registerModules([
       border: 1px solid var(--color-border);
       border-left: 4px solid transparent;
       border-radius: var(--radius-lg);
-      overflow: hidden;
+      overflow: visible;
       box-shadow: var(--shadow-sm);
       transition: box-shadow 0.2s ease, transform 0.2s ease;
       max-width: 100%;
@@ -595,7 +612,7 @@ ModuleRegistry.registerModules([
       display: flex; 
       flex-direction: column;
       gap: var(--space-1); 
-      padding: var(--space-2) 0; 
+      padding: var(--space-3) 0; 
       font-size: 0.9375rem; 
     }
     .order-item:not(:last-child) { border-bottom: 1px solid var(--color-border); }
@@ -603,27 +620,38 @@ ModuleRegistry.registerModules([
       opacity: 0.6; 
       text-decoration: line-through;
       background: var(--color-bg);
+      padding: var(--space-3);
+      margin: 0 calc(-1 * var(--space-4));
+      padding-left: var(--space-4);
+      padding-right: var(--space-4);
     }
-    .item-main { 
+    .item-name-row { 
       display: flex; 
-      gap: 12px; 
       align-items: center;
-      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+    .item-details-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+    }
+    .item-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
     }
     .item-qty { 
       font-weight: 600; 
       color: var(--color-primary); 
-      min-width: 50px; 
       flex-shrink: 0;
-      display: flex;
-      align-items: center;
     }
     .quantity-input {
-      width: 50px;
-      padding: 4px 6px;
+      width: 42px;
+      padding: 4px 4px;
       border: 1px solid var(--color-border);
       border-radius: 4px;
-      font-size: 0.9375rem;
+      font-size: 0.875rem;
       text-align: center;
       background: var(--color-surface);
       color: var(--color-text);
@@ -634,8 +662,34 @@ ModuleRegistry.registerModules([
       border-color: var(--color-primary);
       box-shadow: 0 0 0 2px var(--color-primary-light);
     }
-    .item-name { flex: 1; color: var(--color-text); min-width: 0; }
-    .item-price { color: var(--color-text-muted); }
+    .item-name { 
+      color: var(--color-text); 
+      font-weight: 500;
+    }
+    .item-price { 
+      color: var(--color-text-muted); 
+      font-size: 0.875rem;
+    }
+    .price-total {
+      color: var(--color-text-muted);
+      font-size: 0.75rem;
+      font-weight: 400;
+      margin-left: 4px;
+    }
+    .btn-remove-item {
+      background: none;
+      border: none;
+      color: var(--color-error);
+      cursor: pointer;
+      padding: 2px;
+      display: inline-flex;
+      align-items: center;
+      opacity: 0.7;
+      transition: opacity 0.15s;
+    }
+    .btn-remove-item:hover {
+      opacity: 1;
+    }
     .item-status-badge {
       padding: 2px 8px;
       border-radius: 12px;
@@ -727,31 +781,6 @@ ModuleRegistry.registerModules([
     }
     .btn-danger:hover {
       background: #dc2626;
-    }
-    .btn-remove-item {
-      background: none;
-      border: none;
-      color: var(--color-error);
-      cursor: pointer;
-      padding: 4px;
-      display: flex;
-      align-items: center;
-      opacity: 0.7;
-      transition: opacity 0.15s;
-    }
-    .btn-remove-item:hover {
-      opacity: 1;
-    }
-    .quantity-input {
-      width: 50px;
-      padding: 4px 6px;
-      border: 1px solid var(--color-border);
-      border-radius: 4px;
-      font-size: 0.9375rem;
-      text-align: center;
-      background: var(--color-surface);
-      color: var(--color-text);
-      box-sizing: border-box;
     }
     .quantity-input:focus {
       outline: none;
@@ -919,7 +948,11 @@ ModuleRegistry.registerModules([
     
     .item-status-control {
       position: relative;
-      display: inline-block;
+      display: inline-flex;
+      z-index: 10;
+    }
+    .order-item:hover .item-status-control {
+      z-index: 50;
     }
 
     .grid-container {

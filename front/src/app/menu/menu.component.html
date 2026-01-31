@@ -42,6 +42,7 @@
   <!-- Hero Header -->
   <header class="hero-header">
     <div class="hero-overlay"></div>
+    <app-language-picker class="menu-language-picker"></app-language-picker>
     <div class="hero-content">
       <div class="hero-top-row">
         @if (tenantLogo()) {
@@ -49,7 +50,6 @@
           <img [src]="tenantLogo()" alt="Business Logo" class="tenant-logo" />
         </div>
         }
-        <app-language-picker class="menu-language-picker"></app-language-picker>
       </div>
 
       <div class="hero-info">

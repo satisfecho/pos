@@ -61,7 +61,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-pos}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pos}
     ports:
-      - "${POSTGRES_PORT:-5433}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
     volumes:
       - pos_pgdata:/var/lib/postgresql
     healthcheck:
@@ -75,7 +75,7 @@ services:
     container_name: pos-redis
     restart: unless-stopped
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
@@ -104,7 +104,7 @@ services:
     container_name: pos-haproxy
     restart: unless-stopped
     ports:
-      - "${FRONTEND_PORT:-4202}:4202"
+      - "127.0.0.1:${FRONTEND_PORT:-4202}:4202"
     volumes:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     depends_on:
