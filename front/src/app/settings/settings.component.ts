@@ -298,6 +298,49 @@ import { TranslateModule } from '@ngx-translate/core';
                       <p class="hint">{{ 'SETTINGS.IMMEDIATE_PAYMENT_HINT' | translate }}</p>
                     </div>
                   </div>
+                  
+                  <div class="divider"></div>
+                  
+                  <h3>{{ 'SETTINGS.LOCATION_VERIFICATION' | translate }}</h3>
+                  <p class="section-desc">{{ 'SETTINGS.LOCATION_VERIFICATION_DESC' | translate }}</p>
+                  
+                  <div class="form-group checkbox-row">
+                    <label class="switch">
+                      <input type="checkbox" [(ngModel)]="formData.location_check_enabled" name="location_check_enabled">
+                      <span class="slider round"></span>
+                    </label>
+                    <div>
+                      <label class="check-label">{{ 'SETTINGS.ENABLE_LOCATION_CHECK' | translate }}</label>
+                      <p class="hint">{{ 'SETTINGS.ENABLE_LOCATION_CHECK_HINT' | translate }}</p>
+                    </div>
+                  </div>
+                  
+                  @if (formData.location_check_enabled) {
+                    <div class="location-settings">
+                      <div class="form-row">
+                        <div class="form-group">
+                          <label>{{ 'SETTINGS.LATITUDE' | translate }}</label>
+                          <input type="number" step="0.000001" [(ngModel)]="formData.latitude" name="latitude" placeholder="e.g. 41.385064" />
+                        </div>
+                        <div class="form-group">
+                          <label>{{ 'SETTINGS.LONGITUDE' | translate }}</label>
+                          <input type="number" step="0.000001" [(ngModel)]="formData.longitude" name="longitude" placeholder="e.g. 2.173404" />
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label>{{ 'SETTINGS.LOCATION_RADIUS' | translate }}</label>
+                        <input type="number" [(ngModel)]="formData.location_radius_meters" name="location_radius_meters" placeholder="100" />
+                        <p class="hint">{{ 'SETTINGS.LOCATION_RADIUS_HINT' | translate }}</p>
+                      </div>
+                      <button type="button" class="btn btn-secondary btn-sm" (click)="useCurrentLocation()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="12" cy="12" r="10"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        {{ 'SETTINGS.USE_CURRENT_LOCATION' | translate }}
+                      </button>
+                    </div>
+                  }
                 </div>
               }
 
@@ -940,6 +983,22 @@ import { TranslateModule } from '@ngx-translate/core';
         margin: var(--space-5) 0;
       }
     }
+    
+    .section-desc {
+      color: var(--color-text-muted);
+      font-size: 0.875rem;
+      margin-bottom: var(--space-4);
+    }
+    
+    .location-settings {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      padding: var(--space-4);
+      background: var(--color-bg);
+      border-radius: var(--radius-md);
+      margin-top: var(--space-3);
+    }
 
     h3 {
       font-size: 0.9375rem;
@@ -1394,5 +1453,25 @@ export class SettingsComponent implements OnInit {
 
   cancel() {
     this.router.navigate(['/']);
+  }
+
+  useCurrentLocation() {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          this.formData.latitude = position.coords.latitude;
+          this.formData.longitude = position.coords.longitude;
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          this.error.set('Could not get your location. Please enter coordinates manually.');
+          setTimeout(() => this.error.set(null), 3000);
+        },
+        { timeout: 10000, maximumAge: 60000 }
+      );
+    } else {
+      this.error.set('Geolocation is not supported by your browser.');
+      setTimeout(() => this.error.set(null), 3000);
+    }
   }
 }

@@ -83,6 +83,14 @@ export class MenuComponent implements OnInit, OnDestroy {
   showNameModal = signal(false);
   nameInputValue = '';
 
+  // Table session & PIN
+  tableIsActive = signal(true);  // Default true for backward compatibility
+  tableRequiresPin = signal(false);
+  showPinModal = signal(false);
+  pinValue = signal('');
+  pinError = signal('');
+  private currentPin = '';  // Stored after successful validation
+
   // Payment
   showPaymentModal = signal(false);
   paymentAmount = signal(0);
@@ -232,6 +240,16 @@ export class MenuComponent implements OnInit, OnDestroy {
           this.api.setTenantStripeKey(data.tenant_stripe_publishable_key);
         }
 
+        // Table session status
+        this.tableIsActive.set(data.table_is_active !== false);  // Default true for backward compatibility
+        this.tableRequiresPin.set(data.table_requires_pin === true);
+
+        // Load stored PIN from sessionStorage if available
+        const storedPin = sessionStorage.getItem(`pin_${this.tableToken}`);
+        if (storedPin) {
+          this.currentPin = storedPin;
+        }
+
         this.loading.set(false);
       },
       error: () => {
@@ -274,103 +292,6 @@ export class MenuComponent implements OnInit, OnDestroy {
       this.ws = null;
       setTimeout(() => this.connectWebSocket(), 5000);
     };
-  }
-
-  // ============================================
-  // ORDER STORAGE
-  // ============================================
-  loadStoredOrders() {
-    if (this.sessionId) {
-      this.api.getCurrentOrder(this.tableToken, this.sessionId).subscribe({
-        next: (response) => {
-          if (response.order) {
-            if (response.order.session_id === this.sessionId) {
-              const activeItems = response.order.items.filter((item: any) => !item.removed_by_customer);
-              const order: PlacedOrder = {
-                id: response.order.id,
-                items: activeItems.map((item: any) => ({
-                  product: {
-                    id: item.product_id,
-                    name: item.product_name,
-                    price_cents: item.price_cents
-                  } as Product,
-                  quantity: item.quantity,
-                  notes: item.notes || '',
-                  status: item.status,
-                  itemId: item.id
-                } as CartItem)),
-                notes: response.order.notes || '',
-                total: response.order.total_cents,
-                status: response.order.status
-              };
-              this.placedOrders.set([order]);
-              this.saveOrders();
-            } else {
-              this.loadStoredOrdersFromLocalStorage();
-            }
-          } else {
-            this.loadStoredOrdersFromLocalStorage();
-          }
-        },
-        error: () => {
-          this.loadStoredOrdersFromLocalStorage();
-        }
-      });
-    } else {
-      this.loadStoredOrdersFromLocalStorage();
-    }
-  }
-
-  private loadStoredOrdersFromLocalStorage() {
-    if (this.sessionId) {
-      this.api.getCurrentOrder(this.tableToken, this.sessionId).subscribe({
-        next: (response) => {
-          if (response.order && response.order.session_id === this.sessionId) {
-            const activeItems = response.order.items.filter((item: any) => !item.removed_by_customer);
-            const order: PlacedOrder = {
-              id: response.order.id,
-              items: activeItems.map((item: any) => ({
-                product: {
-                  id: item.product_id,
-                  name: item.product_name,
-                  price_cents: item.price_cents
-                } as Product,
-                quantity: item.quantity,
-                notes: item.notes || '',
-                status: item.status,
-                itemId: item.id
-              } as CartItem)),
-              notes: response.order.notes || '',
-              total: response.order.total_cents,
-              status: response.order.status
-            };
-            this.placedOrders.set([order]);
-            this.saveOrders();
-            return;
-          }
-          this.loadFromLocalStorageFallback();
-        },
-        error: () => {
-          this.loadFromLocalStorageFallback();
-        }
-      });
-    } else {
-      this.loadFromLocalStorageFallback();
-    }
-  }
-
-  private loadFromLocalStorageFallback() {
-    const stored = localStorage.getItem(`orders_${this.tableToken}`);
-    if (stored) {
-      try {
-        const orders: PlacedOrder[] = JSON.parse(stored);
-        const activeOrders = orders.filter(o => o.status !== 'paid' && o.status !== 'completed');
-        this.placedOrders.set(activeOrders);
-        if (activeOrders.length !== orders.length) {
-          this.saveOrders();
-        }
-      } catch { }
-    }
   }
 
   saveOrders() {
@@ -743,18 +664,80 @@ export class MenuComponent implements OnInit, OnDestroy {
   // ORDER SUBMISSION
   // ============================================
   submitOrder() {
+    // Check if table is active
+    if (!this.tableIsActive()) {
+      alert('This table is not accepting orders. Please ask staff for assistance.');
+      return;
+    }
+
+    // Check if PIN is required and we don't have one
+    if (this.tableRequiresPin() && !this.currentPin) {
+      this.showPinModal.set(true);
+      this.pinValue.set('');
+      this.pinError.set('');
+      return;
+    }
+
+    // Proceed with order submission
+    this.doSubmitOrder();
+  }
+
+  // PIN Modal handlers
+  confirmPin() {
+    const pin = this.pinValue().trim();
+    if (pin.length !== 4 || !/^\d+$/.test(pin)) {
+      this.pinError.set('Please enter a 4-digit PIN');
+      return;
+    }
+    this.currentPin = pin;
+    sessionStorage.setItem(`pin_${this.tableToken}`, pin);
+    this.showPinModal.set(false);
+    this.doSubmitOrder();
+  }
+
+  cancelPinModal() {
+    this.showPinModal.set(false);
+    this.pinValue.set('');
+    this.pinError.set('');
+  }
+
+  private async doSubmitOrder() {
     const items: OrderItemCreate[] = this.cart().map(item => ({
       product_id: item.product.id!,
       quantity: item.quantity,
       notes: item.notes || undefined,
       source: item.product._source || undefined
     }));
+
+    // Try to get location (optional, non-blocking)
+    let latitude: number | null = null;
+    let longitude: number | null = null;
+
+    try {
+      if ('geolocation' in navigator) {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            timeout: 5000,
+            maximumAge: 60000
+          });
+        });
+        latitude = position.coords.latitude;
+        longitude = position.coords.longitude;
+      }
+    } catch (e) {
+      // Location denied or unavailable - continue without it
+      console.log('Location not available');
+    }
+
     this.submitting.set(true);
     this.api.submitOrder(this.tableToken, {
       items,
       notes: this.orderNotes || undefined,
       session_id: this.sessionId,
-      customer_name: this.customerName() || undefined
+      customer_name: this.customerName() || undefined,
+      pin: this.currentPin || undefined,
+      latitude,
+      longitude
     }).subscribe({
       next: (response: any) => {
         const orderId = response.order_id;
@@ -789,9 +772,22 @@ export class MenuComponent implements OnInit, OnDestroy {
           }, 500);
         }
       },
-      error: () => {
+      error: (err) => {
         this.submitting.set(false);
-        alert('Failed to place order.');
+        const errorMsg = err.error?.detail || 'Failed to place order.';
+        
+        // Check if it's a PIN error
+        if (errorMsg.includes('PIN') || errorMsg.includes('pin')) {
+          // Clear the stored PIN and show modal again
+          this.currentPin = '';
+          sessionStorage.removeItem(`pin_${this.tableToken}`);
+          this.pinError.set(errorMsg);
+          this.showPinModal.set(true);
+        } else if (errorMsg.includes('active') || errorMsg.includes('accepting')) {
+          alert('This table is not accepting orders. Please ask staff for assistance.');
+        } else {
+          alert(errorMsg);
+        }
       }
     });
   }
@@ -924,6 +920,18 @@ export class MenuComponent implements OnInit, OnDestroy {
         }
       } catch { }
     }
+  }
+
+  canCancelOrder(order: PlacedOrder): boolean {
+    // Can cancel if order is pending and has no items in preparing/ready/delivered status
+    if (order.status === 'paid' || order.status === 'completed' || order.status === 'cancelled') {
+      return false;
+    }
+    // Check if any items are being prepared, ready, or delivered
+    const hasNonPendingItems = order.items.some(item => 
+      item.status === 'preparing' || item.status === 'ready' || item.status === 'delivered'
+    );
+    return !hasNonPendingItems;
   }
 
   cancelOrder(orderId: number) {

@@ -1807,6 +1807,53 @@ $cart-expanded-max: 60vh;
   }
 }
 
+// PIN Modal Styles
+.pin-icon {
+  color: var(--color-primary);
+}
+
+.pin-error {
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  margin-bottom: var(--space-3);
+  text-align: center;
+}
+
+.pin-input-container {
+  display: flex;
+  justify-content: center;
+  margin: var(--space-4) 0;
+}
+
+.pin-input {
+  width: 160px;
+  padding: var(--space-4);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  font-size: 2rem;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-weight: 700;
+  letter-spacing: 0.5em;
+  text-align: center;
+  background: var(--color-bg);
+  color: var(--color-text);
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &::placeholder {
+    color: var(--color-border);
+    letter-spacing: 0.3em;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+  }
+}
+
 .modal-actions {
   display: flex;
   gap: var(--space-3);

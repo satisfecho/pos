@@ -2364,7 +2364,7 @@ def get_menu(
     try:
         result = session.execute(
             text("""
-            SELECT id, tenant_id, name, token
+            SELECT id, tenant_id, name, token, is_active, order_pin, active_order_id
             FROM "table"
             WHERE token = :token
         """),
@@ -2382,13 +2382,16 @@ def get_menu(
 
     # Create a simple object with the needed attributes
     class TableData:
-        def __init__(self, id, tenant_id, name, token):
+        def __init__(self, id, tenant_id, name, token, is_active, order_pin, active_order_id):
             self.id = id
             self.tenant_id = tenant_id
             self.name = name
             self.token = token
+            self.is_active = is_active or False
+            self.order_pin = order_pin
+            self.active_order_id = active_order_id
 
-    table = TableData(table_row[0], table_row[1], table_row[2], table_row[3])
+    table = TableData(table_row[0], table_row[1], table_row[2], table_row[3], table_row[4], table_row[5], table_row[6])
 
     # Get products from TenantProduct (new catalog system) and Product (legacy)
     tenant_products = session.exec(

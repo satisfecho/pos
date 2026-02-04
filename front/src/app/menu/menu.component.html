@@ -606,6 +606,48 @@
   </div>
   }
 
+  <!-- PIN Modal -->
+  @if (showPinModal()) {
+  <div class="modal-overlay" (click)="cancelPinModal()">
+    <div class="modal-sheet" (click)="$event.stopPropagation()">
+      <div class="modal-handle">
+        <span class="handle-bar"></span>
+      </div>
+      <div class="modal-content">
+        <div class="modal-icon pin-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+        </div>
+        <h3 class="modal-title">{{ 'MENU.ENTER_PIN' | translate }}</h3>
+        <p class="modal-subtitle">{{ 'MENU.PIN_HINT' | translate }}</p>
+        @if (pinError()) {
+          <div class="pin-error">{{ pinError() }}</div>
+        }
+        <div class="pin-input-container">
+          <input 
+            type="tel" 
+            inputmode="numeric"
+            pattern="[0-9]*"
+            maxlength="4"
+            class="pin-input" 
+            [ngModel]="pinValue()"
+            (ngModelChange)="pinValue.set($event)"
+            placeholder="----"
+            (keyup.enter)="confirmPin()" 
+            autofocus 
+          />
+        </div>
+        <div class="modal-actions">
+          <button class="btn-secondary" (click)="cancelPinModal()">{{ 'COMMON.CANCEL' | translate }}</button>
+          <button class="btn-primary" (click)="confirmPin()" [disabled]="pinValue().length !== 4">{{ 'COMMON.CONFIRM' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
   <!-- Payment Modal -->
   @if (showPaymentModal()) {
   <div class="modal-overlay" (click)="cancelPayment()">

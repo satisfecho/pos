@@ -18,22 +18,27 @@ Options:
                         Default: production mode (build and serve static files)
     -c, --clean         Remove all containers, volumes, and data
     --remove-all        Same as --clean
+    --fix-perm          Fix file permissions in back/uploads
+    --migrate           Run database migrations only (services must be running)
+    --no-migrate        Skip automatic migration on startup
 
 Examples:
     ./run.sh            Start in production mode (build and serve)
     ./run.sh -dev       Start in development mode (hot reload)
     ./run.sh --clean    Remove all containers and volumes
-    --fix-perm          Fix file permissions in back/uploads
+    ./run.sh --migrate  Run pending database migrations
 
 Development Mode:
     - Frontend runs with 'ng serve' (hot reload enabled)
     - Backend runs with auto-reload
     - All services run in Docker containers
+    - Migrations run automatically on startup
 
 Production Mode:
     - Frontend is built and served as static files via nginx
     - Backend runs in container
     - Optimized for performance
+    - Migrations run automatically on startup
 
 EOF
     exit 0
@@ -113,9 +118,81 @@ fix_permissions() {
     exit 0
 }
 
+# Function to run database migrations
+run_migrations() {
+    echo "🗄️  Running database migrations..."
+    
+    # Check if config.env exists
+    if [ ! -f "config.env" ]; then
+        echo "⚠️  config.env not found, using defaults..."
+        ENV_FILE=""
+    else
+        ENV_FILE="--env-file config.env"
+    fi
+    
+    # Check if backend container is running
+    if ! docker compose $ENV_FILE ps pos-back 2>/dev/null | grep -q "running"; then
+        echo "❌ Backend container (pos-back) is not running!"
+        echo "💡 Start the services first with: ./run.sh or ./run.sh -dev"
+        exit 1
+    fi
+    
+    # Run migrations inside the backend container
+    docker compose $ENV_FILE exec pos-back python -m app.migrate
+    
+    echo "✅ Migrations complete!"
+}
+
+# Function to run migrations only (standalone command)
+run_migrations_only() {
+    run_migrations
+    exit 0
+}
+
+# Function to wait for database and run migrations in background
+run_migrations_background() {
+    local ENV_FILE="$1"
+    
+    echo "⏳ Waiting for database to be ready..."
+    
+    # Wait for backend to be healthy (max 60 seconds)
+    local max_attempts=30
+    local attempt=0
+    
+    while [ $attempt -lt $max_attempts ]; do
+        # Check if backend container exists and is running
+        if docker compose $ENV_FILE ps pos-back 2>/dev/null | grep -q "running"; then
+            # Try to run a simple health check
+            if docker compose $ENV_FILE exec -T pos-back python -c "from app.db import engine; engine.connect()" 2>/dev/null; then
+                echo "✅ Database is ready!"
+                break
+            fi
+        fi
+        
+        attempt=$((attempt + 1))
+        sleep 2
+    done
+    
+    if [ $attempt -eq $max_attempts ]; then
+        echo "⚠️  Timeout waiting for database. Migrations may need to be run manually."
+        echo "💡 Run: ./run.sh --migrate"
+        return 1
+    fi
+    
+    # Run migrations
+    echo "🗄️  Running database migrations..."
+    if docker compose $ENV_FILE exec -T pos-back python -m app.migrate; then
+        echo "✅ Migrations applied successfully!"
+    else
+        echo "⚠️  Migration failed. Check the logs and run manually if needed."
+        echo "💡 Run: ./run.sh --migrate"
+    fi
+}
+
 # Parse command line arguments
 DEV_MODE=false
 ENV_FILE=""
+SKIP_MIGRATE=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -131,6 +208,13 @@ while [[ $# -gt 0 ]]; do
             ;;
         --fix-perm|--fix-permissions)
             fix_permissions
+            ;;
+        --migrate)
+            run_migrations_only
+            ;;
+        --no-migrate)
+            SKIP_MIGRATE=true
+            shift
             ;;
         *)
             echo "❌ Unknown option: $1"
@@ -177,11 +261,22 @@ fi
 # Start all services with Docker Compose
 echo "🐳 Starting all services in containers..."
 echo "📋 Mode: $MODE_DESC"
+if [ "$SKIP_MIGRATE" = true ]; then
+    echo "⏭️  Migrations: Skipped (--no-migrate)"
+else
+    echo "🗄️  Migrations: Auto-run on startup"
+fi
 echo ""
 
-# Start services (this will run in foreground and show logs)
-docker compose $ENV_FILE $COMPOSE_FILE up --build
+# Start services in detached mode first, run migrations, then attach to logs
+docker compose $ENV_FILE $COMPOSE_FILE up --build -d
 
+# Run migrations automatically unless skipped
+if [ "$SKIP_MIGRATE" = false ]; then
+    run_migrations_background "$ENV_FILE"
+fi
+
+echo ""
 if [ "$DEV_MODE" = true ]; then
     echo "✅ POS Application started!"
     echo "🌐 Frontend: http://localhost:4202"
@@ -200,4 +295,10 @@ fi
 echo ""
 echo "Press Ctrl+C to stop all services"
 echo ""
-echo "💡 Tip: Run './run.sh --clean' to remove all containers and volumes"
+echo "💡 Tips:"
+echo "   ./run.sh --clean     Remove all containers and volumes"
+echo "   ./run.sh --migrate   Run database migrations manually"
+echo ""
+
+# Now attach to logs (this will run in foreground)
+docker compose $ENV_FILE $COMPOSE_FILE logs -f

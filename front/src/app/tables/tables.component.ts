@@ -169,6 +169,28 @@ import { CommonModule } from '@angular/common';
                             </div>
                           }
                         </div>
+
+                        <!-- Table Status and PIN Section -->
+                        <div class="status-section">
+                          @if (table.is_active) {
+                            <div class="status-badge status-active">
+                              <span class="status-dot"></span>
+                              {{ 'TABLES.ACTIVE' | translate }}
+                            </div>
+                            @if (table.order_pin) {
+                              <div class="pin-display">
+                                <span class="pin-label">PIN:</span>
+                                <span class="pin-value">{{ table.order_pin }}</span>
+                              </div>
+                            }
+                          } @else {
+                            <div class="status-badge status-inactive">
+                              <span class="status-dot"></span>
+                              {{ 'TABLES.INACTIVE' | translate }}
+                            </div>
+                          }
+                        </div>
+
                         <div class="qr-section">
                           <div class="qr-card">
                             @if (tenantSettings()) {
@@ -199,6 +221,49 @@ import { CommonModule } from '@angular/common';
                             }
                           </div>
                         </div>
+
+                        <!-- Session Control Actions -->
+                        <div class="session-actions">
+                          @if (table.is_active) {
+                            <button 
+                              class="btn btn-sm btn-ghost" 
+                              (click)="regeneratePin(table)"
+                              [disabled]="activatingTableId() === table.id"
+                              title="Generate new PIN">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 4v6h-6M1 20v-6h6"/>
+                                <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                              </svg>
+                              {{ 'TABLES.NEW_PIN' | translate }}
+                            </button>
+                            <button 
+                              class="btn btn-sm btn-warning" 
+                              (click)="closeTableSession(table)"
+                              [disabled]="activatingTableId() === table.id">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0110 0v4"/>
+                              </svg>
+                              {{ 'TABLES.CLOSE_TABLE' | translate }}
+                            </button>
+                          } @else {
+                            <button 
+                              class="btn btn-sm btn-success" 
+                              (click)="activateTableSession(table)"
+                              [disabled]="activatingTableId() === table.id">
+                              @if (activatingTableId() === table.id) {
+                                <span class="spinner"></span>
+                              } @else {
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                  <path d="M7 11V7a5 5 0 0110 0v4"/>
+                                </svg>
+                              }
+                              {{ 'TABLES.ACTIVATE' | translate }}
+                            </button>
+                          }
+                        </div>
+
                         <div class="table-actions">
                           <a [href]="getMenuUrl(table)" target="_blank" class="btn btn-secondary btn-sm">Open Menu</a>
                           <button 
@@ -334,6 +399,101 @@ import { CommonModule } from '@angular/common';
     .icon-btn:hover { background: var(--color-bg); color: var(--color-text); }
     .icon-btn-danger:hover { background: rgba(220, 38, 38, 0.1); color: var(--color-error); }
 
+    /* Status and PIN Section */
+    .status-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-3);
+      padding: var(--space-3);
+      background: var(--color-bg);
+      border-radius: var(--radius-md);
+    }
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: var(--space-1) var(--space-3);
+      border-radius: 12px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .status-active {
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+    }
+    .status-active .status-dot {
+      background: #22c55e;
+      animation: pulse 2s infinite;
+    }
+    .status-inactive {
+      background: rgba(156, 163, 175, 0.1);
+      color: #9ca3af;
+    }
+    .status-inactive .status-dot {
+      background: #9ca3af;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .pin-display {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      background: white;
+      border: 2px dashed var(--color-primary);
+      border-radius: var(--radius-md);
+    }
+    .pin-label {
+      font-size: 0.875rem;
+      color: var(--color-text-muted);
+    }
+    .pin-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+      letter-spacing: 0.2em;
+      color: var(--color-primary);
+    }
+
+    /* Session Actions */
+    .session-actions {
+      display: flex;
+      gap: var(--space-2);
+      justify-content: center;
+      margin-bottom: var(--space-3);
+    }
+    .btn-success {
+      background: #22c55e;
+      color: white;
+      &:hover { background: #16a34a; }
+    }
+    .btn-warning {
+      background: #f59e0b;
+      color: white;
+      &:hover { background: #d97706; }
+    }
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     @media (max-width: 768px) {
       .table-grid { grid-template-columns: 1fr; }
     }
@@ -356,6 +516,7 @@ export class TablesComponent implements OnInit {
   editingName = '';
   editingSeatCount: number | null = null;
   copiedTableId = signal<number | null>(null);
+  activatingTableId = signal<number | null>(null);
 
   // Confirmation Modal State
   confirmationModal = signal<{
@@ -528,6 +689,64 @@ export class TablesComponent implements OnInit {
         this.cancelEdit();
       },
       error: err => this.error.set(err.error?.detail || 'Failed to update table')
+    });
+  }
+
+  // Table Session Management
+  activateTableSession(table: Table) {
+    if (!table.id) return;
+    this.activatingTableId.set(table.id);
+    this.api.activateTable(table.id).subscribe({
+      next: response => {
+        this.tables.update(tables => tables.map(t => 
+          t.id === table.id 
+            ? { ...t, is_active: true, order_pin: response.pin, active_order_id: response.active_order_id, activated_at: response.activated_at }
+            : t
+        ));
+        this.activatingTableId.set(null);
+      },
+      error: err => {
+        this.error.set(err.error?.detail || 'Failed to activate table');
+        this.activatingTableId.set(null);
+      }
+    });
+  }
+
+  closeTableSession(table: Table) {
+    if (!table.id) return;
+    this.activatingTableId.set(table.id);
+    this.api.closeTable(table.id).subscribe({
+      next: () => {
+        this.tables.update(tables => tables.map(t => 
+          t.id === table.id 
+            ? { ...t, is_active: false, order_pin: null, active_order_id: null }
+            : t
+        ));
+        this.activatingTableId.set(null);
+      },
+      error: err => {
+        this.error.set(err.error?.detail || 'Failed to close table');
+        this.activatingTableId.set(null);
+      }
+    });
+  }
+
+  regeneratePin(table: Table) {
+    if (!table.id) return;
+    this.activatingTableId.set(table.id);
+    this.api.regenerateTablePin(table.id).subscribe({
+      next: response => {
+        this.tables.update(tables => tables.map(t => 
+          t.id === table.id 
+            ? { ...t, order_pin: response.pin }
+            : t
+        ));
+        this.activatingTableId.set(null);
+      },
+      error: err => {
+        this.error.set(err.error?.detail || 'Failed to regenerate PIN');
+        this.activatingTableId.set(null);
+      }
     });
   }
 }
