@@ -182,13 +182,21 @@ echo ""
 # Start services (this will run in foreground and show logs)
 docker compose $ENV_FILE $COMPOSE_FILE up --build
 
-echo ""
-echo "✅ POS Application started!"
-echo "🌐 Frontend: http://localhost:4200"
-echo "⚡ Backend API: http://localhost:8020"
-echo "📊 Health check: http://localhost:8020/health"
-echo "🗄️  DB Health check: http://localhost:8020/health/db"
-echo "📚 API Docs: http://localhost:8020/docs"
+if [ "$DEV_MODE" = true ]; then
+    echo "✅ POS Application started!"
+    echo "🌐 Frontend: http://localhost:4202"
+    echo "⚡ Backend API: http://localhost:4202/api"
+    echo "📊 Health check: http://localhost:4202/api/health"
+    echo "🗄️  DB Health check: http://localhost:4202/api/health/db"
+    echo "📚 API Docs: http://localhost:4202/api/docs"
+else
+    echo "✅ POS Application started!"
+    echo "🌐 Frontend: http://localhost:4200"
+    echo "⚡ Backend API: http://localhost:4200/api"
+    echo "📊 Health check: http://localhost:4200/api/health"
+    echo "🗄️  DB Health check: http://localhost:4200/api/health/db"
+    echo "📚 API Docs: http://localhost:4200/api/docs"
+fi
 echo ""
 echo "Press Ctrl+C to stop all services"
 echo ""

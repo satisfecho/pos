@@ -124,7 +124,7 @@
         @if (ordersExpanded()) {
         <div class="order-tracker-body">
           <div class="order-items-list">
-            @for (item of getSortedOrderItems(order.items); track getProductKey(item.product)) {
+            @for (item of order.items; track getProductKey(item.product)) {
             <div class="order-item-row">
               <div class="item-status-dot" [class]="'status-' + (item.status || 'pending')"></div>
               <span class="item-qty-badge">

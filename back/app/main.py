@@ -933,6 +933,7 @@ def list_products(
             tenant_id=tp.tenant_id,
             name=tp.name,
             price_cents=tp.price_cents,
+            description=catalog_item.description if catalog_item else None,
             image_filename=image_filename,
             ingredients=tp.ingredients,
             category=catalog_item.category if catalog_item else None,
@@ -948,19 +949,30 @@ def list_products(
         
         products.append(product)
     
-    # Update existing Product entries that are missing images
+    # Update existing Product entries that are missing images or descriptions
     updated_count = 0
     for product in products:
-        if not product.image_filename:
-            # Find linked TenantProduct
-            tenant_product = session.exec(
-                select(models.TenantProduct).where(
-                    models.TenantProduct.product_id == product.id,
-                    models.TenantProduct.tenant_id == current_user.tenant_id
-                )
-            ).first()
-            
-            if tenant_product and tenant_product.provider_product_id:
+        # Find linked TenantProduct
+        tenant_product = session.exec(
+            select(models.TenantProduct).where(
+                models.TenantProduct.product_id == product.id,
+                models.TenantProduct.tenant_id == current_user.tenant_id
+            )
+        ).first()
+
+        if tenant_product:
+            # Backfill description from catalog if missing
+            if not product.description and tenant_product.catalog_id:
+                catalog_item = session.exec(
+                    select(models.ProductCatalog).where(models.ProductCatalog.id == tenant_product.catalog_id)
+                ).first()
+                if catalog_item and catalog_item.description:
+                    product.description = catalog_item.description
+                    session.add(product)
+                    updated_count += 1
+
+            # Backfill image from provider if missing
+            if not product.image_filename and tenant_product.provider_product_id:
                 # Get image from provider product
                 provider_product = session.exec(
                     select(models.ProviderProduct).where(
@@ -1591,6 +1603,7 @@ def create_tenant_product(
         tenant_id=current_user.tenant_id,
         name=product_name,
         price_cents=price_cents,
+        description=catalog_item.description,
         image_filename=image_filename,
         category=category,
         subcategory=subcategory,
@@ -2111,6 +2124,12 @@ def get_menu(
             "_source": "tenant_product",  # Indicate this is from TenantProduct table
         }
 
+        # Get the actual product record to check for customized description
+        if tp.product_id:
+            custom_product = session.get(models.Product, tp.product_id)
+            if custom_product and custom_product.description:
+                product_data["description"] = custom_product.description
+
         # Add translations for tenant product
         if lang != "en":  # Only add if different from default
             display_name = TranslationService.get_translated_field(
@@ -2148,7 +2167,7 @@ def get_menu(
                 product_data["category_code"] = get_category_code(catalog_item.category)
             if catalog_item.subcategory:
                 product_data["subcategory"] = catalog_item.subcategory
-            if catalog_item.description:
+            if catalog_item.description and not product_data.get("description"):
                 product_data["description"] = catalog_item.description
 
                 # Add translated description if available
@@ -2312,51 +2331,54 @@ def get_menu(
 
         products_list.append(product_data)
 
-    # Add legacy Products (for backward compatibility)
-    for p in legacy_products:
+    # Add legacy Products
+    for lp in legacy_products:
         product_data = {
-            "id": p.id,
-            "name": p.name or "",
-            "price_cents": p.price_cents,
-            "image_filename": p.image_filename,
-            "tenant_id": p.tenant_id,
-            "ingredients": p.ingredients,
-            "_source": "product",  # Indicate this is from legacy Product table
+            "id": lp.id,
+            "name": lp.name,
+            "price_cents": lp.price_cents,
+            "description": lp.description,
+            "image_filename": lp.image_filename,
+            "tenant_id": lp.tenant_id,
+            "ingredients": lp.ingredients,
+            "category": lp.category,
+            "subcategory": lp.subcategory,
+            "_source": "product",
         }
 
         # Add translations for legacy product
         if lang != "en":
             display_name = TranslationService.get_translated_field(
-                session, table.tenant_id, "product", p.id, "name", lang, p.name or ""
+                session, table.tenant_id, "product", lp.id, "name", lang, lp.name or ""
             )
-            if display_name != (p.name or ""):
+            if display_name != (lp.name or ""):
                 product_data["display_name"] = display_name
 
-            if p.ingredients:
+            if lp.ingredients:
                 display_ingredients = TranslationService.get_translated_field(
                     session,
                     table.tenant_id,
                     "product",
-                    p.id,
+                    lp.id,
                     "ingredients",
                     lang,
-                    p.ingredients,
+                    lp.ingredients,
                 )
-                if display_ingredients != p.ingredients:
+                if display_ingredients != lp.ingredients:
                     product_data["display_ingredients"] = display_ingredients
 
         # Add category and subcategory if they exist
-        if p.category:
-            product_data["category"] = p.category
+        if lp.category:
+            product_data["category"] = lp.category
             from .category_codes import get_category_code
 
-            product_data["category_code"] = get_category_code(p.category)
+            product_data["category_code"] = get_category_code(lp.category)
 
-        if p.subcategory:
-            product_data["subcategory"] = p.subcategory
+        if lp.subcategory:
+            product_data["subcategory"] = lp.subcategory
             from .category_codes import get_all_subcategory_codes
 
-            subcategory_codes = get_all_subcategory_codes(p.subcategory)
+            subcategory_codes = get_all_subcategory_codes(lp.subcategory)
             if subcategory_codes:
                 product_data["subcategory_codes"] = subcategory_codes
 

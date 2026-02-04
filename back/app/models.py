@@ -89,6 +89,7 @@ class Product(TenantMixin, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str
     price_cents: int
+    description: str | None = None
     image_filename: str | None = None  # Stored in uploads/{tenant_id}/products/
     ingredients: str | None = None  # Comma-separated list
     category: str | None = Field(

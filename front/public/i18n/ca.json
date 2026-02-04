@@ -119,6 +119,8 @@
     "NAME_PLACEHOLDER": "ex. Pizza Margherita",
     "PRICE_PLACEHOLDER": "0.00",
     "INGREDIENTS_LABEL": "Ingredients (separats per comes)",
+    "DESCRIPTION_LABEL": "Descripció",
+    "DESCRIPTION_PLACEHOLDER": "Introdueix la descripció del producte",
     "CATEGORY_LABEL": "Categoria",
     "SUBCATEGORY_LABEL": "Subcategoria",
     "SELECT_CATEGORY": "Seleccionar Categoria",

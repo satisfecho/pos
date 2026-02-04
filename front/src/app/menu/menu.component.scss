@@ -1033,6 +1033,7 @@ $cart-expanded-max: 60vh;
 
 .product-info {
   padding: var(--space-3);
+  padding-bottom: calc(var(--space-3) + 36px + var(--space-2)); // Prevent overlap with add button
 }
 
 .product-header-row {

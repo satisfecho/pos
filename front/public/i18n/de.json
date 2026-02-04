@@ -119,6 +119,8 @@
     "NAME_PLACEHOLDER": "z.B. Pizza Margherita",
     "PRICE_PLACEHOLDER": "0.00",
     "INGREDIENTS_LABEL": "Zutaten (kommagetrennt)",
+    "DESCRIPTION_LABEL": "Beschreibung",
+    "DESCRIPTION_PLACEHOLDER": "Produktbeschreibung eingeben",
     "CATEGORY_LABEL": "Kategorie",
     "SUBCATEGORY_LABEL": "Unterkategorie",
     "SELECT_CATEGORY": "Kategorie auswählen",

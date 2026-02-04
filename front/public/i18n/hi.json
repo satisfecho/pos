@@ -119,6 +119,8 @@
     "NAME_PLACEHOLDER": "जैसे: मार्गेरिटा पिज्जा",
     "PRICE_PLACEHOLDER": "0.00",
     "INGREDIENTS_LABEL": "सामग्री (अल्पविराम से अलग)",
+    "DESCRIPTION_LABEL": "विवरण",
+    "DESCRIPTION_PLACEHOLDER": "उत्पाद विवरण दर्ज करें",
     "CATEGORY_LABEL": "श्रेणी",
     "SUBCATEGORY_LABEL": "उपश्रेणी",
     "SELECT_CATEGORY": "श्रेणी चुनें",

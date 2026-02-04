@@ -728,6 +728,17 @@ export class MenuComponent implements OnInit, OnDestroy {
     return `${currencySymbol}${(priceCents / 100).toFixed(2)}`;
   }
 
+  sortItems(items: CartItem[]): CartItem[] {
+    return [...items].sort((a, b) => {
+      if (a.itemId && b.itemId) {
+        return b.itemId - a.itemId;
+      }
+      if (a.itemId && !b.itemId) return -1;
+      if (!a.itemId && b.itemId) return 1;
+      return 0;
+    });
+  }
+
   // ============================================
   // ORDER SUBMISSION
   // ============================================
@@ -813,27 +824,106 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   getSortedOrderItems(items: CartItem[]): CartItem[] {
-    return [...items].sort((a, b) => {
-      if (a.itemId && b.itemId) {
-        return b.itemId - a.itemId;
-      }
-      if (a.itemId && !b.itemId) return -1;
-      if (!a.itemId && b.itemId) return 1;
-      return 0;
-    });
+    return this.sortItems(items);
   }
 
-  canCancelOrder(order: PlacedOrder): boolean {
-    if (order.status === 'paid' || order.status === 'completed' || order.status === 'cancelled') {
-      return false;
+  // ============================================
+  // ORDER STORAGE
+  // ============================================
+  loadStoredOrders() {
+    if (this.sessionId) {
+      this.api.getCurrentOrder(this.tableToken, this.sessionId).subscribe({
+        next: (response) => {
+          if (response.order) {
+            if (response.order.session_id === this.sessionId) {
+              const activeItems = response.order.items.filter((item: any) => !item.removed_by_customer);
+              const order: PlacedOrder = {
+                id: response.order.id,
+                items: this.sortItems(activeItems.map((item: any) => ({
+                  product: {
+                    id: item.product_id,
+                    name: item.product_name,
+                    price_cents: item.price_cents
+                  } as Product,
+                  quantity: item.quantity,
+                  notes: item.notes || '',
+                  status: item.status,
+                  itemId: item.id
+                } as CartItem))),
+                notes: response.order.notes || '',
+                total: response.order.total_cents,
+                status: response.order.status
+              };
+              this.placedOrders.set([order]);
+              this.saveOrders();
+            } else {
+              this.loadStoredOrdersFromLocalStorage();
+            }
+          } else {
+            this.loadStoredOrdersFromLocalStorage();
+          }
+        },
+        error: () => {
+          this.loadStoredOrdersFromLocalStorage();
+        }
+      });
+    } else {
+      this.loadStoredOrdersFromLocalStorage();
     }
+  }
 
-    const hasNonPendingItems = order.items.some(item => {
-      const itemStatus = item.status || 'pending';
-      return itemStatus !== 'pending' && itemStatus !== 'cancelled';
-    });
+  private loadStoredOrdersFromLocalStorage() {
+    if (this.sessionId) {
+      this.api.getCurrentOrder(this.tableToken, this.sessionId).subscribe({
+        next: (response) => {
+          if (response.order && response.order.session_id === this.sessionId) {
+            const activeItems = response.order.items.filter((item: any) => !item.removed_by_customer);
+            const order: PlacedOrder = {
+              id: response.order.id,
+              items: this.sortItems(activeItems.map((item: any) => ({
+                product: {
+                  id: item.product_id,
+                  name: item.product_name,
+                  price_cents: item.price_cents
+                } as Product,
+                quantity: item.quantity,
+                notes: item.notes || '',
+                status: item.status,
+                itemId: item.id
+              } as CartItem))),
+              notes: response.order.notes || '',
+              total: response.order.total_cents,
+              status: response.order.status
+            };
+            this.placedOrders.set([order]);
+            this.saveOrders();
+            return;
+          }
+          this.loadFromLocalStorageFallback();
+        },
+        error: () => {
+          this.loadFromLocalStorageFallback();
+        }
+      });
+    } else {
+      this.loadFromLocalStorageFallback();
+    }
+  }
 
-    return !hasNonPendingItems;
+  private loadFromLocalStorageFallback() {
+    const stored = localStorage.getItem(`orders_${this.tableToken}`);
+    if (stored) {
+      try {
+        const orders: PlacedOrder[] = JSON.parse(stored);
+        const activeOrders = orders.filter(o => o.status !== 'paid' && o.status !== 'completed');
+        // Ensure items are sorted in fallback too
+        activeOrders.forEach(o => o.items = this.sortItems(o.items));
+        this.placedOrders.set(activeOrders);
+        if (activeOrders.length !== orders.length) {
+          this.saveOrders();
+        }
+      } catch { }
+    }
   }
 
   cancelOrder(orderId: number) {

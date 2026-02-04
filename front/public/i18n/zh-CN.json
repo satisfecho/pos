@@ -117,6 +117,8 @@
     "NAME_PLACEHOLDER": "例如：玛格丽特比萨",
     "PRICE_PLACEHOLDER": "0.00",
     "INGREDIENTS_LABEL": "配料（逗号分隔）",
+    "DESCRIPTION_LABEL": "描述",
+    "DESCRIPTION_PLACEHOLDER": "输入产品描述",
     "CATEGORY_LABEL": "类别",
     "SUBCATEGORY_LABEL": "子类别",
     "SELECT_CATEGORY": "选择类别",

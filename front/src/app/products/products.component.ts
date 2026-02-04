@@ -87,6 +87,10 @@ import { CategoriesComponent } from './categories.component';
                      <label for="ingredients">{{ 'PRODUCTS.INGREDIENTS_LABEL' | translate }}</label>
                      <input id="ingredients" type="text" [(ngModel)]="formData.ingredients" name="ingredients" [placeholder]="'PRODUCTS.INGREDIENTS_PLACEHOLDER' | translate">
                    </div>
+                   <div class="form-group">
+                     <label for="description">{{ 'PRODUCTS.DESCRIPTION_LABEL' | translate }}</label>
+                     <textarea id="description" [(ngModel)]="formData.description" name="description" [placeholder]="'PRODUCTS.DESCRIPTION_PLACEHOLDER' | translate" rows="3"></textarea>
+                   </div>
                    <div class="form-row">
                      <div class="form-group">
                        <label for="category">{{ 'PRODUCTS.CATEGORY_LABEL' | translate }}</label>
@@ -585,7 +589,8 @@ import { CategoriesComponent } from './categories.component';
     .form-group label { display: block; margin-bottom: var(--space-2); font-size: 0.875rem; font-weight: 500; color: var(--color-text); }
 
     .form-group input,
-    .form-group select {
+    .form-group select,
+    .form-group textarea {
       width: 100%;
       padding: var(--space-3);
       border: 1px solid var(--color-border);
@@ -593,6 +598,7 @@ import { CategoriesComponent } from './categories.component';
       font-size: 0.9375rem;
       background: var(--color-surface);
       color: var(--color-text);
+      font-family: inherit;
       &:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
       &:disabled { opacity: 0.6; cursor: not-allowed; background: var(--color-bg); }
     }
@@ -801,7 +807,7 @@ export class ProductsComponent implements OnInit {
   editingProduct = signal<Product | null>(null);
   productToDelete = signal<Product | null>(null);
   error = signal('');
-  formData = { name: '', price: 0, ingredients: '', category: '', subcategory: '' };
+  formData = { name: '', price: 0, ingredients: '', description: '', category: '', subcategory: '' };
   uploading = signal(false);
   pendingImageFile = signal<File | null>(null);
   pendingImagePreview = signal<string | null>(null);
@@ -1046,6 +1052,7 @@ export class ProductsComponent implements OnInit {
       name: product.name,
       price: product.price_cents / 100,
       ingredients: product.ingredients || '',
+      description: product.description || '',
       category: product.category || '',
       subcategory: product.subcategory || ''
     };
@@ -1056,7 +1063,7 @@ export class ProductsComponent implements OnInit {
   cancelForm() {
     this.showAddForm.set(false);
     this.editingProduct.set(null);
-    this.formData = { name: '', price: 0, ingredients: '', category: '', subcategory: '' };
+    this.formData = { name: '', price: 0, ingredients: '', description: '', category: '', subcategory: '' };
     this.availableSubcategories.set([]);
     this.clearPendingImage();
   }
@@ -1078,6 +1085,7 @@ export class ProductsComponent implements OnInit {
       name: this.formData.name,
       price_cents: Math.round(this.formData.price * 100),
       ingredients: this.formData.ingredients || undefined,
+      description: this.formData.description || undefined,
       category: this.formData.category || undefined,
       subcategory: this.formData.subcategory || undefined
     };

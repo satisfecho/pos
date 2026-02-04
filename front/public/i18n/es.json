@@ -133,6 +133,8 @@
     "NAME_PLACEHOLDER": "ej. Pizza Margherita",
     "PRICE_PLACEHOLDER": "0.00",
     "INGREDIENTS_LABEL": "Ingredientes (separados por comas)",
+    "DESCRIPTION_LABEL": "Descripción",
+    "DESCRIPTION_PLACEHOLDER": "Introduce la descripción del producto",
     "CATEGORY_LABEL": "Categoría",
     "SUBCATEGORY_LABEL": "Subcategoría",
     "SELECT_CATEGORY": "Seleccionar Categoría",

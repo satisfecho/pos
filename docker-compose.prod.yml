@@ -8,8 +8,8 @@ services:
     ports:
       - "${FRONTEND_PORT:-4200}:80"
     environment:
-      - API_URL=${API_URL:-http://localhost:8020}
-      - WS_URL=${WS_URL:-ws://localhost:8021}
+      - API_URL=${API_URL:-/api}
+      - WS_URL=${WS_URL:-}
     depends_on:
       - db
       - redis
