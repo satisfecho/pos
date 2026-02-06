@@ -2,7 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { QRCodeComponent } from 'angularx-qrcode';
-import { ApiService, Table, TenantSettings, Floor } from '../services/api.service';
+import { ApiService, Table, TenantSettings, Floor, TableActivateResponse, User } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { ConfirmationModalComponent } from '../shared/confirmation-modal.component';
 import { TranslateModule } from '@ngx-translate/core';
@@ -100,8 +100,19 @@ import { CommonModule } from '@angular/common';
               @if (getTablesByFloor(floor.id!).length > 0) {
                 <div class="floor-section">
                   <div class="section-header">
-                    <h2>{{ floor.name }}</h2>
-                    <span class="badge">{{ getTablesByFloor(floor.id!).length }}</span>
+                    <div class="section-header-left">
+                      <h2>{{ floor.name }}</h2>
+                      <span class="badge">{{ getTablesByFloor(floor.id!).length }}</span>
+                    </div>
+                    <div class="floor-waiter-assign">
+                      <label class="floor-waiter-label">{{ 'TABLES.DEFAULT_WAITER' | translate }}:</label>
+                      <select class="waiter-select waiter-select-sm" (change)="onFloorWaiterAssign(floor, $event)">
+                        <option value="" [selected]="!floor.default_waiter_id">{{ 'TABLES.UNASSIGNED' | translate }}</option>
+                        @for (w of waiters(); track w.id) {
+                          <option [value]="w.id" [selected]="floor.default_waiter_id === w.id">{{ w.full_name || w.email }}</option>
+                        }
+                      </select>
+                    </div>
                   </div>
                   
                   <div class="table-grid">
@@ -188,6 +199,25 @@ import { CommonModule } from '@angular/common';
                               <span class="status-dot"></span>
                               {{ 'TABLES.INACTIVE' | translate }}
                             </div>
+                          }
+                        </div>
+
+                        <!-- Waiter Assignment -->
+                        <div class="waiter-assign-section">
+                          <div class="waiter-assign-row">
+                            <svg class="waiter-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                              <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <select class="waiter-select" (change)="onWaiterAssign(table, $event)">
+                              <option value="" [selected]="!table.assigned_waiter_id">{{ 'TABLES.UNASSIGNED' | translate }}</option>
+                              @for (w of waiters(); track w.id) {
+                                <option [value]="w.id" [selected]="table.assigned_waiter_id === w.id">{{ w.full_name || w.email }}</option>
+                              }
+                            </select>
+                          </div>
+                          @if (!table.assigned_waiter_id && table.effective_waiter_name) {
+                            <div class="waiter-inherited">{{ 'TABLES.SECTION_DEFAULT' | translate }}: {{ table.effective_waiter_name }}</div>
                           }
                         </div>
 
@@ -349,9 +379,12 @@ import { CommonModule } from '@angular/common';
 
     .floor-section { margin-bottom: var(--space-8); }
     .floor-section .section-header { 
-      display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4);
-      padding-bottom: var(--space-2); border-bottom: 2px solid var(--color-bg);
+      display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4);
+      padding-bottom: var(--space-2); border-bottom: 2px solid var(--color-bg); flex-wrap: wrap;
     }
+    .section-header-left { display: flex; align-items: center; gap: var(--space-3); }
+    .floor-waiter-assign { display: flex; align-items: center; gap: var(--space-2); }
+    .floor-waiter-label { font-size: 0.75rem; color: var(--color-text-muted); white-space: nowrap; }
     .floor-section h2 { margin: 0; font-size: 1.25rem; font-weight: 600; }
     .badge { background: var(--color-bg); color: var(--color-text-muted); padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
 
@@ -400,6 +433,26 @@ import { CommonModule } from '@angular/common';
     .icon-btn-danger:hover { background: rgba(220, 38, 38, 0.1); color: var(--color-error); }
 
     /* Status and PIN Section */
+    .pin-display {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      background: white;
+      border: 2px dashed var(--color-primary);
+      border-radius: var(--radius-md);
+    }
+    .pin-label {
+      font-size: 0.875rem;
+      color: var(--color-text-muted);
+    }
+    .pin-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+      letter-spacing: 0.2em;
+      color: var(--color-primary);
+    }
     .status-section {
       display: flex;
       flex-direction: column;
@@ -444,25 +497,39 @@ import { CommonModule } from '@angular/common';
       0%, 100% { opacity: 1; }
       50% { opacity: 0.5; }
     }
-    .pin-display {
+    /* Waiter Assignment */
+    .waiter-assign-section {
+      padding: var(--space-2) var(--space-3);
+      margin-bottom: var(--space-3);
+      border-top: 1px solid var(--color-border);
+    }
+    .waiter-assign-row {
       display: flex;
       align-items: center;
       gap: var(--space-2);
-      padding: var(--space-2) var(--space-4);
-      background: white;
-      border: 2px dashed var(--color-primary);
-      border-radius: var(--radius-md);
     }
-    .pin-label {
-      font-size: 0.875rem;
+    .waiter-icon { color: var(--color-text-muted); flex-shrink: 0; }
+    .waiter-select {
+      flex: 1;
+      padding: var(--space-1) var(--space-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      font-size: 0.8125rem;
+      background: var(--color-surface);
+      color: var(--color-text);
+      cursor: pointer;
+    }
+    .waiter-select-sm {
+      padding: var(--space-1) var(--space-2);
+      font-size: 0.75rem;
+      max-width: 180px;
+    }
+    .waiter-inherited {
+      font-size: 0.6875rem;
       color: var(--color-text-muted);
-    }
-    .pin-value {
-      font-size: 1.5rem;
-      font-weight: 700;
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
-      letter-spacing: 0.2em;
-      color: var(--color-primary);
+      margin-top: 2px;
+      padding-left: 22px;
+      font-style: italic;
     }
 
     /* Session Actions */
@@ -517,6 +584,7 @@ export class TablesComponent implements OnInit {
   editingSeatCount: number | null = null;
   copiedTableId = signal<number | null>(null);
   activatingTableId = signal<number | null>(null);
+  waiters = signal<User[]>([]);
 
   // Confirmation Modal State
   confirmationModal = signal<{
@@ -540,6 +608,10 @@ export class TablesComponent implements OnInit {
   ngOnInit() {
     this.loadData();
     this.loadTenantSettings();
+    this.api.getWaiters().subscribe({
+      next: waiters => this.waiters.set(waiters),
+      error: () => {}
+    });
   }
 
   loadData() {
@@ -698,8 +770,8 @@ export class TablesComponent implements OnInit {
     this.activatingTableId.set(table.id);
     this.api.activateTable(table.id).subscribe({
       next: response => {
-        this.tables.update(tables => tables.map(t => 
-          t.id === table.id 
+        this.tables.update(tables => tables.map(t =>
+          t.id === table.id
             ? { ...t, is_active: true, order_pin: response.pin, active_order_id: response.active_order_id, activated_at: response.activated_at }
             : t
         ));
@@ -717,8 +789,8 @@ export class TablesComponent implements OnInit {
     this.activatingTableId.set(table.id);
     this.api.closeTable(table.id).subscribe({
       next: () => {
-        this.tables.update(tables => tables.map(t => 
-          t.id === table.id 
+        this.tables.update(tables => tables.map(t =>
+          t.id === table.id
             ? { ...t, is_active: false, order_pin: null, active_order_id: null }
             : t
         ));
@@ -735,18 +807,50 @@ export class TablesComponent implements OnInit {
     if (!table.id) return;
     this.activatingTableId.set(table.id);
     this.api.regenerateTablePin(table.id).subscribe({
-      next: response => {
-        this.tables.update(tables => tables.map(t => 
-          t.id === table.id 
+      next: (response: TableActivateResponse) => {
+        this.tables.update(tables => tables.map(t =>
+          t.id === table.id
             ? { ...t, order_pin: response.pin }
             : t
         ));
         this.activatingTableId.set(null);
       },
-      error: err => {
+      error: (err: any) => {
         this.error.set(err.error?.detail || 'Failed to regenerate PIN');
         this.activatingTableId.set(null);
       }
+    });
+  }
+
+  onWaiterAssign(table: Table, event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const waiterId = select.value ? Number(select.value) : null;
+    if (!table.id) return;
+    this.api.assignWaiterToTable(table.id, waiterId).subscribe({
+      next: (res: any) => {
+        this.tables.update(tables => tables.map(t =>
+          t.id === table.id
+            ? { ...t, assigned_waiter_id: res.assigned_waiter_id, assigned_waiter_name: res.assigned_waiter_name }
+            : t
+        ));
+      },
+      error: (err: any) => this.error.set(err.error?.detail || 'Failed to assign waiter')
+    });
+  }
+
+  onFloorWaiterAssign(floor: Floor, event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const waiterId = select.value ? Number(select.value) : null;
+    if (!floor.id) return;
+    this.api.assignWaiterToFloor(floor.id, waiterId).subscribe({
+      next: (res: any) => {
+        this.floors.update(floors => floors.map(f =>
+          f.id === floor.id
+            ? { ...f, default_waiter_id: res.default_waiter_id, default_waiter_name: res.default_waiter_name }
+            : f
+        ));
+      },
+      error: (err: any) => this.error.set(err.error?.detail || 'Failed to assign waiter to floor')
     });
   }
 }

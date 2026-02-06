@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap, Subject, catchError, of } from 'rxjs';
+import { Observable, BehaviorSubject, tap, Subject, catchError, of, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 // Interfaces
@@ -77,6 +77,8 @@ export interface Floor {
   name: string;
   sort_order: number;
   tenant_id?: number;
+  default_waiter_id?: number | null;
+  default_waiter_name?: string | null;
 }
 
 export interface Table {
@@ -97,6 +99,11 @@ export interface Table {
   is_active?: boolean;
   active_order_id?: number | null;
   activated_at?: string | null;
+  // Waiter assignment
+  assigned_waiter_id?: number | null;
+  assigned_waiter_name?: string | null;
+  effective_waiter_id?: number | null;
+  effective_waiter_name?: string | null;
 }
 
 export interface TableActivateResponse {
@@ -117,6 +124,10 @@ export interface TableCloseResponse {
 
 export interface CanvasTable extends Table {
   status?: 'available' | 'occupied' | 'reserved';
+  assigned_waiter_id?: number | null;
+  assigned_waiter_name?: string | null;
+  effective_waiter_id?: number | null;
+  effective_waiter_name?: string | null;
 }
 
 export interface OrderItem {
@@ -211,6 +222,7 @@ export interface OrderCreate {
   latitude?: number | null;  // Optional GPS latitude for location verification
   longitude?: number | null;  // Optional GPS longitude for location verification
 }
+
 
 // Provider & Catalog Interfaces
 export interface Provider {
@@ -460,6 +472,20 @@ export class ApiService {
     return this.http.post<TableActivateResponse>(`${this.apiUrl}/tables/${tableId}/regenerate-pin`, {});
   }
 
+  assignWaiterToTable(tableId: number, waiterId: number | null): Observable<any> {
+    return this.http.put(`${this.apiUrl}/tables/${tableId}/assign-waiter`, { waiter_id: waiterId });
+  }
+
+  assignWaiterToFloor(floorId: number, waiterId: number | null): Observable<any> {
+    return this.http.put(`${this.apiUrl}/floors/${floorId}/assign-waiter`, { waiter_id: waiterId });
+  }
+
+  getWaiters(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/users`).pipe(
+      map((users: User[]) => users.filter(u => u.role === 'waiter'))
+    );
+  }
+
   // Orders
   getOrders(includeRemoved: boolean = false): Observable<Order[]> {
     const params = includeRemoved ? { params: { include_removed: 'true' } } : {};
@@ -564,6 +590,19 @@ export class ApiService {
       `${this.apiUrl}/orders/${orderId}/confirm-payment?table_token=${tableToken}&payment_intent_id=${paymentIntentId}`,
       {}
     );
+  }
+
+  requestPayment(tableToken: string, orderId: number, paymentMethod: string, message?: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/menu/${tableToken}/order/${orderId}/request-payment`, {
+      payment_method: paymentMethod,
+      message: message || null,
+    });
+  }
+
+  callWaiter(tableToken: string, message?: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/menu/${tableToken}/call-waiter`, {
+      message: message || null,
+    });
   }
 
   private tenantStripeKey = signal<string | null>(null);

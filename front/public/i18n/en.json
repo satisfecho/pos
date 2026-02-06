@@ -119,7 +119,9 @@
     "NAME_OPTIONAL": "(optional - you can skip this)",
     "ENTER_NAME": "Enter your name",
     "ENTER_PIN": "Enter Table PIN",
-    "PIN_HINT": "Ask your server for the 4-digit PIN"
+    "PIN_HINT": "Ask your server for the 4-digit PIN",
+    "TABLE_CLOSED_TITLE": "Table Closed",
+    "TABLE_CLOSED_MESSAGE": "This table is not currently accepting orders. Please ask a member of staff for assistance."
   },
   "PRODUCTS": {
     "TITLE": "Products",
@@ -338,7 +340,12 @@
     "INACTIVE": "Inactive",
     "ACTIVATE": "Activate",
     "CLOSE_TABLE": "Close Table",
-    "NEW_PIN": "New PIN"
+    "NEW_PIN": "New PIN",
+    "ASSIGNED_WAITER": "Assigned Waiter",
+    "UNASSIGNED": "Unassigned",
+    "ASSIGN_WAITER": "Assign Waiter",
+    "DEFAULT_WAITER": "Default Waiter",
+    "SECTION_DEFAULT": "Section default"
   },
   "TABLE_STATUS": {
     "available": "Available",
@@ -437,7 +444,25 @@
     "PAYMENT_FAILED": "Payment failed",
     "CARD_NUMBER": "Card number",
     "EXPIRY": "Expiry",
-    "CVC": "CVC"
+    "CVC": "CVC",
+    "HOW_TO_PAY": "How would you like to pay?",
+    "PAY_ONLINE": "Pay Online",
+    "PAY_ONLINE_DESC": "Pay securely with your card now",
+    "PAY_CARD_TERMINAL": "Pay with Card at Table",
+    "PAY_CARD_TERMINAL_DESC": "A waiter will bring the card terminal",
+    "PAY_CASH": "Pay with Cash",
+    "PAY_CASH_DESC": "A waiter will come to collect payment",
+    "CALL_WAITER": "Call Waiter",
+    "CALL_WAITER_DESC": "Need help or have a question?",
+    "WAITER_CALLED_WAIT": "Waiter has been called, please wait...",
+    "MESSAGE_HINT": "Add an optional note for the staff (e.g. questions, observations).",
+    "MESSAGE_PLACEHOLDER": "Any message for the staff? (optional)",
+    "SEND_CALL": "Send",
+    "REQUEST_PAYMENT": "Request Payment",
+    "WAITER_ON_WAY": "Waiter is on the way!",
+    "WAITER_ON_WAY_DESC": "A member of staff will be with you shortly.",
+    "PAYMENT_REQUESTED": "Payment requested!",
+    "PAYMENT_REQUESTED_DESC": "A waiter will come to your table to process the payment."
   },
   "ERRORS": {
     "GENERIC": "Something went wrong. Please try again.",
@@ -684,5 +709,11 @@
     "FAILED_TO_LOAD_TRANSLATIONS": "Failed to load translations",
     "FAILED_TO_SAVE": "Failed to save translations",
     "SAVED_SUCCESS": "Translations saved successfully"
+  },
+  "NOTIFICATIONS": {
+    "CALL_WAITER_YOURS": "is calling you!",
+    "PAYMENT_REQUEST_YOURS": "is requesting payment!",
+    "CALL_WAITER_OTHER": "Customer is calling a waiter",
+    "PAYMENT_REQUEST_OTHER": "Customer is requesting payment"
   }
 }

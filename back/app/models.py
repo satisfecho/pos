@@ -226,6 +226,9 @@ class Floor(TenantMixin, table=True):
     sort_order: int = Field(default=0)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+    # Default waiter for tables on this floor (fallback when table has no explicit assignment)
+    default_waiter_id: int | None = Field(default=None, foreign_key="user.id")
+
 
 class Table(TenantMixin, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -240,6 +243,9 @@ class Table(TenantMixin, table=True):
     width: float = Field(default=100)
     height: float = Field(default=60)
     seat_count: int = Field(default=4)
+
+    # Waiter assignment (overrides floor-level default)
+    assigned_waiter_id: int | None = Field(default=None, foreign_key="user.id")
 
     # Table session and PIN security
     order_pin: str | None = Field(default=None)  # 4-digit PIN for ordering
@@ -371,6 +377,7 @@ class TableUpdate(SQLModel):
     width: float | None = None
     height: float | None = None
     seat_count: int | None = None
+    assigned_waiter_id: int | None = None
 
 
 class FloorCreate(SQLModel):
@@ -381,6 +388,7 @@ class FloorCreate(SQLModel):
 class FloorUpdate(SQLModel):
     name: str | None = None
     sort_order: int | None = None
+    default_waiter_id: int | None = None
 
 
 class OrderItemCreate(SQLModel):

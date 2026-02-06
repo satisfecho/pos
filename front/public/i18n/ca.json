@@ -108,7 +108,9 @@
     "NAME_OPTIONAL": "(opcional - pots ometre-ho)",
     "ENTER_NAME": "Introdueix el teu nom",
     "ENTER_PIN": "Introdueix el PIN de la taula",
-    "PIN_HINT": "Demana el PIN de 4 dígits al teu cambrer"
+    "PIN_HINT": "Demana el PIN de 4 dígits al teu cambrer",
+    "TABLE_CLOSED_TITLE": "Taula tancada",
+    "TABLE_CLOSED_MESSAGE": "Aquesta taula no accepta comandes en aquest moment. Si us plau, demaneu ajuda al personal."
   },
   "PRODUCTS": {
     "TITLE": "Productes",
@@ -321,7 +323,12 @@
     "INACTIVE": "Inactiva",
     "ACTIVATE": "Activar",
     "CLOSE_TABLE": "Tancar Taula",
-    "NEW_PIN": "Nou PIN"
+    "NEW_PIN": "Nou PIN",
+    "ASSIGNED_WAITER": "Cambrer assignat",
+    "UNASSIGNED": "Sense assignar",
+    "ASSIGN_WAITER": "Assignar cambrer",
+    "DEFAULT_WAITER": "Cambrer per defecte",
+    "SECTION_DEFAULT": "Per defecte de secció"
   },
   "TABLE_STATUS": {
     "available": "Disponible",
@@ -413,12 +420,32 @@
   "PAYMENTS": {
     "PAYMENT": "Pagament",
     "PAY": "Pagar",
+    "PAY_NOW": "Pagar Ara",
+    "PAID": "Pagat",
     "PROCESSING": "Processant...",
     "PAYMENT_SUCCESSFUL": "Pagament realitzat amb èxit!",
     "PAYMENT_FAILED": "Pagament fallat",
     "CARD_NUMBER": "Número de targeta",
     "EXPIRY": "Caducitat",
-    "CVC": "CVC"
+    "CVC": "CVC",
+    "HOW_TO_PAY": "Com vols pagar?",
+    "PAY_ONLINE": "Pagar Online",
+    "PAY_ONLINE_DESC": "Paga de manera segura amb la teva targeta ara",
+    "PAY_CARD_TERMINAL": "Pagar amb Targeta a la Taula",
+    "PAY_CARD_TERMINAL_DESC": "Un cambrer portarà el datàfon",
+    "PAY_CASH": "Pagar en Efectiu",
+    "PAY_CASH_DESC": "Un cambrer vindrà a cobrar",
+    "CALL_WAITER": "Cridar el Cambrer",
+    "CALL_WAITER_DESC": "Necessites ajuda o tens alguna pregunta?",
+    "WAITER_CALLED_WAIT": "Cambrer avisat, si us plau espera...",
+    "MESSAGE_HINT": "Afegeix una nota opcional per al personal (ex. preguntes, observacions).",
+    "MESSAGE_PLACEHOLDER": "Algun missatge per al personal? (opcional)",
+    "SEND_CALL": "Enviar",
+    "REQUEST_PAYMENT": "Sol·licitar Pagament",
+    "WAITER_ON_WAY": "El cambrer ve de camí!",
+    "WAITER_ON_WAY_DESC": "Un membre del personal serà amb tu en breu.",
+    "PAYMENT_REQUESTED": "Pagament sol·licitat!",
+    "PAYMENT_REQUESTED_DESC": "Un cambrer vindrà a la teva taula per processar el pagament."
   },
   "ERRORS": {
     "GENERIC": "Alguna cosa ha anat malament. Si us plau, torna-ho a provar.",
@@ -672,5 +699,11 @@
     "FAILED_TO_LOAD_TRANSLATIONS": "Error en carregar les traduccions",
     "FAILED_TO_SAVE": "Error en desar les traduccions",
     "SAVED_SUCCESS": "Traduccions desades correctament"
+  },
+  "NOTIFICATIONS": {
+    "CALL_WAITER_YOURS": "et crida!",
+    "PAYMENT_REQUEST_YOURS": "sol·licita el pagament!",
+    "CALL_WAITER_OTHER": "Un client crida un cambrer",
+    "PAYMENT_REQUEST_OTHER": "Un client sol·licita el pagament"
   }
 }

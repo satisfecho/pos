@@ -1,11 +1,13 @@
 import { HttpInterceptorFn, HttpErrorResponse, HttpRequest, HttpHandlerFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, throwError, switchMap, Observable } from 'rxjs';
+import { catchError, throwError, switchMap, Observable, Subject, filter, take } from 'rxjs';
 import { ApiService } from '../services/api.service';
 
 // Flag to prevent multiple simultaneous refresh attempts
 let isRefreshing = false;
+// Subject that emits when refresh completes (true = success, false = failure)
+let refreshResult$ = new Subject<boolean>();
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const apiService = inject(ApiService);
@@ -25,18 +27,32 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           req.url.includes('/token') ||
           req.url.includes('/logout');
 
-        if (!isAuthEndpoint && !isRefreshing) {
-          isRefreshing = true;
+        if (isAuthEndpoint) {
+          // Auth endpoint itself failed - logout
+          apiService.logout();
+          if (!router.url.startsWith('/login')) {
+            router.navigate(['/login']);
+          }
+          return throwError(() => error);
+        }
 
-          // Attempt to refresh the token
+        if (!isRefreshing) {
+          // First 401 - initiate token refresh
+          isRefreshing = true;
+          refreshResult$ = new Subject<boolean>();
+
           return apiService.refreshToken().pipe(
             switchMap(() => {
               isRefreshing = false;
+              refreshResult$.next(true);
+              refreshResult$.complete();
               // Retry the original request with fresh token
               return next(req.clone({ withCredentials: true }));
             }),
             catchError((refreshError) => {
               isRefreshing = false;
+              refreshResult$.next(false);
+              refreshResult$.complete();
               // Refresh failed - logout and redirect to login
               apiService.logout();
               if (!router.url.startsWith('/login')) {
@@ -46,11 +62,20 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             })
           );
         } else {
-          // Auth endpoint failed or already refreshing - logout
-          apiService.logout();
-          if (!router.url.startsWith('/login')) {
-            router.navigate(['/login']);
-          }
+          // Another request got 401 while refresh is in progress - wait for it
+          return refreshResult$.pipe(
+            filter((result) => result !== undefined),
+            take(1),
+            switchMap((success) => {
+              if (success) {
+                // Refresh succeeded - retry this request
+                return next(req.clone({ withCredentials: true }));
+              } else {
+                // Refresh failed - propagate the error
+                return throwError(() => error);
+              }
+            })
+          );
         }
       }
       return throwError(() => error);

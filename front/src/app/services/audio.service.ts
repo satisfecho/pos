@@ -124,6 +124,33 @@ export class AudioService {
   }
 
   /**
+   * Play an urgent alert sound for assigned waiter notifications.
+   * Triple beep at higher volume for attention.
+   */
+  playUrgentWaiterAlert(): void {
+    if (!this.enabled || !this.audioContext) return;
+    try {
+      const ctx = this.audioContext;
+      const now = ctx.currentTime;
+      // Triple ascending beep
+      for (let i = 0; i < 3; i++) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 800 + i * 200;
+        osc.type = 'square';
+        gain.gain.setValueAtTime(0.3, now + i * 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.2 + 0.18);
+        osc.start(now + i * 0.2);
+        osc.stop(now + i * 0.2 + 0.2);
+      }
+    } catch (e) {
+      console.warn('Failed to play urgent alert:', e);
+    }
+  }
+
+  /**
    * Enable or disable audio notifications
    */
   setEnabled(enabled: boolean): void {

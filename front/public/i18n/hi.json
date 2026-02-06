@@ -108,7 +108,9 @@
     "NAME_OPTIONAL": "(वैकल्पिक - आप छोड़ सकते हैं)",
     "ENTER_NAME": "अपना नाम दर्ज करें",
     "ENTER_PIN": "टेबल PIN दर्ज करें",
-    "PIN_HINT": "अपने वेटर से 4 अंकों का PIN पूछें"
+    "PIN_HINT": "अपने वेटर से 4 अंकों का PIN पूछें",
+    "TABLE_CLOSED_TITLE": "टेबल बंद है",
+    "TABLE_CLOSED_MESSAGE": "यह टेबल वर्तमान में ऑर्डर स्वीकार नहीं कर रही है। कृपया स्टाफ से सहायता लें।"
   },
   "PRODUCTS": {
     "TITLE": "उत्पाद",
@@ -321,7 +323,12 @@
     "INACTIVE": "निष्क्रिय",
     "ACTIVATE": "सक्रिय करें",
     "CLOSE_TABLE": "टेबल बंद करें",
-    "NEW_PIN": "नया PIN"
+    "NEW_PIN": "नया PIN",
+    "ASSIGNED_WAITER": "नियुक्त वेटर",
+    "UNASSIGNED": "अनियुक्त",
+    "ASSIGN_WAITER": "वेटर नियुक्त करें",
+    "DEFAULT_WAITER": "डिफ़ॉल्ट वेटर",
+    "SECTION_DEFAULT": "सेक्शन डिफ़ॉल्ट"
   },
   "TABLE_STATUS": {
     "available": "उपलब्ध",
@@ -413,12 +420,32 @@
   "PAYMENTS": {
     "PAYMENT": "भुगतान",
     "PAY": "भुगतान करें",
+    "PAY_NOW": "अभी भुगतान करें",
+    "PAID": "भुगतान किया गया",
     "PROCESSING": "प्रसंस्करण हो रहा है...",
     "PAYMENT_SUCCESSFUL": "भुगतान सफल रहा!",
     "PAYMENT_FAILED": "भुगतान विफल रहा",
     "CARD_NUMBER": "कार्ड नंबर",
     "EXPIRY": "समाप्ति",
-    "CVC": "CVC"
+    "CVC": "CVC",
+    "HOW_TO_PAY": "आप कैसे भुगतान करना चाहेंगे?",
+    "PAY_ONLINE": "ऑनलाइन भुगतान करें",
+    "PAY_ONLINE_DESC": "अभी अपने कार्ड से सुरक्षित भुगतान करें",
+    "PAY_CARD_TERMINAL": "टेबल पर कार्ड से भुगतान करें",
+    "PAY_CARD_TERMINAL_DESC": "एक वेटर कार्ड मशीन लाएगा",
+    "PAY_CASH": "नकद में भुगतान करें",
+    "PAY_CASH_DESC": "एक वेटर भुगतान लेने आएगा",
+    "CALL_WAITER": "वेटर को बुलाएं",
+    "CALL_WAITER_DESC": "मदद चाहिए या कोई सवाल है?",
+    "WAITER_CALLED_WAIT": "वेटर को बुलाया गया, कृपया प्रतीक्षा करें...",
+    "MESSAGE_HINT": "स्टाफ के लिए एक वैकल्पिक नोट जोड़ें (जैसे प्रश्न, टिप्पणियां)।",
+    "MESSAGE_PLACEHOLDER": "स्टाफ के लिए कोई संदेश? (वैकल्पिक)",
+    "SEND_CALL": "भेजें",
+    "REQUEST_PAYMENT": "भुगतान अनुरोध करें",
+    "WAITER_ON_WAY": "वेटर रास्ते में है!",
+    "WAITER_ON_WAY_DESC": "एक स्टाफ सदस्य जल्द ही आपके पास आएगा।",
+    "PAYMENT_REQUESTED": "भुगतान अनुरोध किया गया!",
+    "PAYMENT_REQUESTED_DESC": "एक वेटर भुगतान प्रक्रिया के लिए आपकी टेबल पर आएगा।"
   },
   "ERRORS": {
     "GENERIC": "कुछ गलत हो गया। कृपया पुन: प्रयास करें।",
@@ -672,5 +699,11 @@
     "FAILED_TO_LOAD_TRANSLATIONS": "अनुवाद लोड करने में विफल",
     "FAILED_TO_SAVE": "अनुवाद सहेजने में विफल",
     "SAVED_SUCCESS": "अनुवाद सफलतापूर्वक सहेजे गए"
+  },
+  "NOTIFICATIONS": {
+    "CALL_WAITER_YOURS": "आपको बुला रहा है!",
+    "PAYMENT_REQUEST_YOURS": "भुगतान का अनुरोध कर रहा है!",
+    "CALL_WAITER_OTHER": "एक ग्राहक वेटर को बुला रहा है",
+    "PAYMENT_REQUEST_OTHER": "एक ग्राहक भुगतान का अनुरोध कर रहा है"
   }
 }

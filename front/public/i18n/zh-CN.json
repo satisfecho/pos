@@ -108,7 +108,9 @@
     "NAME_OPTIONAL": "（可选 - 您可以跳过）",
     "ENTER_NAME": "请输入您的名字",
     "ENTER_PIN": "输入餐桌PIN码",
-    "PIN_HINT": "请向服务员索取4位数PIN码"
+    "PIN_HINT": "请向服务员索取4位数PIN码",
+    "TABLE_CLOSED_TITLE": "餐桌已关闭",
+    "TABLE_CLOSED_MESSAGE": "此餐桌目前不接受点单。请向工作人员寻求帮助。"
   },
   "PRODUCTS": {
     "TITLE": "产品",
@@ -321,7 +323,12 @@
     "INACTIVE": "未激活",
     "ACTIVATE": "激活",
     "CLOSE_TABLE": "关闭餐桌",
-    "NEW_PIN": "新PIN码"
+    "NEW_PIN": "新PIN码",
+    "ASSIGNED_WAITER": "分配的服务员",
+    "UNASSIGNED": "未分配",
+    "ASSIGN_WAITER": "分配服务员",
+    "DEFAULT_WAITER": "默认服务员",
+    "SECTION_DEFAULT": "区域默认"
   },
   "TABLE_STATUS": {
     "available": "空闲",
@@ -413,12 +420,32 @@
   "PAYMENTS": {
     "PAYMENT": "支付",
     "PAY": "支付",
+    "PAY_NOW": "立即支付",
+    "PAID": "已支付",
     "PROCESSING": "处理中...",
     "PAYMENT_SUCCESSFUL": "支付成功！",
     "PAYMENT_FAILED": "支付失败",
     "CARD_NUMBER": "卡号",
     "EXPIRY": "有效期",
-    "CVC": "CVC"
+    "CVC": "CVC",
+    "HOW_TO_PAY": "您想如何付款？",
+    "PAY_ONLINE": "在线支付",
+    "PAY_ONLINE_DESC": "使用银行卡安全支付",
+    "PAY_CARD_TERMINAL": "在餐桌刷卡支付",
+    "PAY_CARD_TERMINAL_DESC": "服务员将带来刷卡机",
+    "PAY_CASH": "现金支付",
+    "PAY_CASH_DESC": "服务员将来收取现金",
+    "CALL_WAITER": "呼叫服务员",
+    "CALL_WAITER_DESC": "需要帮助或有问题？",
+    "WAITER_CALLED_WAIT": "已呼叫服务员，请稍等...",
+    "MESSAGE_HINT": "为员工添加可选备注（如问题、意见）。",
+    "MESSAGE_PLACEHOLDER": "给员工的留言？（可选）",
+    "SEND_CALL": "发送",
+    "REQUEST_PAYMENT": "请求付款",
+    "WAITER_ON_WAY": "服务员正在赶来！",
+    "WAITER_ON_WAY_DESC": "工作人员很快就会到您身边。",
+    "PAYMENT_REQUESTED": "已请求付款！",
+    "PAYMENT_REQUESTED_DESC": "服务员将到您的餐桌处理付款。"
   },
   "ERRORS": {
     "GENERIC": "出错了，请重试。",
@@ -672,5 +699,11 @@
     "FAILED_TO_LOAD_TRANSLATIONS": "加载翻译失败",
     "FAILED_TO_SAVE": "保存翻译失败",
     "SAVED_SUCCESS": "翻译保存成功"
+  },
+  "NOTIFICATIONS": {
+    "CALL_WAITER_YOURS": "在呼叫您！",
+    "PAYMENT_REQUEST_YOURS": "请求付款！",
+    "CALL_WAITER_OTHER": "顾客呼叫服务员",
+    "PAYMENT_REQUEST_OTHER": "顾客请求付款"
   }
 }

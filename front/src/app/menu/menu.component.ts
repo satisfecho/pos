@@ -39,6 +39,11 @@ export class MenuComponent implements OnInit, OnDestroy {
   // Core state
   loading = signal(true);
   error = signal(false);
+  tableClosed = signal(false);
+  closedTableName = signal('');
+  closedTenantName = signal('');
+  closedTenantLogo = signal<string | null>(null);
+  closedTenantId = signal<number | null>(null);
   products = signal<Product[]>([]);
   filteredProducts = signal<Product[]>([]);
   selectedCategory = signal<string | null>(null);
@@ -83,7 +88,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   showNameModal = signal(false);
   nameInputValue = '';
 
-  // Table session & PIN
+  // Table session
   tableIsActive = signal(true);  // Default true for backward compatibility
   tableRequiresPin = signal(false);
   showPinModal = signal(false);
@@ -91,7 +96,16 @@ export class MenuComponent implements OnInit, OnDestroy {
   pinError = signal('');
   private currentPin = '';  // Stored after successful validation
 
-  // Payment
+  // Payment options
+  showPaymentOptions = signal(false);
+  paymentOptionsStep = signal<'choose' | 'stripe' | 'message' | 'success'>('choose');
+  paymentMessageTarget = signal<'waiter' | 'cash' | 'card_terminal' | null>(null);
+  paymentMessage = signal('');
+  paymentRequestSending = signal(false);
+  paymentRequestSuccess = signal(false);
+  waiterCallCooldown = signal(false);
+
+  // Stripe payment
   showPaymentModal = signal(false);
   paymentAmount = signal(0);
   cardError = signal('');
@@ -244,16 +258,56 @@ export class MenuComponent implements OnInit, OnDestroy {
         this.tableIsActive.set(data.table_is_active !== false);  // Default true for backward compatibility
         this.tableRequiresPin.set(data.table_requires_pin === true);
 
-        // Load stored PIN from sessionStorage if available
-        const storedPin = sessionStorage.getItem(`pin_${this.tableToken}`);
-        if (storedPin) {
-          this.currentPin = storedPin;
+        // Check if the table session has changed (table was closed and reopened).
+        // If active_order_id differs from what we stored, clear stale data and
+        // start a fresh customer session so new customers don't inherit old data.
+        const storedOrderId = localStorage.getItem(`active_order_${this.tableToken}`);
+        const currentOrderId = data.active_order_id ? String(data.active_order_id) : null;
+
+        if (currentOrderId && storedOrderId !== currentOrderId) {
+          // Table session changed -- clear all stale data
+          sessionStorage.removeItem(`pin_${this.tableToken}`);
+          localStorage.removeItem(`session_${this.tableToken}`);
+          localStorage.removeItem(`customer_name_${this.tableToken}`);
+          localStorage.removeItem(`orders_${this.tableToken}`);
+          this.currentPin = '';
+          this.placedOrders.set([]);
+          this.customerName.set('');
+
+          // Re-initialize session with fresh IDs
+          const newSessionId = this.generateUUID();
+          localStorage.setItem(`session_${this.tableToken}`, newSessionId);
+          this.sessionId = newSessionId;
+          this.showNameModal.set(true);
+
+          // Store new active_order_id
+          localStorage.setItem(`active_order_${this.tableToken}`, currentOrderId);
+        } else if (currentOrderId) {
+          // Same session -- restore stored PIN
+          localStorage.setItem(`active_order_${this.tableToken}`, currentOrderId);
+          const storedPin = sessionStorage.getItem(`pin_${this.tableToken}`);
+          if (storedPin) {
+            this.currentPin = storedPin;
+          }
         }
 
         this.loading.set(false);
       },
-      error: () => {
-        this.error.set(true);
+      error: (err) => {
+        if (err.status === 403 && err.error?.detail?.code === 'TABLE_CLOSED') {
+          const detail = err.error.detail;
+          this.tableClosed.set(true);
+          this.closedTableName.set(detail.table_name || '');
+          this.closedTenantName.set(detail.tenant_name || '');
+          this.closedTenantId.set(detail.tenant_id || null);
+          if (detail.tenant_logo && detail.tenant_id) {
+            this.closedTenantLogo.set(
+              `${environment.apiUrl}/uploads/${detail.tenant_id}/logo/${detail.tenant_logo}`
+            );
+          }
+        } else {
+          this.error.set(true);
+        }
         this.loading.set(false);
       }
     });
@@ -269,7 +323,19 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.type === 'status_update') {
+        if (data.type === 'table_closed') {
+          // Staff has closed this table -- show the closed screen
+          this.tableIsActive.set(false);
+          this.tableClosed.set(true);
+          this.closedTenantName.set(this.tenantName());
+          this.closedTenantLogo.set(this.tenantLogo());
+          this.closedTableName.set(this.tableName());
+          // Clear stored session data for this table
+          sessionStorage.removeItem(`pin_${this.tableToken}`);
+          this.currentPin = '';
+          this.ws?.close();
+          return;
+        } else if (data.type === 'status_update') {
           this.audio.playCustomerStatusChange();
           this.placedOrders.update(orders => orders.map(o => o.id === data.order_id ? { ...o, status: data.status } : o));
           this.saveOrders();
@@ -774,8 +840,17 @@ export class MenuComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.submitting.set(false);
-        const errorMsg = err.error?.detail || 'Failed to place order.';
-        
+        const detail = err.error?.detail;
+        const errorMsg = typeof detail === 'string' ? detail : 'Failed to place order.';
+
+        if (err.status === 429) {
+          this.currentPin = '';
+          sessionStorage.removeItem(`pin_${this.tableToken}`);
+          this.pinError.set(errorMsg);
+          this.showPinModal.set(true);
+          return;
+        }
+
         // Check if it's a PIN error
         if (errorMsg.includes('PIN') || errorMsg.includes('pin')) {
           // Clear the stored PIN and show modal again
@@ -827,83 +902,42 @@ export class MenuComponent implements OnInit, OnDestroy {
   // ORDER STORAGE
   // ============================================
   loadStoredOrders() {
-    if (this.sessionId) {
-      this.api.getCurrentOrder(this.tableToken, this.sessionId).subscribe({
-        next: (response) => {
-          if (response.order) {
-            if (response.order.session_id === this.sessionId) {
-              const activeItems = response.order.items.filter((item: any) => !item.removed_by_customer);
-              const order: PlacedOrder = {
-                id: response.order.id,
-                items: this.sortItems(activeItems.map((item: any) => ({
-                  product: {
-                    id: item.product_id,
-                    name: item.product_name,
-                    price_cents: item.price_cents
-                  } as Product,
-                  quantity: item.quantity,
-                  notes: item.notes || '',
-                  status: item.status,
-                  itemId: item.id
-                } as CartItem))),
-                notes: response.order.notes || '',
-                total: response.order.total_cents,
-                status: response.order.status
-              };
-              this.placedOrders.set([order]);
-              this.saveOrders();
-            } else {
-              this.loadStoredOrdersFromLocalStorage();
-            }
-          } else {
-            this.loadStoredOrdersFromLocalStorage();
-          }
-        },
-        error: () => {
-          this.loadStoredOrdersFromLocalStorage();
+    // Fetch the table's active shared order from the backend.
+    // The backend returns the order linked to table.active_order_id,
+    // which is the single shared order for the current table session.
+    this.api.getCurrentOrder(this.tableToken, this.sessionId).subscribe({
+      next: (response) => {
+        if (response.order && response.order.items?.length > 0) {
+          const activeItems = response.order.items.filter((item: any) => !item.removed_by_customer);
+          const order: PlacedOrder = {
+            id: response.order.id,
+            items: this.sortItems(activeItems.map((item: any) => ({
+              product: {
+                id: item.product_id,
+                name: item.product_name,
+                price_cents: item.price_cents
+              } as Product,
+              quantity: item.quantity,
+              notes: item.notes || '',
+              status: item.status,
+              itemId: item.id
+            } as CartItem))),
+            notes: response.order.notes || '',
+            total: response.order.total_cents,
+            status: response.order.status
+          };
+          this.placedOrders.set([order]);
+          this.saveOrders();
+        } else {
+          // No active order with items -- clear displayed orders
+          this.placedOrders.set([]);
+          this.saveOrders();
         }
-      });
-    } else {
-      this.loadStoredOrdersFromLocalStorage();
-    }
-  }
-
-  private loadStoredOrdersFromLocalStorage() {
-    if (this.sessionId) {
-      this.api.getCurrentOrder(this.tableToken, this.sessionId).subscribe({
-        next: (response) => {
-          if (response.order && response.order.session_id === this.sessionId) {
-            const activeItems = response.order.items.filter((item: any) => !item.removed_by_customer);
-            const order: PlacedOrder = {
-              id: response.order.id,
-              items: this.sortItems(activeItems.map((item: any) => ({
-                product: {
-                  id: item.product_id,
-                  name: item.product_name,
-                  price_cents: item.price_cents
-                } as Product,
-                quantity: item.quantity,
-                notes: item.notes || '',
-                status: item.status,
-                itemId: item.id
-              } as CartItem))),
-              notes: response.order.notes || '',
-              total: response.order.total_cents,
-              status: response.order.status
-            };
-            this.placedOrders.set([order]);
-            this.saveOrders();
-            return;
-          }
-          this.loadFromLocalStorageFallback();
-        },
-        error: () => {
-          this.loadFromLocalStorageFallback();
-        }
-      });
-    } else {
-      this.loadFromLocalStorageFallback();
-    }
+      },
+      error: () => {
+        this.loadFromLocalStorageFallback();
+      }
+    });
   }
 
   private loadFromLocalStorageFallback() {
@@ -912,7 +946,6 @@ export class MenuComponent implements OnInit, OnDestroy {
       try {
         const orders: PlacedOrder[] = JSON.parse(stored);
         const activeOrders = orders.filter(o => o.status !== 'paid' && o.status !== 'completed');
-        // Ensure items are sorted in fallback too
         activeOrders.forEach(o => o.items = this.sortItems(o.items));
         this.placedOrders.set(activeOrders);
         if (activeOrders.length !== orders.length) {
@@ -1008,21 +1041,116 @@ export class MenuComponent implements OnInit, OnDestroy {
   // ============================================
   // PAYMENT
   // ============================================
-  async startCheckout(order: PlacedOrder) {
+  startCheckout(order: PlacedOrder) {
     this.currentOrderId = order.id;
+    this.paymentAmount.set(order.total);
+    this.paymentOptionsStep.set('choose');
+    this.paymentMessage.set('');
+    this.paymentMessageTarget.set(null);
+    this.paymentRequestSuccess.set(false);
+    this.showPaymentOptions.set(true);
+  }
+
+  // --- Payment options handlers ---
+
+  selectPayOnline() {
+    // Show loading state in the payment options sheet while we create the intent
+    this.paymentRequestSending.set(true);
+    this.doStripeCheckout();
+  }
+
+  selectPayCash() {
+    this.paymentMessageTarget.set('cash');
+    this.paymentOptionsStep.set('message');
+  }
+
+  selectPayCard() {
+    this.paymentMessageTarget.set('card_terminal');
+    this.paymentOptionsStep.set('message');
+  }
+
+  selectCallWaiter() {
+    this.paymentMessageTarget.set('waiter');
+    this.paymentOptionsStep.set('message');
+  }
+
+  submitPaymentRequest() {
+    const target = this.paymentMessageTarget();
+    const message = this.paymentMessage().trim() || undefined;
+    this.paymentRequestSending.set(true);
+
+    if (target === 'waiter') {
+      this.api.callWaiter(this.tableToken, message).subscribe({
+        next: () => {
+          this.paymentRequestSending.set(false);
+          this.paymentOptionsStep.set('success');
+          this.paymentRequestSuccess.set(true);
+          // Cooldown to prevent spamming
+          this.waiterCallCooldown.set(true);
+          setTimeout(() => this.waiterCallCooldown.set(false), 30000);
+        },
+        error: (err) => {
+          this.paymentRequestSending.set(false);
+          alert(err.error?.detail || 'Failed to call waiter.');
+        }
+      });
+    } else if (target === 'cash' || target === 'card_terminal') {
+      this.api.requestPayment(this.tableToken, this.currentOrderId, target, message).subscribe({
+        next: () => {
+          this.paymentRequestSending.set(false);
+          this.paymentOptionsStep.set('success');
+          this.paymentRequestSuccess.set(true);
+        },
+        error: (err) => {
+          this.paymentRequestSending.set(false);
+          alert(err.error?.detail || 'Failed to request payment.');
+        }
+      });
+    }
+  }
+
+  closePaymentOptions() {
+    this.showPaymentOptions.set(false);
+    this.paymentMessage.set('');
+    this.paymentMessageTarget.set(null);
+  }
+
+  backToPaymentOptions() {
+    this.paymentOptionsStep.set('choose');
+    this.paymentMessage.set('');
+    this.paymentMessageTarget.set(null);
+  }
+
+  // --- Stripe flow (existing, now triggered from payment options) ---
+
+  private async doStripeCheckout() {
+    // Verify Stripe publishable key is configured before proceeding
+    const stripeKey = this.api.getStripePublishableKey();
+    if (!stripeKey) {
+      this.paymentRequestSending.set(false);
+      alert('Online payments are not configured. Please ask staff for assistance.');
+      return;
+    }
     this.processingPayment.set(true);
-    this.api.createPaymentIntent(order.id, this.tableToken).subscribe({
+    // Reset stale state from previous attempts
+    this.paymentSuccess.set(false);
+    this.cardError.set('');
+    this.api.createPaymentIntent(this.currentOrderId, this.tableToken).subscribe({
       next: async (response: any) => {
         this.clientSecret = response.client_secret;
         this.paymentIntentId = response.payment_intent_id;
         this.paymentAmount.set(response.amount);
         this.processingPayment.set(false);
+        this.paymentRequestSending.set(false);
+        // Close payment options and show stripe modal
+        this.showPaymentOptions.set(false);
         this.showPaymentModal.set(true);
         await this.loadStripe();
       },
       error: (err) => {
         this.processingPayment.set(false);
-        alert(err.error?.detail || 'Failed');
+        this.paymentRequestSending.set(false);
+        alert(err.error?.detail || 'Failed to create payment');
       }
     });
   }
@@ -1032,11 +1160,20 @@ export class MenuComponent implements OnInit, OnDestroy {
       this.mountCard();
       return;
     }
+    // Check if Stripe.js is already available globally
+    if ((window as any).Stripe) {
+      this.stripe = (window as any).Stripe(this.api.getStripePublishableKey());
+      this.mountCard();
+      return;
+    }
     const script = document.createElement('script');
     script.src = 'https://js.stripe.com/v3/';
     script.onload = () => {
       this.stripe = (window as any).Stripe(this.api.getStripePublishableKey());
       this.mountCard();
+    };
+    script.onerror = () => {
+      this.cardError.set('Failed to load payment system. Please check your connection and try again.');
     };
     document.head.appendChild(script);
   }
@@ -1053,14 +1190,20 @@ export class MenuComponent implements OnInit, OnDestroy {
         }
       }
     });
-    setTimeout(() => {
+    // Retry mounting until the DOM element is available (Angular may need a tick to render)
+    const tryMount = (attempts: number) => {
       const container = document.getElementById('card-element');
       if (container) {
         container.innerHTML = '';
         this.cardElement.mount('#card-element');
         this.cardElement.on('change', (e: any) => this.cardError.set(e.error ? e.error.message : ''));
+      } else if (attempts > 0) {
+        setTimeout(() => tryMount(attempts - 1), 150);
+      } else {
+        this.cardError.set('Could not load card input. Please close and try again.');
       }
-    }, 100);
+    };
+    setTimeout(() => tryMount(5), 100);
   }
 
   async processPayment() {

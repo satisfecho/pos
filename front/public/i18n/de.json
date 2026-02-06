@@ -108,7 +108,9 @@
     "NAME_OPTIONAL": "(optional - Sie können dies überspringen)",
     "ENTER_NAME": "Geben Sie Ihren Namen ein",
     "ENTER_PIN": "Tisch-PIN eingeben",
-    "PIN_HINT": "Fragen Sie Ihren Kellner nach der 4-stelligen PIN"
+    "PIN_HINT": "Fragen Sie Ihren Kellner nach der 4-stelligen PIN",
+    "TABLE_CLOSED_TITLE": "Tisch geschlossen",
+    "TABLE_CLOSED_MESSAGE": "Dieser Tisch nimmt derzeit keine Bestellungen an. Bitte wenden Sie sich an das Personal."
   },
   "PRODUCTS": {
     "TITLE": "Produkte",
@@ -321,7 +323,12 @@
     "INACTIVE": "Inaktiv",
     "ACTIVATE": "Aktivieren",
     "CLOSE_TABLE": "Tisch schließen",
-    "NEW_PIN": "Neue PIN"
+    "NEW_PIN": "Neue PIN",
+    "ASSIGNED_WAITER": "Zugewiesener Kellner",
+    "UNASSIGNED": "Nicht zugewiesen",
+    "ASSIGN_WAITER": "Kellner zuweisen",
+    "DEFAULT_WAITER": "Standardkellner",
+    "SECTION_DEFAULT": "Bereichsstandard"
   },
   "TABLE_STATUS": {
     "available": "Verfügbar",
@@ -413,12 +420,32 @@
   "PAYMENTS": {
     "PAYMENT": "Zahlung",
     "PAY": "Bezahlen",
+    "PAY_NOW": "Jetzt bezahlen",
+    "PAID": "Bezahlt",
     "PROCESSING": "Wird verarbeitet...",
     "PAYMENT_SUCCESSFUL": "Zahlung erfolgreich!",
     "PAYMENT_FAILED": "Zahlung fehlgeschlagen",
     "CARD_NUMBER": "Kartennummer",
     "EXPIRY": "Ablaufdatum",
-    "CVC": "CVC"
+    "CVC": "CVC",
+    "HOW_TO_PAY": "Wie möchten Sie bezahlen?",
+    "PAY_ONLINE": "Online bezahlen",
+    "PAY_ONLINE_DESC": "Jetzt sicher mit Karte bezahlen",
+    "PAY_CARD_TERMINAL": "Mit Karte am Tisch bezahlen",
+    "PAY_CARD_TERMINAL_DESC": "Ein Kellner bringt das Kartenlesegerät",
+    "PAY_CASH": "Bar bezahlen",
+    "PAY_CASH_DESC": "Ein Kellner kommt zum Kassieren",
+    "CALL_WAITER": "Kellner rufen",
+    "CALL_WAITER_DESC": "Brauchen Sie Hilfe oder haben eine Frage?",
+    "WAITER_CALLED_WAIT": "Kellner wurde gerufen, bitte warten...",
+    "MESSAGE_HINT": "Fügen Sie eine optionale Nachricht für das Personal hinzu (z.B. Fragen, Anmerkungen).",
+    "MESSAGE_PLACEHOLDER": "Nachricht an das Personal? (optional)",
+    "SEND_CALL": "Senden",
+    "REQUEST_PAYMENT": "Zahlung anfordern",
+    "WAITER_ON_WAY": "Der Kellner ist unterwegs!",
+    "WAITER_ON_WAY_DESC": "Ein Mitarbeiter wird gleich bei Ihnen sein.",
+    "PAYMENT_REQUESTED": "Zahlung angefordert!",
+    "PAYMENT_REQUESTED_DESC": "Ein Kellner wird an Ihren Tisch kommen, um die Zahlung abzuwickeln."
   },
   "ERRORS": {
     "GENERIC": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.",
@@ -672,5 +699,11 @@
     "FAILED_TO_LOAD_TRANSLATIONS": "Übersetzungen konnten nicht geladen werden",
     "FAILED_TO_SAVE": "Übersetzungen konnten nicht gespeichert werden",
     "SAVED_SUCCESS": "Übersetzungen erfolgreich gespeichert"
+  },
+  "NOTIFICATIONS": {
+    "CALL_WAITER_YOURS": "ruft dich!",
+    "PAYMENT_REQUEST_YOURS": "möchte bezahlen!",
+    "CALL_WAITER_OTHER": "Ein Gast ruft einen Kellner",
+    "PAYMENT_REQUEST_OTHER": "Ein Gast möchte bezahlen"
   }
 }

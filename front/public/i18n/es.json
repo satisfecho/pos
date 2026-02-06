@@ -119,7 +119,9 @@
     "NAME_OPTIONAL": "(opcional - puedes omitirlo)",
     "ENTER_NAME": "Introduce tu nombre",
     "ENTER_PIN": "Introduce el PIN de la mesa",
-    "PIN_HINT": "Pide el PIN de 4 dígitos a tu camarero"
+    "PIN_HINT": "Pide el PIN de 4 dígitos a tu camarero",
+    "TABLE_CLOSED_TITLE": "Mesa cerrada",
+    "TABLE_CLOSED_MESSAGE": "Esta mesa no acepta pedidos en este momento. Por favor, pide ayuda al personal."
   },
   "PRODUCTS": {
     "TITLE": "Productos",
@@ -339,7 +341,12 @@
     "INACTIVE": "Inactiva",
     "ACTIVATE": "Activar",
     "CLOSE_TABLE": "Cerrar Mesa",
-    "NEW_PIN": "Nuevo PIN"
+    "NEW_PIN": "Nuevo PIN",
+    "ASSIGNED_WAITER": "Camarero asignado",
+    "UNASSIGNED": "Sin asignar",
+    "ASSIGN_WAITER": "Asignar camarero",
+    "DEFAULT_WAITER": "Camarero por defecto",
+    "SECTION_DEFAULT": "Por defecto de sección"
   },
   "TABLE_STATUS": {
     "available": "Disponible",
@@ -438,7 +445,25 @@
     "PAYMENT_FAILED": "Pago fallido",
     "CARD_NUMBER": "Número de tarjeta",
     "EXPIRY": "Caducidad",
-    "CVC": "CVC"
+    "CVC": "CVC",
+    "HOW_TO_PAY": "¿Cómo deseas pagar?",
+    "PAY_ONLINE": "Pagar Online",
+    "PAY_ONLINE_DESC": "Paga de forma segura con tu tarjeta ahora",
+    "PAY_CARD_TERMINAL": "Pagar con Tarjeta en Mesa",
+    "PAY_CARD_TERMINAL_DESC": "Un camarero traerá el datáfono",
+    "PAY_CASH": "Pagar en Efectivo",
+    "PAY_CASH_DESC": "Un camarero vendrá a cobrar",
+    "CALL_WAITER": "Llamar al Camarero",
+    "CALL_WAITER_DESC": "¿Necesitas ayuda o tienes alguna pregunta?",
+    "WAITER_CALLED_WAIT": "Camarero avisado, por favor espera...",
+    "MESSAGE_HINT": "Añade una nota opcional para el personal (ej. preguntas, observaciones).",
+    "MESSAGE_PLACEHOLDER": "¿Algún mensaje para el personal? (opcional)",
+    "SEND_CALL": "Enviar",
+    "REQUEST_PAYMENT": "Solicitar Pago",
+    "WAITER_ON_WAY": "¡El camarero viene en camino!",
+    "WAITER_ON_WAY_DESC": "Un miembro del personal estará contigo en breve.",
+    "PAYMENT_REQUESTED": "¡Pago solicitado!",
+    "PAYMENT_REQUESTED_DESC": "Un camarero vendrá a tu mesa para procesar el pago."
   },
   "ERRORS": {
     "GENERIC": "Algo salió mal. Por favor, inténtalo de nuevo.",
@@ -685,5 +710,11 @@
     "FAILED_TO_LOAD_TRANSLATIONS": "Error al cargar las traducciones",
     "FAILED_TO_SAVE": "Error al guardar las traducciones",
     "SAVED_SUCCESS": "Traducciones guardadas correctamente"
+  },
+  "NOTIFICATIONS": {
+    "CALL_WAITER_YOURS": "¡te está llamando!",
+    "PAYMENT_REQUEST_YOURS": "¡solicita el pago!",
+    "CALL_WAITER_OTHER": "Un cliente llama a un camarero",
+    "PAYMENT_REQUEST_OTHER": "Un cliente solicita el pago"
   }
 }
