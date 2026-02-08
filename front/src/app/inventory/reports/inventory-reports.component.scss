@@ -1,0 +1,133 @@
+// Inventory Reports Component Styles
+@use '../../../styles/breakpoints' as *;
+
+.section {
+    margin-bottom: var(--space-6);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
+
+    h2 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin: 0;
+    }
+}
+
+.date-tag {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+}
+
+.total-card {
+    background: var(--color-primary);
+    color: white;
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.total-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.total-value {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.sku-cell {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+.date-cell {
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.notes-cell {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.price {
+    color: var(--color-success);
+    font-weight: 600;
+}
+
+.positive {
+    color: var(--color-success);
+}
+
+.negative {
+    color: var(--color-error);
+}
+
+.type-badge {
+    display: inline-block;
+    padding: var(--space-1) var(--space-2);
+    border-radius: 4px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+
+    &.purchase {
+        background: var(--color-success-light);
+        color: var(--color-success);
+    }
+
+    &.sale {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3B82F6;
+    }
+
+    &.adjustment_add {
+        background: var(--color-success-light);
+        color: var(--color-success);
+    }
+
+    &.adjustment_subtract {
+        background: rgba(245, 158, 11, 0.15);
+        color: var(--color-warning);
+    }
+
+    &.waste {
+        background: rgba(220, 38, 38, 0.1);
+        color: var(--color-error);
+    }
+}
+
+.loading-state {
+    text-align: center;
+    padding: var(--space-6);
+    color: var(--color-text-muted);
+}
+
+@include for-phone-only {
+    table {
+        font-size: 0.875rem;
+    }
+
+    th,
+    td {
+        padding: var(--space-3);
+    }
+
+    .notes-cell {
+        display: none;
+    }
+}

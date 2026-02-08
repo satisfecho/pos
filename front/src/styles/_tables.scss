@@ -1,0 +1,164 @@
+// ============================================
+// TABLE SYSTEM - Mobile First
+// ============================================
+@use 'breakpoints' as *;
+
+// Base table styles
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: var(--space-4);
+    text-align: left;
+}
+
+th {
+    background: var(--color-bg);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+}
+
+td {
+    border-top: 1px solid var(--color-border);
+    vertical-align: middle;
+}
+
+tbody tr:hover td {
+    background: var(--color-bg);
+}
+
+// Price cell
+.price {
+    font-weight: 600;
+    color: var(--color-success);
+    white-space: nowrap;
+}
+
+// Actions cell
+.actions {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: flex-end;
+}
+
+// Responsive table wrapper
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: var(--color-bg);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--color-border);
+        border-radius: 3px;
+    }
+}
+
+// Compact table (less padding on mobile)
+.table-compact {
+
+    th,
+    td {
+        padding: var(--space-3);
+    }
+
+    @include for-phone-only {
+
+        th,
+        td {
+            padding: var(--space-2);
+        }
+    }
+}
+
+// Image cells
+.image-preview-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    position: relative;
+    min-width: 48px;
+    min-height: 48px;
+}
+
+.product-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    display: block;
+}
+
+.table-thumb {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    display: block;
+    background: var(--color-bg);
+}
+
+.no-image {
+    width: 48px;
+    height: 48px;
+    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    border: 1px dashed var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.file-size {
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+// Clickable cell (for inline editing)
+.category-cell {
+    cursor: pointer;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    transition: background 0.15s ease;
+    display: inline-block;
+    min-width: 60px;
+
+    &:hover {
+        background: var(--color-bg);
+    }
+}
+
+// Ingredients/description text
+.ingredients {
+    color: var(--color-text-muted);
+    font-size: 0.8125rem;
+    display: block;
+    margin-top: 2px;
+}
+
+// AG Grid container
+.grid-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+
+    ag-grid-angular {
+        width: 100%;
+    }
+}

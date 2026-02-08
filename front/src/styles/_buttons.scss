@@ -1,0 +1,194 @@
+// ============================================
+// BUTTON SYSTEM - Mobile First
+// ============================================
+@use 'breakpoints' as *;
+
+// Base button
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    touch-action: manipulation;
+    min-height: 44px; // Touch target minimum
+    white-space: nowrap;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    // Full width on mobile when in form-actions
+    @include for-phone-only {
+        &.btn-block-mobile {
+            width: 100%;
+        }
+    }
+}
+
+// Button variants
+.btn-primary {
+    background: var(--color-primary);
+    color: white;
+
+    &:hover:not(:disabled) {
+        background: var(--color-primary-hover);
+    }
+}
+
+.btn-secondary {
+    background: var(--color-bg);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+
+    &:hover:not(:disabled) {
+        background: var(--color-border);
+    }
+}
+
+.btn-danger {
+    background: var(--color-error);
+    color: white;
+
+    &:hover:not(:disabled) {
+        background: #b91c1c;
+    }
+}
+
+.btn-success {
+    background: var(--color-success);
+    color: white;
+
+    &:hover:not(:disabled) {
+        background: #15803d;
+    }
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--color-text-muted);
+
+    &:hover:not(:disabled) {
+        background: var(--color-bg);
+        color: var(--color-text);
+    }
+}
+
+// Size variants
+.btn-sm {
+    padding: var(--space-2) var(--space-3);
+    font-size: 0.8125rem;
+    min-height: 36px;
+}
+
+.btn-xs {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    min-height: 28px;
+}
+
+.btn-lg {
+    padding: var(--space-4) var(--space-5);
+    font-size: 1rem;
+    min-height: 52px;
+}
+
+// Icon button (square, icon-only)
+.icon-btn {
+    background: none;
+    border: none;
+    padding: var(--space-2);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px; // Touch target
+    min-height: 44px; // Touch target
+
+    &:hover {
+        background: var(--color-bg);
+        color: var(--color-text);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.icon-btn-danger {
+    &:hover {
+        background: rgba(220, 38, 38, 0.1);
+        color: var(--color-error);
+    }
+}
+
+.icon-btn-sm {
+    padding: var(--space-1);
+    min-width: 32px;
+    min-height: 32px;
+}
+
+// Status badge button (clickable status)
+.status-badge-btn {
+    padding: var(--space-1) var(--space-3);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 28px;
+
+    &.pending {
+        background: rgba(245, 158, 11, 0.15);
+        color: var(--color-warning);
+    }
+
+    &.preparing {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3B82F6;
+    }
+
+    &.ready {
+        background: var(--color-success-light);
+        color: var(--color-success);
+    }
+
+    &.paid {
+        background: var(--color-success-light);
+        color: var(--color-success);
+    }
+
+    &.completed {
+        background: var(--color-bg);
+        color: var(--color-text-muted);
+    }
+}
+
+// Button group
+.btn-group {
+    display: flex;
+    gap: var(--space-2);
+
+    @include for-phone-only {
+        flex-direction: column;
+
+        .btn {
+            width: 100%;
+        }
+    }
+}

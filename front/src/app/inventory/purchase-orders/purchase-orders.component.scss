@@ -1,0 +1,170 @@
+// Purchase Orders Component Styles
+@use '../../../styles/breakpoints' as *;
+
+.header-actions {
+    display: flex;
+    gap: var(--space-3);
+}
+
+.filters-bar {
+    display: flex;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    flex-wrap: wrap;
+
+    select {
+        padding: var(--space-3);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        font-size: 0.875rem;
+        background: var(--color-surface);
+        min-width: 150px;
+        min-height: 44px;
+    }
+}
+
+.price {
+    font-weight: 600;
+    color: var(--color-success);
+}
+
+// PO status badges
+.status-badge {
+    &.draft {
+        background: var(--color-bg);
+        color: var(--color-text-muted);
+    }
+
+    &.submitted {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3B82F6;
+    }
+
+    &.approved {
+        background: var(--color-success-light);
+        color: var(--color-success);
+    }
+
+    &.partially_received {
+        background: rgba(245, 158, 11, 0.15);
+        color: var(--color-warning);
+    }
+
+    &.received {
+        background: var(--color-success-light);
+        color: var(--color-success);
+    }
+
+    &.cancelled {
+        background: rgba(220, 38, 38, 0.1);
+        color: var(--color-error);
+    }
+}
+
+.modal-lg {
+    max-width: 800px;
+}
+
+// Form items section
+.items-section {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin-bottom: var(--space-4);
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-4);
+
+        h4 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+    }
+}
+
+.empty-items {
+    text-align: center;
+    padding: var(--space-4);
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+}
+
+.items-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.item-row {
+    display: grid;
+    grid-template-columns: 2fr 80px 100px 100px 80px 32px;
+    gap: var(--space-3);
+    align-items: end;
+    background: var(--color-surface);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+
+    label {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+        margin-bottom: var(--space-1);
+    }
+
+    select,
+    input {
+        padding: var(--space-2);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        font-size: 0.875rem;
+        width: 100%;
+        background: var(--color-surface);
+        color: var(--color-text);
+        min-height: 36px;
+    }
+}
+
+.item-total {
+    text-align: right;
+
+    span {
+        font-weight: 600;
+        color: var(--color-success);
+    }
+}
+
+.order-total {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 2px solid var(--color-border);
+    font-size: 1.125rem;
+
+    strong {
+        color: var(--color-success);
+        font-size: 1.25rem;
+    }
+}
+
+@include for-phone-only {
+    .filters-bar {
+        flex-direction: column;
+
+        select {
+            width: 100%;
+        }
+    }
+
+    .item-row {
+        grid-template-columns: 1fr 1fr;
+    }
+}

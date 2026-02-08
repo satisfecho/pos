@@ -318,8 +318,22 @@ export class MenuComponent implements OnInit, OnDestroy {
   // ============================================
   connectWebSocket() {
     if (this.ws || !this.tableToken) return;
-    const wsUrl = environment.wsUrl.replace(/^http/, 'ws').replace(/^https/, 'wss');
-    this.ws = new WebSocket(`${wsUrl}/ws/table/${this.tableToken}`);
+    
+    let wsUrl = environment.wsUrl;
+    // Handle relative URLs (e.g. '/ws')
+    if (wsUrl.startsWith('/')) {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      wsUrl = `${protocol}//${window.location.host}${wsUrl}`;
+    }
+    // Handle absolute HTTP URLs
+    else if (wsUrl.startsWith('http')) {
+      wsUrl = wsUrl.replace(/^http/, 'ws').replace(/^https/, 'wss');
+    }
+
+    // environment.wsUrl already includes /ws, so we just append the path
+    // If environment.wsUrl is absolute (e.g. ws://host:port/ws), it works
+    // If it was relative, we fixed it above
+    this.ws = new WebSocket(`${wsUrl}/table/${this.tableToken}`);
     this.ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
@@ -372,6 +386,8 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.selectedSubcategory.set(null);
     this.updateSubcategories(category);
     this.applyFilter(category, null);
+    // Scroll to top of products section
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   selectSubcategory(subcategoryCode: string | null) {
@@ -961,7 +977,7 @@ export class MenuComponent implements OnInit, OnDestroy {
       return false;
     }
     // Check if any items are being prepared, ready, or delivered
-    const hasNonPendingItems = order.items.some(item => 
+    const hasNonPendingItems = order.items.some(item =>
       item.status === 'preparing' || item.status === 'ready' || item.status === 'delivered'
     );
     return !hasNonPendingItems;

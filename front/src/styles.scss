@@ -1,6 +1,15 @@
 // Responsive breakpoint mixins
 @use 'styles/breakpoints' as *;
 
+// Shared component styles (mobile-first)
+@use 'styles/layout';
+@use 'styles/buttons';
+@use 'styles/forms';
+@use 'styles/cards';
+@use 'styles/modals';
+@use 'styles/tables';
+@use 'styles/utilities';
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
@@ -193,92 +202,8 @@ select {
   white-space: nowrap;
 }
 
-.card {
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--color-border);
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-5);
-  border: none;
-  border-radius: var(--radius-md);
-  font-weight: 500;
-  font-size: 0.9375rem;
-  transition: all 0.15s ease;
-  touch-action: manipulation;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-}
-
-.btn-primary {
-  background: var(--color-primary);
-  color: white;
-
-  &:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-  }
-}
-
-.btn-secondary {
-  background: var(--color-bg);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-
-  &:hover:not(:disabled) {
-    background: var(--color-border);
-  }
-}
-
-.btn-ghost {
-  background: transparent;
-  color: var(--color-text-muted);
-
-  &:hover:not(:disabled) {
-    background: var(--color-bg);
-    color: var(--color-text);
-  }
-}
-
-.form-group {
-  margin-bottom: var(--space-4);
-
-  label {
-    display: block;
-    margin-bottom: var(--space-2);
-    font-weight: 500;
-    font-size: 0.875rem;
-    color: var(--color-text);
-  }
-
-  input {
-    width: 100%;
-    padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    font-size: 1rem;
-    background: var(--color-surface);
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-
-    &:focus {
-      outline: none;
-      border-color: var(--color-primary);
-      box-shadow: 0 0 0 3px var(--color-primary-light);
-    }
-
-    &::placeholder {
-      color: var(--color-text-muted);
-    }
-  }
-}
+// Note: .card, .btn, .btn-primary, .btn-secondary, .btn-ghost, and .form-group
+// are now defined in the shared modules (_cards.scss, _buttons.scss, _forms.scss)
 
 .error-msg {
   color: var(--color-error);

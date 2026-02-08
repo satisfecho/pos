@@ -1,0 +1,25 @@
+// Suppliers Component Styles
+// Most styles come from global shared modules
+@use '../../../styles/breakpoints' as *;
+
+.code-cell {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    cursor: pointer;
+    font-size: 0.875rem;
+    min-height: 44px;
+}
+
+@include for-phone-only {
+    .form-group-sm {
+        min-width: 100%;
+        flex: none;
+    }
+}

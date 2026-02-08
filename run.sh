@@ -14,7 +14,7 @@ Usage: ./run.sh [OPTIONS]
 
 Options:
     -h, --help          Show this help message
-    -dev, --dev         Start in development mode (ng serve with hot reload)
+    -dev, --dev         Start in development mode (hot reload + LAN access)
                         Default: production mode (build and serve static files)
     -c, --clean         Remove all containers, volumes, and data
     --remove-all        Same as --clean
@@ -24,7 +24,7 @@ Options:
 
 Examples:
     ./run.sh            Start in production mode (build and serve)
-    ./run.sh -dev       Start in development mode (hot reload)
+    ./run.sh -dev       Start in development mode (hot reload + LAN access)
     ./run.sh --clean    Remove all containers and volumes
     ./run.sh --migrate  Run pending database migrations
 
@@ -153,9 +153,9 @@ run_migrations_only() {
 run_migrations_background() {
     local ENV_FILE="$1"
     
-    echo "Waiting for database to be ready..."
+    echo "⏳ Waiting for backend to be ready..."
     
-    # Wait for backend to be healthy (max 60 seconds)
+    # Wait for backend health endpoint (max 60 seconds)
     local max_attempts=30
     local attempt=0
     local wait_seconds=2
@@ -163,36 +163,30 @@ run_migrations_background() {
     local elapsed=0
     
     while [ $attempt -lt $max_attempts ]; do
-        # Check if backend container exists and is running
-        if docker compose $ENV_FILE ps --status=running --services 2>/dev/null | grep -q "^back$"; then
-            # Try to run a simple health check
-            if docker compose $ENV_FILE exec -T back python -c "from app.db import engine; engine.connect()" 2>/dev/null; then
-                echo "Database is ready."
-                break
-            fi
-        else
-            echo "Waiting for backend container to start..."
+        # Use curl to check the health endpoint through HAProxy
+        if curl -sf http://localhost:4202/api/health > /dev/null 2>&1; then
+            echo "✅ Backend is ready!"
+            break
         fi
 
         attempt=$((attempt + 1))
         elapsed=$((attempt * wait_seconds))
-        echo "Still waiting for database... ${elapsed}s elapsed of ${max_wait}s"
+        echo "Still waiting for backend... ${elapsed}s elapsed of ${max_wait}s"
         sleep "$wait_seconds"
     done
     
     if [ $attempt -eq $max_attempts ]; then
-        echo "WARNING: Timeout waiting for database. Migrations may need to be run manually."
-        echo "Run: ./run.sh --migrate"
+        echo "⚠️  Timeout waiting for backend. Migrations may need to be run manually."
+        echo "💡 Run: ./run.sh --migrate"
         return 1
     fi
     
     # Run migrations
-    echo "Running database migrations..."
-    if docker compose $ENV_FILE exec -T back python -m app.migrate; then
-        echo "Migrations applied successfully."
+    echo "🗄️  Running database migrations..."
+    if docker compose $ENV_FILE exec -T pos-back python -m app.migrate 2>/dev/null; then
+        echo "✅ Migrations applied successfully!"
     else
-        echo "WARNING: Migration failed. Check the logs and run manually if needed."
-        echo "Run: ./run.sh --migrate"
+        echo "⚠️  Migration failed or already applied. Check logs if needed."
     fi
 }
 
@@ -258,7 +252,9 @@ fi
 if [ "$DEV_MODE" = true ]; then
     echo "Starting POS Application in DEVELOPMENT mode..."
     COMPOSE_FILE=""
-    MODE_DESC="Development (hot reload enabled)"
+    MODE_DESC="Development (hot reload + LAN access)"
+    echo "📱 LAN access enabled for mobile testing"
+    export CORS_ORIGINS="*"
 else
     echo "Starting POS Application in PRODUCTION mode..."
     COMPOSE_FILE="-f docker-compose.yml -f docker-compose.prod.yml"

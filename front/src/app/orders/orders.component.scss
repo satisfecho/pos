@@ -1,0 +1,198 @@
+// ============================================
+// ORDERS COMPONENT STYLES
+// ============================================
+// Uses shared modules from styles/*.scss for buttons, forms, cards, modals, utilities
+@use '../../styles/breakpoints' as *;
+
+// Component-specific styles only
+
+// Filter tabs (status filter navigation)
+.filter-tabs {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    border-bottom: 2px solid var(--color-border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.filter-tab {
+    padding: var(--space-3) var(--space-4);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: -2px;
+    white-space: nowrap;
+    min-height: 44px;
+
+    &:hover {
+        color: var(--color-text);
+    }
+
+    &.active {
+        color: var(--color-primary);
+        border-bottom-color: var(--color-primary);
+    }
+}
+
+.tab-badge {
+    background: var(--color-primary);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+// Section header
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+
+    h2 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--color-text);
+        margin: 0;
+    }
+}
+
+.history-header {
+    margin-top: var(--space-6);
+}
+
+// Quantity input (inline editing)
+.quantity-input {
+    width: 42px;
+    padding: 4px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 0.875rem;
+    text-align: center;
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-sizing: border-box;
+
+    &:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 2px var(--color-primary-light);
+    }
+}
+
+// Status transition animations
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Status dropdown positioning
+.status-dropdown {
+    animation: slideDown 0.2s ease;
+
+    @include for-phone-only {
+        right: 0;
+        left: auto;
+        min-width: 200px;
+    }
+}
+
+.item-status-dropdown {
+    bottom: auto;
+    top: 100%;
+    margin-top: 4px;
+    margin-bottom: 0;
+    min-width: 160px;
+
+    @include for-phone-only {
+        right: 0;
+        left: auto;
+    }
+}
+
+// Item status control bubble positioning
+.item-status-control {
+    display: inline-flex;
+    z-index: 10;
+}
+
+.order-item:hover .item-status-control {
+    z-index: 50;
+}
+
+// Toast animation
+.toast {
+    animation: slideInUp 0.3s ease;
+}
+
+// AG Grid container override
+.grid-container {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+// Mobile responsive
+@include for-phone-only {
+    .order-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .grid-container {
+        margin-left: calc(-1 * var(--space-4));
+        margin-right: calc(-1 * var(--space-4));
+        padding: 0 var(--space-4);
+        border-radius: 0;
+    }
+
+    .order-header {
+        flex-wrap: wrap;
+        gap: var(--space-2);
+    }
+
+    .order-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-3);
+    }
+
+    .order-actions {
+        justify-content: space-between;
+        width: 100%;
+    }
+}

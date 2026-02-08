@@ -525,8 +525,15 @@ ModuleRegistry.registerModules([
         }
     </app-sidebar>
   `,
-  styles: [`
-    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); }
+  styleUrl: './orders.component.scss',
+  imports: [
+    CommonModule,
+    SidebarComponent,
+    TranslateModule,
+    FormsModule
+  ]
+})
+export class OrdersComponent implements OnInit, OnDestroy {
     .page-header h1 { font-size: 1.5rem; font-weight: 600; color: var(--color-text); margin: 0; }
 
     .filter-tabs {
@@ -1245,12 +1252,7 @@ ModuleRegistry.registerModules([
       resize: vertical;
       min-height: 80px;
     }
-    .form-textarea:focus {
-      outline: none;
-      border-color: var(--color-primary);
-      box-shadow: 0 0 0 3px var(--color-primary-light);
-    }
-  `]
+  }
 })
 export class OrdersComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);

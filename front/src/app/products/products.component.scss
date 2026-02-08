@@ -1,0 +1,111 @@
+// ============================================
+// PRODUCTS COMPONENT STYLES
+// ============================================
+// Uses shared modules from styles/*.scss for buttons, forms, tables, modals
+@use '../../styles/breakpoints' as *;
+
+// Component-specific styles only - common patterns use global classes
+
+// Main tabs (button-style navigation)
+.main-tabs-container {
+    margin-bottom: var(--space-4);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.main-tabs {
+    display: flex;
+    gap: var(--space-2);
+    padding-bottom: var(--space-2);
+    width: max-content;
+    min-width: 100%;
+}
+
+.main-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-height: 44px;
+    flex-shrink: 0;
+
+    &:hover {
+        color: var(--color-text);
+        border-color: var(--color-primary);
+    }
+
+    &.active {
+        background: var(--color-primary);
+        border-color: var(--color-primary);
+        color: white;
+    }
+}
+
+.tab-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+// Filters section
+.filters-section {
+    margin-bottom: var(--space-4);
+}
+
+// Note: .ribbon-container, .ribbon-tab, etc. are in _layout.scss
+
+// Layout styles removed (sidebar covers it via .layout, .main)
+// .sidebar, .nav-link, etc. are in sidebar.component.scss
+
+// Form group size variant
+.form-group-sm {
+    flex: 0 0 150px;
+    min-width: 120px;
+
+    @include for-phone-only {
+        flex: none;
+        min-width: 100%;
+    }
+}
+
+// Pending file name
+.pending-file-name {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+// Ingredients text
+.ingredients {
+    color: var(--color-text-muted);
+    font-size: 0.8125rem;
+    display: block;
+    margin-top: 2px;
+}
+
+// Mobile responsive overrides
+@include for-phone-only {
+    .form-row {
+        flex-direction: column;
+    }
+
+    .form-group,
+    .form-group-sm {
+        min-width: 100%;
+        flex: none;
+    }
+}

@@ -1,0 +1,253 @@
+// ============================================
+// LAYOUT SYSTEM - Mobile First
+// ============================================
+@use 'breakpoints' as *;
+
+// Page Header - consistent across all dashboard pages
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-5);
+    gap: var(--space-3);
+    flex-wrap: wrap;
+
+    h1 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--color-text);
+        margin: 0;
+    }
+
+    @include for-phone-only {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+
+        h1 {
+            font-size: 1.25rem;
+        }
+    }
+}
+
+// Main content area with mobile header spacing
+.content {
+    width: 100%;
+}
+
+// Section headers with badge
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+
+    h2 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--color-text);
+        margin: 0;
+    }
+}
+
+// Tabs - Main navigation style (button-like)
+.main-tabs-container {
+    margin-bottom: var(--space-4);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.main-tabs {
+    display: flex;
+    gap: var(--space-2);
+    padding-bottom: var(--space-2);
+    width: max-content;
+    min-width: 100%;
+}
+
+.main-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-height: 44px; // Touch target
+    flex-shrink: 0;
+
+    &:hover {
+        color: var(--color-text);
+        border-color: var(--color-primary);
+    }
+
+    &.active {
+        background: var(--color-primary);
+        border-color: var(--color-primary);
+        color: white;
+    }
+
+    .tab-icon {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+    }
+}
+
+// Filter tabs - underline style
+.filter-tabs {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    border-bottom: 2px solid var(--color-border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.filter-tab {
+    padding: var(--space-3) var(--space-4);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: -2px;
+    white-space: nowrap;
+    min-height: 44px; // Touch target
+
+    &:hover {
+        color: var(--color-text);
+    }
+
+    &.active {
+        color: var(--color-primary);
+        border-bottom-color: var(--color-primary);
+    }
+}
+
+.tab-badge {
+    background: var(--color-primary);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+// Ribbon tabs (category filters)
+.ribbon-container {
+    margin-bottom: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.ribbon {
+    display: flex;
+    gap: var(--space-1);
+    width: max-content;
+    min-width: 100%;
+}
+
+.ribbon-tab {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-5);
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--color-text-muted);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    min-height: 44px; // Touch target
+
+    &:hover {
+        color: var(--color-text);
+        background: var(--color-bg);
+    }
+
+    &.active {
+        color: var(--color-primary);
+        border-bottom-color: var(--color-primary);
+        background: var(--color-primary-light);
+    }
+
+    &.tab-sm {
+        padding: var(--space-2) var(--space-4);
+        font-size: 0.8125rem;
+    }
+}
+
+.subribbon {
+    margin-top: calc(-1 * var(--space-2));
+    border-bottom: none;
+    padding: var(--space-2) 0;
+
+    .ribbon {
+        padding: var(--space-1);
+        background: var(--color-bg);
+        border-radius: var(--radius-md);
+    }
+
+    .ribbon-tab {
+        border-radius: var(--radius-md);
+        border-bottom: none;
+
+        &.active {
+            background: var(--color-primary);
+            color: white;
+        }
+    }
+}
+
+// Grid layouts
+.grid-responsive {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+
+    @include for-tablet-portrait-up {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+}
+
+.order-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    align-items: start;
+
+    @include for-phone-landscape-up {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+}

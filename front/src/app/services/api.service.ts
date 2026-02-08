@@ -657,12 +657,20 @@ export class ApiService {
 
     // Normalize WebSocket URL - handle both http/https and ws/wss formats
     let wsUrl = this.wsUrl;
-    if (wsUrl.startsWith('http://')) {
+    
+    // Handle relative URLs (e.g. '/ws')
+    if (wsUrl.startsWith('/')) {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      wsUrl = `${protocol}//${window.location.host}${wsUrl}`;
+    }
+    // Handle absolute HTTP URLs
+    else if (wsUrl.startsWith('http://')) {
       wsUrl = wsUrl.replace('http://', 'ws://');
     } else if (wsUrl.startsWith('https://')) {
       wsUrl = wsUrl.replace('https://', 'wss://');
-    } else if (!wsUrl.startsWith('ws://') && !wsUrl.startsWith('wss://')) {
-      // If it doesn't start with a protocol, assume ws://
+    } 
+    // Handle implicit protocol
+    else if (!wsUrl.startsWith('ws://') && !wsUrl.startsWith('wss://')) {
       wsUrl = `ws://${wsUrl}`;
     }
 

@@ -1,0 +1,161 @@
+// Inventory Items Component Styles
+@use '../../../styles/breakpoints' as *;
+
+// Filter bar
+.filters-bar {
+    display: flex;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    flex-wrap: wrap;
+    align-items: center;
+
+    select {
+        padding: var(--space-3);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        font-size: 0.875rem;
+        background: var(--color-surface);
+        min-width: 150px;
+        min-height: 44px;
+    }
+}
+
+.search-group {
+    flex: 1;
+    min-width: 200px;
+
+    input {
+        width: 100%;
+        padding: var(--space-3);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        font-size: 0.9375rem;
+        min-height: 44px;
+
+        &:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px var(--color-primary-light);
+        }
+    }
+}
+
+.checkbox-filter {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 0.875rem;
+    cursor: pointer;
+    min-height: 44px;
+
+    input {
+        cursor: pointer;
+        width: 18px;
+        height: 18px;
+    }
+}
+
+// Stats cards
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+}
+
+.stat-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    text-align: center;
+
+    &.stat-warning {
+        border-color: var(--color-warning);
+        background: rgba(245, 158, 11, 0.05);
+    }
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+// Table specifics
+.sku-cell {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+.text-muted {
+    color: var(--color-text-muted);
+    font-size: 0.8125rem;
+    display: block;
+    margin-top: 2px;
+}
+
+.negative {
+    color: var(--color-error);
+}
+
+tr.low-stock-row td {
+    background: rgba(245, 158, 11, 0.05);
+}
+
+// Stock adjustment modal
+.adjust-item-info {
+    background: var(--color-bg);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-4);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9375rem;
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.radio-label,
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    cursor: pointer;
+    font-size: 0.875rem;
+    min-height: 44px;
+}
+
+// Mobile responsive
+@include for-phone-only {
+    .filters-bar {
+        flex-direction: column;
+    }
+
+    .search-group {
+        width: 100%;
+    }
+
+    table {
+        font-size: 0.875rem;
+    }
+
+    th,
+    td {
+        padding: var(--space-3);
+    }
+}

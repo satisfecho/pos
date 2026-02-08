@@ -106,7 +106,8 @@ services:
     container_name: pos-haproxy
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${FRONTEND_PORT:-4202}:4202"
+      # 0.0.0.0 for LAN access in dev; production uses docker-compose.prod.yml override
+      - "0.0.0.0:${FRONTEND_PORT:-4202}:4202"
     volumes:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     depends_on:
