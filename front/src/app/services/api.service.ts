@@ -130,6 +130,40 @@ export interface CanvasTable extends Table {
   effective_waiter_name?: string | null;
 }
 
+export type ReservationStatus = 'booked' | 'seated' | 'finished' | 'cancelled';
+
+export interface Reservation {
+  id: number;
+  tenant_id: number;
+  customer_name: string;
+  customer_phone: string;
+  reservation_date: string;
+  reservation_time: string;
+  party_size: number;
+  status: ReservationStatus;
+  table_id?: number | null;
+  token?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface ReservationCreate {
+  tenant_id?: number;
+  customer_name: string;
+  customer_phone: string;
+  reservation_date: string;
+  reservation_time: string;
+  party_size: number;
+}
+
+export interface ReservationUpdate {
+  customer_name?: string;
+  customer_phone?: string;
+  reservation_date?: string;
+  reservation_time?: string;
+  party_size?: number;
+}
+
 export interface OrderItem {
   id?: number;
   product_name: string;
@@ -443,6 +477,52 @@ export class ApiService {
 
   getTablesWithStatus(): Observable<CanvasTable[]> {
     return this.http.get<CanvasTable[]>(`${this.apiUrl}/tables/with-status`);
+  }
+
+  // Reservations (staff)
+  getReservations(params?: { date?: string; status?: string; phone?: string }): Observable<Reservation[]> {
+    let httpParams = new HttpParams();
+    if (params?.date) httpParams = httpParams.set('reservation_date', params.date);
+    if (params?.status) httpParams = httpParams.set('status', params.status);
+    if (params?.phone) httpParams = httpParams.set('phone', params.phone);
+    return this.http.get<Reservation[]>(`${this.apiUrl}/reservations`, { params: httpParams });
+  }
+
+  getReservation(id: number): Observable<Reservation> {
+    return this.http.get<Reservation>(`${this.apiUrl}/reservations/${id}`);
+  }
+
+  createReservation(data: ReservationCreate): Observable<Reservation> {
+    return this.http.post<Reservation>(`${this.apiUrl}/reservations`, data);
+  }
+
+  updateReservation(id: number, data: ReservationUpdate): Observable<Reservation> {
+    return this.http.put<Reservation>(`${this.apiUrl}/reservations/${id}`, data);
+  }
+
+  updateReservationStatus(id: number, status: ReservationStatus): Observable<Reservation> {
+    return this.http.put<Reservation>(`${this.apiUrl}/reservations/${id}/status`, { status });
+  }
+
+  seatReservation(id: number, tableId: number): Observable<Reservation> {
+    return this.http.put<Reservation>(`${this.apiUrl}/reservations/${id}/seat`, { table_id: tableId });
+  }
+
+  finishReservation(id: number): Observable<Reservation> {
+    return this.http.put<Reservation>(`${this.apiUrl}/reservations/${id}/finish`, {});
+  }
+
+  // Reservations (public - no auth)
+  getReservationByToken(token: string): Observable<Reservation> {
+    return this.http.get<Reservation>(`${this.apiUrl}/reservations/by-token`, { params: { token } });
+  }
+
+  createReservationPublic(data: ReservationCreate): Observable<Reservation> {
+    return this.http.post<Reservation>(`${this.apiUrl}/reservations`, data);
+  }
+
+  cancelReservationPublic(id: number, token: string): Observable<Reservation> {
+    return this.http.put<Reservation>(`${this.apiUrl}/reservations/${id}/cancel`, {}, { params: { token } });
   }
 
   createTable(name: string, floorId?: number): Observable<Table> {

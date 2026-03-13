@@ -8,7 +8,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:front": "node dist/front/server/server.mjs"
+    "serve:ssr:front": "node dist/front/server/server.mjs",
+    "debug:reservations": "node scripts/debug-reservations.mjs"
   },
   "prettier": {
     "printWidth": 100,
@@ -55,6 +56,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "puppeteer-core": "^23.11.1",
     "typescript": "~5.9.2"
   }
 }

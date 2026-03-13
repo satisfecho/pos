@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from datetime import timedelta, datetime, timezone
+from datetime import date, timedelta, datetime, time, timezone
 from io import BytesIO
 from pathlib import Path
 from typing import Annotated, Dict
@@ -539,6 +539,18 @@ def refresh_access_token(
     )
     
     return response
+
+
+@app.get("/ws-token")
+def get_ws_token(
+    request: Request,
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+) -> dict:
+    """Return the current access token for WebSocket auth (query param). Cookie may not be sent on WS upgrade from some origins."""
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No access token")
+    return {"access_token": token}
 
 
 @app.get("/users/me")
@@ -2202,10 +2214,11 @@ def list_tables_with_status(
     current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_READ))],
     session: Session = Depends(get_session),
 ) -> list[dict]:
-    """List tables with computed status based on active orders."""
+    """List tables with computed status: available, reserved, or occupied."""
     tables = session.exec(
         select(models.Table).where(models.Table.tenant_id == current_user.tenant_id)
     ).all()
+    today_utc = datetime.now(timezone.utc).date()
 
     # Resolve waiter assignments
     waiter_ids = set()
@@ -2235,15 +2248,31 @@ def list_tables_with_status(
 
     result = []
     for table in tables:
-        # Check for active orders (pending, preparing, ready)
+        # Occupied: active order (pending, preparing, ready) or reservation seated at this table
         active_order = session.exec(
             select(models.Order).where(
                 models.Order.table_id == table.id,
                 models.Order.status.in_(["pending", "preparing", "ready"]),
             )
         ).first()
-
-        status = "occupied" if active_order else "available"
+        seated_here = session.exec(
+            select(models.Reservation).where(
+                models.Reservation.table_id == table.id,
+                models.Reservation.status == models.ReservationStatus.seated,
+            )
+        ).first()
+        if active_order or seated_here:
+            status = "occupied"
+        else:
+            # Reserved: a booked reservation is assigned to this table (date >= today)
+            reserved_here = session.exec(
+                select(models.Reservation).where(
+                    models.Reservation.table_id == table.id,
+                    models.Reservation.status == models.ReservationStatus.booked,
+                    models.Reservation.reservation_date >= today_utc,
+                )
+            ).first()
+            status = "reserved" if reserved_here else "available"
         effective_waiter_id = table.assigned_waiter_id or floor_waiter_map.get(table.floor_id)
 
         result.append(
@@ -2351,6 +2380,329 @@ def delete_table(
     session.delete(table)
     session.commit()
     return {"status": "deleted", "id": table_id}
+
+
+# ============ RESERVATIONS ============
+
+
+def _parse_reservation_date(s: str) -> date:
+    """Parse YYYY-MM-DD to date. Accepts full ISO datetime strings (takes first 10 chars)."""
+    s = s.strip()
+    if len(s) < 10:
+        raise ValueError(f"Invalid date format: {s!r}. Use YYYY-MM-DD.")
+    try:
+        return datetime.strptime(s[:10], "%Y-%m-%d").date()
+    except ValueError as e:
+        raise ValueError(f"Invalid date format: {s[:10]!r}. Use YYYY-MM-DD.") from e
+
+
+def _parse_reservation_time(s: str) -> time:
+    """Parse HH:MM or HH:MM:SS to time. Accepts longer strings (takes first 8 chars for HH:MM:SS)."""
+    s = s.strip()
+    if len(s) < 5:
+        raise ValueError(f"Invalid time format: {s!r}. Use HH:MM or HH:MM:SS.")
+    try:
+        if len(s) <= 5:
+            return datetime.strptime(s[:5], "%H:%M").time()
+        return datetime.strptime(s[:8], "%H:%M:%S").time()
+    except ValueError as e:
+        raise ValueError(f"Invalid time format: {s[:8]!r}. Use HH:MM or HH:MM:SS.") from e
+
+
+def _reservation_to_dict(r: models.Reservation) -> dict:
+    """Serialize reservation for JSON (date/time as ISO strings)."""
+    return {
+        "id": r.id,
+        "tenant_id": r.tenant_id,
+        "customer_name": r.customer_name,
+        "customer_phone": r.customer_phone,
+        "reservation_date": r.reservation_date.isoformat() if r.reservation_date else None,
+        "reservation_time": r.reservation_time.strftime("%H:%M") if r.reservation_time else None,
+        "party_size": r.party_size,
+        "status": r.status.value,
+        "table_id": r.table_id,
+        "token": r.token,
+        "created_at": r.created_at.isoformat() if r.created_at else None,
+        "updated_at": r.updated_at.isoformat() if r.updated_at else None,
+    }
+
+
+@app.post("/reservations")
+def create_reservation(
+    body: models.ReservationCreate,
+    current_user: Annotated[models.User | None, Depends(security.get_current_user_optional)],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Create a reservation. Authenticated: tenant from user. Public: tenant_id required in body."""
+    if current_user:
+        tenant_id = current_user.tenant_id
+        data = body
+    else:
+        if body.tenant_id is None:
+            raise HTTPException(status_code=400, detail="tenant_id required for public booking")
+        tenant_id = body.tenant_id
+        data = body
+    # Validate tenant exists
+    tenant = session.get(models.Tenant, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    try:
+        res_date = _parse_reservation_date(data.reservation_date)
+        res_time = _parse_reservation_time(data.reservation_time)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    # Reject past date/time
+    now = datetime.now(timezone.utc)
+    if res_date < now.date():
+        raise HTTPException(status_code=400, detail="Reservation date must be today or in the future")
+    if res_date == now.date():
+        # Compare time
+        now_time = now.time()
+        if res_time <= now_time:
+            raise HTTPException(status_code=400, detail="Reservation time must be in the future")
+    token_str = str(uuid4()) if not current_user else None
+    reservation = models.Reservation(
+        tenant_id=tenant_id,
+        customer_name=data.customer_name,
+        customer_phone=data.customer_phone,
+        reservation_date=res_date,
+        reservation_time=res_time,
+        party_size=data.party_size,
+        status=models.ReservationStatus.booked,
+        token=token_str,
+    )
+    session.add(reservation)
+    session.commit()
+    session.refresh(reservation)
+    return _reservation_to_dict(reservation)
+
+
+@app.get("/reservations")
+def list_reservations(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.RESERVATION_READ))],
+    session: Session = Depends(get_session),
+    reservation_date: str | None = Query(None, description="Filter by date YYYY-MM-DD"),
+    status: str | None = Query(None, description="Filter by status"),
+    phone: str | None = Query(None, description="Search by phone (partial)"),
+) -> list[dict]:
+    """List reservations for the tenant. Staff only."""
+    q = select(models.Reservation).where(models.Reservation.tenant_id == current_user.tenant_id)
+    if reservation_date:
+        try:
+            d = _parse_reservation_date(reservation_date)
+            q = q.where(models.Reservation.reservation_date == d)
+        except ValueError:
+            pass
+    if status:
+        q = q.where(models.Reservation.status == status)
+    if phone and phone.strip():
+        q = q.where(models.Reservation.customer_phone.contains(phone.strip()))
+    q = q.order_by(models.Reservation.reservation_date, models.Reservation.reservation_time)
+    reservations = session.exec(q).all()
+    return [_reservation_to_dict(r) for r in reservations]
+
+
+@app.get("/reservations/by-token")
+def get_reservation_by_token(
+    token: str = Query(..., description="Reservation token from booking confirmation"),
+    session: Session = Depends(get_session),
+) -> dict:
+    """Public: get one reservation by token (for view/cancel)."""
+    reservation = session.exec(
+        select(models.Reservation).where(models.Reservation.token == token)
+    ).first()
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    return _reservation_to_dict(reservation)
+
+
+@app.get("/reservations/{reservation_id}")
+def get_reservation(
+    reservation_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.RESERVATION_READ))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Get one reservation by id. Staff only."""
+    reservation = session.exec(
+        select(models.Reservation).where(
+            models.Reservation.id == reservation_id,
+            models.Reservation.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    return _reservation_to_dict(reservation)
+
+
+@app.put("/reservations/{reservation_id}")
+def update_reservation(
+    reservation_id: int,
+    body: models.ReservationUpdate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.RESERVATION_WRITE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Update reservation. Only when status is booked. Staff only."""
+    reservation = session.exec(
+        select(models.Reservation).where(
+            models.Reservation.id == reservation_id,
+            models.Reservation.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    if reservation.status != models.ReservationStatus.booked:
+        raise HTTPException(status_code=400, detail="Can only edit reservations that are booked")
+    if body.customer_name is not None:
+        reservation.customer_name = body.customer_name
+    if body.customer_phone is not None:
+        reservation.customer_phone = body.customer_phone
+    if body.reservation_date is not None:
+        reservation.reservation_date = _parse_reservation_date(body.reservation_date)
+    if body.reservation_time is not None:
+        reservation.reservation_time = _parse_reservation_time(body.reservation_time)
+    if body.party_size is not None:
+        reservation.party_size = body.party_size
+    reservation.updated_at = datetime.now(timezone.utc)
+    session.add(reservation)
+    session.commit()
+    session.refresh(reservation)
+    return _reservation_to_dict(reservation)
+
+
+@app.put("/reservations/{reservation_id}/status")
+def update_reservation_status(
+    reservation_id: int,
+    body: models.ReservationStatusUpdate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.RESERVATION_WRITE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Update reservation status (e.g. cancel, seat, finish). Staff only."""
+    reservation = session.exec(
+        select(models.Reservation).where(
+            models.Reservation.id == reservation_id,
+            models.Reservation.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    if body.status == models.ReservationStatus.cancelled:
+        reservation.status = models.ReservationStatus.cancelled
+        reservation.table_id = None
+    elif body.status == models.ReservationStatus.finished:
+        reservation.status = models.ReservationStatus.finished
+        reservation.table_id = None
+    else:
+        reservation.status = body.status
+    reservation.updated_at = datetime.now(timezone.utc)
+    session.add(reservation)
+    session.commit()
+    session.refresh(reservation)
+    return _reservation_to_dict(reservation)
+
+
+@app.put("/reservations/{reservation_id}/seat")
+def seat_reservation(
+    reservation_id: int,
+    body: models.ReservationSeat,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.RESERVATION_WRITE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Assign table to reservation (seat the party). Staff only."""
+    reservation = session.exec(
+        select(models.Reservation).where(
+            models.Reservation.id == reservation_id,
+            models.Reservation.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    if reservation.status != models.ReservationStatus.booked:
+        raise HTTPException(status_code=400, detail="Reservation must be booked to seat")
+    table = session.exec(
+        select(models.Table).where(
+            models.Table.id == body.table_id,
+            models.Table.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not table:
+        raise HTTPException(status_code=404, detail="Table not found")
+    if table.seat_count < reservation.party_size:
+        raise HTTPException(status_code=400, detail="Table capacity is less than party size")
+    # Check table not already occupied or reserved by another
+    active_order = session.exec(
+        select(models.Order).where(
+            models.Order.table_id == table.id,
+            models.Order.status.in_(["pending", "preparing", "ready"]),
+        )
+    ).first()
+    if active_order:
+        raise HTTPException(status_code=400, detail="Table is already occupied")
+    other_reserved = session.exec(
+        select(models.Reservation).where(
+            models.Reservation.table_id == table.id,
+            models.Reservation.status == models.ReservationStatus.booked,
+            models.Reservation.id != reservation_id,
+        )
+    ).first()
+    if other_reserved:
+        raise HTTPException(status_code=400, detail="Table is already reserved")
+    reservation.table_id = body.table_id
+    reservation.status = models.ReservationStatus.seated
+    reservation.updated_at = datetime.now(timezone.utc)
+    session.add(reservation)
+    session.commit()
+    session.refresh(reservation)
+    return _reservation_to_dict(reservation)
+
+
+@app.put("/reservations/{reservation_id}/finish")
+def finish_reservation(
+    reservation_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.RESERVATION_WRITE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Clear table assignment and mark reservation finished. Staff only."""
+    reservation = session.exec(
+        select(models.Reservation).where(
+            models.Reservation.id == reservation_id,
+            models.Reservation.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    reservation.status = models.ReservationStatus.finished
+    reservation.table_id = None
+    reservation.updated_at = datetime.now(timezone.utc)
+    session.add(reservation)
+    session.commit()
+    session.refresh(reservation)
+    return _reservation_to_dict(reservation)
+
+
+@app.put("/reservations/{reservation_id}/cancel")
+def cancel_reservation_public(
+    reservation_id: int,
+    token: str = Query(..., description="Reservation token"),
+    session: Session = Depends(get_session),
+) -> dict:
+    """Public: cancel reservation with token."""
+    reservation = session.exec(
+        select(models.Reservation).where(
+            models.Reservation.id == reservation_id,
+            models.Reservation.token == token,
+        )
+    ).first()
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    if reservation.status == models.ReservationStatus.cancelled:
+        return _reservation_to_dict(reservation)
+    reservation.status = models.ReservationStatus.cancelled
+    reservation.table_id = None
+    reservation.updated_at = datetime.now(timezone.utc)
+    session.add(reservation)
+    session.commit()
+    session.refresh(reservation)
+    return _reservation_to_dict(reservation)
 
 
 # ============ TABLE SESSION MANAGEMENT ============
@@ -3068,6 +3420,14 @@ def get_current_order(
                 active_order = order
                 break
 
+    # Table shared order: when no order matched session_id, use table's active order so customer sees current order
+    if not active_order and table.active_order_id:
+        active_order = session.get(models.Order, table.active_order_id)
+        if active_order and active_order.status == models.OrderStatus.paid:
+            active_order = None
+        if active_order and "[PAID:" in (active_order.notes or ""):
+            active_order = None
+
     if not active_order:
         return {"order": None}
     
@@ -3107,6 +3467,57 @@ def get_current_order(
             "total_cents": sum(item.price_cents * item.quantity for item in items),
         }
     }
+
+
+@app.get("/menu/{table_token}/order-history")
+def get_table_order_history(
+    table_token: str,
+    limit: int = Query(10, ge=1, le=50),
+    session: Session = Depends(get_session),
+) -> list[dict]:
+    """Public endpoint - recent paid/completed orders for this table (for customer order history)."""
+    table = session.exec(
+        select(models.Table).where(models.Table.token == table_token)
+    ).first()
+    if not table:
+        raise HTTPException(status_code=404, detail="Table not found")
+
+    orders = session.exec(
+        select(models.Order)
+        .where(
+            models.Order.table_id == table.id,
+            models.Order.status.in_([models.OrderStatus.paid, models.OrderStatus.completed]),
+        )
+        .order_by(models.Order.created_at.desc())
+        .limit(limit)
+    ).all()
+
+    result = []
+    for order in orders:
+        items = session.exec(
+            select(models.OrderItem).where(
+                models.OrderItem.order_id == order.id,
+                models.OrderItem.removed_by_customer == False,
+            )
+        ).all()
+        total_cents = sum(item.price_cents * item.quantity for item in items)
+        result.append({
+            "id": order.id,
+            "status": order.status.value,
+            "created_at": order.created_at.isoformat(),
+            "paid_at": order.paid_at.isoformat() if order.paid_at else None,
+            "items": [
+                {
+                    "id": item.id,
+                    "product_name": item.product_name,
+                    "quantity": item.quantity,
+                    "price_cents": item.price_cents,
+                }
+                for item in items
+            ],
+            "total_cents": total_cents,
+        })
+    return result
 
 
 def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -3217,12 +3628,20 @@ def create_order(
             detail="Active order not found. Please ask staff to reactivate the table."
         )
 
-    # Check order isn't already paid
+    # If the active order is already paid, start a new order for this table (same PIN, no staff action needed)
     if order.status == models.OrderStatus.paid:
-        raise HTTPException(
-            status_code=400, 
-            detail="This order has already been paid. Please ask staff to activate a new session."
+        new_order = models.Order(
+            table_id=table.id,
+            tenant_id=table.tenant_id,
+            status=models.OrderStatus.pending,
+            session_id=None,
         )
+        session.add(new_order)
+        session.flush()
+        table.active_order_id = new_order.id
+        session.add(table)
+        session.flush()
+        order = new_order
 
     print(f"\n{'=' * 60}")
     print(f"[DEBUG] POST /menu/{table_token}/order")
@@ -3266,9 +3685,10 @@ def create_order(
         # Use source indicator if provided, otherwise try TenantProduct first, then legacy Product
         product_name = None
         price_cents = None
-        
+        effective_product_id: int  # Must be Product.id (OrderItem.product_id FK references product.id)
+
         if item.source == "tenant_product":
-            # Explicitly look up TenantProduct
+            # Explicitly look up TenantProduct (menu sends TenantProduct.id as product_id)
             tenant_product = session.exec(
                 select(models.TenantProduct).where(
                     models.TenantProduct.id == item.product_id,
@@ -3279,6 +3699,20 @@ def create_order(
                 raise HTTPException(status_code=400, detail=f"TenantProduct {item.product_id} not found")
             product_name = tenant_product.name
             price_cents = tenant_product.price_cents
+            if tenant_product.product_id is not None:
+                effective_product_id = tenant_product.product_id
+            else:
+                # TenantProduct not yet linked to Product (e.g. catalog-only) - create Product and link
+                new_product = models.Product(
+                    name=tenant_product.name,
+                    price_cents=tenant_product.price_cents,
+                    tenant_id=table.tenant_id,
+                )
+                session.add(new_product)
+                session.flush()
+                effective_product_id = new_product.id
+                tenant_product.product_id = new_product.id
+                session.add(tenant_product)
         elif item.source == "product":
             # Explicitly look up legacy Product
             product = session.exec(
@@ -3291,19 +3725,32 @@ def create_order(
                 raise HTTPException(status_code=400, detail=f"Product {item.product_id} not found")
             product_name = product.name
             price_cents = product.price_cents
+            effective_product_id = product.id
         else:
             # No source specified - try TenantProduct first, then fallback to legacy Product
-            # This maintains backward compatibility
             tenant_product = session.exec(
                 select(models.TenantProduct).where(
                     models.TenantProduct.id == item.product_id,
                     models.TenantProduct.tenant_id == table.tenant_id
                 )
             ).first()
-            
+
             if tenant_product:
                 product_name = tenant_product.name
                 price_cents = tenant_product.price_cents
+                if tenant_product.product_id is not None:
+                    effective_product_id = tenant_product.product_id
+                else:
+                    new_product = models.Product(
+                        name=tenant_product.name,
+                        price_cents=tenant_product.price_cents,
+                        tenant_id=table.tenant_id,
+                    )
+                    session.add(new_product)
+                    session.flush()
+                    effective_product_id = new_product.id
+                    tenant_product.product_id = new_product.id
+                    session.add(tenant_product)
             else:
                 # Fallback to legacy Product table
                 product = session.exec(
@@ -3312,50 +3759,43 @@ def create_order(
                         models.Product.tenant_id == table.tenant_id
                     )
                 ).first()
-                
                 if not product:
                     raise HTTPException(status_code=400, detail=f"Product {item.product_id} not found")
-                
                 product_name = product.name
                 price_cents = product.price_cents
-        
+                effective_product_id = product.id
+
         # Check if this product already exists in the order (only active, non-removed items)
-        # Only merge if the existing item is NOT delivered (to preserve item-level status tracking)
+        # Match by effective_product_id (Product.id) so we merge same product regardless of TenantProduct id
         existing_item = session.exec(
             select(models.OrderItem).where(
                 models.OrderItem.order_id == order.id,
-                models.OrderItem.product_id == item.product_id,
-                models.OrderItem.removed_by_customer == False,  # Only check active items
-                models.OrderItem.status != models.OrderItemStatus.delivered  # Don't merge with delivered items
+                models.OrderItem.product_id == effective_product_id,
+                models.OrderItem.removed_by_customer == False,
+                models.OrderItem.status != models.OrderItemStatus.delivered
             )
         ).first()
 
         if existing_item:
-            # Increment quantity (item is active and not delivered)
             existing_item.quantity += item.quantity
             if item.notes:
                 existing_item.notes = (
                     f"{existing_item.notes or ''}, {item.notes}".strip(", ")
                 )
-            # If this addition is from a flagged location, mark the item
             if location_flagged:
                 existing_item.location_flagged = True
             session.add(existing_item)
         else:
-            # Create new order item with default status
-            # This happens when:
-            # 1. No existing item found, OR
-            # 2. Existing item is delivered (we create a new item to track separately)
             order_item = models.OrderItem(
                 order_id=order.id,
-                product_id=item.product_id,
+                product_id=effective_product_id,
                 product_name=product_name,
                 quantity=item.quantity,
                 price_cents=price_cents,
                 notes=item.notes,
-                status=models.OrderItemStatus.pending,  # New items start as pending
-                added_by_session=order_data.session_id,  # Track which browser added this
-                location_flagged=location_flagged  # Flag if from suspicious location
+                status=models.OrderItemStatus.pending,
+                added_by_session=order_data.session_id,
+                location_flagged=location_flagged
             )
             session.add(order_item)
     

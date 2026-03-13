@@ -431,6 +431,49 @@ $cart-expanded-max: 60vh;
 // ============================================
 // ORDER TRACKER
 // ============================================
+// Order status bar (always visible when user has an order)
+.order-status-bar {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.order-status-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.order-status-bar-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &.status-pending { background: var(--color-warning); }
+  &.status-preparing { background: #3B82F6; }
+  &.status-ready { background: var(--color-success); }
+  &.status-partially_delivered { background: #3B82F6; }
+  &.status-paid,
+  &.status-completed { background: var(--color-success); }
+  &.status-cancelled { background: var(--color-text-muted); }
+}
+
+.order-status-bar-label {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.order-status-bar-value {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
 .orders-section {
   margin-bottom: var(--space-4);
 }
@@ -1885,10 +1928,10 @@ $cart-expanded-max: 60vh;
   padding-left: calc(var(--space-4) + 0.5em);
   border: 2px solid var(--color-border);
   border-radius: var(--radius-lg);
-  font-size: 2rem;
+  font-size: 1.0125rem; /* 10% smaller than 1.125rem */
   font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
-  font-weight: 700;
-  letter-spacing: 0.5em;
+  font-weight: 600;
+  letter-spacing: 0.35em;
   text-align: center;
   background: var(--color-bg);
   color: var(--color-text);
@@ -1901,7 +1944,7 @@ $cart-expanded-max: 60vh;
 
   &::placeholder {
     color: var(--color-border);
-    letter-spacing: 0.3em;
+    letter-spacing: 0.25em;
   }
 
   &:focus {

@@ -213,6 +213,7 @@
   "ORDERS": {
     "TITLE": "Bestellungen",
     "ORDER_ID": "Bestellung #",
+    "YOUR_ORDER_STATUS": "Status deiner Bestellung",
     "TABLE": "Tisch",
     "ITEMS": "Artikel",
     "STATUS": "Status",

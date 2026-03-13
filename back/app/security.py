@@ -90,6 +90,41 @@ async def get_token_from_cookie(
     )
 
 
+async def get_optional_token(
+    request: Request,
+    token: Annotated[str | None, Depends(oauth2_scheme)]
+) -> str | None:
+    """Return access token from cookie or header, or None if not present."""
+    cookie_token = request.cookies.get("access_token")
+    if cookie_token:
+        return cookie_token
+    return token
+
+
+async def get_current_user_optional(
+    token: Annotated[str | None, Depends(get_optional_token)],
+    session: Annotated[Session, Depends(get_session)],
+) -> User | None:
+    """Return current user if authenticated, else None. Use for endpoints that support both auth and anonymous."""
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+        email: str = payload.get("sub")
+        tenant_id: int = payload.get("tenant_id")
+        token_version: int = payload.get("token_version", 0)
+        if email is None or tenant_id is None:
+            return None
+    except JWTError:
+        return None
+    set_tenant_id(tenant_id)
+    statement = select(User).where(User.email == email).where(User.tenant_id == tenant_id)
+    user = session.exec(statement).first()
+    if user is None or user.token_version != token_version:
+        return None
+    return user
+
+
 async def get_current_user(
     token: Annotated[str, Depends(get_token_from_cookie)],
     session: Annotated[Session, Depends(get_session)],

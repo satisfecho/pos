@@ -213,6 +213,7 @@
   "ORDERS": {
     "TITLE": "ऑर्डर",
     "ORDER_ID": "ऑर्डर #",
+    "YOUR_ORDER_STATUS": "आपके ऑर्डर की स्थिति",
     "TABLE": "टेबल",
     "ITEMS": "आइटम",
     "STATUS": "स्थिति",

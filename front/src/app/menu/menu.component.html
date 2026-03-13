@@ -123,6 +123,19 @@
   </nav>
 
   <main class="menu-content">
+    <!-- Order status bar (always visible when user has an order) -->
+    @if (placedOrders().length > 0) {
+    <section class="order-status-bar" aria-label="Order status">
+      @for (order of placedOrders(); track order.id) {
+      <div class="order-status-bar-inner">
+        <span class="order-status-bar-dot" [class]="'status-' + order.status" aria-hidden="true"></span>
+        <span class="order-status-bar-label">{{ 'ORDERS.YOUR_ORDER_STATUS' | translate }}:</span>
+        <span class="order-status-bar-value">{{ ('ORDER_STATUS.' + order.status) | translate }}</span>
+      </div>
+      }
+    </section>
+    }
+
     <!-- Active Orders Tracker -->
     @if (placedOrders().length > 0) {
     <section class="orders-section">
@@ -133,8 +146,8 @@
             <span class="pulse-dot"></span>
           </div>
           <div class="order-info">
-            <span class="order-label">{{ 'ORDERS.ORDER_ID' | translate }} #{{ order.id }}</span>
-            <span class="order-status-text">{{ ('ORDER_STATUS.' + order.status) | translate }}</span>
+            <span class="order-label">{{ 'ORDERS.ORDER_ID' | translate }} {{ order.id }}</span>
+            <span class="order-status-text">{{ 'ORDERS.STATUS' | translate }}: {{ ('ORDER_STATUS.' + order.status) | translate }}</span>
           </div>
           <span class="order-total-badge">{{ formatPrice(order.total) }}</span>
           <svg class="chevron-toggle" [class.expanded]="ordersExpanded()" width="20" height="20" viewBox="0 0 24 24"

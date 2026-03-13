@@ -213,6 +213,7 @@
   "ORDERS": {
     "TITLE": "订单",
     "ORDER_ID": "订单 #",
+    "YOUR_ORDER_STATUS": "您的订单状态",
     "TABLE": "餐桌",
     "ITEMS": "项目",
     "STATUS": "状态",

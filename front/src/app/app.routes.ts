@@ -1,12 +1,17 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './auth/auth.guard';
 import { roleGuard, adminGuard, tableAccessGuard, orderAccessGuard } from './auth/role.guard';
+import { reservationAccessGuard } from './auth/reservation-access.guard';
 
 export const routes: Routes = [
   // Public routes
   { path: 'login', loadComponent: () => import('./auth/login.component').then(m => m.LoginComponent) },
   { path: 'register', loadComponent: () => import('./auth/register.component').then(m => m.RegisterComponent) },
   { path: 'menu/:token', loadComponent: () => import('./menu/menu.component').then(m => m.MenuComponent) },
+  { path: 'book/:tenantId', loadComponent: () => import('./book/book.component').then(m => m.BookComponent) },
+  // Staff reservations (must be before 'reservation' so /reservations matches here, not the public route)
+  { path: 'reservations', canActivate: [authGuard, reservationAccessGuard], loadComponent: () => import('./reservations/reservations.component').then(m => m.ReservationsComponent) },
+  { path: 'reservation', loadComponent: () => import('./reservation-view/reservation-view.component').then(m => m.ReservationViewComponent) },
 
   // Protected routes - accessible by all authenticated users
   { path: '', canActivate: [authGuard], loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent) },

@@ -213,6 +213,7 @@
   "ORDERS": {
     "TITLE": "Comandes",
     "ORDER_ID": "Comanda #",
+    "YOUR_ORDER_STATUS": "Estat del teu comanda",
     "TABLE": "Taula",
     "ITEMS": "Articles",
     "STATUS": "Estat",

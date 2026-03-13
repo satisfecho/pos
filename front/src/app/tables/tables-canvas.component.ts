@@ -246,8 +246,8 @@ interface TableShape {
                           cx="0" cy="0"
                           [attr.rx]="(table.width || 80) / 2"
                           [attr.ry]="(table.height || 80) / 2"
-                          [attr.fill]="table.status === 'occupied' ? 'url(#occupiedPattern)' : 'url(#woodGrain)'"
-                          [attr.stroke]="table.status === 'occupied' ? '#16a34a' : '#8b7355'"
+                          [attr.fill]="table.status === 'occupied' ? 'url(#occupiedPattern)' : table.status === 'reserved' ? '#fef3c7' : 'url(#woodGrain)'"
+                          [attr.stroke]="table.status === 'occupied' ? '#16a34a' : table.status === 'reserved' ? '#d97706' : '#8b7355'"
                           stroke-width="2"
                         />
                       } @else if (table.shape === 'oval') {
@@ -255,8 +255,8 @@ interface TableShape {
                           cx="0" cy="0"
                           [attr.rx]="(table.width || 120) / 2"
                           [attr.ry]="(table.height || 70) / 2"
-                          [attr.fill]="table.status === 'occupied' ? 'url(#occupiedPattern)' : 'url(#woodGrain)'"
-                          [attr.stroke]="table.status === 'occupied' ? '#16a34a' : '#8b7355'"
+                          [attr.fill]="table.status === 'occupied' ? 'url(#occupiedPattern)' : table.status === 'reserved' ? '#fef3c7' : 'url(#woodGrain)'"
+                          [attr.stroke]="table.status === 'occupied' ? '#16a34a' : table.status === 'reserved' ? '#d97706' : '#8b7355'"
                           stroke-width="2"
                         />
                       } @else if (table.shape === 'booth') {
@@ -267,8 +267,8 @@ interface TableShape {
                           [attr.width]="table.width || 100"
                           [attr.height]="table.height || 80"
                           rx="4"
-                          [attr.fill]="table.status === 'occupied' ? 'url(#occupiedPattern)' : 'url(#woodGrain)'"
-                          [attr.stroke]="table.status === 'occupied' ? '#16a34a' : '#8b7355'"
+                          [attr.fill]="table.status === 'occupied' ? 'url(#occupiedPattern)' : table.status === 'reserved' ? '#fef3c7' : 'url(#woodGrain)'"
+                          [attr.stroke]="table.status === 'occupied' ? '#16a34a' : table.status === 'reserved' ? '#d97706' : '#8b7355'"
                           stroke-width="2"
                         />
                         <!-- Booth bench backs (decorative lines) -->
@@ -298,8 +298,8 @@ interface TableShape {
                           [attr.width]="table.width || 160"
                           [attr.height]="table.height || 40"
                           rx="4"
-                          [attr.fill]="table.status === 'occupied' ? 'url(#occupiedPattern)' : '#5c4033'"
-                          [attr.stroke]="table.status === 'occupied' ? '#16a34a' : '#3d2817'"
+                          [attr.fill]="table.status === 'occupied' ? 'url(#occupiedPattern)' : table.status === 'reserved' ? '#fef3c7' : '#5c4033'"
+                          [attr.stroke]="table.status === 'occupied' ? '#16a34a' : table.status === 'reserved' ? '#d97706' : '#3d2817'"
                           stroke-width="2"
                         />
                         <!-- Bar top edge highlight -->
@@ -320,8 +320,8 @@ interface TableShape {
                           [attr.width]="table.width || 100"
                           [attr.height]="table.height || 70"
                           rx="4"
-                          [attr.fill]="table.status === 'occupied' ? 'url(#occupiedPattern)' : 'url(#woodGrain)'"
-                          [attr.stroke]="table.status === 'occupied' ? '#16a34a' : '#8b7355'"
+                          [attr.fill]="table.status === 'occupied' ? 'url(#occupiedPattern)' : table.status === 'reserved' ? '#fef3c7' : 'url(#woodGrain)'"
+                          [attr.stroke]="table.status === 'occupied' ? '#16a34a' : table.status === 'reserved' ? '#d97706' : '#8b7355'"
                           stroke-width="2"
                         />
                       }
@@ -332,7 +332,7 @@ interface TableShape {
                       class="table-number"
                       text-anchor="middle"
                       dominant-baseline="middle"
-                      [attr.fill]="table.status === 'occupied' ? 'white' : '#4a3728'"
+                      [attr.fill]="table.status === 'occupied' ? 'white' : table.status === 'reserved' ? '#92400e' : '#4a3728'"
                       font-weight="600"
                     >
                       {{ getTableNumber(table) }}
@@ -363,8 +363,8 @@ interface TableShape {
               <div class="panel-header">
                 <div class="panel-title-row">
                   <h3>{{ selectedTable()?.name }}</h3>
-                  <div class="status-badge" [class.occupied]="selectedTable()?.status === 'occupied'">
-                    {{ selectedTable()?.status === 'occupied' ? ('TABLES.OCCUPIED' | translate) : ('TABLES.AVAILABLE' | translate) }}
+                  <div class="status-badge" [class.occupied]="selectedTable()?.status === 'occupied'" [class.reserved]="selectedTable()?.status === 'reserved'">
+                    {{ selectedTable()?.status === 'occupied' ? ('TABLES.OCCUPIED' | translate) : selectedTable()?.status === 'reserved' ? ('TABLES.RESERVED' | translate) : ('TABLES.AVAILABLE' | translate) }}
                   </div>
                 </div>
                 <button class="close-btn" (click)="selectedTable.set(null)">
@@ -810,6 +810,11 @@ interface TableShape {
     .status-badge.occupied {
       background: var(--color-success-light);
       color: var(--color-success);
+    }
+
+    .status-badge.reserved {
+      background: #fef3c7;
+      color: #b45309;
     }
 
     .close-btn {

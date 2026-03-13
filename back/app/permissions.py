@@ -38,6 +38,10 @@ class Permission(str, Enum):
     TABLE_WRITE = "table:write"
     TABLE_ACTIVATE = "table:activate"
     
+    # Reservations
+    RESERVATION_READ = "reservation:read"
+    RESERVATION_WRITE = "reservation:write"
+    
     # Floors
     FLOOR_READ = "floor:read"
     FLOOR_WRITE = "floor:write"
@@ -81,6 +85,9 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         Permission.TABLE_READ,
         Permission.TABLE_WRITE,
         Permission.TABLE_ACTIVATE,
+        # Reservations
+        Permission.RESERVATION_READ,
+        Permission.RESERVATION_WRITE,
         # Floors
         Permission.FLOOR_READ,
         Permission.FLOOR_WRITE,
@@ -116,6 +123,9 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         Permission.TABLE_READ,
         Permission.TABLE_ACTIVATE,
         Permission.FLOOR_READ,
+        # Reservations
+        Permission.RESERVATION_READ,
+        Permission.RESERVATION_WRITE,
         # Orders (full order management except cancel)
         Permission.ORDER_READ,
         Permission.ORDER_UPDATE_STATUS,
@@ -132,6 +142,9 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         Permission.TABLE_READ,
         Permission.TABLE_ACTIVATE,
         Permission.FLOOR_READ,
+        # Reservations
+        Permission.RESERVATION_READ,
+        Permission.RESERVATION_WRITE,
         # Orders (view only)
         Permission.ORDER_READ,
     },

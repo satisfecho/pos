@@ -17,6 +17,8 @@ venv/
 
 # Local config (copy from config.env.example)
 config.env
+# Demo/local credentials (do not commit)
+.env
 
 # Uploads directory (user-uploaded files)
 back/uploads/

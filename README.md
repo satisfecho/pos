@@ -45,6 +45,10 @@ A Point of Sale system with Angular frontend and FastAPI backend using PostgreSQ
  - **DB Health Check**: http://localhost:4202/api/health/db
  - **API Docs**: http://localhost:4202/api/docs
 
+ ### First-time login
+
+ There is no pre-seeded user. Create an account at **http://localhost:4202/register** (or your HAProxy port, e.g. 4203). Enter tenant name, email, password, and optionally full name. The first user of each tenant becomes the owner. Then log in at the main URL with that email and password.
+
  ### Internationalization (i18n)
 
  The system supports multiple languages and currencies:
