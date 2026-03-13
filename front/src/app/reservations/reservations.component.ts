@@ -5,7 +5,7 @@ import { ApiService, Reservation, ReservationCreate, ReservationUpdate, Reservat
 import { PermissionService } from '../services/permission.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { ConfirmationModalComponent } from '../shared/confirmation-modal.component';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-reservations',
@@ -204,6 +204,7 @@ import { TranslateModule } from '@ngx-translate/core';
 export class ReservationsComponent implements OnInit {
   private api = inject(ApiService);
   private permissions = inject(PermissionService);
+  private translate = inject(TranslateService);
 
   loading = signal(false);
   reservations = signal<Reservation[]>([]);
@@ -289,7 +290,7 @@ export class ReservationsComponent implements OnInit {
     const user = this.api.getCurrentUser();
     const tenantId = user?.tenant_id;
     if (!tenantId && !this.editingReservation()) {
-      this.formError.set('Missing tenant');
+      this.formError.set(this.translate.instant('RESERVATIONS.ERROR_MISSING_TENANT'));
       return;
     }
     const payload: ReservationCreate = {
@@ -310,12 +311,12 @@ export class ReservationsComponent implements OnInit {
       };
       this.api.updateReservation(this.editingReservation()!.id, update).subscribe({
         next: () => { this.closeForm(); this.load(); },
-        error: (e) => this.formError.set(e.error?.detail || 'Failed to update'),
+        error: (e) => this.formError.set(e.error?.detail || this.translate.instant('RESERVATIONS.ERROR_FAILED_UPDATE')),
       });
     } else {
       this.api.createReservation(payload).subscribe({
         next: () => { this.closeForm(); this.load(); },
-        error: (e) => this.formError.set(e.error?.detail || 'Failed to create'),
+        error: (e) => this.formError.set(e.error?.detail || this.translate.instant('RESERVATIONS.ERROR_FAILED_CREATE')),
       });
     }
   }
@@ -341,7 +342,7 @@ export class ReservationsComponent implements OnInit {
     if (!r) return;
     this.api.seatReservation(r.id, tableId).subscribe({
       next: () => { this.closeSeatModal(); this.load(); this.loadTables(); },
-      error: (e) => alert(e.error?.detail || 'Failed to seat'),
+      error: (e) => alert(e.error?.detail || this.translate.instant('RESERVATIONS.ERROR_FAILED_SEAT')),
     });
   }
 
@@ -361,7 +362,7 @@ export class ReservationsComponent implements OnInit {
   finish(r: Reservation) {
     this.api.finishReservation(r.id).subscribe({
       next: () => { this.load(); this.loadTables(); },
-      error: (e) => alert(e.error?.detail || 'Failed'),
+      error: (e) => alert(e.error?.detail || this.translate.instant('RESERVATIONS.ERROR_FAILED')),
     });
   }
 }

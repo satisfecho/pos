@@ -2,7 +2,7 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService, Reservation, ReservationCreate } from '../services/api.service';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-book',
@@ -78,6 +78,7 @@ export class BookComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private api = inject(ApiService);
+  private translate = inject(TranslateService);
 
   minDate = () => new Date().toISOString().slice(0, 10);
   tenantId = signal<number>(0);
@@ -104,7 +105,7 @@ export class BookComponent {
     this.error.set(null);
     const tid = this.tenantId();
     if (!tid) {
-      this.error.set('Invalid booking link. Please use the link provided by the restaurant.');
+      this.error.set(this.translate.instant('BOOK.ERROR_INVALID_LINK'));
       return;
     }
     this.submitting.set(true);
@@ -122,7 +123,7 @@ export class BookComponent {
         this.submitting.set(false);
       },
       error: (e) => {
-        this.error.set(e.error?.detail || 'Booking failed. Please try again.');
+        this.error.set(e.error?.detail || this.translate.instant('BOOK.ERROR_FAILED'));
         this.submitting.set(false);
       },
     });

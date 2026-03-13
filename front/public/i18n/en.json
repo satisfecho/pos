@@ -362,7 +362,9 @@
     "SUCCESS_MESSAGE": "Your table has been reserved.",
     "VIEW_CANCEL_HINT": "You can view or cancel your reservation using the link below. Save this link or the confirmation token.",
     "VIEW_OR_CANCEL": "View or cancel my reservation",
-    "VIEW_TITLE": "My reservation"
+    "VIEW_TITLE": "My reservation",
+    "ERROR_INVALID_LINK": "Invalid booking link. Please use the link provided by the restaurant.",
+    "ERROR_FAILED": "Booking failed. Please try again."
   },
   "RESERVATIONS": {
     "TITLE": "Reservations",
@@ -389,7 +391,14 @@
     "NO_AVAILABLE_TABLES": "No available tables for this party size.",
     "CANCEL_CONFIRM_TITLE": "Cancel reservation",
     "CANCEL_CONFIRM_MESSAGE": "Are you sure you want to cancel this reservation?",
-    "STATUS": "Status"
+    "STATUS": "Status",
+    "ERROR_MISSING_TENANT": "Missing tenant",
+    "ERROR_FAILED_UPDATE": "Failed to update",
+    "ERROR_FAILED_CREATE": "Failed to create",
+    "ERROR_FAILED_SEAT": "Failed to seat",
+    "ERROR_FAILED": "Failed",
+    "ERROR_MISSING_TOKEN": "Missing reservation token. Use the link from your confirmation.",
+    "ERROR_NOT_FOUND": "Reservation not found or link expired."
   },
   "SETTINGS": {
     "TITLE": "Settings",
