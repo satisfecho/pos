@@ -529,6 +529,18 @@ def refresh_access_token(
     return response
 
 
+@app.get("/ws-token")
+def get_ws_token(
+    request: Request,
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+) -> dict:
+    """Return the current access token for WebSocket auth (query param). Cookie may not be sent on WS upgrade from some origins."""
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No access token")
+    return {"access_token": token}
+
+
 @app.get("/users/me")
 def read_users_me(
     current_user: Annotated[models.User, Depends(security.get_current_user)],
@@ -2215,16 +2227,27 @@ def delete_table(
 
 
 def _parse_reservation_date(s: str) -> date:
-    """Parse YYYY-MM-DD to date."""
-    return datetime.strptime(s.strip()[:10], "%Y-%m-%d").date()
+    """Parse YYYY-MM-DD to date. Accepts full ISO datetime strings (takes first 10 chars)."""
+    s = s.strip()
+    if len(s) < 10:
+        raise ValueError(f"Invalid date format: {s!r}. Use YYYY-MM-DD.")
+    try:
+        return datetime.strptime(s[:10], "%Y-%m-%d").date()
+    except ValueError as e:
+        raise ValueError(f"Invalid date format: {s[:10]!r}. Use YYYY-MM-DD.") from e
 
 
 def _parse_reservation_time(s: str) -> time:
-    """Parse HH:MM or HH:MM:SS to time."""
+    """Parse HH:MM or HH:MM:SS to time. Accepts longer strings (takes first 8 chars for HH:MM:SS)."""
     s = s.strip()
-    if len(s) <= 5:
-        return datetime.strptime(s, "%H:%M").time()
-    return datetime.strptime(s[:8], "%H:%M:%S").time()
+    if len(s) < 5:
+        raise ValueError(f"Invalid time format: {s!r}. Use HH:MM or HH:MM:SS.")
+    try:
+        if len(s) <= 5:
+            return datetime.strptime(s[:5], "%H:%M").time()
+        return datetime.strptime(s[:8], "%H:%M:%S").time()
+    except ValueError as e:
+        raise ValueError(f"Invalid time format: {s[:8]!r}. Use HH:MM or HH:MM:SS.") from e
 
 
 def _reservation_to_dict(r: models.Reservation) -> dict:
@@ -2264,8 +2287,11 @@ def create_reservation(
     tenant = session.get(models.Tenant, tenant_id)
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
-    res_date = _parse_reservation_date(data.reservation_date)
-    res_time = _parse_reservation_time(data.reservation_time)
+    try:
+        res_date = _parse_reservation_date(data.reservation_date)
+        res_time = _parse_reservation_time(data.reservation_time)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     # Reject past date/time
     now = datetime.now(timezone.utc)
     if res_date < now.date():
@@ -3187,6 +3213,57 @@ def get_current_order(
             "total_cents": sum(item.price_cents * item.quantity for item in items),
         }
     }
+
+
+@app.get("/menu/{table_token}/order-history")
+def get_table_order_history(
+    table_token: str,
+    limit: int = Query(10, ge=1, le=50),
+    session: Session = Depends(get_session),
+) -> list[dict]:
+    """Public endpoint - recent paid/completed orders for this table (for customer order history)."""
+    table = session.exec(
+        select(models.Table).where(models.Table.token == table_token)
+    ).first()
+    if not table:
+        raise HTTPException(status_code=404, detail="Table not found")
+
+    orders = session.exec(
+        select(models.Order)
+        .where(
+            models.Order.table_id == table.id,
+            models.Order.status.in_([models.OrderStatus.paid, models.OrderStatus.completed]),
+        )
+        .order_by(models.Order.created_at.desc())
+        .limit(limit)
+    ).all()
+
+    result = []
+    for order in orders:
+        items = session.exec(
+            select(models.OrderItem).where(
+                models.OrderItem.order_id == order.id,
+                models.OrderItem.removed_by_customer == False,
+            )
+        ).all()
+        total_cents = sum(item.price_cents * item.quantity for item in items)
+        result.append({
+            "id": order.id,
+            "status": order.status.value,
+            "created_at": order.created_at.isoformat(),
+            "paid_at": order.paid_at.isoformat() if order.paid_at else None,
+            "items": [
+                {
+                    "id": item.id,
+                    "product_name": item.product_name,
+                    "quantity": item.quantity,
+                    "price_cents": item.price_cents,
+                }
+                for item in items
+            ],
+            "total_cents": total_cents,
+        })
+    return result
 
 
 def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:

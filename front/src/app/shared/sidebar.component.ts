@@ -429,14 +429,14 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       z-index: 99;
     }
 
-    /* Main */
+    /* Main - full width of content area (no max-width so it uses all space beside sidebar) */
     .main {
       flex: 1;
       margin-left: 240px;
       padding: var(--space-6);
       min-width: 0;
-      max-width: calc(100vw - 240px); /* Constrain to available space */
-      overflow-x: hidden; /* Prevent horizontal scroll */
+      width: 100%;
+      overflow-x: auto;
     }
 
     @media (max-width: 768px) {

@@ -22,3 +22,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Reservation create "failed to create": DB columns `reservation_date` and `reservation_time` were `timestamp`; migration updates them to `DATE` and `TIME` to match the API model.
 - Reservations route and sidebar: Staff route `/reservations` defined before public `/reservation`; permission-based `reservationAccessGuard`; frontend build fixes (Router import, `minDate()`, `LowerCasePipe` in reservations component).
+- Reservation API: invalid date/time in create now return HTTP 400 with a clear message instead of 500; parsing validates length and format.
+- Puppeteer test: create/cancel flow uses DOM-set form values and date filter so create succeeds and the new card is visible; cancel confirmation works.
+- Admin layout: main content area no longer constrained by `max-width`; Reservations, Products, Orders, etc. use full width beside the sidebar again.

@@ -125,6 +125,113 @@ async function main() {
     } else {
       console.log('\n>>> RESULT: Reservations page appears to have loaded.');
     }
+
+    // 4. Create reservation
+    const testName = 'Puppeteer Test ' + Date.now();
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dateStr = tomorrow.toISOString().slice(0, 10);
+    console.log('4. Creating reservation:', testName, 'date:', dateStr);
+    const newBtn = await page.$('.page-header .btn-primary');
+    if (newBtn) {
+      await newBtn.click();
+      await sleep(800);
+      const modal = await page.$('.modal-overlay .modal-content');
+      if (modal) {
+        await page.waitForSelector('.modal-body input[type="date"]', { timeout: 3000 }).catch(() => null);
+        // Set form values via DOM so Angular binds correctly (avoids typing/format issues)
+        await page.evaluate(
+          ({ name, phone, dateVal, timeVal, partySize }) => {
+            const inputs = document.querySelectorAll('.modal-body input');
+            if (inputs.length >= 5) {
+              const [nameIn, phoneIn, dateIn, timeIn, numIn] = inputs;
+              const setAndDispatch = (el, value) => {
+                el.value = value;
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+              };
+              setAndDispatch(nameIn, name);
+              setAndDispatch(phoneIn, phone);
+              setAndDispatch(dateIn, dateVal);
+              setAndDispatch(timeIn, timeVal);
+              setAndDispatch(numIn, String(partySize));
+            }
+          },
+          {
+            name: testName,
+            phone: '+1555123456',
+            dateVal: dateStr,
+            timeVal: '19:00',
+            partySize: 2,
+          }
+        );
+        await sleep(300);
+        const saveBtn = await page.$('.modal-footer .btn-primary');
+        if (saveBtn) {
+          await saveBtn.click();
+          await sleep(1500);
+          // List is filtered by date; set filter to created date so the new reservation appears
+          await page.evaluate((dateVal) => {
+            const dateFilter = document.querySelector('.filters input[type="date"]');
+            if (dateFilter) {
+              dateFilter.value = dateVal;
+              dateFilter.dispatchEvent(new Event('input', { bubbles: true }));
+              dateFilter.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          }, dateStr);
+          await sleep(1200);
+          const hasCard = await page.evaluate((name) => {
+            return !!Array.from(document.querySelectorAll('.reservation-card')).find(
+              (el) => el.innerText && el.innerText.includes(name)
+            );
+          }, testName);
+          console.log('   Create: card visible after save:', hasCard);
+          if (!hasCard) console.log('   (Check for form error or API failure in console above)');
+        }
+      } else {
+        console.log('   Create: modal did not open');
+      }
+    } else {
+      console.log('   Create: New button not found (no write permission?)');
+    }
+
+    // 5. Cancel reservation
+    await sleep(500);
+    console.log('5. Cancelling the created reservation');
+    const cancelClicked = await page.evaluate((name) => {
+      const cards = document.querySelectorAll('.reservation-card');
+      for (const card of cards) {
+        if (card.innerText && card.innerText.includes(name)) {
+          const cancelBtn = card.querySelector('.card-actions button.danger');
+          if (cancelBtn) {
+            cancelBtn.click();
+            return true;
+          }
+        }
+      }
+      return false;
+    }, testName);
+    if (cancelClicked) {
+      await sleep(600);
+      const confirmBtn = await page.$('app-confirmation-modal button[class*="danger"], .btn-danger');
+      if (confirmBtn) {
+        await confirmBtn.click();
+        await sleep(1200);
+        const stillBooked = await page.evaluate((name) => {
+          const cards = document.querySelectorAll('.reservation-card.status-booked');
+          return Array.from(cards).some((el) => el.innerText && el.innerText.includes(name));
+        }, testName);
+        const hasCancelled = await page.evaluate((name) => {
+          const cards = document.querySelectorAll('.reservation-card.status-cancelled');
+          return Array.from(cards).some((el) => el.innerText && el.innerText.includes(name));
+        }, testName);
+        console.log('   Cancel: confirmed, no longer booked:', !stillBooked, '| shows cancelled:', hasCancelled);
+      } else {
+        console.log('   Cancel: confirm modal button not found');
+      }
+    } else {
+      console.log('   Cancel: card or Cancel button not found for', testName);
+    }
   } catch (err) {
     console.error('Error:', err.message);
   } finally {
