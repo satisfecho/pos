@@ -16,11 +16,14 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           <form (ngSubmit)="submit()" class="book-form">
             <div class="form-group">
               <label>{{ 'RESERVATIONS.DATE' | translate }}</label>
-              <input type="date" [(ngModel)]="formDate" name="date" required [min]="minDate()" />
+              <input type="date" [(ngModel)]="formDate" name="date" required [min]="minDate()" (ngModelChange)="onDateChange($event)" />
             </div>
             <div class="form-group">
               <label>{{ 'RESERVATIONS.TIME' | translate }}</label>
               <input type="time" [(ngModel)]="formTime" name="time" required />
+              @if (suggestedTime()) {
+                <small class="suggested-time" (click)="formTime = suggestedTime()!">{{ 'RESERVATIONS.SUGGESTED_TIME' | translate }}: {{ suggestedTime() }}</small>
+              }
             </div>
             <div class="form-group">
               <label>{{ 'RESERVATIONS.PARTY_SIZE' | translate }}</label>
@@ -65,6 +68,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     .book-form label { display: block; margin-bottom: 0.25rem; font-weight: 500; }
     .book-form input { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; }
     .form-error { color: #dc2626; font-size: 0.875rem; margin-bottom: 1rem; }
+    .suggested-time { display: block; margin-top: 4px; font-size: 0.8rem; color: #2563eb; cursor: pointer; text-decoration: underline; }
     .btn { display: inline-block; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; cursor: pointer; border: none; text-decoration: none; text-align: center; }
     .btn-primary { background: #2563eb; color: #fff; width: 100%; margin-top: 0.5rem; }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -90,6 +94,7 @@ export class BookComponent {
   submitting = signal(false);
   error = signal<string | null>(null);
   successReservation = signal<Reservation | null>(null);
+  suggestedTime = signal<string | null>(null);
 
   today = computed(() => new Date().toISOString().slice(0, 10));
 
@@ -99,6 +104,19 @@ export class BookComponent {
     if (n) this.tenantId.set(n);
     const today = new Date().toISOString().slice(0, 10);
     this.formDate = today;
+    this.onDateChange(today);
+  }
+
+  onDateChange(dateStr: string) {
+    const tid = this.tenantId();
+    if (!tid || !dateStr) return;
+    this.api.getNextAvailableReservation(tid, dateStr).subscribe({
+      next: (res) => {
+        this.suggestedTime.set(res.time);
+        this.formTime = res.time;
+      },
+      error: () => this.suggestedTime.set(null),
+    });
   }
 
   submit() {
