@@ -12,6 +12,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
@@ -26,17 +29,4 @@ jobs:
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/development/pos2' }}
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new \
-            "${DEPLOY_USER}@${DEPLOY_HOST}" "set -e
-            cd '${DEPLOY_PATH}'
-            git fetch origin
-            git checkout master
-            git pull origin master
-            if [ ! -f config.env ]; then
-              echo 'Error: config.env not found. Create it from config.env.example on the server.'
-              exit 1
-            fi
-            docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml down || true
-            docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml build back
-            docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml up --build -d
-            sleep 15
-            docker compose --env-file config.env exec -T back python -m app.migrate || true"
+            "${DEPLOY_USER}@${DEPLOY_HOST}" "cd ${DEPLOY_PATH} && git fetch origin && git checkout master && git pull origin master && bash -s" < scripts/deploy-amvara9.sh
