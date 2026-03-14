@@ -1,5 +1,5 @@
 # Deploy to amvara9 when master (or main) is updated.
-# Requires repository secret: SSH_PRIVATE_KEY (private key for root@amvara9).
+# Requires repository secret: SSH_PRIVATE_KEY (private key for root@amvara9, base64-encoded to preserve newlines).
 # Optional: DEPLOY_HOST (default 167.235.138.59), DEPLOY_USER (default root).
 
 name: Deploy to amvara9
@@ -15,7 +15,7 @@ jobs:
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H "${{ secrets.DEPLOY_HOST || '167.235.138.59' }}" >> ~/.ssh/known_hosts 2>/dev/null || true
 
