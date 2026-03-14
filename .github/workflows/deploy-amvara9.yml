@@ -25,7 +25,7 @@ jobs:
             # Preserve newlines: interpret \n if stored literally, strip CR
             printf '%b' "$KEY" | tr -d '\r' > ~/.ssh/deploy_key
           else
-            echo "$KEY" | tr -d '\n\r\t ' | base64 -d > ~/.ssh/deploy_key
+            echo "$KEY" | tr -d '\n\r\t ' | sed 's/[^A-Za-z0-9+\/=]//g' | base64 -d > ~/.ssh/deploy_key
           fi
           chmod 600 ~/.ssh/deploy_key
           if ! ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null 2>&1; then
