@@ -20,7 +20,7 @@ The workflow accepts **either** the raw private key (with `-----BEGIN ... END---
 
 2. **Add it as a repository secret** in GitHub:
    - Repo **pos2** → **Settings** → **Secrets and variables** → **Actions**
-   - Create or update secret **`SSH_PRIVATE_KEY`**
+   - Create or update secret **`SSH_PRIVATE_KEY_AMVARA9`**
    - Value: paste the full private key (raw PEM, all lines) or the **single-line base64** from `ssh amvara9 "base64 -w 0 /root/.ssh/github_deploy"` (base64 often works better in GitHub’s secret field)
    - Save
 
@@ -49,6 +49,6 @@ You can override defaults with these repository secrets:
 ## First deploy
 
 1. Ensure **Docker** and **Docker Compose** are installed on amvara9.
-2. Edit `/development/pos2/config.env` on amvara9 with production values (API_URL, WS_URL, CORS_ORIGINS, SECRET_KEY, etc.). See [DEPLOYMENT.md](DEPLOYMENT.md).
-3. Add `SSH_PRIVATE_KEY` in GitHub as above.
+2. Edit `/development/pos2/config.env` on amvara9 with production values (API_URL, WS_URL, CORS_ORIGINS, SECRET_KEY, etc.). See [0004-deployment.md](0004-deployment.md).
+3. Add `SSH_PRIVATE_KEY_AMVARA9` in GitHub as above.
 4. Push to `master` (or re-run the workflow from the Actions tab) to trigger the first deploy.

@@ -1,5 +1,5 @@
 # Deploy to amvara9 when master (or main) is updated.
-# Requires repository secret: SSH_PRIVATE_KEY (private key for root@amvara9, base64-encoded to preserve newlines).
+# Requires repository secret: SSH_PRIVATE_KEY_AMVARA9 (private key for root@amvara9; raw PEM or base64).
 # Optional: DEPLOY_HOST (default 167.235.138.59), DEPLOY_USER (default root).
 
 name: Deploy to amvara9
@@ -18,7 +18,7 @@ jobs:
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
-          KEY="${{ secrets.SSH_PRIVATE_KEY }}"
+          KEY="${{ secrets.SSH_PRIVATE_KEY_AMVARA9 }}"
           echo "Key length: ${#KEY} chars, looks like PEM: $(echo \"$KEY\" | grep -q 'BEGIN' && echo \"$KEY\" | grep -q 'PRIVATE KEY' && echo yes || echo no)"
           # If secret contains PEM markers, use as raw key; else decode as base64
           if echo "$KEY" | grep -q "BEGIN" && echo "$KEY" | grep -q "PRIVATE KEY"; then
@@ -29,7 +29,7 @@ jobs:
           fi
           chmod 600 ~/.ssh/deploy_key
           if ! ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null 2>&1; then
-            echo "::error::Invalid SSH_PRIVATE_KEY: ssh-keygen could not read the key. Paste the full raw key (-----BEGIN...END-----) or a single-line base64 string (base64 -w 0 keyfile)."
+            echo "::error::Invalid SSH_PRIVATE_KEY_AMVARA9: ssh-keygen could not read the key. Paste the full raw key (-----BEGIN...END-----) or a single-line base64 string (base64 -w 0 keyfile)."
             exit 1
           fi
           ssh-keyscan -H "${{ secrets.DEPLOY_HOST || '167.235.138.59' }}" >> ~/.ssh/known_hosts 2>/dev/null || true
