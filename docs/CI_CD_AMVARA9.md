@@ -21,7 +21,7 @@ The workflow accepts **either** the raw private key (with `-----BEGIN ... END---
 2. **Add it as a repository secret** in GitHub:
    - Repo **pos2** → **Settings** → **Secrets and variables** → **Actions**
    - Create or update secret **`SSH_PRIVATE_KEY`**
-   - Value: paste the full private key (raw PEM) or, alternatively, the single-line base64 from `base64 -w 0 /root/.ssh/github_deploy`
+   - Value: paste the full private key (raw PEM, all lines) or the **single-line base64** from `ssh amvara9 "base64 -w 0 /root/.ssh/github_deploy"` (base64 often works better in GitHub’s secret field)
    - Save
 
 3. **(Optional)** Remove the private key from the server so only GitHub has it:

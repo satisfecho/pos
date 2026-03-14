@@ -20,9 +20,10 @@ jobs:
           mkdir -p ~/.ssh
           KEY="${{ secrets.SSH_PRIVATE_KEY }}"
           echo "Key length: ${#KEY} chars, looks like PEM: $(echo \"$KEY\" | grep -q 'BEGIN' && echo \"$KEY\" | grep -q 'PRIVATE KEY' && echo yes || echo no)"
-          # If secret contains PEM markers, use as raw key (strip CR for Windows paste); else decode as base64
+          # If secret contains PEM markers, use as raw key; else decode as base64
           if echo "$KEY" | grep -q "BEGIN" && echo "$KEY" | grep -q "PRIVATE KEY"; then
-            echo "$KEY" | tr -d '\r' > ~/.ssh/deploy_key
+            # Preserve newlines: interpret \n if stored literally, strip CR
+            printf '%b' "$KEY" | tr -d '\r' > ~/.ssh/deploy_key
           else
             echo "$KEY" | tr -d '\n\r\t ' | base64 -d > ~/.ssh/deploy_key
           fi
