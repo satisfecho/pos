@@ -118,7 +118,8 @@ export class PermissionService {
   hasPermission(user: User | null, permission: Permission): boolean {
     if (!user) return false;
 
-    const permissions = ROLE_PERMISSIONS[user.role];
+    const roleKey = user.role ? String(user.role).toLowerCase() : '';
+    const permissions = ROLE_PERMISSIONS[roleKey as UserRole];
     if (!permissions) return false;
 
     // Owner has all permissions

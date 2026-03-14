@@ -412,7 +412,7 @@
     "SAVE_CHANGES": "Änderungen speichern",
     "SUBTITLE": "Verwalten Sie Ihre Geschäftsinformationen und Ihr Branding",
     "UPLOAD_LOGO": "Logo hochladen",
-    "UPLOAD_LOGO_HINT": "Empfohlen: Quadratisches Bild, max. 2MB (JPG, PNG, WebP)",
+    "UPLOAD_LOGO_HINT": "Empfohlen: Quadratisches Bild, max. 2MB (JPG, PNG, WebP, AVIF, SVG)",
     "REMOVE_LOGO": "Entfernen",
     "BASIC_INFO": "Basisinformationen",
     "BUSINESS_NAME_PLACEHOLDER": "Ihr Geschäftsname",

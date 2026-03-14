@@ -159,7 +159,7 @@ app.add_middleware(
 # Uploads directory for product images
 UPLOADS_DIR = Path(__file__).parent.parent / "uploads"
 UPLOADS_DIR.mkdir(exist_ok=True)
-ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/avif"}
 MAX_IMAGE_SIZE = 2 * 1024 * 1024  # 2MB
 
 # Image optimization settings
@@ -254,6 +254,8 @@ def optimize_image(image_data: bytes, content_type: str) -> bytes:
         elif content_type == "image/png" or original_format == "PNG":
             # PNG optimization
             image.save(output, format="PNG", optimize=PNG_OPTIMIZE)
+        elif content_type == "image/avif" or original_format == "AVIF":
+            image.save(output, format="AVIF", quality=WEBP_QUALITY)
         else:
             # Default to JPEG
             image.save(output, format="JPEG", quality=JPEG_QUALITY, optimize=True)
@@ -1064,11 +1066,12 @@ async def upload_tenant_logo(
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
 
-    # Validate content type
-    if file.content_type not in ALLOWED_IMAGE_TYPES:
+    # Validate content type (logo allows SVG in addition to raster images)
+    allowed_logo_types = ALLOWED_IMAGE_TYPES | {"image/svg+xml"}
+    if file.content_type not in allowed_logo_types:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_TYPES)}",
+            detail=f"Invalid file type. Allowed: {', '.join(sorted(allowed_logo_types))}",
         )
 
     # Read file and check size
@@ -1079,8 +1082,10 @@ async def upload_tenant_logo(
             detail=f"File too large. Max size: {MAX_IMAGE_SIZE // (1024 * 1024)}MB",
         )
 
-    # Optimize image locally
-    contents = optimize_image(contents, file.content_type)
+    is_svg = file.content_type == "image/svg+xml"
+    if not is_svg:
+        # Optimize raster image locally (SVG is stored as-is)
+        contents = optimize_image(contents, file.content_type)
 
     # Create tenant logo directory
     tenant_dir = UPLOADS_DIR / str(current_user.tenant_id) / "logo"
@@ -1093,8 +1098,11 @@ async def upload_tenant_logo(
             old_path.unlink()
 
     # Generate unique filename
-    ext = Path(file.filename or "logo.jpg").suffix.lower()
-    if ext not in [".jpg", ".jpeg", ".png", ".webp"]:
+    ext = Path(file.filename or ("logo.svg" if is_svg else "logo.jpg")).suffix.lower()
+    if is_svg:
+        if ext != ".svg":
+            ext = ".svg"
+    elif ext not in [".jpg", ".jpeg", ".png", ".webp", ".avif"]:
         ext = ".jpg"
     new_filename = f"{uuid4()}{ext}"
 
@@ -1351,7 +1359,7 @@ async def upload_product_image(
 
     # Generate unique filename
     ext = Path(file.filename or "image.jpg").suffix.lower()
-    if ext not in [".jpg", ".jpeg", ".png", ".webp"]:
+    if ext not in [".jpg", ".jpeg", ".png", ".webp", ".avif"]:
         ext = ".jpg"
     new_filename = f"{uuid4()}{ext}"
 

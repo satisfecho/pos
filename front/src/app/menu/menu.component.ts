@@ -1,4 +1,5 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { CommonModule, SlicePipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
@@ -35,6 +36,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private api = inject(ApiService);
   private audio = inject(AudioService);
+  private sanitizer = inject(DomSanitizer);
 
   // Core state
   loading = signal(true);
@@ -590,6 +592,12 @@ export class MenuComponent implements OnInit, OnDestroy {
   // ============================================
   // PRODUCT HELPERS
   // ============================================
+  /** Safe URL for tenant logo (needed for SVG, which Angular may block in img src). */
+  getLogoSafeUrl(url: string | null): SafeResourceUrl | null {
+    if (!url) return null;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
   getProductImageUrl(product: Product): string | null {
     if (!product.image_filename || !product.tenant_id) return null;
     if (product.image_filename.startsWith('providers/')) {

@@ -429,7 +429,7 @@
     "WEBSITE": "Sitio web",
     "LOGO": "Logo",
     "UPLOAD_LOGO": "Subir Logo",
-    "UPLOAD_LOGO_HINT": "Imagen cuadrada, máx 2MB (JPG, PNG, WebP)",
+    "UPLOAD_LOGO_HINT": "Imagen cuadrada, máx 2MB (JPG, PNG, WebP, AVIF, SVG)",
     "REMOVE_LOGO": "Eliminar",
     "OPENING_HOURS": "Horarios de apertura",
     "OPENING_HOURS_SUBTITLE": "Configura los horarios de apertura de tu negocio",

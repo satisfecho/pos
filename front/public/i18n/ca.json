@@ -412,7 +412,7 @@
     "SAVE_CHANGES": "Desar canvis",
     "SUBTITLE": "Gestiona la informació i la marca del teu negoci",
     "UPLOAD_LOGO": "Pujar Logo",
-    "UPLOAD_LOGO_HINT": "Recomanat: Imatge quadrada, màx 2MB (JPG, PNG, WebP)",
+    "UPLOAD_LOGO_HINT": "Recomanat: Imatge quadrada, màx 2MB (JPG, PNG, WebP, AVIF, SVG)",
     "REMOVE_LOGO": "Eliminar",
     "BASIC_INFO": "Informació bàsica",
     "BUSINESS_NAME_PLACEHOLDER": "Nom del teu negoci",

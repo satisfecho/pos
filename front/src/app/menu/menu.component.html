@@ -31,7 +31,7 @@
   <div class="error-screen table-closed-screen">
     @if (closedTenantLogo()) {
     <div class="closed-logo-container">
-      <img [src]="closedTenantLogo()" alt="Business Logo" class="closed-tenant-logo" />
+      <img [src]="getLogoSafeUrl(closedTenantLogo())" alt="Business Logo" class="closed-tenant-logo" />
     </div>
     }
     @if (closedTenantName()) {
@@ -69,7 +69,7 @@
       <div class="hero-top-row">
         @if (tenantLogo()) {
         <div class="logo-container">
-          <img [src]="tenantLogo()" alt="Business Logo" class="tenant-logo" />
+          <img [src]="getLogoSafeUrl(tenantLogo())" alt="Business Logo" class="tenant-logo" />
         </div>
         }
       </div>
