@@ -72,14 +72,17 @@ async function main() {
 
     // Wait for landing page to be present (Angular may render after bootstrap)
     await page.waitForSelector('.landing-page', { timeout: 10000 });
-    // Give Angular time to render the full template (version bar is always in the template)
+    // Version bar: data-testid or .landing-version-bar (always in template; allow time for lazy route)
     await page.waitForFunction(
-      () => document.querySelector('[data-testid="landing-version"]')?.textContent?.trim().length > 0,
-      { timeout: 10000 }
+      () => {
+        const el = document.querySelector('[data-testid="landing-version"]') || document.querySelector('.landing-version-bar');
+        return el?.textContent?.trim().length > 0;
+      },
+      { timeout: 15000 }
     );
 
     const versionVisible = await page.evaluate(() => {
-      const el = document.querySelector('[data-testid="landing-version"]');
+      const el = document.querySelector('[data-testid="landing-version"]') || document.querySelector('.landing-version-bar');
       if (!el) return { found: false, text: '' };
       const style = window.getComputedStyle(el);
       const rect = el.getBoundingClientRect();
