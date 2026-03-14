@@ -18,8 +18,15 @@ jobs:
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > ~/.ssh/deploy_key
+          KEY="${{ secrets.SSH_PRIVATE_KEY }}"
+          # If secret looks like base64 (no PEM markers), decode it; otherwise use as raw key
+          if echo "$KEY" | grep -q "BEGIN.*PRIVATE KEY"; then
+            echo "$KEY" > ~/.ssh/deploy_key
+          else
+            echo "$KEY" | tr -d '\n\r' | base64 -d > ~/.ssh/deploy_key
+          fi
           chmod 600 ~/.ssh/deploy_key
+          ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null || (echo "Invalid SSH key in SSH_PRIVATE_KEY secret. Use the raw private key (with -----BEGIN/END----- lines) or its base64 encoding (base64 -w 0 keyfile)."; exit 1)
           ssh-keyscan -H "${{ secrets.DEPLOY_HOST || '167.235.138.59' }}" >> ~/.ssh/known_hosts 2>/dev/null || true
 
       - name: Deploy on amvara9

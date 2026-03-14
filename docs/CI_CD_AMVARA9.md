@@ -10,18 +10,18 @@ When code is pushed to the **master** (or **main**) branch, GitHub Actions deplo
 
 ## What you need to do: add the private key to GitHub
 
-The workflow expects the key **base64-encoded** so newlines are preserved (avoids "error in libcrypto" when pasting).
+The workflow accepts **either** the raw private key (with `-----BEGIN ... END-----` lines) **or** its base64 encoding. Prefer the raw key so newlines are preserved.
 
-1. **Get the base64-encoded private key** from amvara9 (one-time). SSH in and run:
+1. **Get the private key** from amvara9 (one-time). SSH in and run:
    ```bash
-   ssh amvara9 "base64 -w 0 /root/.ssh/github_deploy"
+   ssh amvara9 "cat /root/.ssh/github_deploy"
    ```
-   Copy the single line of output.
+   Copy the **entire** output (including `-----BEGIN OPENSSH PRIVATE KEY-----` and `-----END OPENSSH PRIVATE KEY-----` and all lines between).
 
 2. **Add it as a repository secret** in GitHub:
    - Repo **pos2** → **Settings** → **Secrets and variables** → **Actions**
    - Create or update secret **`SSH_PRIVATE_KEY`**
-   - Value: paste the **base64 string** from step 1 (one line, no line breaks)
+   - Value: paste the full private key (raw PEM) or, alternatively, the single-line base64 from `base64 -w 0 /root/.ssh/github_deploy`
    - Save
 
 3. **(Optional)** Remove the private key from the server so only GitHub has it:
