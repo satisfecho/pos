@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from datetime import date, timedelta, datetime, time, timezone
+from zoneinfo import ZoneInfo
 from io import BytesIO
 from pathlib import Path
 from typing import Annotated, Dict
@@ -987,6 +988,24 @@ def update_tenant_settings(
             else None
         )
         tenant.default_language = lang or None
+
+    if tenant_update.timezone is not None:
+        tz_val = (
+            tenant_update.timezone.strip()
+            if isinstance(tenant_update.timezone, str)
+            else None
+        )
+        if tz_val:
+            try:
+                ZoneInfo(tz_val)
+            except (KeyError, ValueError):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid timezone: {tz_val}. Use IANA format (e.g. America/Mazatlan)",
+                )
+            tenant.timezone = tz_val
+        else:
+            tenant.timezone = None
 
     if tenant_update.stripe_secret_key is not None:
         # Only update if a non-empty value is provided
@@ -2465,14 +2484,13 @@ def create_reservation(
         res_time = _parse_reservation_time(data.reservation_time)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    # Reject past date/time
-    now = datetime.now(timezone.utc)
-    if res_date < now.date():
+    # Reject past date/time (use business timezone if configured, else UTC)
+    tz = ZoneInfo(tenant.timezone) if tenant.timezone else timezone.utc
+    now_local = datetime.now(tz)
+    if res_date < now_local.date():
         raise HTTPException(status_code=400, detail="Reservation date must be today or in the future")
-    if res_date == now.date():
-        # Compare time
-        now_time = now.time()
-        if res_time <= now_time:
+    if res_date == now_local.date():
+        if res_time <= now_local.time():
             raise HTTPException(status_code=400, detail="Reservation time must be in the future")
     token_str = str(uuid4()) if not current_user else None
     reservation = models.Reservation(
@@ -2514,6 +2532,81 @@ def list_reservations(
     q = q.order_by(models.Reservation.reservation_date, models.Reservation.reservation_time)
     reservations = session.exec(q).all()
     return [_reservation_to_dict(r, session) for r in reservations]
+
+
+@app.get("/reservations/next-available")
+def get_next_available_reservation_time(
+    tenant_id: int = Query(...),
+    date_str: str = Query(..., alias="date"),
+    session: Session = Depends(get_session),
+) -> dict:
+    """Public: find the next available hourly slot for a reservation."""
+    tenant = session.get(models.Tenant, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    tz = ZoneInfo(tenant.timezone) if tenant.timezone else timezone.utc
+    now_local = datetime.now(tz)
+
+    # Parse opening hours
+    opening_hours = {}
+    if tenant.opening_hours:
+        try:
+            opening_hours = json.loads(tenant.opening_hours)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    day_names = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+
+    # Try the requested date and up to 7 more days
+    try:
+        check_date = _parse_reservation_date(date_str)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    for day_offset in range(8):
+        d = check_date + timedelta(days=day_offset)
+        day_key = day_names[d.weekday()]
+        day_hours = opening_hours.get(day_key, {})
+
+        if day_hours.get("closed", False) or not day_hours.get("open") or not day_hours.get("close"):
+            continue
+
+        try:
+            open_h, open_m = map(int, day_hours["open"].split(":"))
+            close_h, close_m = map(int, day_hours["close"].split(":"))
+        except (ValueError, AttributeError):
+            continue
+
+        # Generate hourly slots from open to close-1h
+        slot_hour = open_h
+        while slot_hour < close_h:
+            slot_time = time(slot_hour, 0)
+
+            # Skip past slots if today
+            if d == now_local.date() and slot_time <= now_local.time():
+                slot_hour += 1
+                continue
+
+            # Check for existing reservations at this slot
+            existing = session.exec(
+                select(models.Reservation).where(
+                    models.Reservation.tenant_id == tenant_id,
+                    models.Reservation.reservation_date == d,
+                    models.Reservation.reservation_time == slot_time,
+                    models.Reservation.status.in_(["booked", "seated"]),
+                )
+            ).first()
+
+            if not existing:
+                return {
+                    "date": d.isoformat(),
+                    "time": slot_time.strftime("%H:%M"),
+                }
+
+            slot_hour += 1
+
+    raise HTTPException(status_code=404, detail="No available time slots found")
 
 
 @app.get("/reservations/by-token")

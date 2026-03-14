@@ -98,11 +98,14 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               </div>
               <div class="form-group">
                 <label>{{ 'RESERVATIONS.DATE' | translate }}</label>
-                <input type="date" [(ngModel)]="formDate" />
+                <input type="date" [(ngModel)]="formDate" (ngModelChange)="onFormDateChange($event)" />
               </div>
               <div class="form-group">
                 <label>{{ 'RESERVATIONS.TIME' | translate }}</label>
                 <input type="time" [(ngModel)]="formTime" />
+                @if (suggestedTime()) {
+                  <small class="suggested-time" (click)="formTime = suggestedTime()!">{{ 'RESERVATIONS.SUGGESTED_TIME' | translate }}: {{ suggestedTime() }}</small>
+                }
               </div>
               <div class="form-group">
                 <label>{{ 'RESERVATIONS.PARTY_SIZE' | translate }}</label>
@@ -191,6 +194,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     .form-group label { display: block; margin-bottom: 0.25rem; font-weight: 500; }
     .form-group input { width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
     .form-error { color: #dc2626; font-size: 0.875rem; margin-top: 0.5rem; }
+    .suggested-time { display: block; margin-top: 4px; font-size: 0.8rem; color: var(--color-primary, #c0785c); cursor: pointer; text-decoration: underline; }
     .table-list { display: flex; flex-direction: column; gap: 0.5rem; }
     .table-option { padding: 0.5rem 1rem; text-align: left; border: 1px solid #e5e7eb; border-radius: 4px; background: #fff; cursor: pointer; }
     .table-option:hover { background: #f3f4f6; }
@@ -218,6 +222,7 @@ export class ReservationsComponent implements OnInit {
   formTime = '';
   formPartySize = 1;
   formError = signal<string | null>(null);
+  suggestedTime = signal<string | null>(null);
   reservationToSeat = signal<Reservation | null>(null);
   reservationToCancel = signal<Reservation | null>(null);
 
@@ -271,7 +276,23 @@ export class ReservationsComponent implements OnInit {
     this.formTime = '19:00';
     this.formPartySize = 2;
     this.formError.set(null);
+    this.suggestedTime.set(null);
     this.showForm.set(true);
+    this.onFormDateChange(today);
+  }
+
+  onFormDateChange(dateStr: string) {
+    const tenantId = this.permissions.getCurrentUser()?.tenant_id;
+    if (!tenantId || !dateStr) return;
+    this.api.getNextAvailableReservation(tenantId, dateStr).subscribe({
+      next: (res) => {
+        this.suggestedTime.set(res.time);
+        if (!this.editingReservation()) {
+          this.formTime = res.time;
+        }
+      },
+      error: () => this.suggestedTime.set(null),
+    });
   }
 
   openEdit(r: Reservation) {
@@ -295,7 +316,7 @@ export class ReservationsComponent implements OnInit {
     const user = this.api.getCurrentUser();
     const tenantId = user?.tenant_id;
     if (!tenantId && !this.editingReservation()) {
-      this.formError.set('Missing tenant');
+      this.formError.set(this.translate.instant('RESERVATIONS.ERROR_MISSING_TENANT'));
       return;
     }
     const payload: ReservationCreate = {
@@ -316,12 +337,12 @@ export class ReservationsComponent implements OnInit {
       };
       this.api.updateReservation(this.editingReservation()!.id, update).subscribe({
         next: () => { this.closeForm(); this.load(); },
-        error: (e) => this.formError.set(e.error?.detail || 'Failed to update'),
+        error: (e) => this.formError.set(e.error?.detail || this.translate.instant('RESERVATIONS.ERROR_FAILED_UPDATE')),
       });
     } else {
       this.api.createReservation(payload).subscribe({
         next: () => { this.closeForm(); this.load(); },
-        error: (e) => this.formError.set(e.error?.detail || 'Failed to create'),
+        error: (e) => this.formError.set(e.error?.detail || this.translate.instant('RESERVATIONS.ERROR_FAILED_CREATE')),
       });
     }
   }
@@ -347,7 +368,7 @@ export class ReservationsComponent implements OnInit {
     if (!r) return;
     this.api.seatReservation(r.id, tableId).subscribe({
       next: () => { this.closeSeatModal(); this.load(); this.loadTables(); },
-      error: (e) => alert(e.error?.detail || 'Failed to seat'),
+      error: (e) => alert(e.error?.detail || this.translate.instant('RESERVATIONS.ERROR_FAILED_SEAT')),
     });
   }
 
@@ -367,7 +388,7 @@ export class ReservationsComponent implements OnInit {
   finish(r: Reservation) {
     this.api.finishReservation(r.id).subscribe({
       next: () => { this.load(); this.loadTables(); },
-      error: (e) => alert(e.error?.detail || 'Failed'),
+      error: (e) => alert(e.error?.detail || this.translate.instant('RESERVATIONS.ERROR_FAILED')),
     });
   }
 }

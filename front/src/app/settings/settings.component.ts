@@ -161,6 +161,40 @@ import { TranslateModule } from '@ngx-translate/core';
                     <label for="description">{{ 'SETTINGS.DESCRIPTION' | translate }}</label>
                     <textarea id="description" [(ngModel)]="formData.description" name="description" rows="3"></textarea>
                   </div>
+
+                  <div class="form-group">
+                    <label for="timezone">{{ 'SETTINGS.TIMEZONE' | translate }}</label>
+                    <div class="timezone-select-wrapper">
+                      <input
+                        type="text"
+                        id="timezone-search"
+                        [(ngModel)]="timezoneSearch"
+                        name="timezoneSearch"
+                        [placeholder]="'SETTINGS.SEARCH_TIMEZONE' | translate"
+                        (focus)="timezoneDropdownOpen = true"
+                        (blur)="timezoneDropdownOpen = false"
+                        (input)="filterTimezones()"
+                        autocomplete="off"
+                      />
+                      @if (timezoneDropdownOpen && filteredTimezones.length > 0) {
+                        <div class="timezone-dropdown">
+                          @for (tz of filteredTimezones; track tz) {
+                            <div
+                              class="timezone-option"
+                              [class.selected]="formData.timezone === tz"
+                              (mousedown)="selectTimezone(tz)">
+                              {{ tz }}
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                    @if (formData.timezone) {
+                      <small class="field-hint">{{ formData.timezone }}</small>
+                    } @else {
+                      <small class="field-hint field-warning">{{ 'SETTINGS.TIMEZONE_NOT_SET' | translate }}</small>
+                    }
+                  </div>
                 </div>
               }
 
@@ -1159,6 +1193,45 @@ import { TranslateModule } from '@ngx-translate/core';
       }
     }
 
+    .timezone-select-wrapper {
+      position: relative;
+    }
+
+    .timezone-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      max-height: 200px;
+      overflow-y: auto;
+      background: var(--color-bg, #fff);
+      border: 1px solid var(--color-border, #ddd);
+      border-radius: 0 0 8px 8px;
+      z-index: 10;
+    }
+
+    .timezone-option {
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .timezone-option:hover,
+    .timezone-option.selected {
+      background: var(--color-primary-light, #f0e6e0);
+    }
+
+    .field-hint {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.8rem;
+      color: var(--color-text-secondary, #666);
+    }
+
+    .field-warning {
+      color: var(--color-warning, #e67e22);
+    }
+
     @keyframes slideUp {
       from {
         transform: translateY(100%);
@@ -1219,9 +1292,21 @@ export class SettingsComponent implements OnInit {
     stripe_secret_key: null,
     stripe_publishable_key: null,
     immediate_payment_required: false,
+    timezone: null,
   };
 
+  allTimezones: string[] = [];
+  filteredTimezones: string[] = [];
+  timezoneSearch = '';
+  timezoneDropdownOpen = false;
+
   ngOnInit() {
+    try {
+      this.allTimezones = (Intl as any).supportedValuesOf('timeZone');
+    } catch {
+      this.allTimezones = [];
+    }
+    this.filteredTimezones = this.allTimezones;
     this.loadSettings();
   }
 
@@ -1245,7 +1330,9 @@ export class SettingsComponent implements OnInit {
           stripe_secret_key: null,
           stripe_publishable_key: settings.stripe_publishable_key || null,
           immediate_payment_required: settings.immediate_payment_required || false,
+          timezone: settings.timezone || null,
         };
+        this.timezoneSearch = settings.timezone || '';
         this.parseOpeningHours(settings.opening_hours);
         this.loading.set(false);
       },
@@ -1255,6 +1342,19 @@ export class SettingsComponent implements OnInit {
         console.error('Error loading settings:', err);
       }
     });
+  }
+
+  filterTimezones() {
+    const q = this.timezoneSearch.toLowerCase();
+    this.filteredTimezones = q
+      ? this.allTimezones.filter(tz => tz.toLowerCase().includes(q))
+      : this.allTimezones;
+  }
+
+  selectTimezone(tz: string) {
+    this.formData.timezone = tz;
+    this.timezoneSearch = tz;
+    this.timezoneDropdownOpen = false;
   }
 
   parseOpeningHours(jsonString: string | null | undefined) {

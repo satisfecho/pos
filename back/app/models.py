@@ -64,6 +64,9 @@ class Tenant(SQLModel, table=True):
     # Default UI language for this tenant (e.g. en, es, ca, de, zh-CN, hi)
     default_language: str | None = Field(default=None)
 
+    # IANA timezone for this tenant (e.g. America/Mazatlan, Europe/Madrid)
+    timezone: str | None = Field(default=None)
+
     stripe_secret_key: str | None = Field(
         default=None
     )  # Stripe secret key for this tenant
@@ -516,6 +519,7 @@ class TenantUpdate(SQLModel):
     currency: str | None = None
 
     default_language: str | None = None
+    timezone: str | None = None
 
     stripe_secret_key: str | None = None
     stripe_publishable_key: str | None = None

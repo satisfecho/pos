@@ -230,6 +230,7 @@ export interface TenantSettings {
   currency?: string | null;
   currency_code?: string | null;
   default_language?: string | null;
+  timezone?: string | null;
   stripe_secret_key?: string | null;
   stripe_publishable_key?: string | null;
   logo_size_bytes?: number | null;
@@ -528,6 +529,12 @@ export class ApiService {
 
   createReservationPublic(data: ReservationCreate): Observable<Reservation> {
     return this.http.post<Reservation>(`${this.apiUrl}/reservations`, data);
+  }
+
+  getNextAvailableReservation(tenantId: number, date: string): Observable<{ date: string; time: string }> {
+    return this.http.get<{ date: string; time: string }>(`${this.apiUrl}/reservations/next-available`, {
+      params: { tenant_id: tenantId.toString(), date },
+    });
   }
 
   cancelReservationPublic(id: number, token: string): Observable<Reservation> {

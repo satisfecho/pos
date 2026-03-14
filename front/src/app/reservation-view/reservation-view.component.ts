@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService, Reservation } from '../services/api.service';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterLink } from '@angular/router';
 import { ConfirmationModalComponent } from '../shared/confirmation-modal.component';
 
@@ -64,6 +64,7 @@ import { ConfirmationModalComponent } from '../shared/confirmation-modal.compone
 export class ReservationViewComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private api = inject(ApiService);
+  private translate = inject(TranslateService);
 
   loading = signal(true);
   error = signal<string | null>(null);
@@ -78,13 +79,13 @@ export class ReservationViewComponent implements OnInit {
   ngOnInit() {
     const token = this.route.snapshot.queryParamMap.get('token');
     if (!token) {
-      this.error.set('Missing reservation token. Use the link from your confirmation.');
+      this.error.set(this.translate.instant('RESERVATIONS.ERROR_MISSING_TOKEN'));
       this.loading.set(false);
       return;
     }
     this.api.getReservationByToken(token).subscribe({
       next: (r) => { this.reservation.set(r); this.loading.set(false); },
-      error: () => { this.error.set('Reservation not found or link expired.'); this.loading.set(false); },
+      error: () => { this.error.set(this.translate.instant('RESERVATIONS.ERROR_NOT_FOUND')); this.loading.set(false); },
     });
   }
 
