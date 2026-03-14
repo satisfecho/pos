@@ -4,7 +4,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ApiService, TenantSummary } from '../services/api.service';
 import { FormsModule } from '@angular/forms';
 import { LanguagePickerComponent } from '../shared/language-picker.component';
-import { environment } from '../environments/environment';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-landing',
@@ -65,7 +65,7 @@ import { environment } from '../environments/environment';
         <span>{{ 'AUTH.DONT_HAVE_ACCOUNT' | translate }}</span>
         <a routerLink="/register">{{ 'AUTH.CREATE_ACCOUNT' | translate }}</a>
       </div>
-      <div class="landing-version-bar" data-testid="landing-version">{{ version }} <span class="landing-commit">{{ commitHash }}</span></div>
+      <div class="landing-version-bar" data-testid="landing-version">{{ version || '0.0.0' }} <span class="landing-commit">{{ commitHash || '' }}</span></div>
     </div>
   `,
   styles: [`
