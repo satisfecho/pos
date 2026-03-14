@@ -364,7 +364,7 @@
     "SAVE_CHANGES": "保存更改",
     "SUBTITLE": "管理您的业务信息和品牌",
     "UPLOAD_LOGO": "上传徽标",
-    "UPLOAD_LOGO_HINT": "建议：方形图片，最大 2MB (JPG, PNG, WebP)",
+    "UPLOAD_LOGO_HINT": "建议：方形图片，最大 2MB (JPG, PNG, WebP, AVIF, SVG)",
     "REMOVE_LOGO": "移除",
     "BASIC_INFO": "基本信息",
     "BUSINESS_NAME_PLACEHOLDER": "您的业务名称",

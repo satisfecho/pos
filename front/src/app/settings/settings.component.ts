@@ -126,7 +126,7 @@ import { TranslateModule } from '@ngx-translate/core';
                         <input
                           type="file"
                           id="logo-upload"
-                          accept="image/*"
+                          accept="image/*,image/svg+xml,.svg,image/avif,.avif"
                           (change)="onLogoSelected($event)"
                           hidden
                         />

@@ -87,7 +87,7 @@ async function main() {
           submit.click(),
         ]);
       }
-      await sleep(2000);
+      await sleep(3000);
       console.log('   URL after login:', page.url());
     } else {
       console.log('2. Waiting 8s for you to log in manually in the opened window...');
@@ -96,15 +96,14 @@ async function main() {
     }
 
     console.log('3. Navigating to /reservations');
-    await page
-      .goto(new URL('/reservations', BASE_URL).href, {
-        waitUntil: 'networkidle2',
-        timeout: 10000,
-      })
-      .catch((e) => {
-        console.log('   Navigation error:', e.message);
-      });
-    await sleep(3000);
+    await sleep(1000);
+    await page.goto(new URL('/reservations', BASE_URL).href, {
+      waitUntil: 'networkidle2',
+      timeout: 10000,
+    }).catch((e) => {
+      console.log('   Navigation error:', e.message);
+    });
+    await sleep(2500);
     const finalUrl = page.url();
     console.log('   Final URL:', finalUrl);
 

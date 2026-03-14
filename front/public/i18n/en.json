@@ -404,7 +404,7 @@
     "BUSINESS_PROFILE": "Business Profile",
     "LOGO": "Logo",
     "UPLOAD_LOGO": "Upload Logo",
-    "UPLOAD_LOGO_HINT": "Recommended: Square image, max 2MB (JPG, PNG, WebP)",
+    "UPLOAD_LOGO_HINT": "Recommended: Square image, max 2MB (JPG, PNG, WebP, AVIF, SVG)",
     "REMOVE_LOGO": "Remove",
     "BASIC_INFO": "Basic Information",
     "BUSINESS_NAME": "Business Name",

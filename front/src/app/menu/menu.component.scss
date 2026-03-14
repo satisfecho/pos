@@ -224,6 +224,11 @@ $cart-expanded-max: 60vh;
   border-radius: var(--radius-lg);
   padding: var(--space-2);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-width: 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tenant-logo {
@@ -231,8 +236,11 @@ $cart-expanded-max: 60vh;
   max-height: 80px;
   width: auto;
   height: auto;
+  min-width: 24px;
+  min-height: 24px;
   object-fit: contain;
   display: block;
+  vertical-align: middle;
 
   @include for-tablet-portrait-up {
     max-width: 100px;
