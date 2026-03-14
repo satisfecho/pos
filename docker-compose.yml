@@ -6,6 +6,8 @@ services:
     user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
     expose:
       - "8020"
+    networks:
+      - pos2_net
     environment:
       - DB_HOST=db
       - DB_PORT=5432
@@ -39,6 +41,8 @@ services:
     restart: unless-stopped
     expose:
       - "4200"
+    networks:
+      - pos2_net
     environment:
       - NODE_ENV=development
       # Leave API_URL and WS_URL empty to use relative URLs (proxied through HAProxy)
@@ -57,6 +61,8 @@ services:
     image: postgres:18-alpine3.23
     container_name: pos-postgres
     restart: unless-stopped
+    networks:
+      - pos2_net
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-pos}
       POSTGRES_USER: ${POSTGRES_USER:-pos}
@@ -75,6 +81,8 @@ services:
     image: redis:7-alpine
     container_name: pos-redis
     restart: unless-stopped
+    networks:
+      - pos2_net
     ports:
       - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     healthcheck:
@@ -89,6 +97,8 @@ services:
     restart: unless-stopped
     expose:
       - "8021"
+    networks:
+      - pos2_net
     environment:
       REDIS_URL: redis://redis:6379
       SECRET_KEY: ${SECRET_KEY:-CHANGE_THIS_IN_PRODUCTION}
@@ -114,6 +124,12 @@ services:
       - front
       - back
       - ws-bridge
+    networks:
+      - pos2_net
+
+networks:
+  pos2_net:
+    name: pos2_net
 
 volumes:
   pos_pgdata:

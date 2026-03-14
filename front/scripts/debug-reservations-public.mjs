@@ -43,10 +43,11 @@ async function main() {
   console.log('Book URL (public, no login):', bookUrl);
   console.log('---');
 
+  const headless = process.env.HEADLESS === '1' || process.env.HEADLESS === 'true';
   const browser = await puppeteer.launch({
     executablePath: CHROME_PATH,
-    headless: false,
-    defaultViewport: null,
+    headless,
+    defaultViewport: headless ? { width: 1280, height: 720 } : null,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
 

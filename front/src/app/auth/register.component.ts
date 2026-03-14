@@ -60,7 +60,14 @@ import { ApiService } from '../services/api.service';
           </div>
 
           @if (error()) {
-            <div class="error-banner">{{ error() }}</div>
+            <div class="error-banner">
+              {{ error() }}
+              @if (emailAlreadyRegistered()) {
+                <div class="sign-in-hint">
+                  <a routerLink="/login">{{ 'AUTH.SIGN_IN_INSTEAD' | translate }}</a>
+                </div>
+              }
+            </div>
           }
 
           @if (success()) {
@@ -124,6 +131,15 @@ import { ApiService } from '../services/api.service';
       margin-bottom: var(--space-4);
     }
 
+    .sign-in-hint {
+      margin-top: var(--space-2);
+    }
+
+    .sign-in-hint a {
+      color: var(--color-primary);
+      font-weight: 500;
+    }
+
     .success-banner {
       background: var(--color-success-light);
       color: var(--color-success);
@@ -183,6 +199,8 @@ export class RegisterComponent {
   error = signal<string>('');
   success = signal<string>('');
   loading = signal(false);
+  /** True when the API reported this email is already registered (suggest sign-in). */
+  emailAlreadyRegistered = signal(false);
 
   form = this.fb.group({
     tenant_name: ['', Validators.required],
@@ -195,6 +213,7 @@ export class RegisterComponent {
     if (this.form.valid) {
       this.error.set('');
       this.success.set('');
+      this.emailAlreadyRegistered.set(false);
       this.loading.set(true);
 
       this.api.register(this.form.value).subscribe({
@@ -206,7 +225,13 @@ export class RegisterComponent {
         },
         error: (err) => {
           this.loading.set(false);
-          this.error.set(err.error?.detail || 'Registration failed');
+          const detail = (err.error?.detail ?? '') as string;
+          this.error.set(detail || 'Registration failed');
+          // Backend returns localized "email already registered"; suggest sign-in
+          this.emailAlreadyRegistered.set(
+            err.status === 400 &&
+            /registered|registriert|registrat|registrado|registrat|已注册|पंजीकृत/i.test(detail)
+          );
         }
       });
     }

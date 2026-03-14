@@ -86,6 +86,7 @@
     "CREATING_ACCOUNT": "Creating account...",
     "ALREADY_HAVE_ACCOUNT": "Already have an account?",
     "SIGN_IN_LINK": "Sign in",
+    "SIGN_IN_INSTEAD": "Sign in instead",
     "EMAIL_PLACEHOLDER": "you@example.com",
     "PASSWORD_PLACEHOLDER": "Enter your password",
     "ORGANIZATION_PLACEHOLDER": "Your restaurant name",

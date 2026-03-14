@@ -50,6 +50,21 @@ node scripts/debug-reservations-public.mjs
 
 Optional env: `BASE_URL` (e.g. `http://127.0.0.1:4203`), `TENANT_ID` (default `1`). No credentials needed for the public test.
 
+**Run reservation tests on both localhost and production (satisfecho.de):**
+
+```bash
+# From repo root: public tests only (default)
+./scripts/run-reservation-tests.sh
+
+# Include staff test (needs .env with DEMO_LOGIN_EMAIL / DEMO_LOGIN_PASSWORD)
+STAFF_TEST=1 ./scripts/run-reservation-tests.sh
+
+# Custom URLs, headless
+BASE_URLS="http://127.0.0.1:4203 http://satisfecho.de" HEADLESS=1 ./scripts/run-reservation-tests.sh
+```
+
+Production (satisfecho.de) requires the front container’s nginx to strip the `/api` prefix when proxying to the backend; see `front/nginx.conf` (`location /api` → `proxy_pass http://pos-back:8020/`).
+
 ## Demo tables (seed and test)
 
 The demo restaurant (tenant id 1) should have **T01–T09**: T01–T05 with 4 seats, T06–T09 with 2 seats, on a single floor "Main". If the database was reinitialized or tables were lost, seed them and then run the check.

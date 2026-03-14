@@ -83,6 +83,7 @@
     "CREATING_ACCOUNT": "खाता बना रहा है...",
     "ALREADY_HAVE_ACCOUNT": "पहले से खाता है?",
     "SIGN_IN_LINK": "साइन इन करें",
+    "SIGN_IN_INSTEAD": "इसके बजाय साइन इन करें",
     "EMAIL_PLACEHOLDER": "आप@उदाहरण.com",
     "PASSWORD_PLACEHOLDER": "अपना पासवर्ड दर्ज करें",
     "ORGANIZATION_PLACEHOLDER": "आपके रेस्तरां का नाम",

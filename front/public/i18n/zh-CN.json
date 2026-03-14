@@ -83,6 +83,7 @@
     "CREATING_ACCOUNT": "创建账户中...",
     "ALREADY_HAVE_ACCOUNT": "已有账户？",
     "SIGN_IN_LINK": "登录",
+    "SIGN_IN_INSTEAD": "请改为登录",
     "EMAIL_PLACEHOLDER": "您的邮箱@示例.com",
     "PASSWORD_PLACEHOLDER": "请输入密码",
     "ORGANIZATION_PLACEHOLDER": "您的餐厅名称",
