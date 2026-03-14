@@ -13,12 +13,18 @@ fi
 
 echo "Stopping existing containers..."
 docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml down || true
+echo "Waiting for ports to be released..."
+sleep 10
 
 echo "Building back image first..."
 docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml build back
 
 echo "Starting all services..."
-docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+if ! docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml up --build -d; then
+  echo "First up failed (possible port race); waiting 10s and retrying..."
+  sleep 10
+  docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml up -d
+fi
 
 echo "Waiting for back to be ready..."
 sleep 15
