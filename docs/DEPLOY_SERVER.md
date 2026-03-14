@@ -1,6 +1,8 @@
-# Deploying to a server (e.g. amvara8)
+# Deploying to a server (e.g. amvara8, amvara9)
 
-Steps to get the latest **master** or **main** branch deployed on a server where the project lives (e.g. `/development/pos2` on amvara8).
+Steps to get the latest **master** or **main** branch deployed on a server where the project lives (e.g. `/development/pos2`).
+
+**amvara9:** Automatic deploy on push to master is set up via GitHub Actions. See [CI_CD_AMVARA9.md](CI_CD_AMVARA9.md).
 
 ## Prerequisites
 

@@ -32,6 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Frontend dev proxy config `proxy.conf.json` for local API/WS proxying.
 - **Demo tables**: Seed script `back/app/seeds/seed_demo_tables.py` (floor "Main" + T01–T09 for tenant 1; idempotent). Check script `back/app/seeds/check_demo_tables.py` to verify T01–T09 exist with correct seat counts. See AGENTS.md.
 - **Deploy guide**: `docs/DEPLOY_SERVER.md` for deploying latest master to a server (e.g. amvara8 at `/development/pos2`).
+- **CI/CD (amvara9)**: GitHub Actions workflow `.github/workflows/deploy-amvara9.yml` deploys to amvara9 on push to master/main (SSH key in repo secret `SSH_PRIVATE_KEY`). Server setup: deploy key in `authorized_keys`, repo at `/development/pos2`, `config.env` from example. See `docs/CI_CD_AMVARA9.md`.
 
 ### Fixed
 
