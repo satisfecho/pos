@@ -178,7 +178,7 @@ npm run test:order-8-status --prefix front
 
 ---
 
-### Reports (Sales & Revenue) smoke test
+### 8. Reports (Sales & Revenue) smoke test
 
 Login as **owner or admin**, open `/reports`, and assert the Reports page loads (date range inputs and `[data-testid="reports-page"]` present). Use after Reports feature work.
 
@@ -191,7 +191,7 @@ npm run test:reports --prefix front
 
 ---
 
-### 8. Catalog (products + images)
+### 9. Catalog (products + images)
 
 Login, open `/catalog`, count cards and how many show real images vs placeholders.
 
@@ -204,7 +204,7 @@ npm run test:catalog --prefix front
 
 ---
 
-### 8. Menu logo
+### 10. Menu logo
 
 Restaurant logo (e.g. Cobalto SVG) on customer menu page `/menu/{tableToken}`.
 
@@ -216,7 +216,7 @@ node front/scripts/test-menu-logo.mjs
 
 ---
 
-### 9. WebSocket
+### 11. WebSocket
 
 WebSocket connectivity after owner login (e.g. on `/orders`). Requires full stack including ws-bridge.
 
@@ -226,6 +226,19 @@ node front/scripts/test-websocket.mjs
 ```
 
 - **Env:** `BASE_URL`, `LOGIN_EMAIL`, `LOGIN_PASSWORD`. Loads `.env` from project root. No npm script; run with `node` from repo root.
+
+---
+
+### 12. Bartender role (Users page)
+
+Login as admin or owner, open `/users`, click “Add user”, and assert the role dropdown includes the “Bartender” option.
+
+```bash
+npm run test:bartender-role --prefix front
+# Or: LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/test-bartender-role.mjs
+```
+
+- **Env:** `BASE_URL`, `LOGIN_EMAIL`, `LOGIN_PASSWORD` (admin or owner), `HEADLESS`.
 
 ---
 
@@ -239,6 +252,7 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `debug:reservations:public` | `scripts/debug-reservations-public.mjs` |
 | `test:register` | `scripts/test-register.mjs` |
 | `test:demo-data` | `scripts/test-demo-data.mjs` |
+| `test:tables-page` | `scripts/test-tables-page.mjs` |
 | `test:landing-version` | `scripts/test-landing-version.mjs` |
 | `test:landing-provider-links` | `scripts/test-landing-provider-links.mjs` |
 | `test:provider-register` | `scripts/test-provider-register.mjs` |
@@ -247,6 +261,7 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `test:order-8-status` | `scripts/test-order-8-status.mjs` |
 | `test:register-page` | `scripts/test-register-page.mjs` |
 | `test:reports` | `scripts/test-reports.mjs` (Reports page smoke; owner/admin) |
+| `test:bartender-role` | `scripts/test-bartender-role.mjs` (Users → Add user → role dropdown includes Bartender) |
 
 `test-menu-logo` and `test-websocket` have no npm script; run via `node front/scripts/<name>.mjs`.
 
@@ -259,6 +274,40 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 - **Seed demo products:** `docker compose exec back python -m app.seeds.seed_demo_products`.
 
 See `AGENTS.md` for full seed and deploy notes.
+
+---
+
+## Coverage summary
+
+| Area | Covered by | Notes |
+|------|------------|--------|
+| **Reservations** | Public + staff scripts, `run-reservation-tests.sh` | Public flow cancels booking by token; staff flow creates/cancels. |
+| **Demo data** | `test-demo-data.mjs` | Tenant 1: tables, products, `/book/1`. |
+| **Tables** | `test-tables-page.mjs` | View toggle, Table view and data table. |
+| **Landing** | Version, provider links | Version bar; footer links to provider login/register. |
+| **Provider portal** | Register, add-product, landing links | No dedicated “login only” test; add-product covers login + dashboard. |
+| **Staff auth** | Register page content, full register | Who-is-this-for; full registration (no cleanup). |
+| **Orders** | Order #8 status dropdown | Requires existing order in Active Orders. |
+| **Reports** | `test-reports.mjs` | Smoke: page loads (owner/admin). |
+| **Users / Bartender role** | `test-bartender-role.mjs` | Admin/owner: /users → Add user → role dropdown includes Bartender. |
+| **Catalog** | `test-catalog.mjs` | Cards and image placeholders. |
+| **Menu (customer)** | `test-menu-logo.mjs` | Logo on `/menu/:token`. |
+| **WebSocket** | `test-websocket.mjs` | Post-login WS (ws-bridge required). |
+
+**Not covered (or partial):** No automated cleanup of test-created data (e.g. provider/restaurant registration leaves DB entries). No Puppeteer tests for settings, inventory, or tables canvas. Unit tests (Karma/Jasmine) are separate; see `npm test` in front.
+
+---
+
+### Bartender role (Users page)
+
+Login as admin or owner, open `/users`, click “Add user”, and assert the role dropdown includes the “Bartender” option.
+
+```bash
+npm run test:bartender-role --prefix front
+# Or: LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/test-bartender-role.mjs
+```
+
+- **Env:** `BASE_URL`, `LOGIN_EMAIL`, `LOGIN_PASSWORD` (admin or owner), `HEADLESS`.
 
 ---
 

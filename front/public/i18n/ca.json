@@ -1,5 +1,7 @@
 {
   "COMMON": {
+    "ACTIONS": "Accions",
+    "COPY": "Copiar",
     "SAVE": "Desar",
     "SAVING": "Desant...",
     "CANCEL": "Cancel·lar",
@@ -71,7 +73,25 @@
     "TABLES_TITLE": "Taules",
     "TABLES_DESC": "Veu i gestiona les taules",
     "ORDERS_TITLE": "Comandes",
-    "ORDERS_DESC": "Fes el seguiment de les comandes dels clients"
+    "ORDERS_DESC": "Fes el seguiment de les comandes dels clients",
+    "CATALOG_TITLE": "Catàleg",
+    "CATALOG_DESC": "Catàleg del proveïdor i articles del menú",
+    "RESERVATIONS_TITLE": "Reserves",
+    "RESERVATIONS_DESC": "Veure i gestionar reserves de taules",
+    "KITCHEN_TITLE": "Pantalla de cuina",
+    "KITCHEN_DESC": "Vista de comandes per a la cuina",
+    "REPORTS_TITLE": "Informes",
+    "REPORTS_DESC": "Anàlisi de vendes i ingressos",
+    "INVENTORY_TITLE": "Inventari",
+    "INVENTORY_DESC": "Stock i gestió d'inventari",
+    "USERS_TITLE": "Usuaris",
+    "USERS_DESC": "Gestió del personal i usuaris",
+    "SETTINGS_TITLE": "Configuració",
+    "SETTINGS_DESC": "Configuració del restaurant i de l'app",
+    "HELP_TITLE": "Ajuda",
+    "HELP_DESC": "Documentació i suport",
+    "HELP_ISSUES": "Issues (GitHub)",
+    "HELP_DISCUSSIONS": "Discussions (GitHub)"
   },
   "AUTH": {
     "LOGIN": "Iniciar sessió",
@@ -352,7 +372,12 @@
     "UNASSIGNED": "Sense assignar",
     "ASSIGN_WAITER": "Assignar cambrer",
     "DEFAULT_WAITER": "Cambrer per defecte",
-    "SECTION_DEFAULT": "Per defecte de secció"
+    "SECTION_DEFAULT": "Per defecte de secció",
+    "VIEW_TILES": "Rajoles",
+    "VIEW_TABLE": "Taula",
+    "COL_STATUS": "Estat",
+    "PIN": "PIN",
+    "OPEN_MENU": "Obrir menú"
   },
   "TABLE_STATUS": {
     "available": "Disponible",
@@ -756,6 +781,7 @@
       "OWNER": "Propietari",
       "ADMIN": "Administrador",
       "KITCHEN": "Personal de Cuina",
+      "BARTENDER": "Cambrer de barra",
       "WAITER": "Cambrer",
       "RECEPTIONIST": "Recepcionista"
     }

@@ -5,7 +5,7 @@ The **kitchen display** is a dedicated full-screen view for the kitchen: large, 
 ## URL and access
 
 - **URL:** `/kitchen` (e.g. `http://localhost:4202/kitchen`)
-- **Access:** Same as Orders — authenticated users with order access (owner, admin, kitchen, waiter, receptionist). Route protected by `authGuard` and `orderAccessGuard`.
+- **Access:** Same as Orders — authenticated users with order access (owner, admin, kitchen, bartender, waiter, receptionist). Route protected by `authGuard` and `orderAccessGuard`.
 
 ## Features
 

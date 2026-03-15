@@ -1,5 +1,7 @@
 {
   "COMMON": {
+    "ACTIONS": "Aktionen",
+    "COPY": "Kopieren",
     "SAVE": "Speichern",
     "SAVING": "Speichern...",
     "CANCEL": "Abbrechen",
@@ -71,7 +73,25 @@
     "TABLES_TITLE": "Tische",
     "TABLES_DESC": "Tische ansehen und verwalten",
     "ORDERS_TITLE": "Bestellungen",
-    "ORDERS_DESC": "Kundenbestellungen verfolgen"
+    "ORDERS_DESC": "Kundenbestellungen verfolgen",
+    "CATALOG_TITLE": "Katalog",
+    "CATALOG_DESC": "Anbieterkatalog und Menüpunkte",
+    "RESERVATIONS_TITLE": "Reservierungen",
+    "RESERVATIONS_DESC": "Reservierungen anzeigen und verwalten",
+    "KITCHEN_TITLE": "Küchenanzeige",
+    "KITCHEN_DESC": "Bestellansicht für die Küche",
+    "REPORTS_TITLE": "Berichte",
+    "REPORTS_DESC": "Umsatz- und Erlösanalyse",
+    "INVENTORY_TITLE": "Inventar",
+    "INVENTORY_DESC": "Lager- und Bestandsverwaltung",
+    "USERS_TITLE": "Benutzer",
+    "USERS_DESC": "Personal- und Benutzerverwaltung",
+    "SETTINGS_TITLE": "Konfiguration",
+    "SETTINGS_DESC": "Restaurant- und App-Einstellungen",
+    "HELP_TITLE": "Hilfe",
+    "HELP_DESC": "Dokumentation und Support",
+    "HELP_ISSUES": "Issues (GitHub)",
+    "HELP_DISCUSSIONS": "Diskussionen (GitHub)"
   },
   "AUTH": {
     "LOGIN": "Anmelden",
@@ -352,7 +372,12 @@
     "UNASSIGNED": "Nicht zugewiesen",
     "ASSIGN_WAITER": "Kellner zuweisen",
     "DEFAULT_WAITER": "Standardkellner",
-    "SECTION_DEFAULT": "Bereichsstandard"
+    "SECTION_DEFAULT": "Bereichsstandard",
+    "VIEW_TILES": "Kacheln",
+    "VIEW_TABLE": "Tabelle",
+    "COL_STATUS": "Status",
+    "PIN": "PIN",
+    "OPEN_MENU": "Menü öffnen"
   },
   "TABLE_STATUS": {
     "available": "Verfügbar",
@@ -756,6 +781,7 @@
       "OWNER": "Eigentümer",
       "ADMIN": "Administrator",
       "KITCHEN": "Küchenpersonal",
+      "BARTENDER": "Barkeeper",
       "WAITER": "Kellner",
       "RECEPTIONIST": "Empfangsmitarbeiter"
     }

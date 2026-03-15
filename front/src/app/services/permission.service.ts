@@ -73,6 +73,12 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'order:read', 'order:item_status',
   ]),
 
+  bartender: new Set([
+    'product:read',
+    'catalog:read',
+    'order:read', 'order:item_status',
+  ]),
+
   waiter: new Set([
     'product:read',
     'catalog:read',
@@ -99,14 +105,14 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
  * Routes and their required roles
  */
 const ROUTE_ROLES: Record<string, UserRole[]> = {
-  '/': ['owner', 'admin', 'kitchen', 'waiter', 'receptionist'],
-  '/products': ['owner', 'admin', 'kitchen', 'waiter', 'receptionist'],
-  '/catalog': ['owner', 'admin', 'kitchen', 'waiter', 'receptionist'],
+  '/': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
+  '/products': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
+  '/catalog': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
   '/tables': ['owner', 'admin', 'waiter', 'receptionist'],
   '/tables/canvas': ['owner', 'admin'],
   '/reservations': ['owner', 'admin', 'waiter', 'receptionist'],
-  '/orders': ['owner', 'admin', 'kitchen', 'waiter', 'receptionist'],
-  '/kitchen': ['owner', 'admin', 'kitchen', 'waiter', 'receptionist'],
+  '/orders': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
+  '/kitchen': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
   '/inventory': ['owner', 'admin'],
   '/reports': ['owner', 'admin'],
   '/settings': ['owner', 'admin'],
@@ -221,6 +227,6 @@ export class PermissionService {
     }
 
     // Default: all roles
-    return ['owner', 'admin', 'kitchen', 'waiter', 'receptionist'];
+    return ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'];
   }
 }

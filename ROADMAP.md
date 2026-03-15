@@ -18,6 +18,8 @@
 - **Deployment**: Config guide for domain/IP, `API_URL`, `WS_URL`, CORS. See `docs/0004-deployment.md`.
 - **Provider portal**: Suppliers register at `/provider/register`, log in at `/provider/login`, manage catalog at `/provider` (tile/list view, search, add/edit/delete products, company details, bank info). API: `GET/PUT /provider/me`, `GET/POST/PUT/DELETE /provider/products`, etc. See `docs/0014-provider-portal.md`.
 - **Kitchen display**: Full-screen view at `/kitchen` for kitchen staff — large order cards, auto-refresh (15s) and WebSocket, optional sound on new orders; read-only. Same access as Orders. See `docs/0015-kitchen-display.md`.
+- **Reports (Sales & Revenue)**: Date range, summary, reservation count and by source (public/staff), by product/category/table/waiter, CSS charts, CSV/Excel export. Owner/admin only. See `docs/0016-reports.md`.
+- **Dashboard**: Quick links at `/dashboard` to Catalog, Reservations, Kitchen display, Reports, Inventory, Users, Configuration (admin sections shown only to owner/admin), plus Help section with links to [GitHub Issues](https://github.com/raro42/pos2/issues) and [GitHub Discussions](https://github.com/raro42/pos2/discussions).
 
 ### ❌ Missing Features / To Be Implemented
 - **Customer accounts (planned)**: Registration, login, email verification, MFA, customer order history, invoice generation. Not implemented; see `docs/0002-customer-features-plan.md` for full scope.
@@ -25,7 +27,7 @@
 - **Stricter “immediate payment” (optional)**: Today the menu auto-opens payment after place order; customers can still close the modal. A strict “cannot place another order or proceed without paying” flow is not enforced.
 
 ### Documentation reference
-- **`docs/`**: `0008-order-management-logic.md`, `0007-implementation-verification.md`, `0010-table-reservation-implementation-plan.md`, `0011-table-reservation-user-guide.md`, `0009-table-pin-security.md`, `0012-translation-implementation.md`, `0004-deployment.md`, `0002-customer-features-plan.md`, `0005-email-sending-options.md`, `0006-gmail-setup-instructions.md`, `0013-verification-alternatives.md`.
+- **`docs/`**: `0008-order-management-logic.md`, `0007-implementation-verification.md`, `0010-table-reservation-implementation-plan.md`, `0011-table-reservation-user-guide.md`, `0009-table-pin-security.md`, `0012-translation-implementation.md`, `0004-deployment.md`, `0002-customer-features-plan.md`, `0005-email-sending-options.md`, `0006-gmail-setup-instructions.md`, `0013-verification-alternatives.md`, `0015-kitchen-display.md`, `0016-reports.md`, `0014-provider-portal.md`.
 - **`CHANGELOG.md`**: Tracks unreleased and released changes (reservations, order history, WebSocket, fixes).
 
 ---

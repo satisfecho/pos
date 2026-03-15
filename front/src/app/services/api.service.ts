@@ -4,7 +4,7 @@ import { Observable, BehaviorSubject, tap, Subject, catchError, of, map } from '
 import { environment } from '../../environments/environment';
 
 // Interfaces
-export type UserRole = 'owner' | 'admin' | 'kitchen' | 'waiter' | 'receptionist' | 'provider';
+export type UserRole = 'owner' | 'admin' | 'kitchen' | 'bartender' | 'waiter' | 'receptionist' | 'provider';
 
 export interface User {
   id?: number;
@@ -424,6 +424,10 @@ export interface SalesReport {
   by_category: { category: string; quantity: number; revenue_cents: number }[];
   by_table: { table_name: string; revenue_cents: number; order_count: number }[];
   by_waiter: { waiter_name: string; revenue_cents: number; order_count: number }[];
+  reservations?: {
+    total: number;
+    by_source: { source: string; count: number }[];
+  };
 }
 
 // Provider & Catalog Interfaces

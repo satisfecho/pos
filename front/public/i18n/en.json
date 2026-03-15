@@ -76,7 +76,25 @@
     "TABLES_TITLE": "Tables",
     "TABLES_DESC": "View and manage tables",
     "ORDERS_TITLE": "Orders",
-    "ORDERS_DESC": "Track customer orders"
+    "ORDERS_DESC": "Track customer orders",
+    "CATALOG_TITLE": "Catalog",
+    "CATALOG_DESC": "Provider catalog and menu items",
+    "RESERVATIONS_TITLE": "Reservations",
+    "RESERVATIONS_DESC": "View and manage table reservations",
+    "KITCHEN_TITLE": "Kitchen display",
+    "KITCHEN_DESC": "Orders view for kitchen",
+    "REPORTS_TITLE": "Reports",
+    "REPORTS_DESC": "Sales and revenue analysis",
+    "INVENTORY_TITLE": "Inventory",
+    "INVENTORY_DESC": "Stock and inventory management",
+    "USERS_TITLE": "Users",
+    "USERS_DESC": "Staff and user management",
+    "SETTINGS_TITLE": "Configuration",
+    "SETTINGS_DESC": "Restaurant and app settings",
+    "HELP_TITLE": "Help",
+    "HELP_DESC": "Documentation and support",
+    "HELP_ISSUES": "Issues (GitHub)",
+    "HELP_DISCUSSIONS": "Discussions (GitHub)"
   },
   "AUTH": {
     "LOGIN": "Login",
@@ -362,7 +380,12 @@
     "EXPORT": "Export",
     "EXPORT_CSV": "Export CSV",
     "EXPORT_EXCEL": "Export Excel",
-    "EXPORTING": "Exporting..."
+    "EXPORTING": "Exporting...",
+    "RESERVATIONS": "Reservations",
+    "RESERVATIONS_TOTAL": "Total reservations",
+    "RESERVATIONS_BY_SOURCE": "By source",
+    "RESERVATIONS_SOURCE_PUBLIC": "Public (book page)",
+    "RESERVATIONS_SOURCE_STAFF": "Staff"
   },
   "TABLES": {
     "TITLE": "Tables",
@@ -804,6 +827,7 @@
       "OWNER": "Owner",
       "ADMIN": "Administrator",
       "KITCHEN": "Kitchen Staff",
+      "BARTENDER": "Bartender",
       "WAITER": "Waiter",
       "RECEPTIONIST": "Receptionist"
     }

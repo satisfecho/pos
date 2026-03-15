@@ -76,7 +76,25 @@
     "TABLES_TITLE": "Mesas",
     "TABLES_DESC": "Ver y gestionar mesas",
     "ORDERS_TITLE": "Pedidos",
-    "ORDERS_DESC": "Rastrear pedidos de clientes"
+    "ORDERS_DESC": "Rastrear pedidos de clientes",
+    "CATALOG_TITLE": "Catálogo",
+    "CATALOG_DESC": "Catálogo de proveedor y artículos del menú",
+    "RESERVATIONS_TITLE": "Reservas",
+    "RESERVATIONS_DESC": "Ver y gestionar reservas de mesas",
+    "KITCHEN_TITLE": "Pantalla de cocina",
+    "KITCHEN_DESC": "Vista de pedidos para cocina",
+    "REPORTS_TITLE": "Informes",
+    "REPORTS_DESC": "Análisis de ventas e ingresos",
+    "INVENTORY_TITLE": "Inventario",
+    "INVENTORY_DESC": "Stock y gestión de inventario",
+    "USERS_TITLE": "Usuarios",
+    "USERS_DESC": "Gestión de personal y usuarios",
+    "SETTINGS_TITLE": "Configuración",
+    "SETTINGS_DESC": "Ajustes del restaurante y la app",
+    "HELP_TITLE": "Ayuda",
+    "HELP_DESC": "Documentación y soporte",
+    "HELP_ISSUES": "Issues (GitHub)",
+    "HELP_DISCUSSIONS": "Discusiones (GitHub)"
   },
   "AUTH": {
     "LOGIN": "Iniciar sesión",
@@ -363,7 +381,12 @@
     "EXPORT": "Exportar",
     "EXPORT_CSV": "Exportar CSV",
     "EXPORT_EXCEL": "Exportar Excel",
-    "EXPORTING": "Exportando..."
+    "EXPORTING": "Exportando...",
+    "RESERVATIONS": "Reservas",
+    "RESERVATIONS_TOTAL": "Total reservas",
+    "RESERVATIONS_BY_SOURCE": "Por origen",
+    "RESERVATIONS_SOURCE_PUBLIC": "Público (página reservar)",
+    "RESERVATIONS_SOURCE_STAFF": "Personal"
   },
   "TABLES": {
     "TITLE": "Mesas",
@@ -804,6 +827,7 @@
       "OWNER": "Propietario",
       "ADMIN": "Administrador",
       "KITCHEN": "Personal de Cocina",
+      "BARTENDER": "Camarero de barra",
       "WAITER": "Camarero",
       "RECEPTIONIST": "Recepcionista"
     }

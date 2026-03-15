@@ -164,6 +164,25 @@ def _build_report_payload(tenant_id: int, session: Session, from_date: date, to_
         for k, v in sorted(by_waiter.items(), key=lambda x: -x[1]["revenue_cents"])
     ]
 
+    # Reservations in date range (by reservation_date); source = public (token set) vs staff (no token)
+    reservations = session.exec(
+        select(models.Reservation)
+        .where(models.Reservation.tenant_id == tenant_id)
+        .where(models.Reservation.reservation_date >= from_date)
+        .where(models.Reservation.reservation_date <= to_date)
+    ).all()
+    total_reservations = len(reservations)
+    by_source: dict[str, int] = defaultdict(int)
+    for r in reservations:
+        source = "public" if r.token else "staff"
+        by_source[source] += 1
+    reservations_summary = {
+        "total": total_reservations,
+        "by_source": [
+            {"source": k, "count": v} for k, v in sorted(by_source.items(), key=lambda x: -x[1])
+        ],
+    }
+
     return {
         "from_date": from_date.isoformat(),
         "to_date": to_date.isoformat(),
@@ -172,6 +191,7 @@ def _build_report_payload(tenant_id: int, session: Session, from_date: date, to_
             "total_orders": total_orders,
             "daily": summary_daily,
         },
+        "reservations": reservations_summary,
         "by_product": by_product_list,
         "by_category": by_category_list,
         "by_table": by_table_list,
@@ -230,6 +250,14 @@ def export_report(
             ws.append([row["date"], row["revenue_cents"], row["order_count"]])
         ws.append([])
         ws.append(["Total", data["summary"]["total_revenue_cents"], data["summary"]["total_orders"]])
+        # Reservations
+        res = data.get("reservations", {})
+        ws_res = wb.create_sheet("Reservations")
+        ws_res.append(["Source", "Count"])
+        for row in res.get("by_source", []):
+            ws_res.append([row["source"], row["count"]])
+        ws_res.append([])
+        ws_res.append(["Total", res.get("total", 0)])
         # Products
         ws2 = wb.create_sheet("By Product")
         ws2.append(["Product", "Category", "Quantity", "Revenue (cents)"])

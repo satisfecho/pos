@@ -35,15 +35,8 @@
   @if (loading() && !report()) {
     <div class="loading-state">{{ 'REPORTS.LOADING' | translate }}</div>
   } @else if (report(); as r) {
-    @if (r.summary.total_orders === 0) {
-      <div class="empty-state">
-        <div class="empty-icon">📊</div>
-        <h2>{{ 'REPORTS.NO_DATA' | translate }}</h2>
-        <p>{{ 'REPORTS.NO_DATA_DESC' | translate }}</p>
-      </div>
-    } @else {
-      <!-- Summary cards -->
-      <section class="report-section summary-section">
+    <!-- Summary cards (always shown: revenue, orders, reservations) -->
+    <section class="report-section summary-section">
         <h2>{{ 'REPORTS.SUMMARY' | translate }}</h2>
         <div class="summary-cards">
           <div class="summary-card revenue">
@@ -54,10 +47,36 @@
             <span class="card-label">{{ 'REPORTS.TOTAL_ORDERS' | translate }}</span>
             <span class="card-value">{{ r.summary.total_orders }}</span>
           </div>
+          @if (r.reservations) {
+            <div class="summary-card reservations">
+              <span class="card-label">{{ 'REPORTS.RESERVATIONS_TOTAL' | translate }}</span>
+              <span class="card-value">{{ r.reservations.total }}</span>
+            </div>
+          }
         </div>
 
-        <!-- Daily sales chart -->
-        @if (r.summary.daily.length > 0) {
+        <!-- Reservations by source -->
+        @if ((r.reservations?.by_source?.length ?? 0) > 0) {
+          <div class="chart-block reservations-block">
+            <h3>{{ 'REPORTS.RESERVATIONS' | translate }} – {{ 'REPORTS.RESERVATIONS_BY_SOURCE' | translate }}</h3>
+            <div class="reservations-by-source">
+              @for (row of (r.reservations?.by_source ?? []); track row.source) {
+                <div class="source-row">
+                  <span class="source-label">{{ getReservationSourceLabel(row.source) }}</span>
+                  <span class="source-count">{{ row.count }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Sales empty state or daily chart -->
+        @if (r.summary.total_orders === 0) {
+          <div class="empty-state compact">
+            <p>{{ 'REPORTS.NO_DATA' | translate }}</p>
+            <p class="muted">{{ 'REPORTS.NO_DATA_DESC' | translate }}</p>
+          </div>
+        } @else if (r.summary.daily.length > 0) {
           <div class="chart-block">
             <h3>{{ 'REPORTS.DAILY_SALES' | translate }}</h3>
             <div class="bar-chart daily-chart">
@@ -75,6 +94,7 @@
         }
       </section>
 
+      @if (r.summary.total_orders > 0) {
       <!-- By product -->
       <section class="report-section">
         <h2>{{ 'REPORTS.BY_PRODUCT' | translate }}</h2>

@@ -29,6 +29,7 @@ class UserRole(str, Enum):
     owner = "owner"
     admin = "admin"
     kitchen = "kitchen"
+    bartender = "bartender"  # Prepares drinks and beverages
     waiter = "waiter"
     receptionist = "receptionist"
     provider = "provider"  # Product provider (supplier) – no tenant, has provider_id

@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { ApiService, SalesReport } from '../services/api.service';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-reports',
@@ -20,6 +20,7 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 export class ReportsComponent implements OnInit {
   private api = inject(ApiService);
+  private translate = inject(TranslateService);
 
   report = signal<SalesReport | null>(null);
   loading = signal(true);
@@ -99,6 +100,12 @@ export class ReportsComponent implements OnInit {
   formatShortDate(iso: string): string {
     const d = new Date(iso);
     return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  getReservationSourceLabel(source: string): string {
+    if (source === 'public') return this.translate.instant('REPORTS.RESERVATIONS_SOURCE_PUBLIC');
+    if (source === 'staff') return this.translate.instant('REPORTS.RESERVATIONS_SOURCE_STAFF');
+    return source;
   }
 
   barWidth(cents: number): string {

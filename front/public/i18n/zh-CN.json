@@ -1,5 +1,7 @@
 {
   "COMMON": {
+    "ACTIONS": "操作",
+    "COPY": "复制",
     "SAVE": "保存",
     "SAVING": "保存中...",
     "CANCEL": "取消",
@@ -70,7 +72,25 @@
     "TABLES_TITLE": "餐桌",
     "TABLES_DESC": "查看和管理餐桌",
     "ORDERS_TITLE": "订单",
-    "ORDERS_DESC": "跟踪客户订单"
+    "ORDERS_DESC": "跟踪客户订单",
+    "CATALOG_TITLE": "目录",
+    "CATALOG_DESC": "供应商目录和菜单项",
+    "RESERVATIONS_TITLE": "预订",
+    "RESERVATIONS_DESC": "查看和管理桌位预订",
+    "KITCHEN_TITLE": "厨房显示屏",
+    "KITCHEN_DESC": "厨房订单视图",
+    "REPORTS_TITLE": "报表",
+    "REPORTS_DESC": "销售与收入分析",
+    "INVENTORY_TITLE": "库存",
+    "INVENTORY_DESC": "库存管理",
+    "USERS_TITLE": "用户",
+    "USERS_DESC": "员工和用户管理",
+    "SETTINGS_TITLE": "配置",
+    "SETTINGS_DESC": "餐厅和应用设置",
+    "HELP_TITLE": "帮助",
+    "HELP_DESC": "文档与支持",
+    "HELP_ISSUES": "Issues (GitHub)",
+    "HELP_DISCUSSIONS": "讨论 (GitHub)"
   },
   "AUTH": {
     "LOGIN": "登录",
@@ -351,7 +371,12 @@
     "UNASSIGNED": "未分配",
     "ASSIGN_WAITER": "分配服务员",
     "DEFAULT_WAITER": "默认服务员",
-    "SECTION_DEFAULT": "区域默认"
+    "SECTION_DEFAULT": "区域默认",
+    "VIEW_TILES": "磁贴",
+    "VIEW_TABLE": "表格",
+    "COL_STATUS": "状态",
+    "PIN": "PIN",
+    "OPEN_MENU": "打开菜单"
   },
   "TABLE_STATUS": {
     "available": "空闲",
@@ -745,6 +770,7 @@
       "OWNER": "所有者",
       "ADMIN": "管理员",
       "KITCHEN": "厨房人员",
+      "BARTENDER": "调酒师",
       "WAITER": "服务员",
       "RECEPTIONIST": "接待员"
     }

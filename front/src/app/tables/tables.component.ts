@@ -25,6 +25,16 @@ import { CommonModule } from '@angular/common';
               </svg>
               {{ 'TABLES.FLOOR_PLAN' | translate }}
             </a>
+            @if (!showForm() && tables().length > 0) {
+              <div class="view-toggle">
+                <button type="button" class="btn btn-ghost btn-sm" [class.active]="viewMode() === 'tiles'" (click)="viewMode.set('tiles')">
+                  {{ 'TABLES.VIEW_TILES' | translate }}
+                </button>
+                <button type="button" class="btn btn-ghost btn-sm" [class.active]="viewMode() === 'table'" (click)="viewMode.set('table')">
+                  {{ 'TABLES.VIEW_TABLE' | translate }}
+                </button>
+              </div>
+            }
           </div>
           @if (!showForm() && floors().length > 0) {
             <button class="btn btn-primary" (click)="showForm.set(true)">
@@ -94,8 +104,83 @@ import { CommonModule } from '@angular/common';
               <p>{{ 'TABLES.CREATE_FIRST_FLOOR_DESC' | translate }}</p>
               <button class="btn btn-primary" (click)="showForm.set(true)">{{ 'TABLES.ADD_TABLE' | translate }}</button>
             </div>
+          } @else if (viewMode() === 'table') {
+            <!-- Table view: all tables in a data table -->
+            <div class="table-responsive">
+              <table class="tables-data-table">
+                <thead>
+                  <tr>
+                    <th>{{ 'TABLES.NAME' | translate }}</th>
+                    <th>{{ 'TABLES.FLOOR' | translate }}</th>
+                    <th>{{ 'TABLES.SEATS' | translate }}</th>
+                    <th>{{ 'TABLES.COL_STATUS' | translate }}</th>
+                    <th>{{ 'TABLES.PIN' | translate }}</th>
+                    <th>{{ 'TABLES.ASSIGNED_WAITER' | translate }}</th>
+                    <th class="th-actions">{{ 'COMMON.ACTIONS' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (table of allTablesOrdered(); track table.id) {
+                    <tr>
+                      <td>
+                        @if (editingTableId() === table.id) {
+                          <div class="table-cell-edit">
+                            <input type="text" [(ngModel)]="editingName" class="edit-input-inline" (keydown.enter)="saveTable(table)" (keydown.escape)="cancelEdit()">
+                            <input type="number" [(ngModel)]="editingSeatCount" class="edit-input-inline edit-seats" min="1" max="20" (keydown.enter)="saveTable(table)" (keydown.escape)="cancelEdit()">
+                          </div>
+                        } @else {
+                          <span class="table-name" (click)="startEdit(table)">{{ table.name }}</span>
+                        }
+                      </td>
+                      <td>{{ getFloorName(table.floor_id) }}</td>
+                      @if (editingTableId() !== table.id) {
+                        <td>{{ table.seat_count ?? '—' }}</td>
+                      } @else {
+                        <td>—</td>
+                      }
+                      <td>
+                        @if (table.is_active) {
+                          <span class="status-badge status-active status-inline"><span class="status-dot"></span>{{ 'TABLES.ACTIVE' | translate }}</span>
+                        } @else {
+                          <span class="status-badge status-inactive status-inline"><span class="status-dot"></span>{{ 'TABLES.INACTIVE' | translate }}</span>
+                        }
+                      </td>
+                      <td class="pin-cell">{{ table.order_pin ?? '—' }}</td>
+                      <td>
+                        <select class="waiter-select-inline" (change)="onWaiterAssign(table, $event)">
+                          <option value="" [selected]="!table.assigned_waiter_id">{{ 'TABLES.UNASSIGNED' | translate }}</option>
+                          @for (w of waiters(); track w.id) {
+                            <option [value]="w.id" [selected]="table.assigned_waiter_id === w.id">{{ w.full_name || w.email }}</option>
+                          }
+                        </select>
+                        @if (!table.assigned_waiter_id && table.effective_waiter_name) {
+                          <div class="waiter-inherited-inline">{{ table.effective_waiter_name }}</div>
+                        }
+                      </td>
+                      <td class="td-actions">
+                        @if (editingTableId() === table.id) {
+                          <button type="button" class="icon-btn icon-btn-success" (click)="saveTable(table)" [title]="'COMMON.SAVE' | translate">✓</button>
+                          <button type="button" class="icon-btn" (click)="cancelEdit()" [title]="'COMMON.CANCEL' | translate">✕</button>
+                        } @else {
+                          <button type="button" class="icon-btn icon-btn-edit" (click)="startEdit(table)" [title]="'COMMON.EDIT' | translate">✎</button>
+                          @if (table.is_active) {
+                            <button type="button" class="btn btn-sm btn-ghost" (click)="regeneratePin(table)" [disabled]="activatingTableId() === table.id" [title]="'TABLES.NEW_PIN' | translate">↻</button>
+                            <button type="button" class="btn btn-sm btn-warning" (click)="closeTableSession(table)" [disabled]="activatingTableId() === table.id" [title]="'TABLES.CLOSE_TABLE' | translate">⌫</button>
+                          } @else {
+                            <button type="button" class="btn btn-sm btn-success" (click)="activateTableSession(table)" [disabled]="activatingTableId() === table.id" [title]="'TABLES.ACTIVATE' | translate">▶</button>
+                          }
+                          <a [href]="getMenuUrl(table)" target="_blank" class="btn btn-secondary btn-sm" [title]="'TABLES.OPEN_MENU' | translate">↗</a>
+                          <button type="button" class="icon-btn" (click)="copyLink(table)" [title]="'COMMON.COPY' | translate">⎘</button>
+                          <button type="button" class="icon-btn icon-btn-danger" (click)="deleteTable(table)" [title]="'COMMON.DELETE' | translate">🗑</button>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           } @else {
-            <!-- Grouped by Floor -->
+            <!-- Tiles view: grouped by Floor -->
             @for (floor of floors(); track floor.id) {
               @if (getTablesByFloor(floor.id!).length > 0) {
                 <div class="floor-section">
@@ -340,8 +425,10 @@ import { CommonModule } from '@angular/common';
   `,
   styles: [`
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); }
-    .header-left { display: flex; align-items: center; gap: var(--space-4); }
+    .header-left { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
     .page-header h1 { font-size: 1.5rem; font-weight: 600; color: var(--color-text); margin: 0; }
+    .view-toggle { display: flex; gap: 2px; }
+    .view-toggle .btn.active { background: var(--color-bg); color: var(--color-text); font-weight: 500; }
 
     .btn { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4); border: none; border-radius: var(--radius-md); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.15s ease; text-decoration: none; }
     .btn-primary { background: var(--color-primary); color: white; &:hover { background: var(--color-primary-hover); } }
@@ -561,6 +648,25 @@ import { CommonModule } from '@angular/common';
       to { transform: rotate(360deg); }
     }
 
+    /* Table view (data table) */
+    .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: var(--space-6); }
+    .tables-data-table { width: 100%; border-collapse: collapse; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+    .tables-data-table th, .tables-data-table td { padding: var(--space-3) var(--space-4); text-align: left; border-bottom: 1px solid var(--color-border); }
+    .tables-data-table th { background: var(--color-bg); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-muted); }
+    .tables-data-table th.th-actions { text-align: right; }
+    .tables-data-table td.td-actions { text-align: right; }
+    .tables-data-table tbody tr:hover td { background: var(--color-bg); }
+    .tables-data-table .table-name { font-weight: 600; cursor: pointer; }
+    .tables-data-table .table-name:hover { color: var(--color-primary); }
+    .tables-data-table .pin-cell { font-family: ui-monospace, monospace; font-weight: 600; letter-spacing: 0.05em; }
+    .tables-data-table .waiter-select-inline { padding: var(--space-1) var(--space-2); border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.8125rem; background: var(--color-surface); color: var(--color-text); min-width: 120px; }
+    .tables-data-table .waiter-inherited-inline { font-size: 0.6875rem; color: var(--color-text-muted); font-style: italic; margin-top: 2px; }
+    .tables-data-table .status-inline { display: inline-flex; align-items: center; gap: var(--space-1); }
+    .tables-data-table .table-cell-edit { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
+    .tables-data-table .edit-input-inline { padding: var(--space-1) var(--space-2); border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.875rem; }
+    .tables-data-table .edit-input-inline.edit-seats { width: 56px; }
+    .tables-data-table .td-actions { display: flex; gap: var(--space-1); justify-content: flex-end; flex-wrap: wrap; }
+
     @media (max-width: 768px) {
       .table-grid { grid-template-columns: 1fr; }
     }
@@ -575,6 +681,7 @@ export class TablesComponent implements OnInit {
   loading = signal(true);
   error = signal('');
   showForm = signal(false);
+  viewMode = signal<'tiles' | 'table'>('tiles');
   newTableName = '';
   selectedFloorId: number | null = null;
   tenantSettings = signal<TenantSettings | null>(null);
@@ -634,6 +741,24 @@ export class TablesComponent implements OnInit {
 
   getTablesByFloor(floorId: number): Table[] {
     return this.tables().filter(t => t.floor_id === floorId);
+  }
+
+  getFloorName(floorId?: number | null): string {
+    if (floorId == null) return '—';
+    const floor = this.floors().find(f => f.id === floorId);
+    return floor?.name ?? '—';
+  }
+
+  /** All tables sorted by floor name then table name, for table view */
+  allTablesOrdered(): Table[] {
+    const floors = this.floors();
+    const tables = this.tables();
+    return [...tables].sort((a, b) => {
+      const nameA = this.getFloorName(a.floor_id);
+      const nameB = this.getFloorName(b.floor_id);
+      if (nameA !== nameB) return nameA.localeCompare(nameB);
+      return (a.name ?? '').localeCompare(b.name ?? '');
+    });
   }
 
   createTable(e: Event) {

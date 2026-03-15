@@ -3254,7 +3254,7 @@ def activate_table(
 ) -> dict:
     """
     Activate a table for ordering.
-    Generates a new PIN and creates an empty order for the table.
+    Generates a PIN; no order is created until the first item is added via the menu.
     """
     import secrets
 
@@ -3271,20 +3271,10 @@ def activate_table(
     # Generate a cryptographically random 4-digit PIN
     pin = str(secrets.randbelow(9000) + 1000)
 
-    # Create a new empty order for this table
-    new_order = models.Order(
-        table_id=table_id,
-        tenant_id=current_user.tenant_id,
-        status=models.OrderStatus.pending,
-        session_id=None,  # Shared order, no session binding
-    )
-    session.add(new_order)
-    session.flush()  # Get the order ID
-
-    # Update table with PIN and active order
+    # Activate table only; order is created when customer adds first items via POST /menu/.../order
     table.order_pin = pin
     table.is_active = True
-    table.active_order_id = new_order.id
+    table.active_order_id = None
     table.activated_at = datetime.now(timezone.utc)
 
     session.commit()
@@ -3295,7 +3285,7 @@ def activate_table(
         "name": table.name,
         "pin": pin,
         "is_active": True,
-        "active_order_id": new_order.id,
+        "active_order_id": None,
         "activated_at": table.activated_at.isoformat() if table.activated_at else None,
     }
 
@@ -3308,7 +3298,7 @@ def close_table(
 ) -> dict:
     """
     Close a table session.
-    Clears the PIN and deactivates the table.
+    Clears the PIN and deactivates the table. Deletes the active order if it has no items.
     """
     table = session.exec(
         select(models.Table).where(
@@ -3319,6 +3309,22 @@ def close_table(
 
     if not table:
         raise HTTPException(status_code=404, detail="Table not found")
+
+    # If there is an active order with no (active) items, delete it so we don't keep empty orders
+    if table.active_order_id:
+        order = session.get(models.Order, table.active_order_id)
+        if order:
+            all_items = session.exec(
+                select(models.OrderItem).where(models.OrderItem.order_id == order.id)
+            ).all()
+            active_count = sum(
+                1 for it in all_items
+                if not it.removed_by_customer and it.removed_by_user_id is None and it.status != models.OrderItemStatus.cancelled
+            )
+            if active_count == 0:
+                for it in all_items:
+                    session.delete(it)
+                session.delete(order)
 
     # Clear session data
     table.order_pin = None
@@ -4151,23 +4157,22 @@ def create_order(
         redis_conn.delete(attempts_key)
         redis_conn.delete(lock_key)
 
-    # ============ GET SHARED ORDER ============
-    # Use the table's active order (created when table was activated)
-    if not table.active_order_id:
-        raise HTTPException(
-            status_code=500, 
-            detail="No active order for this table. Please ask staff to reactivate the table."
-        )
+    # ============ GET OR CREATE SHARED ORDER ============
+    # Order is created when table is activated only as a slot; we create it on first item add.
+    # If no active order yet, we will create one below (requires at least one item).
+    order = None
+    if table.active_order_id:
+        order = session.get(models.Order, table.active_order_id)
+        if order and order.status == models.OrderStatus.paid:
+            order = None  # Will create a new order below if we have items
 
-    order = session.get(models.Order, table.active_order_id)
-    if not order:
-        raise HTTPException(
-            status_code=500, 
-            detail="Active order not found. Please ask staff to reactivate the table."
-        )
-
-    # If the active order is already paid, start a new order for this table (same PIN, no staff action needed)
-    if order.status == models.OrderStatus.paid:
+    if order is None:
+        # No order yet, or previous order was paid: create new order only if customer is adding items
+        if not order_data.items or len(order_data.items) == 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Add at least one product to place an order.",
+            )
         new_order = models.Order(
             table_id=table.id,
             tenant_id=table.tenant_id,
@@ -4180,6 +4185,9 @@ def create_order(
         session.add(table)
         session.flush()
         order = new_order
+        is_new_order = True
+    else:
+        is_new_order = False
 
     print(f"\n{'=' * 60}")
     print(f"[DEBUG] POST /menu/{table_token}/order")
@@ -4586,8 +4594,14 @@ def list_orders(
         # Get all items for removed count calculation
         all_items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order.id)).all()
         
-        # Calculate total from active items only (exclude items removed by customer OR staff)
-        active_items = [item for item in all_items if not item.removed_by_customer and item.removed_by_user_id is None]
+        # Calculate total from active items only (exclude items removed by customer OR staff, and cancelled)
+        active_items = [
+            item for item in all_items
+            if not item.removed_by_customer and item.removed_by_user_id is None and item.status != models.OrderItemStatus.cancelled
+        ]
+        # Do not list orders that have no products (empty orders are not allowed)
+        if len(active_items) == 0:
+            continue
         total_cents = sum(item.price_cents * item.quantity for item in active_items)
         
         result.append({

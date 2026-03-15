@@ -120,6 +120,15 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         Permission.ORDER_ITEM_STATUS,
     },
     
+    UserRole.bartender: {
+        # Products (read-only for viewing menu / drinks)
+        Permission.PRODUCT_READ,
+        Permission.CATALOG_READ,
+        # Orders (view and update item status for drinks/beverages)
+        Permission.ORDER_READ,
+        Permission.ORDER_ITEM_STATUS,
+    },
+    
     UserRole.waiter: {
         # Products (read-only)
         Permission.PRODUCT_READ,

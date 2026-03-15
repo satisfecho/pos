@@ -27,13 +27,13 @@ The frontend is Angular; the backend is FastAPI with PostgreSQL and Redis. All m
 | **Orders** | Full lifecycle (pending → preparing → ready → delivered → paid). Session-based orders per browser. Item-level status; partial delivery; order modification and cancellation before delivery; soft delete with “Show removed items” in staff UI. |
 | **Customer menu** | Browse menu, cart, place order, order history. Optional “immediate payment required” (checkout auto-opens after placing order). |
 | **Kitchen display** | Dedicated full-screen view at `/kitchen`: large order cards, auto-refresh and WebSocket updates, optional sound on new orders. Read-only; same access as Orders. See [docs/0015-kitchen-display.md](docs/0015-kitchen-display.md). |
-| **Reports** | Sales & revenue at `/reports` (owner/admin): date range, summary, by product/category/table/waiter, charts, CSV/Excel export. See [docs/0016-reports.md](docs/0016-reports.md). |
+| **Reports** | Sales & revenue at `/reports` (owner/admin): date range, summary, reservation count and by source (public/staff), by product/category/table/waiter, charts, CSV/Excel export. See [docs/0016-reports.md](docs/0016-reports.md). |
 | **Payments** | Stripe integration; per-tenant Stripe keys and currency. |
 | **Tables** | Table management, QR codes, canvas view. Table activation and 4-digit PIN so only present guests can order; PIN rate limiting via Redis. |
 | **Reservations** | Staff: list, create, edit, seat, finish, cancel at `/reservations`. Public: book at `/book/:tenantId`, view/cancel at `/reservation?token=...`. Table status: available / reserved / occupied. |
 | **Real-time** | WebSocket updates for order status; token-based WS auth (`/ws-token`). |
 | **i18n & currency** | Multiple UI languages (e.g. en, es, ca, de, zh-CN, hi); backend localized messages; per-tenant currency (EUR, USD, MXN, etc.). |
-| **Multi-tenant** | Isolated data per tenant; first user becomes owner; configurable roles and permissions (e.g. reservation read/write). |
+| **Multi-tenant** | Isolated data per tenant; first user becomes owner; configurable roles (owner, admin, kitchen, bartender, waiter, receptionist) and permissions (e.g. reservation read/write). |
 | **Provider portal** | Suppliers register at `/provider/register`, log in at `/provider/login`, and manage their catalog at `/provider` (tile/list view, search, add/edit/delete products, company details). See [docs/0014-provider-portal.md](docs/0014-provider-portal.md). |
 
 Planned but not yet implemented: customer accounts (registration, MFA, invoices), batch order operations, and stricter “must pay before continuing” flow. See [ROADMAP.md](ROADMAP.md) and [docs/0002-customer-features-plan.md](docs/0002-customer-features-plan.md).
@@ -63,8 +63,8 @@ Planned but not yet implemented: customer accounts (registration, MFA, invoices)
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>
-   cd pos2
+   git clone https://github.com/satisfecho/pos
+   cd pos
    ```
 
 2. **Configure environment**
@@ -104,6 +104,7 @@ Planned but not yet implemented: customer accounts (registration, MFA, invoices)
 | **Provider dashboard** | http://localhost:4202/provider |
 | **Kitchen display** | http://localhost:4202/kitchen |
 | **Reports (owner/admin)** | http://localhost:4202/reports |
+| **Dashboard (staff)** | http://localhost:4202/dashboard |
 
 If your frontend port is different (e.g. 4203), replace 4202 with that port. See [AGENTS.md](AGENTS.md) for how to detect the port and debug with logs.
 

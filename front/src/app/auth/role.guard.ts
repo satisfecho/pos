@@ -73,4 +73,4 @@ export const tableAccessGuard: CanActivateFn = roleGuard(['owner', 'admin', 'wai
 /**
  * Route guard that allows staff with order access (owner, admin, kitchen, waiter, receptionist)
  */
-export const orderAccessGuard: CanActivateFn = roleGuard(['owner', 'admin', 'kitchen', 'waiter', 'receptionist']);
+export const orderAccessGuard: CanActivateFn = roleGuard(['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist']);
