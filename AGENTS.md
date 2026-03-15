@@ -2,7 +2,7 @@
 
 These instructions apply to all work in this repository:
 
-- **Commits**: Do not add `Co-authored-by:`, `Signed-off-by:`, or any Cursor/agent/IDE attribution to commit messages. Do not advertise the agent or tool in commits. To enforce this locally, run `./scripts/install-git-hooks.sh` once (installs a prepare-commit-msg hook that strips such lines). **Always commit completed work**: when you finish a change, feature, or fix that the user asked for, stage and commit the changes so they are not lost. Do not leave the user to ask "was this committed?" — commit as part of doing the needed.
+- **Commits**: Do not add `Co-authored-by:`, `Signed-off-by:`, or any Cursor/agent/IDE attribution to commit messages. Do not advertise the agent or tool in commits. To enforce this locally, run `./scripts/install-git-hooks.sh` once (installs a prepare-commit-msg hook that strips such lines). **Always commit completed work**: when you finish a change, feature, or fix that the user asked for, stage and commit the changes so they are not lost. Do not leave the user to ask "was this committed?" — commit as part of doing the needed. **Do the full follow-through**: after committing, pull and push (or whatever is needed to sync with the remote) without asking. Do not prompt the user to confirm routine git or deployment steps — just do the needed so they do not have to comment on it.
 
 - Do not install anything on the host system. Use containers for any installs.
 - If any install is required, ask for approval before proceeding.
