@@ -51,6 +51,7 @@
     "TRANSLATIONS": "Translations",
     "SETTINGS": "Settings",
     "USERS": "Users",
+    "KITCHEN_DISPLAY": "Kitchen display",
     "LOGOUT": "Logout"
   },
   "LANDING": {
@@ -320,6 +321,16 @@
     "ready": "Ready",
     "delivered": "Delivered",
     "cancelled": "Cancelled"
+  },
+  "KITCHEN_DISPLAY": {
+    "TITLE": "Kitchen display",
+    "BACK_TO_ORDERS": "Back to orders",
+    "SOUND_ON": "Sound on",
+    "SOUND_OFF": "Sound off",
+    "LAST_REFRESH": "Updated",
+    "NO_ACTIVE_ORDERS": "No active orders",
+    "NO_ACTIVE_ORDERS_DESC": "New orders will appear here when customers place them",
+    "NOTES": "Notes"
   },
   "TABLES": {
     "TITLE": "Tables",

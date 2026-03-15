@@ -48,6 +48,7 @@
     "TRANSLATIONS": "Traduccions",
     "SETTINGS": "Configuració",
     "USERS": "Usuaris",
+    "KITCHEN_DISPLAY": "Pantalla cuina",
     "LOGOUT": "Tancar sessió"
   },
   "LANDING": {
@@ -726,6 +727,16 @@
     "ready": "Llest",
     "delivered": "Lliurat",
     "cancelled": "Cancel·lat"
+  },
+  "KITCHEN_DISPLAY": {
+    "TITLE": "Pantalla cuina",
+    "BACK_TO_ORDERS": "Tornar a comandes",
+    "SOUND_ON": "So activat",
+    "SOUND_OFF": "So desactivat",
+    "LAST_REFRESH": "Actualitzat",
+    "NO_ACTIVE_ORDERS": "Sense comandes actives",
+    "NO_ACTIVE_ORDERS_DESC": "Les noves comandes apareixeran aquí",
+    "NOTES": "Notes"
   },
   "USERS": {
     "TITLE": "Gestió d'Usuaris",

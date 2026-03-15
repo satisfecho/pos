@@ -33,6 +33,8 @@ export const routes: Routes = [
 
   // Orders - all roles can view (but actions are permission-controlled)
   { path: 'orders', canActivate: [authGuard, orderAccessGuard], loadComponent: () => import('./orders/orders.component').then(m => m.OrdersComponent) },
+  // Kitchen display - dedicated large view, auto-refresh, optional sound (same access as orders)
+  { path: 'kitchen', canActivate: [authGuard, orderAccessGuard], loadComponent: () => import('./kitchen-display/kitchen-display.component').then(m => m.KitchenDisplayComponent) },
 
   // Admin-only routes
   { path: 'translations', redirectTo: 'settings', pathMatch: 'full' },

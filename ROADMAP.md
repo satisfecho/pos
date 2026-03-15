@@ -17,6 +17,7 @@
 - **Translations**: Frontend i18n (`@ngx-translate`, `front/public/i18n/*.json`), backend localized messages (`back/app/messages.py`), language detection and persistence. See `docs/0012-translation-implementation.md`.
 - **Deployment**: Config guide for domain/IP, `API_URL`, `WS_URL`, CORS. See `docs/0004-deployment.md`.
 - **Provider portal**: Suppliers register at `/provider/register`, log in at `/provider/login`, manage catalog at `/provider` (tile/list view, search, add/edit/delete products, company details, bank info). API: `GET/PUT /provider/me`, `GET/POST/PUT/DELETE /provider/products`, etc. See `docs/0014-provider-portal.md`.
+- **Kitchen display**: Full-screen view at `/kitchen` for kitchen staff — large order cards, auto-refresh (15s) and WebSocket, optional sound on new orders; read-only. Same access as Orders. See `docs/0015-kitchen-display.md`.
 
 ### ❌ Missing Features / To Be Implemented
 - **Customer accounts (planned)**: Registration, login, email verification, MFA, customer order history, invoice generation. Not implemented; see `docs/0002-customer-features-plan.md` for full scope.

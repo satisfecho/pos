@@ -26,6 +26,7 @@ The frontend is Angular; the backend is FastAPI with PostgreSQL and Redis. All m
 |------|------------------|
 | **Orders** | Full lifecycle (pending → preparing → ready → delivered → paid). Session-based orders per browser. Item-level status; partial delivery; order modification and cancellation before delivery; soft delete with “Show removed items” in staff UI. |
 | **Customer menu** | Browse menu, cart, place order, order history. Optional “immediate payment required” (checkout auto-opens after placing order). |
+| **Kitchen display** | Dedicated full-screen view at `/kitchen`: large order cards, auto-refresh and WebSocket updates, optional sound on new orders. Read-only; same access as Orders. See [docs/0015-kitchen-display.md](docs/0015-kitchen-display.md). |
 | **Payments** | Stripe integration; per-tenant Stripe keys and currency. |
 | **Tables** | Table management, QR codes, canvas view. Table activation and 4-digit PIN so only present guests can order; PIN rate limiting via Redis. |
 | **Reservations** | Staff: list, create, edit, seat, finish, cancel at `/reservations`. Public: book at `/book/:tenantId`, view/cancel at `/reservation?token=...`. Table status: available / reserved / occupied. |
@@ -100,6 +101,7 @@ Planned but not yet implemented: customer accounts (registration, MFA, invoices)
 | **Public booking** | http://localhost:4202/book/{tenantId} |
 | **Provider login** | http://localhost:4202/provider/login |
 | **Provider dashboard** | http://localhost:4202/provider |
+| **Kitchen display** | http://localhost:4202/kitchen |
 
 If your frontend port is different (e.g. 4203), replace 4202 with that port. See [AGENTS.md](AGENTS.md) for how to detect the port and debug with logs.
 
@@ -142,6 +144,7 @@ Stripe keys are configured per tenant in **Settings** in the admin UI. For deplo
 | [docs/0006-gmail-setup-instructions.md](docs/0006-gmail-setup-instructions.md) | Gmail SMTP setup |
 | [docs/0013-verification-alternatives.md](docs/0013-verification-alternatives.md) | Verification flow alternatives |
 | [docs/0014-provider-portal.md](docs/0014-provider-portal.md) | Provider registration, login, and catalog management |
+| [docs/0015-kitchen-display.md](docs/0015-kitchen-display.md) | Kitchen display: full-screen view, auto-refresh, optional sound |
 
 ---
 

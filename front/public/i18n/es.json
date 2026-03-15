@@ -51,6 +51,7 @@
     "TRANSLATIONS": "Traducciones",
     "SETTINGS": "Configuración",
     "USERS": "Usuarios",
+    "KITCHEN_DISPLAY": "Pantalla cocina",
     "LOGOUT": "Cerrar sesión"
   },
   "LANDING": {
@@ -321,6 +322,16 @@
     "ready": "Listo",
     "delivered": "Entregado",
     "cancelled": "Cancelado"
+  },
+  "KITCHEN_DISPLAY": {
+    "TITLE": "Pantalla cocina",
+    "BACK_TO_ORDERS": "Volver a pedidos",
+    "SOUND_ON": "Sonido on",
+    "SOUND_OFF": "Sonido off",
+    "LAST_REFRESH": "Actualizado",
+    "NO_ACTIVE_ORDERS": "Sin pedidos activos",
+    "NO_ACTIVE_ORDERS_DESC": "Los nuevos pedidos aparecerán aquí",
+    "NOTES": "Notas"
   },
   "TABLES": {
     "TITLE": "Mesas",

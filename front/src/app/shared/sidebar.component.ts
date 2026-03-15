@@ -86,6 +86,13 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
              </svg>
              <span>{{ 'NAV.ORDERS' | translate }}</span>
            </a>
+           <a routerLink="/kitchen" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+               <rect x="2" y="4" width="20" height="16" rx="2"/>
+               <path d="M6 8h.01M10 8h.01M14 8h.01M6 12h12M6 16h8"/>
+             </svg>
+             <span>{{ 'NAV.KITCHEN_DISPLAY' | translate }}</span>
+           </a>
            <!-- Inventory Module (Admin only) -->
            @if (canViewInventory()) {
              <div class="nav-section">

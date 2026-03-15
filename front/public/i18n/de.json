@@ -48,6 +48,7 @@
     "TRANSLATIONS": "Übersetzungen",
     "SETTINGS": "Einstellungen",
     "USERS": "Benutzer",
+    "KITCHEN_DISPLAY": "Küchenanzeige",
     "LOGOUT": "Abmelden"
   },
   "LANDING": {
@@ -726,6 +727,16 @@
     "ready": "Fertig",
     "delivered": "Geliefert",
     "cancelled": "Storniert"
+  },
+  "KITCHEN_DISPLAY": {
+    "TITLE": "Küchenanzeige",
+    "BACK_TO_ORDERS": "Zurück zu Bestellungen",
+    "SOUND_ON": "Ton an",
+    "SOUND_OFF": "Ton aus",
+    "LAST_REFRESH": "Aktualisiert",
+    "NO_ACTIVE_ORDERS": "Keine aktiven Bestellungen",
+    "NO_ACTIVE_ORDERS_DESC": "Neue Bestellungen erscheinen hier, wenn Gäste bestellen",
+    "NOTES": "Notizen"
   },
   "USERS": {
     "TITLE": "Benutzerverwaltung",
