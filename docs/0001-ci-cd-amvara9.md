@@ -82,3 +82,29 @@ If the demo account **ralf@roeber.de** no longer works on amvara9, it was almost
    Open `https://<amvara9-domain>/register` and register again with ralf@roeber.de (and the desired password). This creates a new tenant. Use this if you want a separate "Roeber" tenant again.
 
 **Do not run `remove_extra_tenants`** on amvara9 unless you intentionally want a single-tenant (Cobalto-only) server and accept that all other tenants and their users will be deleted.
+
+## Smoke test after deploy
+
+Once the GitHub Actions deploy job has finished, run smoke tests from a machine that can reach the production URL (e.g. your laptop, or a runner with network access to amvara9 / satisfecho.de).
+
+**1. Landing (no credentials):**
+```bash
+cd pos2/front
+BASE_URL=https://satisfecho.de HEADLESS=1 npm run test:landing-version
+# Or use the amvara9 host/port if the app is exposed there, e.g. BASE_URL=http://167.235.138.59:4202
+```
+
+**2. Reports (owner/admin credentials required):**
+```bash
+cd pos2/front
+BASE_URL=https://satisfecho.de HEADLESS=1 LOGIN_EMAIL=your-owner@example.com LOGIN_PASSWORD=yourpassword npm run test:reports
+```
+
+**3. Optional – full reservation tests:**
+```bash
+# From repo root
+STAFF_TEST=1 BASE_URLS="https://satisfecho.de" HEADLESS=1 ./scripts/run-reservation-tests.sh
+# Set LOGIN_EMAIL / LOGIN_PASSWORD in env or .env (DEMO_LOGIN_EMAIL / DEMO_LOGIN_PASSWORD) for staff test
+```
+
+If the production URL is not satisfecho.de, set `BASE_URL` (or `BASE_URLS`) to the actual app URL. See [AGENTS.md](../AGENTS.md) (Smoke tests required) and [testing.md](testing.md).
