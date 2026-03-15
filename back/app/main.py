@@ -456,10 +456,16 @@ def register(
             status_code=400, detail=get_message("email_already_registered", lang)
         )
 
-    tenant = models.Tenant(name=tenant_name)
-    session.add(tenant)
-    session.commit()
-    session.refresh(tenant)
+    # Virgin deployment: if exactly one tenant exists and has no users, first registrant becomes its owner
+    tenant_count = session.exec(select(models.Tenant)).all()
+    user_count = session.exec(select(models.User)).all()
+    if len(user_count) == 0 and len(tenant_count) == 1:
+        tenant = tenant_count[0]
+    else:
+        tenant = models.Tenant(name=tenant_name)
+        session.add(tenant)
+        session.commit()
+        session.refresh(tenant)
 
     hashed_password = security.get_password_hash(password)
     user = models.User(

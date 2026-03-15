@@ -1,6 +1,7 @@
 # Deploy to amvara9 when master (or main) is updated.
+# Repository: https://github.com/satisfecho/pos — workflow must run from satisfecho/pos; server clone must have origin = satisfecho/pos.
 # Requires repository secret: SSH_PRIVATE_KEY_AMVARA9 (private key for root@amvara9; raw PEM or base64).
-# Optional: DEPLOY_HOST (default 167.235.138.59), DEPLOY_USER (default root).
+# Optional: DEPLOY_HOST (default 167.235.138.59), DEPLOY_USER (default root), DEPLOY_PATH (default /development/pos).
 
 name: Deploy to amvara9
 
@@ -38,7 +39,7 @@ jobs:
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST || '167.235.138.59' }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
-          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/development/pos2' }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/development/pos' }}
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=60 -o ServerAliveCountMax=10 \
             "${DEPLOY_USER}@${DEPLOY_HOST}" "cd ${DEPLOY_PATH} && git fetch origin && git checkout master && git pull origin master && bash -s" < scripts/deploy-amvara9.sh

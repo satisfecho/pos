@@ -57,7 +57,7 @@ EMAIL_FROM_NAME=POS2 System
 
 ### Option 1: Run the test script
 ```bash
-cd /development/pos2
+cd /development/pos
 python3 test/test_email_config.py
 ```
 

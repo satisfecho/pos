@@ -132,10 +132,10 @@ import { ApiService } from '../services/api.service';
           <h2 class="help-title">{{ 'DASHBOARD.HELP_TITLE' | translate }}</h2>
           <p class="help-desc">{{ 'DASHBOARD.HELP_DESC' | translate }}</p>
           <div class="help-links">
-            <a href="https://github.com/raro42/pos2/issues" target="_blank" rel="noopener noreferrer" class="help-link">
+            <a href="https://github.com/satisfecho/pos/issues" target="_blank" rel="noopener noreferrer" class="help-link">
               {{ 'DASHBOARD.HELP_ISSUES' | translate }}
             </a>
-            <a href="https://github.com/raro42/pos2/discussions" target="_blank" rel="noopener noreferrer" class="help-link">
+            <a href="https://github.com/satisfecho/pos/discussions" target="_blank" rel="noopener noreferrer" class="help-link">
               {{ 'DASHBOARD.HELP_DISCUSSIONS' | translate }}
             </a>
           </div>

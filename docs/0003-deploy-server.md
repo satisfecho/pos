@@ -1,6 +1,6 @@
 # Deploying to a server (e.g. amvara8, amvara9)
 
-Steps to get the latest **master** or **main** branch deployed on a server where the project lives (e.g. `/development/pos2`).
+Steps to get the latest **master** or **main** branch deployed on a server where the project lives (e.g. `/development/pos`).
 
 **amvara9:** Automatic deploy on push to master is set up via GitHub Actions. See [0001-ci-cd-amvara9.md](0001-ci-cd-amvara9.md).
 
@@ -15,7 +15,7 @@ Steps to get the latest **master** or **main** branch deployed on a server where
 1. **SSH to the server** and go to the project directory:
    ```bash
    ssh amvara8
-   cd /development/pos2
+   cd /development/pos
    ```
 
 2. **Fetch and switch to the branch you want to deploy** (e.g. `main` or `master`):
@@ -36,7 +36,7 @@ Steps to get the latest **master** or **main** branch deployed on a server where
    See [0004-deployment.md](0004-deployment.md) for details.
 
 4. **Rebuild and start (production mode)**  
-   From the project root (`/development/pos2`):
+   From the project root (`/development/pos`):
    ```bash
    docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml up --build -d
    ```
@@ -61,7 +61,7 @@ Steps to get the latest **master** or **main** branch deployed on a server where
 If the server also uses `run.sh` for startup (and you have `config.env` in place):
 
 ```bash
-cd /development/pos2
+cd /development/pos
 git fetch origin && git checkout main && git pull origin main
 ./run.sh
 ```
@@ -72,7 +72,7 @@ That script starts in **production** mode (build + prod compose override) and ru
 
 | Step | Command / action |
 |------|-------------------|
-| 1 | `cd /development/pos2` |
+| 1 | `cd /development/pos` |
 | 2 | `git fetch origin && git checkout main && git pull origin main` |
 | 3 | Keep `config.env` with correct `API_URL`, `WS_URL`, `CORS_ORIGINS`, secrets |
 | 4 | `docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml up --build -d` |
