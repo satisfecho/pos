@@ -677,12 +677,12 @@ def import_beers(clear_existing: bool = False) -> dict[str, int]:
             deleted_count = 0
             for pp in existing:
                 # Check if this provider product is referenced by any tenant product
-                referenced = session.exec(
+                ref_result = session.execute(
                     text("SELECT COUNT(*) FROM tenantproduct WHERE provider_product_id = :pp_id"),
                     {"pp_id": pp.id}
-                ).first()
-                
-                if referenced and referenced[0] > 0:
+                )
+                ref_count = ref_result.scalar() or 0
+                if ref_count > 0:
                     # Don't delete if referenced, just mark for update
                     continue
                 

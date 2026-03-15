@@ -38,4 +38,9 @@ docker compose --env-file config.env exec -T back python -m app.seeds.seed_demo_
 echo "Seeding demo products for tenant 1..."
 docker compose --env-file config.env exec -T back python -m app.seeds.seed_demo_products || true
 
+echo "Seeding catalog (beer, pizza, wine) so Catalog matches development..."
+docker compose --env-file config.env exec -T back python -m app.seeds.beer_import || true
+docker compose --env-file config.env exec -T back python -m app.seeds.pizza_import || true
+docker compose --env-file config.env exec -T back python -m app.seeds.wine_import || true
+
 echo "Deploy done."

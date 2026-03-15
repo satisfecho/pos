@@ -13,7 +13,8 @@
     "debug:reservations:public": "node scripts/debug-reservations-public.mjs",
     "test:register": "node scripts/test-register.mjs",
     "test:demo-data": "node scripts/test-demo-data.mjs",
-    "test:landing-version": "node scripts/test-landing-version.mjs"
+    "test:landing-version": "node scripts/test-landing-version.mjs",
+    "test:catalog": "node scripts/test-catalog.mjs"
   },
   "prettier": {
     "printWidth": 100,
