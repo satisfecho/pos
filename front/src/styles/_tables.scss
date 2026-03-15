@@ -122,6 +122,10 @@ tbody tr:hover td {
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--color-text-muted, #6b7280);
+}
+.no-image svg {
+    flex-shrink: 0;
 }
 
 .file-size {

@@ -29,8 +29,10 @@ class UserRole(str, Enum):
     owner = "owner"
     admin = "admin"
     kitchen = "kitchen"
+    bartender = "bartender"  # Prepares drinks and beverages
     waiter = "waiter"
     receptionist = "receptionist"
+    provider = "provider"  # Product provider (supplier) – no tenant, has provider_id
 
 
 class Tenant(SQLModel, table=True):
@@ -99,6 +101,9 @@ class User(SQLModel, table=True):
     tenant_id: int | None = Field(default=None, foreign_key="tenant.id")
     tenant: Tenant | None = Relationship(back_populates="users")
 
+    # Provider users: tenant_id is None, provider_id set; they manage provider catalog
+    provider_id: int | None = Field(default=None, foreign_key="provider.id", index=True)
+
 
 class TenantMixin(SQLModel):
     tenant_id: int = Field(foreign_key="tenant.id")
@@ -134,6 +139,17 @@ class Provider(SQLModel, table=True):
     api_endpoint: str | None = None
     is_active: bool = Field(default=True, index=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    # Company / contact details (from registration or profile update)
+    full_company_name: str | None = None
+    address: str | None = None
+    tax_number: str | None = None  # VAT ID / tax number
+    phone: str | None = None
+    email: str | None = None  # Company contact email
+    bank_iban: str | None = None
+    bank_bic: str | None = None
+    bank_name: str | None = None
+    bank_account_holder: str | None = None
 
 
 class ProductCatalog(SQLModel, table=True):
@@ -379,6 +395,7 @@ class UserResponse(SQLModel):
     full_name: str | None = None
     role: UserRole
     tenant_id: int | None = None
+    provider_id: int | None = None
 
 
 class ProductUpdate(SQLModel):
@@ -537,6 +554,80 @@ class TenantProductCreate(SQLModel):
     provider_product_id: int | None = None
     name: str | None = None
     price_cents: int | None = None
+
+
+class ProviderRegister(SQLModel):
+    """Body for provider self-registration."""
+    provider_name: str
+    email: str
+    password: str
+    full_name: str | None = None
+    full_company_name: str | None = None
+    address: str | None = None
+    tax_number: str | None = None
+    phone: str | None = None
+    bank_iban: str | None = None
+    bank_bic: str | None = None
+    bank_name: str | None = None
+    bank_account_holder: str | None = None
+
+
+class ProviderUpdate(SQLModel):
+    """Body for provider profile update (company details)."""
+    full_company_name: str | None = None
+    address: str | None = None
+    tax_number: str | None = None
+    phone: str | None = None
+    email: str | None = None
+    bank_iban: str | None = None
+    bank_bic: str | None = None
+    bank_name: str | None = None
+    bank_account_holder: str | None = None
+
+
+class ProviderProductCreate(SQLModel):
+    """Create a provider product: link to existing catalog item or create new catalog + product."""
+    catalog_id: int | None = None  # If set, link to existing catalog item
+    # For new catalog item (when catalog_id is None):
+    name: str  # Product name (used for catalog and provider product)
+    category: str | None = None
+    subcategory: str | None = None
+    description: str | None = None
+    brand: str | None = None
+    barcode: str | None = None
+    # Provider product fields
+    external_id: str = ""  # Provider's own ID
+    price_cents: int | None = None
+    availability: bool = True
+    country: str | None = None
+    region: str | None = None
+    grape_variety: str | None = None
+    volume_ml: int | None = None
+    unit: str | None = None
+    detailed_description: str | None = None
+    wine_style: str | None = None
+    vintage: int | None = None
+    winery: str | None = None
+    aromas: str | None = None
+    elaboration: str | None = None
+
+
+class ProviderProductUpdate(SQLModel):
+    """Partial update for provider product."""
+    name: str | None = None
+    price_cents: int | None = None
+    availability: bool | None = None
+    country: str | None = None
+    region: str | None = None
+    grape_variety: str | None = None
+    volume_ml: int | None = None
+    unit: str | None = None
+    detailed_description: str | None = None
+    wine_style: str | None = None
+    vintage: int | None = None
+    winery: str | None = None
+    aromas: str | None = None
+    elaboration: str | None = None
 
 
 class TenantProductUpdate(SQLModel):

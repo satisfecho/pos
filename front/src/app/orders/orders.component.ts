@@ -857,6 +857,7 @@ ModuleRegistry.registerModules([
       gap: var(--space-2);
       margin-top: var(--space-3);
       border-top: 1px solid var(--color-border);
+      overflow: visible;
     }
     .order-footer-left {
       display: flex;
@@ -864,10 +865,11 @@ ModuleRegistry.registerModules([
       gap: var(--space-1);
     }
     .order-total { font-weight: 600; color: var(--color-text); }
-    .order-actions { display: flex; gap: var(--space-2); position: relative; }
+    .order-actions { display: flex; gap: var(--space-2); position: relative; overflow: visible; }
     
     .status-control {
       position: relative;
+      overflow: visible;
     }
     
     .status-badge-btn {
@@ -901,9 +903,11 @@ ModuleRegistry.registerModules([
     
     .status-dropdown {
       position: absolute;
-      bottom: 100%;
+      top: 100%;
       right: 0;
-      margin-bottom: 8px;
+      left: auto;
+      margin-top: 6px;
+      margin-bottom: 0;
       background: var(--color-surface);
       border: 1px solid var(--color-border);
       border-radius: var(--radius-md);
@@ -914,17 +918,13 @@ ModuleRegistry.registerModules([
       animation: slideDown 0.2s ease;
     }
     .item-status-dropdown {
-      bottom: auto;
-      top: 100%;
-      margin-top: 4px;
-      margin-bottom: 0;
       min-width: 160px;
     }
     
     @keyframes slideDown {
       from {
         opacity: 0;
-        transform: translateY(-8px);
+        transform: translateY(-4px);
       }
       to {
         opacity: 1;
@@ -1717,7 +1717,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
       paid: { forward: [], backward: ['completed'] },
       cancelled: { forward: [], backward: [] }
     };
-    return transitions[currentStatus] || { forward: [], backward: [] };
+    const key = (currentStatus ?? '').toString().toLowerCase();
+    return transitions[key] ?? { forward: [], backward: [] };
   }
 
   // Get available status transitions for an item
@@ -1729,7 +1730,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
       delivered: { forward: [], backward: ['ready'] },
       cancelled: { forward: [], backward: [] }
     };
-    return transitions[currentStatus] || { forward: [], backward: [] };
+    const key = (currentStatus ?? '').toString().toLowerCase();
+    return transitions[key] ?? { forward: [], backward: [] };
   }
 
   toggleStatusDropdown(orderId: number) {

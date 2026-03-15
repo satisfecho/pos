@@ -23,6 +23,7 @@ from . import models, security
 from .db import check_db_connection, create_db_and_tables, get_session
 from .settings import settings
 from .inventory_routes import router as inventory_router
+from .reports_routes import router as reports_router
 from .inventory_service import deduct_inventory_for_order
 from . import inventory_models
 from .translation_service import TranslationService
@@ -168,6 +169,7 @@ MAX_IMAGE_HEIGHT = 1920  # Maximum height in pixels
 JPEG_QUALITY = 85  # JPEG quality (1-100, 85 is a good balance)
 PNG_OPTIMIZE = True  # Enable PNG optimization
 WEBP_QUALITY = 85  # WebP quality (1-100)
+AVIF_QUALITY = 85  # AVIF quality (1-100)
 
 # Static files directory for favicon and other assets
 STATIC_DIR = Path(__file__).parent.parent
@@ -178,6 +180,8 @@ app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 # Register Inventory API router
 app.include_router(inventory_router, prefix="/inventory", tags=["Inventory"])
+# Reports (sales / revenue analysis)
+app.include_router(reports_router, prefix="/reports", tags=["Reports"])
 
 
 # ============ IMAGE OPTIMIZATION ============
@@ -255,7 +259,7 @@ def optimize_image(image_data: bytes, content_type: str) -> bytes:
             # PNG optimization
             image.save(output, format="PNG", optimize=PNG_OPTIMIZE)
         elif content_type == "image/avif" or original_format == "AVIF":
-            image.save(output, format="AVIF", quality=WEBP_QUALITY)
+            image.save(output, format="AVIF", quality=AVIF_QUALITY)
         else:
             # Default to JPEG
             image.save(output, format="JPEG", quality=JPEG_QUALITY, optimize=True)
@@ -388,6 +392,50 @@ def health_db(session: Session = Depends(get_session)) -> dict:
         raise HTTPException(status_code=503, detail=f"Database error: {e}")
 
 
+# ============ PUBLIC TENANTS (no auth) ============
+
+
+class TenantSummary(_BaseModel):
+    """Public tenant info for landing page / tenant picker / book page."""
+
+    id: int
+    name: str
+    logo_filename: str | None = None
+    description: str | None = None
+    phone: str | None = None
+    email: str | None = None
+
+
+def _tenant_to_summary(t: models.Tenant) -> TenantSummary:
+    return TenantSummary(
+        id=t.id,
+        name=t.name,
+        logo_filename=t.logo_filename,
+        description=t.description,
+        phone=t.phone,
+        email=t.email,
+    )
+
+
+@app.get("/public/tenants", response_model=list[TenantSummary])
+def list_public_tenants(session: Session = Depends(get_session)) -> list:
+    """List all tenants (id, name, logo, description, phone, email). Public, no authentication."""
+    tenants = session.exec(select(models.Tenant).order_by(models.Tenant.name)).all()
+    return [_tenant_to_summary(t) for t in tenants]
+
+
+@app.get("/public/tenants/{tenant_id}", response_model=TenantSummary)
+def get_public_tenant(
+    tenant_id: int,
+    session: Session = Depends(get_session),
+) -> TenantSummary:
+    """Get one tenant's public info for book page. Public, no authentication."""
+    tenant = session.get(models.Tenant, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    return _tenant_to_summary(tenant)
+
+
 # ============ AUTH ============
 
 
@@ -427,13 +475,85 @@ def register(
     return {"status": "created", "tenant_id": tenant.id, "email": email}
 
 
+@app.post("/register/provider")
+def register_provider(
+    body: models.ProviderRegister,
+    lang: str = Depends(_get_requested_language),
+    session: Session = Depends(get_session),
+) -> dict:
+    """Provider self-registration: creates Provider and first provider user."""
+    existing = session.exec(
+        select(models.User).where(models.User.email == body.email)
+    ).first()
+    if existing:
+        raise HTTPException(
+            status_code=400,
+            detail=get_message("email_already_registered", lang),
+        )
+    existing_provider = session.exec(
+        select(models.Provider).where(models.Provider.name == body.provider_name)
+    ).first()
+    if existing_provider:
+        raise HTTPException(
+            status_code=400,
+            detail="Provider name already registered",
+        )
+    provider = models.Provider(
+        name=body.provider_name,
+        is_active=True,
+        full_company_name=body.full_company_name,
+        address=body.address,
+        tax_number=body.tax_number,
+        phone=body.phone,
+        email=body.email,
+        bank_iban=body.bank_iban,
+        bank_bic=body.bank_bic,
+        bank_name=body.bank_name,
+        bank_account_holder=body.bank_account_holder,
+    )
+    session.add(provider)
+    session.commit()
+    session.refresh(provider)
+    hashed_password = security.get_password_hash(body.password)
+    user = models.User(
+        email=body.email,
+        hashed_password=hashed_password,
+        full_name=body.full_name,
+        tenant_id=None,
+        provider_id=provider.id,
+        role=models.UserRole.provider,
+    )
+    session.add(user)
+    session.commit()
+    return {"status": "created", "provider_id": provider.id, "email": body.email}
+
+
+def _token_data_for_user(user: models.User) -> dict:
+    """Build JWT payload for user (tenant or provider)."""
+    return {
+        "sub": user.email,
+        "tenant_id": user.tenant_id,
+        "provider_id": getattr(user, "provider_id", None),
+        "token_version": user.token_version,
+    }
+
+
 @app.post("/token")
 def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    tenant_id: int | None = Query(None, description="Optional tenant id from tenant picker"),
+    scope: str | None = Query(None, description="Login scope: 'provider' for provider portal"),
     lang: str = Depends(_get_requested_language),
     session: Session = Depends(get_session),
 ) -> dict:
     statement = select(models.User).where(models.User.email == form_data.username)
+    if scope == "provider":
+        statement = statement.where(
+            models.User.provider_id.is_not(None),
+            models.User.tenant_id.is_(None),
+        )
+    elif tenant_id is not None:
+        statement = statement.where(models.User.tenant_id == tenant_id)
     user = session.exec(statement).first()
 
     if not user or not security.verify_password(
@@ -445,12 +565,7 @@ def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Token data includes token_version for revocation support
-    token_data = {
-        "sub": user.email,
-        "tenant_id": user.tenant_id,
-        "token_version": user.token_version,
-    }
+    token_data = _token_data_for_user(user)
 
     access_token = security.create_access_token(
         data=token_data,
@@ -517,13 +632,7 @@ def refresh_access_token(
     
     # Validate refresh token and get user
     user = security.validate_refresh_token(refresh_token, session)
-    
-    # Create new access token with current token_version
-    token_data = {
-        "sub": user.email,
-        "tenant_id": user.tenant_id,
-        "token_version": user.token_version,
-    }
+    token_data = _token_data_for_user(user)
     
     access_token = security.create_access_token(
         data=token_data,
@@ -581,7 +690,8 @@ def list_users(
             email=u.email,
             full_name=u.full_name,
             role=u.role,
-            tenant_id=u.tenant_id
+            tenant_id=u.tenant_id,
+            provider_id=getattr(u, "provider_id", None),
         )
         for u in users
     ]
@@ -630,7 +740,8 @@ def create_user(
         email=new_user.email,
         full_name=new_user.full_name,
         role=new_user.role,
-        tenant_id=new_user.tenant_id
+        tenant_id=new_user.tenant_id,
+        provider_id=getattr(new_user, "provider_id", None),
     )
 
 
@@ -713,7 +824,8 @@ def update_user(
         email=target_user.email,
         full_name=target_user.full_name,
         role=target_user.role,
-        tenant_id=target_user.tenant_id
+        tenant_id=target_user.tenant_id,
+        provider_id=getattr(target_user, "provider_id", None),
     )
 
 
@@ -1711,6 +1823,325 @@ def list_provider_products(
         .where(models.ProviderProduct.provider_id == provider_id)
         .order_by(models.ProviderProduct.name)
     ).all()
+
+
+# ============ PROVIDER PORTAL (provider-scoped auth) ============
+
+
+def _catalog_normalized_name(name: str) -> str:
+    """Normalize product name for catalog matching."""
+    return " ".join(name.lower().strip().split())
+
+
+@app.get("/provider/me")
+def provider_me(
+    current: Annotated[
+        tuple[models.User, models.Provider],
+        Depends(security.get_current_provider_user),
+    ],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Return current provider info (for provider portal)."""
+    _user, provider = current
+    return {
+        "id": provider.id,
+        "name": provider.name,
+        "token": provider.token,
+        "url": provider.url,
+        "is_active": provider.is_active,
+        "full_company_name": provider.full_company_name,
+        "address": provider.address,
+        "tax_number": provider.tax_number,
+        "phone": provider.phone,
+        "email": provider.email,
+        "bank_iban": provider.bank_iban,
+        "bank_bic": provider.bank_bic,
+        "bank_name": provider.bank_name,
+        "bank_account_holder": provider.bank_account_holder,
+    }
+
+
+@app.put("/provider/me")
+def provider_update_me(
+    body: models.ProviderUpdate,
+    current: Annotated[
+        tuple[models.User, models.Provider],
+        Depends(security.get_current_provider_user),
+    ],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Update current provider company/contact details."""
+    _user, provider = current
+    data = body.model_dump(exclude_unset=True)
+    for k, v in data.items():
+        setattr(provider, k, v)
+    session.add(provider)
+    session.commit()
+    session.refresh(provider)
+    return {
+        "id": provider.id,
+        "name": provider.name,
+        "token": provider.token,
+        "url": provider.url,
+        "is_active": provider.is_active,
+        "full_company_name": provider.full_company_name,
+        "address": provider.address,
+        "tax_number": provider.tax_number,
+        "phone": provider.phone,
+        "email": provider.email,
+        "bank_iban": provider.bank_iban,
+        "bank_bic": provider.bank_bic,
+        "bank_name": provider.bank_name,
+        "bank_account_holder": provider.bank_account_holder,
+    }
+
+
+@app.get("/provider/catalog")
+def provider_list_catalog(
+    current: Annotated[
+        tuple[models.User, models.Provider],
+        Depends(security.get_current_provider_user),
+    ],
+    session: Session = Depends(get_session),
+    search: str | None = None,
+) -> list[dict]:
+    """List catalog items (id, name, category) for linking provider products."""
+    _user, _provider = current
+    query = select(models.ProductCatalog).order_by(models.ProductCatalog.name)
+    if search:
+        term = f"%{search.lower()}%"
+        query = query.where(models.ProductCatalog.name.ilike(term))
+    items = session.exec(query.limit(200)).all()
+    return [{"id": c.id, "name": c.name, "category": c.category, "subcategory": c.subcategory} for c in items]
+
+
+@app.get("/provider/products")
+def provider_list_products(
+    current: Annotated[
+        tuple[models.User, models.Provider],
+        Depends(security.get_current_provider_user),
+    ],
+    session: Session = Depends(get_session),
+) -> list[dict]:
+    """List all products for the current provider."""
+    _user, provider = current
+    products = session.exec(
+        select(models.ProviderProduct)
+        .where(models.ProviderProduct.provider_id == provider.id)
+        .order_by(models.ProviderProduct.name)
+    ).all()
+    result = []
+    for pp in products:
+        catalog_item = session.get(models.ProductCatalog, pp.catalog_id)
+        image_url = None
+        if pp.image_filename:
+            image_url = f"/uploads/providers/{provider.token}/products/{pp.image_filename}"
+        result.append(
+            {
+                "id": pp.id,
+                "catalog_id": pp.catalog_id,
+                "catalog_name": catalog_item.name if catalog_item else None,
+                "name": pp.name,
+                "price_cents": pp.price_cents,
+                "availability": pp.availability,
+                "image_url": image_url,
+                "external_id": pp.external_id,
+                "country": pp.country,
+                "region": pp.region,
+                "volume_ml": pp.volume_ml,
+                "unit": pp.unit,
+                "detailed_description": pp.detailed_description,
+                "grape_variety": pp.grape_variety,
+                "wine_style": pp.wine_style,
+                "vintage": pp.vintage,
+                "winery": pp.winery,
+                "aromas": pp.aromas,
+                "elaboration": pp.elaboration,
+            }
+        )
+    return result
+
+
+@app.post("/provider/products")
+def provider_create_product(
+    current: Annotated[
+        tuple[models.User, models.Provider],
+        Depends(security.get_current_provider_user),
+    ],
+    body: models.ProviderProductCreate,
+    session: Session = Depends(get_session),
+) -> dict:
+    """Create a provider product; create new catalog item if catalog_id not provided."""
+    _user, provider = current
+    try:
+        catalog_id = body.catalog_id
+        if catalog_id is not None:
+            catalog_item = session.get(models.ProductCatalog, catalog_id)
+            if not catalog_item:
+                raise HTTPException(status_code=404, detail="Catalog item not found")
+            name = body.name or catalog_item.name
+        else:
+            # Create new catalog item
+            normalized = _catalog_normalized_name(body.name)
+            existing = session.exec(
+                select(models.ProductCatalog).where(
+                    models.ProductCatalog.normalized_name == normalized
+                )
+            ).first()
+            if existing:
+                catalog_item = existing
+                name = body.name or catalog_item.name
+            else:
+                catalog_item = models.ProductCatalog(
+                    name=body.name,
+                    normalized_name=normalized,
+                    category=body.category,
+                    subcategory=body.subcategory,
+                    description=body.description,
+                    brand=body.brand,
+                    barcode=body.barcode,
+                )
+                session.add(catalog_item)
+                session.commit()
+                session.refresh(catalog_item)
+                name = body.name
+            catalog_id = catalog_item.id
+        external_id = body.external_id or f"pp-{provider.id}-{uuid4().hex[:12]}"
+        pp = models.ProviderProduct(
+            catalog_id=catalog_id,
+            provider_id=provider.id,
+            external_id=external_id,
+            name=name,
+            price_cents=body.price_cents,
+            availability=body.availability,
+            country=body.country,
+            region=body.region,
+            grape_variety=body.grape_variety,
+            volume_ml=body.volume_ml,
+            unit=body.unit,
+            detailed_description=body.detailed_description,
+            wine_style=body.wine_style,
+            vintage=body.vintage,
+            winery=body.winery,
+            aromas=body.aromas,
+            elaboration=body.elaboration,
+        )
+        session.add(pp)
+        session.commit()
+        session.refresh(pp)
+        return pp.model_dump(mode="json")
+    except HTTPException:
+        raise
+    except Exception as e:  # noqa: BLE001
+        session.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to create product: {e!s}",
+        ) from e
+
+
+@app.put("/provider/products/{product_id}")
+def provider_update_product(
+    product_id: int,
+    current: Annotated[
+        tuple[models.User, models.Provider],
+        Depends(security.get_current_provider_user),
+    ],
+    body: models.ProviderProductUpdate,
+    session: Session = Depends(get_session),
+) -> models.ProviderProduct:
+    """Update a provider product (own products only)."""
+    _user, provider = current
+    pp = session.exec(
+        select(models.ProviderProduct).where(
+            models.ProviderProduct.id == product_id,
+            models.ProviderProduct.provider_id == provider.id,
+        )
+    ).first()
+    if not pp:
+        raise HTTPException(status_code=404, detail="Product not found")
+    data = body.model_dump(exclude_unset=True)
+    for k, v in data.items():
+        setattr(pp, k, v)
+    session.add(pp)
+    session.commit()
+    session.refresh(pp)
+    return pp
+
+
+@app.delete("/provider/products/{product_id}")
+def provider_delete_product(
+    product_id: int,
+    current: Annotated[
+        tuple[models.User, models.Provider],
+        Depends(security.get_current_provider_user),
+    ],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Delete a provider product (own products only)."""
+    _user, provider = current
+    pp = session.exec(
+        select(models.ProviderProduct).where(
+            models.ProviderProduct.id == product_id,
+            models.ProviderProduct.provider_id == provider.id,
+        )
+    ).first()
+    if not pp:
+        raise HTTPException(status_code=404, detail="Product not found")
+    session.delete(pp)
+    session.commit()
+    return {"status": "deleted", "id": product_id}
+
+
+@app.post("/provider/products/{product_id}/image")
+async def provider_upload_product_image(
+    product_id: int,
+    current: Annotated[
+        tuple[models.User, models.Provider],
+        Depends(security.get_current_provider_user),
+    ],
+    file: Annotated[UploadFile, File()],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Upload image for a provider product."""
+    _user, provider = current
+    pp = session.exec(
+        select(models.ProviderProduct).where(
+            models.ProviderProduct.id == product_id,
+            models.ProviderProduct.provider_id == provider.id,
+        )
+    ).first()
+    if not pp:
+        raise HTTPException(status_code=404, detail="Product not found")
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_TYPES)}",
+        )
+    contents = await file.read()
+    if len(contents) > MAX_IMAGE_SIZE:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File too large. Max size: {MAX_IMAGE_SIZE // (1024 * 1024)}MB",
+        )
+    contents = optimize_image(contents, file.content_type)
+    provider_dir = UPLOADS_DIR / "providers" / provider.token / "products"
+    provider_dir.mkdir(parents=True, exist_ok=True)
+    if pp.image_filename:
+        old_path = provider_dir / pp.image_filename
+        if old_path.exists():
+            old_path.unlink()
+    ext = Path(file.filename or "image.jpg").suffix.lower()
+    if ext not in [".jpg", ".jpeg", ".png", ".webp", ".avif"]:
+        ext = ".jpg"
+    new_filename = f"{uuid4()}{ext}"
+    (provider_dir / new_filename).write_bytes(contents)
+    pp.image_filename = new_filename
+    session.add(pp)
+    session.commit()
+    session.refresh(pp)
+    image_url = f"/uploads/providers/{provider.token}/products/{pp.image_filename}"
+    return {"id": pp.id, "image_filename": pp.image_filename, "image_url": image_url}
 
 
 # ============ TENANT PRODUCTS ============
@@ -2823,7 +3254,7 @@ def activate_table(
 ) -> dict:
     """
     Activate a table for ordering.
-    Generates a new PIN and creates an empty order for the table.
+    Generates a PIN; no order is created until the first item is added via the menu.
     """
     import secrets
 
@@ -2840,20 +3271,10 @@ def activate_table(
     # Generate a cryptographically random 4-digit PIN
     pin = str(secrets.randbelow(9000) + 1000)
 
-    # Create a new empty order for this table
-    new_order = models.Order(
-        table_id=table_id,
-        tenant_id=current_user.tenant_id,
-        status=models.OrderStatus.pending,
-        session_id=None,  # Shared order, no session binding
-    )
-    session.add(new_order)
-    session.flush()  # Get the order ID
-
-    # Update table with PIN and active order
+    # Activate table only; order is created when customer adds first items via POST /menu/.../order
     table.order_pin = pin
     table.is_active = True
-    table.active_order_id = new_order.id
+    table.active_order_id = None
     table.activated_at = datetime.now(timezone.utc)
 
     session.commit()
@@ -2864,7 +3285,7 @@ def activate_table(
         "name": table.name,
         "pin": pin,
         "is_active": True,
-        "active_order_id": new_order.id,
+        "active_order_id": None,
         "activated_at": table.activated_at.isoformat() if table.activated_at else None,
     }
 
@@ -2877,7 +3298,7 @@ def close_table(
 ) -> dict:
     """
     Close a table session.
-    Clears the PIN and deactivates the table.
+    Clears the PIN and deactivates the table. Deletes the active order if it has no items.
     """
     table = session.exec(
         select(models.Table).where(
@@ -2888,6 +3309,22 @@ def close_table(
 
     if not table:
         raise HTTPException(status_code=404, detail="Table not found")
+
+    # If there is an active order with no (active) items, delete it so we don't keep empty orders
+    if table.active_order_id:
+        order = session.get(models.Order, table.active_order_id)
+        if order:
+            all_items = session.exec(
+                select(models.OrderItem).where(models.OrderItem.order_id == order.id)
+            ).all()
+            active_count = sum(
+                1 for it in all_items
+                if not it.removed_by_customer and it.removed_by_user_id is None and it.status != models.OrderItemStatus.cancelled
+            )
+            if active_count == 0:
+                for it in all_items:
+                    session.delete(it)
+                session.delete(order)
 
     # Clear session data
     table.order_pin = None
@@ -3720,23 +4157,22 @@ def create_order(
         redis_conn.delete(attempts_key)
         redis_conn.delete(lock_key)
 
-    # ============ GET SHARED ORDER ============
-    # Use the table's active order (created when table was activated)
-    if not table.active_order_id:
-        raise HTTPException(
-            status_code=500, 
-            detail="No active order for this table. Please ask staff to reactivate the table."
-        )
+    # ============ GET OR CREATE SHARED ORDER ============
+    # Order is created when table is activated only as a slot; we create it on first item add.
+    # If no active order yet, we will create one below (requires at least one item).
+    order = None
+    if table.active_order_id:
+        order = session.get(models.Order, table.active_order_id)
+        if order and order.status == models.OrderStatus.paid:
+            order = None  # Will create a new order below if we have items
 
-    order = session.get(models.Order, table.active_order_id)
-    if not order:
-        raise HTTPException(
-            status_code=500, 
-            detail="Active order not found. Please ask staff to reactivate the table."
-        )
-
-    # If the active order is already paid, start a new order for this table (same PIN, no staff action needed)
-    if order.status == models.OrderStatus.paid:
+    if order is None:
+        # No order yet, or previous order was paid: create new order only if customer is adding items
+        if not order_data.items or len(order_data.items) == 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Add at least one product to place an order.",
+            )
         new_order = models.Order(
             table_id=table.id,
             tenant_id=table.tenant_id,
@@ -3749,6 +4185,9 @@ def create_order(
         session.add(table)
         session.flush()
         order = new_order
+        is_new_order = True
+    else:
+        is_new_order = False
 
     print(f"\n{'=' * 60}")
     print(f"[DEBUG] POST /menu/{table_token}/order")
@@ -4155,8 +4594,14 @@ def list_orders(
         # Get all items for removed count calculation
         all_items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order.id)).all()
         
-        # Calculate total from active items only (exclude items removed by customer OR staff)
-        active_items = [item for item in all_items if not item.removed_by_customer and item.removed_by_user_id is None]
+        # Calculate total from active items only (exclude items removed by customer OR staff, and cancelled)
+        active_items = [
+            item for item in all_items
+            if not item.removed_by_customer and item.removed_by_user_id is None and item.status != models.OrderItemStatus.cancelled
+        ]
+        # Do not list orders that have no products (empty orders are not allowed)
+        if len(active_items) == 0:
+            continue
         total_cents = sum(item.price_cents * item.quantity for item in active_items)
         
         result.append({
@@ -4270,12 +4715,19 @@ def mark_order_paid(
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     
-    # Validation: Order must be completed (all items delivered) before marking as paid
-    if order.status != models.OrderStatus.completed:
+    # Use computed status from items so we don't get stuck when stored order.status is out of sync
+    # (e.g. order shows "completed" in UI because list_orders returns computed status, but DB was never updated)
+    all_items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order_id)).all()
+    computed_status = compute_order_status_from_items(all_items)
+    if computed_status != models.OrderStatus.completed:
         raise HTTPException(
-            status_code=400, 
-            detail=f"Order must be completed before marking as paid. Current status: {order.status.value}"
+            status_code=400,
+            detail=f"Order must be completed (all items delivered) before marking as paid. Current status: {computed_status.value}"
         )
+    # Sync stored order status if it was out of sync
+    if order.status != models.OrderStatus.completed:
+        order.status = models.OrderStatus.completed
+        session.add(order)
     
     # Mark as paid
     order.status = models.OrderStatus.paid

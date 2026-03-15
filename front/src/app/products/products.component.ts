@@ -129,7 +129,7 @@ import { CategoriesComponent } from './categories.component';
                            }
                          </div>
                        }
-                       <input type="file" #fileInput accept="image/jpeg,image/png,image/webp" (change)="handleImageSelect($event)" style="display:none">
+                       <input type="file" #fileInput accept="image/jpeg,image/png,image/webp,image/avif" (change)="handleImageSelect($event)" style="display:none">
                        <button type="button" class="btn btn-secondary" (click)="fileInput.click()" [disabled]="uploading()">
                          {{ uploading() ? ('PRODUCTS.UPLOADING' | translate) : (pendingImageFile() ? ('PRODUCTS.CHANGE_IMAGE' | translate) : ('PRODUCTS.UPLOAD_IMAGE' | translate)) }}
                        </button>
@@ -245,7 +245,13 @@ import { CategoriesComponent } from './categories.component';
                               }
                             </div>
                           } @else {
-                            <div class="no-image"></div>
+                            <div class="no-image" title="No image">
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <path d="M21 15l-5-5L5 21"/>
+                              </svg>
+                            </div>
                           }
                         </td>
                         <td>
@@ -699,16 +705,17 @@ export class ProductsComponent implements OnInit {
   handleImageError(event: Event) {
     const img = event.target as HTMLImageElement;
     img.style.display = 'none';
-    // Show placeholder if parent has no-image div
     const wrapper = img.closest('.image-preview-wrapper');
     if (wrapper) {
-      const placeholder = wrapper.querySelector('.no-image') as HTMLElement;
+      let placeholder = wrapper.querySelector('.no-image') as HTMLElement;
       if (!placeholder) {
-        const noImageDiv = document.createElement('div');
-        noImageDiv.className = 'no-image';
-        wrapper.insertBefore(noImageDiv, img);
+        placeholder = document.createElement('div');
+        placeholder.className = 'no-image';
+        placeholder.title = 'No image';
+        placeholder.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+        wrapper.insertBefore(placeholder, img);
       } else {
-        placeholder.style.display = 'block';
+        placeholder.style.display = 'flex';
       }
     }
   }

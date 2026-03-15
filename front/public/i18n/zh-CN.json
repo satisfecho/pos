@@ -1,5 +1,7 @@
 {
   "COMMON": {
+    "ACTIONS": "操作",
+    "COPY": "复制",
     "SAVE": "保存",
     "SAVING": "保存中...",
     "CANCEL": "取消",
@@ -50,6 +52,17 @@
     "USERS": "用户",
     "LOGOUT": "退出登录"
   },
+  "LANDING": {
+    "TITLE": "POS",
+    "SUBTITLE": "选择您的餐厅登录",
+    "LOGIN": "登录",
+    "NO_TENANTS": "暂无注册餐厅。",
+    "AT_TABLE_LABEL": "在桌点餐",
+    "AT_TABLE_HINT": "已在桌前？输入桌位码即可点餐。",
+    "TABLE_CODE_PLACEHOLDER": "桌位码",
+    "GO": "进入",
+    "BOOK_TABLE": "预订桌位"
+  },
   "DASHBOARD": {
     "TITLE": "仪表板",
     "WELCOME_BACK": "欢迎回来",
@@ -59,7 +72,25 @@
     "TABLES_TITLE": "餐桌",
     "TABLES_DESC": "查看和管理餐桌",
     "ORDERS_TITLE": "订单",
-    "ORDERS_DESC": "跟踪客户订单"
+    "ORDERS_DESC": "跟踪客户订单",
+    "CATALOG_TITLE": "目录",
+    "CATALOG_DESC": "供应商目录和菜单项",
+    "RESERVATIONS_TITLE": "预订",
+    "RESERVATIONS_DESC": "查看和管理桌位预订",
+    "KITCHEN_TITLE": "厨房显示屏",
+    "KITCHEN_DESC": "厨房订单视图",
+    "REPORTS_TITLE": "报表",
+    "REPORTS_DESC": "销售与收入分析",
+    "INVENTORY_TITLE": "库存",
+    "INVENTORY_DESC": "库存管理",
+    "USERS_TITLE": "用户",
+    "USERS_DESC": "员工和用户管理",
+    "SETTINGS_TITLE": "配置",
+    "SETTINGS_DESC": "餐厅和应用设置",
+    "HELP_TITLE": "帮助",
+    "HELP_DESC": "文档与支持",
+    "HELP_ISSUES": "Issues (GitHub)",
+    "HELP_DISCUSSIONS": "讨论 (GitHub)"
   },
   "AUTH": {
     "LOGIN": "登录",
@@ -78,11 +109,15 @@
     "DONT_HAVE_ACCOUNT": "没有账户？",
     "CREATE_ACCOUNT": "创建账户",
     "SET_UP_ORGANIZATION": "设置您的组织",
+    "REGISTER_WHO_IS_THIS_FOR": "这是给谁的？",
+    "REGISTER_FOR_PROVIDERS": "餐厅与商家。在此创建您的餐厅，使用员工后台管理订单、桌位与预订。",
+    "REGISTER_GUEST_HINT": "您只是想订桌或点餐？无需注册 — 请回到首页使用「预订餐桌」或「输入桌位码」。",
     "ORGANIZATION_NAME": "组织名称",
     "FULL_NAME": "全名",
     "CREATING_ACCOUNT": "创建账户中...",
     "ALREADY_HAVE_ACCOUNT": "已有账户？",
     "SIGN_IN_LINK": "登录",
+    "SIGN_IN_INSTEAD": "请改为登录",
     "EMAIL_PLACEHOLDER": "您的邮箱@示例.com",
     "PASSWORD_PLACEHOLDER": "请输入密码",
     "ORGANIZATION_PLACEHOLDER": "您的餐厅名称",
@@ -336,7 +371,12 @@
     "UNASSIGNED": "未分配",
     "ASSIGN_WAITER": "分配服务员",
     "DEFAULT_WAITER": "默认服务员",
-    "SECTION_DEFAULT": "区域默认"
+    "SECTION_DEFAULT": "区域默认",
+    "VIEW_TILES": "磁贴",
+    "VIEW_TABLE": "表格",
+    "COL_STATUS": "状态",
+    "PIN": "PIN",
+    "OPEN_MENU": "打开菜单"
   },
   "TABLE_STATUS": {
     "available": "空闲",
@@ -357,6 +397,7 @@
   },
   "RESERVATIONS": {
     "TITLE": "预订管理",
+    "RESERVATION_NUMBER": "预订编号",
     "NEW": "新建预订",
     "LOADING": "加载中...",
     "NONE": "暂无预订",
@@ -729,6 +770,7 @@
       "OWNER": "所有者",
       "ADMIN": "管理员",
       "KITCHEN": "厨房人员",
+      "BARTENDER": "调酒师",
       "WAITER": "服务员",
       "RECEPTIONIST": "接待员"
     }

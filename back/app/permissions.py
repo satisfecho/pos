@@ -62,6 +62,9 @@ class Permission(str, Enum):
     TRANSLATION_READ = "translation:read"
     TRANSLATION_WRITE = "translation:write"
 
+    # Reports (revenue / sales analysis – owner & admin)
+    REPORT_READ = "report:read"
+
 
 # Map roles to their permissions
 ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
@@ -104,6 +107,8 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         # Translations
         Permission.TRANSLATION_READ,
         Permission.TRANSLATION_WRITE,
+        # Reports
+        Permission.REPORT_READ,
     },
     
     UserRole.kitchen: {
@@ -111,6 +116,15 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         Permission.PRODUCT_READ,
         Permission.CATALOG_READ,
         # Orders (view and update item status)
+        Permission.ORDER_READ,
+        Permission.ORDER_ITEM_STATUS,
+    },
+    
+    UserRole.bartender: {
+        # Products (read-only for viewing menu / drinks)
+        Permission.PRODUCT_READ,
+        Permission.CATALOG_READ,
+        # Orders (view and update item status for drinks/beverages)
         Permission.ORDER_READ,
         Permission.ORDER_ITEM_STATUS,
     },

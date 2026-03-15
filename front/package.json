@@ -10,7 +10,19 @@
     "test": "ng test",
     "serve:ssr:front": "node dist/front/server/server.mjs",
     "debug:reservations": "node scripts/debug-reservations.mjs",
-    "debug:reservations:public": "node scripts/debug-reservations-public.mjs"
+    "debug:reservations:public": "node scripts/debug-reservations-public.mjs",
+    "test:register": "node scripts/test-register.mjs",
+    "test:demo-data": "node scripts/test-demo-data.mjs",
+    "test:tables-page": "node scripts/test-tables-page.mjs",
+    "test:landing-version": "node scripts/test-landing-version.mjs",
+    "test:landing-provider-links": "node scripts/test-landing-provider-links.mjs",
+    "test:provider-register": "node scripts/test-provider-register.mjs",
+    "test:provider-add-product": "node scripts/test-provider-add-product.mjs",
+    "test:catalog": "node scripts/test-catalog.mjs",
+    "test:order-8-status": "node scripts/test-order-8-status.mjs",
+    "test:register-page": "node scripts/test-register-page.mjs",
+    "test:reports": "node scripts/test-reports.mjs",
+    "test:bartender-role": "node scripts/test-bartender-role.mjs"
   },
   "prettier": {
     "printWidth": 100,

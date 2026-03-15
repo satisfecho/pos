@@ -1,0 +1,252 @@
+<app-sidebar>
+  <div class="reports-page" data-testid="reports-page">
+  <div class="page-header">
+    <div class="header-text">
+      <h1>{{ 'REPORTS.TITLE' | translate }}</h1>
+      <p class="subtitle">{{ 'REPORTS.SUBTITLE' | translate }}</p>
+    </div>
+    <div class="header-actions">
+      <div class="date-range">
+        <label>{{ 'REPORTS.FROM' | translate }}</label>
+        <input type="date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event)" />
+      </div>
+      <div class="date-range">
+        <label>{{ 'REPORTS.TO' | translate }}</label>
+        <input type="date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event)" />
+      </div>
+      <button class="btn btn-primary" (click)="loadReport()" [disabled]="loading()">
+        {{ loading() ? ('REPORTS.LOADING' | translate) : ('REPORTS.REFRESH' | translate) }}
+      </button>
+      <div class="export-buttons">
+        <button class="btn btn-secondary" (click)="exportCSV()" [disabled]="exporting() || !report()">
+          {{ 'REPORTS.EXPORT_CSV' | translate }}
+        </button>
+        <button class="btn btn-secondary" (click)="exportExcel()" [disabled]="exporting() || !report()">
+          {{ exporting() ? ('REPORTS.EXPORTING' | translate) : ('REPORTS.EXPORT_EXCEL' | translate) }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="error-banner">{{ error() }}</div>
+  }
+
+  @if (loading() && !report()) {
+    <div class="loading-state">{{ 'REPORTS.LOADING' | translate }}</div>
+  } @else if (report(); as r) {
+    <!-- Summary cards (always shown: revenue, orders, reservations) -->
+    <section class="report-section summary-section">
+        <h2>{{ 'REPORTS.SUMMARY' | translate }}</h2>
+        <div class="summary-cards">
+          <div class="summary-card revenue">
+            <span class="card-label">{{ 'REPORTS.TOTAL_REVENUE' | translate }}</span>
+            <span class="card-value">{{ formatCurrency(r.summary.total_revenue_cents) }}</span>
+          </div>
+          <div class="summary-card orders">
+            <span class="card-label">{{ 'REPORTS.TOTAL_ORDERS' | translate }}</span>
+            <span class="card-value">{{ r.summary.total_orders }}</span>
+          </div>
+          @if (r.reservations) {
+            <div class="summary-card reservations">
+              <span class="card-label">{{ 'REPORTS.RESERVATIONS_TOTAL' | translate }}</span>
+              <span class="card-value">{{ r.reservations.total }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Reservations by source -->
+        @if ((r.reservations?.by_source?.length ?? 0) > 0) {
+          <div class="chart-block reservations-block">
+            <h3>{{ 'REPORTS.RESERVATIONS' | translate }} – {{ 'REPORTS.RESERVATIONS_BY_SOURCE' | translate }}</h3>
+            <div class="reservations-by-source">
+              @for (row of (r.reservations?.by_source ?? []); track row.source) {
+                <div class="source-row">
+                  <span class="source-label">{{ getReservationSourceLabel(row.source) }}</span>
+                  <span class="source-count">{{ row.count }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Sales empty state or daily chart -->
+        @if (r.summary.total_orders === 0) {
+          <div class="empty-state compact">
+            <p>{{ 'REPORTS.NO_DATA' | translate }}</p>
+            <p class="muted">{{ 'REPORTS.NO_DATA_DESC' | translate }}</p>
+          </div>
+        } @else if (r.summary.daily.length > 0) {
+          <div class="chart-block">
+            <h3>{{ 'REPORTS.DAILY_SALES' | translate }}</h3>
+            <div class="bar-chart daily-chart">
+              @for (day of r.summary.daily; track day.date) {
+                <div class="bar-row">
+                  <span class="bar-label">{{ formatShortDate(day.date) }}</span>
+                  <div class="bar-track">
+                    <div class="bar-fill daily" [style.width.%]="(day.revenue_cents / maxBarValue()) * 100"></div>
+                  </div>
+                  <span class="bar-value">{{ formatCurrency(day.revenue_cents) }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </section>
+
+      @if (r.summary.total_orders > 0) {
+      <!-- By product -->
+      <section class="report-section">
+        <h2>{{ 'REPORTS.BY_PRODUCT' | translate }}</h2>
+        <div class="table-and-chart">
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>{{ 'REPORTS.PRODUCT' | translate }}</th>
+                  <th>{{ 'REPORTS.QUANTITY' | translate }}</th>
+                  <th>{{ 'REPORTS.REVENUE' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of r.by_product; track p.product_id) {
+                  <tr>
+                    <td>{{ p.product_name }}</td>
+                    <td>{{ p.quantity }}</td>
+                    <td class="num">{{ formatCurrency(p.revenue_cents) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="bar-chart compact">
+            @for (p of r.by_product.slice(0, 10); track p.product_id) {
+              <div class="bar-row">
+                <span class="bar-label" [title]="p.product_name">{{ p.product_name | slice:0:20 }}{{ p.product_name.length > 20 ? '…' : '' }}</span>
+                <div class="bar-track">
+                  <div class="bar-fill product" [style.width]="barWidth(p.revenue_cents)"></div>
+                </div>
+                <span class="bar-value">{{ formatCurrency(p.revenue_cents) }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- By category -->
+      <section class="report-section">
+        <h2>{{ 'REPORTS.BY_CATEGORY' | translate }}</h2>
+        <div class="table-and-chart">
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>{{ 'REPORTS.CATEGORY' | translate }}</th>
+                  <th>{{ 'REPORTS.QUANTITY' | translate }}</th>
+                  <th>{{ 'REPORTS.REVENUE' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (c of r.by_category; track c.category) {
+                  <tr>
+                    <td>{{ c.category }}</td>
+                    <td>{{ c.quantity }}</td>
+                    <td class="num">{{ formatCurrency(c.revenue_cents) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="bar-chart compact category-bars">
+            @for (c of r.by_category; track c.category) {
+              <div class="bar-row">
+                <span class="bar-label">{{ c.category }}</span>
+                <div class="bar-track">
+                  <div class="bar-fill category" [style.width]="barWidth(c.revenue_cents)"></div>
+                </div>
+                <span class="bar-value">{{ formatCurrency(c.revenue_cents) }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- By table -->
+      <section class="report-section">
+        <h2>{{ 'REPORTS.BY_TABLE' | translate }}</h2>
+        <div class="table-and-chart">
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>{{ 'REPORTS.TABLE' | translate }}</th>
+                  <th>{{ 'REPORTS.TOTAL_ORDERS' | translate }}</th>
+                  <th>{{ 'REPORTS.REVENUE' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (t of r.by_table; track t.table_name) {
+                  <tr>
+                    <td>{{ t.table_name }}</td>
+                    <td>{{ t.order_count }}</td>
+                    <td class="num">{{ formatCurrency(t.revenue_cents) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="bar-chart compact">
+            @for (t of r.by_table; track t.table_name) {
+              <div class="bar-row">
+                <span class="bar-label">{{ t.table_name }}</span>
+                <div class="bar-track">
+                  <div class="bar-fill table" [style.width]="barWidth(t.revenue_cents)"></div>
+                </div>
+                <span class="bar-value">{{ formatCurrency(t.revenue_cents) }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- By waiter -->
+      <section class="report-section">
+        <h2>{{ 'REPORTS.BY_WAITER' | translate }}</h2>
+        <div class="table-and-chart">
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>{{ 'REPORTS.WAITER' | translate }}</th>
+                  <th>{{ 'REPORTS.TOTAL_ORDERS' | translate }}</th>
+                  <th>{{ 'REPORTS.REVENUE' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (w of r.by_waiter; track w.waiter_name) {
+                  <tr>
+                    <td>{{ w.waiter_name }}</td>
+                    <td>{{ w.order_count }}</td>
+                    <td class="num">{{ formatCurrency(w.revenue_cents) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="bar-chart compact">
+            @for (w of r.by_waiter; track w.waiter_name) {
+              <div class="bar-row">
+                <span class="bar-label">{{ w.waiter_name }}</span>
+                <div class="bar-track">
+                  <div class="bar-fill waiter" [style.width]="barWidth(w.revenue_cents)"></div>
+                </div>
+                <span class="bar-value">{{ formatCurrency(w.revenue_cents) }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+    }
+  }
+  </div>
+</app-sidebar>

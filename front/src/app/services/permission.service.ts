@@ -42,7 +42,9 @@ export type Permission =
   | 'inventory:write'
   // Translations
   | 'translation:read'
-  | 'translation:write';
+  | 'translation:write'
+  // Reports (revenue analysis)
+  | 'report:read';
 
 /**
  * Role to permissions mapping (mirrors backend ROLE_PERMISSIONS)
@@ -62,9 +64,16 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'order:mark_paid', 'order:cancel', 'order:remove_item',
     'inventory:read', 'inventory:write',
     'translation:read', 'translation:write',
+    'report:read',
   ]),
 
   kitchen: new Set([
+    'product:read',
+    'catalog:read',
+    'order:read', 'order:item_status',
+  ]),
+
+  bartender: new Set([
     'product:read',
     'catalog:read',
     'order:read', 'order:item_status',
@@ -88,20 +97,24 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'floor:read',
     'order:read',
   ]),
+
+  provider: new Set([]), // Provider portal uses provider_id scoping, not tenant permissions
 };
 
 /**
  * Routes and their required roles
  */
 const ROUTE_ROLES: Record<string, UserRole[]> = {
-  '/': ['owner', 'admin', 'kitchen', 'waiter', 'receptionist'],
-  '/products': ['owner', 'admin', 'kitchen', 'waiter', 'receptionist'],
-  '/catalog': ['owner', 'admin', 'kitchen', 'waiter', 'receptionist'],
+  '/': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
+  '/products': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
+  '/catalog': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
   '/tables': ['owner', 'admin', 'waiter', 'receptionist'],
   '/tables/canvas': ['owner', 'admin'],
   '/reservations': ['owner', 'admin', 'waiter', 'receptionist'],
-  '/orders': ['owner', 'admin', 'kitchen', 'waiter', 'receptionist'],
+  '/orders': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
+  '/kitchen': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
   '/inventory': ['owner', 'admin'],
+  '/reports': ['owner', 'admin'],
   '/settings': ['owner', 'admin'],
   '/users': ['owner', 'admin'],
 };
@@ -214,6 +227,6 @@ export class PermissionService {
     }
 
     // Default: all roles
-    return ['owner', 'admin', 'kitchen', 'waiter', 'receptionist'];
+    return ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'];
   }
 }

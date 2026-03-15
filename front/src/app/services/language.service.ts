@@ -39,13 +39,6 @@ export class LanguageService {
     const browserLang = this.getBrowserLanguage();
     const initialLang = stored || browserLang || DEFAULT_LANGUAGE;
 
-    console.log('[LanguageService] Init:', {
-      stored,
-      browserLang,
-      initialLang,
-      navigatorLanguage: typeof navigator !== 'undefined' ? navigator.language : 'N/A'
-    });
-
     // Apply language WITHOUT storing (only store on explicit user change)
     this.applyLanguage(initialLang);
   }

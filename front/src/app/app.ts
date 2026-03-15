@@ -1,6 +1,7 @@
 import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
+import { LanguageService } from './services/language.service';
 
 @Component({
   selector: 'app-root',
@@ -12,6 +13,9 @@ export class App implements OnInit, OnDestroy {
   protected readonly title = signal('front');
   private router = inject(Router);
   private routerSub?: Subscription;
+
+  /** Inject so LanguageService initializes at bootstrap and applies browser default language everywhere from first load. */
+  private languageService = inject(LanguageService);
 
   ngOnInit() {
     // Set initial favicon based on current route

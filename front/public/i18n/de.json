@@ -1,5 +1,7 @@
 {
   "COMMON": {
+    "ACTIONS": "Aktionen",
+    "COPY": "Kopieren",
     "SAVE": "Speichern",
     "SAVING": "Speichern...",
     "CANCEL": "Abbrechen",
@@ -48,7 +50,19 @@
     "TRANSLATIONS": "Übersetzungen",
     "SETTINGS": "Einstellungen",
     "USERS": "Benutzer",
+    "KITCHEN_DISPLAY": "Küchenanzeige",
     "LOGOUT": "Abmelden"
+  },
+  "LANDING": {
+    "TITLE": "POS",
+    "SUBTITLE": "Wählen Sie Ihr Restaurant für die Anmeldung",
+    "LOGIN": "Anmelden",
+    "NO_TENANTS": "Noch keine Restaurants registriert.",
+    "AT_TABLE_LABEL": "An Tisch bestellen",
+    "AT_TABLE_HINT": "Bereits am Tisch? Geben Sie den Tischcode ein, um zu bestellen.",
+    "TABLE_CODE_PLACEHOLDER": "Tischcode",
+    "GO": "Los",
+    "BOOK_TABLE": "Tisch reservieren"
   },
   "DASHBOARD": {
     "TITLE": "Dashboard",
@@ -59,7 +73,25 @@
     "TABLES_TITLE": "Tische",
     "TABLES_DESC": "Tische ansehen und verwalten",
     "ORDERS_TITLE": "Bestellungen",
-    "ORDERS_DESC": "Kundenbestellungen verfolgen"
+    "ORDERS_DESC": "Kundenbestellungen verfolgen",
+    "CATALOG_TITLE": "Katalog",
+    "CATALOG_DESC": "Anbieterkatalog und Menüpunkte",
+    "RESERVATIONS_TITLE": "Reservierungen",
+    "RESERVATIONS_DESC": "Reservierungen anzeigen und verwalten",
+    "KITCHEN_TITLE": "Küchenanzeige",
+    "KITCHEN_DESC": "Bestellansicht für die Küche",
+    "REPORTS_TITLE": "Berichte",
+    "REPORTS_DESC": "Umsatz- und Erlösanalyse",
+    "INVENTORY_TITLE": "Inventar",
+    "INVENTORY_DESC": "Lager- und Bestandsverwaltung",
+    "USERS_TITLE": "Benutzer",
+    "USERS_DESC": "Personal- und Benutzerverwaltung",
+    "SETTINGS_TITLE": "Konfiguration",
+    "SETTINGS_DESC": "Restaurant- und App-Einstellungen",
+    "HELP_TITLE": "Hilfe",
+    "HELP_DESC": "Dokumentation und Support",
+    "HELP_ISSUES": "Issues (GitHub)",
+    "HELP_DISCUSSIONS": "Diskussionen (GitHub)"
   },
   "AUTH": {
     "LOGIN": "Anmelden",
@@ -78,11 +110,15 @@
     "DONT_HAVE_ACCOUNT": "Kein Konto?",
     "CREATE_ACCOUNT": "Konto erstellen",
     "SET_UP_ORGANIZATION": "Richten Sie Ihre Organisation ein",
+    "REGISTER_WHO_IS_THIS_FOR": "Für wen ist das?",
+    "REGISTER_FOR_PROVIDERS": "Restaurant- und Geschäftsinhaber. Erstellen Sie hier Ihr Restaurant und nutzen Sie Ihr eigenes Staff-Dashboard für Bestellungen, Tische und Reservierungen.",
+    "REGISTER_GUEST_HINT": "Möchten Sie nur einen Tisch reservieren oder im Restaurant bestellen? Dafür brauchen Sie kein Konto — nutzen Sie «Tisch buchen» oder «Tischcode eingeben» auf der Startseite.",
     "ORGANIZATION_NAME": "Organisationsname",
     "FULL_NAME": "Vollständiger Name",
     "CREATING_ACCOUNT": "Konto wird erstellt...",
     "ALREADY_HAVE_ACCOUNT": "Haben Sie bereits ein Konto?",
     "SIGN_IN_LINK": "Anmelden",
+    "SIGN_IN_INSTEAD": "Stattdessen anmelden",
     "EMAIL_PLACEHOLDER": "du@beispiel.com",
     "PASSWORD_PLACEHOLDER": "Geben Sie Ihr Passwort ein",
     "ORGANIZATION_PLACEHOLDER": "Name Ihres Restaurants",
@@ -336,7 +372,12 @@
     "UNASSIGNED": "Nicht zugewiesen",
     "ASSIGN_WAITER": "Kellner zuweisen",
     "DEFAULT_WAITER": "Standardkellner",
-    "SECTION_DEFAULT": "Bereichsstandard"
+    "SECTION_DEFAULT": "Bereichsstandard",
+    "VIEW_TILES": "Kacheln",
+    "VIEW_TABLE": "Tabelle",
+    "COL_STATUS": "Status",
+    "PIN": "PIN",
+    "OPEN_MENU": "Menü öffnen"
   },
   "TABLE_STATUS": {
     "available": "Verfügbar",
@@ -357,6 +398,7 @@
   },
   "RESERVATIONS": {
     "TITLE": "Reservierungen",
+    "RESERVATION_NUMBER": "Reservierungsnummer",
     "NEW": "Neue Reservierung",
     "LOADING": "Laden...",
     "NONE": "Keine Reservierungen",
@@ -711,6 +753,16 @@
     "delivered": "Geliefert",
     "cancelled": "Storniert"
   },
+  "KITCHEN_DISPLAY": {
+    "TITLE": "Küchenanzeige",
+    "BACK_TO_ORDERS": "Zurück zu Bestellungen",
+    "SOUND_ON": "Ton an",
+    "SOUND_OFF": "Ton aus",
+    "LAST_REFRESH": "Aktualisiert",
+    "NO_ACTIVE_ORDERS": "Keine aktiven Bestellungen",
+    "NO_ACTIVE_ORDERS_DESC": "Neue Bestellungen erscheinen hier, wenn Gäste bestellen",
+    "NOTES": "Notizen"
+  },
   "USERS": {
     "TITLE": "Benutzerverwaltung",
     "ADD_USER": "Benutzer hinzufügen",
@@ -729,6 +781,7 @@
       "OWNER": "Eigentümer",
       "ADMIN": "Administrator",
       "KITCHEN": "Küchenpersonal",
+      "BARTENDER": "Barkeeper",
       "WAITER": "Kellner",
       "RECEPTIONIST": "Empfangsmitarbeiter"
     }

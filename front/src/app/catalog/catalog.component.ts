@@ -72,6 +72,14 @@ import { TranslateModule } from '@ngx-translate/core';
                   <div class="catalog-image">
                     <img [src]="getImageUrl(item.image_url)" [alt]="item.name" (error)="$event.target.style.display='none'">
                   </div>
+                } @else {
+                  <div class="catalog-image catalog-image-placeholder">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <path d="M21 15l-5-5L5 21"/>
+                    </svg>
+                  </div>
                 }
                 <div class="catalog-header">
                   <h3>{{ item.name }}</h3>
@@ -345,6 +353,13 @@ import { TranslateModule } from '@ngx-translate/core';
       height: auto;
       object-fit: contain;
       object-position: center;
+    }
+
+    .catalog-image-placeholder {
+      color: var(--color-text-muted, #6b7280);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .catalog-header {

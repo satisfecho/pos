@@ -310,6 +310,11 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       color: #9d174d;
     }
 
+    .role-bartender {
+      background: #fef3c7;
+      color: #b45309;
+    }
+
     .role-waiter {
       background: #d1fae5;
       color: #065f46;
@@ -517,10 +522,10 @@ export class UsersComponent implements OnInit {
 
     if (user.role === 'owner') {
       // Owner can create all roles except owner (there's only one owner)
-      this.availableRoles.set(['admin', 'kitchen', 'waiter', 'receptionist']);
+      this.availableRoles.set(['admin', 'kitchen', 'bartender', 'waiter', 'receptionist']);
     } else if (user.role === 'admin') {
       // Admin can create all roles except owner
-      this.availableRoles.set(['admin', 'kitchen', 'waiter', 'receptionist']);
+      this.availableRoles.set(['admin', 'kitchen', 'bartender', 'waiter', 'receptionist']);
     }
   }
 

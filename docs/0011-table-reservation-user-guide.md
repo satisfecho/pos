@@ -89,5 +89,5 @@ This document describes how table reservations work for **staff** and **end user
 ## 5. Related files
 
 - **Changelog**: `CHANGELOG.md` (reservation feature and fixes).
-- **Implementation plan**: `docs/TABLE_RESERVATION_IMPLEMENTATION_PLAN.md`.
+- **Implementation plan**: `docs/0010-table-reservation-implementation-plan.md`.
 - **Agent instructions**: `AGENTS.md` (Docker, logs, ports).

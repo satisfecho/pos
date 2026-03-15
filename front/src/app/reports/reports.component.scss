@@ -1,0 +1,351 @@
+// Sales & Revenue Reports – clean, catchy layout
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+
+  .header-text h1 {
+    margin: 0 0 var(--space-1);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+
+  .subtitle {
+    margin: 0;
+    font-size: 0.9375rem;
+    color: var(--color-text-muted);
+  }
+
+  .header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--space-3);
+  }
+
+  .date-range {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+
+    label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--color-text-muted);
+    }
+
+    input[type="date"] {
+      padding: var(--space-2) var(--space-3);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-size: 0.875rem;
+    }
+  }
+
+  .export-buttons {
+    display: flex;
+    gap: var(--space-2);
+  }
+}
+
+.error-banner {
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  color: var(--color-error);
+  font-size: 0.9375rem;
+}
+
+.loading-state {
+  text-align: center;
+  padding: var(--space-8);
+  color: var(--color-text-muted);
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--space-10);
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+
+  .empty-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-4);
+    opacity: 0.6;
+  }
+
+  h2 {
+    margin: 0 0 var(--space-2);
+    font-size: 1.25rem;
+    color: var(--color-text);
+  }
+
+  p {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.9375rem;
+  }
+
+  &.compact {
+    padding: var(--space-4);
+    margin-bottom: var(--space-6);
+
+    p + p.muted {
+      margin-top: var(--space-1);
+      font-size: 0.875rem;
+      color: var(--color-text-muted);
+    }
+  }
+}
+
+.report-section {
+  margin-bottom: var(--space-8);
+
+  h2 {
+    margin: 0 0 var(--space-4);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text);
+    padding-bottom: var(--space-2);
+    border-bottom: 2px solid var(--color-border);
+  }
+
+  h3 {
+    margin: 0 0 var(--space-3);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+}
+
+.summary-section {
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+
+  .summary-card {
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    .card-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    .card-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    &.revenue {
+      background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+      color: white;
+    }
+
+    &.orders {
+      background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+      color: white;
+    }
+
+    &.reservations {
+      background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+      color: white;
+    }
+  }
+
+  .reservations-block {
+    margin-bottom: var(--space-6);
+
+    h3 {
+      margin: 0 0 var(--space-3);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+  }
+
+  .reservations-by-source {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    max-width: 320px;
+  }
+
+  .source-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 0.9375rem;
+
+    .source-label {
+      color: var(--color-text);
+    }
+
+    .source-count {
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+  }
+}
+
+.chart-block {
+  margin-top: var(--space-4);
+}
+
+.bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  &.daily-chart .bar-fill {
+    background: linear-gradient(90deg, #0d9488 0%, #2dd4bf 100%);
+  }
+
+  &.compact {
+    max-width: 420px;
+  }
+
+  .bar-row {
+    display: grid;
+    grid-template-columns: 1fr minmax(120px, 2fr) auto;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: 0.875rem;
+  }
+
+  .bar-label {
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  .bar-track {
+    height: 22px;
+    background: var(--color-bg);
+    border-radius: 11px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 11px;
+    min-width: 4px;
+    transition: width 0.4s ease-out;
+
+    &.product {
+      background: linear-gradient(90deg, #059669 0%, #34d399 100%);
+    }
+
+    &.category {
+      background: linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%);
+    }
+
+    &.table {
+      background: linear-gradient(90deg, #dc2626 0%, #f87171 100%);
+    }
+
+    &.waiter {
+      background: linear-gradient(90deg, #ea580c 0%, #fb923c 100%);
+    }
+  }
+
+  .bar-value {
+    font-weight: 600;
+    color: var(--color-text);
+    white-space: nowrap;
+  }
+}
+
+.table-and-chart {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.data-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  th,
+  td {
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  th {
+    background: var(--color-bg);
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  td.num {
+    font-weight: 600;
+    color: var(--color-success);
+  }
+}
+
+.btn {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border: none;
+
+  &.btn-primary {
+    background: var(--color-primary);
+    color: white;
+  }
+
+  &.btn-secondary {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}

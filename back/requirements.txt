@@ -32,3 +32,6 @@ aiosmtplib>=3.0.0
 
 # PDF generation
 reportlab>=4.4.7
+
+# Excel export for reports
+openpyxl>=3.1.0

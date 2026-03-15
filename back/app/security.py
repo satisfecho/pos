@@ -10,7 +10,7 @@ from jose import JWTError, jwt
 from sqlmodel import Session, select
 
 from .db import get_session
-from .models import User, Tenant, UserRole
+from .models import User, Tenant, UserRole, Provider
 from .settings import settings
 
 # Context variable to store the current tenant_id for the request
@@ -101,6 +101,27 @@ async def get_optional_token(
     return token
 
 
+def _user_from_payload(session: Session, payload: dict) -> User | None:
+    """Look up user from JWT payload (tenant_id or provider_id). Returns None if invalid."""
+    email: str = payload.get("sub")
+    tenant_id = payload.get("tenant_id")  # None for provider users
+    provider_id = payload.get("provider_id")
+    token_version: int = payload.get("token_version", 0)
+    if email is None:
+        return None
+    if tenant_id is not None:
+        set_tenant_id(tenant_id)
+        statement = select(User).where(User.email == email).where(User.tenant_id == tenant_id)
+    elif provider_id is not None:
+        statement = select(User).where(User.email == email).where(User.provider_id == provider_id)
+    else:
+        return None
+    user = session.exec(statement).first()
+    if user is None or user.token_version != token_version:
+        return None
+    return user
+
+
 async def get_current_user_optional(
     token: Annotated[str | None, Depends(get_optional_token)],
     session: Annotated[Session, Depends(get_session)],
@@ -110,19 +131,9 @@ async def get_current_user_optional(
         return None
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-        email: str = payload.get("sub")
-        tenant_id: int = payload.get("tenant_id")
-        token_version: int = payload.get("token_version", 0)
-        if email is None or tenant_id is None:
-            return None
+        return _user_from_payload(session, payload)
     except JWTError:
         return None
-    set_tenant_id(tenant_id)
-    statement = select(User).where(User.email == email).where(User.tenant_id == tenant_id)
-    user = session.exec(statement).first()
-    if user is None or user.token_version != token_version:
-        return None
-    return user
 
 
 async def get_current_user(
@@ -135,30 +146,12 @@ async def get_current_user(
     )
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-        email: str = payload.get("sub")
-        tenant_id: int = payload.get("tenant_id")
-        token_version: int = payload.get("token_version", 0)
-        if email is None or tenant_id is None:
+        user = _user_from_payload(session, payload)
+        if user is None:
             raise credentials_exception
+        return user
     except JWTError:
         raise credentials_exception
-
-    # Set the context for the tenant
-    set_tenant_id(tenant_id)
-
-    # We might want to verify the user actually exists and belongs to this tenant
-    # Note: We filter by the tenant_id from the token to ensure consistency
-    statement = select(User).where(User.email == email).where(User.tenant_id == tenant_id)
-    user = session.exec(statement).first()
-    
-    if user is None:
-        raise credentials_exception
-
-    # Check token version for revocation support
-    if user.token_version != token_version:
-        raise credentials_exception
-        
-    return user
 
 
 def validate_refresh_token(refresh_token: str, session: Session) -> User:
@@ -178,30 +171,27 @@ def validate_refresh_token(refresh_token: str, session: Session) -> User:
         payload = jwt.decode(
             refresh_token, settings.refresh_secret_key, algorithms=[settings.algorithm]
         )
-        
-        # Verify this is a refresh token (not an access token)
         if payload.get("type") != "refresh":
             raise credentials_exception
-        
-        email: str = payload.get("sub")
-        tenant_id: int = payload.get("tenant_id")
-        token_version: int = payload.get("token_version", 0)
-        
-        if email is None or tenant_id is None:
+        user = _user_from_payload(session, payload)
+        if user is None:
             raise credentials_exception
-            
+        return user
     except JWTError:
         raise credentials_exception
 
-    # Verify user exists and token version matches
-    statement = select(User).where(User.email == email).where(User.tenant_id == tenant_id)
-    user = session.exec(statement).first()
-    
-    if user is None:
-        raise credentials_exception
 
-    # Check token version for revocation support
-    if user.token_version != token_version:
-        raise credentials_exception
-    
-    return user
+async def get_current_provider_user(
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[Session, Depends(get_session)],
+) -> tuple[User, Provider]:
+    """Require that the current user is a provider; return (user, provider)."""
+    if current_user.provider_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Provider account required",
+        )
+    provider = session.get(Provider, current_user.provider_id)
+    if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    return (current_user, provider)

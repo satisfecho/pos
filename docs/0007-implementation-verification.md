@@ -2,7 +2,7 @@
 
 ## Date: 2026-01-13
 
-This document verifies what has been implemented against the requirements in `ORDER_MANAGEMENT_LOGIC.md`.
+This document verifies what has been implemented against the requirements in `0008-order-management-logic.md`.
 
 ---
 
@@ -203,6 +203,6 @@ Missing Features:
 
 2. **Phase 4 features are optional enhancements** - These are "nice to have" features that don't block core functionality.
 
-3. **Documentation should be updated** - The `ORDER_MANAGEMENT_LOGIC.md` file should be updated to reflect that Issues 1-10 are now implemented, and Phase 4 features are marked as "Future Enhancements".
+3. **Documentation should be updated** - The `0008-order-management-logic.md` file should be updated to reflect that Issues 1-10 are now implemented, and Phase 4 features are marked as "Future Enhancements".
 
 4. **No breaking changes** - All implementations are backward compatible.

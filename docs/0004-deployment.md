@@ -95,10 +95,11 @@ CORS_ORIGINS=http://localhost:4200,*
 
 ## Important Notes
 
-1. **HTTPS/WSS**: If using HTTPS for the API, use `wss://` (not `ws://`) for WebSocket connections
-2. **Ports**: Make sure the ports you specify are accessible and not blocked by firewalls
-3. **CORS**: The `CORS_ORIGINS` must include the exact URL where users access the frontend
-4. **Wildcard**: The `*` in CORS_ORIGINS allows public menu access from any origin (useful for QR code menus)
+1. **Production port 80**: With `docker-compose.prod.yml`, the frontend defaults to host port **80** so `http://yourdomain/` works without a port. Set `FRONTEND_PORT` in `config.env` only if you need a different port.
+2. **HTTPS/WSS**: If using HTTPS for the API, use `wss://` (not `ws://`) for WebSocket connections
+3. **Ports**: Make sure the ports you specify are accessible and not blocked by firewalls
+4. **CORS**: The `CORS_ORIGINS` must include the exact URL where users access the frontend
+5. **Wildcard**: The `*` in CORS_ORIGINS allows public menu access from any origin (useful for QR code menus)
 
 ## Reverse Proxy Setup (Optional)
 

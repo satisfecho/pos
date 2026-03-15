@@ -1,5 +1,7 @@
 {
   "COMMON": {
+    "ACTIONS": "कार्रवाई",
+    "COPY": "कॉपी करें",
     "SAVE": "सहेजें",
     "SAVING": "सहेज रहा है...",
     "CANCEL": "रद्द करें",
@@ -50,6 +52,17 @@
     "USERS": "उपयोगकर्ता",
     "LOGOUT": "लॉग आउट"
   },
+  "LANDING": {
+    "TITLE": "POS",
+    "SUBTITLE": "साइन इन करने के लिए अपना रेस्तरां चुनें",
+    "LOGIN": "लॉग इन",
+    "NO_TENANTS": "अभी तक कोई रेस्तरां पंजीकृत नहीं है।",
+    "AT_TABLE_LABEL": "अपनी टेबल पर ऑर्डर करें",
+    "AT_TABLE_HINT": "पहले से टेबल पर हैं? ऑर्डर करने के लिए अपनी टेबल का कोड दर्ज करें।",
+    "TABLE_CODE_PLACEHOLDER": "टेबल कोड",
+    "GO": "जाएं",
+    "BOOK_TABLE": "टेबल बुक करें"
+  },
   "DASHBOARD": {
     "TITLE": "डैशबोर्ड",
     "WELCOME_BACK": "आपका स्वागत है",
@@ -59,7 +72,25 @@
     "TABLES_TITLE": "टेबल",
     "TABLES_DESC": "टेबल देखें और प्रबंधित करें",
     "ORDERS_TITLE": "ऑर्डर",
-    "ORDERS_DESC": "ग्राहक के आदेशों को ट्रैक करें"
+    "ORDERS_DESC": "ग्राहक के आदेशों को ट्रैक करें",
+    "CATALOG_TITLE": "कैटलॉग",
+    "CATALOG_DESC": "प्रोवाइडर कैटलॉग और मेनू आइटम",
+    "RESERVATIONS_TITLE": "आरक्षण",
+    "RESERVATIONS_DESC": "टेबल आरक्षण देखें और प्रबंधित करें",
+    "KITCHEN_TITLE": "किचन डिस्प्ले",
+    "KITCHEN_DESC": "किचन के लिए ऑर्डर व्यू",
+    "REPORTS_TITLE": "रिपोर्ट",
+    "REPORTS_DESC": "बिक्री और राजस्व विश्लेषण",
+    "INVENTORY_TITLE": "इन्वेंटरी",
+    "INVENTORY_DESC": "स्टॉक और इन्वेंटरी प्रबंधन",
+    "USERS_TITLE": "उपयोगकर्ता",
+    "USERS_DESC": "स्टाफ और उपयोगकर्ता प्रबंधन",
+    "SETTINGS_TITLE": "कॉन्फ़िगरेशन",
+    "SETTINGS_DESC": "रेस्तरां और ऐप सेटिंग्स",
+    "HELP_TITLE": "सहायता",
+    "HELP_DESC": "दस्तावेज़ीकरण और सहायता",
+    "HELP_ISSUES": "Issues (GitHub)",
+    "HELP_DISCUSSIONS": "Discussions (GitHub)"
   },
   "AUTH": {
     "LOGIN": "लॉग इन",
@@ -78,11 +109,15 @@
     "DONT_HAVE_ACCOUNT": "खाता नहीं है?",
     "CREATE_ACCOUNT": "खाता बनाएं",
     "SET_UP_ORGANIZATION": "अपना संगठन सेट करें",
+    "REGISTER_WHO_IS_THIS_FOR": "यह किसके लिए है?",
+    "REGISTER_FOR_PROVIDERS": "रेस्तरां और व्यवसाय मालिक। यहाँ अपना रेस्तरां बनाएं और ऑर्डर, टेबल और आरक्षण के लिए स्टाफ डैशबोर्ड का उपयोग करें।",
+    "REGISTER_GUEST_HINT": "बस टेबल बुक करनी है या ऑर्डर देना है? खाता जरूरी नहीं — मुख्य पृष्ठ पर «टेबल बुक करें» या «टेबल कोड दर्ज करें» इस्तेमाल करें।",
     "ORGANIZATION_NAME": "संगठन का नाम",
     "FULL_NAME": "पूरा नाम",
     "CREATING_ACCOUNT": "खाता बना रहा है...",
     "ALREADY_HAVE_ACCOUNT": "पहले से खाता है?",
     "SIGN_IN_LINK": "साइन इन करें",
+    "SIGN_IN_INSTEAD": "इसके बजाय साइन इन करें",
     "EMAIL_PLACEHOLDER": "आप@उदाहरण.com",
     "PASSWORD_PLACEHOLDER": "अपना पासवर्ड दर्ज करें",
     "ORGANIZATION_PLACEHOLDER": "आपके रेस्तरां का नाम",
@@ -336,7 +371,12 @@
     "UNASSIGNED": "अनियुक्त",
     "ASSIGN_WAITER": "वेटर नियुक्त करें",
     "DEFAULT_WAITER": "डिफ़ॉल्ट वेटर",
-    "SECTION_DEFAULT": "सेक्शन डिफ़ॉल्ट"
+    "SECTION_DEFAULT": "सेक्शन डिफ़ॉल्ट",
+    "VIEW_TILES": "टाइल्स",
+    "VIEW_TABLE": "टेबल",
+    "COL_STATUS": "स्थिति",
+    "PIN": "PIN",
+    "OPEN_MENU": "मेन्यू खोलें"
   },
   "TABLE_STATUS": {
     "available": "उपलब्ध",
@@ -357,6 +397,7 @@
   },
   "RESERVATIONS": {
     "TITLE": "आरक्षण",
+    "RESERVATION_NUMBER": "आरक्षण संख्या",
     "NEW": "नया आरक्षण",
     "LOADING": "लोड हो रहा है...",
     "NONE": "कोई आरक्षण नहीं",
@@ -729,6 +770,7 @@
       "OWNER": "मालिक",
       "ADMIN": "व्यवस्थापक",
       "KITCHEN": "किचन स्टाफ",
+      "BARTENDER": "बारटेंडर",
       "WAITER": "वेटर",
       "RECEPTIONIST": "रिसेप्शनिस्ट"
     }

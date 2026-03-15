@@ -1416,6 +1416,14 @@ All customer-facing order modification endpoints require and validate `session_i
 
 **Result**: Order status updates now work correctly, including partial delivery scenarios.
 
+### Edge case: Order shows "completed" but Mark as Paid fails
+
+**Symptom**: Staff see an order as "completed" (all items delivered) but "Mark as Paid" returns an error (e.g. "Order must be completed before marking as paid").
+
+**Cause**: The orders list API returns a **computed** status from item statuses (so the UI shows "completed" when all active items are delivered). The mark-paid endpoint previously checked only the **stored** `order.status` in the database. If that value was never updated (e.g. older data, or a code path that didn’t persist the computed status), the check failed.
+
+**Fix**: The `PUT /orders/{order_id}/mark-paid` endpoint now uses the same computed status from items. If all active items are delivered, the order can be marked as paid; the stored `order.status` is synced to `completed` before setting to `paid` so the DB stays consistent. This prevents orders from getting stuck when the stored status was out of sync.
+
 ### Future Enhancements (Phase 4 - Optional)
 - ⚠️ **LOW PRIORITY**: Batch status updates (`PUT /orders/{order_id}/items/batch-status`)
 - ⚠️ **LOW PRIORITY**: Status history/audit trail

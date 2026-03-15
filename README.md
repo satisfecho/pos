@@ -26,14 +26,17 @@ The frontend is Angular; the backend is FastAPI with PostgreSQL and Redis. All m
 |------|------------------|
 | **Orders** | Full lifecycle (pending → preparing → ready → delivered → paid). Session-based orders per browser. Item-level status; partial delivery; order modification and cancellation before delivery; soft delete with “Show removed items” in staff UI. |
 | **Customer menu** | Browse menu, cart, place order, order history. Optional “immediate payment required” (checkout auto-opens after placing order). |
+| **Kitchen display** | Dedicated full-screen view at `/kitchen`: large order cards, auto-refresh and WebSocket updates, optional sound on new orders. Read-only; same access as Orders. See [docs/0015-kitchen-display.md](docs/0015-kitchen-display.md). |
+| **Reports** | Sales & revenue at `/reports` (owner/admin): date range, summary, reservation count and by source (public/staff), by product/category/table/waiter, charts, CSV/Excel export. See [docs/0016-reports.md](docs/0016-reports.md). |
 | **Payments** | Stripe integration; per-tenant Stripe keys and currency. |
 | **Tables** | Table management, QR codes, canvas view. Table activation and 4-digit PIN so only present guests can order; PIN rate limiting via Redis. |
 | **Reservations** | Staff: list, create, edit, seat, finish, cancel at `/reservations`. Public: book at `/book/:tenantId`, view/cancel at `/reservation?token=...`. Table status: available / reserved / occupied. |
 | **Real-time** | WebSocket updates for order status; token-based WS auth (`/ws-token`). |
 | **i18n & currency** | Multiple UI languages (e.g. en, es, ca, de, zh-CN, hi); backend localized messages; per-tenant currency (EUR, USD, MXN, etc.). |
-| **Multi-tenant** | Isolated data per tenant; first user becomes owner; configurable roles and permissions (e.g. reservation read/write). |
+| **Multi-tenant** | Isolated data per tenant; first user becomes owner; configurable roles (owner, admin, kitchen, bartender, waiter, receptionist) and permissions (e.g. reservation read/write). |
+| **Provider portal** | Suppliers register at `/provider/register`, log in at `/provider/login`, and manage their catalog at `/provider` (tile/list view, search, add/edit/delete products, company details). See [docs/0014-provider-portal.md](docs/0014-provider-portal.md). |
 
-Planned but not yet implemented: customer accounts (registration, MFA, invoices), batch order operations, and stricter “must pay before continuing” flow. See [ROADMAP.md](ROADMAP.md) and [docs/CUSTOMER_FEATURES_PLAN.md](docs/CUSTOMER_FEATURES_PLAN.md).
+Planned but not yet implemented: customer accounts (registration, MFA, invoices), batch order operations, and stricter “must pay before continuing” flow. See [ROADMAP.md](ROADMAP.md) and [docs/0002-customer-features-plan.md](docs/0002-customer-features-plan.md).
 
 ---
 
@@ -60,15 +63,15 @@ Planned but not yet implemented: customer accounts (registration, MFA, invoices)
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>
-   cd pos2
+   git clone https://github.com/satisfecho/pos
+   cd pos
    ```
 
 2. **Configure environment**
    ```bash
    cp config.env.example config.env
    ```
-   For local development the defaults are fine. For production or a custom domain, set `API_URL`, `WS_URL`, `CORS_ORIGINS`, and `SECRET_KEY`. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+   For local development the defaults are fine. For production or a custom domain, set `API_URL`, `WS_URL`, `CORS_ORIGINS`, and `SECRET_KEY`. See [docs/0004-deployment.md](docs/0004-deployment.md).
 
 3. **Start all services**
    ```bash
@@ -97,6 +100,11 @@ Planned but not yet implemented: customer accounts (registration, MFA, invoices)
 | **DB health** | http://localhost:4202/api/health/db |
 | **Public menu (example)** | http://localhost:4202/menu/{table_token} |
 | **Public booking** | http://localhost:4202/book/{tenantId} |
+| **Provider login** | http://localhost:4202/provider/login |
+| **Provider dashboard** | http://localhost:4202/provider |
+| **Kitchen display** | http://localhost:4202/kitchen |
+| **Reports (owner/admin)** | http://localhost:4202/reports |
+| **Dashboard (staff)** | http://localhost:4202/dashboard |
 
 If your frontend port is different (e.g. 4203), replace 4202 with that port. See [AGENTS.md](AGENTS.md) for how to detect the port and debug with logs.
 
@@ -116,7 +124,7 @@ Key variables in `config.env` (see `config.env.example` for the full list):
 | `POSTGRES_*` / `DB_*` | Database connection | Yes |
 | `STRIPE_CURRENCY` | Fallback currency if tenant has none | Optional |
 
-Stripe keys are configured per tenant in **Settings** in the admin UI. For deployment on a domain or IP, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+Stripe keys are configured per tenant in **Settings** in the admin UI. For deployment on a domain or IP, see [docs/0004-deployment.md](docs/0004-deployment.md).
 
 ---
 
@@ -127,17 +135,19 @@ Stripe keys are configured per tenant in **Settings** in the admin UI. For deplo
 | [ROADMAP.md](ROADMAP.md) | Implemented vs planned features; rate limiting and security roadmap |
 | [CHANGELOG.md](CHANGELOG.md) | Release notes and unreleased changes |
 | [AGENTS.md](AGENTS.md) | How to find the app port and view logs (for developers/agents) |
-| [docs/ORDER_MANAGEMENT_LOGIC.md](docs/ORDER_MANAGEMENT_LOGIC.md) | Order lifecycle, session rules, status reset |
-| [docs/IMPLEMENTATION_VERIFICATION.md](docs/IMPLEMENTATION_VERIFICATION.md) | What’s implemented vs Phase 4 (batch, audit, etc.) |
-| [docs/TABLE_RESERVATION_IMPLEMENTATION_PLAN.md](docs/TABLE_RESERVATION_IMPLEMENTATION_PLAN.md) | Reservations design and backend |
-| [docs/TABLE_RESERVATION_USER_GUIDE.md](docs/TABLE_RESERVATION_USER_GUIDE.md) | URLs and flows for staff and public booking |
-| [docs/TABLE_PIN_SECURITY.md](docs/TABLE_PIN_SECURITY.md) | Table activation and PIN validation |
-| [docs/TRANSLATION_IMPLEMENTATION.md](docs/TRANSLATION_IMPLEMENTATION.md) | i18n (frontend + backend + DB content) |
-| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Domain/IP deployment and env vars |
-| [docs/CUSTOMER_FEATURES_PLAN.md](docs/CUSTOMER_FEATURES_PLAN.md) | Planned customer accounts, MFA, invoices |
-| [docs/EMAIL_SENDING_OPTIONS.md](docs/EMAIL_SENDING_OPTIONS.md) | Email configuration options |
-| [docs/GMAIL_SETUP_INSTRUCTIONS.md](docs/GMAIL_SETUP_INSTRUCTIONS.md) | Gmail SMTP setup |
-| [docs/VERIFICATION_ALTERNATIVES.md](docs/VERIFICATION_ALTERNATIVES.md) | Verification flow alternatives |
+| [docs/0008-order-management-logic.md](docs/0008-order-management-logic.md) | Order lifecycle, session rules, status reset |
+| [docs/0007-implementation-verification.md](docs/0007-implementation-verification.md) | What’s implemented vs Phase 4 (batch, audit, etc.) |
+| [docs/0010-table-reservation-implementation-plan.md](docs/0010-table-reservation-implementation-plan.md) | Reservations design and backend |
+| [docs/0011-table-reservation-user-guide.md](docs/0011-table-reservation-user-guide.md) | URLs and flows for staff and public booking |
+| [docs/0009-table-pin-security.md](docs/0009-table-pin-security.md) | Table activation and PIN validation |
+| [docs/0012-translation-implementation.md](docs/0012-translation-implementation.md) | i18n (frontend + backend + DB content) |
+| [docs/0004-deployment.md](docs/0004-deployment.md) | Domain/IP deployment and env vars |
+| [docs/0002-customer-features-plan.md](docs/0002-customer-features-plan.md) | Planned customer accounts, MFA, invoices |
+| [docs/0005-email-sending-options.md](docs/0005-email-sending-options.md) | Email configuration options |
+| [docs/0006-gmail-setup-instructions.md](docs/0006-gmail-setup-instructions.md) | Gmail SMTP setup |
+| [docs/0013-verification-alternatives.md](docs/0013-verification-alternatives.md) | Verification flow alternatives |
+| [docs/0014-provider-portal.md](docs/0014-provider-portal.md) | Provider registration, login, and catalog management |
+| [docs/0015-kitchen-display.md](docs/0015-kitchen-display.md) | Kitchen display: full-screen view, auto-refresh, optional sound |
 
 ---
 
@@ -200,7 +210,7 @@ docker compose --env-file config.env down
 - **Language picker:** In admin sidebar and on the public menu.
 - **API:** Use `?lang=es` (or other code) for localized API messages.
 
-See [docs/TRANSLATION_IMPLEMENTATION.md](docs/TRANSLATION_IMPLEMENTATION.md).
+See [docs/0012-translation-implementation.md](docs/0012-translation-implementation.md).
 
 ---
 
@@ -209,7 +219,7 @@ See [docs/TRANSLATION_IMPLEMENTATION.md](docs/TRANSLATION_IMPLEMENTATION.md).
 - **Staff:** Sign in → **Reservations** in the sidebar. List, create, edit, seat at a table, finish, or cancel. Tables canvas shows status **Reserved** (amber) when a reservation is assigned.
 - **Public:** Book at **`/book/:tenantId`** (e.g. `http://localhost:4202/book/1`). After booking, use the link to **view or cancel** at `/reservation?token=...`. No login required.
 
-Details: [docs/TABLE_RESERVATION_USER_GUIDE.md](docs/TABLE_RESERVATION_USER_GUIDE.md).
+Details: [docs/0011-table-reservation-user-guide.md](docs/0011-table-reservation-user-guide.md).
 
 ---
 
@@ -222,7 +232,7 @@ For a custom domain or IP, set in `config.env`:
 
 Then restart: `docker compose --env-file config.env up -d`.
 
-Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+Full guide: [docs/0004-deployment.md](docs/0004-deployment.md).
 
 ---
 
@@ -252,4 +262,4 @@ Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 | **Wrong port** | Run `docker compose ps`, find the host port for `haproxy`, and open that URL (e.g. `http://localhost:4202`). |
 | **DB connection errors** | Ensure `db` is healthy (`docker compose ps`); with Compose, use `DB_HOST=db`. Check credentials in `config.env`. |
 
-More: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and [AGENTS.md](AGENTS.md).
+More: [docs/0004-deployment.md](docs/0004-deployment.md) and [AGENTS.md](AGENTS.md).

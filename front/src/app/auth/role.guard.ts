@@ -47,7 +47,7 @@ export function roleGuard(allowedRoles: UserRole[]): CanActivateFn {
       // User doesn't have permission - redirect to dashboard
       // Could also show an access denied page
       console.warn(`Access denied to ${state.url}. User role: ${user.role}, Required: ${allowedRoles.join(', ')}`);
-      router.navigate(['/']);
+      router.navigate(['/dashboard']);
       return false;
     }
 
@@ -73,4 +73,4 @@ export const tableAccessGuard: CanActivateFn = roleGuard(['owner', 'admin', 'wai
 /**
  * Route guard that allows staff with order access (owner, admin, kitchen, waiter, receptionist)
  */
-export const orderAccessGuard: CanActivateFn = roleGuard(['owner', 'admin', 'kitchen', 'waiter', 'receptionist']);
+export const orderAccessGuard: CanActivateFn = roleGuard(['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist']);

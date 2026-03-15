@@ -26,7 +26,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
         <div class="sidebar-header">
           <div class="logo-container">
             <span class="logo">POS</span>
-            <span class="version">v{{ version }}<span class="commit-hash">{{ commitHash }}</span></span>
+            <span class="version">{{ version }} <span class="commit-hash">{{ commitHash }}</span></span>
           </div>
           <button class="close-btn" (click)="closeSidebar()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -36,7 +36,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
         </div>
         
         <nav class="nav">
-           <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link" (click)="closeSidebar()">
+           <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link" (click)="closeSidebar()">
              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
                <polyline points="9,22 9,12 15,12 15,22"/>
@@ -86,6 +86,21 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
              </svg>
              <span>{{ 'NAV.ORDERS' | translate }}</span>
            </a>
+           <a routerLink="/kitchen" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+               <rect x="2" y="4" width="20" height="16" rx="2"/>
+               <path d="M6 8h.01M10 8h.01M14 8h.01M6 12h12M6 16h8"/>
+             </svg>
+             <span>{{ 'NAV.KITCHEN_DISPLAY' | translate }}</span>
+           </a>
+           @if (canViewReports()) {
+             <a routerLink="/reports" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+               </svg>
+               <span>{{ 'NAV.REPORTS' | translate }}</span>
+             </a>
+           }
            <!-- Inventory Module (Admin only) -->
            @if (canViewInventory()) {
              <div class="nav-section">
@@ -191,6 +206,7 @@ export class SidebarComponent implements OnInit {
   canViewReservations = computed(() => this.permissions.hasPermission(this.user(), 'reservation:read'));
   canViewSettings = computed(() => this.permissions.isAdmin(this.user()));
   canViewInventory = computed(() => this.permissions.isAdmin(this.user()));
+  canViewReports = computed(() => this.permissions.isAdmin(this.user()));
   canViewUsers = computed(() => this.permissions.isAdmin(this.user()));
 
   ngOnInit() {
@@ -239,6 +255,6 @@ export class SidebarComponent implements OnInit {
 
   logout() {
     this.api.logout();
-    this.router.navigate(['/login']);
+    this.router.navigate(['/']);
   }
 }

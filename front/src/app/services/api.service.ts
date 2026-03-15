@@ -4,13 +4,14 @@ import { Observable, BehaviorSubject, tap, Subject, catchError, of, map } from '
 import { environment } from '../../environments/environment';
 
 // Interfaces
-export type UserRole = 'owner' | 'admin' | 'kitchen' | 'waiter' | 'receptionist';
+export type UserRole = 'owner' | 'admin' | 'kitchen' | 'bartender' | 'waiter' | 'receptionist' | 'provider';
 
 export interface User {
   id?: number;
   email: string;
   full_name?: string;
-  tenant_id: number;
+  tenant_id?: number | null;
+  provider_id?: number | null;
   role: UserRole;
 }
 
@@ -35,8 +36,150 @@ export interface AuthResponse {
 
 export interface RegisterResponse {
   status: string;
-  tenant_id: number;
+  tenant_id?: number;
+  provider_id?: number;
   email: string;
+}
+
+/** Provider portal types */
+export interface ProviderInfo {
+  id: number;
+  name: string;
+  token: string;
+  url?: string | null;
+  is_active: boolean;
+  full_company_name?: string | null;
+  address?: string | null;
+  tax_number?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  bank_iban?: string | null;
+  bank_bic?: string | null;
+  bank_name?: string | null;
+  bank_account_holder?: string | null;
+}
+
+export interface ProviderRegisterData {
+  provider_name: string;
+  email: string;
+  password: string;
+  full_name?: string | null;
+  full_company_name?: string | null;
+  address?: string | null;
+  tax_number?: string | null;
+  phone?: string | null;
+  bank_iban?: string | null;
+  bank_bic?: string | null;
+  bank_name?: string | null;
+  bank_account_holder?: string | null;
+}
+
+export interface ProviderUpdateData {
+  full_company_name?: string | null;
+  address?: string | null;
+  tax_number?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  bank_iban?: string | null;
+  bank_bic?: string | null;
+  bank_name?: string | null;
+  bank_account_holder?: string | null;
+}
+
+export interface ProviderCatalogItem {
+  id: number;
+  name: string;
+  category?: string | null;
+  subcategory?: string | null;
+}
+
+export interface ProviderProductItem {
+  id: number;
+  catalog_id: number;
+  catalog_name?: string | null;
+  name: string;
+  price_cents?: number | null;
+  availability: boolean;
+  image_url?: string | null;
+  external_id: string;
+  country?: string | null;
+  region?: string | null;
+  volume_ml?: number | null;
+  unit?: string | null;
+  detailed_description?: string | null;
+  grape_variety?: string | null;
+  wine_style?: string | null;
+  vintage?: number | null;
+  winery?: string | null;
+  aromas?: string | null;
+  elaboration?: string | null;
+}
+
+export interface ProviderProductCreate {
+  catalog_id?: number | null;
+  name: string;
+  category?: string | null;
+  subcategory?: string | null;
+  description?: string | null;
+  brand?: string | null;
+  barcode?: string | null;
+  external_id?: string;
+  price_cents?: number | null;
+  availability?: boolean;
+  country?: string | null;
+  region?: string | null;
+  grape_variety?: string | null;
+  volume_ml?: number | null;
+  unit?: string | null;
+  detailed_description?: string | null;
+  wine_style?: string | null;
+  vintage?: number | null;
+  winery?: string | null;
+  aromas?: string | null;
+  elaboration?: string | null;
+}
+
+export interface ProviderProductUpdate {
+  name?: string | null;
+  price_cents?: number | null;
+  availability?: boolean | null;
+  country?: string | null;
+  region?: string | null;
+  grape_variety?: string | null;
+  volume_ml?: number | null;
+  unit?: string | null;
+  detailed_description?: string | null;
+  wine_style?: string | null;
+  vintage?: number | null;
+  winery?: string | null;
+  aromas?: string | null;
+  elaboration?: string | null;
+}
+
+export interface ProviderProduct {
+  id: number;
+  catalog_id: number;
+  provider_id: number;
+  external_id: string;
+  name: string;
+  price_cents?: number | null;
+  availability: boolean;
+  image_filename?: string | null;
+  country?: string | null;
+  region?: string | null;
+  volume_ml?: number | null;
+  unit?: string | null;
+  [key: string]: unknown;
+}
+
+/** Public tenant info for landing page / tenant picker / book page. */
+export interface TenantSummary {
+  id: number;
+  name: string;
+  logo_filename: string | null;
+  description?: string | null;
+  phone?: string | null;
+  email?: string | null;
 }
 
 export interface Product {
@@ -268,6 +411,25 @@ export interface OrderHistoryItem {
   total_cents: number;
 }
 
+/** Sales report payload from GET /reports/sales */
+export interface SalesReport {
+  from_date: string;
+  to_date: string;
+  summary: {
+    total_revenue_cents: number;
+    total_orders: number;
+    daily: { date: string; revenue_cents: number; order_count: number }[];
+  };
+  by_product: { product_id: number; product_name: string; category?: string; quantity: number; revenue_cents: number }[];
+  by_category: { category: string; quantity: number; revenue_cents: number }[];
+  by_table: { table_name: string; revenue_cents: number; order_count: number }[];
+  by_waiter: { waiter_name: string; revenue_cents: number; order_count: number }[];
+  reservations?: {
+    total: number;
+    by_source: { source: string; count: number }[];
+  };
+}
+
 // Provider & Catalog Interfaces
 export interface Provider {
   id?: number;
@@ -276,22 +438,6 @@ export interface Provider {
   api_endpoint?: string | null;
   is_active?: boolean;
   created_at?: string;
-}
-
-export interface ProviderProduct {
-  id?: number;
-  catalog_id: number;
-  provider_id: number;
-  external_id: string;
-  name: string;
-  price_cents?: number | null;
-  image_url?: string | null;
-  availability?: boolean;
-  country?: string | null;
-  region?: string | null;
-  grape_variety?: string | null;
-  volume_ml?: number | null;
-  unit?: string | null;
 }
 
 export interface CatalogItem {
@@ -395,12 +541,26 @@ export class ApiService {
     return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, null, { params });
   }
 
-  login(credentials: FormData): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/token`, credentials).pipe(
+  login(credentials: FormData, tenantId?: number, scope?: 'tenant' | 'provider'): Observable<any> {
+    let params = new HttpParams();
+    if (scope === 'provider') {
+      params = params.set('scope', 'provider');
+    } else if (tenantId != null) {
+      params = params.set('tenant_id', tenantId.toString());
+    }
+    return this.http.post<any>(`${this.apiUrl}/token`, credentials, { params }).pipe(
       tap(() => {
         this.checkAuth().subscribe();
       })
     );
+  }
+
+  registerProvider(data: ProviderRegisterData): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.apiUrl}/register/provider`, data);
+  }
+
+  updateProviderMe(data: ProviderUpdateData): Observable<ProviderInfo> {
+    return this.http.put<ProviderInfo>(`${this.apiUrl}/provider/me`, data);
   }
 
   logout() {
@@ -424,6 +584,42 @@ export class ApiService {
         // Re-check auth to update user state with new token
         this.checkAuth().subscribe();
       })
+    );
+  }
+
+  // Provider portal (provider-scoped auth)
+  getProviderMe(): Observable<ProviderInfo> {
+    return this.http.get<ProviderInfo>(`${this.apiUrl}/provider/me`);
+  }
+
+  getProviderCatalog(search?: string): Observable<ProviderCatalogItem[]> {
+    let params = new HttpParams();
+    if (search) params = params.set('search', search);
+    return this.http.get<ProviderCatalogItem[]>(`${this.apiUrl}/provider/catalog`, { params });
+  }
+
+  getProviderProducts(): Observable<ProviderProductItem[]> {
+    return this.http.get<ProviderProductItem[]>(`${this.apiUrl}/provider/products`);
+  }
+
+  createProviderProduct(data: ProviderProductCreate): Observable<ProviderProduct> {
+    return this.http.post<ProviderProduct>(`${this.apiUrl}/provider/products`, data);
+  }
+
+  updateProviderProduct(id: number, data: Partial<ProviderProductUpdate>): Observable<ProviderProduct> {
+    return this.http.put<ProviderProduct>(`${this.apiUrl}/provider/products/${id}`, data);
+  }
+
+  deleteProviderProduct(id: number): Observable<{ status: string }> {
+    return this.http.delete<{ status: string }>(`${this.apiUrl}/provider/products/${id}`);
+  }
+
+  uploadProviderProductImage(productId: number, file: File): Observable<{ id: number; image_filename: string; image_url: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ id: number; image_filename: string; image_url: string }>(
+      `${this.apiUrl}/provider/products/${productId}/image`,
+      formData
     );
   }
 
@@ -659,6 +855,20 @@ export class ApiService {
     return this.http.delete(url);
   }
 
+  // Reports (sales / revenue analysis)
+  getSalesReports(fromDate: string, toDate: string): Observable<SalesReport> {
+    const params = { from_date: fromDate, to_date: toDate };
+    return this.http.get<SalesReport>(`${this.apiUrl}/reports/sales`, { params });
+  }
+
+  getReportsExport(fromDate: string, toDate: string, format: 'csv' | 'xlsx', report: string): Observable<Blob> {
+    const params = { from_date: fromDate, to_date: toDate, format, report };
+    return this.http.get(`${this.apiUrl}/reports/export`, {
+      params,
+      responseType: 'blob',
+    });
+  }
+
   // Public Menu (no auth)
   getMenu(tableToken: string): Observable<MenuResponse> {
     return this.http.get<MenuResponse>(`${this.apiUrl}/menu/${tableToken}`);
@@ -752,6 +962,16 @@ export class ApiService {
     return `${this.apiUrl}/uploads/${tenantId}/logo/${logoFilename}`;
   }
 
+  /** List all tenants (public, no auth). For landing page tenant picker. */
+  getPublicTenants(): Observable<TenantSummary[]> {
+    return this.http.get<TenantSummary[]>(`${this.apiUrl}/public/tenants`);
+  }
+
+  /** Get one tenant's public info (for book/menu branding). Public, no auth. */
+  getPublicTenant(tenantId: number): Observable<TenantSummary> {
+    return this.http.get<TenantSummary>(`${this.apiUrl}/public/tenants/${tenantId}`);
+  }
+
   /** Get token for WebSocket auth (cookie may not be sent on WS upgrade from some origins). */
   getWsToken(): Observable<{ access_token: string }> {
     return this.http.get<{ access_token: string }>(`${this.apiUrl}/ws-token`, {
@@ -766,10 +986,10 @@ export class ApiService {
 
     // Fetch token so we can pass it in the URL; cookie may not be sent on WebSocket upgrade (e.g. cross-origin)
     this.getWsToken().subscribe({
-      next: (res) => this.connectWebSocketWithToken(user.tenant_id, res.access_token),
+      next: (res) => { if (user.tenant_id != null) this.connectWebSocketWithToken(user.tenant_id, res.access_token); },
       error: (err) => {
         console.warn('Could not get WebSocket token, connection may fail:', err?.status ?? err);
-        this.connectWebSocketWithToken(user.tenant_id, null);
+        if (user.tenant_id != null) this.connectWebSocketWithToken(user.tenant_id, null);
       },
     });
   }
@@ -889,7 +1109,8 @@ export class ApiService {
   }
 
   // Provider Products
-  getProviderProducts(providerId: number): Observable<ProviderProduct[]> {
+  /** List products for a given provider (admin/catalog). For provider-portal "my products" use getProviderProducts(). */
+  listProviderProducts(providerId: number): Observable<ProviderProduct[]> {
     return this.http.get<ProviderProduct[]>(`${this.apiUrl}/providers/${providerId}/products`);
   }
 

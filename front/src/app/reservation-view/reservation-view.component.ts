@@ -1,79 +1,40 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { ApiService, Reservation } from '../services/api.service';
+import { ApiService, Reservation, TenantSummary } from '../services/api.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterLink } from '@angular/router';
 import { ConfirmationModalComponent } from '../shared/confirmation-modal.component';
+import { LanguagePickerComponent } from '../shared/language-picker.component';
 
 @Component({
   selector: 'app-reservation-view',
   standalone: true,
-  imports: [TranslateModule, RouterLink, ConfirmationModalComponent],
-  template: `
-    <div class="view-page">
-      <div class="view-card">
-        @if (loading()) {
-          <p>{{ 'RESERVATIONS.LOADING' | translate }}</p>
-        } @else if (error()) {
-          <h1>{{ 'BOOK.VIEW_TITLE' | translate }}</h1>
-          <p class="error">{{ error() }}</p>
-          <a routerLink="/" class="btn btn-ghost">{{ 'COMMON.BACK' | translate }}</a>
-        } @else if (reservation()) {
-          <h1>{{ 'BOOK.VIEW_TITLE' | translate }}</h1>
-          @if (reservation()?.status === 'cancelled') {
-            <p class="status-cancelled">{{ 'RESERVATIONS.STATUS_CANCELLED' | translate }}</p>
-          } @else {
-            <div class="reservation-details">
-              <p><strong>{{ 'RESERVATIONS.DATE' | translate }}:</strong> {{ reservation()?.reservation_date }} {{ reservation()?.reservation_time }}</p>
-              <p><strong>{{ 'RESERVATIONS.PARTY_SIZE' | translate }}:</strong> {{ reservation()?.party_size }}</p>
-              <p><strong>{{ 'RESERVATIONS.CUSTOMER_NAME' | translate }}:</strong> {{ reservation()?.customer_name }}</p>
-              <p><strong>{{ 'RESERVATIONS.CUSTOMER_PHONE' | translate }}:</strong> {{ reservation()?.customer_phone }}</p>
-              <p><strong>{{ 'RESERVATIONS.STATUS' | translate }}:</strong> {{ getStatusKey() | translate }}</p>
-            </div>
-            @if (reservation()?.status === 'booked' || reservation()?.status === 'seated') {
-              <button class="btn btn-danger" (click)="showCancelConfirm.set(true)">{{ 'RESERVATIONS.CANCEL' | translate }}</button>
-            }
-          }
-        }
-      </div>
-      @if (showCancelConfirm() && reservation()) {
-        <app-confirmation-modal
-          title="RESERVATIONS.CANCEL_CONFIRM_TITLE"
-          message="RESERVATIONS.CANCEL_CONFIRM_MESSAGE"
-          [confirmText]="'RESERVATIONS.CANCEL'"
-          cancelText="COMMON.CANCEL"
-          confirmBtnClass="btn-danger"
-          (confirm)="doCancel()"
-          (cancel)="showCancelConfirm.set(false)"
-        />
-      }
-    </div>
-  `,
-  styles: [`
-    .view-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; background: #f9fafb; }
-    .view-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.07); padding: 2rem; max-width: 420px; width: 100%; }
-    .view-card h1 { margin: 0 0 1rem; font-size: 1.5rem; }
-    .reservation-details { margin: 1rem 0; padding: 1rem; background: #f3f4f6; border-radius: 8px; }
-    .error { color: #dc2626; }
-    .status-cancelled { color: #b91c1c; font-weight: 500; }
-    .btn { display: inline-block; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; cursor: pointer; border: none; text-decoration: none; margin-top: 0.5rem; }
-    .btn-ghost { background: transparent; color: #4b5563; }
-    .btn-danger { background: #dc2626; color: #fff; }
-  `],
+  imports: [TranslateModule, RouterLink, ConfirmationModalComponent, LanguagePickerComponent],
+  templateUrl: './reservation-view.component.html',
+  styleUrl: './reservation-view.component.scss',
 })
 export class ReservationViewComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private api = inject(ApiService);
   private translate = inject(TranslateService);
+  private sanitizer = inject(DomSanitizer);
 
   loading = signal(true);
   error = signal<string | null>(null);
   reservation = signal<Reservation | null>(null);
+  tenant = signal<TenantSummary | null>(null);
+  logoUrl = signal<string | null>(null);
   showCancelConfirm = signal(false);
 
   getStatusKey(): string {
     const s = this.reservation()?.status;
     return s ? 'RESERVATIONS.STATUS_' + s.toUpperCase() : '';
+  }
+
+  getLogoSafeUrl(url: string | null): SafeResourceUrl | null {
+    if (!url) return null;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
   ngOnInit() {
@@ -84,8 +45,26 @@ export class ReservationViewComponent implements OnInit {
       return;
     }
     this.api.getReservationByToken(token).subscribe({
-      next: (r) => { this.reservation.set(r); this.loading.set(false); },
-      error: () => { this.error.set(this.translate.instant('RESERVATIONS.ERROR_NOT_FOUND')); this.loading.set(false); },
+      next: (r) => {
+        this.reservation.set(r);
+        this.loadTenant(r.tenant_id);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.error.set(this.translate.instant('RESERVATIONS.ERROR_NOT_FOUND'));
+        this.loading.set(false);
+      },
+    });
+  }
+
+  private loadTenant(tenantId: number) {
+    this.api.getPublicTenant(tenantId).subscribe({
+      next: (t) => {
+        this.tenant.set(t);
+        const url = this.api.getTenantLogoUrl(t.logo_filename ?? undefined, t.id);
+        this.logoUrl.set(url);
+      },
+      error: () => {},
     });
   }
 
@@ -94,7 +73,10 @@ export class ReservationViewComponent implements OnInit {
     const token = this.route.snapshot.queryParamMap.get('token');
     if (!r || !token) return;
     this.api.cancelReservationPublic(r.id, token).subscribe({
-      next: (updated) => { this.reservation.set(updated); this.showCancelConfirm.set(false); },
+      next: (updated) => {
+        this.reservation.set(updated);
+        this.showCancelConfirm.set(false);
+      },
       error: () => this.showCancelConfirm.set(false),
     });
   }

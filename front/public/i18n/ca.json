@@ -1,5 +1,7 @@
 {
   "COMMON": {
+    "ACTIONS": "Accions",
+    "COPY": "Copiar",
     "SAVE": "Desar",
     "SAVING": "Desant...",
     "CANCEL": "Cancel·lar",
@@ -48,7 +50,19 @@
     "TRANSLATIONS": "Traduccions",
     "SETTINGS": "Configuració",
     "USERS": "Usuaris",
+    "KITCHEN_DISPLAY": "Pantalla cuina",
     "LOGOUT": "Tancar sessió"
+  },
+  "LANDING": {
+    "TITLE": "POS",
+    "SUBTITLE": "Selecciona el teu restaurant per iniciar sessió",
+    "LOGIN": "Iniciar sessió",
+    "NO_TENANTS": "Encara no hi ha restaurants registrats.",
+    "AT_TABLE_LABEL": "Comanda a la teva taula",
+    "AT_TABLE_HINT": "Ja ets a una taula? Introdueix el codi de la taula per fer la comanda.",
+    "TABLE_CODE_PLACEHOLDER": "Codi de taula",
+    "GO": "Anar",
+    "BOOK_TABLE": "Reservar taula"
   },
   "DASHBOARD": {
     "TITLE": "Tauler",
@@ -59,7 +73,25 @@
     "TABLES_TITLE": "Taules",
     "TABLES_DESC": "Veu i gestiona les taules",
     "ORDERS_TITLE": "Comandes",
-    "ORDERS_DESC": "Fes el seguiment de les comandes dels clients"
+    "ORDERS_DESC": "Fes el seguiment de les comandes dels clients",
+    "CATALOG_TITLE": "Catàleg",
+    "CATALOG_DESC": "Catàleg del proveïdor i articles del menú",
+    "RESERVATIONS_TITLE": "Reserves",
+    "RESERVATIONS_DESC": "Veure i gestionar reserves de taules",
+    "KITCHEN_TITLE": "Pantalla de cuina",
+    "KITCHEN_DESC": "Vista de comandes per a la cuina",
+    "REPORTS_TITLE": "Informes",
+    "REPORTS_DESC": "Anàlisi de vendes i ingressos",
+    "INVENTORY_TITLE": "Inventari",
+    "INVENTORY_DESC": "Stock i gestió d'inventari",
+    "USERS_TITLE": "Usuaris",
+    "USERS_DESC": "Gestió del personal i usuaris",
+    "SETTINGS_TITLE": "Configuració",
+    "SETTINGS_DESC": "Configuració del restaurant i de l'app",
+    "HELP_TITLE": "Ajuda",
+    "HELP_DESC": "Documentació i suport",
+    "HELP_ISSUES": "Issues (GitHub)",
+    "HELP_DISCUSSIONS": "Discussions (GitHub)"
   },
   "AUTH": {
     "LOGIN": "Iniciar sessió",
@@ -78,11 +110,15 @@
     "DONT_HAVE_ACCOUNT": "No tens compte?",
     "CREATE_ACCOUNT": "Crear compte",
     "SET_UP_ORGANIZATION": "Configura la teva organització",
+    "REGISTER_WHO_IS_THIS_FOR": "Per a qui és?",
+    "REGISTER_FOR_PROVIDERS": "Restaurants i negocis. Crea aquí el teu restaurant per tenir el teu panell d'staff, gestionar comandes, taules i reserves.",
+    "REGISTER_GUEST_HINT": "Només vols reservar taula o fer una comanda? No cal compte — usa «Reservar taula» o «Codi de taula» a la pàgina principal.",
     "ORGANIZATION_NAME": "Nom de l'organització",
     "FULL_NAME": "Nom complet",
     "CREATING_ACCOUNT": "Creant compte...",
     "ALREADY_HAVE_ACCOUNT": "Ja tens compte?",
     "SIGN_IN_LINK": "Iniciar sessió",
+    "SIGN_IN_INSTEAD": "Iniciar sessió en el seu lloc",
     "EMAIL_PLACEHOLDER": "tu@exemple.com",
     "PASSWORD_PLACEHOLDER": "Introdueix la teva contrasenya",
     "ORGANIZATION_PLACEHOLDER": "Nom del teu restaurant",
@@ -336,7 +372,12 @@
     "UNASSIGNED": "Sense assignar",
     "ASSIGN_WAITER": "Assignar cambrer",
     "DEFAULT_WAITER": "Cambrer per defecte",
-    "SECTION_DEFAULT": "Per defecte de secció"
+    "SECTION_DEFAULT": "Per defecte de secció",
+    "VIEW_TILES": "Rajoles",
+    "VIEW_TABLE": "Taula",
+    "COL_STATUS": "Estat",
+    "PIN": "PIN",
+    "OPEN_MENU": "Obrir menú"
   },
   "TABLE_STATUS": {
     "available": "Disponible",
@@ -357,6 +398,7 @@
   },
   "RESERVATIONS": {
     "TITLE": "Reserves",
+    "RESERVATION_NUMBER": "Número de reserva",
     "NEW": "Nova reserva",
     "LOADING": "Carregant...",
     "NONE": "Sense reserves",
@@ -711,6 +753,16 @@
     "delivered": "Lliurat",
     "cancelled": "Cancel·lat"
   },
+  "KITCHEN_DISPLAY": {
+    "TITLE": "Pantalla cuina",
+    "BACK_TO_ORDERS": "Tornar a comandes",
+    "SOUND_ON": "So activat",
+    "SOUND_OFF": "So desactivat",
+    "LAST_REFRESH": "Actualitzat",
+    "NO_ACTIVE_ORDERS": "Sense comandes actives",
+    "NO_ACTIVE_ORDERS_DESC": "Les noves comandes apareixeran aquí",
+    "NOTES": "Notes"
+  },
   "USERS": {
     "TITLE": "Gestió d'Usuaris",
     "ADD_USER": "Afegir Usuari",
@@ -729,6 +781,7 @@
       "OWNER": "Propietari",
       "ADMIN": "Administrador",
       "KITCHEN": "Personal de Cuina",
+      "BARTENDER": "Cambrer de barra",
       "WAITER": "Cambrer",
       "RECEPTIONIST": "Recepcionista"
     }

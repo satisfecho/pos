@@ -1,7 +1,7 @@
 """
-Check that demo tables T01–T09 exist for tenant 1.
+Check that demo tables T01–T10 exist for tenant 1.
 
-Exits 0 if all exist with expected seat counts (T01–T05: 4, T06–T09: 2);
+Exits 0 if all exist with expected seat counts (T01–T05: 4, T06–T10: 2);
 exits 1 otherwise. Use after seed_demo_tables or to verify DB state.
 
 Usage:
@@ -19,7 +19,7 @@ from app.db import engine
 DEMO_TENANT_ID = 1
 EXPECTED = [
     ("T01", 4), ("T02", 4), ("T03", 4), ("T04", 4), ("T05", 4),
-    ("T06", 2), ("T07", 2), ("T08", 2), ("T09", 2),
+    ("T06", 2), ("T07", 2), ("T08", 2), ("T09", 2), ("T10", 2),
 ]
 
 
@@ -45,7 +45,7 @@ def run() -> int:
         print(f"Wrong seat_count: {wrong_seats}")
     if missing or wrong_seats:
         return 1
-    print(f"OK: tenant {DEMO_TENANT_ID} has T01–T09 with correct seat counts.")
+    print(f"OK: tenant {DEMO_TENANT_ID} has T01–T10 with correct seat counts.")
     return 0
 
 

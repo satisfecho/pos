@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../services/api.service';
 
@@ -147,6 +147,7 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private api = inject(ApiService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   translate = inject(TranslateService);
 
   error = signal<string>('');
@@ -166,9 +167,11 @@ export class LoginComponent {
       formData.append('username', this.form.get('username')?.value || '');
       formData.append('password', this.form.get('password')?.value || '');
 
-      this.api.login(formData).subscribe({
+      const tenantId = this.route.snapshot.queryParams['tenant'];
+      const id = tenantId != null ? parseInt(tenantId, 10) : undefined;
+      this.api.login(formData, isNaN(id as number) ? undefined : id).subscribe({
         next: () => {
-          this.router.navigate(['/']);
+          this.router.navigate(['/dashboard']);
         },
         error: (err) => {
           this.loading.set(false);

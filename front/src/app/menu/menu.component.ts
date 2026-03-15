@@ -688,6 +688,13 @@ export class MenuComponent implements OnInit, OnDestroy {
     document.body.style.overflow = '';
   }
 
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.selectedProduct()) {
+      this.closeProductDetail();
+    }
+  }
+
   // ============================================
   // CART OPERATIONS
   // ============================================

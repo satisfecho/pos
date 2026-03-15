@@ -6,7 +6,8 @@ services:
     container_name: pos-front
     restart: unless-stopped
     ports:
-      - "${FRONTEND_PORT:-4200}:80"
+      # Default 80 so http://satisfecho.de/ works without :4200
+      - "${FRONTEND_PORT:-80}:80"
     environment:
       - API_URL=${API_URL:-/api}
       - WS_URL=${WS_URL:-}

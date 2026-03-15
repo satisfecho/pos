@@ -16,6 +16,12 @@ import { ApiService } from '../services/api.service';
           <p>{{ 'AUTH.SET_UP_ORGANIZATION' | translate }}</p>
         </div>
 
+        <div class="register-explanation">
+          <p class="register-explanation-title">{{ 'AUTH.REGISTER_WHO_IS_THIS_FOR' | translate }}</p>
+          <p class="register-explanation-providers">{{ 'AUTH.REGISTER_FOR_PROVIDERS' | translate }}</p>
+          <p class="register-explanation-guests">{{ 'AUTH.REGISTER_GUEST_HINT' | translate }}</p>
+        </div>
+
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
           <div class="form-group">
             <label for="tenant">{{ 'AUTH.ORGANIZATION_NAME' | translate }}</label>
@@ -60,7 +66,14 @@ import { ApiService } from '../services/api.service';
           </div>
 
           @if (error()) {
-            <div class="error-banner">{{ error() }}</div>
+            <div class="error-banner">
+              {{ error() }}
+              @if (emailAlreadyRegistered()) {
+                <div class="sign-in-hint">
+                  <a routerLink="/login">{{ 'AUTH.SIGN_IN_INSTEAD' | translate }}</a>
+                </div>
+              }
+            </div>
           }
 
           @if (success()) {
@@ -115,6 +128,35 @@ import { ApiService } from '../services/api.service';
       }
     }
 
+    .register-explanation {
+      background: var(--color-bg);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      margin-bottom: var(--space-6);
+      border-left: 4px solid var(--color-primary);
+    }
+
+    .register-explanation-title {
+      font-weight: 600;
+      color: var(--color-text);
+      font-size: 0.9375rem;
+      margin: 0 0 var(--space-2) 0;
+    }
+
+    .register-explanation-providers {
+      color: var(--color-text);
+      font-size: 0.875rem;
+      margin: 0 0 var(--space-2) 0;
+      line-height: 1.45;
+    }
+
+    .register-explanation-guests {
+      color: var(--color-text-muted);
+      font-size: 0.8125rem;
+      margin: 0;
+      line-height: 1.45;
+    }
+
     .error-banner {
       background: rgba(220, 38, 38, 0.1);
       color: var(--color-error);
@@ -122,6 +164,15 @@ import { ApiService } from '../services/api.service';
       border-radius: var(--radius-md);
       font-size: 0.875rem;
       margin-bottom: var(--space-4);
+    }
+
+    .sign-in-hint {
+      margin-top: var(--space-2);
+    }
+
+    .sign-in-hint a {
+      color: var(--color-primary);
+      font-weight: 500;
     }
 
     .success-banner {
@@ -183,6 +234,8 @@ export class RegisterComponent {
   error = signal<string>('');
   success = signal<string>('');
   loading = signal(false);
+  /** True when the API reported this email is already registered (suggest sign-in). */
+  emailAlreadyRegistered = signal(false);
 
   form = this.fb.group({
     tenant_name: ['', Validators.required],
@@ -195,6 +248,7 @@ export class RegisterComponent {
     if (this.form.valid) {
       this.error.set('');
       this.success.set('');
+      this.emailAlreadyRegistered.set(false);
       this.loading.set(true);
 
       this.api.register(this.form.value).subscribe({
@@ -206,7 +260,13 @@ export class RegisterComponent {
         },
         error: (err) => {
           this.loading.set(false);
-          this.error.set(err.error?.detail || 'Registration failed');
+          const detail = (err.error?.detail ?? '') as string;
+          this.error.set(detail || 'Registration failed');
+          // Backend returns localized "email already registered"; suggest sign-in
+          this.emailAlreadyRegistered.set(
+            err.status === 400 &&
+            /registered|registriert|registrat|registrado|registrat|已注册|पंजीकृत/i.test(detail)
+          );
         }
       });
     }

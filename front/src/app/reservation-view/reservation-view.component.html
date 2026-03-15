@@ -1,0 +1,97 @@
+<div class="view-page">
+  @if (loading()) {
+    <div class="loading-screen">
+      <div class="loading-content">
+        <div class="skeleton-header">
+          <div class="skeleton-logo"></div>
+          <div class="skeleton-text skeleton-title"></div>
+          <div class="skeleton-text skeleton-subtitle short"></div>
+        </div>
+        <div class="skeleton-cards">
+          <div class="skeleton-card">
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text short"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  } @else if (error()) {
+    <div class="view-card view-card-standalone">
+      <h1>{{ 'BOOK.VIEW_TITLE' | translate }}</h1>
+      <p class="error">{{ error() }}</p>
+      <a routerLink="/" class="btn btn-ghost">{{ 'COMMON.BACK' | translate }}</a>
+    </div>
+  } @else if (reservation()) {
+    @if (tenant()) {
+      <header class="hero-header">
+        <div class="hero-overlay"></div>
+        <app-language-picker class="view-language-picker"></app-language-picker>
+        <div class="hero-content">
+          <div class="hero-top-row">
+            @if (logoUrl()) {
+              <div class="logo-container">
+                <img [src]="getLogoSafeUrl(logoUrl())" [alt]="tenant()?.name" class="tenant-logo" />
+              </div>
+            }
+          </div>
+          <div class="hero-info">
+            <h1 class="restaurant-name">{{ tenant()!.name }}</h1>
+            @if (tenant()?.description) {
+              <p class="restaurant-tagline">{{ tenant()!.description }}</p>
+            }
+            <div class="table-pill view-pill">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <span>{{ 'BOOK.VIEW_TITLE' | translate }}</span>
+            </div>
+            @if (tenant()?.phone || tenant()?.email) {
+              <div class="restaurant-contact">
+                @if (tenant()?.phone) {
+                  <a [href]="'tel:' + tenant()!.phone" class="contact-link">{{ tenant()!.phone }}</a>
+                }
+                @if (tenant()?.phone && tenant()?.email) {
+                  <span class="contact-sep">·</span>
+                }
+                @if (tenant()?.email) {
+                  <a [href]="'mailto:' + tenant()!.email" class="contact-link">{{ tenant()!.email }}</a>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </header>
+    }
+    <main class="view-content">
+      <div class="view-card">
+        @if (reservation()?.status === 'cancelled') {
+          <p class="status-cancelled">{{ 'RESERVATIONS.STATUS_CANCELLED' | translate }}</p>
+        } @else {
+          <div class="reservation-details">
+            <p><strong>{{ 'RESERVATIONS.RESERVATION_NUMBER' | translate }}:</strong> #{{ reservation()?.id }}</p>
+            <p><strong>{{ 'RESERVATIONS.DATE' | translate }}:</strong> {{ reservation()?.reservation_date }} {{ reservation()?.reservation_time }}</p>
+            <p><strong>{{ 'RESERVATIONS.PARTY_SIZE' | translate }}:</strong> {{ reservation()?.party_size }}</p>
+            <p><strong>{{ 'RESERVATIONS.CUSTOMER_NAME' | translate }}:</strong> {{ reservation()?.customer_name }}</p>
+            <p><strong>{{ 'RESERVATIONS.CUSTOMER_PHONE' | translate }}:</strong> {{ reservation()?.customer_phone }}</p>
+            <p><strong>{{ 'RESERVATIONS.STATUS' | translate }}:</strong> {{ getStatusKey() | translate }}</p>
+          </div>
+          @if (reservation()?.status === 'booked' || reservation()?.status === 'seated') {
+            <button type="button" class="btn btn-danger" (click)="showCancelConfirm.set(true)">{{ 'RESERVATIONS.CANCEL' | translate }}</button>
+          }
+        }
+      </div>
+    </main>
+    @if (showCancelConfirm() && reservation()) {
+      <app-confirmation-modal
+        title="RESERVATIONS.CANCEL_CONFIRM_TITLE"
+        message="RESERVATIONS.CANCEL_CONFIRM_MESSAGE"
+        [confirmText]="'RESERVATIONS.CANCEL'"
+        cancelText="COMMON.CANCEL"
+        confirmBtnClass="btn-danger"
+        (confirm)="doCancel()"
+        (cancel)="showCancelConfirm.set(false)"
+      />
+    }
+  }
+</div>

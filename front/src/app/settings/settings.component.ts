@@ -126,7 +126,7 @@ import { TranslateModule } from '@ngx-translate/core';
                         <input
                           type="file"
                           id="logo-upload"
-                          accept="image/*,image/svg+xml,.svg,image/avif,.avif"
+                          accept="image/jpeg,image/png,image/webp,image/avif,image/svg+xml,.svg"
                           (change)="onLogoSelected($event)"
                           hidden
                         />
@@ -1552,7 +1552,7 @@ export class SettingsComponent implements OnInit {
   }
 
   cancel() {
-    this.router.navigate(['/']);
+    this.router.navigate(['/dashboard']);
   }
 
   useCurrentLocation() {
