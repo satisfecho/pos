@@ -100,6 +100,7 @@ show_help() {
     echo "  --beers         Import popular beers collection"
     echo "  --pizzas        Import award-winning Spanish pizzas"
     echo "  --products      Seed basic tenant products"
+    echo "  --demo-orders   Seed demo orders for tenant 1 (Reports/Informes; clean deployment only)"
     echo "  --clear         Pass --clear flag to the seed scripts (resets data)"
     echo "  --delete-all    GLOBAL CLEANUP: Deletes all seeded data and images"
     echo "  --help          Show this help message"
@@ -114,6 +115,7 @@ RUN_WINES=false
 RUN_BEERS=false
 RUN_PIZZAS=false
 RUN_PRODUCTS=false
+RUN_DEMO_ORDERS=false
 DELETE_ALL=false
 CLEAR_FLAG=""
 
@@ -130,6 +132,7 @@ while [[ $# -gt 0 ]]; do
         --beers) RUN_BEERS=true; shift ;;
         --pizzas) RUN_PIZZAS=true; shift ;;
         --products) RUN_PRODUCTS=true; shift ;;
+        --demo-orders) RUN_DEMO_ORDERS=true; shift ;;
         --clear) CLEAR_FLAG="--clear"; shift ;;
         --delete-all) DELETE_ALL=true; shift ;;
         --help) show_help; exit 0 ;;
@@ -164,6 +167,10 @@ fi
 
 if [ "$RUN_ALL" = true ] || [ "$RUN_PRODUCTS" = true ]; then
     run_seed "app.seeds.products" "Basic Products" "$CLEAR_FLAG"
+fi
+
+if [ "$RUN_DEMO_ORDERS" = true ]; then
+    run_seed "app.seeds.seed_demo_orders" "Demo Orders (tenant 1)" ""
 fi
 
 success "Seed automation process finished."

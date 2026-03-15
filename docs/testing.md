@@ -273,6 +273,7 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 - **Seed tables:** `docker compose exec back python -m app.seeds.seed_demo_tables` (idempotent).
 - **Seed demo products:** `docker compose exec back python -m app.seeds.seed_demo_products` (idempotent).
 - **Link demo products to catalog (images on /products):** `docker compose exec back python -m app.seeds.link_demo_products_to_catalog` — links products without images to provider products that have images; deploy runs this after catalog imports.
+- **Demo orders (Reports):** `docker compose exec back python -m app.seeds.seed_demo_orders` — seeds tenant 1 with paid and active orders over ±90 days; idempotent (skips if orders exist). Bootstrap runs this on virgin deploy. Optional: `./run_seeds.sh --demo-orders` from `back/`.
 
 See `AGENTS.md` for full seed and deploy notes.
 

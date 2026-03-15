@@ -1,9 +1,10 @@
 """
-Bootstrap a demo tenant on virgin deployment so the first registration gets tables and products.
+Bootstrap a demo tenant on virgin deployment so the first registration gets tables, products, and demo orders.
 
-If no tenants exist, creates tenant 1 "Demo Restaurant", then runs seed_demo_tables and
-seed_demo_products for it. Deploy runs this after migrations so that:
+If no tenants exist, creates tenant 1 "Demo Restaurant", then runs seed_demo_tables,
+seed_demo_products, and seed_demo_orders for it. Deploy runs this after migrations so that:
 - First user to register is assigned to this tenant (see register() in main.py) and gets T01–T10 + demo products.
+- Reports (Informes) show meaningful paid-order data (orders spread over the last ±90 days, biased to last 30).
 - No manual "run seeds after first register" step.
 
 Usage:
@@ -32,9 +33,11 @@ def run() -> None:
 
     from app.seeds.seed_demo_tables import run as run_tables
     from app.seeds.seed_demo_products import run as run_products
+    from app.seeds.seed_demo_orders import run as run_orders
 
     run_tables()
     run_products()
+    run_orders()
     print("Bootstrap done.")
 
 
