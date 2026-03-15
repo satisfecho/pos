@@ -431,6 +431,9 @@
     "ERROR_MISSING_TOKEN": "आरक्षण टोकन गायब है। अपनी पुष्टि के लिंक का उपयोग करें।",
     "ERROR_NOT_FOUND": "आरक्षण नहीं मिला या लिंक समाप्त हो गया।"
   },
+  "REPORTS": {
+    "AVG_PAYMENT_PER_CLIENT": "ग्राहक के अनुसार औसत भुगतान"
+  },
   "SETTINGS": {
     "TITLE": "सेटिंग्स",
     "BUSINESS_PROFILE": "व्यवसाय प्रोफ़ाइल",

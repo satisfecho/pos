@@ -183,12 +183,16 @@ def _build_report_payload(tenant_id: int, session: Session, from_date: date, to_
         ],
     }
 
+    average_revenue_per_order_cents = (
+        total_revenue_cents // total_orders if total_orders else 0
+    )
     return {
         "from_date": from_date.isoformat(),
         "to_date": to_date.isoformat(),
         "summary": {
             "total_revenue_cents": total_revenue_cents,
             "total_orders": total_orders,
+            "average_revenue_per_order_cents": average_revenue_per_order_cents,
             "daily": summary_daily,
         },
         "reservations": reservations_summary,

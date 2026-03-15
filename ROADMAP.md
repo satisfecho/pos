@@ -18,7 +18,7 @@
 - **Deployment**: Config guide for domain/IP, `API_URL`, `WS_URL`, CORS. See `docs/0004-deployment.md`.
 - **Provider portal**: Suppliers register at `/provider/register`, log in at `/provider/login`, manage catalog at `/provider` (tile/list view, search, add/edit/delete products, company details, bank info). API: `GET/PUT /provider/me`, `GET/POST/PUT/DELETE /provider/products`, etc. See `docs/0014-provider-portal.md`.
 - **Kitchen display**: Full-screen view at `/kitchen` for kitchen staff — large order cards, auto-refresh (15s) and WebSocket, optional sound on new orders; read-only. Same access as Orders. See `docs/0015-kitchen-display.md`.
-- **Reports (Sales & Revenue)**: Date range, summary, reservation count and by source (public/staff), by product/category/table/waiter, CSS charts, CSV/Excel export. Owner/admin only. See `docs/0016-reports.md`.
+- **Reports (Sales & Revenue)**: Date range, summary (total revenue, order count, average payment per client), reservation count and by source (public/staff), by product/category/table/waiter, CSS charts, CSV/Excel export. Owner/admin only. See `docs/0016-reports.md`.
 - **Dashboard**: Quick links at `/dashboard` to Catalog, Reservations, Kitchen display, Reports, Inventory, Users, Configuration (admin sections shown only to owner/admin), plus Help section with links to [GitHub Issues](https://github.com/satisfecho/pos/issues) and [GitHub Discussions](https://github.com/satisfecho/pos/discussions).
 
 ### ❌ Missing Features / To Be Implemented

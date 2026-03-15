@@ -366,6 +366,7 @@
     "SUMMARY": "Summary",
     "TOTAL_REVENUE": "Total revenue",
     "TOTAL_ORDERS": "Orders",
+    "AVG_PAYMENT_PER_CLIENT": "Average payment per client",
     "DAILY_SALES": "Daily sales",
     "BY_PRODUCT": "By product",
     "BY_CATEGORY": "By category",

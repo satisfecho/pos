@@ -432,6 +432,9 @@
     "ERROR_MISSING_TOKEN": "Falta el token de reserva. Utilitza l'enllaç de la teva confirmació.",
     "ERROR_NOT_FOUND": "Reserva no trobada o enllaç expirat."
   },
+  "REPORTS": {
+    "AVG_PAYMENT_PER_CLIENT": "Pagament mitjà per client"
+  },
   "SETTINGS": {
     "TITLE": "Configuració",
     "BUSINESS_PROFILE": "Perfil del negoci",

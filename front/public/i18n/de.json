@@ -432,6 +432,9 @@
     "ERROR_MISSING_TOKEN": "Reservierungstoken fehlt. Verwenden Sie den Link aus Ihrer Bestätigung.",
     "ERROR_NOT_FOUND": "Reservierung nicht gefunden oder Link abgelaufen."
   },
+  "REPORTS": {
+    "AVG_PAYMENT_PER_CLIENT": "Durchschnittlicher Umsatz pro Kunde"
+  },
   "SETTINGS": {
     "TITLE": "Einstellungen",
     "BUSINESS_PROFILE": "Geschäftsprofil",

@@ -47,6 +47,10 @@
             <span class="card-label">{{ 'REPORTS.TOTAL_ORDERS' | translate }}</span>
             <span class="card-value">{{ r.summary.total_orders }}</span>
           </div>
+          <div class="summary-card avg-payment">
+            <span class="card-label">{{ 'REPORTS.AVG_PAYMENT_PER_CLIENT' | translate }}</span>
+            <span class="card-value">{{ formatCurrency(r.summary.average_revenue_per_order_cents ?? 0) }}</span>
+          </div>
           @if (r.reservations) {
             <div class="summary-card reservations">
               <span class="card-label">{{ 'REPORTS.RESERVATIONS_TOTAL' | translate }}</span>

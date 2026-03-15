@@ -367,6 +367,7 @@
     "SUMMARY": "Resumen",
     "TOTAL_REVENUE": "Ingresos totales",
     "TOTAL_ORDERS": "Pedidos",
+    "AVG_PAYMENT_PER_CLIENT": "Pago medio por cliente",
     "DAILY_SALES": "Ventas diarias",
     "BY_PRODUCT": "Por producto",
     "BY_CATEGORY": "Por categoría",

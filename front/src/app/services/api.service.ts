@@ -418,6 +418,7 @@ export interface SalesReport {
   summary: {
     total_revenue_cents: number;
     total_orders: number;
+    average_revenue_per_order_cents: number;
     daily: { date: string; revenue_cents: number; order_count: number }[];
   };
   by_product: { product_id: number; product_name: string; category?: string; quantity: number; revenue_cents: number }[];

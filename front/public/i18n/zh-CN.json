@@ -431,6 +431,9 @@
     "ERROR_MISSING_TOKEN": "缺少预订令牌。请使用确认中的链接。",
     "ERROR_NOT_FOUND": "未找到预订或链接已过期。"
   },
+  "REPORTS": {
+    "AVG_PAYMENT_PER_CLIENT": "客户平均消费"
+  },
   "SETTINGS": {
     "TITLE": "设置",
     "BUSINESS_PROFILE": "业务概况",
