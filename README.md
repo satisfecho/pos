@@ -34,6 +34,7 @@ The frontend is Angular; the backend is FastAPI with PostgreSQL and Redis. All m
 | **Real-time** | WebSocket updates for order status; token-based WS auth (`/ws-token`). |
 | **i18n & currency** | Multiple UI languages (e.g. en, es, ca, de, zh-CN, hi); backend localized messages; per-tenant currency (EUR, USD, MXN, etc.). |
 | **Multi-tenant** | Isolated data per tenant; first user becomes owner; configurable roles (owner, admin, kitchen, bartender, waiter, receptionist) and permissions (e.g. reservation read/write). |
+| **Products & images** | Staff manage products at `/products`. On deploy, demo products are linked to catalog provider products so the Products page shows images (beer/pizza/wine import); first load of `/products` backfills image URLs. |
 | **Provider portal** | Suppliers register at `/provider/register`, log in at `/provider/login`, and manage their catalog at `/provider` (tile/list view, search, add/edit/delete products, company details). See [docs/0014-provider-portal.md](docs/0014-provider-portal.md). |
 
 Planned but not yet implemented: customer accounts (registration, MFA, invoices), batch order operations, and stricter “must pay before continuing” flow. See [ROADMAP.md](ROADMAP.md) and [docs/0002-customer-features-plan.md](docs/0002-customer-features-plan.md).

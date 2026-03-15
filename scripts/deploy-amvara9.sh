@@ -60,4 +60,7 @@ docker compose --env-file config.env exec -T back python -m app.seeds.beer_impor
 docker compose --env-file config.env exec -T back python -m app.seeds.pizza_import || true
 docker compose --env-file config.env exec -T back python -m app.seeds.wine_import || true
 
+echo "Linking demo products to catalog so /products page has images..."
+docker compose --env-file config.env exec -T back python -m app.seeds.link_demo_products_to_catalog || true
+
 echo "Deploy done."

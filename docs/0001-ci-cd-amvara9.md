@@ -86,7 +86,7 @@ If the demo account **ralf@roeber.de** no longer works on amvara9, it was almost
 
 ## Virgin / fresh install (fully automatic)
 
-On a clean clone to `/development/pos` with no `config.env`, the deploy script creates `config.env` from `config.env.example` (with generated secrets) and uses relative `API_URL=/api` so registration works from any host. After migrations, **bootstrap_demo** runs: if no tenants exist, it creates tenant 1 "Demo Restaurant" and seeds T01–T10 + demo products. The **first user to register** is assigned as owner of that tenant and gets the demo data immediately (no manual seed step). The app listens on port 80; reach it at **http://167.235.138.59** or your domain.
+On a clean clone to `/development/pos` with no `config.env`, the deploy script creates `config.env` from `config.env.example` (with generated secrets) and uses relative `API_URL=/api` so registration works from any host. After migrations, **bootstrap_demo** runs: if no tenants exist, it creates tenant 1 "Demo Restaurant" and seeds T01–T10 + demo products. Then **beer, pizza, wine** catalog imports run; **link_demo_products_to_catalog** runs so tenant products without images are linked to catalog provider products — when staff open `/products`, images are backfilled. The **first user to register** is assigned as owner of that tenant and gets the demo data immediately (no manual seed step). The app listens on port 80; reach it at **http://167.235.138.59** or your domain.
 
 ## Smoke test after deploy
 

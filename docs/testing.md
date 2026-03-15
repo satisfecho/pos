@@ -271,7 +271,8 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 
 - **Demo tables:** `docker compose exec back python -m app.seeds.check_demo_tables` (exit 0 = T01–T10 present for tenant 1).
 - **Seed tables:** `docker compose exec back python -m app.seeds.seed_demo_tables` (idempotent).
-- **Seed demo products:** `docker compose exec back python -m app.seeds.seed_demo_products`.
+- **Seed demo products:** `docker compose exec back python -m app.seeds.seed_demo_products` (idempotent).
+- **Link demo products to catalog (images on /products):** `docker compose exec back python -m app.seeds.link_demo_products_to_catalog` — links products without images to provider products that have images; deploy runs this after catalog imports.
 
 See `AGENTS.md` for full seed and deploy notes.
 
