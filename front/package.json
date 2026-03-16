@@ -24,6 +24,8 @@
     "test:reports": "node scripts/test-reports.mjs",
     "test:bartender-role": "node scripts/test-bartender-role.mjs",
     "test:kitchen-status-dropdown": "node scripts/test-kitchen-status-dropdown.mjs",
+    "test:rate-limit": "node scripts/test-rate-limit.mjs",
+    "test:rate-limit-puppeteer": "node scripts/test-rate-limit-puppeteer.mjs",
     "capture-screenshots": "node scripts/capture-screenshots.mjs"
   },
   "prettier": {

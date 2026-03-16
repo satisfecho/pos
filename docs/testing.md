@@ -276,6 +276,8 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `test:reports` | `scripts/test-reports.mjs` (Reports page smoke; owner/admin) |
 | `test:bartender-role` | `scripts/test-bartender-role.mjs` (Users → Add user → role dropdown includes Bartender) |
 | `test:kitchen-status-dropdown` | `scripts/test-kitchen-status-dropdown.mjs` (Kitchen display: status dropdown visible, not clipped) |
+| `test:rate-limit` | `scripts/test-rate-limit.mjs` (API rate limiting: login 5/15min, register 3/hour; expects 429 after limit) |
+| `test:rate-limit-puppeteer` | `scripts/test-rate-limit-puppeteer.mjs` (Puppeteer: login page, 6 wrong attempts, expects error banner) |
 
 `test-menu-logo` and `test-websocket` have no npm script; run via `node front/scripts/<name>.mjs`.
 
@@ -309,8 +311,28 @@ See `AGENTS.md` for full seed and deploy notes.
 | **Catalog** | `test-catalog.mjs` | Cards and image placeholders. |
 | **Menu (customer)** | `test-menu-logo.mjs` | Logo on `/menu/:token`. |
 | **WebSocket** | `test-websocket.mjs` | Post-login WS (ws-bridge required). |
+| **Rate limiting** | `test-rate-limit.mjs`, `test-rate-limit-puppeteer.mjs` | API: 429 after limit; Puppeteer: login page shows error banner (e.g. "Too many login attempts") when rate limited. |
 
 **Not covered (or partial):** No automated cleanup of test-created data (e.g. provider/restaurant registration leaves DB entries). No Puppeteer tests for settings, inventory, or tables canvas. Unit tests (Karma/Jasmine) are separate; see `npm test` in front.
+
+### Rate limiting (API)
+
+Verifies that login and register endpoints return HTTP 429 after the configured limit (login: 5 per 15 minutes per IP, register: 3 per hour per IP). Uses direct API calls (no browser). Requires backend and Redis running.
+
+```bash
+npm run test:rate-limit --prefix front
+# Or: BASE_URL=http://127.0.0.1:4202 node front/scripts/test-rate-limit.mjs
+# Skip register test (creates DB entries): SKIP_REGISTER_LIMIT=1 node front/scripts/test-rate-limit.mjs
+```
+
+- **Env:** `API_URL` or `BASE_URL` (API = BASE_URL + `/api`), `SKIP_LOGIN_LIMIT`, `SKIP_REGISTER_LIMIT`.
+
+**Puppeteer (browser):** Opens `/login`, submits wrong credentials 6 times; asserts an error banner is shown (401 or 429). When rate limited, the UI shows "Too many login attempts. Please try again later."
+
+```bash
+npm run test:rate-limit-puppeteer --prefix front
+# Or: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 node front/scripts/test-rate-limit-puppeteer.mjs
+```
 
 ---
 

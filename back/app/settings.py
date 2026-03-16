@@ -77,6 +77,24 @@ class Settings(BaseSettings):
     # OpenAPI docs and spec URLs are correct (e.g. /api/docs, /api/openapi.json).
     root_path: str = Field(default="", validation_alias="ROOT_PATH")
 
+    # Rate limiting (see ROADMAP.md / satisfecho/pos ROADMAP)
+    rate_limit_enabled: bool = Field(default=True, validation_alias="RATE_LIMIT_ENABLED")
+    rate_limit_redis_url: str = Field(
+        default="", validation_alias="RATE_LIMIT_REDIS_URL"
+    )  # Empty = use REDIS_URL
+    rate_limit_global_per_minute: int = Field(
+        default=100, validation_alias="RATE_LIMIT_GLOBAL_PER_MINUTE"
+    )
+    rate_limit_login_per_15min: int = Field(
+        default=5, validation_alias="RATE_LIMIT_LOGIN_PER_15MIN"
+    )
+    rate_limit_register_per_hour: int = Field(
+        default=3, validation_alias="RATE_LIMIT_REGISTER_PER_HOUR"
+    )
+    rate_limit_payment_per_minute: int = Field(
+        default=10, validation_alias="RATE_LIMIT_PAYMENT_PER_MINUTE"
+    )
+
     @property
     def database_url(self) -> str:
         # SQLModel uses SQLAlchemy under the hood; this uses the psycopg driver (v3).

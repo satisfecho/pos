@@ -15,8 +15,11 @@ bcrypt>=5.0.0
 python-jose[cryptography]>=3.5.0
 python-multipart>=0.0.21
 
-# Redis for pub/sub
+# Redis for pub/sub and rate limiting
 redis>=5.2.0
+
+# Rate limiting (FastAPI middleware, Redis backend)
+slowapi>=0.1.9
 
 # Payment processing
 stripe>=14.1.0

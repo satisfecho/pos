@@ -31,6 +31,49 @@ from .messages import get_message
 from .permissions import Permission, require_permission, require_role, has_permission
 from . import email_service as email_svc
 
+# Rate limiting (slowapi)
+try:
+    from slowapi import Limiter, _rate_limit_exceeded_handler
+    from slowapi.util import get_remote_address
+    from slowapi.errors import RateLimitExceeded
+    _SLOWAPI_AVAILABLE = True
+except ImportError:
+    _SLOWAPI_AVAILABLE = False
+    Limiter = None  # type: ignore[misc, assignment]
+    RateLimitExceeded = None  # type: ignore[misc, assignment]
+
+
+def _rate_limit_key(request: Request) -> str:
+    """Client IP for rate limiting: X-Forwarded-For (first hop) when behind proxy, else client host."""
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        # First IP is the client when behind a single trusted proxy (e.g. HAProxy)
+        return forwarded.split(",")[0].strip()
+    if request.client:
+        return request.client.host
+    return "unknown"
+
+
+def _rate_limit_exceeded_handler_log(request: Request, exc: "RateLimitExceeded"):
+    """Log rate limit violations then return 429 (for security monitoring)."""
+    logger.warning(
+        "Rate limit exceeded: path=%s method=%s client=%s",
+        request.url.path,
+        request.method,
+        _rate_limit_key(request),
+    )
+    return _rate_limit_exceeded_handler(request, exc)
+
+
+class _NoOpLimiter:
+    """No-op limiter when slowapi is not installed; allows same decorator pattern."""
+
+    @staticmethod
+    def limit(*args, **kwargs):
+        def decorator(f):
+            return f
+        return decorator
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -164,6 +207,28 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Rate limiter (global + per-route limits; Redis or in-memory fallback)
+if _SLOWAPI_AVAILABLE and Limiter is not None and RateLimitExceeded is not None:
+    _rate_limit_storage = (
+        settings.rate_limit_redis_url
+        or os.getenv("REDIS_URL", "redis://localhost:6379")
+    )
+    _global_limit = f"{settings.rate_limit_global_per_minute}/minute"
+    limiter = Limiter(
+        key_func=_rate_limit_key,
+        default_limits=[_global_limit],
+        storage_uri=_rate_limit_storage,
+        enabled=settings.rate_limit_enabled,
+        headers_enabled=True,
+        swallow_errors=True,
+        in_memory_fallback_enabled=True,
+        in_memory_fallback=[_global_limit],
+    )
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler_log)
+else:
+    limiter = _NoOpLimiter()
 
 # Uploads directory for product images
 UPLOADS_DIR = Path(__file__).parent.parent / "uploads"
@@ -450,7 +515,9 @@ def get_public_tenant(
 
 
 @app.post("/register")
+@limiter.limit(f"{getattr(settings, 'rate_limit_register_per_hour', 3)}/hour")
 def register(
+    request: Request,
     tenant_name: str,
     email: str,
     password: str,
@@ -492,7 +559,9 @@ def register(
 
 
 @app.post("/register/provider")
+@limiter.limit(f"{getattr(settings, 'rate_limit_register_per_hour', 3)}/hour")
 def register_provider(
+    request: Request,
     body: models.ProviderRegister,
     lang: str = Depends(_get_requested_language),
     session: Session = Depends(get_session),
@@ -555,7 +624,9 @@ def _token_data_for_user(user: models.User) -> dict:
 
 
 @app.post("/token")
+@limiter.limit(f"{getattr(settings, 'rate_limit_login_per_15min', 5)}/15 minutes")
 def login_for_access_token(
+    request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     tenant_id: int | None = Query(None, description="Optional tenant id from tenant picker"),
     scope: str | None = Query(None, description="Login scope: 'provider' for provider portal"),
@@ -5726,7 +5797,9 @@ def cancel_order(
 
 
 @app.post("/orders/{order_id}/create-payment-intent")
+@limiter.limit(f"{getattr(settings, 'rate_limit_payment_per_minute', 10)}/minute")
 def create_payment_intent(
+    request: Request,
     order_id: int, table_token: str, session: Session = Depends(get_session)
 ) -> dict:
     """Create a Stripe PaymentIntent for an order."""
@@ -5809,7 +5882,9 @@ def create_payment_intent(
 
 
 @app.post("/orders/{order_id}/confirm-payment")
+@limiter.limit(f"{getattr(settings, 'rate_limit_payment_per_minute', 10)}/minute")
 def confirm_payment(
+    request: Request,
     order_id: int,
     table_token: str,
     payment_intent_id: str,

@@ -223,7 +223,11 @@ export class LoginComponent {
         },
         error: (err) => {
           this.loading.set(false);
-          this.error.set(err.error?.detail || 'Login failed');
+          if (err.status === 429) {
+            this.error.set(err.error?.detail || 'Too many login attempts. Please try again later.');
+          } else {
+            this.error.set(err.error?.detail || 'Login failed');
+          }
         }
       });
     }
