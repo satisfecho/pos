@@ -4,8 +4,6 @@
 
 </div>
 
-# POS2
-
 **Restaurant POS and ordering infrastructure — self-hosted, multi-tenant, real-time.**
 
 A point-of-sale system with a customer-facing menu, table management, reservations, and Stripe payments. Staff use the Angular admin; customers order via QR codes and pay at the table. You keep full control of your data and deployment.
