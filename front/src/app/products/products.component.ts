@@ -1,7 +1,8 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService, Product } from '../services/api.service';
+import { PermissionService } from '../services/permission.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
@@ -15,7 +16,7 @@ import { CategoriesComponent } from './categories.component';
     <app-sidebar>
         <div class="page-header">
            <h1>{{ 'PRODUCTS.TITLE' | translate }}</h1>
-           @if (activeTab() === 'products' && !showAddForm() && !editingProduct()) {
+           @if (activeTab() === 'products' && !showAddForm() && !editingProduct() && canEditProducts()) {
              <button class="btn btn-primary" (click)="showAddForm.set(true)">
                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -69,32 +70,35 @@ import { CategoriesComponent } from './categories.component';
                      </svg>
                    </button>
                  </div>
+                 @if (!canEditProducts()) {
+                   <p class="form-readonly-hint">{{ 'PRODUCTS.ONLY_OWNERS_CAN_EDIT' | translate }}</p>
+                 }
                 <form (submit)="saveProduct($event)">
                    <div class="form-row">
                      <div class="form-group">
                        <label for="name">{{ 'PRODUCTS.PRODUCT_NAME' | translate }}</label>
-                       <input id="name" type="text" [(ngModel)]="formData.name" name="name" required [placeholder]="'PRODUCTS.NAME_PLACEHOLDER' | translate">
+                       <input id="name" type="text" [(ngModel)]="formData.name" name="name" required [placeholder]="'PRODUCTS.NAME_PLACEHOLDER' | translate" [readonly]="!canEditProducts()">
                      </div>
                      <div class="form-group form-group-sm">
                        <label for="price">{{ 'PRODUCTS.PRODUCT_PRICE' | translate }}</label>
                        <div class="price-input">
                          <span class="currency">{{ currency() }}</span>
-                         <input id="price" type="number" step="0.01" [(ngModel)]="formData.price" name="price" required [placeholder]="'PRODUCTS.PRICE_PLACEHOLDER' | translate">
+                         <input id="price" type="number" step="0.01" [(ngModel)]="formData.price" name="price" required [placeholder]="'PRODUCTS.PRICE_PLACEHOLDER' | translate" [readonly]="!canEditProducts()">
                        </div>
                      </div>
                    </div>
                    <div class="form-group">
                      <label for="ingredients">{{ 'PRODUCTS.INGREDIENTS_LABEL' | translate }}</label>
-                     <input id="ingredients" type="text" [(ngModel)]="formData.ingredients" name="ingredients" [placeholder]="'PRODUCTS.INGREDIENTS_PLACEHOLDER' | translate">
+                     <input id="ingredients" type="text" [(ngModel)]="formData.ingredients" name="ingredients" [placeholder]="'PRODUCTS.INGREDIENTS_PLACEHOLDER' | translate" [readonly]="!canEditProducts()">
                    </div>
                    <div class="form-group">
                      <label for="description">{{ 'PRODUCTS.DESCRIPTION_LABEL' | translate }}</label>
-                     <textarea id="description" [(ngModel)]="formData.description" name="description" [placeholder]="'PRODUCTS.DESCRIPTION_PLACEHOLDER' | translate" rows="3"></textarea>
+                     <textarea id="description" [(ngModel)]="formData.description" name="description" [placeholder]="'PRODUCTS.DESCRIPTION_PLACEHOLDER' | translate" rows="3" [readonly]="!canEditProducts()"></textarea>
                    </div>
                    <div class="form-row">
                      <div class="form-group">
                        <label for="category">{{ 'PRODUCTS.CATEGORY_LABEL' | translate }}</label>
-                       <select id="category" [(ngModel)]="formData.category" name="category" (change)="onCategoryChange()">
+                       <select id="category" [(ngModel)]="formData.category" name="category" (change)="onCategoryChange()" [disabled]="!canEditProducts()">
                          <option value="">{{ 'PRODUCTS.SELECT_CATEGORY' | translate }}</option>
                          @for (category of getCategoryKeys(); track category) {
                            <option [value]="category">{{ category }}</option>
@@ -103,7 +107,7 @@ import { CategoriesComponent } from './categories.component';
                      </div>
                      <div class="form-group">
                        <label for="subcategory">{{ 'PRODUCTS.SUBCATEGORY_LABEL' | translate }}</label>
-                       <select id="subcategory" [(ngModel)]="formData.subcategory" name="subcategory" [disabled]="!formData.category || availableSubcategories().length === 0">
+                       <select id="subcategory" [(ngModel)]="formData.subcategory" name="subcategory" [disabled]="!canEditProducts() || !formData.category || availableSubcategories().length === 0">
                          <option value="">{{ 'PRODUCTS.SELECT_SUBCATEGORY' | translate }}</option>
                          @for (subcat of availableSubcategories(); track subcat) {
                            <option [value]="subcat">{{ subcat }}</option>
@@ -129,18 +133,20 @@ import { CategoriesComponent } from './categories.component';
                            }
                          </div>
                        }
-                       <input type="file" #fileInput accept="image/jpeg,image/png,image/webp,image/avif" (change)="handleImageSelect($event)" style="display:none">
-                       <button type="button" class="btn btn-secondary" (click)="fileInput.click()" [disabled]="uploading()">
-                         {{ uploading() ? ('PRODUCTS.UPLOADING' | translate) : (pendingImageFile() ? ('PRODUCTS.CHANGE_IMAGE' | translate) : ('PRODUCTS.UPLOAD_IMAGE' | translate)) }}
-                       </button>
-                       @if (pendingImageFile()) {
-                         <span class="pending-file-name">{{ pendingImageFile()?.name }}</span>
+                       @if (canEditProducts()) {
+                         <input type="file" #fileInput accept="image/jpeg,image/png,image/webp,image/avif" (change)="handleImageSelect($event)" style="display:none">
+                         <button type="button" class="btn btn-secondary" (click)="fileInput.click()" [disabled]="uploading()">
+                           {{ uploading() ? ('PRODUCTS.UPLOADING' | translate) : (pendingImageFile() ? ('PRODUCTS.CHANGE_IMAGE' | translate) : ('PRODUCTS.UPLOAD_IMAGE' | translate)) }}
+                         </button>
+                         @if (pendingImageFile()) {
+                           <span class="pending-file-name">{{ pendingImageFile()?.name }}</span>
+                         }
                        }
                      </div>
                    </div>
                    <div class="form-actions">
                      <button type="button" class="btn btn-secondary" (click)="cancelForm()">{{ 'PRODUCTS.CANCEL' | translate }}</button>
-                     <button type="submit" class="btn btn-primary" [disabled]="saving()">
+                     <button type="submit" class="btn btn-primary" [disabled]="saving() || !canEditProducts()">
                        {{ saving() ? ('PRODUCTS.SAVING' | translate) : (editingProduct() ? ('PRODUCTS.UPDATE' | translate) : ('PRODUCTS.ADD_PRODUCT_BUTTON' | translate)) }}
                      </button>
                    </div>
@@ -172,7 +178,9 @@ import { CategoriesComponent } from './categories.component';
                  </div>
                  <h3>{{ 'PRODUCTS.NO_PRODUCTS' | translate }}</h3>
                  <p>{{ 'PRODUCTS.NO_PRODUCTS_DESC' | translate }}</p>
+                 @if (canEditProducts()) {
                  <button class="btn btn-primary" (click)="showAddForm.set(true)">{{ 'PRODUCTS.ADD_PRODUCT' | translate }}</button>
+               }
                </div>
             } @else {
               <!-- Category Filters (Ribbon Style) -->
@@ -261,7 +269,7 @@ import { CategoriesComponent } from './categories.component';
                           }
                         </td>
                         <td>
-                          @if (editingCategoryProductId() === product.id) {
+                          @if (editingCategoryProductId() === product.id && canEditProducts()) {
                             <select 
                               class="inline-select" 
                               [(ngModel)]="editingCategory" 
@@ -275,13 +283,13 @@ import { CategoriesComponent } from './categories.component';
                               }
                             </select>
                           } @else {
-                            <span class="category-cell" (click)="startCategoryEdit(product, $event)">
+                            <span class="category-cell" [class.clickable]="canEditProducts()" (click)="canEditProducts() && startCategoryEdit(product, $event)">
                               {{ product.category || '—' }}
                             </span>
                           }
                         </td>
                         <td>
-                          @if (editingCategoryProductId() === product.id) {
+                          @if (editingCategoryProductId() === product.id && canEditProducts()) {
                             <select 
                               class="inline-select" 
                               [(ngModel)]="editingSubcategory" 
@@ -294,24 +302,26 @@ import { CategoriesComponent } from './categories.component';
                               }
                             </select>
                           } @else {
-                            <span class="category-cell" (click)="startCategoryEdit(product, $event)">
+                            <span class="category-cell" [class.clickable]="canEditProducts()" (click)="canEditProducts() && startCategoryEdit(product, $event)">
                               {{ product.subcategory || '—' }}
                             </span>
                           }
                         </td>
                         <td class="price">{{ formatPrice(product.price_cents) }}</td>
                         <td class="actions">
-                          <button class="icon-btn" (click)="startEdit(product)" title="Edit">
+                          <button class="icon-btn" (click)="startEdit(product)" [attr.title]="'PRODUCTS.EDIT_TOOLTIP' | translate">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                               <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
                               <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
                             </svg>
                           </button>
-                          <button class="icon-btn icon-btn-danger" (click)="confirmDelete(product)" title="Delete" [disabled]="deleting() === product.id">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                              <polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
-                            </svg>
-                          </button>
+                          @if (canEditProducts()) {
+                            <button class="icon-btn icon-btn-danger" (click)="confirmDelete(product)" [attr.title]="'PRODUCTS.DELETE_TOOLTIP' | translate" [disabled]="deleting() === product.id">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                              </svg>
+                            </button>
+                          }
                         </td>
                       </tr>
                     }
@@ -341,6 +351,9 @@ import { CategoriesComponent } from './categories.component';
 export class ProductsComponent implements OnInit {
   private api = inject(ApiService);
   private router = inject(Router);
+  private permissions = inject(PermissionService);
+
+  canEditProducts = computed(() => this.permissions.hasPermission(this.permissions.getCurrentUser(), 'product:write'));
 
   activeTab = signal<'products' | 'categories'>('products');
   products = signal<Product[]>([]);
@@ -623,6 +636,7 @@ export class ProductsComponent implements OnInit {
 
   saveProduct(event: Event) {
     event.preventDefault();
+    if (!this.canEditProducts()) return;
     if (!this.formData.name || this.formData.price <= 0) return;
 
     this.saving.set(true);

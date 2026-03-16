@@ -177,6 +177,7 @@
     "TITLE": "उत्पाद",
     "ADD_PRODUCT": "उत्पाद जोड़ें",
     "EDIT_PRODUCT": "उत्पाद संपादित करें",
+    "ONLY_OWNERS_CAN_EDIT": "केवल मालिक ही उत्पाद संपादित कर सकते हैं।",
     "DELETE_PRODUCT": "उत्पाद हटाएं",
     "PRODUCT_NAME": "उत्पाद का नाम",
     "PRODUCT_PRICE": "कीमत",

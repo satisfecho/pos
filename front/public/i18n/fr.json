@@ -177,6 +177,7 @@
     "TITLE": "Produits",
     "ADD_PRODUCT": "Ajouter un produit",
     "EDIT_PRODUCT": "Modifier le produit",
+    "ONLY_OWNERS_CAN_EDIT": "Seuls les propriétaires peuvent modifier les produits.",
     "DELETE_PRODUCT": "Supprimer le produit",
     "NEW_PRODUCT": "Nouveau produit",
     "PRODUCT_NAME": "Nom du produit",

@@ -177,6 +177,7 @@
     "TITLE": "Products",
     "ADD_PRODUCT": "Add Product",
     "EDIT_PRODUCT": "Edit Product",
+    "ONLY_OWNERS_CAN_EDIT": "Only owners can edit products.",
     "DELETE_PRODUCT": "Delete Product",
     "NEW_PRODUCT": "New Product",
     "PRODUCT_NAME": "Product Name",

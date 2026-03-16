@@ -18,6 +18,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Kitchen display**: On `/kitchen`, only orders that have at least one item in **pending** or **preparing** are shown; within each order only those items are listed (ready/delivered/cancelled lines are hidden). Status badge and dropdown buttons use the same size as on the Orders page (min-height 44px / 48px) for thumb-friendly tapping.
 - **Documentation**: Merged `GEMINI.md` into `AGENTS.md`. Agent instructions now include project overview, architecture, setup & development (quick start, manual commands), development conventions, and key URLs in a single file.
 
+### Fixed
+
+- **Products – waiter cannot add/edit** ([#20](https://github.com/satisfecho/pos/issues/20)): Users without `product:write` (e.g. waiter) no longer see the "Add product" button. When they open a product (Edit), the form is read-only with the message "Only owners can edit products."; all inputs and the Save button are disabled, image upload is hidden, and Delete is not shown. Inline category/subcategory editing is disabled for non-editors. i18n: `PRODUCTS.ONLY_OWNERS_CAN_EDIT` (en, de, es, fr, ca, zh-CN, hi).
+
 ### Removed
 
 - **GEMINI.md**: Removed; content merged into `AGENTS.md`.

@@ -177,6 +177,7 @@
     "TITLE": "Productes",
     "ADD_PRODUCT": "Afegir producte",
     "EDIT_PRODUCT": "Editar producte",
+    "ONLY_OWNERS_CAN_EDIT": "Només els propietaris poden editar productes.",
     "DELETE_PRODUCT": "Eliminar producte",
     "PRODUCT_NAME": "Nom del producte",
     "PRODUCT_PRICE": "Preu",

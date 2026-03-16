@@ -177,6 +177,7 @@
     "TITLE": "产品",
     "ADD_PRODUCT": "添加产品",
     "EDIT_PRODUCT": "编辑产品",
+    "ONLY_OWNERS_CAN_EDIT": "只有所有者可以编辑产品。",
     "DELETE_PRODUCT": "删除产品",
     "NEW_PRODUCT": "新产品",
     "PRODUCT_NAME": "产品名称",
