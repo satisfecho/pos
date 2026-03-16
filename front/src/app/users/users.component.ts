@@ -124,14 +124,42 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                       <span class="optional">({{ 'USERS.LEAVE_BLANK' | translate }})</span>
                     }
                   </label>
-                  <input
-                    type="password"
-                    id="password"
-                    [(ngModel)]="formPassword"
-                    name="password"
-                    [required]="!editingUser()"
-                    minlength="6"
-                  />
+                  <div class="input-with-toggle">
+                    <input
+                      [type]="showPassword() ? 'text' : 'password'"
+                      id="password"
+                      [(ngModel)]="formPassword"
+                      name="password"
+                      [required]="!editingUser()"
+                      minlength="6"
+                    />
+                    <button type="button" class="pw-toggle" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? ('USERS.HIDE_PASSWORD' | translate) : ('USERS.SHOW_PASSWORD' | translate)" tabindex="-1">
+                      @if (showPassword()) {
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                      } @else {
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      }
+                    </button>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="password_confirm">{{ 'USERS.CONFIRM_PASSWORD' | translate }}</label>
+                  <div class="input-with-toggle">
+                    <input
+                      [type]="showPasswordConfirm() ? 'text' : 'password'"
+                      id="password_confirm"
+                      [(ngModel)]="formPasswordConfirm"
+                      name="password_confirm"
+                      minlength="6"
+                    />
+                    <button type="button" class="pw-toggle" (click)="showPasswordConfirm.set(!showPasswordConfirm())" [attr.aria-label]="showPasswordConfirm() ? ('USERS.HIDE_PASSWORD' | translate) : ('USERS.SHOW_PASSWORD' | translate)" tabindex="-1">
+                      @if (showPasswordConfirm()) {
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                      } @else {
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      }
+                    </button>
+                  </div>
                 </div>
                 @if (formError()) {
                   <div class="form-error">{{ formError() }}</div>
@@ -448,6 +476,32 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       cursor: not-allowed;
     }
 
+    .input-with-toggle {
+      position: relative;
+      display: flex;
+    }
+    .input-with-toggle input {
+      flex: 1;
+      padding-right: 2.75rem;
+    }
+    .input-with-toggle .pw-toggle {
+      position: absolute;
+      right: var(--space-2);
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      padding: var(--space-1);
+      cursor: pointer;
+      color: var(--color-text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .input-with-toggle .pw-toggle:hover {
+      color: var(--color-text);
+    }
+
     .form-error {
       margin-bottom: var(--space-4);
       padding: var(--space-3);
@@ -486,6 +540,9 @@ export class UsersComponent implements OnInit {
   formFullName = '';
   formRole: UserRole = 'waiter';
   formPassword = '';
+  formPasswordConfirm = '';
+  showPassword = signal(false);
+  showPasswordConfirm = signal(false);
 
   // Delete confirmation
   showDeleteConfirm = signal(false);
@@ -575,6 +632,7 @@ export class UsersComponent implements OnInit {
     this.formFullName = '';
     this.formRole = 'waiter';
     this.formPassword = '';
+    this.formPasswordConfirm = '';
     this.formError.set(null);
     this.showModal.set(true);
   }
@@ -585,6 +643,7 @@ export class UsersComponent implements OnInit {
     this.formFullName = user.full_name || '';
     this.formRole = user.role;
     this.formPassword = '';
+    this.formPasswordConfirm = '';
     this.formError.set(null);
     this.showModal.set(true);
   }
@@ -596,9 +655,29 @@ export class UsersComponent implements OnInit {
 
   saveUser() {
     this.formError.set(null);
-    this.saving.set(true);
 
     const editing = this.editingUser();
+    if (!editing) {
+      if (this.formPassword !== this.formPasswordConfirm) {
+        this.formError.set(this.translate.instant('USERS.PASSWORDS_DO_NOT_MATCH'));
+        return;
+      }
+      if (!this.formPassword || this.formPassword.length < 6) {
+        this.formError.set(this.translate.instant('COMMON.ERROR'));
+        return;
+      }
+    } else if (this.formPassword || this.formPasswordConfirm) {
+      if (this.formPassword !== this.formPasswordConfirm) {
+        this.formError.set(this.translate.instant('USERS.PASSWORDS_DO_NOT_MATCH'));
+        return;
+      }
+      if (this.formPassword.length < 6) {
+        this.formError.set(this.translate.instant('COMMON.ERROR'));
+        return;
+      }
+    }
+
+    this.saving.set(true);
 
     if (editing) {
       // Update existing user

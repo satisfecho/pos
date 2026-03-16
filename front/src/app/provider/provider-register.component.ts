@@ -87,15 +87,46 @@ import { ApiService } from '../services/api.service';
             </div>
             <div class="form-group">
               <label for="password">Password</label>
-              <input
-                id="password"
-                type="password"
-                formControlName="password"
-                placeholder="At least 6 characters"
-                autocomplete="new-password"
-              >
+              <div class="input-with-toggle">
+                <input
+                  id="password"
+                  [type]="showPassword() ? 'text' : 'password'"
+                  formControlName="password"
+                  placeholder="At least 6 characters"
+                  autocomplete="new-password"
+                >
+                <button type="button" class="pw-toggle" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'" tabindex="-1">
+                  @if (showPassword()) {
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  } @else {
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  }
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="password_confirm">Confirm password</label>
+              <div class="input-with-toggle">
+                <input
+                  id="password_confirm"
+                  [type]="showPasswordConfirm() ? 'text' : 'password'"
+                  formControlName="password_confirm"
+                  placeholder="Repeat password"
+                  autocomplete="new-password"
+                >
+                <button type="button" class="pw-toggle" (click)="showPasswordConfirm.set(!showPasswordConfirm())" [attr.aria-label]="showPasswordConfirm() ? 'Hide password' : 'Show password'" tabindex="-1">
+                  @if (showPasswordConfirm()) {
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  } @else {
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  }
+                </button>
+              </div>
             </div>
           </section>
+          @if (form.get('password_confirm')?.touched && form.errors?.['passwordMismatch']) {
+            <div class="error-banner">Passwords do not match</div>
+          }
           <section class="form-section">
             <h2 class="form-section-title">Bank details</h2>
             <div class="form-group">
@@ -193,6 +224,14 @@ import { ApiService } from '../services/api.service';
       font-family: inherit;
     }
     .form-group textarea { resize: vertical; min-height: 2.5em; }
+    .input-with-toggle { position: relative; display: flex; }
+    .input-with-toggle input { flex: 1; padding-right: 2.75rem; }
+    .input-with-toggle .pw-toggle {
+      position: absolute; right: var(--space-2); top: 50%; transform: translateY(-50%);
+      background: none; border: none; padding: var(--space-1); cursor: pointer;
+      color: var(--color-text-muted); display: flex; align-items: center; justify-content: center;
+    }
+    .input-with-toggle .pw-toggle:hover { color: var(--color-text); }
     .error-banner {
       background: rgba(220, 38, 38, 0.1);
       color: var(--color-error);
@@ -249,11 +288,15 @@ export class ProviderRegisterComponent {
     email: ['', [Validators.required, Validators.email]],
     phone: [''],
     password: ['', [Validators.required, Validators.minLength(6)]],
+    password_confirm: ['', Validators.required],
     bank_account_holder: [''],
     bank_iban: [''],
     bank_bic: [''],
     bank_name: ['']
-  });
+  }, { validators: (g) => g.get('password')?.value === g.get('password_confirm')?.value ? null : { passwordMismatch: true } });
+
+  showPassword = signal(false);
+  showPasswordConfirm = signal(false);
 
   onSubmit() {
     if (!this.form.valid) return;
@@ -261,19 +304,20 @@ export class ProviderRegisterComponent {
     this.success.set('');
     this.loading.set(true);
     const v = this.form.value;
+    const { password_confirm, ...rest } = v;
     this.api.registerProvider({
-      provider_name: v.provider_name ?? '',
-      email: v.email ?? '',
-      password: v.password ?? '',
-      full_name: v.full_name || undefined,
-      full_company_name: v.full_company_name || undefined,
-      address: v.address || undefined,
-      tax_number: v.tax_number || undefined,
-      phone: v.phone || undefined,
-      bank_iban: v.bank_iban || undefined,
-      bank_bic: v.bank_bic || undefined,
-      bank_name: v.bank_name || undefined,
-      bank_account_holder: v.bank_account_holder || undefined
+      provider_name: rest.provider_name ?? '',
+      email: rest.email ?? '',
+      password: rest.password ?? '',
+      full_name: rest.full_name || undefined,
+      full_company_name: rest.full_company_name || undefined,
+      address: rest.address || undefined,
+      tax_number: rest.tax_number || undefined,
+      phone: rest.phone || undefined,
+      bank_iban: rest.bank_iban || undefined,
+      bank_bic: rest.bank_bic || undefined,
+      bank_name: rest.bank_name || undefined,
+      bank_account_holder: rest.bank_account_holder || undefined
     }).subscribe({
       next: () => {
         this.success.set('Account created. You can now sign in.');

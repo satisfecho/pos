@@ -3,17 +3,23 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../services/api.service';
+import { LanguagePickerComponent } from '../shared/language-picker.component';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, TranslateModule],
+  imports: [ReactiveFormsModule, RouterLink, TranslateModule, LanguagePickerComponent],
   template: `
     <div class="auth-page">
       <div class="auth-card">
         <div class="auth-header">
-          <h1>{{ 'AUTH.CREATE_ACCOUNT' | translate }}</h1>
-          <p>{{ 'AUTH.SET_UP_ORGANIZATION' | translate }}</p>
+          <div class="auth-header-row">
+            <div>
+              <h1>{{ 'AUTH.CREATE_ACCOUNT' | translate }}</h1>
+              <p>{{ 'AUTH.SET_UP_ORGANIZATION' | translate }}</p>
+            </div>
+            <app-language-picker></app-language-picker>
+          </div>
         </div>
 
         <div class="register-explanation">
@@ -56,15 +62,45 @@ import { ApiService } from '../services/api.service';
 
           <div class="form-group">
             <label for="password">{{ 'AUTH.PASSWORD' | translate }}</label>
-            <input 
-              id="password" 
-              type="password" 
-              formControlName="password" 
-              placeholder="At least 6 characters"
-              autocomplete="new-password"
-            >
+            <div class="input-with-toggle">
+              <input 
+                id="password" 
+                [type]="showPassword() ? 'text' : 'password'" 
+                formControlName="password" 
+                placeholder="At least 6 characters"
+                autocomplete="new-password"
+              >
+              <button type="button" class="pw-toggle" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? ('AUTH.HIDE_PASSWORD' | translate) : ('AUTH.SHOW_PASSWORD' | translate)" tabindex="-1">
+                @if (showPassword()) {
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                } @else {
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                }
+              </button>
+            </div>
           </div>
-
+          <div class="form-group">
+            <label for="password_confirm">{{ 'AUTH.CONFIRM_PASSWORD' | translate }}</label>
+            <div class="input-with-toggle">
+              <input 
+                id="password_confirm" 
+                [type]="showPasswordConfirm() ? 'text' : 'password'" 
+                formControlName="password_confirm" 
+                placeholder="Repeat password"
+                autocomplete="new-password"
+              >
+              <button type="button" class="pw-toggle" (click)="showPasswordConfirm.set(!showPasswordConfirm())" [attr.aria-label]="showPasswordConfirm() ? ('AUTH.HIDE_PASSWORD' | translate) : ('AUTH.SHOW_PASSWORD' | translate)" tabindex="-1">
+                @if (showPasswordConfirm()) {
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                } @else {
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                }
+              </button>
+            </div>
+          </div>
+          @if (form.get('password_confirm')?.touched && form.errors?.['passwordMismatch']) {
+            <div class="error-banner">{{ 'AUTH.PASSWORDS_DO_NOT_MATCH' | translate }}</div>
+          }
           @if (error()) {
             <div class="error-banner">
               {{ error() }}
@@ -112,8 +148,14 @@ import { ApiService } from '../services/api.service';
     }
 
     .auth-header {
-      text-align: center;
       margin-bottom: var(--space-6);
+
+      .auth-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: var(--space-4);
+      }
 
       h1 {
         font-size: 1.75rem;
@@ -155,6 +197,32 @@ import { ApiService } from '../services/api.service';
       font-size: 0.8125rem;
       margin: 0;
       line-height: 1.45;
+    }
+
+    .input-with-toggle {
+      position: relative;
+      display: flex;
+    }
+    .input-with-toggle input {
+      flex: 1;
+      padding-right: 2.75rem;
+    }
+    .input-with-toggle .pw-toggle {
+      position: absolute;
+      right: var(--space-2);
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      padding: var(--space-1);
+      cursor: pointer;
+      color: var(--color-text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .input-with-toggle .pw-toggle:hover {
+      color: var(--color-text);
     }
 
     .error-banner {
@@ -241,8 +309,12 @@ export class RegisterComponent {
     tenant_name: ['', Validators.required],
     full_name: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]]
-  });
+    password: ['', [Validators.required, Validators.minLength(6)]],
+    password_confirm: ['', Validators.required]
+  }, { validators: (g) => g.get('password')?.value === g.get('password_confirm')?.value ? null : { passwordMismatch: true } });
+
+  showPassword = signal(false);
+  showPasswordConfirm = signal(false);
 
   onSubmit() {
     if (this.form.valid) {
@@ -251,7 +323,8 @@ export class RegisterComponent {
       this.emailAlreadyRegistered.set(false);
       this.loading.set(true);
 
-      this.api.register(this.form.value).subscribe({
+      const { password_confirm, ...payload } = this.form.value;
+      this.api.register(payload).subscribe({
         next: () => {
           this.success.set('Account created! Redirecting...');
           setTimeout(() => {
