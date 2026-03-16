@@ -231,6 +231,17 @@ import { TranslateModule } from '@ngx-translate/core';
                     <label for="website">{{ 'SETTINGS.WEBSITE' | translate }}</label>
                     <input type="url" id="website" [(ngModel)]="formData.website" name="website" />
                   </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="tax_id">{{ 'SETTINGS.TAX_ID' | translate }}</label>
+                      <input type="text" id="tax_id" [(ngModel)]="formData.tax_id" name="tax_id" [placeholder]="'SETTINGS.TAX_ID_PLACEHOLDER' | translate" />
+                    </div>
+                    <div class="form-group">
+                      <label for="cif">{{ 'SETTINGS.CIF' | translate }}</label>
+                      <input type="text" id="cif" [(ngModel)]="formData.cif" name="cif" [placeholder]="'SETTINGS.CIF_PLACEHOLDER' | translate" />
+                    </div>
+                  </div>
                 </div>
               }
 
@@ -1287,6 +1298,8 @@ export class SettingsComponent implements OnInit {
     email: null,
     address: null,
     website: null,
+    tax_id: null,
+    cif: null,
     opening_hours: null,
     currency: null,
     stripe_secret_key: null,
@@ -1324,6 +1337,8 @@ export class SettingsComponent implements OnInit {
           email: settings.email || null,
           address: settings.address || null,
           website: settings.website || null,
+          tax_id: settings.tax_id || null,
+          cif: settings.cif || null,
           opening_hours: settings.opening_hours || null,
           currency: settings.currency || null,
           // Don't load masked secret key - user must enter new one to update

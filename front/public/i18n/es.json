@@ -324,7 +324,10 @@
     "FAILED_TO_REMOVE_ITEM": "Error al eliminar el artículo",
     "FAILED_TO_RESET_STATUS": "Error al restablecer el estado del artículo",
     "FAILED_TO_CANCEL_ITEM": "Error al cancelar el artículo",
-    "FAILED_TO_MARK_PAID": "Error al marcar el pedido como pagado"
+    "FAILED_TO_MARK_PAID": "Error al marcar el pedido como pagado",
+    "PRINT_INVOICE": "Imprimir factura",
+    "INVOICE": "Factura",
+    "INVOICE_FOOTER": "Gracias por su pedido."
   },
   "ORDER_STATUS": {
     "pending": "Pendiente",
@@ -567,6 +570,10 @@
     "EMAIL_PLACEHOLDER": "contacto@tuempresa.com",
     "ADDRESS_PLACEHOLDER": "Calle Mayor 1, Ciudad",
     "WEBSITE_PLACEHOLDER": "https://www.tuweb.com",
+    "TAX_ID": "NIF / CIF / VAT",
+    "TAX_ID_PLACEHOLDER": "ej. B12345678",
+    "CIF": "CIF",
+    "CIF_PLACEHOLDER": "ej. B12345678",
     "SELECT_CURRENCY": "Seleccionar moneda",
     "SELECT_LANGUAGE": "Seleccionar idioma",
     "LANGUAGE_HINT": "Se aplica al menú público y a la interfaz de administración por defecto.",

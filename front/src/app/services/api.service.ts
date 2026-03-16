@@ -367,6 +367,8 @@ export interface TenantSettings {
   email?: string | null;
   address?: string | null;
   website?: string | null;
+  tax_id?: string | null;
+  cif?: string | null;
   logo_filename?: string | null;
   opening_hours?: string | null;
   immediate_payment_required?: boolean;

@@ -48,6 +48,8 @@ class Tenant(SQLModel, table=True):
     email: str | None = None
     address: str | None = None
     website: str | None = None
+    tax_id: str | None = None  # Tax ID / VAT number (e.g. DE123456789)
+    cif: str | None = None  # CIF / NIF (Spain: B12345678)
     logo_filename: str | None = None  # Stored in uploads/{tenant_id}/logo/
     opening_hours: str | None = (
         None  # JSON string: {"monday": {"open": "09:00", "close": "22:00", "closed": false}, ...}
@@ -526,6 +528,8 @@ class TenantUpdate(SQLModel):
     email: str | None = None
     address: str | None = None
     website: str | None = None
+    tax_id: str | None = None
+    cif: str | None = None
     opening_hours: str | None = None  # JSON string
     immediate_payment_required: bool | None = None
 

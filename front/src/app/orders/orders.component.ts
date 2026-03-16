@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ApiService, Order, OrderItem } from '../services/api.service';
+import { ApiService, Order, OrderItem, TenantSettings } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
 import { PermissionService, Permission } from '../services/permission.service';
 import { Subscription } from 'rxjs';
@@ -194,6 +194,12 @@ ModuleRegistry.registerModules([
                         }
                       </div>
                       <div class="order-actions">
+                        <button type="button" class="btn btn-print" (click)="printInvoice(order)" [title]="'ORDERS.PRINT_INVOICE' | translate">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+                          </svg>
+                          {{ 'ORDERS.PRINT_INVOICE' | translate }}
+                        </button>
                         <div class="status-control">
                           <button 
                             class="status-badge-btn" 
@@ -320,6 +326,12 @@ ModuleRegistry.registerModules([
                           }
                         </div>
                         <div class="order-actions">
+                          <button type="button" class="btn btn-print" (click)="printInvoice(order)" [title]="'ORDERS.PRINT_INVOICE' | translate">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+                            </svg>
+                            {{ 'ORDERS.PRINT_INVOICE' | translate }}
+                          </button>
                           <div class="status-control">
                             <button 
                               class="status-badge-btn" 
@@ -805,6 +817,14 @@ ModuleRegistry.registerModules([
     }
     .btn-secondary:hover {
       background: #57534e;
+    }
+    .btn-print {
+      background: var(--color-surface);
+      color: var(--color-text);
+      border: 1px solid var(--color-border);
+    }
+    .btn-print:hover {
+      background: var(--color-bg);
     }
     .btn-danger {
       background: var(--color-error);
@@ -1569,9 +1589,12 @@ export class OrdersComponent implements OnInit, OnDestroy {
     });
   }
 
+  tenantSettings = signal<TenantSettings | null>(null);
+
   loadTenantSettings() {
     this.api.getTenantSettings().subscribe({
       next: (settings) => {
+        this.tenantSettings.set(settings);
         this.currency.set(settings.currency || '$');
         this.currencyCode.set(settings.currency_code || null);
       },
@@ -1580,6 +1603,105 @@ export class OrdersComponent implements OnInit, OnDestroy {
         // Default to $ if settings can't be loaded
       }
     });
+  }
+
+  printInvoice(order: Order) {
+    const settings = this.tenantSettings();
+    const tenantId = this.api.getCurrentUser()?.tenant_id;
+    const logoUrl = settings?.logo_filename && tenantId
+      ? this.api.getTenantLogoUrl(settings.logo_filename, tenantId)
+      : null;
+
+    const businessName = settings?.name || 'Business';
+    const address = settings?.address ? `<p>${this.escapeHtml(settings.address)}</p>` : '';
+    const taxLine: string[] = [];
+    if (settings?.tax_id) taxLine.push(`Tax ID: ${this.escapeHtml(settings.tax_id)}`);
+    if (settings?.cif) taxLine.push(`CIF: ${this.escapeHtml(settings.cif)}`);
+    const taxBlock = taxLine.length ? `<p style="font-size:11px;color:#555;">${taxLine.join(' &nbsp;|&nbsp; ')}</p>` : '';
+
+    const dateStr = order.created_at
+      ? new Date(order.created_at.endsWith('Z') || order.created_at.includes('+') || order.created_at.includes('-', 10) ? order.created_at : order.created_at + 'Z').toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+      : '';
+
+    const items = (order.items || []).filter(i => !i.removed_by_customer);
+    const rows = items.map(i => {
+      const lineTotal = (i.price_cents || 0) * (i.quantity || 1);
+      return `<tr>
+        <td>${this.escapeHtml(i.product_name || '')}</td>
+        <td style="text-align:center">${i.quantity || 1}</td>
+        <td style="text-align:right">${this.formatPrice(i.price_cents || 0)}</td>
+        <td style="text-align:right">${this.formatPrice(lineTotal)}</td>
+      </tr>`;
+    }).join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Invoice #${order.id}</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.4; color: #1a1a1a; max-width: 400px; margin: 0 auto; padding: 20px; }
+    .header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #333; padding-bottom: 16px; }
+    .header img { max-height: 56px; max-width: 180px; }
+    .header h1 { margin: 8px 0 4px; font-size: 1.5rem; font-weight: 700; }
+    .meta { font-size: 12px; color: #555; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #666; border-bottom: 1px solid #ddd; padding: 8px 4px; }
+    th:nth-child(2), th:nth-child(3), th:nth-child(4) { text-align: right; }
+    th:nth-child(2) { text-align: center; }
+    td { padding: 10px 4px; border-bottom: 1px solid #eee; }
+    .total-row { font-weight: 700; font-size: 1.1rem; border-top: 2px solid #333; }
+    .total-row td { padding-top: 12px; }
+    .footer { margin-top: 24px; font-size: 11px; color: #888; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    ${logoUrl ? `<img src="${this.escapeHtml(logoUrl)}" alt="" />` : ''}
+    <h1>${this.escapeHtml(businessName)}</h1>
+    ${address}
+    ${taxBlock}
+  </div>
+  <div class="meta">
+    <strong>${this.translate.instant('ORDERS.INVOICE')}</strong> #${order.id} &nbsp;|&nbsp;
+    ${this.translate.instant('ORDERS.ORDER_TIME')}: ${this.escapeHtml(dateStr)} &nbsp;|&nbsp;
+    ${this.translate.instant('ORDERS.TABLE')}: ${this.escapeHtml(order.table_name || '—')}
+    ${order.customer_name ? ` &nbsp;|&nbsp; ${this.translate.instant('ORDERS.CUSTOMER')}: ${this.escapeHtml(order.customer_name)}` : ''}
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>${this.translate.instant('COMMON.NAME')}</th>
+        <th>${this.translate.instant('COMMON.QUANTITY')}</th>
+        <th>${this.translate.instant('COMMON.PRICE')}</th>
+        <th>${this.translate.instant('ORDERS.TOTAL')}</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows}
+    </tbody>
+    <tr class="total-row">
+      <td colspan="3">${this.translate.instant('ORDERS.TOTAL')}</td>
+      <td style="text-align:right">${this.formatPrice(order.total_cents || 0)}</td>
+    </tr>
+  </table>
+  <div class="footer">${this.translate.instant('ORDERS.INVOICE_FOOTER')}</div>
+  <script>window.onload = function() { window.print(); window.onafterprint = function() { window.close(); }; }</script>
+</body>
+</html>`;
+
+    const w = window.open('', '_blank');
+    if (w) {
+      w.document.write(html);
+      w.document.close();
+    }
+  }
+
+  private escapeHtml(s: string): string {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
   }
 
   formatPrice(priceCents: number): string {

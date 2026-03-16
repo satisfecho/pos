@@ -12,6 +12,6 @@ export const environment = {
   apiUrl: getWindowConfig('__API_URL__', '/api'),
   wsUrl: getWindowConfig('__WS_URL__', '/ws'),
   stripePublishableKey: getWindowConfig('__STRIPE_PUBLISHABLE_KEY__', ''),
-  version: '1.0.12',
+  version: '1.0.13',
   commitHash: commitHash,
 };

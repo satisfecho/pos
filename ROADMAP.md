@@ -20,6 +20,8 @@
 - **Kitchen display**: Full-screen view at `/kitchen` for kitchen staff — large order cards, auto-refresh (15s) and WebSocket, optional sound on new orders; read-only. Same access as Orders. See `docs/0015-kitchen-display.md`.
 - **Reports (Sales & Revenue)**: Date range, summary (total revenue, order count, average payment per client), reservation count and by source (public/staff), by product/category/table/waiter, CSS charts, CSV/Excel export. Owner/admin only. See `docs/0016-reports.md`.
 - **Dashboard**: Quick links at `/dashboard` to Catalog, Reservations, Kitchen display, Reports, Inventory, Users, Configuration (admin sections shown only to owner/admin), plus Help section with links to [GitHub Issues](https://github.com/satisfecho/pos/issues) and [GitHub Discussions](https://github.com/satisfecho/pos/discussions).
+- **Settings – Tax ID / CIF**: Tenant settings (Contact tab at `/settings`) include **Tax ID / VAT** and **CIF / NIF** fields; stored in DB (migration `20260316120000_add_tenant_tax_id_cif.sql`), shown on printed invoices.
+- **Orders – Print invoice**: Each order card on `/orders` has a **Print invoice** button; opens a print-optimized invoice (business name, logo, address, Tax ID, CIF, order lines, total) and the browser print dialog for customer handover.
 
 ### ❌ Missing Features / To Be Implemented
 - **Customer accounts (planned)**: Registration, login, email verification, MFA, customer order history, invoice generation. Not implemented; see `docs/0002-customer-features-plan.md` for full scope.

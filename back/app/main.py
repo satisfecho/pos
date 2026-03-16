@@ -1067,6 +1067,14 @@ def update_tenant_settings(
         tenant.website = (
             tenant_update.website.strip() if tenant_update.website else None
         )
+    if tenant_update.tax_id is not None:
+        tenant.tax_id = (
+            tenant_update.tax_id.strip() if tenant_update.tax_id else None
+        )
+    if tenant_update.cif is not None:
+        tenant.cif = (
+            tenant_update.cif.strip() if tenant_update.cif else None
+        )
     if tenant_update.opening_hours is not None:
         tenant.opening_hours = (
             tenant_update.opening_hours.strip() if tenant_update.opening_hours else None

@@ -323,7 +323,10 @@
     "FAILED_TO_REMOVE_ITEM": "Failed to remove item",
     "FAILED_TO_RESET_STATUS": "Failed to reset item status",
     "FAILED_TO_CANCEL_ITEM": "Failed to cancel item",
-    "FAILED_TO_MARK_PAID": "Failed to mark order as paid"
+    "FAILED_TO_MARK_PAID": "Failed to mark order as paid",
+    "PRINT_INVOICE": "Print invoice",
+    "INVOICE": "Invoice",
+    "INVOICE_FOOTER": "Thank you for your order."
   },
   "ORDER_STATUS": {
     "pending": "Pending",
@@ -533,6 +536,10 @@
     "ADDRESS_PLACEHOLDER": "123 Main St, City, State 12345",
     "WEBSITE": "Website",
     "WEBSITE_PLACEHOLDER": "https://www.yourbusiness.com",
+    "TAX_ID": "Tax ID / VAT",
+    "TAX_ID_PLACEHOLDER": "e.g. DE123456789",
+    "CIF": "CIF / NIF",
+    "CIF_PLACEHOLDER": "e.g. B12345678",
     "OPENING_HOURS": "Opening Hours",
     "OPENING_HOURS_SUBTITLE": "Set your business hours for each day of the week",
     "OPENING_HOURS_HINT": "Set your business hours for each day of the week. You can add a break between shifts.",

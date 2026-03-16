@@ -30,7 +30,7 @@ The frontend is Angular; the backend is FastAPI with PostgreSQL and Redis. All m
 
 | Area | What's included |
 |------|------------------|
-| **Orders** | Full lifecycle (pending → preparing → ready → delivered → paid). Session-based orders per browser. Item-level status; partial delivery; order modification and cancellation before delivery; soft delete with “Show removed items” in staff UI. |
+| **Orders** | Full lifecycle (pending → preparing → ready → delivered → paid). Session-based orders per browser. Item-level status; partial delivery; order modification and cancellation before delivery; soft delete with “Show removed items” in staff UI. **Print invoice** button opens the browser print dialog with a customer-ready invoice (business details, Tax ID/CIF, items, total). |
 | **Customer menu** | Browse menu, cart, place order, order history. Optional “immediate payment required” (checkout auto-opens after placing order). |
 | **Kitchen display** | Dedicated full-screen view at `/kitchen`: large order cards, auto-refresh and WebSocket updates, optional sound on new orders. Read-only; same access as Orders. See [docs/0015-kitchen-display.md](docs/0015-kitchen-display.md). |
 | **Reports** | Sales & revenue at `/reports` (owner/admin): date range, summary (total revenue, order count, average payment per client), reservation count and by source (public/staff), by product/category/table/waiter, charts, CSV/Excel export. See [docs/0016-reports.md](docs/0016-reports.md). |
@@ -131,7 +131,7 @@ Key variables in `config.env` (see `config.env.example` for the full list):
 | `POSTGRES_*` / `DB_*` | Database connection | Yes |
 | `STRIPE_CURRENCY` | Fallback currency if tenant has none | Optional |
 
-Stripe keys are configured per tenant in **Settings** in the admin UI. For deployment on a domain or IP, see [docs/0004-deployment.md](docs/0004-deployment.md).
+Stripe keys are configured per tenant in **Settings** in the admin UI. Settings also include business profile, contact (phone, email, address, **Tax ID**, **CIF**), opening hours, and payment options. For deployment on a domain or IP, see [docs/0004-deployment.md](docs/0004-deployment.md).
 
 ---
 
