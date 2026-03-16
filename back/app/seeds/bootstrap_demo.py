@@ -34,10 +34,12 @@ def run() -> None:
     from app.seeds.seed_demo_tables import run as run_tables
     from app.seeds.seed_demo_products import run as run_products
     from app.seeds.seed_demo_orders import run as run_orders
+    from app.seeds.seed_demo_reservations import run as run_reservations
 
     run_tables()
     run_products()
     run_orders()
+    run_reservations()
     print("Bootstrap done.")
 
 

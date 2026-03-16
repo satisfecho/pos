@@ -55,6 +55,12 @@ docker compose --env-file config.env exec -T back python -m app.seeds.seed_demo_
 echo "Seeding demo products for any tenant missing products..."
 docker compose --env-file config.env exec -T back python -m app.seeds.seed_demo_products || true
 
+echo "Seeding demo orders for tenant 1 (Reports; idempotent)..."
+docker compose --env-file config.env exec -T back python -m app.seeds.seed_demo_orders || true
+
+echo "Seeding demo reservations for tenant 1 (Reports; idempotent)..."
+docker compose --env-file config.env exec -T back python -m app.seeds.seed_demo_reservations || true
+
 echo "Seeding catalog (beer, pizza, wine) so Catalog matches development..."
 docker compose --env-file config.env exec -T back python -m app.seeds.beer_import || true
 docker compose --env-file config.env exec -T back python -m app.seeds.pizza_import || true
