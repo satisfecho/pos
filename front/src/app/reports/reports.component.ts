@@ -120,6 +120,12 @@ export class ReportsComponent implements OnInit {
     return source;
   }
 
+  getReservationStatusLabel(status: string): string {
+    const key = `RESERVATIONS.STATUS_${status.toUpperCase().replace(/-/g, '_')}`;
+    const t = this.translate.instant(key);
+    return t !== key ? t : status;
+  }
+
   barWidth(cents: number): string {
     const max = this.maxBarValue();
     if (max <= 0) return '0%';

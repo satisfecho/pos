@@ -456,6 +456,7 @@ export interface SalesReport {
   reservations?: {
     total: number;
     by_source: { source: string; count: number }[];
+    by_status?: { status: string; count: number }[];
   };
 }
 

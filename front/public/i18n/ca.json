@@ -536,6 +536,7 @@
     "RESERVATIONS": "Reserves",
     "RESERVATIONS_TOTAL": "Reserves totals",
     "RESERVATIONS_BY_SOURCE": "Per font",
+    "RESERVATIONS_BY_STATUS": "Per estat",
     "RESERVATIONS_SOURCE_PUBLIC": "Públic (pàgina de reserva)",
     "RESERVATIONS_SOURCE_STAFF": "Personal",
     "SHARE": "%"

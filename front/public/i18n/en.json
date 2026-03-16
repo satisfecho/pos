@@ -435,6 +435,7 @@
     "RESERVATIONS": "Reservations",
     "RESERVATIONS_TOTAL": "Total reservations",
     "RESERVATIONS_BY_SOURCE": "By source",
+    "RESERVATIONS_BY_STATUS": "By status",
     "RESERVATIONS_SOURCE_PUBLIC": "Public (book page)",
     "RESERVATIONS_SOURCE_STAFF": "Staff",
     "SHARE": "%"

@@ -555,6 +555,7 @@
     "RESERVATIONS": "आरक्षण",
     "RESERVATIONS_TOTAL": "कुल आरक्षण",
     "RESERVATIONS_BY_SOURCE": "स्रोत के अनुसार",
+    "RESERVATIONS_BY_STATUS": "स्थिति के अनुसार",
     "RESERVATIONS_SOURCE_PUBLIC": "सार्वजनिक (बुक पेज)",
     "RESERVATIONS_SOURCE_STAFF": "स्टाफ",
     "SHARE": "%"

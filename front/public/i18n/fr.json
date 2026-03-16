@@ -435,6 +435,7 @@
     "RESERVATIONS": "Réservations",
     "RESERVATIONS_TOTAL": "Total des réservations",
     "RESERVATIONS_BY_SOURCE": "Par source",
+    "RESERVATIONS_BY_STATUS": "Par statut",
     "RESERVATIONS_SOURCE_PUBLIC": "Public (page réservation)",
     "RESERVATIONS_SOURCE_STAFF": "Personnel",
     "SHARE": "%"

@@ -164,7 +164,7 @@ def _build_report_payload(tenant_id: int, session: Session, from_date: date, to_
         for k, v in sorted(by_waiter.items(), key=lambda x: -x[1]["revenue_cents"])
     ]
 
-    # Reservations in date range (by reservation_date); source = public (token set) vs staff (no token)
+    # Reservations in date range (by reservation_date); source = public (token set) vs staff (no token); by status
     reservations = session.exec(
         select(models.Reservation)
         .where(models.Reservation.tenant_id == tenant_id)
@@ -173,13 +173,18 @@ def _build_report_payload(tenant_id: int, session: Session, from_date: date, to_
     ).all()
     total_reservations = len(reservations)
     by_source: dict[str, int] = defaultdict(int)
+    by_status: dict[str, int] = defaultdict(int)
     for r in reservations:
         source = "public" if r.token else "staff"
         by_source[source] += 1
+        by_status[r.status.value] += 1
     reservations_summary = {
         "total": total_reservations,
         "by_source": [
             {"source": k, "count": v} for k, v in sorted(by_source.items(), key=lambda x: -x[1])
+        ],
+        "by_status": [
+            {"status": k, "count": v} for k, v in sorted(by_status.items(), key=lambda x: -x[1])
         ],
     }
 
@@ -260,6 +265,10 @@ def export_report(
         ws_res.append(["Source", "Count"])
         for row in res.get("by_source", []):
             ws_res.append([row["source"], row["count"]])
+        ws_res.append([])
+        ws_res.append(["Status", "Count"])
+        for row in res.get("by_status", []):
+            ws_res.append([row["status"], row["count"]])
         ws_res.append([])
         ws_res.append(["Total", res.get("total", 0)])
         # Products

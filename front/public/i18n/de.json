@@ -536,6 +536,7 @@
     "RESERVATIONS": "Reservierungen",
     "RESERVATIONS_TOTAL": "Reservierungen gesamt",
     "RESERVATIONS_BY_SOURCE": "Nach Quelle",
+    "RESERVATIONS_BY_STATUS": "Nach Status",
     "RESERVATIONS_SOURCE_PUBLIC": "Öffentlich (Buchungsseite)",
     "RESERVATIONS_SOURCE_STAFF": "Personal",
     "SHARE": "%"

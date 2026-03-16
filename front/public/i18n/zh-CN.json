@@ -555,6 +555,7 @@
     "RESERVATIONS": "预订",
     "RESERVATIONS_TOTAL": "预订总数",
     "RESERVATIONS_BY_SOURCE": "按来源",
+    "RESERVATIONS_BY_STATUS": "按状态",
     "RESERVATIONS_SOURCE_PUBLIC": "公开（预订页）",
     "RESERVATIONS_SOURCE_STAFF": "员工",
     "SHARE": "%"

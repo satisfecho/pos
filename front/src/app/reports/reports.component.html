@@ -73,6 +73,19 @@
             </div>
           </div>
         }
+        @if ((r.reservations?.by_status?.length ?? 0) > 0) {
+          <div class="chart-block reservations-block">
+            <h3>{{ 'REPORTS.RESERVATIONS' | translate }} – {{ 'REPORTS.RESERVATIONS_BY_STATUS' | translate }}</h3>
+            <div class="reservations-by-source">
+              @for (row of (r.reservations?.by_status ?? []); track row.status) {
+                <div class="source-row">
+                  <span class="source-label">{{ getReservationStatusLabel(row.status) }}</span>
+                  <span class="source-count">{{ row.count }} ({{ formatPct(row.count, r.reservations!.total) }})</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
 
         <!-- Sales empty state or daily chart -->
         @if (r.summary.total_orders === 0) {
