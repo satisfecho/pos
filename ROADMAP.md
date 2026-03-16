@@ -23,9 +23,9 @@
 - **Settings – Tax ID / CIF**: Tenant settings (Contact tab at `/settings`) include **Tax ID / VAT** and **CIF / NIF** fields; stored in DB (migration `20260316120000_add_tenant_tax_id_cif.sql`), shown on printed invoices.
 - **Orders – Print invoice**: Each order card on `/orders` has a **Print invoice** button; opens a print-optimized invoice (business name, logo, address, Tax ID, CIF, order lines, total) and the browser print dialog for customer handover.
 - **Billing customers (Factura)**: Register customers that need a tax invoice with company details. **Customers** at `/customers`: list, search, add, edit, delete. From Orders (any tab): **Print Factura** lets staff select a billing customer and print an invoice with “Bill to” block; optional link to save customer on the order. See `docs/0017-billing-customers-factura.md`.
+- **Customer accounts**: End-customer registration, login, email verification, MFA, account-based order history, and customer-facing invoice generation. See `docs/0002-customer-features-plan.md` for scope and API summary.
 
 ### ❌ Missing Features / To Be Implemented
-- **Customer accounts (planned)**: Registration, login, email verification, MFA, customer order history, invoice generation. Not implemented; see `docs/0002-customer-features-plan.md` for full scope.
 - **Order management Phase 4 (advanced)**: Batch status updates, status/audit history, item replacement, modification after payment/refund, analytics. See `docs/0007-implementation-verification.md` § "NOT IMPLEMENTED (Phase 4)".
 - **Stricter “immediate payment” (optional)**: Today the menu auto-opens payment after place order; customers can still close the modal. A strict “cannot place another order or proceed without paying” flow is not enforced.
 

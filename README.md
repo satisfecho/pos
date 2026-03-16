@@ -28,7 +28,7 @@ The staff dashboard gives quick access to Catalog, Reservations, Kitchen display
 
 ![Staff dashboard — quick links to Catalog, Reservations, Kitchen, Reports](docs/screenshots/dashboard.png)
 
-*More screenshots (orders, kitchen display, reports, customer menu) are listed in [docs/screenshots/README.md](docs/screenshots/README.md). Add PNG/WebP files there to show them here and in the feature docs.*
+*More screenshots (orders, kitchen display, reports, customer menu) are listed in [docs/screenshots/README.md](docs/screenshots/README.md).*
 
 ---
 
@@ -50,7 +50,7 @@ The staff dashboard gives quick access to Catalog, Reservations, Kitchen display
 | **Products & images** | Staff manage products at `/products`. On deploy, demo products are linked to catalog provider products so the Products page shows images (beer/pizza/wine import); first load of `/products` backfills image URLs. |
 | **Provider portal** | Suppliers register at `/provider/register`, log in at `/provider/login`, and manage their catalog at `/provider` (tile/list view, search, add/edit/delete products, company details). See [docs/0014-provider-portal.md](docs/0014-provider-portal.md). |
 
-Planned but not yet implemented: customer accounts (registration, MFA, invoices), batch order operations, and stricter “must pay before continuing” flow. See [ROADMAP.md](ROADMAP.md) and [docs/0002-customer-features-plan.md](docs/0002-customer-features-plan.md).
+Planned but not yet implemented: batch order operations, and stricter “must pay before continuing” flow. See [ROADMAP.md](ROADMAP.md).
 
 ---
 
@@ -159,7 +159,7 @@ Stripe keys are configured per tenant in **Settings** in the admin UI. Settings 
 | [docs/0009-table-pin-security.md](docs/0009-table-pin-security.md) | Table activation and PIN validation |
 | [docs/0012-translation-implementation.md](docs/0012-translation-implementation.md) | i18n (frontend + backend + DB content) |
 | [docs/0004-deployment.md](docs/0004-deployment.md) | Domain/IP deployment and env vars |
-| [docs/0002-customer-features-plan.md](docs/0002-customer-features-plan.md) | Planned customer accounts, MFA, invoices |
+| [docs/0002-customer-features-plan.md](docs/0002-customer-features-plan.md) | Customer accounts: registration, login, MFA, order history, invoices |
 | [docs/0005-email-sending-options.md](docs/0005-email-sending-options.md) | Email configuration options |
 | [docs/0006-gmail-setup-instructions.md](docs/0006-gmail-setup-instructions.md) | Gmail SMTP setup |
 | [docs/0013-verification-alternatives.md](docs/0013-verification-alternatives.md) | Verification flow alternatives |
@@ -257,7 +257,7 @@ Full guide: [docs/0004-deployment.md](docs/0004-deployment.md).
 ## Roadmap
 
 - **Done:** Order management, reservations, table PIN, Stripe, WebSocket, i18n, deployment docs. See [ROADMAP.md](ROADMAP.md) for the full list.
-- **Planned:** Customer accounts (register, MFA, invoices), order Phase 4 (batch, audit, item replacement), optional stricter “immediate payment” enforcement. Rate limiting and security hardening are described in [ROADMAP.md](ROADMAP.md).
+- **Planned:** Order Phase 4 (batch, audit, item replacement), optional stricter “immediate payment” enforcement. Rate limiting and security hardening are described in [ROADMAP.md](ROADMAP.md).
 
 ---
 
