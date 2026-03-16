@@ -34,7 +34,7 @@
     "STRIPE_INTEGRATION": "Stripe एकीकरण",
     "ITEMS": "आइटम",
     "SKIP": "छोड़ें",
-    "OK": "OK"
+    "OK": "ठीक है"
   },
   "NAV": {
     "HOME": "होम",
@@ -573,9 +573,9 @@
     "TIMEZONE_NOT_SET": "कोई समय क्षेत्र कॉन्फ़िगर नहीं है। आरक्षण समय सत्यापन के लिए UTC का उपयोग किया जाएगा।",
     "PHONE_PLACEHOLDER": "+91 98765 43210",
     "WHATSAPP_PLACEHOLDER": "+91 98765 43210",
-    "EMAIL_PLACEHOLDER": "contact@yourbusiness.com",
+    "EMAIL_PLACEHOLDER": "sampark@udaharan.com",
     "ADDRESS_PLACEHOLDER": "123 मुख्य सड़क, शहर",
-    "WEBSITE_PLACEHOLDER": "https://www.yourbusiness.com",
+    "WEBSITE_PLACEHOLDER": "https://www.udaharan.com",
     "TAX_ID": "टैक्स आईडी / वैट",
     "TAX_ID_PLACEHOLDER": "जैसे DE123456789",
     "CIF": "CIF / NIF",

@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **French (Français) locale**: New language for Morocco and Francophone users. Added `fr` to supported languages (label "Français", locale fr-FR) and full translation file `front/public/i18n/fr.json`. Language picker and app UI available in French.
+- **Translations**: Review of remaining locales (de, es, ca, hi, zh-CN): removed English-only strings (e.g. Dashboard → Übersicht, Website → Webseite in German; Balance → Saldo, Stock → Existencias in Spanish), added missing keys (COMMON, MENU, ORDERS, REPORTS, RESERVATIONS, KITCHEN_DISPLAY, SETTINGS where needed), and localized placeholders (e.g. yourbusiness → example/udaharan where appropriate).
 - **Invoice – open source footer**: Printed invoices (Print invoice / Print Factura) now show a small grey line at the bottom: “Open source · Made with ♥ in Barcelona and Mexico”, GitHub repo URL (plain text for print), app version, and commit hash. A separator line above this block matches the total-row line; spacing is symmetric. Styled in 9px grey. i18n: `ORDERS.INVOICE_FOOTER`, `ORDERS.INVOICE_OSS_PREFIX` (en, es, ca, de, hi, zh-CN).
 
 ## [1.0.14] - 2026-03-16

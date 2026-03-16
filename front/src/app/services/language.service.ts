@@ -4,6 +4,7 @@ import { TranslateService } from '@ngx-translate/core';
 export const SUPPORTED_LANGUAGES = [
   { code: 'en', label: 'English', locale: 'en-US' },
   { code: 'es', label: 'Español', locale: 'es-ES' },
+  { code: 'fr', label: 'Français', locale: 'fr-FR' },
   { code: 'ca', label: 'Català', locale: 'ca-ES' },
   { code: 'de', label: 'Deutsch', locale: 'de-DE' },
   { code: 'zh-CN', label: '中文（简体）', locale: 'zh-CN' },
