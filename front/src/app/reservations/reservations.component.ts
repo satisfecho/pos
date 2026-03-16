@@ -60,6 +60,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                 <div>{{ r.reservation_date }} {{ r.reservation_time }}</div>
                 <div>{{ 'RESERVATIONS.PARTY_SIZE' | translate }}: {{ r.party_size }}</div>
                 <div>{{ r.customer_phone }}</div>
+                @if (r.customer_email) {
+                  <div>{{ r.customer_email }}</div>
+                }
                 <div class="table-assigned">{{ 'RESERVATIONS.TABLE' | translate }}: {{ getTableDisplay(r) }}</div>
               </div>
               <div class="card-actions">
@@ -95,6 +98,10 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               <div class="form-group">
                 <label>{{ 'RESERVATIONS.CUSTOMER_PHONE' | translate }}</label>
                 <input type="text" [(ngModel)]="formPhone" />
+              </div>
+              <div class="form-group">
+                <label>{{ 'RESERVATIONS.CUSTOMER_EMAIL' | translate }}</label>
+                <input type="email" [(ngModel)]="formEmail" />
               </div>
               <div class="form-group">
                 <label>{{ 'RESERVATIONS.DATE' | translate }}</label>
@@ -218,6 +225,7 @@ export class ReservationsComponent implements OnInit {
   editingReservation = signal<Reservation | null>(null);
   formName = '';
   formPhone = '';
+  formEmail = '';
   formDate = '';
   formTime = '';
   formPartySize = 1;
@@ -272,6 +280,7 @@ export class ReservationsComponent implements OnInit {
     const today = new Date().toISOString().slice(0, 10);
     this.formName = '';
     this.formPhone = '';
+    this.formEmail = '';
     this.formDate = today;
     this.formTime = '19:00';
     this.formPartySize = 2;
@@ -299,6 +308,7 @@ export class ReservationsComponent implements OnInit {
     this.editingReservation.set(r);
     this.formName = r.customer_name;
     this.formPhone = r.customer_phone;
+    this.formEmail = r.customer_email ?? '';
     this.formDate = r.reservation_date.slice(0, 10);
     this.formTime = r.reservation_time.length >= 5 ? r.reservation_time.slice(0, 5) : r.reservation_time;
     this.formPartySize = r.party_size;
@@ -322,6 +332,7 @@ export class ReservationsComponent implements OnInit {
     const payload: ReservationCreate = {
       customer_name: this.formName.trim(),
       customer_phone: this.formPhone.trim(),
+      customer_email: this.formEmail.trim() || undefined,
       reservation_date: this.formDate,
       reservation_time: this.formTime,
       party_size: this.formPartySize,
@@ -331,6 +342,7 @@ export class ReservationsComponent implements OnInit {
       const update: ReservationUpdate = {
         customer_name: payload.customer_name,
         customer_phone: payload.customer_phone,
+        customer_email: payload.customer_email,
         reservation_date: payload.reservation_date,
         reservation_time: payload.reservation_time,
         party_size: payload.party_size,

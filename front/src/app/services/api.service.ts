@@ -280,6 +280,7 @@ export interface Reservation {
   tenant_id: number;
   customer_name: string;
   customer_phone: string;
+  customer_email?: string | null;
   reservation_date: string;
   reservation_time: string;
   party_size: number;
@@ -295,6 +296,7 @@ export interface ReservationCreate {
   tenant_id?: number;
   customer_name: string;
   customer_phone: string;
+  customer_email?: string | null;
   reservation_date: string;
   reservation_time: string;
   party_size: number;
@@ -303,6 +305,7 @@ export interface ReservationCreate {
 export interface ReservationUpdate {
   customer_name?: string;
   customer_phone?: string;
+  customer_email?: string | null;
   reservation_date?: string;
   reservation_time?: string;
   party_size?: number;

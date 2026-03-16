@@ -2931,6 +2931,7 @@ def _reservation_to_dict(r: models.Reservation, session: Session | None = None) 
         "tenant_id": r.tenant_id,
         "customer_name": r.customer_name,
         "customer_phone": r.customer_phone,
+        "customer_email": r.customer_email,
         "reservation_date": r.reservation_date.isoformat() if r.reservation_date else None,
         "reservation_time": r.reservation_time.strftime("%H:%M") if r.reservation_time else None,
         "party_size": r.party_size,
@@ -2985,6 +2986,7 @@ def create_reservation(
         tenant_id=tenant_id,
         customer_name=data.customer_name,
         customer_phone=data.customer_phone,
+        customer_email=data.customer_email,
         reservation_date=res_date,
         reservation_time=res_time,
         party_size=data.party_size,
@@ -3151,6 +3153,8 @@ def update_reservation(
         reservation.customer_name = body.customer_name
     if body.customer_phone is not None:
         reservation.customer_phone = body.customer_phone
+    if body.customer_email is not None:
+        reservation.customer_email = body.customer_email
     if body.reservation_date is not None:
         reservation.reservation_date = _parse_reservation_date(body.reservation_date)
     if body.reservation_time is not None:

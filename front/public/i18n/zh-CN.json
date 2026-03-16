@@ -486,6 +486,7 @@
     "TABLE_NOT_ASSIGNED": "—",
     "CUSTOMER_NAME": "客户姓名",
     "CUSTOMER_PHONE": "电话",
+    "CUSTOMER_EMAIL": "电子邮箱",
     "DATE": "日期",
     "TIME": "时间",
     "EDIT": "编辑",

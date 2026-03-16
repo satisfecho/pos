@@ -523,6 +523,7 @@
     "TABLE_NOT_ASSIGNED": "—",
     "CUSTOMER_NAME": "Nombre del cliente",
     "CUSTOMER_PHONE": "Teléfono",
+    "CUSTOMER_EMAIL": "Correo electrónico",
     "DATE": "Fecha",
     "TIME": "Hora",
     "EDIT": "Editar",

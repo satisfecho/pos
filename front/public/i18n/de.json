@@ -467,6 +467,7 @@
     "TABLE_NOT_ASSIGNED": "—",
     "CUSTOMER_NAME": "Kundenname",
     "CUSTOMER_PHONE": "Telefon",
+    "CUSTOMER_EMAIL": "E-Mail",
     "DATE": "Datum",
     "TIME": "Uhrzeit",
     "EDIT": "Bearbeiten",

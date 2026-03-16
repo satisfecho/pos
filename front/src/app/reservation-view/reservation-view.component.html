@@ -74,6 +74,9 @@
             <p><strong>{{ 'RESERVATIONS.PARTY_SIZE' | translate }}:</strong> {{ reservation()?.party_size }}</p>
             <p><strong>{{ 'RESERVATIONS.CUSTOMER_NAME' | translate }}:</strong> {{ reservation()?.customer_name }}</p>
             <p><strong>{{ 'RESERVATIONS.CUSTOMER_PHONE' | translate }}:</strong> {{ reservation()?.customer_phone }}</p>
+            @if (reservation()?.customer_email) {
+              <p><strong>{{ 'RESERVATIONS.CUSTOMER_EMAIL' | translate }}:</strong> {{ reservation()?.customer_email }}</p>
+            }
             <p><strong>{{ 'RESERVATIONS.STATUS' | translate }}:</strong> {{ getStatusKey() | translate }}</p>
           </div>
           @if (reservation()?.status === 'booked' || reservation()?.status === 'seated') {

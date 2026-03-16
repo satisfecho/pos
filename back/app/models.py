@@ -298,6 +298,7 @@ class Reservation(TenantMixin, table=True):
     id: int | None = Field(default=None, primary_key=True)
     customer_name: str
     customer_phone: str
+    customer_email: str | None = Field(default=None, index=True)
     reservation_date: date = Field(sa_column=Column(Date, nullable=False))
     reservation_time: time = Field(sa_column=Column(Time, nullable=False))
     party_size: int
@@ -456,6 +457,7 @@ class TableUpdate(SQLModel):
 class ReservationCreate(SQLModel):
     customer_name: str
     customer_phone: str
+    customer_email: str | None = None
     reservation_date: str  # YYYY-MM-DD
     reservation_time: str  # HH:MM or HH:MM:SS
     party_size: int
@@ -465,6 +467,7 @@ class ReservationCreate(SQLModel):
 class ReservationUpdate(SQLModel):
     customer_name: str | None = None
     customer_phone: str | None = None
+    customer_email: str | None = None
     reservation_date: str | None = None
     reservation_time: str | None = None
     party_size: int | None = None
@@ -483,6 +486,7 @@ class PublicReservationCreate(SQLModel):
     tenant_id: int
     customer_name: str
     customer_phone: str
+    customer_email: str | None = None
     reservation_date: str
     reservation_time: str
     party_size: int

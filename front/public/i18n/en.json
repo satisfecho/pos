@@ -522,6 +522,7 @@
     "TABLE_NOT_ASSIGNED": "—",
     "CUSTOMER_NAME": "Customer name",
     "CUSTOMER_PHONE": "Phone",
+    "CUSTOMER_EMAIL": "Email",
     "DATE": "Date",
     "TIME": "Time",
     "EDIT": "Edit",
