@@ -2,6 +2,8 @@
 
 Reports give restaurant owners and admins revenue analysis from paid orders: date range, summary, breakdown by product, category, table, and waiter, with simple charts and CSV/Excel export.
 
+![Reports — date range, summary, by product/category/table](screenshots/reports.png)
+
 ## Access
 
 - **Route:** `/reports`

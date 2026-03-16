@@ -2,6 +2,8 @@
 
 The **kitchen display** is a dedicated full-screen view for the kitchen: large, readable order cards with auto-refresh and optional sound on new orders.
 
+![Kitchen display — full-screen order cards](screenshots/kitchen.png)
+
 ## URL and access
 
 - **URL:** `/kitchen` (e.g. `http://localhost:4202/kitchen`)

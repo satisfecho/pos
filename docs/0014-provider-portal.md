@@ -12,6 +12,8 @@ This document describes the **provider portal**: registration, login, and catalo
 - **Log in** to a dedicated provider portal (separate from staff/tenant login).
 - **Manage their catalog**: list, add, edit, delete their products and upload product images.
 
+![Provider dashboard — catalog tiles/list](screenshots/provider.png)
+
 Provider users are stored in the same `User` table as tenant staff, but with `tenant_id = NULL` and `provider_id` set. Authentication uses the same cookie-based JWT flow, with the token carrying `provider_id` instead of `tenant_id` when the user is a provider.
 
 ---

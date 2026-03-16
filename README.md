@@ -22,13 +22,22 @@ POS2 is built for restaurants and venues that want:
 
 The frontend is Angular; the backend is FastAPI with PostgreSQL and Redis. All major flows are implemented and documented (see [ROADMAP.md](ROADMAP.md) and the `docs/` folder).
 
+### Screenshot — Staff dashboard
+
+The staff dashboard gives quick access to Catalog, Reservations, Kitchen display, Reports, and more.
+
+![Staff dashboard — quick links to Catalog, Reservations, Kitchen, Reports](docs/screenshots/dashboard.png)
+
+*More screenshots (orders, kitchen display, reports, customer menu) are listed in [docs/screenshots/README.md](docs/screenshots/README.md). Add PNG/WebP files there to show them here and in the feature docs.*
+
 ---
 
 ## Features
 
 | Area | What's included |
 |------|------------------|
-| **Orders** | Full lifecycle (pending → preparing → ready → delivered → paid). Session-based orders per browser. Item-level status; partial delivery; order modification and cancellation before delivery; soft delete with “Show removed items” in staff UI. **Print invoice** button opens the browser print dialog with a customer-ready invoice (business details, Tax ID/CIF, items, total). |
+| **Orders** | Full lifecycle (pending → preparing → ready → delivered → paid). Session-based orders per browser. Item-level status; partial delivery; order modification and cancellation before delivery; soft delete with “Show removed items” in staff UI. **Print invoice** and **Print Factura** (with optional billing customer) open the browser print dialog. See [docs/0017-billing-customers-factura.md](docs/0017-billing-customers-factura.md). |
+| **Billing customers (Factura)** | Register customers that need a tax invoice with company details (name, company, CIF/tax ID, address, email, phone). List and search at `/customers`; from Orders, **Print Factura** lets you select a customer and print an invoice with “Bill to” block; optionally save the customer on the order. |
 | **Customer menu** | Browse menu, cart, place order, order history. Optional “immediate payment required” (checkout auto-opens after placing order). |
 | **Kitchen display** | Dedicated full-screen view at `/kitchen`: large order cards, auto-refresh and WebSocket updates, optional sound on new orders. Read-only; same access as Orders. See [docs/0015-kitchen-display.md](docs/0015-kitchen-display.md). |
 | **Reports** | Sales & revenue at `/reports` (owner/admin): date range, summary (total revenue, order count, average payment per client), reservation count and by source (public/staff), by product/category/table/waiter, charts, CSV/Excel export. See [docs/0016-reports.md](docs/0016-reports.md). |
@@ -153,6 +162,7 @@ Stripe keys are configured per tenant in **Settings** in the admin UI. Settings 
 | [docs/0013-verification-alternatives.md](docs/0013-verification-alternatives.md) | Verification flow alternatives |
 | [docs/0014-provider-portal.md](docs/0014-provider-portal.md) | Provider registration, login, and catalog management |
 | [docs/0015-kitchen-display.md](docs/0015-kitchen-display.md) | Kitchen display: full-screen view, auto-refresh, optional sound |
+| [docs/0017-billing-customers-factura.md](docs/0017-billing-customers-factura.md) | Billing customers (Factura): register company details, search, print invoice with “Bill to” |
 
 ---
 
