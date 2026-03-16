@@ -156,6 +156,7 @@ Stripe keys are configured per tenant in **Settings** in the admin UI. Settings 
 | [docs/0007-implementation-verification.md](docs/0007-implementation-verification.md) | What’s implemented vs Phase 4 (batch, audit, etc.) |
 | [docs/0010-table-reservation-implementation-plan.md](docs/0010-table-reservation-implementation-plan.md) | Reservations design and backend |
 | [docs/0011-table-reservation-user-guide.md](docs/0011-table-reservation-user-guide.md) | URLs and flows for staff and public booking |
+| [docs/0019-no-show-implementation-plan.md](docs/0019-no-show-implementation-plan.md) | No-show status and reminder emails: plan and implementation guide |
 | [docs/0009-table-pin-security.md](docs/0009-table-pin-security.md) | Table activation and PIN validation |
 | [docs/0012-translation-implementation.md](docs/0012-translation-implementation.md) | i18n (frontend + backend + DB content) |
 | [docs/0004-deployment.md](docs/0004-deployment.md) | Domain/IP deployment and env vars |
