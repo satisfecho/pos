@@ -75,6 +75,8 @@ Planned but not yet implemented: customer accounts (registration, MFA, invoices)
 
 ### Quick Start
 
+The quickest way to try POS out is to head over to [https://satisfecho.de/](https://satisfecho.de/) and set up your restaurant.
+
 1. **Clone the repository**
    ```bash
    git clone https://github.com/satisfecho/pos
