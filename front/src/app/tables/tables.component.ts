@@ -165,7 +165,7 @@ import { CommonModule } from '@angular/common';
                           <button type="button" class="icon-btn icon-btn-edit" (click)="startEdit(table)" [title]="'COMMON.EDIT' | translate">✎</button>
                           @if (table.is_active) {
                             <button type="button" class="btn btn-sm btn-ghost" (click)="regeneratePin(table)" [disabled]="activatingTableId() === table.id" [title]="'TABLES.NEW_PIN' | translate">↻</button>
-                            <button type="button" class="btn btn-sm btn-warning" (click)="closeTableSession(table)" [disabled]="activatingTableId() === table.id" [title]="'TABLES.CLOSE_TABLE' | translate">⌫</button>
+                            <button type="button" class="btn btn-sm btn-warning" (click)="confirmCloseTable(table)" [disabled]="activatingTableId() === table.id" [title]="'TABLES.CLOSE_TABLE' | translate">⌫</button>
                           } @else {
                             <button type="button" class="btn btn-sm btn-success" (click)="activateTableSession(table)" [disabled]="activatingTableId() === table.id" [title]="'TABLES.ACTIVATE' | translate">▶</button>
                           }
@@ -353,7 +353,7 @@ import { CommonModule } from '@angular/common';
                             </button>
                             <button 
                               class="btn btn-sm btn-warning" 
-                              (click)="closeTableSession(table)"
+                              (click)="confirmCloseTable(table)"
                               [disabled]="activatingTableId() === table.id">
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
@@ -414,12 +414,23 @@ import { CommonModule } from '@angular/common';
           <app-confirmation-modal
             [title]="confirmationModal().title"
             [message]="confirmationModal().message"
+            [messageParams]="confirmationModal().messageParams"
             [confirmText]="confirmationModal().confirmText"
             [cancelText]="confirmationModal().cancelText"
             [confirmBtnClass]="confirmationModal().confirmBtnClass"
             (confirm)="onConfirmationConfirm()"
             (cancel)="onConfirmationCancel()"
           ></app-confirmation-modal>
+        }
+
+        <!-- Toast (e.g. after close table) -->
+        @if (toast()) {
+          <div class="toast" [class]="toast()!.type">
+            <span>{{ toast()!.message | translate }}</span>
+            <button type="button" class="toast-close" (click)="dismissToast()" aria-label="Dismiss">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
         }
     </app-sidebar>
   `,
@@ -455,6 +466,16 @@ import { CommonModule } from '@angular/common';
     .form-actions-inline { display: flex; gap: var(--space-2); }
 
     .error-banner { background: rgba(220, 38, 38, 0.1); color: var(--color-error); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); margin-bottom: var(--space-4); }
+
+    .toast {
+      position: fixed; bottom: var(--space-4); right: var(--space-4);
+      background: var(--color-surface); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4);
+      box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: var(--space-3); z-index: 3000; max-width: calc(100vw - var(--space-8));
+    }
+    .toast.success { border-left: 4px solid var(--color-success, #16a34a); }
+    .toast.error { border-left: 4px solid var(--color-error, #dc2626); }
+    .toast-close { background: none; border: none; color: var(--color-text-muted); cursor: pointer; padding: var(--space-1); }
+    .toast-close:hover { color: var(--color-text); }
 
     .empty-state {
       text-align: center; padding: var(--space-8); background: var(--color-surface);
@@ -698,10 +719,12 @@ export class TablesComponent implements OnInit {
     show: boolean;
     title: string;
     message: string;
+    messageParams?: Record<string, string>;
     confirmText: string;
     cancelText: string;
     confirmBtnClass: string;
     tableToDelete: Table | null;
+    tableToClose: Table | null;
   }>({
     show: false,
     title: '',
@@ -709,8 +732,12 @@ export class TablesComponent implements OnInit {
     confirmText: 'COMMON.YES',
     cancelText: 'COMMON.NO',
     confirmBtnClass: 'btn-primary',
-    tableToDelete: null
+    tableToDelete: null,
+    tableToClose: null
   });
+
+  private toastTimeout?: ReturnType<typeof setTimeout>;
+  toast = signal<{ message: string; type: 'success' | 'error' } | null>(null);
 
   ngOnInit() {
     this.loadData();
@@ -783,12 +810,51 @@ export class TablesComponent implements OnInit {
       confirmText: 'COMMON.DELETE',
       cancelText: 'COMMON.CANCEL',
       confirmBtnClass: 'btn-danger',
-      tableToDelete: table
+      tableToDelete: table,
+      tableToClose: null
+    });
+  }
+
+  confirmCloseTable(table: Table) {
+    if (!table.id) return;
+    this.confirmationModal.set({
+      show: true,
+      title: 'TABLES.CLOSE_TABLE',
+      message: 'TABLES.CLOSE_TABLE_CONFIRM',
+      messageParams: { name: table.name || '' },
+      confirmText: 'COMMON.CONFIRM',
+      cancelText: 'COMMON.CANCEL',
+      confirmBtnClass: 'btn-warning',
+      tableToDelete: null,
+      tableToClose: table
     });
   }
 
   onConfirmationConfirm() {
-    const table = this.confirmationModal().tableToDelete;
+    const modal = this.confirmationModal();
+    if (modal.tableToClose?.id) {
+      const table = modal.tableToClose;
+      this.activatingTableId.set(table.id);
+      this.api.closeTable(table.id).subscribe({
+        next: () => {
+          this.tables.update(tables => tables.map(t =>
+            t.id === table.id
+              ? { ...t, is_active: false, order_pin: null, active_order_id: null }
+              : t
+          ));
+          this.activatingTableId.set(null);
+          this.showToast('TABLES.TABLE_CLOSED', 'success');
+          this.onConfirmationCancel();
+        },
+        error: err => {
+          this.error.set(err.error?.detail || 'Failed to close table');
+          this.activatingTableId.set(null);
+          this.onConfirmationCancel();
+        }
+      });
+      return;
+    }
+    const table = modal.tableToDelete;
     if (table?.id) {
       this.api.deleteTable(table.id).subscribe({
         next: () => this.tables.update(t => t.filter(x => x.id !== table.id)),
@@ -799,7 +865,19 @@ export class TablesComponent implements OnInit {
   }
 
   onConfirmationCancel() {
-    this.confirmationModal.update(m => ({ ...m, show: false, tableToDelete: null }));
+    this.confirmationModal.update(m => ({ ...m, show: false, tableToDelete: null, tableToClose: null }));
+  }
+
+  showToast(messageKey: string, type: 'success' | 'error') {
+    if (this.toastTimeout) clearTimeout(this.toastTimeout);
+    this.toast.set({ message: messageKey, type });
+    this.toastTimeout = setTimeout(() => this.dismissToast(), 4000);
+  }
+
+  dismissToast() {
+    if (this.toastTimeout) clearTimeout(this.toastTimeout);
+    this.toastTimeout = undefined;
+    this.toast.set(null);
   }
 
   getMenuUrl(table: Table): string {
