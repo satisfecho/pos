@@ -1019,6 +1019,10 @@ def get_tenant_settings(
             f"{secret_key[:7]}...{secret_key[-4:]}" if len(secret_key) > 11 else "***"
         )
 
+    # Don't expose SMTP password; indicate if configured
+    if tenant_dict.get("smtp_password"):
+        tenant_dict["smtp_password"] = "********"
+
     return tenant_dict
 
 
@@ -1151,6 +1155,41 @@ def update_tenant_settings(
             else None
         )
 
+    # Per-tenant SMTP / email (optional; fallback to global config)
+    if tenant_update.smtp_host is not None:
+        tenant.smtp_host = (
+            tenant_update.smtp_host.strip()
+            if isinstance(tenant_update.smtp_host, str) and tenant_update.smtp_host.strip()
+            else None
+        )
+    if tenant_update.smtp_port is not None:
+        tenant.smtp_port = tenant_update.smtp_port if tenant_update.smtp_port > 0 else None
+    if tenant_update.smtp_use_tls is not None:
+        tenant.smtp_use_tls = tenant_update.smtp_use_tls
+    if tenant_update.smtp_user is not None:
+        tenant.smtp_user = (
+            tenant_update.smtp_user.strip()
+            if isinstance(tenant_update.smtp_user, str) and tenant_update.smtp_user.strip()
+            else None
+        )
+    if tenant_update.smtp_password is not None and isinstance(tenant_update.smtp_password, str):
+        # Only update if non-empty (empty = keep existing)
+        if tenant_update.smtp_password.strip():
+            tenant.smtp_password = tenant_update.smtp_password.strip()
+    if tenant_update.email_from is not None:
+        tenant.email_from = (
+            tenant_update.email_from.strip()
+            if isinstance(tenant_update.email_from, str) and tenant_update.email_from.strip()
+            else None
+        )
+    if tenant_update.email_from_name is not None:
+        tenant.email_from_name = (
+            tenant_update.email_from_name.strip()
+            if isinstance(tenant_update.email_from_name, str)
+            and tenant_update.email_from_name.strip()
+            else None
+        )
+
     session.add(tenant)
     session.commit()
     session.refresh(tenant)
@@ -1174,6 +1213,10 @@ def update_tenant_settings(
         tenant_dict["stripe_secret_key"] = (
             f"{secret_key[:7]}...{secret_key[-4:]}" if len(secret_key) > 11 else "***"
         )
+
+    # Don't expose SMTP password; indicate if configured
+    if tenant_dict.get("smtp_password"):
+        tenant_dict["smtp_password"] = "********"
 
     return tenant_dict
 

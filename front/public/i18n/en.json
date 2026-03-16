@@ -630,7 +630,19 @@
     "LONGITUDE": "Longitude",
     "LOCATION_RADIUS": "Radius (meters)",
     "LOCATION_RADIUS_HINT": "Orders outside this radius will be flagged",
-    "USE_CURRENT_LOCATION": "Use current location"
+    "USE_CURRENT_LOCATION": "Use current location",
+    "EMAIL_SETTINGS": "Email (SMTP)",
+    "EMAIL_SETTINGS_SUBTITLE": "Configure SMTP for transactional emails (e.g. reservation confirmations). Leave empty to use the global server configuration.",
+    "SMTP_HOST": "SMTP host",
+    "SMTP_HOST_PLACEHOLDER": "e.g. smtp.gmail.com",
+    "SMTP_PORT": "SMTP port",
+    "SMTP_USE_TLS": "Use TLS",
+    "SMTP_USER": "SMTP username / email",
+    "SMTP_PASSWORD": "SMTP password",
+    "SMTP_PASSWORD_PLACEHOLDER": "Leave blank to keep current",
+    "EMAIL_FROM": "From email address",
+    "EMAIL_FROM_NAME": "From name",
+    "EMAIL_FROM_PLACEHOLDER": "e.g. Your Restaurant Name"
   },
   "PAYMENTS": {
     "PAYMENT": "Payment",

@@ -89,6 +89,15 @@ class Tenant(SQLModel, table=True):
     location_radius_meters: int = Field(default=100)  # Default 100m radius
     location_check_enabled: bool = Field(default=False)
 
+    # Per-tenant SMTP / email (optional; fallback to global config.env)
+    smtp_host: str | None = Field(default=None)
+    smtp_port: int | None = Field(default=None)
+    smtp_use_tls: bool | None = Field(default=None)
+    smtp_user: str | None = Field(default=None)
+    smtp_password: str | None = Field(default=None)
+    email_from: str | None = Field(default=None)
+    email_from_name: str | None = Field(default=None)
+
     users: list["User"] = Relationship(back_populates="tenant")
 
 
@@ -592,6 +601,15 @@ class TenantUpdate(SQLModel):
     longitude: float | None = None
     location_radius_meters: int | None = None
     location_check_enabled: bool | None = None
+
+    # Per-tenant SMTP / email (optional; fallback to global config)
+    smtp_host: str | None = None
+    smtp_port: int | None = None
+    smtp_use_tls: bool | None = None
+    smtp_user: str | None = None
+    smtp_password: str | None = None
+    email_from: str | None = None
+    email_from_name: str | None = None
 
 
 class TenantProductCreate(SQLModel):

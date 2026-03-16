@@ -72,6 +72,18 @@ import { TranslateModule } from '@ngx-translate/core';
           <button 
             type="button" 
             class="tab" 
+            [class.active]="activeSection() === 'email'"
+            (click)="activeSection.set('email')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <span>{{ 'SETTINGS.EMAIL_SETTINGS' | translate }}</span>
+          </button>
+          
+          <button 
+            type="button" 
+            class="tab" 
             [class.active]="activeSection() === 'translations'"
             (click)="activeSection.set('translations')">
             <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -386,6 +398,51 @@ import { TranslateModule } from '@ngx-translate/core';
                       </button>
                     </div>
                   }
+                </div>
+              }
+
+              <!-- Email (SMTP) Section -->
+              @if (activeSection() === 'email') {
+                <div class="section">
+                  <div class="section-header">
+                    <h2>{{ 'SETTINGS.EMAIL_SETTINGS' | translate }}</h2>
+                    <p>{{ 'SETTINGS.EMAIL_SETTINGS_SUBTITLE' | translate }}</p>
+                  </div>
+                  <div class="form-group">
+                    <label for="smtp_host">{{ 'SETTINGS.SMTP_HOST' | translate }}</label>
+                    <input type="text" id="smtp_host" [(ngModel)]="formData.smtp_host" name="smtp_host" [placeholder]="'SETTINGS.SMTP_HOST_PLACEHOLDER' | translate" />
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="smtp_port">{{ 'SETTINGS.SMTP_PORT' | translate }}</label>
+                      <input type="number" id="smtp_port" [(ngModel)]="formData.smtp_port" name="smtp_port" placeholder="587" min="1" max="65535" />
+                    </div>
+                    <div class="form-group checkbox-row">
+                      <label class="switch">
+                        <input type="checkbox" [(ngModel)]="formData.smtp_use_tls" name="smtp_use_tls">
+                        <span class="slider round"></span>
+                      </label>
+                      <div>
+                        <label class="check-label">{{ 'SETTINGS.SMTP_USE_TLS' | translate }}</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="smtp_user">{{ 'SETTINGS.SMTP_USER' | translate }}</label>
+                    <input type="text" id="smtp_user" [(ngModel)]="formData.smtp_user" name="smtp_user" placeholder="user@example.com" />
+                  </div>
+                  <div class="form-group">
+                    <label for="smtp_password">{{ 'SETTINGS.SMTP_PASSWORD' | translate }}</label>
+                    <input type="password" id="smtp_password" [(ngModel)]="formData.smtp_password" name="smtp_password" [placeholder]="'SETTINGS.SMTP_PASSWORD_PLACEHOLDER' | translate" />
+                  </div>
+                  <div class="form-group">
+                    <label for="email_from">{{ 'SETTINGS.EMAIL_FROM' | translate }}</label>
+                    <input type="email" id="email_from" [(ngModel)]="formData.email_from" name="email_from" [placeholder]="'SETTINGS.EMAIL_PLACEHOLDER' | translate" />
+                  </div>
+                  <div class="form-group">
+                    <label for="email_from_name">{{ 'SETTINGS.EMAIL_FROM_NAME' | translate }}</label>
+                    <input type="text" id="email_from_name" [(ngModel)]="formData.email_from_name" name="email_from_name" [placeholder]="'SETTINGS.EMAIL_FROM_PLACEHOLDER' | translate" />
+                  </div>
                 </div>
               }
 
@@ -1306,6 +1363,13 @@ export class SettingsComponent implements OnInit {
     stripe_publishable_key: null,
     immediate_payment_required: false,
     timezone: null,
+    smtp_host: null,
+    smtp_port: null,
+    smtp_use_tls: null,
+    smtp_user: null,
+    smtp_password: null,
+    email_from: null,
+    email_from_name: null,
   };
 
   allTimezones: string[] = [];
@@ -1341,11 +1405,17 @@ export class SettingsComponent implements OnInit {
           cif: settings.cif || null,
           opening_hours: settings.opening_hours || null,
           currency: settings.currency || null,
-          // Don't load masked secret key - user must enter new one to update
           stripe_secret_key: null,
           stripe_publishable_key: settings.stripe_publishable_key || null,
           immediate_payment_required: settings.immediate_payment_required || false,
           timezone: settings.timezone || null,
+          smtp_host: settings.smtp_host ?? null,
+          smtp_port: settings.smtp_port ?? null,
+          smtp_use_tls: settings.smtp_use_tls ?? null,
+          smtp_user: settings.smtp_user ?? null,
+          smtp_password: null,
+          email_from: settings.email_from ?? null,
+          email_from_name: settings.email_from_name ?? null,
         };
         this.timezoneSearch = settings.timezone || '';
         this.parseOpeningHours(settings.opening_hours);
@@ -1546,9 +1616,11 @@ export class SettingsComponent implements OnInit {
     // Prepare update data - only include stripe_secret_key if it was actually changed
     const updateData = { ...this.formData };
 
-    // If stripe_secret_key is empty string, don't send it (backend will keep existing value)
     if (updateData.stripe_secret_key === '') {
       delete updateData.stripe_secret_key;
+    }
+    if (updateData.smtp_password === '') {
+      delete updateData.smtp_password;
     }
 
     this.api.updateTenantSettings(updateData).subscribe({

@@ -399,6 +399,14 @@ export interface TenantSettings {
   longitude?: number | null;
   location_radius_meters?: number | null;
   location_check_enabled?: boolean;
+  // Per-tenant SMTP / email (optional; fallback to global config)
+  smtp_host?: string | null;
+  smtp_port?: number | null;
+  smtp_use_tls?: boolean | null;
+  smtp_user?: string | null;
+  smtp_password?: string | null;
+  email_from?: string | null;
+  email_from_name?: string | null;
 }
 
 export interface OrderItemCreate {
