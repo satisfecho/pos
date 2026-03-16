@@ -242,6 +242,19 @@ npm run test:bartender-role --prefix front
 
 ---
 
+### 13. Kitchen display – status dropdown visible
+
+Login, open `/kitchen`, click the first clickable item status badge (e.g. "Preparando"), assert the status dropdown appears and is fully visible in the viewport (not clipped by the order card).
+
+```bash
+npm run test:kitchen-status-dropdown --prefix front
+# Or: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/test-kitchen-status-dropdown.mjs
+```
+
+- **Env:** `BASE_URL`, `LOGIN_EMAIL`, `LOGIN_PASSWORD` (staff with `order:item_status`, e.g. owner, admin, kitchen), `HEADLESS`.
+
+---
+
 ## npm scripts (front)
 
 From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <script>`.
@@ -262,6 +275,7 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `test:register-page` | `scripts/test-register-page.mjs` |
 | `test:reports` | `scripts/test-reports.mjs` (Reports page smoke; owner/admin) |
 | `test:bartender-role` | `scripts/test-bartender-role.mjs` (Users → Add user → role dropdown includes Bartender) |
+| `test:kitchen-status-dropdown` | `scripts/test-kitchen-status-dropdown.mjs` (Kitchen display: status dropdown visible, not clipped) |
 
 `test-menu-logo` and `test-websocket` have no npm script; run via `node front/scripts/<name>.mjs`.
 

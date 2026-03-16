@@ -90,7 +90,7 @@ ModuleRegistry.registerModules([
                 @for (order of activeOrders(); track order.id) {
                   <div class="order-card" [class]="'status-' + order.status">
                     <div class="order-header">
-                      <div>
+                      <div class="order-header-main">
                         <span class="order-id">#{{ order.id }}</span>
                         <span class="order-table">{{ order.table_name }}</span>
                         @if (order.customer_name) {
@@ -98,7 +98,66 @@ ModuleRegistry.registerModules([
                         }
                         <span class="order-time" [title]="formatExactTime(order.created_at)">{{ 'ORDERS.ORDER_TIME' | translate }}: {{ formatOrderTime(order.created_at) }}</span>
                       </div>
-                      <span class="status-badge" [class]="order.status">{{ getStatusLabel(order.status) }}</span>
+                      <div class="order-header-actions">
+                        <div class="status-control">
+                          <button 
+                            class="status-badge-btn" 
+                            [class]="order.status"
+                            (click)="toggleStatusDropdown(order.id)"
+                            [title]="'ORDERS.CLICK_TO_CHANGE_STATUS' | translate">
+                            {{ getStatusLabel(order.status) }}
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <polyline points="6,9 12,15 18,9"/>
+                            </svg>
+                          </button>
+                          @if (statusDropdownOpen() === order.id) {
+                            <div class="status-dropdown" (click)="$event.stopPropagation()">
+                              @if (getOrderStatusTransitions(order.status).backward.length > 0) {
+                                <div class="dropdown-section">
+                                  <div class="dropdown-label">{{ 'ORDERS.GO_BACK' | translate }}</div>
+                                  @for (status of getOrderStatusTransitions(order.status).backward; track status) {
+                                    <button 
+                                      class="dropdown-item backward"
+                                      (click)="updateStatus(order, status)">
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="15,18 9,12 15,6"/>
+                                      </svg>
+                                      {{ getStatusLabel(status) }}
+                                    </button>
+                                  }
+                                </div>
+                              }
+                              @if (getOrderStatusTransitions(order.status).forward.length > 0) {
+                                <div class="dropdown-section">
+                                  <div class="dropdown-label">{{ 'ORDERS.MOVE_FORWARD' | translate }}</div>
+                                  @for (status of getOrderStatusTransitions(order.status).forward; track status) {
+                                    <button 
+                                      class="dropdown-item forward"
+                                      (click)="updateStatus(order, status)">
+                                      {{ getStatusLabel(status) }}
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="9,18 15,12 9,6"/>
+                                      </svg>
+                                    </button>
+                                  }
+                                </div>
+                              }
+                              @if (order.status === 'completed' && canMarkPaid()) {
+                                <div class="dropdown-section">
+                                  <button 
+                                    class="dropdown-item forward"
+                                    (click)="markAsPaid(order); statusDropdownOpen.set(null)">
+                                    {{ 'ORDERS.MARK_AS_PAID' | translate }}
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                      <polyline points="9,18 15,12 9,6"/>
+                                    </svg>
+                                  </button>
+                                </div>
+                              }
+                            </div>
+                          }
+                        </div>
+                      </div>
                     </div>
 
                     <div class="order-items">
@@ -142,7 +201,7 @@ ModuleRegistry.registerModules([
                                     (click)="toggleItemStatusDropdown(order.id, item.id!)"
                                     [title]="'ORDERS.CLICK_TO_CHANGE_STATUS' | translate">
                                     {{ getItemStatusLabel(item.status) }}
-                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                       <polyline points="6,9 12,15 18,9"/>
                                     </svg>
                                   </button>
@@ -213,64 +272,6 @@ ModuleRegistry.registerModules([
                         <button type="button" class="btn btn-print" (click)="openFacturaModal(order)" [title]="'CUSTOMERS.PRINT_FACTURA' | translate">
                           {{ 'CUSTOMERS.PRINT_FACTURA' | translate }}
                         </button>
-                        <div class="status-control">
-                          <button 
-                            class="status-badge-btn" 
-                            [class]="order.status"
-                            (click)="toggleStatusDropdown(order.id)"
-                            [title]="'ORDERS.CLICK_TO_CHANGE_STATUS' | translate">
-                            {{ getStatusLabel(order.status) }}
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                              <polyline points="6,9 12,15 18,9"/>
-                            </svg>
-                          </button>
-                          @if (statusDropdownOpen() === order.id) {
-                            <div class="status-dropdown" (click)="$event.stopPropagation()">
-                              @if (getOrderStatusTransitions(order.status).backward.length > 0) {
-                                <div class="dropdown-section">
-                                  <div class="dropdown-label">{{ 'ORDERS.GO_BACK' | translate }}</div>
-                                  @for (status of getOrderStatusTransitions(order.status).backward; track status) {
-                                    <button 
-                                      class="dropdown-item backward"
-                                      (click)="updateStatus(order, status)">
-                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="15,18 9,12 15,6"/>
-                                      </svg>
-                                      {{ getStatusLabel(status) }}
-                                    </button>
-                                  }
-                                </div>
-                              }
-                              @if (getOrderStatusTransitions(order.status).forward.length > 0) {
-                                <div class="dropdown-section">
-                                  <div class="dropdown-label">{{ 'ORDERS.MOVE_FORWARD' | translate }}</div>
-                                  @for (status of getOrderStatusTransitions(order.status).forward; track status) {
-                                    <button 
-                                      class="dropdown-item forward"
-                                      (click)="updateStatus(order, status)">
-                                      {{ getStatusLabel(status) }}
-                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="9,18 15,12 9,6"/>
-                                      </svg>
-                                    </button>
-                                  }
-                                </div>
-                              }
-                              @if (order.status === 'completed' && canMarkPaid()) {
-                                <div class="dropdown-section">
-                                  <button 
-                                    class="dropdown-item forward"
-                                    (click)="markAsPaid(order); statusDropdownOpen.set(null)">
-                                    {{ 'ORDERS.MARK_AS_PAID' | translate }}
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                      <polyline points="9,18 15,12 9,6"/>
-                                    </svg>
-                                  </button>
-                                </div>
-                              }
-                            </div>
-                          }
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -296,7 +297,7 @@ ModuleRegistry.registerModules([
                   @for (order of notPaidOrders(); track order.id) {
                     <div class="order-card" [class]="'status-' + order.status">
                       <div class="order-header">
-                        <div>
+                        <div class="order-header-main">
                           <span class="order-id">#{{ order.id }}</span>
                           <span class="order-table">{{ order.table_name }}</span>
                           @if (order.customer_name) {
@@ -304,50 +305,7 @@ ModuleRegistry.registerModules([
                           }
                           <span class="order-time" [title]="formatExactTime(order.created_at)">{{ 'ORDERS.ORDER_TIME' | translate }}: {{ formatOrderTime(order.created_at) }}</span>
                         </div>
-                        <span class="status-badge" [class]="order.status">{{ getStatusLabel(order.status) }}</span>
-                      </div>
-
-                      <div class="order-items">
-                        @for (item of order.items; track item.id) {
-                          <div class="order-item" [class.removed]="item.removed_by_customer">
-                            <div class="item-name-row">
-                              <span class="item-qty">{{ item.quantity }}x</span>
-                              <span class="item-name">{{ item.product_name }}</span>
-                            </div>
-                            <div class="item-details-row">
-                              <span class="item-price">
-                                {{ formatPrice(item.price_cents) }}
-                                @if (item.quantity > 1) {
-                                  <span class="price-total">({{ formatPrice(item.price_cents * item.quantity) }} total)</span>
-                                }
-                              </span>
-                              @if (item.status && !item.removed_by_customer) {
-                                <span class="item-status-badge" [class]="'status-' + item.status">
-                                  {{ getItemStatusLabel(item.status) }}
-                                </span>
-                              }
-                            </div>
-                          </div>
-                        }
-                      </div>
-
-                      <div class="order-footer">
-                        <div class="order-footer-left">
-                          <span class="order-total">{{ 'ORDERS.TOTAL' | translate }}: {{ formatPrice(order.total_cents) }}</span>
-                          @if (order.removed_items_count && order.removed_items_count > 0) {
-                            <span class="removed-count">{{ 'ORDERS.ITEMS_REMOVED' | translate:{ count: order.removed_items_count } }}</span>
-                          }
-                        </div>
-                        <div class="order-actions">
-                          <button type="button" class="btn btn-print" (click)="printInvoice(order)" [title]="'ORDERS.PRINT_INVOICE' | translate">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                              <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
-                            </svg>
-                            {{ 'ORDERS.PRINT_INVOICE' | translate }}
-                          </button>
-                          <button type="button" class="btn btn-print" (click)="openFacturaModal(order)" [title]="'CUSTOMERS.PRINT_FACTURA' | translate">
-                            {{ 'CUSTOMERS.PRINT_FACTURA' | translate }}
-                          </button>
+                        <div class="order-header-actions">
                           <div class="status-control">
                             <button 
                               class="status-badge-btn" 
@@ -355,7 +313,7 @@ ModuleRegistry.registerModules([
                               (click)="toggleStatusDropdown(order.id)"
                               [title]="'Click to change status'">
                               {{ getStatusLabel(order.status) }}
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="6,9 12,15 18,9"/>
                               </svg>
                             </button>
@@ -406,6 +364,50 @@ ModuleRegistry.registerModules([
                               </div>
                             }
                           </div>
+                        </div>
+                      </div>
+
+                      <div class="order-items">
+                        @for (item of order.items; track item.id) {
+                          <div class="order-item" [class.removed]="item.removed_by_customer">
+                            <div class="item-name-row">
+                              <span class="item-qty">{{ item.quantity }}x</span>
+                              <span class="item-name">{{ item.product_name }}</span>
+                            </div>
+                            <div class="item-details-row">
+                              <span class="item-price">
+                                {{ formatPrice(item.price_cents) }}
+                                @if (item.quantity > 1) {
+                                  <span class="price-total">({{ formatPrice(item.price_cents * item.quantity) }} total)</span>
+                                }
+                              </span>
+                              @if (item.status && !item.removed_by_customer) {
+                                <span class="item-status-badge" [class]="'status-' + item.status">
+                                  {{ getItemStatusLabel(item.status) }}
+                                </span>
+                              }
+                            </div>
+                          </div>
+                        }
+                      </div>
+
+                      <div class="order-footer">
+                        <div class="order-footer-left">
+                          <span class="order-total">{{ 'ORDERS.TOTAL' | translate }}: {{ formatPrice(order.total_cents) }}</span>
+                          @if (order.removed_items_count && order.removed_items_count > 0) {
+                            <span class="removed-count">{{ 'ORDERS.ITEMS_REMOVED' | translate:{ count: order.removed_items_count } }}</span>
+                          }
+                        </div>
+                        <div class="order-actions">
+                          <button type="button" class="btn btn-print" (click)="printInvoice(order)" [title]="'ORDERS.PRINT_INVOICE' | translate">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+                            </svg>
+                            {{ 'ORDERS.PRINT_INVOICE' | translate }}
+                          </button>
+                          <button type="button" class="btn btn-print" (click)="openFacturaModal(order)" [title]="'CUSTOMERS.PRINT_FACTURA' | translate">
+                            {{ 'CUSTOMERS.PRINT_FACTURA' | translate }}
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -698,7 +700,8 @@ ModuleRegistry.registerModules([
     }
 
     .order-header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); border-bottom: 1px solid var(--color-border); margin-bottom: var(--space-3); }
-    .order-header > div { display: flex; flex-direction: column; gap: var(--space-1); }
+    .order-header-main { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+    .order-header-actions { flex-shrink: 0; }
     .order-id { font-weight: 600; color: var(--color-text); }
     .order-table { color: var(--color-text-muted); font-size: 0.875rem; }
     .order-customer { color: var(--color-primary); font-size: 0.875rem; font-weight: 500; }
@@ -787,9 +790,12 @@ ModuleRegistry.registerModules([
       border: none;
       color: var(--color-error);
       cursor: pointer;
-      padding: 2px;
+      min-width: 44px;
+      min-height: 44px;
+      padding: var(--space-2);
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       opacity: 0.7;
       transition: opacity 0.15s;
     }
@@ -797,11 +803,13 @@ ModuleRegistry.registerModules([
       opacity: 1;
     }
     .item-status-badge {
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 0.75rem;
+      min-height: 44px;
+      padding: var(--space-2) var(--space-3);
+      border-radius: 14px;
+      font-size: 0.875rem;
       font-weight: 600;
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
       white-space: nowrap;
       border: 1px solid var(--color-border);
     }
@@ -833,7 +841,7 @@ ModuleRegistry.registerModules([
       user-select: none;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: var(--space-2);
     }
     .item-status-badge.clickable svg {
       transition: transform 0.15s;
@@ -958,10 +966,11 @@ ModuleRegistry.registerModules([
     .status-badge-btn {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: var(--space-1) var(--space-3);
-      border-radius: 20px;
-      font-size: 0.75rem;
+      gap: var(--space-2);
+      min-height: 44px;
+      padding: var(--space-2) var(--space-3);
+      border-radius: 14px;
+      font-size: 0.875rem;
       font-weight: 600;
       cursor: pointer;
       border: 1px solid var(--color-border);
@@ -996,12 +1005,12 @@ ModuleRegistry.registerModules([
       border-radius: var(--radius-md);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       z-index: 100;
-      min-width: 180px;
+      min-width: 220px;
       overflow: hidden;
       animation: slideDown 0.2s ease;
     }
     .item-status-dropdown {
-      min-width: 160px;
+      min-width: 200px;
     }
     
     @keyframes slideDown {
@@ -1016,15 +1025,15 @@ ModuleRegistry.registerModules([
     }
     
     .dropdown-section {
-      padding: 8px 0;
+      padding: var(--space-2) 0;
     }
     .dropdown-section:not(:last-child) {
       border-bottom: 1px solid var(--color-border);
     }
     
     .dropdown-label {
-      padding: 6px 12px;
-      font-size: 0.7rem;
+      padding: var(--space-2) var(--space-3);
+      font-size: 0.75rem;
       font-weight: 600;
       color: var(--color-text-muted);
       text-transform: uppercase;
@@ -1035,13 +1044,14 @@ ModuleRegistry.registerModules([
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: var(--space-2);
       width: 100%;
-      padding: 10px 12px;
+      min-height: 48px;
+      padding: var(--space-3) var(--space-4);
       background: none;
       border: none;
       text-align: left;
-      font-size: 0.875rem;
+      font-size: 1rem;
       font-weight: 500;
       color: var(--color-text);
       cursor: pointer;
