@@ -180,6 +180,7 @@ export interface TenantSummary {
   description?: string | null;
   phone?: string | null;
   email?: string | null;
+  opening_hours?: string | null;
 }
 
 export interface Product {

@@ -300,15 +300,15 @@ import { TranslateModule } from '@ngx-translate/core';
                           <div class="hours-inputs">
                             @if (!openingHours[day.key]?.hasBreak) {
                               <div class="time-range">
-                                <select [value]="openingHours[day.key]?.open || '09:00'" (change)="updateOpeningHours(day.key, 'open', $event)">
+                                <select [ngModel]="openingHours[day.key]?.open || '09:00'" (ngModelChange)="setOpeningHourValue(day.key, 'open', $event)" [name]="'open-' + day.key">
                                   @for (t of timeOptions; track t) {
-                                    <option [value]="t" [selected]="(openingHours[day.key]?.open || '09:00') === t">{{ t }}</option>
+                                    <option [value]="t">{{ t }}</option>
                                   }
                                 </select>
                                 <span>–</span>
-                                <select [value]="openingHours[day.key]?.close || '22:00'" (change)="updateOpeningHours(day.key, 'close', $event)">
+                                <select [ngModel]="openingHours[day.key]?.close || '22:00'" (ngModelChange)="setOpeningHourValue(day.key, 'close', $event)" [name]="'close-' + day.key">
                                   @for (t of timeOptions; track t) {
-                                    <option [value]="t" [selected]="(openingHours[day.key]?.close || '22:00') === t">{{ t }}</option>
+                                    <option [value]="t">{{ t }}</option>
                                   }
                                 </select>
                               </div>
@@ -316,29 +316,29 @@ import { TranslateModule } from '@ngx-translate/core';
                               <div class="split-shifts">
                                 <div class="shift">
                                   <span class="shift-label">{{ 'SETTINGS.MORNING_SHIFT' | translate }}</span>
-                                  <select [value]="openingHours[day.key]?.morningOpen" (change)="updateOpeningHours(day.key, 'morningOpen', $event)">
+                                  <select [ngModel]="openingHours[day.key]?.morningOpen" (ngModelChange)="setOpeningHourValue(day.key, 'morningOpen', $event)" [name]="'mo-' + day.key">
                                     @for (t of timeOptions; track t) {
-                                      <option [value]="t" [selected]="openingHours[day.key]?.morningOpen === t">{{ t }}</option>
+                                      <option [value]="t">{{ t }}</option>
                                     }
                                   </select>
                                   <span>–</span>
-                                  <select [value]="openingHours[day.key]?.morningClose" (change)="updateOpeningHours(day.key, 'morningClose', $event)">
+                                  <select [ngModel]="openingHours[day.key]?.morningClose" (ngModelChange)="setOpeningHourValue(day.key, 'morningClose', $event)" [name]="'mc-' + day.key">
                                     @for (t of timeOptions; track t) {
-                                      <option [value]="t" [selected]="openingHours[day.key]?.morningClose === t">{{ t }}</option>
+                                      <option [value]="t">{{ t }}</option>
                                     }
                                   </select>
                                 </div>
                                 <div class="shift">
                                   <span class="shift-label">{{ 'SETTINGS.EVENING_SHIFT' | translate }}</span>
-                                  <select [value]="openingHours[day.key]?.eveningOpen" (change)="updateOpeningHours(day.key, 'eveningOpen', $event)">
+                                  <select [ngModel]="openingHours[day.key]?.eveningOpen" (ngModelChange)="setOpeningHourValue(day.key, 'eveningOpen', $event)" [name]="'eo-' + day.key">
                                     @for (t of timeOptions; track t) {
-                                      <option [value]="t" [selected]="openingHours[day.key]?.eveningOpen === t">{{ t }}</option>
+                                      <option [value]="t">{{ t }}</option>
                                     }
                                   </select>
                                   <span>–</span>
-                                  <select [value]="openingHours[day.key]?.eveningClose" (change)="updateOpeningHours(day.key, 'eveningClose', $event)">
+                                  <select [ngModel]="openingHours[day.key]?.eveningClose" (ngModelChange)="setOpeningHourValue(day.key, 'eveningClose', $event)" [name]="'ec-' + day.key">
                                     @for (t of timeOptions; track t) {
-                                      <option [value]="t" [selected]="openingHours[day.key]?.eveningClose === t">{{ t }}</option>
+                                      <option [value]="t">{{ t }}</option>
                                     }
                                   </select>
                                 </div>
@@ -841,6 +841,25 @@ import { TranslateModule } from '@ngx-translate/core';
     /* ==========================================
        OPENING HOURS - Mobile First
        ========================================== */
+    .opening-hours-summary {
+      background: var(--color-bg);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-4);
+      border: 1px solid var(--color-border);
+      .summary-label { font-weight: 600; color: var(--color-text-muted); font-size: 0.875rem; margin-right: var(--space-2); }
+      .summary-text { font-size: 0.9375rem; color: var(--color-text); }
+    }
+    .copy-to-other-days {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+      label { font-weight: 500; font-size: 0.875rem; }
+      select { padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--color-border); min-width: 120px; }
+      .btn-sm { padding: var(--space-2) var(--space-3); font-size: 0.875rem; }
+    }
     .hours-grid {
       display: flex;
       flex-direction: column;
@@ -889,23 +908,25 @@ import { TranslateModule } from '@ngx-translate/core';
       }
     }
 
-    /* Mobile: Full-width time inputs */
+    /* Mobile: Full-width time inputs / selects (0, 15, 30, 45 min options) */
     .time-range {
       display: flex;
       align-items: center;
       gap: var(--space-2);
       flex-wrap: wrap;
 
-      input {
+      input, select {
         flex: 1;
         min-width: 90px;
         max-width: 120px;
         padding: var(--space-2) var(--space-3);
         border: 1px solid var(--color-border);
         border-radius: var(--radius-sm);
-        font-size: 1rem; /* Prevents iOS zoom */
+        font-size: 1rem;
         min-height: 40px;
         text-align: center;
+        background: var(--color-bg);
+        color: var(--color-text);
       }
       
       span {
@@ -915,7 +936,7 @@ import { TranslateModule } from '@ngx-translate/core';
     }
     
     @media (min-width: 480px) {
-      .time-range input {
+      .time-range input, .time-range select {
         flex: 0 0 auto;
         width: 110px;
         min-width: unset;
@@ -951,7 +972,7 @@ import { TranslateModule } from '@ngx-translate/core';
           flex-wrap: wrap;
         }
 
-        input {
+        input, select {
           flex: 1;
           min-width: 80px;
           max-width: 110px;
@@ -961,6 +982,8 @@ import { TranslateModule } from '@ngx-translate/core';
           font-size: 1rem;
           min-height: 40px;
           text-align: center;
+          background: var(--color-bg);
+          color: var(--color-text);
         }
       }
     }
@@ -1628,10 +1651,12 @@ export class SettingsComponent implements OnInit {
       let j = i + 1;
       while (j < this.daysOfWeek.length) {
         const next = this.openingHours[this.daysOfWeek[j].key];
-        if (!next || next.closed !== d.closed || next.hasBreak !== d.hasBreak ||
-            next.open !== d.open || next.close !== d.close ||
-            (d.hasBreak && (next.morningOpen !== d.morningOpen || next.eveningClose !== d.eveningClose))) {
-          break;
+        if (!next || next.closed !== d.closed || next.hasBreak !== d.hasBreak) break;
+        if (d.hasBreak) {
+          if (next.morningOpen !== d.morningOpen || next.morningClose !== d.morningClose ||
+              next.eveningOpen !== d.eveningOpen || next.eveningClose !== d.eveningClose) break;
+        } else {
+          if (next.open !== d.open || next.close !== d.close) break;
         }
         j++;
       }

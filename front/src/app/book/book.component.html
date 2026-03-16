@@ -57,6 +57,12 @@
               }
             </div>
           }
+          @if (formatOpeningHours(tenant()?.opening_hours)) {
+            <div class="opening-hours-display">
+              <span class="oh-label">{{ 'BOOK.OPENING_HOURS' | translate }}:</span>
+              <span class="oh-text">{{ formatOpeningHours(tenant()?.opening_hours) }}</span>
+            </div>
+          }
         </div>
       </div>
     </header>
@@ -71,7 +77,11 @@
             </div>
             <div class="form-group">
               <label>{{ 'RESERVATIONS.TIME' | translate }}</label>
-              <input type="time" [(ngModel)]="formTime" name="time" required />
+              <select [(ngModel)]="formTime" name="time" required>
+                @for (t of timeOptions; track t) {
+                  <option [value]="t">{{ t }}</option>
+                }
+              </select>
               @if (suggestedTime()) {
                 <small class="suggested-time" (click)="formTime = suggestedTime()!">{{ 'RESERVATIONS.SUGGESTED_TIME' | translate }}: {{ suggestedTime() }}</small>
               }
@@ -89,8 +99,8 @@
               <input type="tel" [(ngModel)]="formPhone" name="phone" required />
             </div>
             <div class="form-group">
-              <label>{{ 'RESERVATIONS.CUSTOMER_EMAIL' | translate }}</label>
-              <input type="email" [(ngModel)]="formEmail" name="email" />
+              <label for="book-email">{{ 'RESERVATIONS.CUSTOMER_EMAIL' | translate }}</label>
+              <input type="email" id="book-email" [(ngModel)]="formEmail" name="email" placeholder="your@email.com" autocomplete="email" />
             </div>
             @if (error()) {
               <div class="form-error">{{ error() }}</div>

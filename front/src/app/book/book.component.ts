@@ -26,7 +26,7 @@ export class BookComponent implements OnInit {
   logoUrl = signal<string | null>(null);
   loading = signal(true);
   formDate = '';
-  formTime = '19:00';
+  formTime = '20:00';
   formPartySize = 2;
   formName = '';
   formPhone = '';
@@ -35,6 +35,17 @@ export class BookComponent implements OnInit {
   error = signal<string | null>(null);
   successReservation = signal<Reservation | null>(null);
   suggestedTime = signal<string | null>(null);
+
+  /** Time options for reservation: 00:00, 00:15, ... 23:45 (European 24h). */
+  timeOptions: string[] = (() => {
+    const opts: string[] = [];
+    for (let h = 0; h < 24; h++) {
+      for (const m of [0, 15, 30, 45]) {
+        opts.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+      }
+    }
+    return opts;
+  })();
 
   today = computed(() => new Date().toISOString().slice(0, 10));
 
@@ -76,11 +87,64 @@ export class BookComponent implements OnInit {
     if (!tid || !dateStr) return;
     this.api.getNextAvailableReservation(tid, dateStr).subscribe({
       next: (res) => {
-        this.suggestedTime.set(res.time);
-        this.formTime = res.time;
+        const time = this.roundTimeToQuarter(res.time);
+        this.suggestedTime.set(time);
+        this.formTime = time;
       },
       error: () => this.suggestedTime.set(null),
     });
+  }
+
+  /** Round time to nearest 15 minutes (European 24h). */
+  roundTimeToQuarter(t: string): string {
+    if (!t) return '20:00';
+    const [h, m] = t.split(':').map(Number);
+    const quarter = Math.round((h * 60 + (m || 0)) / 15) * 15;
+    const nh = Math.floor(quarter / 60) % 24;
+    const nm = quarter % 60;
+    return `${String(nh).padStart(2, '0')}:${String(nm).padStart(2, '0')}`;
+  }
+
+  /** Format opening_hours JSON for display (e.g. "Mon–Fri 09:00–22:00, Sat 10:00–20:00, Sun closed"). */
+  formatOpeningHours(json: string | null | undefined): string {
+    if (!json) return '';
+    try {
+      const oh = JSON.parse(json);
+      const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+      const short = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const parts: string[] = [];
+      let i = 0;
+      while (i < days.length) {
+        const d = oh[days[i]];
+        if (!d) {
+          i++;
+          continue;
+        }
+        if (d.closed) {
+          parts.push(`${short[i]} closed`);
+          i++;
+          continue;
+        }
+        const range = d.hasBreak
+          ? `${d.morningOpen}–${d.morningClose}, ${d.eveningOpen}–${d.eveningClose}`
+          : `${d.open}–${d.close}`;
+        let j = i + 1;
+        while (j < days.length) {
+          const n = oh[days[j]];
+          if (!n || n.closed !== d.closed || n.hasBreak !== d.hasBreak) break;
+          if (d.hasBreak) {
+            if (n.morningOpen !== d.morningOpen || n.morningClose !== d.morningClose ||
+                n.eveningOpen !== d.eveningOpen || n.eveningClose !== d.eveningClose) break;
+          } else if (n.open !== d.open || n.close !== d.close) break;
+          j++;
+        }
+        parts.push(j > i + 1 ? `${short[i]}–${short[j - 1]} ${range}` : `${short[i]} ${range}`);
+        i = j;
+      }
+      return parts.join(', ');
+    } catch {
+      return '';
+    }
   }
 
   submit() {

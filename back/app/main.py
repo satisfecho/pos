@@ -404,6 +404,7 @@ class TenantSummary(_BaseModel):
     description: str | None = None
     phone: str | None = None
     email: str | None = None
+    opening_hours: str | None = None
 
 
 def _tenant_to_summary(t: models.Tenant) -> TenantSummary:
@@ -414,6 +415,7 @@ def _tenant_to_summary(t: models.Tenant) -> TenantSummary:
         description=t.description,
         phone=t.phone,
         email=t.email,
+        opening_hours=t.opening_hours,
     )
 
 
@@ -3068,33 +3070,32 @@ def get_next_available_reservation_time(
         except (ValueError, AttributeError):
             continue
 
-        # Generate hourly slots from open to close-1h
-        slot_hour = open_h
-        while slot_hour < close_h:
-            slot_time = time(slot_hour, 0)
+        # Generate 15-minute slots (:00, :15, :30, :45) from open to before close
+        for slot_hour in range(open_h, close_h + 1):
+            for slot_min in (0, 15, 30, 45):
+                if slot_hour == close_h and slot_min >= close_m:
+                    break
+                slot_time = time(slot_hour, slot_min)
 
-            # Skip past slots if today
-            if d == now_local.date() and slot_time <= now_local.time():
-                slot_hour += 1
-                continue
+                # Skip past slots if today
+                if d == now_local.date() and slot_time <= now_local.time():
+                    continue
 
-            # Check for existing reservations at this slot
-            existing = session.exec(
-                select(models.Reservation).where(
-                    models.Reservation.tenant_id == tenant_id,
-                    models.Reservation.reservation_date == d,
-                    models.Reservation.reservation_time == slot_time,
-                    models.Reservation.status.in_(["booked", "seated"]),
-                )
-            ).first()
+                # Check for existing reservations at this slot
+                existing = session.exec(
+                    select(models.Reservation).where(
+                        models.Reservation.tenant_id == tenant_id,
+                        models.Reservation.reservation_date == d,
+                        models.Reservation.reservation_time == slot_time,
+                        models.Reservation.status.in_(["booked", "seated"]),
+                    )
+                ).first()
 
-            if not existing:
-                return {
-                    "date": d.isoformat(),
-                    "time": slot_time.strftime("%H:%M"),
-                }
-
-            slot_hour += 1
+                if not existing:
+                    return {
+                        "date": d.isoformat(),
+                        "time": slot_time.strftime("%H:%M"),
+                    }
 
     raise HTTPException(status_code=404, detail="No available time slots found")
 

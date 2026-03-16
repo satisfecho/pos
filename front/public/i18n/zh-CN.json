@@ -460,6 +460,7 @@
   },
   "BOOK": {
     "TITLE": "预订餐桌",
+    "OPENING_HOURS": "营业时间",
     "SUBMIT": "预订餐桌",
     "SUBMITTING": "预订中...",
     "SUCCESS_TITLE": "预订已确认",
@@ -605,6 +606,8 @@
     "MORNING_SHIFT": "上午",
     "EVENING_SHIFT": "下午",
     "CLOSED": "休息",
+    "COPY_FROM_DAY": "复制自",
+    "COPY_TO_OTHER_DAYS": "复制到其他日期",
     "SELECT_CURRENCY": "选择货币",
     "CURRENCY_HINT": "用于 Stripe 和价格格式化。",
     "SELECT_LANGUAGE": "选择语言",

@@ -441,6 +441,7 @@
   },
   "BOOK": {
     "TITLE": "Tisch reservieren",
+    "OPENING_HOURS": "Öffnungszeiten",
     "SUBMIT": "Tisch reservieren",
     "SUBMITTING": "Reservierung...",
     "SUCCESS_TITLE": "Reservierung bestätigt",
@@ -586,6 +587,8 @@
     "MORNING_SHIFT": "Vormittag",
     "EVENING_SHIFT": "Nachmittag",
     "CLOSED": "Geschlossen",
+    "COPY_FROM_DAY": "Kopieren von",
+    "COPY_TO_OTHER_DAYS": "Auf andere Tage übertragen",
     "SELECT_CURRENCY": "Währung auswählen",
     "CURRENCY_HINT": "Wird für Stripe und die Preisformatierung verwendet.",
     "SELECT_LANGUAGE": "Sprache auswählen",

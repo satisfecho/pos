@@ -460,6 +460,7 @@
   },
   "BOOK": {
     "TITLE": "टेबल आरक्षित करें",
+    "OPENING_HOURS": "खुलने का समय",
     "SUBMIT": "टेबल आरक्षित करें",
     "SUBMITTING": "आरक्षित कर रहे हैं...",
     "SUCCESS_TITLE": "आरक्षण की पुष्टि हुई",
@@ -605,6 +606,8 @@
     "MORNING_SHIFT": "सुबह",
     "EVENING_SHIFT": "शाम",
     "CLOSED": "बंद",
+    "COPY_FROM_DAY": "इस दिन से कॉपी करें",
+    "COPY_TO_OTHER_DAYS": "अन्य दिनों में कॉपी करें",
     "SELECT_CURRENCY": "मुद्रा चुनें",
     "CURRENCY_HINT": "Stripe और कीमत प्रारूपण के लिए उपयोग किया जाता है।",
     "SELECT_LANGUAGE": "भाषा चुनें",

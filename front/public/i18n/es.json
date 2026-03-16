@@ -497,6 +497,7 @@
   },
   "BOOK": {
     "TITLE": "Reservar una mesa",
+    "OPENING_HOURS": "Horario",
     "SUBMIT": "Reservar mesa",
     "SUBMITTING": "Reservando...",
     "SUCCESS_TITLE": "Reserva confirmada",
@@ -581,6 +582,8 @@
     "OPEN_LABEL": "Abre",
     "CLOSE_LABEL": "Cierra",
     "CLOSED": "Cerrado",
+    "COPY_FROM_DAY": "Copiar desde",
+    "COPY_TO_OTHER_DAYS": "Copiar a otros días",
     "HAS_BREAK": "Turno partido",
     "MORNING_SHIFT": "Mañana",
     "EVENING_SHIFT": "Tarde",

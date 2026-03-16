@@ -441,6 +441,7 @@
   },
   "BOOK": {
     "TITLE": "Reservar una taula",
+    "OPENING_HOURS": "Horari",
     "SUBMIT": "Reservar taula",
     "SUBMITTING": "Reservant...",
     "SUCCESS_TITLE": "Reserva confirmada",
@@ -586,6 +587,8 @@
     "MORNING_SHIFT": "Matí",
     "EVENING_SHIFT": "Tarda",
     "CLOSED": "Tancat",
+    "COPY_FROM_DAY": "Copiar des de",
+    "COPY_TO_OTHER_DAYS": "Copiar a la resta de dies",
     "SELECT_CURRENCY": "Seleccionar moneda",
     "CURRENCY_HINT": "S'utilitza per a Stripe i el format dels preus.",
     "SELECT_LANGUAGE": "Seleccionar idioma",
