@@ -97,6 +97,22 @@
     margin-top: 2px;
 }
 
+// Required field indicator and validation errors (product form)
+.required {
+    color: var(--color-error, #dc2626);
+}
+
+.field-error {
+    display: block;
+    font-size: 0.8125rem;
+    color: var(--color-error, #dc2626);
+    margin-top: var(--space-1);
+}
+
+.input-error {
+    border-color: var(--color-error, #dc2626) !important;
+}
+
 // Read-only form hint (waiter / non-owner viewing product)
 .form-readonly-hint {
     margin: 0 0 var(--space-4);

@@ -5,7 +5,7 @@ import { ApiService, Product } from '../services/api.service';
 import { PermissionService } from '../services/permission.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CategoriesComponent } from './categories.component';
 
 @Component({
@@ -17,7 +17,7 @@ import { CategoriesComponent } from './categories.component';
         <div class="page-header">
            <h1>{{ 'PRODUCTS.TITLE' | translate }}</h1>
            @if (activeTab() === 'products' && !showAddForm() && !editingProduct() && canEditProducts()) {
-             <button class="btn btn-primary" (click)="showAddForm.set(true)">
+             <button class="btn btn-primary" (click)="openAddForm()">
                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                </svg>
@@ -76,15 +76,21 @@ import { CategoriesComponent } from './categories.component';
                 <form (submit)="saveProduct($event)">
                    <div class="form-row">
                      <div class="form-group">
-                       <label for="name">{{ 'PRODUCTS.PRODUCT_NAME' | translate }}</label>
-                       <input id="name" type="text" [(ngModel)]="formData.name" name="name" required [placeholder]="'PRODUCTS.NAME_PLACEHOLDER' | translate" [readonly]="!canEditProducts()">
+                       <label for="name">{{ 'PRODUCTS.PRODUCT_NAME' | translate }} <span class="required" aria-hidden="true">*</span></label>
+                       <input id="name" type="text" [(ngModel)]="formData.name" name="name" required [placeholder]="'PRODUCTS.NAME_PLACEHOLDER' | translate" [readonly]="!canEditProducts()" [class.input-error]="productFormErrors()?.name" (ngModelChange)="clearProductFormError('name')">
+                       @if (productFormErrors()?.name) {
+                         <span class="field-error" role="alert">{{ 'PRODUCTS.NAME_REQUIRED' | translate }}</span>
+                       }
                      </div>
                      <div class="form-group form-group-sm">
-                       <label for="price">{{ 'PRODUCTS.PRODUCT_PRICE' | translate }}</label>
+                       <label for="price">{{ 'PRODUCTS.PRODUCT_PRICE' | translate }} <span class="required" aria-hidden="true">*</span></label>
                        <div class="price-input">
                          <span class="currency">{{ currency() }}</span>
-                         <input id="price" type="number" step="0.01" [(ngModel)]="formData.price" name="price" required [placeholder]="'PRODUCTS.PRICE_PLACEHOLDER' | translate" [readonly]="!canEditProducts()">
+                         <input id="price" type="number" step="0.01" [(ngModel)]="formData.price" name="price" required [placeholder]="'PRODUCTS.PRICE_PLACEHOLDER' | translate" [readonly]="!canEditProducts()" [class.input-error]="productFormErrors()?.price" (ngModelChange)="clearProductFormError('price')">
                        </div>
+                       @if (productFormErrors()?.price) {
+                         <span class="field-error" role="alert">{{ 'PRODUCTS.PRICE_REQUIRED' | translate }}</span>
+                       }
                      </div>
                    </div>
                    <div class="form-group">
@@ -179,7 +185,7 @@ import { CategoriesComponent } from './categories.component';
                  <h3>{{ 'PRODUCTS.NO_PRODUCTS' | translate }}</h3>
                  <p>{{ 'PRODUCTS.NO_PRODUCTS_DESC' | translate }}</p>
                  @if (canEditProducts()) {
-                 <button class="btn btn-primary" (click)="showAddForm.set(true)">{{ 'PRODUCTS.ADD_PRODUCT' | translate }}</button>
+                 <button class="btn btn-primary" (click)="openAddForm()">{{ 'PRODUCTS.ADD_PRODUCT' | translate }}</button>
                }
                </div>
             } @else {
@@ -352,6 +358,7 @@ export class ProductsComponent implements OnInit {
   private api = inject(ApiService);
   private router = inject(Router);
   private permissions = inject(PermissionService);
+  private translate = inject(TranslateService);
 
   canEditProducts = computed(() => this.permissions.hasPermission(this.permissions.getCurrentUser(), 'product:write'));
 
@@ -365,6 +372,8 @@ export class ProductsComponent implements OnInit {
   editingProduct = signal<Product | null>(null);
   productToDelete = signal<Product | null>(null);
   error = signal('');
+  /** Set when submit was attempted with invalid required fields; cleared on edit or cancel */
+  productFormErrors = signal<{ name?: boolean; price?: boolean } | null>(null);
   formData = { name: '', price: 0, ingredients: '', description: '', category: '', subcategory: '' };
   uploading = signal(false);
   pendingImageFile = signal<File | null>(null);
@@ -605,6 +614,7 @@ export class ProductsComponent implements OnInit {
     if (this.editingCategoryProductId() === product.id) {
       this.cancelCategoryEdit();
     }
+    this.productFormErrors.set(null);
     this.editingProduct.set(product);
     this.formData = {
       name: product.name,
@@ -618,12 +628,28 @@ export class ProductsComponent implements OnInit {
     this.showAddForm.set(false);
   }
 
+  openAddForm() {
+    this.productFormErrors.set(null);
+    this.showAddForm.set(true);
+  }
+
   cancelForm() {
     this.showAddForm.set(false);
     this.editingProduct.set(null);
     this.formData = { name: '', price: 0, ingredients: '', description: '', category: '', subcategory: '' };
     this.availableSubcategories.set([]);
+    this.productFormErrors.set(null);
     this.clearPendingImage();
+  }
+
+  clearProductFormError(field: 'name' | 'price') {
+    const current = this.productFormErrors();
+    if (!current) return;
+    const next = { ...current };
+    delete next[field];
+    const nextState = Object.keys(next).length ? next : null;
+    this.productFormErrors.set(nextState);
+    if (!nextState) this.error.set('');
   }
 
   clearPendingImage() {
@@ -637,8 +663,17 @@ export class ProductsComponent implements OnInit {
   saveProduct(event: Event) {
     event.preventDefault();
     if (!this.canEditProducts()) return;
-    if (!this.formData.name || this.formData.price <= 0) return;
 
+    const nameInvalid = !this.formData.name?.trim();
+    const priceInvalid = this.formData.price == null || Number(this.formData.price) <= 0;
+    if (nameInvalid || priceInvalid) {
+      this.productFormErrors.set({ name: nameInvalid, price: priceInvalid });
+      this.error.set(this.translate.instant('PRODUCTS.FILL_REQUIRED_FIELDS'));
+      return;
+    }
+
+    this.productFormErrors.set(null);
+    this.error.set('');
     this.saving.set(true);
     const productData = {
       name: this.formData.name,
