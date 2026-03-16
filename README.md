@@ -68,14 +68,14 @@ Planned but not yet implemented: customer accounts (registration, MFA, invoices)
 
 ## Getting Started
 
+The quickest way to try POS out is to head over to [https://satisfecho.de/](https://satisfecho.de/) and set up your restaurant.
+
 ### Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
 - Git
 
 ### Quick Start
-
-The quickest way to try POS out is to head over to [https://satisfecho.de/](https://satisfecho.de/) and set up your restaurant.
 
 1. **Clone the repository**
    ```bash
