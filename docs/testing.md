@@ -113,7 +113,7 @@ npm run test:landing-provider-links --prefix front
 
 Tests for the provider portal: landing links, registration, login, and dashboard (add product).
 
-**Landing → provider links** (see §3): `test-landing-provider-links` checks footer links to `/provider/login` and `/provider/register` and that the register link opens the provider registration form.
+**Landing → provider links** (see §4): `test-landing-provider-links` checks footer links to `/provider/login` and `/provider/register` and that the register link opens the provider registration form.
 
 **Provider registration** (creates a new provider account; no cleanup — leaves DB entry):
 
@@ -308,12 +308,26 @@ See `AGENTS.md` for full seed and deploy notes.
 | **Orders** | Order #8 status dropdown | Requires existing order in Active Orders. |
 | **Reports** | `test-reports.mjs` | Smoke: page loads (owner/admin). |
 | **Users / Bartender role** | `test-bartender-role.mjs` | Admin/owner: /users → Add user → role dropdown includes Bartender. |
+| **Kitchen display** | `test-kitchen-status-dropdown.mjs` | Status dropdown visible and not clipped on /kitchen. |
 | **Catalog** | `test-catalog.mjs` | Cards and image placeholders. |
 | **Menu (customer)** | `test-menu-logo.mjs` | Logo on `/menu/:token`. |
 | **WebSocket** | `test-websocket.mjs` | Post-login WS (ws-bridge required). |
 | **Rate limiting** | `test-rate-limit.mjs`, `test-rate-limit-puppeteer.mjs` | API: 429 after limit; Puppeteer: login page shows error banner (e.g. "Too many login attempts") when rate limited. |
 
 **Not covered (or partial):** No automated cleanup of test-created data (e.g. provider/restaurant registration leaves DB entries). No Puppeteer tests for settings, inventory, or tables canvas. Unit tests (Karma/Jasmine) are separate; see `npm test` in front.
+
+**When running many tests in a row:** Login-based tests (demo-data, tables-page, reports, order-8-status, catalog, etc.) hit the same API; rate limiting (e.g. 429) can occur. Space out runs or run login tests in a separate session if you see 429 on login.
+
+---
+
+## Known issues and follow-up (to address later)
+
+- **test-provider-register** — Often ends in “Unknown state” (no success or error banner after submit; stays on `/provider/register`). Likely backend/API or UI timing/selectors; to fix: confirm provider registration API and success/error UI, then adjust backend or test.
+- **debug-reservations-public** — API can return 422; time field (e.g. `20:00`) may trigger validation or parsing issues; success UI not shown. To fix: align reservations API and book form (time format/validation) so the test payload is accepted and success is visible.
+- **Login-based tests (demo-data, tables-page, reports, etc.)** — Can fail with 429 Too Many Requests when run in quick succession. To fix later: relax or bypass rate limiting in test env, or run login tests in a separate session / with delays.
+- **Test data cleanup** — Provider and restaurant registration tests create real DB rows and do not remove them. To fix later: add teardown (e.g. delete created provider/tenant), use a dedicated test DB that is reset, or document manual cleanup.
+
+---
 
 ### Rate limiting (API)
 
