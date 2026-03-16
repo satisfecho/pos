@@ -274,7 +274,7 @@ export interface CanvasTable extends Table {
   effective_waiter_name?: string | null;
 }
 
-export type ReservationStatus = 'booked' | 'seated' | 'finished' | 'cancelled';
+export type ReservationStatus = 'booked' | 'seated' | 'finished' | 'cancelled' | 'no_show';
 
 export interface Reservation {
   id: number;
@@ -740,6 +740,10 @@ export class ApiService {
 
   finishReservation(id: number): Observable<Reservation> {
     return this.http.put<Reservation>(`${this.apiUrl}/reservations/${id}/finish`, {});
+  }
+
+  sendReservationReminder(id: number): Observable<{ sent: boolean; to: string }> {
+    return this.http.post<{ sent: boolean; to: string }>(`${this.apiUrl}/reservations/${id}/send-reminder`, {});
   }
 
   // Reservations (public - no auth)

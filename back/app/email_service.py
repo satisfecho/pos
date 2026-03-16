@@ -172,6 +172,75 @@ async def send_verification_email(
     return await send_email(to_email, subject, html_content, text_content, tenant=tenant)
 
 
+async def send_reservation_reminder(
+    to_email: str,
+    customer_name: str,
+    reservation_date: str,
+    reservation_time: str,
+    party_size: int,
+    tenant_name: str,
+    view_url: Optional[str] = None,
+    tenant: Optional["Tenant"] = None,
+) -> bool:
+    """Send a reminder email for an upcoming reservation. Helps reduce no-shows."""
+    subject = f"Reminder: Your reservation at {tenant_name}"
+
+    view_block = ""
+    if view_url:
+        view_block = f"""
+            <p>You can <a href="{view_url}">view or cancel your reservation</a> online.</p>
+        """
+
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .details {{ background: #f5f5f5; padding: 12px 16px; border-radius: 6px; margin: 16px 0; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Reservation reminder</h1>
+            <p>Hi {customer_name},</p>
+            <p>This is a friendly reminder of your reservation at <strong>{tenant_name}</strong>.</p>
+            <div class="details">
+                <p><strong>Date:</strong> {reservation_date}<br>
+                <strong>Time:</strong> {reservation_time}<br>
+                <strong>Party size:</strong> {party_size}</p>
+            </div>
+            <p>We look forward to seeing you. Please contact us if you need to change or cancel.</p>
+            {view_block}
+            <hr>
+            <p style="color: #666; font-size: 12px;">This is an automated reminder from {tenant_name}.</p>
+        </div>
+    </body>
+    </html>
+    """
+
+    text_content = f"""
+    Reservation reminder
+
+    Hi {customer_name},
+
+    This is a friendly reminder of your reservation at {tenant_name}.
+
+    Date: {reservation_date}
+    Time: {reservation_time}
+    Party size: {party_size}
+
+    We look forward to seeing you. Please contact us if you need to change or cancel.
+    """
+    if view_url:
+        text_content += f"\nView or cancel online: {view_url}\n"
+    text_content += f"\n---\nAutomated reminder from {tenant_name}."
+
+    return await send_email(to_email, subject, html_content, text_content, tenant=tenant)
+
+
 async def test_smtp_connection(tenant: Optional["Tenant"] = None) -> dict:
     """
     Test SMTP connection and authentication.

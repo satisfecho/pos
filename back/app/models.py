@@ -290,6 +290,7 @@ class ReservationStatus(str, Enum):
     seated = "seated"
     finished = "finished"
     cancelled = "cancelled"
+    no_show = "no_show"
 
 
 class Reservation(TenantMixin, table=True):

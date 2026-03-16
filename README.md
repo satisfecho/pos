@@ -43,7 +43,7 @@ The staff dashboard gives quick access to Catalog, Reservations, Kitchen display
 | **Reports** | Sales & revenue at `/reports` (owner/admin): date range, summary (total revenue, order count, average payment per client), reservation count and by source (public/staff), by product/category/table/waiter, charts, CSV/Excel export. See [docs/0016-reports.md](docs/0016-reports.md). |
 | **Payments** | Stripe integration; per-tenant Stripe keys and currency. |
 | **Tables** | Table management, QR codes, canvas view. Table activation and 4-digit PIN so only present guests can order; PIN rate limiting via Redis. |
-| **Reservations** | Staff: list, create, edit, seat, finish, cancel at `/reservations`. Public: book at `/book/:tenantId`, view/cancel at `/reservation?token=...`. Table status: available / reserved / occupied. |
+| **Reservations** | Staff: list, create, edit, seat, finish, cancel at `/reservations`. **No-show**: mark no-shows (so you can stop calling them “cancelled”) and send reminder emails to the ones who might still show. Public: book at `/book/:tenantId`, view/cancel at `/reservation?token=...`. Table status: available / reserved / occupied. |
 | **Real-time** | WebSocket updates for order status; token-based WS auth (`/ws-token`). |
 | **i18n & currency** | Multiple UI languages (e.g. en, es, ca, de, zh-CN, hi); backend localized messages; per-tenant currency (EUR, USD, MXN, etc.). |
 | **Multi-tenant** | Isolated data per tenant; first user becomes owner; configurable roles (owner, admin, kitchen, bartender, waiter, receptionist) and permissions (e.g. reservation read/write). |

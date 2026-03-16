@@ -34,6 +34,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           <option value="seated">{{ 'RESERVATIONS.STATUS_SEATED' | translate }}</option>
           <option value="finished">{{ 'RESERVATIONS.STATUS_FINISHED' | translate }}</option>
           <option value="cancelled">{{ 'RESERVATIONS.STATUS_CANCELLED' | translate }}</option>
+          <option value="no_show">{{ 'RESERVATIONS.STATUS_NO_SHOW' | translate }}</option>
         </select>
         <button class="btn btn-ghost btn-sm" (click)="load()">{{ 'ORDERS.REFRESH' | translate }}</button>
       </div>
@@ -67,8 +68,14 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               </div>
               <div class="card-actions">
                 @if (r.status === 'booked' && canWrite()) {
+                  @if (r.customer_email) {
+                    <button class="btn btn-ghost btn-sm" (click)="sendReminder(r)" [disabled]="sendingReminderId() === r.id" [title]="'RESERVATIONS.SEND_REMINDER' | translate">
+                      {{ sendingReminderId() === r.id ? ('COMMON.LOADING' | translate) : ('RESERVATIONS.SEND_REMINDER' | translate) }}
+                    </button>
+                  }
                   <button class="btn btn-ghost btn-sm" (click)="openEdit(r)">{{ 'RESERVATIONS.EDIT' | translate }}</button>
                   <button class="btn btn-ghost btn-sm" (click)="openSeat(r)">{{ 'RESERVATIONS.SEAT' | translate }}</button>
+                  <button class="btn btn-ghost btn-sm no-show-btn" (click)="confirmNoShow(r)">{{ 'RESERVATIONS.NO_SHOW' | translate }}</button>
                   <button class="btn btn-ghost btn-sm danger" (click)="confirmCancel(r)">{{ 'RESERVATIONS.CANCEL' | translate }}</button>
                 }
                 @if (r.status === 'seated' && canWrite()) {
@@ -169,6 +176,18 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           (cancel)="reservationToCancel.set(null)"
         />
       }
+      <!-- No-show confirm -->
+      @if (reservationToNoShow()) {
+        <app-confirmation-modal
+          title="RESERVATIONS.NO_SHOW_CONFIRM_TITLE"
+          message="RESERVATIONS.NO_SHOW_CONFIRM_MESSAGE"
+          [confirmText]="'RESERVATIONS.NO_SHOW'"
+          cancelText="COMMON.CANCEL"
+          confirmBtnClass="btn-primary"
+          (confirm)="doNoShow()"
+          (cancel)="reservationToNoShow.set(null)"
+        />
+      }
     </app-sidebar>
   `,
   styles: [`
@@ -181,6 +200,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     .reservation-card.status-seated { border-left: 4px solid #16a34a; }
     .reservation-card.status-finished { border-left: 4px solid #6b7280; }
     .reservation-card.status-cancelled { border-left: 4px solid #dc2626; opacity: 0.85; }
+    .reservation-card.status-no_show { border-left: 4px solid #b45309; opacity: 0.9; }
     .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
     .res-id { font-weight: 600; color: #6b7280; }
     .res-name { font-weight: 600; }
@@ -189,6 +209,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     .status-badge.seated { background: #dcfce7; color: #15803d; }
     .status-badge.finished { background: #f3f4f6; color: #4b5563; }
     .status-badge.cancelled { background: #fee2e2; color: #b91c1c; }
+    .status-badge.no_show { background: #ffedd5; color: #c2410c; }
     .card-body { font-size: 0.9rem; color: #4b5563; margin-bottom: 0.75rem; }
     .table-assigned { font-weight: 500; }
     .card-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
@@ -208,6 +229,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     .no-tables { color: #6b7280; }
     .empty-state { text-align: center; padding: 2rem; color: #6b7280; }
     .btn.danger { color: #dc2626; }
+    .btn.no-show-btn { color: #b45309; }
   `],
 })
 export class ReservationsComponent implements OnInit {
@@ -233,6 +255,8 @@ export class ReservationsComponent implements OnInit {
   suggestedTime = signal<string | null>(null);
   reservationToSeat = signal<Reservation | null>(null);
   reservationToCancel = signal<Reservation | null>(null);
+  reservationToNoShow = signal<Reservation | null>(null);
+  sendingReminderId = signal<number | null>(null);
 
   canWrite = () => this.permissions.hasPermission(this.permissions.getCurrentUser(), 'reservation:write');
 
@@ -260,8 +284,14 @@ export class ReservationsComponent implements OnInit {
   }
 
   getStatusLabel(s: ReservationStatus): string {
-    const key = { booked: 'RESERVATIONS.STATUS_BOOKED', seated: 'RESERVATIONS.STATUS_SEATED', finished: 'RESERVATIONS.STATUS_FINISHED', cancelled: 'RESERVATIONS.STATUS_CANCELLED' }[s];
-    return key ?? s;
+    const key: Record<string, string> = {
+      booked: 'RESERVATIONS.STATUS_BOOKED',
+      seated: 'RESERVATIONS.STATUS_SEATED',
+      finished: 'RESERVATIONS.STATUS_FINISHED',
+      cancelled: 'RESERVATIONS.STATUS_CANCELLED',
+      no_show: 'RESERVATIONS.STATUS_NO_SHOW',
+    };
+    return key[s] ?? s;
   }
 
   getTableName(tableId: number): string {
@@ -394,6 +424,33 @@ export class ReservationsComponent implements OnInit {
     this.api.updateReservationStatus(r.id, 'cancelled').subscribe({
       next: () => { this.reservationToCancel.set(null); this.load(); this.loadTables(); },
       error: () => this.reservationToCancel.set(null),
+    });
+  }
+
+  confirmNoShow(r: Reservation) {
+    this.reservationToNoShow.set(r);
+  }
+
+  doNoShow() {
+    const r = this.reservationToNoShow();
+    if (!r) return;
+    this.api.updateReservationStatus(r.id, 'no_show').subscribe({
+      next: () => { this.reservationToNoShow.set(null); this.load(); this.loadTables(); },
+      error: () => this.reservationToNoShow.set(null),
+    });
+  }
+
+  sendReminder(r: Reservation) {
+    this.sendingReminderId.set(r.id);
+    this.api.sendReservationReminder(r.id).subscribe({
+      next: () => {
+        this.sendingReminderId.set(null);
+        alert(this.translate.instant('RESERVATIONS.REMINDER_SENT'));
+      },
+      error: (e) => {
+        this.sendingReminderId.set(null);
+        alert(e.error?.detail || this.translate.instant('RESERVATIONS.REMINDER_FAILED'));
+      },
     });
   }
 

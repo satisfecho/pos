@@ -29,6 +29,7 @@ from . import inventory_models
 from .translation_service import TranslationService
 from .messages import get_message
 from .permissions import Permission, require_permission, require_role, has_permission
+from . import email_service as email_svc
 
 # Configure logging
 logging.basicConfig(
@@ -3195,6 +3196,9 @@ def update_reservation_status(
     if body.status == models.ReservationStatus.cancelled:
         reservation.status = models.ReservationStatus.cancelled
         reservation.table_id = None
+    elif body.status == models.ReservationStatus.no_show:
+        reservation.status = models.ReservationStatus.no_show
+        reservation.table_id = None
     elif body.status == models.ReservationStatus.finished:
         reservation.status = models.ReservationStatus.finished
         reservation.table_id = None
@@ -3310,6 +3314,48 @@ def cancel_reservation_public(
     session.commit()
     session.refresh(reservation)
     return _reservation_to_dict(reservation, session)
+
+
+@app.post("/reservations/{reservation_id}/send-reminder")
+async def send_reservation_reminder_email(
+    reservation_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.RESERVATION_WRITE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Send a reminder email for an upcoming reservation. Staff only. Requires customer_email."""
+    reservation = session.exec(
+        select(models.Reservation).where(
+            models.Reservation.id == reservation_id,
+            models.Reservation.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    if reservation.status != models.ReservationStatus.booked:
+        raise HTTPException(status_code=400, detail="Can only send reminders for booked reservations")
+    if not reservation.customer_email or not reservation.customer_email.strip():
+        raise HTTPException(status_code=400, detail="Reservation has no email address")
+    tenant = session.get(models.Tenant, reservation.tenant_id)
+    tenant_name = tenant.name if tenant else "Restaurant"
+    date_str = reservation.reservation_date.isoformat() if reservation.reservation_date else ""
+    time_str = reservation.reservation_time.strftime("%H:%M") if reservation.reservation_time else ""
+    view_url = None
+    if reservation.token:
+        # Frontend can pass base URL via header or we use CORS origin; for now omit link
+        pass
+    ok = await email_svc.send_reservation_reminder(
+        to_email=reservation.customer_email.strip(),
+        customer_name=reservation.customer_name,
+        reservation_date=date_str,
+        reservation_time=time_str,
+        party_size=reservation.party_size,
+        tenant_name=tenant_name,
+        view_url=view_url,
+        tenant=tenant,
+    )
+    if not ok:
+        raise HTTPException(status_code=502, detail="Failed to send reminder email")
+    return {"sent": True, "to": reservation.customer_email}
 
 
 # ============ TABLE SESSION MANAGEMENT ============
