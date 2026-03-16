@@ -2,6 +2,7 @@
 # Repository: https://github.com/satisfecho/pos — workflow must run from satisfecho/pos; server clone must have origin = satisfecho/pos.
 # Requires repository secret: SSH_PRIVATE_KEY_AMVARA9 (private key for root@amvara9; raw PEM or base64).
 # Optional: DEPLOY_HOST (default 167.235.138.59), DEPLOY_USER (default root), DEPLOY_PATH (default /development/pos).
+# Smoke test uses SMOKE_TEST_BASE_URL (default https://www.satisfecho.de) so SSL validates.
 
 name: Deploy to amvara9
 
@@ -46,9 +47,9 @@ jobs:
 
       - name: Smoke test (landing and API health)
         env:
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST || '167.235.138.59' }}
+          SMOKE_TEST_BASE_URL: ${{ vars.SMOKE_TEST_BASE_URL || 'https://www.satisfecho.de' }}
         run: |
-          BASE="http://${DEPLOY_HOST}"
+          BASE="${SMOKE_TEST_BASE_URL}"
           echo "Smoke test: $BASE and $BASE/api/health"
           curl -sf -o /dev/null -w "%{http_code}" "$BASE/" | grep -q 200 || (echo "Landing page failed"; exit 1)
           curl -sf -o /dev/null -w "%{http_code}" "$BASE/api/health" | grep -q 200 || (echo "API health failed"; exit 1)
