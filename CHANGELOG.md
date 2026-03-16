@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Products page – search**: On `/products`, a search input above the category filters lets you filter the product list by name, ingredients, description, category, or subcategory (case-insensitive, live as you type). Works together with the existing category/subcategory ribbons. i18n: `PRODUCTS.SEARCH_PLACEHOLDER` (en, de, es, fr, ca, zh-CN, hi).
 - **Per-tenant SMTP / email settings**: Restaurant owners can configure their own SMTP (host, port, TLS, user, password, from address/name) in **Settings → Email (SMTP)**. If left empty, the app uses the global SMTP from `config.env`. Backend: new optional fields on `Tenant` and `TenantUpdate`; GET/PUT `/tenant/settings` read and update them (password masked in responses). Email service uses tenant config when both `smtp_user` and `smtp_password` are set, otherwise falls back to global. Migration `20260316150000_add_tenant_smtp_email.sql`. i18n: `SETTINGS.EMAIL_SETTINGS`, `SMTP_*`, `EMAIL_FROM*` (en).
 - **Gmail setup guide**: `docs/0018-gmail-setup.md` – step-by-step: create Gmail account, enable 2FA, create App Password at myaccount.google.com/apppasswords, then enter Gmail and password in **POS → Settings → Email (SMTP)**.
 - **SMTP debug script**: `back/scripts/debug_smtp.py` – minimal script that parses `config.env` (handles passwords with apostrophes when wrapped in double quotes), tests SMTP connection, and optionally sends a test email. Run: `PYTHONPATH=back python back/scripts/debug_smtp.py [to_email]` from repo root, or pipe `config.env` into the back container.
@@ -24,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Opening hours summary – localized**: The opening hours summary in **Settings → Opening hours** and the opening hours text on the public book page now use the current UI language: short day names (e.g. Lun, Mar, Mié in Spanish; Mon, Tue, Wed in English) via `Intl.DateTimeFormat`, and the word "closed" from `SETTINGS.CLOSED` (e.g. Cerrado, Closed, Geschlossen).
 - **Opening hours and reservation time – 15-minute steps, 24h format**: Settings opening hours and the book (reservation) page now use time selectors with minutes **0, 15, 30, 45** only, in European 24h format (e.g. 20:00). Settings: time inputs replaced by dropdowns; existing values are rounded to the nearest quarter hour. Book page: time is a dropdown, default **20:00**; opening hours are shown in the hero when set. Next-available reservation slot API returns 15-minute slots.
 - **Kitchen display**: On `/kitchen`, only orders that have at least one item in **pending** or **preparing** are shown; within each order only those items are listed (ready/delivered/cancelled lines are hidden). Status badge and dropdown buttons use the same size as on the Orders page (min-height 44px / 48px) for thumb-friendly tapping.
 - **Documentation**: Merged `GEMINI.md` into `AGENTS.md`. Agent instructions now include project overview, architecture, setup & development (quick start, manual commands), development conventions, and key URLs in a single file.
