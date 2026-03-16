@@ -23,6 +23,9 @@ config.env
 # Uploads directory (user-uploaded files)
 back/uploads/
 
+# Pre-deploy database backups (created on server by deploy script)
+backups/
+
 # Node / Angular (front has its own .gitignore too, this is just extra safety)
 node_modules/
 dist/

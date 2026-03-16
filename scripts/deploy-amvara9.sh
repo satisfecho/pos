@@ -6,6 +6,10 @@
 # This script does NOT run remove_extra_tenants. That seed deletes all tenants except
 # Cobalto and their users (including demo account ralf@roeber.de). Run it only if you
 # intentionally want a single-tenant (Cobalto-only) server.
+#
+# Before any deploy steps, a full DB backup is taken (pg_dump) to BACKUP_DIR (default
+# ./backups). Only the last BACKUP_RETAIN backups are kept (default 10). Set these
+# env vars on the server to override.
 
 set -e
 # Expect to be run from repo root on server, e.g. cd /development/pos && bash -s
@@ -21,8 +25,29 @@ if [ ! -f config.env ]; then
   echo "Generated SECRET_KEY and REFRESH_SECRET_KEY."
 fi
 
+# Backup database before any deployment steps so we never lose data
+BACKUP_DIR="${BACKUP_DIR:-./backups}"
+BACKUP_RETAIN="${BACKUP_RETAIN:-10}"
+mkdir -p "$BACKUP_DIR"
+if docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml ps -q db 2>/dev/null | head -1 | grep -q .; then
+  BACKUP_FILE="${BACKUP_DIR}/pos_backup_$(date -u +%Y%m%d_%H%M%S).sql"
+  echo "Creating database backup: ${BACKUP_FILE}"
+  if docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml exec -T db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > "$BACKUP_FILE"; then
+    echo "Backup created ($(wc -c < "$BACKUP_FILE") bytes)."
+    # Retain only the last BACKUP_RETAIN backups
+    (cd "$BACKUP_DIR" && ls -t pos_backup_*.sql 2>/dev/null | tail -n +$((BACKUP_RETAIN + 1)) | while read -r f; do rm -f "$f"; done)
+  else
+    echo "::error::Database backup failed. Aborting deploy to avoid data loss."
+    exit 1
+  fi
+else
+  echo "Database container not running; skipping backup (virgin or first deploy)."
+fi
+
 echo "Stopping existing containers..."
-docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml down || true
+docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml down --remove-orphans || true
+echo "Force-remove haproxy container if present (avoids port 4202 already in use)..."
+docker rm -f pos-haproxy 2>/dev/null || true
 echo "Waiting for ports to be released..."
 sleep 10
 

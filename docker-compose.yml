@@ -115,9 +115,11 @@ services:
     image: haproxy:2.8-alpine
     container_name: pos-haproxy
     restart: unless-stopped
-    ports:
-      # 0.0.0.0 for LAN access in dev; production uses docker-compose.prod.yml override
-      - "0.0.0.0:${FRONTEND_PORT:-4202}:4202"
+    expose:
+      - "4202"   # dev only
+      - "80"     # prod
+      - "443"    # prod (HTTPS)
+    # Published ports: override (dev) → 4202 only; prod → 80 and 443.
     volumes:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     depends_on:

@@ -1,12 +1,15 @@
 # HAProxy Configuration
 
-This HAProxy setup proxies all traffic through port 4202, allowing the POS system to work when only one port is accessible.
+HAProxy is the single entry point for end-user traffic:
+
+- **Production**: listens on **80** (HTTP) and **443** (HTTPS). Configure SSL on 443 in `haproxy.cfg` if needed.
+- **Development**: listens on **4202** only (no root, no conflict with other services).
 
 ## Routing
 
-- **Frontend (Static Files)**: `http://host:4202/` → `pos-front:4200`
-- **API Requests**: `http://host:4202/api/*` → `pos-back:8020/*` (path prefix removed)
-- **WebSocket**: `ws://host:4202/ws/*` → `pos-ws-bridge:8021/*` (path prefix removed)
+- **Frontend (Static Files)**: `/` → `pos-front:80` (or `pos-front:4200` in dev)
+- **API Requests**: `/api/*` → `pos-back:8020/*` (path prefix removed)
+- **WebSocket**: `/ws/*` → `pos-ws-bridge:8021/*` (path prefix removed)
 
 ## Configuration
 
@@ -20,10 +23,10 @@ You can override these by setting environment variables:
 
 ## Usage
 
-HAProxy is automatically started with `docker compose up`. It listens on port 4202 and routes traffic to the appropriate backend services.
+- **Development**: `docker compose up` (uses `docker-compose.override.yml`). HAProxy is published on **4202**; use `http://localhost:4202/`.
+- **Production**: `docker compose -f docker-compose.yml -f docker-compose.prod.yml up`. HAProxy is published on **80** and **443**; no port in URL.
 
 ## Testing
 
-1. Frontend: `http://host:4202/`
-2. API: `http://host:4202/api/docs`
-3. WebSocket: `ws://host:4202/ws/tenant/1?token=...` or `ws://host:4202/ws/table/{token}`
+- **Dev**: `http://localhost:4202/`, `http://localhost:4202/api/docs`, `ws://localhost:4202/ws/...`
+- **Prod**: `http://host/`, `http://host/api/docs`, `ws://host/ws/...` (or `https://` when SSL is configured)
