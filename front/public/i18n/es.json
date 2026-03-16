@@ -335,7 +335,8 @@
     "FAILED_TO_MARK_PAID": "Error al marcar el pedido como pagado",
     "PRINT_INVOICE": "Imprimir factura",
     "INVOICE": "Factura",
-    "INVOICE_FOOTER": "Gracias por su pedido."
+    "INVOICE_FOOTER": "Gracias por su pedido.",
+    "INVOICE_OSS_PREFIX": "Open source · Hecho con ♥ en Barcelona y México"
   },
   "CUSTOMERS": {
     "TITLE": "Clientes (Factura)",

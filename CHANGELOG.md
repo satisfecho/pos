@@ -6,7 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-(Nothing at the moment.)
+### Added
+
+- **Invoice – open source footer**: Printed invoices (Print invoice / Print Factura) now show a small grey line at the bottom: “Open source · Made with ♥ in Barcelona and Mexico”, GitHub repo link, app version, and commit hash. Styled in 9px grey; i18n: `ORDERS.INVOICE_OSS_PREFIX` (en, es).
 
 ## [1.0.14] - 2026-03-16
 

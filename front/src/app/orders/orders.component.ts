@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../environments/environment';
 import { ApiService, Order, OrderItem, TenantSettings, BillingCustomer } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
 import { PermissionService, Permission } from '../services/permission.service';
@@ -1770,6 +1771,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
     .total-row { font-weight: 700; font-size: 1.1rem; border-top: 2px solid #333; }
     .total-row td { padding-top: 12px; }
     .footer { margin-top: 24px; font-size: 11px; color: #888; text-align: center; }
+    .invoice-oss { margin-top: 12px; font-size: 9px; color: #999; text-align: center; line-height: 1.3; }
+    .invoice-oss a { color: #999; text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -1812,6 +1815,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     </tr>
   </table>
   <div class="footer">${this.translate.instant('ORDERS.INVOICE_FOOTER')}</div>
+  <div class="invoice-oss">${this.getInvoiceOssLine()}</div>
   <script>window.onload = function() { window.print(); window.onafterprint = function() { window.close(); }; }</script>
 </body>
 </html>`;
@@ -1821,6 +1825,15 @@ export class OrdersComponent implements OnInit, OnDestroy {
       w.document.write(html);
       w.document.close();
     }
+  }
+
+  private getInvoiceOssLine(): string {
+    const prefix = this.translate.instant('ORDERS.INVOICE_OSS_PREFIX');
+    const repoUrl = 'https://github.com/satisfecho/pos';
+    const version = environment.version || '0.0.0';
+    const commit = environment.commitHash || '';
+    const link = `<a href="${this.escapeHtml(repoUrl)}" target="_blank" rel="noopener">GitHub</a>`;
+    return `${this.escapeHtml(prefix)} · ${link} · v${this.escapeHtml(version)}${commit ? ` (${this.escapeHtml(commit)})` : ''}`;
   }
 
   private escapeHtml(s: string): string {

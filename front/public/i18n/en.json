@@ -334,7 +334,8 @@
     "FAILED_TO_MARK_PAID": "Failed to mark order as paid",
     "PRINT_INVOICE": "Print invoice",
     "INVOICE": "Invoice",
-    "INVOICE_FOOTER": "Thank you for your order."
+    "INVOICE_FOOTER": "Thank you for your order.",
+    "INVOICE_OSS_PREFIX": "Open source · Made with ♥ in Barcelona and Mexico"
   },
   "CUSTOMERS": {
     "TITLE": "Customers (Factura)",
