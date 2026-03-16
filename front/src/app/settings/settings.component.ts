@@ -264,7 +264,23 @@ import { TranslateModule } from '@ngx-translate/core';
                     <h2>{{ 'SETTINGS.OPENING_HOURS' | translate }}</h2>
                     <p>{{ 'SETTINGS.OPENING_HOURS_SUBTITLE' | translate }}</p>
                   </div>
-                  
+                  @if (getOpeningHoursSummary()) {
+                    <div class="opening-hours-summary">
+                      <span class="summary-label">{{ 'SETTINGS.OPENING_HOURS' | translate }}:</span>
+                      <span class="summary-text">{{ getOpeningHoursSummary() }}</span>
+                    </div>
+                  }
+                  <div class="copy-to-other-days">
+                    <label>{{ 'SETTINGS.COPY_FROM_DAY' | translate }}</label>
+                    <select [(ngModel)]="copyFromDayKey" name="copyFromDay">
+                      @for (day of daysOfWeek; track day.key) {
+                        <option [value]="day.key">{{ day.label | translate }}</option>
+                      }
+                    </select>
+                    <button type="button" class="btn btn-secondary btn-sm" (click)="copyDayToOtherDays(copyFromDayKey)">
+                      {{ 'SETTINGS.COPY_TO_OTHER_DAYS' | translate }}
+                    </button>
+                  </div>
                   <div class="hours-grid">
                     @for (day of daysOfWeek; track day.key) {
                       <div class="day-row" [class.closed]="openingHours[day.key]?.closed">
@@ -284,23 +300,47 @@ import { TranslateModule } from '@ngx-translate/core';
                           <div class="hours-inputs">
                             @if (!openingHours[day.key]?.hasBreak) {
                               <div class="time-range">
-                                <input type="time" [value]="openingHours[day.key]?.open || '09:00'" (change)="updateOpeningHours(day.key, 'open', $event)">
-                                <span>-</span>
-                                <input type="time" [value]="openingHours[day.key]?.close || '22:00'" (change)="updateOpeningHours(day.key, 'close', $event)">
+                                <select [value]="openingHours[day.key]?.open || '09:00'" (change)="updateOpeningHours(day.key, 'open', $event)">
+                                  @for (t of timeOptions; track t) {
+                                    <option [value]="t" [selected]="(openingHours[day.key]?.open || '09:00') === t">{{ t }}</option>
+                                  }
+                                </select>
+                                <span>–</span>
+                                <select [value]="openingHours[day.key]?.close || '22:00'" (change)="updateOpeningHours(day.key, 'close', $event)">
+                                  @for (t of timeOptions; track t) {
+                                    <option [value]="t" [selected]="(openingHours[day.key]?.close || '22:00') === t">{{ t }}</option>
+                                  }
+                                </select>
                               </div>
                             } @else {
                               <div class="split-shifts">
                                 <div class="shift">
-                                  <span class="shift-label">Morning</span>
-                                  <input type="time" [value]="openingHours[day.key]?.morningOpen" (change)="updateOpeningHours(day.key, 'morningOpen', $event)">
-                                  <span>-</span>
-                                  <input type="time" [value]="openingHours[day.key]?.morningClose" (change)="updateOpeningHours(day.key, 'morningClose', $event)">
+                                  <span class="shift-label">{{ 'SETTINGS.MORNING_SHIFT' | translate }}</span>
+                                  <select [value]="openingHours[day.key]?.morningOpen" (change)="updateOpeningHours(day.key, 'morningOpen', $event)">
+                                    @for (t of timeOptions; track t) {
+                                      <option [value]="t" [selected]="openingHours[day.key]?.morningOpen === t">{{ t }}</option>
+                                    }
+                                  </select>
+                                  <span>–</span>
+                                  <select [value]="openingHours[day.key]?.morningClose" (change)="updateOpeningHours(day.key, 'morningClose', $event)">
+                                    @for (t of timeOptions; track t) {
+                                      <option [value]="t" [selected]="openingHours[day.key]?.morningClose === t">{{ t }}</option>
+                                    }
+                                  </select>
                                 </div>
                                 <div class="shift">
-                                  <span class="shift-label">Evening</span>
-                                  <input type="time" [value]="openingHours[day.key]?.eveningOpen" (change)="updateOpeningHours(day.key, 'eveningOpen', $event)">
-                                  <span>-</span>
-                                  <input type="time" [value]="openingHours[day.key]?.eveningClose" (change)="updateOpeningHours(day.key, 'eveningClose', $event)">
+                                  <span class="shift-label">{{ 'SETTINGS.EVENING_SHIFT' | translate }}</span>
+                                  <select [value]="openingHours[day.key]?.eveningOpen" (change)="updateOpeningHours(day.key, 'eveningOpen', $event)">
+                                    @for (t of timeOptions; track t) {
+                                      <option [value]="t" [selected]="openingHours[day.key]?.eveningOpen === t">{{ t }}</option>
+                                    }
+                                  </select>
+                                  <span>–</span>
+                                  <select [value]="openingHours[day.key]?.eveningClose" (change)="updateOpeningHours(day.key, 'eveningClose', $event)">
+                                    @for (t of timeOptions; track t) {
+                                      <option [value]="t" [selected]="openingHours[day.key]?.eveningClose === t">{{ t }}</option>
+                                    }
+                                  </select>
                                 </div>
                               </div>
                             }
@@ -1317,7 +1357,7 @@ export class SettingsComponent implements OnInit {
   private router = inject(Router);
 
   settings = signal<TenantSettings | null>(null);
-  activeSection = signal<'general' | 'contact' | 'hours' | 'payments' | 'translations'>('general');
+  activeSection = signal<'general' | 'contact' | 'hours' | 'payments' | 'email' | 'translations'>('general');
   loading = signal<boolean>(false);
   saving = signal<boolean>(false);
   error = signal<string | null>(null);
@@ -1334,6 +1374,19 @@ export class SettingsComponent implements OnInit {
     { key: 'saturday', label: 'SETTINGS.DAY_SATURDAY' },
     { key: 'sunday', label: 'SETTINGS.DAY_SUNDAY' }
   ];
+
+  /** Time options for opening hours: 00:00, 00:15, 00:30, 00:45, ... 23:45 (European 24h). */
+  timeOptions: string[] = (() => {
+    const opts: string[] = [];
+    for (let h = 0; h < 24; h++) {
+      for (const m of [0, 15, 30, 45]) {
+        opts.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+      }
+    }
+    return opts;
+  })();
+
+  copyFromDayKey = 'monday';
 
   openingHours: Record<string, {
     open: string;
@@ -1457,7 +1510,7 @@ export class SettingsComponent implements OnInit {
       };
     });
 
-    // Parse JSON if provided
+    // Parse JSON if provided; round all times to :00, :15, :30, :45
     if (jsonString) {
       try {
         const parsed = JSON.parse(jsonString);
@@ -1465,14 +1518,14 @@ export class SettingsComponent implements OnInit {
           if (parsed[day.key]) {
             const dayData = parsed[day.key];
             this.openingHours[day.key] = {
-              open: dayData.open || '09:00',
-              close: dayData.close || '22:00',
+              open: this.roundTimeToQuarter(dayData.open || '09:00'),
+              close: this.roundTimeToQuarter(dayData.close || '22:00'),
               closed: dayData.closed === true,
               hasBreak: dayData.hasBreak === true,
-              morningOpen: dayData.morningOpen || dayData.open || '09:00',
-              morningClose: dayData.morningClose || '14:00',
-              eveningOpen: dayData.eveningOpen || '17:00',
-              eveningClose: dayData.eveningClose || dayData.close || '22:00'
+              morningOpen: this.roundTimeToQuarter(dayData.morningOpen || dayData.open || '09:00'),
+              morningClose: this.roundTimeToQuarter(dayData.morningClose || '14:00'),
+              eveningOpen: this.roundTimeToQuarter(dayData.eveningOpen || '17:00'),
+              eveningClose: this.roundTimeToQuarter(dayData.eveningClose || dayData.close || '22:00')
             };
           }
         });
@@ -1509,10 +1562,87 @@ export class SettingsComponent implements OnInit {
     this.serializeOpeningHours();
   }
 
+  /** Round time string to nearest 15 minutes (00, 15, 30, 45). European 24h. */
+  roundTimeToQuarter(t: string | undefined): string {
+    if (!t) return '09:00';
+    const [h, m] = t.split(':').map(Number);
+    const quarter = Math.round((h * 60 + (m || 0)) / 15) * 15;
+    const nh = Math.floor(quarter / 60) % 24;
+    const nm = quarter % 60;
+    return `${String(nh).padStart(2, '0')}:${String(nm).padStart(2, '0')}`;
+  }
+
   updateOpeningHours(dayKey: string, field: 'open' | 'close' | 'morningOpen' | 'morningClose' | 'eveningOpen' | 'eveningClose', event: Event) {
-    const value = (event.target as HTMLInputElement).value;
-    (this.openingHours[dayKey] as any)[field] = value;
+    const value = (event.target as HTMLInputElement | HTMLSelectElement).value;
+    this.setOpeningHourValue(dayKey, field, value);
+  }
+
+  setOpeningHourValue(dayKey: string, field: 'open' | 'close' | 'morningOpen' | 'morningClose' | 'eveningOpen' | 'eveningClose', value: string) {
+    (this.openingHours[dayKey] as any)[field] = this.roundTimeToQuarter(value);
     this.serializeOpeningHours();
+  }
+
+  copyDayToOtherDays(sourceKey: string) {
+    const source = this.openingHours[sourceKey];
+    if (!source) return;
+    this.daysOfWeek.forEach(day => {
+      if (day.key === sourceKey) return;
+      this.openingHours[day.key] = {
+        ...source,
+        open: source.open,
+        close: source.close,
+        closed: source.closed,
+        hasBreak: source.hasBreak,
+        morningOpen: source.morningOpen,
+        morningClose: source.morningClose,
+        eveningOpen: source.eveningOpen,
+        eveningClose: source.eveningClose,
+      };
+    });
+    this.serializeOpeningHours();
+  }
+
+  /** Formatted opening hours summary, e.g. "Mon–Fri 09:00–22:00, Sat 10:00–20:00, Sun closed". */
+  getOpeningHoursSummary(): string {
+    const dayShort = (key: string) => {
+      const i = this.daysOfWeek.findIndex(d => d.key === key);
+      return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i] ?? key;
+    };
+    const parts: string[] = [];
+    let i = 0;
+    while (i < this.daysOfWeek.length) {
+      const day = this.daysOfWeek[i];
+      const d = this.openingHours[day.key];
+      if (!d) {
+        i++;
+        continue;
+      }
+      if (d.closed) {
+        parts.push(`${dayShort(day.key)} closed`);
+        i++;
+        continue;
+      }
+      const range = d.hasBreak
+        ? `${d.morningOpen}–${d.morningClose}, ${d.eveningOpen}–${d.eveningClose}`
+        : `${d.open}–${d.close}`;
+      let j = i + 1;
+      while (j < this.daysOfWeek.length) {
+        const next = this.openingHours[this.daysOfWeek[j].key];
+        if (!next || next.closed !== d.closed || next.hasBreak !== d.hasBreak ||
+            next.open !== d.open || next.close !== d.close ||
+            (d.hasBreak && (next.morningOpen !== d.morningOpen || next.eveningClose !== d.eveningClose))) {
+          break;
+        }
+        j++;
+      }
+      if (j > i + 1) {
+        parts.push(`${dayShort(day.key)}–${dayShort(this.daysOfWeek[j - 1].key)} ${range}`);
+      } else {
+        parts.push(`${dayShort(day.key)} ${range}`);
+      }
+      i = j;
+    }
+    return parts.join(', ');
   }
 
   serializeOpeningHours() {

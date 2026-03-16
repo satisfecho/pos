@@ -832,13 +832,14 @@ export class TablesComponent implements OnInit {
 
   onConfirmationConfirm() {
     const modal = this.confirmationModal();
-    if (modal.tableToClose?.id) {
+    if (modal.tableToClose?.id != null) {
       const table = modal.tableToClose;
-      this.activatingTableId.set(table.id);
-      this.api.closeTable(table.id).subscribe({
+      const tableId = table.id as number;
+      this.activatingTableId.set(tableId);
+      this.api.closeTable(tableId).subscribe({
         next: () => {
           this.tables.update(tables => tables.map(t =>
-            t.id === table.id
+            t.id === tableId
               ? { ...t, is_active: false, order_pin: null, active_order_id: null }
               : t
           ));

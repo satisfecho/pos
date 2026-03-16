@@ -42,4 +42,4 @@ jobs:
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/development/pos' }}
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=60 -o ServerAliveCountMax=10 \
-            "${DEPLOY_USER}@${DEPLOY_HOST}" "cd ${DEPLOY_PATH} && git fetch origin && git checkout master && git pull origin master && bash -s" < scripts/deploy-amvara9.sh
+            "${DEPLOY_USER}@${DEPLOY_HOST}" "cd ${DEPLOY_PATH} && git fetch origin && git checkout master && git reset --hard origin/master && bash -s" < scripts/deploy-amvara9.sh
