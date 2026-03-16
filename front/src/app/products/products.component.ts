@@ -107,7 +107,7 @@ import { CategoriesComponent } from './categories.component';
                        <select id="category" [(ngModel)]="formData.category" name="category" (change)="onCategoryChange()" [disabled]="!canEditProducts()">
                          <option value="">{{ 'PRODUCTS.SELECT_CATEGORY' | translate }}</option>
                          @for (category of getCategoryKeys(); track category) {
-                           <option [value]="category">{{ category }}</option>
+                           <option [value]="category">{{ getCategoryLabel(category) }}</option>
                          }
                        </select>
                      </div>
@@ -189,6 +189,19 @@ import { CategoriesComponent } from './categories.component';
                }
                </div>
             } @else {
+              <!-- Search -->
+              <div class="search-row">
+                <label for="products-search" class="visually-hidden">{{ 'PRODUCTS.SEARCH_PLACEHOLDER' | translate }}</label>
+                <input
+                  id="products-search"
+                  type="search"
+                  class="search-input"
+                  [value]="searchQuery()"
+                  (input)="onSearchChange($event)"
+                  [placeholder]="'PRODUCTS.SEARCH_PLACEHOLDER' | translate"
+                  autocomplete="off"
+                />
+              </div>
               <!-- Category Filters (Ribbon Style) -->
               <div class="filters-section">
                 @if (availableCategories().length > 0) {
@@ -205,7 +218,7 @@ import { CategoriesComponent } from './categories.component';
                           class="ribbon-tab" 
                           [class.active]="selectedCategory() === category"
                           (click)="selectCategory(category)">
-                          {{ category }}
+                          {{ getCategoryLabel(category) }}
                         </button>
                       }
                     </div>
@@ -220,7 +233,7 @@ import { CategoriesComponent } from './categories.component';
                         class="ribbon-tab tab-sm" 
                         [class.active]="selectedSubcategory() === null"
                         (click)="selectSubcategory(null)">
-                        {{ 'PRODUCTS.ALL_ITEMS_IN' | translate:{category: selectedCategory()} }}
+                        {{ 'PRODUCTS.ALL_ITEMS_IN' | translate:{category: getCategoryLabel(selectedCategory()!) } }}
                       </button>
                       @for (subcategory of availableSubcategoriesForFilter(); track subcategory) {
                         <button 
@@ -285,12 +298,12 @@ import { CategoriesComponent } from './categories.component';
                               [attr.data-product-id]="product.id">
                               <option value="">None</option>
                               @for (category of getCategoryKeys(); track category) {
-                                <option [value]="category">{{ category }}</option>
+                                <option [value]="category">{{ getCategoryLabel(category) }}</option>
                               }
                             </select>
                           } @else {
                             <span class="category-cell" [class.clickable]="canEditProducts()" (click)="canEditProducts() && startCategoryEdit(product, $event)">
-                              {{ product.category || '—' }}
+                              {{ product.category ? getCategoryLabel(product.category) : '—' }}
                             </span>
                           }
                         </td>
@@ -386,6 +399,7 @@ export class ProductsComponent implements OnInit {
   editingCategory: string = '';
   editingSubcategory: string = '';
   // Filter state
+  searchQuery = signal('');
   selectedCategory = signal<string | null>(null);
   selectedSubcategory = signal<string | null>(null);
   availableCategories = signal<string[]>([]);
@@ -410,6 +424,20 @@ export class ProductsComponent implements OnInit {
 
   getCategoryKeys(): string[] {
     return Object.keys(this.categories());
+  }
+
+  /** Translation key for known categories; falls back to raw value for custom categories. */
+  getCategoryLabel(category: string): string {
+    const keyMap: Record<string, string> = {
+      'Starters': 'PRODUCTS.CATEGORY_STARTERS',
+      'Main Course': 'PRODUCTS.CATEGORY_MAIN_COURSE',
+      'Desserts': 'PRODUCTS.CATEGORY_DESSERTS',
+      'Beverages': 'PRODUCTS.CATEGORY_BEVERAGES',
+      'Sides': 'PRODUCTS.CATEGORY_SIDES',
+    };
+    const key = keyMap[category];
+    if (key) return this.translate.instant(key);
+    return category;
   }
 
   getSubcategoriesForCategory(category: string): string[] {
@@ -593,8 +621,26 @@ export class ProductsComponent implements OnInit {
     this.availableSubcategoriesForFilter.set(Array.from(subcategories).sort());
   }
 
+  onSearchChange(event: Event) {
+    this.searchQuery.set((event.target as HTMLInputElement).value);
+    this.applyFilters();
+  }
+
   applyFilters() {
     let filtered = this.products();
+
+    // Filter by search (name, ingredients, description, category, subcategory)
+    const q = this.searchQuery().trim().toLowerCase();
+    if (q) {
+      filtered = filtered.filter(p => {
+        const name = (p.name || '').toLowerCase();
+        const ingredients = (p.ingredients || '').toLowerCase();
+        const description = (p.description || '').toLowerCase();
+        const category = (p.category || '').toLowerCase();
+        const subcategory = (p.subcategory || '').toLowerCase();
+        return name.includes(q) || ingredients.includes(q) || description.includes(q) || category.includes(q) || subcategory.includes(q);
+      });
+    }
 
     // Filter by category
     if (this.selectedCategory()) {

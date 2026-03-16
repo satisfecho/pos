@@ -24,7 +24,7 @@ import { forkJoin } from 'rxjs';
                 class="category-item" 
                 [class.active]="selectedCategory() === category"
                 (click)="selectCategory(category)">
-                <span>{{ category }}</span>
+                <span>{{ getCategoryLabel(category) }}</span>
                 <span class="count">{{ getSubcategoryCount(category) }}</span>
               </button>
             }
@@ -35,7 +35,7 @@ import { forkJoin } from 'rxjs';
         <div class="subcategory-main">
           @if (selectedCategory()) {
             <div class="main-header">
-              <h2>{{ 'PRODUCTS.MANAGE_SUBCATEGORIES_FOR' | translate:{category: selectedCategory()} }}</h2>
+              <h2>{{ 'PRODUCTS.MANAGE_SUBCATEGORIES_FOR' | translate:{category: getCategoryLabel(selectedCategory()!) } }}</h2>
               <button class="btn btn-primary btn-sm" (click)="showAddForm.set(true)">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -392,6 +392,19 @@ export class CategoriesComponent implements OnInit {
 
   getSubcategoryCount(category: string): number {
     return (this.categoriesMap()[category] || []).length;
+  }
+
+  getCategoryLabel(category: string): string {
+    const keyMap: Record<string, string> = {
+      'Starters': 'PRODUCTS.CATEGORY_STARTERS',
+      'Main Course': 'PRODUCTS.CATEGORY_MAIN_COURSE',
+      'Desserts': 'PRODUCTS.CATEGORY_DESSERTS',
+      'Beverages': 'PRODUCTS.CATEGORY_BEVERAGES',
+      'Sides': 'PRODUCTS.CATEGORY_SIDES',
+    };
+    const key = keyMap[category];
+    if (key) return this.translate.instant(key);
+    return category;
   }
 
   selectCategory(category: string) {
