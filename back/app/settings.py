@@ -6,6 +6,13 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
+# Only use absolute paths so loading works regardless of CWD (e.g. uvicorn reload subprocess).
+# Include only paths that exist to avoid FileNotFoundError when a path is missing.
+_ENV_FILE_PATHS = [
+    p for p in (_PROJECT_ROOT / "config.env", _PROJECT_ROOT / ".env")
+    if p.exists()
+]
+
 
 class Settings(BaseSettings):
     """
@@ -16,14 +23,7 @@ class Settings(BaseSettings):
     """
 
     model_config = SettingsConfigDict(
-        # Prefer reading env files from the repository root, regardless of CWD.
-        # Also allow local relative paths for flexibility.
-        env_file=(
-            str(_PROJECT_ROOT / "config.env"),
-            str(_PROJECT_ROOT / ".env"),
-            "config.env",
-            ".env",
-        ),
+        env_file=_ENV_FILE_PATHS if _ENV_FILE_PATHS else None,
         env_file_encoding="utf-8",
         extra="ignore",
     )
