@@ -73,6 +73,10 @@ class Settings(BaseSettings):
     # Production mode (enables secure cookies, stricter CORS, etc.)
     is_production: bool = Field(default=False, validation_alias="PRODUCTION")
 
+    # When behind a reverse proxy that mounts the API at a subpath (e.g. /api), set this so
+    # OpenAPI docs and spec URLs are correct (e.g. /api/docs, /api/openapi.json).
+    root_path: str = Field(default="", validation_alias="ROOT_PATH")
+
     @property
     def database_url(self) -> str:
         # SQLModel uses SQLAlchemy under the hood; this uses the psycopg driver (v3).

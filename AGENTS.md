@@ -62,6 +62,8 @@ Full-stack Point of Sale (POS) system.
 
 **After every new feature, fix, or code change** that can affect the running app (frontend, backend, config, Docker, env), **smoke tests are required** so regressions (503, broken routes, failed build, broken flows) are caught before the user hits them.
 
+**Before telling the user something is fixed:** Run a relevant Puppeteer test (or other smoke test) first. Do not report "it's fixed" until the test has passed. For example: after fixing `/api/docs`, run `BASE_URL=http://127.0.0.1:4202 HEADLESS=1 node front/scripts/test-api-docs.mjs`; after fixing the landing page, run `npm run test:landing-version`; after fixing a specific flow, run the matching Puppeteer script. Only then tell the user the fix is done.
+
 1. **Minimum:** Confirm the app responds (e.g. `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:4202/` returns 200) or run the Puppeteer landing test:
    ```bash
    cd front && BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:landing-version

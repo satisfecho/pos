@@ -132,12 +132,19 @@ def _get_requested_language(
     return "en"
 
 
+# Backend always serves the spec at /openapi.json (HAProxy strips /api before forwarding).
+# When behind a proxy at ROOT_PATH=/api, Swagger UI must fetch the spec from /api/openapi.json
+# so the browser request goes through HAProxy correctly; we pass that via swagger_ui_parameters.
+_swagger_ui_params = {"faviconUrl": "/favicon.ico"}
+if settings.root_path:
+    _swagger_ui_params["url"] = f"{settings.root_path.rstrip('/')}/openapi.json"
 app = FastAPI(
     title="POS API",
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
-    swagger_ui_parameters={"faviconUrl": "/favicon.ico"},
+    root_path=settings.root_path,
+    swagger_ui_parameters=_swagger_ui_params,
 )
 
 # Parse CORS origins from environment (comma-separated)
