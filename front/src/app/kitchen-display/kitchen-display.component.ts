@@ -90,7 +90,7 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
                               (click)="toggleItemStatusDropdown(order.id, item.id!)"
                               [title]="'ORDERS.CLICK_TO_CHANGE_STATUS' | translate">
                               {{ getItemStatusLabel(item.status || 'pending') }}
-                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="6,9 12,15 18,9"/>
                               </svg>
                             </button>
@@ -306,17 +306,20 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
     .item-status-badge.clickable {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 2px 8px;
-      font-size: 0.8125rem;
+      gap: var(--space-2);
+      min-height: 44px;
+      padding: var(--space-2) var(--space-3);
+      font-size: 0.875rem;
       font-weight: 600;
-      border-radius: 10px;
-      border: 1px solid transparent;
+      border-radius: 14px;
+      border: 1px solid var(--color-border);
       cursor: pointer;
       background: inherit;
+      transition: all 0.15s;
     }
     .item-status-badge.clickable:hover {
       filter: brightness(0.95);
+      transform: scale(1.05);
     }
     .item-status-badge.status-pending.clickable { background: rgba(245, 158, 11, 0.15); color: var(--color-warning); }
     .item-status-badge.status-preparing.clickable { background: rgba(59, 130, 246, 0.15); color: #3B82F6; }
@@ -353,13 +356,14 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: var(--space-2);
       width: 100%;
-      padding: 10px 12px;
+      min-height: 48px;
+      padding: var(--space-3) var(--space-4);
       background: none;
       border: none;
       text-align: left;
-      font-size: 0.875rem;
+      font-size: 1rem;
       font-weight: 500;
       color: var(--color-text);
       cursor: pointer;
@@ -405,10 +409,15 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
     this.permissions.hasPermission(this.permissions.getCurrentUser(), 'order:item_status')
   );
 
+  /** Orders that are active and have at least one item still pending or preparing (kitchen work to do). */
   activeOrders = computed(() =>
-    this.orders().filter((o) =>
-      ['pending', 'preparing', 'ready', 'partially_delivered'].includes(o.status)
-    )
+    this.orders().filter((o) => {
+      if (!['pending', 'preparing', 'ready', 'partially_delivered'].includes(o.status)) return false;
+      const hasPendingOrPreparing = (o.items ?? []).some(
+        (i) => !i.removed_by_customer && (i.status === 'pending' || i.status === 'preparing')
+      );
+      return hasPendingOrPreparing;
+    })
   );
 
   lastRefreshRelative = computed(() => {
@@ -495,6 +504,7 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
     return this.translate.instant('ITEM_STATUS.' + status) || status;
   }
 
+  /** Items sorted by status; for kitchen we only show pending and preparing. */
   getSortedItems(items: OrderItem[]): OrderItem[] {
     const order: Record<string, number> = {
       pending: 0,
@@ -503,7 +513,10 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
       delivered: 3,
       cancelled: 4,
     };
-    return [...items].sort((a, b) => {
+    const pendingOrPreparing = [...items].filter(
+      (i) => !i.removed_by_customer && (i.status === 'pending' || i.status === 'preparing')
+    );
+    return pendingOrPreparing.sort((a, b) => {
       const aOrder = order[a.status || 'pending'] ?? 5;
       const bOrder = order[b.status || 'pending'] ?? 5;
       return aOrder - bOrder;

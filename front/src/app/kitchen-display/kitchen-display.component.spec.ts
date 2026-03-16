@@ -9,7 +9,7 @@ import { of } from 'rxjs';
 
 describe('KitchenDisplayComponent', () => {
   let orderUpdates$: Subject<unknown>;
-  let mockApi: { getOrders: jasmine.Spy; connectWebSocket: jasmine.Spy; orderUpdates$: Subject<unknown> };
+  let mockApi: { getOrders: jasmine.Spy; connectWebSocket: jasmine.Spy; orderUpdates$: Subject<unknown>; getCurrentUser: jasmine.Spy };
   let mockAudio: { setEnabled: jasmine.Spy; playRestaurantOrderChange: jasmine.Spy };
 
   beforeEach(async () => {
@@ -18,6 +18,7 @@ describe('KitchenDisplayComponent', () => {
       getOrders: jasmine.createSpy('getOrders').and.returnValue(of([])),
       connectWebSocket: jasmine.createSpy('connectWebSocket'),
       orderUpdates$,
+      getCurrentUser: jasmine.createSpy('getCurrentUser').and.returnValue({ id: 1, role: 'kitchen' }),
     };
     mockAudio = {
       setEnabled: jasmine.createSpy('setEnabled'),
@@ -90,10 +91,25 @@ describe('KitchenDisplayComponent', () => {
     expect(mockApi.getOrders).toHaveBeenCalledWith(false);
   });
 
-  it('should filter active orders only', () => {
+  it('should filter to orders that have at least one pending or preparing item', () => {
     const orders = [
-      { id: 1, status: 'pending', table_name: 'T1', created_at: new Date().toISOString(), items: [], total_cents: 0 },
-      { id: 2, status: 'completed', table_name: 'T2', created_at: new Date().toISOString(), items: [], total_cents: 0 },
+      {
+        id: 1,
+        status: 'pending',
+        table_name: 'T1',
+        created_at: new Date().toISOString(),
+        items: [{ id: 1, product_name: 'Coffee', quantity: 1, status: 'pending', price_cents: 100 }],
+        total_cents: 100,
+      },
+      {
+        id: 2,
+        status: 'pending',
+        table_name: 'T2',
+        created_at: new Date().toISOString(),
+        items: [{ id: 2, product_name: 'Tea', quantity: 1, status: 'ready', price_cents: 80 }],
+        total_cents: 80,
+      },
+      { id: 3, status: 'completed', table_name: 'T3', created_at: new Date().toISOString(), items: [], total_cents: 0 },
     ];
     mockApi.getOrders.and.returnValue(of(orders));
     const fixture = TestBed.createComponent(KitchenDisplayComponent);
