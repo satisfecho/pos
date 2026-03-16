@@ -804,7 +804,6 @@ export class ProviderDashboardComponent implements OnInit {
   }
 
   logout() {
-    this.api.logout();
-    this.router.navigate(['/provider/login']);
+    this.api.logout().subscribe(() => this.router.navigate(['/provider/login']));
   }
 }

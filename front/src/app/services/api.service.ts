@@ -580,18 +580,13 @@ export class ApiService {
     return this.http.put<ProviderInfo>(`${this.apiUrl}/provider/me`, data);
   }
 
-  logout() {
-    this.http.post(`${this.apiUrl}/logout`, {}).subscribe({
-      next: () => {
-        this.userSubject.next(null);
-        this.disconnectWebSocket();
-      },
-      error: () => {
-        // Even if logout fails server-side, clear local state
-        this.userSubject.next(null);
-        this.disconnectWebSocket();
-      }
-    });
+  /** Clears local state immediately and returns an Observable that completes when the server has processed logout. Callers should navigate after subscribe. */
+  logout(): Observable<unknown> {
+    this.userSubject.next(null);
+    this.disconnectWebSocket();
+    return this.http.post(`${this.apiUrl}/logout`, {}).pipe(
+      catchError(() => of(undefined))
+    );
   }
 
   // Refresh token - exchange valid refresh token for new access token

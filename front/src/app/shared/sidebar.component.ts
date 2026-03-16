@@ -273,7 +273,6 @@ export class SidebarComponent implements OnInit {
   }
 
   logout() {
-    this.api.logout();
-    this.router.navigate(['/']);
+    this.api.logout().subscribe(() => this.router.navigate(['/']));
   }
 }

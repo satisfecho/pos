@@ -62,10 +62,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
         if (isAuthEndpoint) {
           // Auth endpoint itself failed - logout
-          apiService.logout();
-          if (!router.url.startsWith('/login')) {
-            router.navigate(['/login']);
-          }
+          apiService.logout().subscribe(() => {
+            if (!router.url.startsWith('/login')) {
+              router.navigate(['/login']);
+            }
+          });
           return throwError(() => error);
         }
 
@@ -87,10 +88,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
               refreshResult$.next(false);
               refreshResult$.complete();
               // Refresh failed - logout and redirect to login
-              apiService.logout();
-              if (!router.url.startsWith('/login')) {
-                router.navigate(['/login']);
-              }
+              apiService.logout().subscribe(() => {
+                if (!router.url.startsWith('/login')) {
+                  router.navigate(['/login']);
+                }
+              });
               return throwError(() => refreshError);
             })
           );
