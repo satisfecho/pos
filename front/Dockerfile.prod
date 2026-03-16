@@ -5,11 +5,11 @@ WORKDIR /app
 # Install git for commit hash generation (needed for build script)
 RUN apk add --no-cache git
 
-# Copy package files
-COPY package*.json ./
+# Copy package files and npm config (supply chain: pinned deps, no install scripts)
+COPY package*.json .npmrc ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (--ignore-scripts: no lifecycle scripts, supply chain hardening)
+RUN npm ci --ignore-scripts
 
 # Copy source code
 COPY . .

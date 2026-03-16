@@ -9,7 +9,54 @@ These instructions apply to all work in this repository:
 - Run tests or tooling inside containers whenever possible.
 - If a command must run outside containers, only use existing folders (no new host-wide installs).
 - Always check container logs after making changes, to spot errors.
-- Never use `npm install`; always use `npm ci --ignore-scripts`, pin versions in package.json/package-lock.json, and avoid running scripts on install (supply chain risk).
+- Never use `npm install`; always use `npm ci --ignore-scripts`, pin versions in package.json/package-lock.json, and avoid running scripts on install (supply chain risk). The front app has `front/.npmrc` with `save-exact=true` and `ignore-scripts=true` so new deps are pinned and install scripts never run.
+
+## Project overview
+
+Full-stack Point of Sale (POS) system.
+
+- **Frontend:** Angular 20+ (SPA with SSR capability; SSR is disabled in dev script).
+- **Backend:** FastAPI (Python) using SQLModel for ORM.
+- **Database:** PostgreSQL 18 (Alpine), managed via Docker Compose.
+
+## Architecture & directory structure
+
+```
+/
+├── back/               # Python FastAPI Backend
+│   ├── app/            # Application source (main.py, models.py, db.py)
+│   └── requirements.txt
+├── front/              # Angular Frontend
+│   ├── src/            # Source code
+│   └── package.json    # Angular dependencies & scripts
+├── docker-compose.yml  # Services (DB, front, back, haproxy)
+└── run.sh              # Main development entry script
+```
+
+## Setup & development
+
+**Prerequisites:** Docker & Docker Compose, Python 3.12+ (venv recommended), Node.js 18+.
+
+**Quick start:** Use `run.sh` to orchestrate the stack.
+
+1. **Configure:** `cp config.env.example config.env`
+2. **Start:** `./run.sh` — starts PostgreSQL, disables Angular SSR for dev, `ng serve` on 4200, uvicorn on 8020. Script restores SSR files on exit.
+
+**Manual commands** (if not using `run.sh`):
+
+- **Database:** `docker compose --env-file config.env up -d`
+- **Backend:**
+  ```bash
+  cd back && source venv/bin/activate
+  export $(grep -v '^#' ../config.env | xargs)
+  uvicorn app.main:app --host 0.0.0.0 --port 8020 --reload
+  ```
+- **Frontend:**
+  ```bash
+  cd front
+  npm ci --ignore-scripts   # Use lockfile only; no install scripts (supply chain hardening)
+  npm start                 # Runs 'ng serve'
+  ```
 
 ## Smoke tests required
 
@@ -114,3 +161,17 @@ Exit 0 means tenant 1 has T01–T10 with the correct seat counts; exit 1 reports
 **Puppeteer test (demo data):** Verifies tenant 1 has ≥10 tables and ≥10 products and /book/1 loads. Run with tenant 1 credentials: `BASE_URL=http://satisfecho.de LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/test-demo-data.mjs` (or `npm run test:demo-data` from front/). Set `HEADLESS=1` for headless.
 
 **Puppeteer test (catalog + images):** `front/scripts/test-catalog.mjs` logs in, opens /catalog, and reports total cards, how many have loaded images vs placeholders. Compare dev vs amvara9: `BASE_URL=http://127.0.0.1:4202 LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/test-catalog.mjs` and same with `BASE_URL=http://satisfecho.de`. Catalog data (ProductCatalog, ProviderProduct, images) comes from wine/beer/pizza import seeds, not from deploy; amvara9 has no catalog unless those imports are run on the server.
+
+## Development conventions
+
+**Frontend (Angular):** Prettier config in `package.json` (`singleQuote: true`, `printWidth: 100`). Uses `@angular/ssr`; dev is typically client-side (handled by `run.sh`). Standard Angular CLI structure.
+
+**Backend (FastAPI):** SQLModel (Pydantic + SQLAlchemy). DB driver: `psycopg[binary]` (v3). `from . import models` in `main.py` so models are registered before DB creation. Environment via `config.env`.
+
+**Testing:** Frontend: `ng test` (Karma/Jasmine). Backend: pytest. See `docs/testing.md` for Puppeteer tests.
+
+## Key URLs
+
+- **Frontend (run.sh):** http://localhost:4200 — **Frontend (Docker):** use HAProxy port from `docker compose ps` (e.g. http://127.0.0.1:4202).
+- **Backend API docs:** http://localhost:8020/docs
+- **Health check:** http://localhost:8020/health
