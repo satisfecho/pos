@@ -43,3 +43,13 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=60 -o ServerAliveCountMax=10 \
             "${DEPLOY_USER}@${DEPLOY_HOST}" "cd ${DEPLOY_PATH} && git fetch origin && git checkout master && git reset --hard origin/master && bash -s" < scripts/deploy-amvara9.sh
+
+      - name: Smoke test (landing and API health)
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST || '167.235.138.59' }}
+        run: |
+          BASE="http://${DEPLOY_HOST}"
+          echo "Smoke test: $BASE and $BASE/api/health"
+          curl -sf -o /dev/null -w "%{http_code}" "$BASE/" | grep -q 200 || (echo "Landing page failed"; exit 1)
+          curl -sf -o /dev/null -w "%{http_code}" "$BASE/api/health" | grep -q 200 || (echo "API health failed"; exit 1)
+          echo "Smoke test passed."
