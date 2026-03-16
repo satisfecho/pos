@@ -433,7 +433,8 @@
     "ERROR_NOT_FOUND": "Reservierung nicht gefunden oder Link abgelaufen."
   },
   "REPORTS": {
-    "AVG_PAYMENT_PER_CLIENT": "Durchschnittlicher Umsatz pro Kunde"
+    "AVG_PAYMENT_PER_CLIENT": "Durchschnittlicher Umsatz pro Kunde",
+    "SHARE": "%"
   },
   "SETTINGS": {
     "TITLE": "Einstellungen",

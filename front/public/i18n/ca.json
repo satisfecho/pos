@@ -433,7 +433,8 @@
     "ERROR_NOT_FOUND": "Reserva no trobada o enllaç expirat."
   },
   "REPORTS": {
-    "AVG_PAYMENT_PER_CLIENT": "Pagament mitjà per client"
+    "AVG_PAYMENT_PER_CLIENT": "Pagament mitjà per client",
+    "SHARE": "%"
   },
   "SETTINGS": {
     "TITLE": "Configuració",

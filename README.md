@@ -1,3 +1,9 @@
+<div align="center">
+
+![POS2 — Restaurant POS and ordering](docs/banner.svg)
+
+</div>
+
 # POS2
 
 **Restaurant POS and ordering infrastructure — self-hosted, multi-tenant, real-time.**

@@ -432,7 +432,8 @@
     "ERROR_NOT_FOUND": "未找到预订或链接已过期。"
   },
   "REPORTS": {
-    "AVG_PAYMENT_PER_CLIENT": "客户平均消费"
+    "AVG_PAYMENT_PER_CLIENT": "客户平均消费",
+    "SHARE": "%"
   },
   "SETTINGS": {
     "TITLE": "设置",

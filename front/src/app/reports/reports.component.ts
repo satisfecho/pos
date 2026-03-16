@@ -43,6 +43,18 @@ export class ReportsComponent implements OnInit {
     return Math.max(1, dailyMax, productMax);
   });
 
+  totalProductQuantity = computed(() => {
+    const r = this.report();
+    if (!r?.by_product?.length) return 0;
+    return r.by_product.reduce((sum, p) => sum + p.quantity, 0);
+  });
+
+  totalCategoryQuantity = computed(() => {
+    const r = this.report();
+    if (!r?.by_category?.length) return 0;
+    return r.by_category.reduce((sum, c) => sum + c.quantity, 0);
+  });
+
   ngOnInit() {
     const to = new Date();
     const from = new Date(to);
@@ -112,6 +124,13 @@ export class ReportsComponent implements OnInit {
     const max = this.maxBarValue();
     if (max <= 0) return '0%';
     return `${Math.min(100, (cents / max) * 100)}%`;
+  }
+
+  /** Format value as percentage of total (e.g. "12.3%" or "0%"). */
+  formatPct(value: number, total: number): string {
+    if (total <= 0) return '0%';
+    const pct = (value / total) * 100;
+    return pct >= 100 ? '100%' : pct <= 0 ? '0%' : `${pct.toFixed(1)}%`;
   }
 
   exportCSV() {

@@ -67,7 +67,7 @@
               @for (row of (r.reservations?.by_source ?? []); track row.source) {
                 <div class="source-row">
                   <span class="source-label">{{ getReservationSourceLabel(row.source) }}</span>
-                  <span class="source-count">{{ row.count }}</span>
+                  <span class="source-count">{{ row.count }} ({{ formatPct(row.count, r.reservations!.total) }})</span>
                 </div>
               }
             </div>
@@ -110,14 +110,16 @@
                   <th>{{ 'REPORTS.PRODUCT' | translate }}</th>
                   <th>{{ 'REPORTS.QUANTITY' | translate }}</th>
                   <th>{{ 'REPORTS.REVENUE' | translate }}</th>
+                  <th class="num">{{ 'REPORTS.SHARE' | translate }}</th>
                 </tr>
               </thead>
               <tbody>
                 @for (p of r.by_product; track p.product_id) {
                   <tr>
                     <td>{{ p.product_name }}</td>
-                    <td>{{ p.quantity }}</td>
+                    <td>{{ p.quantity }} ({{ formatPct(p.quantity, totalProductQuantity()) }})</td>
                     <td class="num">{{ formatCurrency(p.revenue_cents) }}</td>
+                    <td class="num">{{ formatPct(p.revenue_cents, r.summary.total_revenue_cents) }}</td>
                   </tr>
                 }
               </tbody>
@@ -130,7 +132,7 @@
                 <div class="bar-track">
                   <div class="bar-fill product" [style.width]="barWidth(p.revenue_cents)"></div>
                 </div>
-                <span class="bar-value">{{ formatCurrency(p.revenue_cents) }}</span>
+                <span class="bar-value">{{ formatCurrency(p.revenue_cents) }} ({{ formatPct(p.revenue_cents, r.summary.total_revenue_cents) }})</span>
               </div>
             }
           </div>
@@ -148,14 +150,16 @@
                   <th>{{ 'REPORTS.CATEGORY' | translate }}</th>
                   <th>{{ 'REPORTS.QUANTITY' | translate }}</th>
                   <th>{{ 'REPORTS.REVENUE' | translate }}</th>
+                  <th class="num">{{ 'REPORTS.SHARE' | translate }}</th>
                 </tr>
               </thead>
               <tbody>
                 @for (c of r.by_category; track c.category) {
                   <tr>
                     <td>{{ c.category }}</td>
-                    <td>{{ c.quantity }}</td>
+                    <td>{{ c.quantity }} ({{ formatPct(c.quantity, totalCategoryQuantity()) }})</td>
                     <td class="num">{{ formatCurrency(c.revenue_cents) }}</td>
+                    <td class="num">{{ formatPct(c.revenue_cents, r.summary.total_revenue_cents) }}</td>
                   </tr>
                 }
               </tbody>
@@ -168,7 +172,7 @@
                 <div class="bar-track">
                   <div class="bar-fill category" [style.width]="barWidth(c.revenue_cents)"></div>
                 </div>
-                <span class="bar-value">{{ formatCurrency(c.revenue_cents) }}</span>
+                <span class="bar-value">{{ formatCurrency(c.revenue_cents) }} ({{ formatPct(c.revenue_cents, r.summary.total_revenue_cents) }})</span>
               </div>
             }
           </div>
@@ -186,6 +190,7 @@
                   <th>{{ 'REPORTS.TABLE' | translate }}</th>
                   <th>{{ 'REPORTS.TOTAL_ORDERS' | translate }}</th>
                   <th>{{ 'REPORTS.REVENUE' | translate }}</th>
+                  <th class="num">{{ 'REPORTS.SHARE' | translate }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -194,6 +199,7 @@
                     <td>{{ t.table_name }}</td>
                     <td>{{ t.order_count }}</td>
                     <td class="num">{{ formatCurrency(t.revenue_cents) }}</td>
+                    <td class="num">{{ formatPct(t.revenue_cents, r.summary.total_revenue_cents) }}</td>
                   </tr>
                 }
               </tbody>
@@ -206,7 +212,7 @@
                 <div class="bar-track">
                   <div class="bar-fill table" [style.width]="barWidth(t.revenue_cents)"></div>
                 </div>
-                <span class="bar-value">{{ formatCurrency(t.revenue_cents) }}</span>
+                <span class="bar-value">{{ formatCurrency(t.revenue_cents) }} ({{ formatPct(t.revenue_cents, r.summary.total_revenue_cents) }})</span>
               </div>
             }
           </div>
@@ -224,6 +230,7 @@
                   <th>{{ 'REPORTS.WAITER' | translate }}</th>
                   <th>{{ 'REPORTS.TOTAL_ORDERS' | translate }}</th>
                   <th>{{ 'REPORTS.REVENUE' | translate }}</th>
+                  <th class="num">{{ 'REPORTS.SHARE' | translate }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -232,6 +239,7 @@
                     <td>{{ w.waiter_name }}</td>
                     <td>{{ w.order_count }}</td>
                     <td class="num">{{ formatCurrency(w.revenue_cents) }}</td>
+                    <td class="num">{{ formatPct(w.revenue_cents, r.summary.total_revenue_cents) }}</td>
                   </tr>
                 }
               </tbody>
@@ -244,7 +252,7 @@
                 <div class="bar-track">
                   <div class="bar-fill waiter" [style.width]="barWidth(w.revenue_cents)"></div>
                 </div>
-                <span class="bar-value">{{ formatCurrency(w.revenue_cents) }}</span>
+                <span class="bar-value">{{ formatCurrency(w.revenue_cents) }} ({{ formatPct(w.revenue_cents, r.summary.total_revenue_cents) }})</span>
               </div>
             }
           </div>

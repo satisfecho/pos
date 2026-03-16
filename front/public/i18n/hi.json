@@ -432,7 +432,8 @@
     "ERROR_NOT_FOUND": "आरक्षण नहीं मिला या लिंक समाप्त हो गया।"
   },
   "REPORTS": {
-    "AVG_PAYMENT_PER_CLIENT": "ग्राहक के अनुसार औसत भुगतान"
+    "AVG_PAYMENT_PER_CLIENT": "ग्राहक के अनुसार औसत भुगतान",
+    "SHARE": "%"
   },
   "SETTINGS": {
     "TITLE": "सेटिंग्स",

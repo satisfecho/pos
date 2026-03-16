@@ -387,7 +387,8 @@
     "RESERVATIONS_TOTAL": "Total reservas",
     "RESERVATIONS_BY_SOURCE": "Por origen",
     "RESERVATIONS_SOURCE_PUBLIC": "Público (página reservar)",
-    "RESERVATIONS_SOURCE_STAFF": "Personal"
+    "RESERVATIONS_SOURCE_STAFF": "Personal",
+    "SHARE": "%"
   },
   "TABLES": {
     "TITLE": "Mesas",
