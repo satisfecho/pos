@@ -6,12 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+(Nothing at the moment.)
+
+## [1.0.14] - 2026-03-16
+
 ### Added
 
-- **Billing customers (Factura)**: Register customers that require a tax invoice (Factura) with company details. New **Customers** section at `/customers`: add, edit, search by name, company, tax ID, or email. From **Orders** (active, not paid, or history): **Print Factura** opens a modal to select a billing customer; the printed invoice includes a "Bill to" block with company name, tax ID, address, and email. Optionally save the selected customer on the order for future reference. Backend: `BillingCustomer` model, `GET/POST/PUT/DELETE /billing-customers` with search, `PUT /orders/:id/billing-customer`; migration `20260316140000_add_billing_customer.sql`. Permissions: `billing_customer:read` / `billing_customer:write`. i18n: `CUSTOMERS.*`, `NAV.CUSTOMERS` (en, es). See `docs/0017-billing-customers-factura.md`.
+- **Billing customers (Factura)**: Register customers that require a tax invoice (Factura) with company details. New **Customers** section at `/customers`: add, edit, search by name, company, tax ID, or email. From **Orders** (active, not paid, or history): **Print Factura** opens a modal to select a billing customer; the printed invoice includes a "Bill to" block with company name, tax ID, address, and email. Optionally save the selected customer on the order for future reference. Backend: `BillingCustomer` model, `GET/POST/PUT/DELETE /billing-customers` with search, `PUT /orders/:id/billing-customer`; migration `20260316140000_add_billing_customer.sql`. Permissions: `billing_customer:read` / `billing_customer:write`. i18n: `CUSTOMERS.*`, `NAV.CUSTOMERS` (en, es, ca, de, zh-CN, hi). See `docs/0017-billing-customers-factura.md`.
 
 ### Changed
 
+- **Sidebar and dashboard order**: Most-used options first: **Orders**, **Reservations**, **Tables**, **Kitchen display**, **Beverages display** (bar view, same route as kitchen), then Customers, Products, Catalog, Reports, etc. Dashboard quick-action cards follow the same order.
+- **Dashboard Help section**: Friendlier, inviting copy (“Need help?”, “We’re here for you…”) and new line encouraging users to start a discussion for enhancements or open an issue. Light gradient background and clearer call-to-action. i18n: `DASHBOARD.HELP_TITLE`, `HELP_DESC`, `HELP_INVITE` (en, es, ca, de, zh-CN, hi).
 - **Kitchen display – clickable item status**: On `/kitchen`, the item status badge (e.g. "Preparando") is now clickable for users with `order:item_status`. Clicking it opens the same status dropdown as on the Orders page (Move forward / Go back), so kitchen staff can advance items to "Ready" (Listo) or move them back without leaving the kitchen view. Uses the same transition logic and API as the Orders page.
 
 ## [1.0.13] - 2026-03-16

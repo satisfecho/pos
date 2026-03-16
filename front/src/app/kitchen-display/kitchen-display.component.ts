@@ -95,7 +95,7 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
                               </svg>
                             </button>
                             @if (itemStatusDropdownOpen() === order.id + '-' + item.id) {
-                              <div class="status-dropdown item-status-dropdown" (click)="$event.stopPropagation()">
+                              <div class="status-dropdown item-status-dropdown" data-testid="kitchen-item-status-dropdown" (click)="$event.stopPropagation()">
                                 @if (getItemStatusTransitions(item.status || 'pending').backward.length > 0) {
                                   <div class="dropdown-section">
                                     <div class="dropdown-label">{{ 'ORDERS.GO_BACK' | translate }}</div>
@@ -217,7 +217,7 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
       border: 2px solid var(--color-border);
       border-left: 6px solid var(--color-warning);
       border-radius: var(--radius-lg);
-      overflow: hidden;
+      overflow: visible;
       box-shadow: var(--shadow-md);
     }
     .order-card.status-preparing { border-left-color: #3B82F6; }
