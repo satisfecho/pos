@@ -5,6 +5,7 @@ If no tenants exist, creates tenant 1 "Demo Restaurant", then runs seed_demo_tab
 seed_demo_products, and seed_demo_orders for it. Deploy runs this after migrations so that:
 - First user to register is assigned to this tenant (see register() in main.py) and gets T01–T10 + demo products.
 - Reports (Informes) show meaningful paid-order data (orders spread over the last ±90 days, biased to last 30).
+- Reservations page shows a full list (demo reservations for today and tomorrow, plus spread for Reports).
 - No manual "run seeds after first register" step.
 
 Usage:

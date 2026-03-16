@@ -43,6 +43,61 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
              </svg>
              <span>{{ 'NAV.HOME' | translate }}</span>
            </a>
+           <a routerLink="/orders" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+               <polyline points="14,2 14,8 20,8"/>
+               <line x1="16" y1="13" x2="8" y2="13"/>
+               <line x1="16" y1="17" x2="8" y2="17"/>
+               <polyline points="10,9 9,9 8,9"/>
+             </svg>
+             <span>{{ 'NAV.ORDERS' | translate }}</span>
+           </a>
+           @if (canViewReservations()) {
+             <a routerLink="/reservations" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                 <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+               </svg>
+               <span>{{ 'NAV.RESERVATIONS' | translate }}</span>
+             </a>
+           }
+           @if (canViewTables()) {
+             <a routerLink="/tables" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <rect x="3" y="3" width="7" height="7"/>
+                 <rect x="14" y="3" width="7" height="7"/>
+                 <rect x="14" y="14" width="7" height="7"/>
+                 <rect x="3" y="14" width="7" height="7"/>
+               </svg>
+               <span>{{ 'NAV.TABLES' | translate }}</span>
+             </a>
+           }
+           <a routerLink="/kitchen" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+               <rect x="2" y="4" width="20" height="16" rx="2"/>
+               <path d="M6 8h.01M10 8h.01M14 8h.01M6 12h12M6 16h8"/>
+             </svg>
+             <span>{{ 'NAV.KITCHEN_DISPLAY' | translate }}</span>
+           </a>
+           <a routerLink="/kitchen" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+               <path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/>
+               <path d="M9 14h6M9 18h6"/>
+             </svg>
+             <span>{{ 'NAV.BEVERAGES_DISPLAY' | translate }}</span>
+           </a>
+           @if (canViewCustomers()) {
+             <a routerLink="/customers" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                 <circle cx="9" cy="7" r="4"/>
+                 <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                 <path d="M16 3.13a4 4 0 010 7.75"/>
+               </svg>
+               <span>{{ 'NAV.CUSTOMERS' | translate }}</span>
+             </a>
+           }
            <a routerLink="/products" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
@@ -55,43 +110,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
              </svg>
              <span>{{ 'NAV.CATALOG' | translate }}</span>
-           </a>
-           @if (canViewTables()) {
-             <a routerLink="/tables" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
-               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                 <rect x="3" y="3" width="7" height="7"/>
-                 <rect x="14" y="3" width="7" height="7"/>
-                 <rect x="14" y="14" width="7" height="7"/>
-                 <rect x="3" y="14" width="7" height="7"/>
-               </svg>
-               <span>{{ 'NAV.TABLES' | translate }}</span>
-             </a>
-           }
-           @if (canViewReservations()) {
-             <a routerLink="/reservations" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
-               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                 <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-               </svg>
-               <span>{{ 'NAV.RESERVATIONS' | translate }}</span>
-             </a>
-           }
-           <a routerLink="/orders" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
-             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-               <polyline points="14,2 14,8 20,8"/>
-               <line x1="16" y1="13" x2="8" y2="13"/>
-               <line x1="16" y1="17" x2="8" y2="17"/>
-               <polyline points="10,9 9,9 8,9"/>
-             </svg>
-             <span>{{ 'NAV.ORDERS' | translate }}</span>
-           </a>
-           <a routerLink="/kitchen" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
-             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-               <rect x="2" y="4" width="20" height="16" rx="2"/>
-               <path d="M6 8h.01M10 8h.01M14 8h.01M6 12h12M6 16h8"/>
-             </svg>
-             <span>{{ 'NAV.KITCHEN_DISPLAY' | translate }}</span>
            </a>
            @if (canViewReports()) {
              <a routerLink="/reports" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
@@ -204,6 +222,7 @@ export class SidebarComponent implements OnInit {
   // Computed permission checks
   canViewTables = computed(() => this.permissions.canAccessRoute(this.user(), '/tables'));
   canViewReservations = computed(() => this.permissions.hasPermission(this.user(), 'reservation:read'));
+  canViewCustomers = computed(() => this.permissions.canAccessRoute(this.user(), '/customers'));
   canViewSettings = computed(() => this.permissions.isAdmin(this.user()));
   canViewInventory = computed(() => this.permissions.isAdmin(this.user()));
   canViewReports = computed(() => this.permissions.isAdmin(this.user()));

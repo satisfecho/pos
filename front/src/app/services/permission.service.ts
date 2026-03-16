@@ -44,7 +44,10 @@ export type Permission =
   | 'translation:read'
   | 'translation:write'
   // Reports (revenue analysis)
-  | 'report:read';
+  | 'report:read'
+  // Billing customers (Factura)
+  | 'billing_customer:read'
+  | 'billing_customer:write';
 
 /**
  * Role to permissions mapping (mirrors backend ROLE_PERMISSIONS)
@@ -62,6 +65,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'floor:read', 'floor:write',
     'order:read', 'order:update_status', 'order:item_status',
     'order:mark_paid', 'order:cancel', 'order:remove_item',
+    'billing_customer:read', 'billing_customer:write',
     'inventory:read', 'inventory:write',
     'translation:read', 'translation:write',
     'report:read',
@@ -87,6 +91,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'floor:read',
     'order:read', 'order:update_status', 'order:item_status',
     'order:mark_paid', 'order:remove_item',
+    'billing_customer:read', 'billing_customer:write',
   ]),
 
   receptionist: new Set([
@@ -96,6 +101,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'reservation:read', 'reservation:write',
     'floor:read',
     'order:read',
+    'billing_customer:read',
   ]),
 
   provider: new Set([]), // Provider portal uses provider_id scoping, not tenant permissions
@@ -112,6 +118,7 @@ const ROUTE_ROLES: Record<string, UserRole[]> = {
   '/tables/canvas': ['owner', 'admin'],
   '/reservations': ['owner', 'admin', 'waiter', 'receptionist'],
   '/orders': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
+  '/customers': ['owner', 'admin', 'waiter', 'receptionist'],
   '/kitchen': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
   '/inventory': ['owner', 'admin'],
   '/reports': ['owner', 'admin'],

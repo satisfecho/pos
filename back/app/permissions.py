@@ -65,6 +65,10 @@ class Permission(str, Enum):
     # Reports (revenue / sales analysis – owner & admin)
     REPORT_READ = "report:read"
 
+    # Billing customers (for Factura / tax invoicing)
+    BILLING_CUSTOMER_READ = "billing_customer:read"
+    BILLING_CUSTOMER_WRITE = "billing_customer:write"
+
 
 # Map roles to their permissions
 ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
@@ -101,6 +105,8 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         Permission.ORDER_MARK_PAID,
         Permission.ORDER_CANCEL,
         Permission.ORDER_REMOVE_ITEM,
+        Permission.BILLING_CUSTOMER_READ,
+        Permission.BILLING_CUSTOMER_WRITE,
         # Inventory
         Permission.INVENTORY_READ,
         Permission.INVENTORY_WRITE,
@@ -146,6 +152,8 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         Permission.ORDER_ITEM_STATUS,
         Permission.ORDER_MARK_PAID,
         Permission.ORDER_REMOVE_ITEM,
+        Permission.BILLING_CUSTOMER_READ,
+        Permission.BILLING_CUSTOMER_WRITE,
     },
     
     UserRole.receptionist: {
@@ -161,6 +169,7 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         Permission.RESERVATION_WRITE,
         # Orders (view only)
         Permission.ORDER_READ,
+        Permission.BILLING_CUSTOMER_READ,
     },
 }
 

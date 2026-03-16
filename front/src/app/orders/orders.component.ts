@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ApiService, Order, OrderItem, TenantSettings } from '../services/api.service';
+import { ApiService, Order, OrderItem, TenantSettings, BillingCustomer } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
 import { PermissionService, Permission } from '../services/permission.service';
 import { Subscription } from 'rxjs';
@@ -64,6 +64,15 @@ ModuleRegistry.registerModules([
                 {{ 'ORDERS.NOT_PAID_YET' | translate }}
                 @if (notPaidOrders().length > 0) {
                   <span class="tab-badge">{{ notPaidOrders().length }}</span>
+                }
+              </button>
+              <button 
+                class="filter-tab" 
+                [class.active]="viewMode() === 'history'"
+                (click)="viewMode.set('history')">
+                {{ 'ORDERS.ORDER_HISTORY' | translate }}
+                @if (completedOrders().length > 0) {
+                  <span class="tab-badge">{{ completedOrders().length }}</span>
                 }
               </button>
               @if (viewMode() === 'active') {
@@ -200,6 +209,9 @@ ModuleRegistry.registerModules([
                           </svg>
                           {{ 'ORDERS.PRINT_INVOICE' | translate }}
                         </button>
+                        <button type="button" class="btn btn-print" (click)="openFacturaModal(order)" [title]="'CUSTOMERS.PRINT_FACTURA' | translate">
+                          {{ 'CUSTOMERS.PRINT_FACTURA' | translate }}
+                        </button>
                         <div class="status-control">
                           <button 
                             class="status-badge-btn" 
@@ -332,6 +344,9 @@ ModuleRegistry.registerModules([
                             </svg>
                             {{ 'ORDERS.PRINT_INVOICE' | translate }}
                           </button>
+                          <button type="button" class="btn btn-print" (click)="openFacturaModal(order)" [title]="'CUSTOMERS.PRINT_FACTURA' | translate">
+                            {{ 'CUSTOMERS.PRINT_FACTURA' | translate }}
+                          </button>
                           <div class="status-control">
                             <button 
                               class="status-badge-btn" 
@@ -408,24 +423,71 @@ ModuleRegistry.registerModules([
               }
             }
 
-            <!-- Order History Section (AG Grid) -->
-            @if (completedOrders().length > 0) {
-              <div class="section-header history-header">
-                <h2>{{ 'ORDERS.ORDER_HISTORY' | translate }}</h2>
-                <span class="badge secondary">{{ completedOrders().length }}</span>
-              </div>
-              <div class="grid-container">
-                <ag-grid-angular
-                  style="width: 100%; height: 400px;"
-                  [theme]="gridTheme"
-                  [rowData]="completedOrders()"
-                  [columnDefs]="columnDefs"
-                  [defaultColDef]="defaultColDef"
-                />
-              </div>
+            <!-- Order History Section (AG Grid) - only when History tab is selected -->
+            @if (viewMode() === 'history') {
+              @if (completedOrders().length > 0) {
+                <div class="section-header history-header">
+                  <h2>{{ 'ORDERS.ORDER_HISTORY' | translate }}</h2>
+                  <span class="badge secondary">{{ completedOrders().length }}</span>
+                </div>
+                <div class="grid-container" (click)="onGridClick($event)">
+                  <ag-grid-angular
+                    style="width: 100%; height: 400px;"
+                    [theme]="gridTheme"
+                    [rowData]="completedOrders()"
+                    [columnDefs]="columnDefs"
+                    [defaultColDef]="defaultColDef"
+                  />
+                </div>
+              } @else {
+                <div class="empty-state">
+                  <div class="empty-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                      <polyline points="14,2 14,8 20,8"/>
+                    </svg>
+                  </div>
+                  <h3>{{ 'ORDERS.ORDER_HISTORY' | translate }}</h3>
+                  <p>{{ 'ORDERS.NO_ORDER_HISTORY_YET' | translate }}</p>
+                </div>
+              }
             }
           }
         </div>
+
+        <!-- Print Factura Modal -->
+        @if (facturaOrder()) {
+          <div class="modal-overlay" (click)="closeFacturaModal()">
+            <div class="modal" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h3>{{ 'CUSTOMERS.PRINT_FACTURA' | translate }}</h3>
+                <button class="icon-btn" (click)="closeFacturaModal()">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="modal-body">
+                <p>{{ 'ORDERS.ORDER_ID' | translate }}{{ facturaOrder()!.id }} — {{ facturaOrder()!.table_name }} — {{ formatPrice(facturaOrder()!.total_cents) }}</p>
+                <div class="form-group">
+                  <label for="factura-customer">{{ 'CUSTOMERS.SELECT_FOR_FACTURA' | translate }}</label>
+                  <select id="factura-customer" class="form-select" [(ngModel)]="facturaCustomerId" name="facturaCustomer">
+                    <option [ngValue]="null">{{ 'COMMON.NONE' | translate }}</option>
+                    @for (c of facturaCustomers(); track c.id) {
+                      <option [ngValue]="c.id">{{ c.company_name || c.name }}{{ c.tax_id ? ' (' + c.tax_id + ')' : '' }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+              <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" (click)="closeFacturaModal()">{{ 'COMMON.CANCEL' | translate }}</button>
+                <button type="button" class="btn btn-primary" (click)="printFacturaAndClose()">
+                  {{ 'ORDERS.PRINT_INVOICE' | translate }}
+                </button>
+              </div>
+            </div>
+          </div>
+        }
 
         <!-- Mark as Paid Modal -->
         @if (orderToMarkPaid()) {
@@ -1309,12 +1371,15 @@ export class OrdersComponent implements OnInit, OnDestroy {
   currency = signal<string>('$');
   currencyCode = signal<string | null>(null);
   showRemovedItems = false;
-  viewMode = signal<'active' | 'not_paid'>('active');
+  viewMode = signal<'active' | 'not_paid' | 'history'>('active');
   orderToMarkPaid = signal<Order | null>(null);
   paymentMethod = 'cash';
   processingPayment = signal(false);
   statusDropdownOpen = signal<number | null>(null); // Order ID for which dropdown is open
   itemStatusDropdownOpen = signal<string | null>(null); // "orderId-itemId" for which dropdown is open
+  facturaOrder = signal<Order | null>(null);
+  facturaCustomers = signal<BillingCustomer[]>([]);
+  facturaCustomerId: number | null = null;
 
   // Toast notification system (replaces native alerts)
   toast = signal<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -1457,6 +1522,18 @@ export class OrdersComponent implements OnInit, OnDestroy {
             timeZone: timeZone,
             hour12: false
           });
+        },
+      },
+      {
+        headerName: '',
+        width: 130,
+        sortable: false,
+        filter: false,
+        cellRenderer: (params: ICellRendererParams) => {
+          const id = params.data?.id;
+          if (id == null) return '';
+          const label = this.translate.instant('CUSTOMERS.PRINT_FACTURA');
+          return `<button type="button" class="btn-factura-row" data-order-id="${id}">${label}</button>`;
         },
       },
     ];
@@ -1605,7 +1682,46 @@ export class OrdersComponent implements OnInit, OnDestroy {
     });
   }
 
-  printInvoice(order: Order) {
+  openFacturaModal(order: Order) {
+    this.facturaOrder.set(order);
+    this.facturaCustomerId = order.billing_customer_id ?? null;
+    this.api.getBillingCustomers().subscribe({
+      next: list => this.facturaCustomers.set(list),
+      error: () => this.facturaCustomers.set([])
+    });
+  }
+
+  closeFacturaModal() {
+    this.facturaOrder.set(null);
+    this.facturaCustomers.set([]);
+  }
+
+  onGridClick(event: Event) {
+    const btn = (event.target as HTMLElement).closest('.btn-factura-row');
+    if (btn) {
+      const id = +(btn.getAttribute('data-order-id') || 0);
+      const order = this.orders().find(o => o.id === id);
+      if (order) this.openFacturaModal(order);
+    }
+  }
+
+  printFacturaAndClose() {
+    const order = this.facturaOrder();
+    if (!order) return;
+    const customer = this.facturaCustomerId != null
+      ? this.facturaCustomers().find(c => c.id === this.facturaCustomerId)
+      : null;
+    this.printInvoice(order, customer ?? undefined);
+    if (this.facturaCustomerId != null) {
+      this.api.setOrderBillingCustomer(order.id, this.facturaCustomerId).subscribe({
+        next: () => { this.orders.update(list => list.map(o => o.id === order.id ? { ...o, billing_customer_id: this.facturaCustomerId, billing_customer: customer ?? undefined } : o)); },
+        error: () => {}
+      });
+    }
+    this.closeFacturaModal();
+  }
+
+  printInvoice(order: Order, billingCustomer?: BillingCustomer | null) {
     const settings = this.tenantSettings();
     const tenantId = this.api.getCurrentUser()?.tenant_id;
     const logoUrl = settings?.logo_filename && tenantId
@@ -1663,6 +1779,15 @@ export class OrdersComponent implements OnInit, OnDestroy {
     ${address}
     ${taxBlock}
   </div>
+  ${billingCustomer ? `
+  <div class="bill-to" style="margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 6px; font-size: 13px;">
+    <strong style="font-size: 11px; text-transform: uppercase; color: #64748b;">${this.translate.instant('CUSTOMERS.BILL_TO')}</strong>
+    <p style="margin: 6px 0 0; font-weight: 600;">${this.escapeHtml(billingCustomer.company_name || billingCustomer.name)}</p>
+    ${billingCustomer.tax_id ? `<p style="margin: 2px 0 0; color: #555;">Tax ID: ${this.escapeHtml(billingCustomer.tax_id)}</p>` : ''}
+    ${billingCustomer.address ? `<p style="margin: 2px 0 0; color: #555;">${this.escapeHtml(billingCustomer.address)}</p>` : ''}
+    ${billingCustomer.email ? `<p style="margin: 2px 0 0; color: #555;">${this.escapeHtml(billingCustomer.email)}</p>` : ''}
+  </div>
+  ` : ''}
   <div class="meta">
     <strong>${this.translate.instant('ORDERS.INVOICE')}</strong> #${order.id} &nbsp;|&nbsp;
     ${this.translate.instant('ORDERS.ORDER_TIME')}: ${this.escapeHtml(dateStr)} &nbsp;|&nbsp;

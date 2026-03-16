@@ -22,14 +22,25 @@ import { ApiService } from '../services/api.service';
         </div>
 
         <div class="quick-actions">
-          <a routerLink="/products" class="action-card">
+          <a routerLink="/orders" class="action-card">
             <div class="action-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14,2 14,8 20,8"/>
               </svg>
             </div>
-            <span class="action-label">{{ 'DASHBOARD.PRODUCTS_TITLE' | translate }}</span>
-            <span class="action-desc">{{ 'DASHBOARD.PRODUCTS_DESC' | translate }}</span>
+            <span class="action-label">{{ 'DASHBOARD.ORDERS_TITLE' | translate }}</span>
+            <span class="action-desc">{{ 'DASHBOARD.ORDERS_DESC' | translate }}</span>
+          </a>
+          <a routerLink="/reservations" class="action-card">
+            <div class="action-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <span class="action-label">{{ 'DASHBOARD.RESERVATIONS_TITLE' | translate }}</span>
+            <span class="action-desc">{{ 'DASHBOARD.RESERVATIONS_DESC' | translate }}</span>
           </a>
           <a routerLink="/tables" class="action-card">
             <div class="action-icon">
@@ -43,15 +54,34 @@ import { ApiService } from '../services/api.service';
             <span class="action-label">{{ 'DASHBOARD.TABLES_TITLE' | translate }}</span>
             <span class="action-desc">{{ 'DASHBOARD.TABLES_DESC' | translate }}</span>
           </a>
-          <a routerLink="/orders" class="action-card">
+          <a routerLink="/kitchen" class="action-card">
             <div class="action-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                <polyline points="14,2 14,8 20,8"/>
+                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                <path d="M6 8h.01M10 8h.01M14 8h.01M6 12h12M6 16h8"/>
               </svg>
             </div>
-            <span class="action-label">{{ 'DASHBOARD.ORDERS_TITLE' | translate }}</span>
-            <span class="action-desc">{{ 'DASHBOARD.ORDERS_DESC' | translate }}</span>
+            <span class="action-label">{{ 'DASHBOARD.KITCHEN_TITLE' | translate }}</span>
+            <span class="action-desc">{{ 'DASHBOARD.KITCHEN_DESC' | translate }}</span>
+          </a>
+          <a routerLink="/kitchen" class="action-card">
+            <div class="action-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/>
+                <path d="M9 14h6M9 18h6"/>
+              </svg>
+            </div>
+            <span class="action-label">{{ 'DASHBOARD.BEVERAGES_TITLE' | translate }}</span>
+            <span class="action-desc">{{ 'DASHBOARD.BEVERAGES_DESC' | translate }}</span>
+          </a>
+          <a routerLink="/products" class="action-card">
+            <div class="action-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+              </svg>
+            </div>
+            <span class="action-label">{{ 'DASHBOARD.PRODUCTS_TITLE' | translate }}</span>
+            <span class="action-desc">{{ 'DASHBOARD.PRODUCTS_DESC' | translate }}</span>
           </a>
           <a routerLink="/catalog" class="action-card">
             <div class="action-icon">
@@ -63,27 +93,19 @@ import { ApiService } from '../services/api.service';
             <span class="action-label">{{ 'DASHBOARD.CATALOG_TITLE' | translate }}</span>
             <span class="action-desc">{{ 'DASHBOARD.CATALOG_DESC' | translate }}</span>
           </a>
-          <a routerLink="/reservations" class="action-card">
+          @if (canViewCustomers()) {
+          <a routerLink="/customers" class="action-card">
             <div class="action-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
               </svg>
             </div>
-            <span class="action-label">{{ 'DASHBOARD.RESERVATIONS_TITLE' | translate }}</span>
-            <span class="action-desc">{{ 'DASHBOARD.RESERVATIONS_DESC' | translate }}</span>
+            <span class="action-label">{{ 'DASHBOARD.CUSTOMERS_TITLE' | translate }}</span>
+            <span class="action-desc">{{ 'DASHBOARD.CUSTOMERS_DESC' | translate }}</span>
           </a>
-          <a routerLink="/kitchen" class="action-card">
-            <div class="action-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 8h1a4 4 0 010 8h-1"/>
-                <path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/>
-                <line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
-              </svg>
-            </div>
-            <span class="action-label">{{ 'DASHBOARD.KITCHEN_TITLE' | translate }}</span>
-            <span class="action-desc">{{ 'DASHBOARD.KITCHEN_DESC' | translate }}</span>
-          </a>
+          }
           @if (canShowAdminSections()) {
             <a routerLink="/reports" class="action-card">
               <div class="action-icon">
@@ -131,6 +153,7 @@ import { ApiService } from '../services/api.service';
         <div class="help-section">
           <h2 class="help-title">{{ 'DASHBOARD.HELP_TITLE' | translate }}</h2>
           <p class="help-desc">{{ 'DASHBOARD.HELP_DESC' | translate }}</p>
+          <p class="help-invite">{{ 'DASHBOARD.HELP_INVITE' | translate }}</p>
           <div class="help-links">
             <a href="https://github.com/satisfecho/pos/issues" target="_blank" rel="noopener noreferrer" class="help-link">
               {{ 'DASHBOARD.HELP_ISSUES' | translate }}
@@ -231,12 +254,14 @@ import { ApiService } from '../services/api.service';
     }
     .help-section {
       margin-top: var(--space-8);
-      padding-top: var(--space-6);
-      border-top: 1px solid var(--color-border);
+      padding: var(--space-6);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-surface) 100%);
+      border: 1px solid var(--color-border);
     }
 
     .help-title {
-      font-size: 1.125rem;
+      font-size: 1.25rem;
       font-weight: 600;
       color: var(--color-text);
       margin: 0 0 var(--space-2);
@@ -245,7 +270,14 @@ import { ApiService } from '../services/api.service';
     .help-desc {
       font-size: 0.9375rem;
       color: var(--color-text-muted);
+      margin: 0 0 var(--space-2);
+    }
+
+    .help-invite {
+      font-size: 0.9375rem;
+      color: var(--color-text);
       margin: 0 0 var(--space-4);
+      font-weight: 500;
     }
 
     .help-links {
@@ -280,6 +312,7 @@ export class DashboardComponent implements OnInit {
 
   user = signal(this.api.getCurrentUser());
   canShowAdminSections = computed(() => this.permissions.isAdmin(this.user()));
+  canViewCustomers = computed(() => this.permissions.canAccessRoute(this.user(), '/customers'));
 
   ngOnInit() {
     this.user.set(this.api.getCurrentUser());

@@ -299,6 +299,22 @@ class Reservation(TenantMixin, table=True):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+class BillingCustomer(TenantMixin, table=True):
+    """Customer registered for tax invoicing (Factura). Company details for printing invoices."""
+    __tablename__ = "billing_customer"
+    id: int | None = Field(default=None, primary_key=True)
+    tenant_id: int = Field(foreign_key="tenant.id", index=True)
+    name: str = Field(index=True)  # Contact or company name
+    company_name: str | None = Field(default=None, index=True)  # Legal / company name for invoice
+    tax_id: str | None = Field(default=None, index=True)  # CIF / NIF / VAT number
+    address: str | None = None
+    email: str | None = Field(default=None, index=True)
+    phone: str | None = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    orders: list["Order"] = Relationship(back_populates="billing_customer")
+
+
 class Order(TenantMixin, table=True):
     id: int | None = Field(default=None, primary_key=True)
     table_id: int = Field(foreign_key="table.id")
@@ -306,6 +322,7 @@ class Order(TenantMixin, table=True):
     notes: str | None = None  # General order notes
     session_id: str | None = Field(default=None, index=True)  # Unique session identifier per browser
     customer_name: str | None = Field(default=None, index=True)  # Optional customer name for restaurant staff
+    billing_customer_id: int | None = Field(default=None, foreign_key="billing_customer.id", index=True)  # For Factura
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     
     # Cancellation tracking
@@ -323,6 +340,7 @@ class Order(TenantMixin, table=True):
     flag_reason: str | None = Field(default=None)  # Why order was flagged
     
     items: list["OrderItem"] = Relationship(back_populates="order")
+    billing_customer: BillingCustomer | None = Relationship(back_populates="orders")
 
 
 class OrderItemStatus(str, Enum):
@@ -512,6 +530,29 @@ class OrderItemCancel(SQLModel):
 
 class OrderMarkPaid(SQLModel):
     payment_method: str = "cash"  # 'cash', 'terminal', 'stripe', etc.
+
+
+class OrderBillingCustomerSet(SQLModel):
+    """Set or clear the billing customer (Factura) for an order."""
+    billing_customer_id: int | None = None
+
+
+class BillingCustomerCreate(SQLModel):
+    name: str
+    company_name: str | None = None
+    tax_id: str | None = None
+    address: str | None = None
+    email: str | None = None
+    phone: str | None = None
+
+
+class BillingCustomerUpdate(SQLModel):
+    name: str | None = None
+    company_name: str | None = None
+    tax_id: str | None = None
+    address: str | None = None
+    email: str | None = None
+    phone: str | None = None
 
 
 class OrderItemStaffUpdate(SQLModel):

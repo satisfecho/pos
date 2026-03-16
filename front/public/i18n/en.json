@@ -44,6 +44,7 @@
     "CATALOG": "Catalog",
     "TABLES": "Tables",
     "RESERVATIONS": "Reservations",
+    "CUSTOMERS": "Customers (Factura)",
     "INVENTORY": "Inventory",
     "ITEMS": "Items",
     "SUPPLIERS": "Suppliers",
@@ -54,6 +55,7 @@
     "SETTINGS": "Settings",
     "USERS": "Users",
     "KITCHEN_DISPLAY": "Kitchen display",
+    "BEVERAGES_DISPLAY": "Beverages display",
     "LOGOUT": "Logout"
   },
   "LANDING": {
@@ -83,6 +85,10 @@
     "RESERVATIONS_DESC": "View and manage table reservations",
     "KITCHEN_TITLE": "Kitchen display",
     "KITCHEN_DESC": "Orders view for kitchen",
+    "BEVERAGES_TITLE": "Beverages display",
+    "BEVERAGES_DESC": "Orders view for bar and drinks",
+    "CUSTOMERS_TITLE": "Customers (Factura)",
+    "CUSTOMERS_DESC": "Billing customers for tax invoices",
     "REPORTS_TITLE": "Reports",
     "REPORTS_DESC": "Sales and revenue analysis",
     "INVENTORY_TITLE": "Inventory",
@@ -91,10 +97,11 @@
     "USERS_DESC": "Staff and user management",
     "SETTINGS_TITLE": "Configuration",
     "SETTINGS_DESC": "Restaurant and app settings",
-    "HELP_TITLE": "Help",
-    "HELP_DESC": "Documentation and support",
-    "HELP_ISSUES": "Issues (GitHub)",
-    "HELP_DISCUSSIONS": "Discussions (GitHub)"
+    "HELP_TITLE": "Need help?",
+    "HELP_DESC": "We're here for you. Report a bug, ask a question, or share an idea.",
+    "HELP_INVITE": "Start a discussion for enhancements or open an issue — we'd love to hear from you.",
+    "HELP_ISSUES": "Report an issue (GitHub)",
+    "HELP_DISCUSSIONS": "Start a discussion (GitHub)"
   },
   "AUTH": {
     "LOGIN": "Login",
@@ -280,6 +287,7 @@
     "SHOW_REMOVED_ITEMS": "Show Removed Items",
     "COMPLETED_ORDERS": "Completed orders",
     "ORDER_HISTORY": "Order History",
+    "NO_ORDER_HISTORY_YET": "No orders in history yet",
     "CUSTOMER": "Customer",
     "ORDER_TIME": "Order Time",
     "TOTAL": "Total",
@@ -328,6 +336,28 @@
     "INVOICE": "Invoice",
     "INVOICE_FOOTER": "Thank you for your order."
   },
+  "CUSTOMERS": {
+    "TITLE": "Customers (Factura)",
+    "ADD": "Add customer",
+    "EDIT": "Edit customer",
+    "CREATE": "Create",
+    "NAME": "Name",
+    "COMPANY": "Company name",
+    "TAX_ID": "Tax ID / CIF",
+    "TAX_ID_PLACEHOLDER": "e.g. B12345678",
+    "ADDRESS": "Address",
+    "EMAIL": "Email",
+    "PHONE": "Phone",
+    "SEARCH_PLACEHOLDER": "Search by name, company, tax ID, email…",
+    "LOADING": "Loading customers…",
+    "NONE": "No customers yet",
+    "NONE_DESC": "Add customers that need a tax invoice (Factura) with their company details.",
+    "DELETE_TITLE": "Delete customer",
+    "DELETE_CONFIRM": "Delete {{name}}? Orders already linked will keep the saved data.",
+    "PRINT_FACTURA": "Print Factura",
+    "SELECT_FOR_FACTURA": "Select customer for invoice",
+    "BILL_TO": "Bill to"
+  },
   "ORDER_STATUS": {
     "pending": "Pending",
     "preparing": "Preparing",
@@ -353,7 +383,9 @@
     "LAST_REFRESH": "Updated",
     "NO_ACTIVE_ORDERS": "No active orders",
     "NO_ACTIVE_ORDERS_DESC": "New orders will appear here when customers place them",
-    "NOTES": "Notes"
+    "NOTES": "Notes",
+    "MARK_READY": "Ready",
+    "UPDATING": "…"
   },
   "REPORTS": {
     "TITLE": "Sales & Revenue",

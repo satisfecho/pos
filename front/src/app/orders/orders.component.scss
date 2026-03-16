@@ -165,6 +165,19 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
+
+    ::ng-deep .btn-factura-row {
+        padding: 4px 10px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        background: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: 4px;
+    }
+    ::ng-deep .btn-factura-row:hover {
+        opacity: 0.9;
+    }
 }
 
 // Mobile responsive

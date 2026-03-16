@@ -118,6 +118,7 @@ Planned but not yet implemented: customer accounts (registration, MFA, invoices)
 | **Provider dashboard** | http://localhost:4202/provider |
 | **Kitchen display** | http://localhost:4202/kitchen |
 | **Reports (owner/admin)** | http://localhost:4202/reports |
+| **Customers (Factura)** | http://localhost:4202/customers |
 | **Dashboard (staff)** | http://localhost:4202/dashboard |
 
 If your frontend port is different (e.g. 4203), replace 4202 with that port. See [AGENTS.md](AGENTS.md) for how to detect the port and debug with logs.

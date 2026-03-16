@@ -51,6 +51,7 @@
     "SETTINGS": "Configuració",
     "USERS": "Usuaris",
     "KITCHEN_DISPLAY": "Pantalla cuina",
+    "BEVERAGES_DISPLAY": "Pantalla de begudes",
     "LOGOUT": "Tancar sessió"
   },
   "LANDING": {
@@ -80,6 +81,10 @@
     "RESERVATIONS_DESC": "Veure i gestionar reserves de taules",
     "KITCHEN_TITLE": "Pantalla de cuina",
     "KITCHEN_DESC": "Vista de comandes per a la cuina",
+    "BEVERAGES_TITLE": "Pantalla de begudes",
+    "BEVERAGES_DESC": "Vista de comandes per a bar i begudes",
+    "CUSTOMERS_TITLE": "Clients (Factura)",
+    "CUSTOMERS_DESC": "Clients de facturació per a factures fiscals",
     "REPORTS_TITLE": "Informes",
     "REPORTS_DESC": "Anàlisi de vendes i ingressos",
     "INVENTORY_TITLE": "Inventari",
@@ -88,9 +93,10 @@
     "USERS_DESC": "Gestió del personal i usuaris",
     "SETTINGS_TITLE": "Configuració",
     "SETTINGS_DESC": "Configuració del restaurant i de l'app",
-    "HELP_TITLE": "Ajuda",
-    "HELP_DESC": "Documentació i suport",
-    "HELP_ISSUES": "Issues (GitHub)",
+    "HELP_TITLE": "Necessites ajuda?",
+    "HELP_DESC": "Som aquí per ajudar-te. Reporta un error, fes una pregunta o comparteix una idea.",
+    "HELP_INVITE": "Obre una discussió per a millores o un issue — ens encantaria saber de tu.",
+    "HELP_ISSUES": "Reportar un problema (GitHub)",
     "HELP_DISCUSSIONS": "Discussions (GitHub)"
   },
   "AUTH": {
@@ -268,6 +274,7 @@
     "REFRESH": "Actualitzar",
     "NO_ORDERS_DESC": "No hi ha comandes actives en aquest moment",
     "ORDER_HISTORY": "Historial de comandes",
+    "NO_ORDER_HISTORY_YET": "Encara no hi ha comandes al historial",
     "NOT_PAID_YET": "Encara no pagat",
     "ALL_ORDERS_PAID": "Totes les comandes pagades",
     "NO_UNPAID_ORDERS": "No hi ha comandes no pagades",
@@ -769,7 +776,9 @@
     "LAST_REFRESH": "Actualitzat",
     "NO_ACTIVE_ORDERS": "Sense comandes actives",
     "NO_ACTIVE_ORDERS_DESC": "Les noves comandes apareixeran aquí",
-    "NOTES": "Notes"
+    "NOTES": "Notes",
+    "MARK_READY": "Llest",
+    "UPDATING": "…"
   },
   "USERS": {
     "TITLE": "Gestió d'Usuaris",

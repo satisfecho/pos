@@ -10,6 +10,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { ApiService, Order, OrderItem } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
+import { PermissionService } from '../services/permission.service';
 import { Subscription } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -80,7 +81,49 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
                         @if (item.notes) {
                           <span class="item-notes">{{ item.notes }}</span>
                         }
-                        <span class="item-status" [class]="'status-' + (item.status || 'pending')">{{ getItemStatusLabel(item.status || 'pending') }}</span>
+                        @if (canUpdateItemStatus() && item.id != null && item.status !== 'delivered' && item.status !== 'cancelled') {
+                          <div class="item-status-control">
+                            <button
+                              type="button"
+                              class="item-status-badge clickable"
+                              [class]="'status-' + (item.status || 'pending')"
+                              (click)="toggleItemStatusDropdown(order.id, item.id!)"
+                              [title]="'ORDERS.CLICK_TO_CHANGE_STATUS' | translate">
+                              {{ getItemStatusLabel(item.status || 'pending') }}
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6,9 12,15 18,9"/>
+                              </svg>
+                            </button>
+                            @if (itemStatusDropdownOpen() === order.id + '-' + item.id) {
+                              <div class="status-dropdown item-status-dropdown" (click)="$event.stopPropagation()">
+                                @if (getItemStatusTransitions(item.status || 'pending').backward.length > 0) {
+                                  <div class="dropdown-section">
+                                    <div class="dropdown-label">{{ 'ORDERS.GO_BACK' | translate }}</div>
+                                    @for (status of getItemStatusTransitions(item.status || 'pending').backward; track status) {
+                                      <button type="button" class="dropdown-item backward" (click)="updateItemStatus(order.id, item.id!, status); itemStatusDropdownOpen.set(null)">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+                                        {{ getItemStatusLabel(status) }}
+                                      </button>
+                                    }
+                                  </div>
+                                }
+                                @if (getItemStatusTransitions(item.status || 'pending').forward.length > 0) {
+                                  <div class="dropdown-section">
+                                    <div class="dropdown-label">{{ 'ORDERS.MOVE_FORWARD' | translate }}</div>
+                                    @for (status of getItemStatusTransitions(item.status || 'pending').forward; track status) {
+                                      <button type="button" class="dropdown-item forward" (click)="updateItemStatus(order.id, item.id!, status); itemStatusDropdownOpen.set(null)">
+                                        {{ getItemStatusLabel(status) }}
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg>
+                                      </button>
+                                    }
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                        } @else {
+                          <span class="item-status" [class]="'status-' + (item.status || 'pending')">{{ getItemStatusLabel(item.status || 'pending') }}</span>
+                        }
                       </li>
                     }
                   }
@@ -221,8 +264,8 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
     }
     .order-item {
       display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: baseline;
+      grid-template-columns: auto 1fr auto auto;
+      align-items: center;
       gap: var(--space-3);
       padding: var(--space-3) 0;
       font-size: 1.125rem;
@@ -237,7 +280,7 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
     }
     .item-name { font-weight: 600; color: var(--color-text); }
     .item-notes {
-      grid-column: 2 / -1;
+      grid-column: 2 / 4;
       font-size: 0.9375rem;
       color: var(--color-text-muted);
       font-style: italic;
@@ -252,6 +295,88 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
     .item-status.status-preparing { background: rgba(59, 130, 246, 0.15); color: #3B82F6; }
     .item-status.status-ready { background: var(--color-success-light); color: var(--color-success); }
     .item-status.status-delivered { background: var(--color-bg); color: var(--color-text-muted); }
+    .item-status-control {
+      position: relative;
+      display: inline-flex;
+      z-index: 10;
+    }
+    .order-item:hover .item-status-control {
+      z-index: 50;
+    }
+    .item-status-badge.clickable {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      background: inherit;
+    }
+    .item-status-badge.clickable:hover {
+      filter: brightness(0.95);
+    }
+    .item-status-badge.status-pending.clickable { background: rgba(245, 158, 11, 0.15); color: var(--color-warning); }
+    .item-status-badge.status-preparing.clickable { background: rgba(59, 130, 246, 0.15); color: #3B82F6; }
+    .item-status-badge.status-ready.clickable { background: var(--color-success-light); color: var(--color-success); }
+    .status-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      left: auto;
+      margin-top: 6px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 100;
+      min-width: 160px;
+      overflow: hidden;
+    }
+    .dropdown-section {
+      padding: 8px 0;
+    }
+    .dropdown-section:not(:last-child) {
+      border-bottom: 1px solid var(--color-border);
+    }
+    .dropdown-label {
+      padding: 6px 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+      padding: 10px 12px;
+      background: none;
+      border: none;
+      text-align: left;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--color-text);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .dropdown-item:hover {
+      background: var(--color-bg);
+    }
+    .dropdown-item.forward {
+      color: var(--color-primary);
+    }
+    .dropdown-item.backward {
+      color: var(--color-text-muted);
+    }
+    .dropdown-item svg {
+      flex-shrink: 0;
+    }
     .order-notes {
       padding: var(--space-3) var(--space-5);
       background: rgba(245, 158, 11, 0.08);
@@ -265,6 +390,7 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private audio = inject(AudioService);
   private translate = inject(TranslateService);
+  private permissions = inject(PermissionService);
 
   private refreshIntervalId: ReturnType<typeof setInterval> | null = null;
   private wsSub: Subscription | null = null;
@@ -273,6 +399,11 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
   loading = signal(true);
   lastRefreshAt = signal<Date | null>(null);
   soundEnabled = signal(true);
+  itemStatusDropdownOpen = signal<string | null>(null);
+
+  canUpdateItemStatus = computed(() =>
+    this.permissions.hasPermission(this.permissions.getCurrentUser(), 'order:item_status')
+  );
 
   activeOrders = computed(() =>
     this.orders().filter((o) =>
@@ -317,6 +448,8 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
     } catch {
       // continue without WebSocket
     }
+
+    document.addEventListener('click', this.closeItemStatusDropdown);
   }
 
   ngOnDestroy(): void {
@@ -325,7 +458,15 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
       this.refreshIntervalId = null;
     }
     this.wsSub?.unsubscribe();
+    document.removeEventListener('click', this.closeItemStatusDropdown);
   }
+
+  private closeItemStatusDropdown = (e: Event): void => {
+    const target = e.target as HTMLElement;
+    if (!target.closest('.item-status-control')) {
+      this.itemStatusDropdownOpen.set(null);
+    }
+  };
 
   loadOrders(): void {
     this.loading.set(true);
@@ -392,5 +533,30 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
         : dateString + 'Z';
     const date = new Date(dateStr);
     return isNaN(date.getTime()) ? dateString : date.toLocaleString();
+  }
+
+  getItemStatusTransitions(currentStatus: string): { forward: string[]; backward: string[] } {
+    const transitions: Record<string, { forward: string[]; backward: string[] }> = {
+      pending: { forward: ['preparing'], backward: [] },
+      preparing: { forward: ['ready'], backward: ['pending'] },
+      ready: { forward: ['delivered'], backward: ['preparing'] },
+      delivered: { forward: [], backward: ['ready'] },
+      cancelled: { forward: [], backward: [] },
+    };
+    const key = (currentStatus ?? '').toString().toLowerCase();
+    return transitions[key] ?? { forward: [], backward: [] };
+  }
+
+  toggleItemStatusDropdown(orderId: number, itemId: number): void {
+    const key = `${orderId}-${itemId}`;
+    this.itemStatusDropdownOpen.update((current) => (current === key ? null : key));
+  }
+
+  updateItemStatus(orderId: number, itemId: number, status: string): void {
+    this.itemStatusDropdownOpen.set(null);
+    this.api.updateOrderItemStatus(orderId, itemId, status).subscribe({
+      next: () => this.loadOrders(),
+      error: () => this.loadOrders(),
+    });
   }
 }

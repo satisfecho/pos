@@ -50,6 +50,8 @@
     "TRANSLATIONS": "अनुवाद",
     "SETTINGS": "सेटिंग्स",
     "USERS": "उपयोगकर्ता",
+    "KITCHEN_DISPLAY": "किचन डिस्प्ले",
+    "BEVERAGES_DISPLAY": "पेय डिस्प्ले",
     "LOGOUT": "लॉग आउट"
   },
   "LANDING": {
@@ -79,6 +81,10 @@
     "RESERVATIONS_DESC": "टेबल आरक्षण देखें और प्रबंधित करें",
     "KITCHEN_TITLE": "किचन डिस्प्ले",
     "KITCHEN_DESC": "किचन के लिए ऑर्डर व्यू",
+    "BEVERAGES_TITLE": "पेय डिस्प्ले",
+    "BEVERAGES_DESC": "बार और पेय के लिए ऑर्डर व्यू",
+    "CUSTOMERS_TITLE": "ग्राहक (इनवॉइस)",
+    "CUSTOMERS_DESC": "टैक्स इनवॉइस के लिए बिलिंग ग्राहक",
     "REPORTS_TITLE": "रिपोर्ट",
     "REPORTS_DESC": "बिक्री और राजस्व विश्लेषण",
     "INVENTORY_TITLE": "इन्वेंटरी",
@@ -87,10 +93,11 @@
     "USERS_DESC": "स्टाफ और उपयोगकर्ता प्रबंधन",
     "SETTINGS_TITLE": "कॉन्फ़िगरेशन",
     "SETTINGS_DESC": "रेस्तरां और ऐप सेटिंग्स",
-    "HELP_TITLE": "सहायता",
-    "HELP_DESC": "दस्तावेज़ीकरण और सहायता",
-    "HELP_ISSUES": "Issues (GitHub)",
-    "HELP_DISCUSSIONS": "Discussions (GitHub)"
+    "HELP_TITLE": "मदद चाहिए?",
+    "HELP_DESC": "हम यहाँ हैं। बग रिपोर्ट करें, सवाल पूछें या विचार साझा करें।",
+    "HELP_INVITE": "सुधार के लिए चर्चा शुरू करें या Issue खोलें — हम आपसे सुनना पसंद करेंगे।",
+    "HELP_ISSUES": "समस्या रिपोर्ट करें (GitHub)",
+    "HELP_DISCUSSIONS": "चर्चा शुरू करें (GitHub)"
   },
   "AUTH": {
     "LOGIN": "लॉग इन",
@@ -267,6 +274,7 @@
     "REFRESH": "रिफ्रेश करें",
     "NO_ORDERS_DESC": "वर्तमान में कोई सक्रिय ऑर्डर नहीं",
     "ORDER_HISTORY": "ऑर्डर इतिहास",
+    "NO_ORDER_HISTORY_YET": "अभी तक इतिहास में कोई ऑर्डर नहीं",
     "NOT_PAID_YET": "अभी तक भुगतान नहीं किया",
     "ALL_ORDERS_PAID": "सभी ऑर्डर का भुगतान हो गया",
     "NO_UNPAID_ORDERS": "कोई अदत्त ऑर्डर नहीं",

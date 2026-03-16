@@ -51,6 +51,7 @@
     "SETTINGS": "Einstellungen",
     "USERS": "Benutzer",
     "KITCHEN_DISPLAY": "Küchenanzeige",
+    "BEVERAGES_DISPLAY": "Getränke-Anzeige",
     "LOGOUT": "Abmelden"
   },
   "LANDING": {
@@ -80,6 +81,10 @@
     "RESERVATIONS_DESC": "Reservierungen anzeigen und verwalten",
     "KITCHEN_TITLE": "Küchenanzeige",
     "KITCHEN_DESC": "Bestellansicht für die Küche",
+    "BEVERAGES_TITLE": "Getränke-Anzeige",
+    "BEVERAGES_DESC": "Bestellansicht für Bar und Getränke",
+    "CUSTOMERS_TITLE": "Kunden (Rechnung)",
+    "CUSTOMERS_DESC": "Rechnungskunden für Steuerrechnungen",
     "REPORTS_TITLE": "Berichte",
     "REPORTS_DESC": "Umsatz- und Erlösanalyse",
     "INVENTORY_TITLE": "Inventar",
@@ -88,10 +93,11 @@
     "USERS_DESC": "Personal- und Benutzerverwaltung",
     "SETTINGS_TITLE": "Konfiguration",
     "SETTINGS_DESC": "Restaurant- und App-Einstellungen",
-    "HELP_TITLE": "Hilfe",
-    "HELP_DESC": "Dokumentation und Support",
-    "HELP_ISSUES": "Issues (GitHub)",
-    "HELP_DISCUSSIONS": "Diskussionen (GitHub)"
+    "HELP_TITLE": "Brauchen Sie Hilfe?",
+    "HELP_DESC": "Wir sind für Sie da. Melden Sie einen Fehler, stellen Sie eine Frage oder teilen Sie eine Idee.",
+    "HELP_INVITE": "Starten Sie eine Diskussion für Verbesserungen oder öffnen Sie ein Issue — wir freuen uns auf Ihr Feedback.",
+    "HELP_ISSUES": "Problem melden (GitHub)",
+    "HELP_DISCUSSIONS": "Diskussion starten (GitHub)"
   },
   "AUTH": {
     "LOGIN": "Anmelden",
@@ -268,6 +274,7 @@
     "REFRESH": "Aktualisieren",
     "NO_ORDERS_DESC": "Derzeit keine aktiven Bestellungen",
     "ORDER_HISTORY": "Bestellverlauf",
+    "NO_ORDER_HISTORY_YET": "Noch keine Bestellungen im Verlauf",
     "NOT_PAID_YET": "Noch nicht bezahlt",
     "ALL_ORDERS_PAID": "Alle Bestellungen bezahlt",
     "NO_UNPAID_ORDERS": "Keine unbezahlten Bestellungen",
@@ -769,7 +776,9 @@
     "LAST_REFRESH": "Aktualisiert",
     "NO_ACTIVE_ORDERS": "Keine aktiven Bestellungen",
     "NO_ACTIVE_ORDERS_DESC": "Neue Bestellungen erscheinen hier, wenn Gäste bestellen",
-    "NOTES": "Notizen"
+    "NOTES": "Notizen",
+    "MARK_READY": "Fertig",
+    "UPDATING": "…"
   },
   "USERS": {
     "TITLE": "Benutzerverwaltung",

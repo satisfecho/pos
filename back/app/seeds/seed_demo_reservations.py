@@ -1,8 +1,9 @@
 """
-Seed demo reservations for tenant 1 so Reports (Informes) show reservation counts and by-source breakdown.
+Seed demo reservations for tenant 1 so the Reservations page and Reports (Informes) show meaningful data.
 
-Creates reservations spread over the last ±90 days (more in last 30) and a few upcoming (next 14 days).
-Mix of statuses: finished, booked, and a few seated/cancelled. Mix of public (token set) vs staff (no token).
+- Guarantees reservations for **today** and **tomorrow** so the Reservations page (default filter = today) shows a full list.
+- Adds more over the last ±90 days (and next 14 days) for Reports and variety.
+- Mix of statuses: booked, seated, finished, cancelled. Mix of public (token) vs staff (no token).
 
 Idempotent: runs only when tenant 1 has no reservations (clean deployment). Does not delete or change existing.
 
@@ -12,7 +13,7 @@ Usage:
 """
 
 import random
-from datetime import date, timedelta, time, timezone
+from datetime import date, timedelta, time
 from uuid import uuid4
 
 from sqlmodel import Session, select
@@ -23,8 +24,15 @@ from app.models import Reservation, ReservationStatus, Table, Tenant
 DEMO_TENANT_ID = 1
 DAYS_BACK = 90
 DAYS_FORWARD = 14
-NUM_PAST_RESERVATIONS = 25
-NUM_UPCOMING_RESERVATIONS = 5
+# Reservations for today so the Reservations page (default filter = today) shows a full list
+NUM_TODAY_BOOKED = 3
+NUM_TODAY_SEATED = 2
+NUM_TODAY_FINISHED = 3
+NUM_TODAY_CANCELLED = 1
+NUM_TOMORROW_BOOKED = 4
+# Past/upcoming spread for Reports and variety
+NUM_PAST_RESERVATIONS = 20
+NUM_UPCOMING_OTHER = 4
 # Fraction with token (public book page) vs no token (staff-created)
 PUBLIC_FRACTION = 0.4
 
@@ -59,6 +67,35 @@ def _random_time_slot() -> time:
     return time(hour, minute, 0)
 
 
+def _add_reservation(
+    session: Session,
+    tenant_id: int,
+    rdate: date,
+    rtime: time,
+    party_size: int,
+    status: ReservationStatus,
+    table_ids: list[int],
+    use_public_token: bool,
+) -> None:
+    table_id = random.choice(table_ids) if status == ReservationStatus.finished or status == ReservationStatus.seated else None
+    token = str(uuid4()) if use_public_token else None
+    customer_name = random.choice(DEMO_NAMES)
+    customer_phone = random.choice(DEMO_PHONE_PREFIXES) + str(random.randint(1000000, 9999999))
+    session.add(
+        Reservation(
+            tenant_id=tenant_id,
+            customer_name=customer_name,
+            customer_phone=customer_phone,
+            reservation_date=rdate,
+            reservation_time=rtime,
+            party_size=party_size,
+            status=status,
+            table_id=table_id,
+            token=token,
+        )
+    )
+
+
 def run() -> None:
     with Session(engine) as session:
         existing = session.exec(
@@ -79,44 +116,77 @@ def run() -> None:
             return
 
         table_ids = [t.id for t in tables]
+        today = date.today()
+        tomorrow = today + timedelta(days=1)
         created = 0
 
-        for i in range(NUM_PAST_RESERVATIONS + NUM_UPCOMING_RESERVATIONS):
-            is_upcoming = i >= NUM_PAST_RESERVATIONS
+        # Fixed time slots for today/tomorrow so the list looks realistic (not all same time)
+        time_slots = [
+            time(12, 0, 0), time(12, 30, 0), time(13, 0, 0), time(13, 30, 0),
+            time(19, 0, 0), time(19, 30, 0), time(20, 0, 0), time(20, 30, 0), time(21, 0, 0),
+        ]
+
+        # Today: mix of statuses so Reservations page (default filter = today) shows a full list
+        idx = 0
+        for _ in range(NUM_TODAY_BOOKED):
+            _add_reservation(
+                session, DEMO_TENANT_ID, today, time_slots[idx % len(time_slots)],
+                random.randint(2, 5), ReservationStatus.booked, table_ids, random.random() < PUBLIC_FRACTION,
+            )
+            idx += 1
+            created += 1
+        for _ in range(NUM_TODAY_SEATED):
+            _add_reservation(
+                session, DEMO_TENANT_ID, today, time_slots[idx % len(time_slots)],
+                random.randint(2, 4), ReservationStatus.seated, table_ids, random.random() < PUBLIC_FRACTION,
+            )
+            idx += 1
+            created += 1
+        for _ in range(NUM_TODAY_FINISHED):
+            _add_reservation(
+                session, DEMO_TENANT_ID, today, time_slots[idx % len(time_slots)],
+                random.randint(1, 6), ReservationStatus.finished, table_ids, random.random() < PUBLIC_FRACTION,
+            )
+            idx += 1
+            created += 1
+        for _ in range(NUM_TODAY_CANCELLED):
+            _add_reservation(
+                session, DEMO_TENANT_ID, today, time_slots[idx % len(time_slots)],
+                random.randint(2, 4), ReservationStatus.cancelled, table_ids, random.random() < PUBLIC_FRACTION,
+            )
+            idx += 1
+            created += 1
+
+        # Tomorrow: booked only
+        for i in range(NUM_TOMORROW_BOOKED):
+            _add_reservation(
+                session, DEMO_TENANT_ID, tomorrow, time_slots[i % len(time_slots)],
+                random.randint(2, 6), ReservationStatus.booked, table_ids, random.random() < PUBLIC_FRACTION,
+            )
+            created += 1
+
+        # Past and other upcoming: spread over ±90 days for Reports and variety
+        for i in range(NUM_PAST_RESERVATIONS + NUM_UPCOMING_OTHER):
             rdate = _random_date_in_range(DAYS_BACK, DAYS_FORWARD)
+            # Skip today and tomorrow (already added)
+            if rdate == today or rdate == tomorrow:
+                rdate = today - timedelta(days=random.randint(1, DAYS_BACK))
             rtime = _random_time_slot()
-            # Past reservations: mostly finished, some cancelled; upcoming: booked
-            if rdate < date.today():
+            if rdate < today:
                 status = random.choices(
                     [ReservationStatus.finished, ReservationStatus.finished, ReservationStatus.cancelled],
                     weights=[85, 10, 5],
                 )[0]
-                table_id = random.choice(table_ids) if status == ReservationStatus.finished else None
             else:
                 status = ReservationStatus.booked
-                table_id = None
-
-            use_token = random.random() < PUBLIC_FRACTION
-            token = str(uuid4()) if use_token else None
-            customer_name = random.choice(DEMO_NAMES)
-            customer_phone = random.choice(DEMO_PHONE_PREFIXES) + str(random.randint(1000000, 9999999))
-
-            res = Reservation(
-                tenant_id=DEMO_TENANT_ID,
-                customer_name=customer_name,
-                customer_phone=customer_phone,
-                reservation_date=rdate,
-                reservation_time=rtime,
-                party_size=random.randint(1, 6),
-                status=status,
-                table_id=table_id,
-                token=token,
+            _add_reservation(
+                session, DEMO_TENANT_ID, rdate, rtime, random.randint(1, 6), status, table_ids,
+                random.random() < PUBLIC_FRACTION,
             )
-            session.add(res)
             created += 1
 
         session.commit()
-        print(f"Tenant {DEMO_TENANT_ID}: created {created} demo reservations for Reports.")
+        print(f"Tenant {DEMO_TENANT_ID}: created {created} demo reservations (today, tomorrow, and spread).")
 
     print("Done.")
 

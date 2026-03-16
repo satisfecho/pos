@@ -320,6 +320,18 @@ export interface OrderItem {
   removed_reason?: string;
 }
 
+/** Billing customer for Factura (tax invoice) */
+export interface BillingCustomer {
+  id: number;
+  name: string;
+  company_name?: string | null;
+  tax_id?: string | null;
+  address?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  created_at: string;
+}
+
 export interface Order {
   id: number;
   table_name: string;
@@ -327,6 +339,8 @@ export interface Order {
   notes?: string;
   session_id?: string;
   customer_name?: string;
+  billing_customer_id?: number | null;
+  billing_customer?: BillingCustomer | null;
   created_at: string;
   items: OrderItem[];
   total_cents: number;
@@ -832,6 +846,35 @@ export class ApiService {
   // Restaurant staff endpoints
   markOrderPaid(orderId: number, paymentMethod: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/orders/${orderId}/mark-paid`, { payment_method: paymentMethod });
+  }
+
+  setOrderBillingCustomer(orderId: number, billingCustomerId: number | null): Observable<{ order_id: number; billing_customer_id: number | null }> {
+    return this.http.put<{ order_id: number; billing_customer_id: number | null }>(
+      `${this.apiUrl}/orders/${orderId}/billing-customer`,
+      { billing_customer_id: billingCustomerId }
+    );
+  }
+
+  // Billing customers (Factura)
+  getBillingCustomers(search?: string): Observable<BillingCustomer[]> {
+    const params = search != null && search.trim() !== '' ? { params: { search: search.trim() } } : {};
+    return this.http.get<BillingCustomer[]>(`${this.apiUrl}/billing-customers`, params);
+  }
+
+  getBillingCustomer(id: number): Observable<BillingCustomer> {
+    return this.http.get<BillingCustomer>(`${this.apiUrl}/billing-customers/${id}`);
+  }
+
+  createBillingCustomer(data: { name: string; company_name?: string; tax_id?: string; address?: string; email?: string; phone?: string }): Observable<BillingCustomer> {
+    return this.http.post<BillingCustomer>(`${this.apiUrl}/billing-customers`, data);
+  }
+
+  updateBillingCustomer(id: number, data: Partial<BillingCustomer>): Observable<BillingCustomer> {
+    return this.http.put<BillingCustomer>(`${this.apiUrl}/billing-customers/${id}`, data);
+  }
+
+  deleteBillingCustomer(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/billing-customers/${id}`);
   }
 
   resetItemStatus(orderId: number, itemId: number): Observable<any> {

@@ -50,6 +50,8 @@
     "TRANSLATIONS": "翻译",
     "SETTINGS": "设置",
     "USERS": "用户",
+    "KITCHEN_DISPLAY": "厨房显示屏",
+    "BEVERAGES_DISPLAY": "饮品显示屏",
     "LOGOUT": "退出登录"
   },
   "LANDING": {
@@ -79,6 +81,10 @@
     "RESERVATIONS_DESC": "查看和管理桌位预订",
     "KITCHEN_TITLE": "厨房显示屏",
     "KITCHEN_DESC": "厨房订单视图",
+    "BEVERAGES_TITLE": "饮品显示屏",
+    "BEVERAGES_DESC": "吧台与饮品订单视图",
+    "CUSTOMERS_TITLE": "客户（发票）",
+    "CUSTOMERS_DESC": "税务发票客户",
     "REPORTS_TITLE": "报表",
     "REPORTS_DESC": "销售与收入分析",
     "INVENTORY_TITLE": "库存",
@@ -87,10 +93,11 @@
     "USERS_DESC": "员工和用户管理",
     "SETTINGS_TITLE": "配置",
     "SETTINGS_DESC": "餐厅和应用设置",
-    "HELP_TITLE": "帮助",
-    "HELP_DESC": "文档与支持",
-    "HELP_ISSUES": "Issues (GitHub)",
-    "HELP_DISCUSSIONS": "讨论 (GitHub)"
+    "HELP_TITLE": "需要帮助？",
+    "HELP_DESC": "我们随时为您服务。报告问题、提问或分享想法。",
+    "HELP_INVITE": "发起改进讨论或提交 Issue — 我们期待您的反馈。",
+    "HELP_ISSUES": "报告问题 (GitHub)",
+    "HELP_DISCUSSIONS": "发起讨论 (GitHub)"
   },
   "AUTH": {
     "LOGIN": "登录",
@@ -267,6 +274,7 @@
     "REFRESH": "刷新",
     "NO_ORDERS_DESC": "目前没有活跃订单",
     "ORDER_HISTORY": "订单历史",
+    "NO_ORDER_HISTORY_YET": "暂无历史订单",
     "NOT_PAID_YET": "尚未付款",
     "ALL_ORDERS_PAID": "所有订单已付款",
     "NO_UNPAID_ORDERS": "没有未付款订单",

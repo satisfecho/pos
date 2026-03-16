@@ -44,6 +44,7 @@
     "CATALOG": "Catálogo",
     "TABLES": "Mesas",
     "RESERVATIONS": "Reservaciones",
+    "CUSTOMERS": "Clientes (Factura)",
     "INVENTORY": "Inventario",
     "ITEMS": "Artículos",
     "SUPPLIERS": "Proveedores",
@@ -54,6 +55,7 @@
     "SETTINGS": "Configuración",
     "USERS": "Usuarios",
     "KITCHEN_DISPLAY": "Pantalla cocina",
+    "BEVERAGES_DISPLAY": "Pantalla de bebidas",
     "LOGOUT": "Cerrar sesión"
   },
   "LANDING": {
@@ -83,6 +85,10 @@
     "RESERVATIONS_DESC": "Ver y gestionar reservas de mesas",
     "KITCHEN_TITLE": "Pantalla de cocina",
     "KITCHEN_DESC": "Vista de pedidos para cocina",
+    "BEVERAGES_TITLE": "Pantalla de bebidas",
+    "BEVERAGES_DESC": "Vista de pedidos para bar y bebidas",
+    "CUSTOMERS_TITLE": "Clientes (Factura)",
+    "CUSTOMERS_DESC": "Clientes de facturación para facturas fiscales",
     "REPORTS_TITLE": "Informes",
     "REPORTS_DESC": "Análisis de ventas e ingresos",
     "INVENTORY_TITLE": "Inventario",
@@ -91,10 +97,11 @@
     "USERS_DESC": "Gestión de personal y usuarios",
     "SETTINGS_TITLE": "Configuración",
     "SETTINGS_DESC": "Ajustes del restaurante y la app",
-    "HELP_TITLE": "Ayuda",
-    "HELP_DESC": "Documentación y soporte",
-    "HELP_ISSUES": "Issues (GitHub)",
-    "HELP_DISCUSSIONS": "Discusiones (GitHub)"
+    "HELP_TITLE": "¿Necesitas ayuda?",
+    "HELP_DESC": "Estamos contigo. Reporta un fallo, haz una pregunta o comparte una idea.",
+    "HELP_INVITE": "Abre una discusión para mejoras o un issue — nos encantaría saber de ti.",
+    "HELP_ISSUES": "Reportar un problema (GitHub)",
+    "HELP_DISCUSSIONS": "Iniciar una discusión (GitHub)"
   },
   "AUTH": {
     "LOGIN": "Iniciar sesión",
@@ -281,6 +288,7 @@
     "SHOW_REMOVED_ITEMS": "Mostrar Artículos Eliminados",
     "COMPLETED_ORDERS": "Pedidos completados",
     "ORDER_HISTORY": "Historial de Pedidos",
+    "NO_ORDER_HISTORY_YET": "Aún no hay pedidos en el historial",
     "CUSTOMER": "Cliente",
     "ORDER_TIME": "Hora del Pedido",
     "TOTAL": "Total",
@@ -329,6 +337,28 @@
     "INVOICE": "Factura",
     "INVOICE_FOOTER": "Gracias por su pedido."
   },
+  "CUSTOMERS": {
+    "TITLE": "Clientes (Factura)",
+    "ADD": "Añadir cliente",
+    "EDIT": "Editar cliente",
+    "CREATE": "Crear",
+    "NAME": "Nombre",
+    "COMPANY": "Razón social",
+    "TAX_ID": "CIF / NIF",
+    "TAX_ID_PLACEHOLDER": "ej. B12345678",
+    "ADDRESS": "Dirección",
+    "EMAIL": "Email",
+    "PHONE": "Teléfono",
+    "SEARCH_PLACEHOLDER": "Buscar por nombre, empresa, CIF, email…",
+    "LOADING": "Cargando clientes…",
+    "NONE": "Aún no hay clientes",
+    "NONE_DESC": "Añade clientes que necesiten factura con datos fiscales.",
+    "DELETE_TITLE": "Eliminar cliente",
+    "DELETE_CONFIRM": "¿Eliminar {{name}}? Los pedidos ya vinculados conservan los datos.",
+    "PRINT_FACTURA": "Imprimir Factura",
+    "SELECT_FOR_FACTURA": "Cliente para la factura",
+    "BILL_TO": "Facturar a"
+  },
   "ORDER_STATUS": {
     "pending": "Pendiente",
     "preparing": "Preparando",
@@ -354,7 +384,9 @@
     "LAST_REFRESH": "Actualizado",
     "NO_ACTIVE_ORDERS": "Sin pedidos activos",
     "NO_ACTIVE_ORDERS_DESC": "Los nuevos pedidos aparecerán aquí",
-    "NOTES": "Notas"
+    "NOTES": "Notas",
+    "MARK_READY": "Listo",
+    "UPDATING": "…"
   },
   "REPORTS": {
     "TITLE": "Ventas e ingresos",

@@ -4618,6 +4618,21 @@ def list_orders(
             continue
         total_cents = sum(item.price_cents * item.quantity for item in active_items)
         
+        # Billing customer for Factura (if set)
+        billing_customer = None
+        if order.billing_customer_id:
+            bc = session.get(models.BillingCustomer, order.billing_customer_id)
+            if bc and bc.tenant_id == current_user.tenant_id:
+                billing_customer = {
+                    "id": bc.id,
+                    "name": bc.name,
+                    "company_name": bc.company_name,
+                    "tax_id": bc.tax_id,
+                    "address": bc.address,
+                    "email": bc.email,
+                    "phone": bc.phone,
+                }
+
         result.append({
             "id": order.id,
             "table_name": table.name if table else "Unknown",
@@ -4625,6 +4640,8 @@ def list_orders(
             "notes": order.notes,
             "session_id": order.session_id,
             "customer_name": order.customer_name,
+            "billing_customer_id": order.billing_customer_id,
+            "billing_customer": billing_customer,
             "created_at": order.created_at.isoformat(),
             "paid_at": order.paid_at.isoformat() if order.paid_at else None,
             "payment_method": order.payment_method,
@@ -4767,6 +4784,193 @@ def mark_order_paid(
         "payment_method": payment_data.payment_method,
         "paid_at": order.paid_at.isoformat()
     }
+
+
+@app.put("/orders/{order_id}/billing-customer")
+def set_order_billing_customer(
+    order_id: int,
+    body: models.OrderBillingCustomerSet,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.ORDER_READ))],
+    session: Session = Depends(get_session)
+) -> dict:
+    """Set or clear the billing customer (Factura) for an order."""
+    order = session.exec(
+        select(models.Order).where(
+            models.Order.id == order_id,
+            models.Order.tenant_id == current_user.tenant_id
+        )
+    ).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    customer_id = body.billing_customer_id
+    if customer_id is not None:
+        customer = session.get(models.BillingCustomer, customer_id)
+        if not customer or customer.tenant_id != current_user.tenant_id:
+            raise HTTPException(status_code=404, detail="Billing customer not found")
+    order.billing_customer_id = customer_id
+    session.add(order)
+    session.commit()
+    return {"order_id": order.id, "billing_customer_id": order.billing_customer_id}
+
+
+# ---------- Billing customers (Factura) ----------
+
+
+@app.get("/billing-customers")
+def list_billing_customers(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.BILLING_CUSTOMER_READ))],
+    search: str | None = Query(None, description="Search by name, company_name, tax_id, email"),
+    session: Session = Depends(get_session)
+) -> list[dict]:
+    from sqlalchemy import or_
+    if search and search.strip():
+        term = f"%{search.strip()}%"
+        q = select(models.BillingCustomer).where(
+            models.BillingCustomer.tenant_id == current_user.tenant_id
+        ).where(
+            or_(
+                models.BillingCustomer.name.ilike(term),
+                models.BillingCustomer.company_name.ilike(term),
+                models.BillingCustomer.tax_id.ilike(term),
+                models.BillingCustomer.email.ilike(term),
+            )
+        ).order_by(models.BillingCustomer.name.asc())
+    else:
+        q = select(models.BillingCustomer).where(
+            models.BillingCustomer.tenant_id == current_user.tenant_id
+        ).order_by(models.BillingCustomer.name.asc())
+    customers = session.exec(q).all()
+    return [
+        {
+            "id": c.id,
+            "name": c.name,
+            "company_name": c.company_name,
+            "tax_id": c.tax_id,
+            "address": c.address,
+            "email": c.email,
+            "phone": c.phone,
+            "created_at": c.created_at.isoformat(),
+        }
+        for c in customers
+    ]
+
+
+@app.post("/billing-customers")
+def create_billing_customer(
+    body: models.BillingCustomerCreate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.BILLING_CUSTOMER_WRITE))],
+    session: Session = Depends(get_session)
+) -> dict:
+    customer = models.BillingCustomer(
+        tenant_id=current_user.tenant_id,
+        name=body.name,
+        company_name=body.company_name,
+        tax_id=body.tax_id,
+        address=body.address,
+        email=body.email,
+        phone=body.phone,
+    )
+    session.add(customer)
+    session.commit()
+    session.refresh(customer)
+    return {
+        "id": customer.id,
+        "name": customer.name,
+        "company_name": customer.company_name,
+        "tax_id": customer.tax_id,
+        "address": customer.address,
+        "email": customer.email,
+        "phone": customer.phone,
+        "created_at": customer.created_at.isoformat(),
+    }
+
+
+@app.get("/billing-customers/{customer_id}")
+def get_billing_customer(
+    customer_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.BILLING_CUSTOMER_READ))],
+    session: Session = Depends(get_session)
+) -> dict:
+    customer = session.exec(
+        select(models.BillingCustomer).where(
+            models.BillingCustomer.id == customer_id,
+            models.BillingCustomer.tenant_id == current_user.tenant_id
+        )
+    ).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Billing customer not found")
+    return {
+        "id": customer.id,
+        "name": customer.name,
+        "company_name": customer.company_name,
+        "tax_id": customer.tax_id,
+        "address": customer.address,
+        "email": customer.email,
+        "phone": customer.phone,
+        "created_at": customer.created_at.isoformat(),
+    }
+
+
+@app.put("/billing-customers/{customer_id}")
+def update_billing_customer(
+    customer_id: int,
+    body: models.BillingCustomerUpdate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.BILLING_CUSTOMER_WRITE))],
+    session: Session = Depends(get_session)
+) -> dict:
+    customer = session.exec(
+        select(models.BillingCustomer).where(
+            models.BillingCustomer.id == customer_id,
+            models.BillingCustomer.tenant_id == current_user.tenant_id
+        )
+    ).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Billing customer not found")
+    if body.name is not None:
+        customer.name = body.name
+    if body.company_name is not None:
+        customer.company_name = body.company_name
+    if body.tax_id is not None:
+        customer.tax_id = body.tax_id
+    if body.address is not None:
+        customer.address = body.address
+    if body.email is not None:
+        customer.email = body.email
+    if body.phone is not None:
+        customer.phone = body.phone
+    customer.updated_at = datetime.now(timezone.utc)
+    session.add(customer)
+    session.commit()
+    session.refresh(customer)
+    return {
+        "id": customer.id,
+        "name": customer.name,
+        "company_name": customer.company_name,
+        "tax_id": customer.tax_id,
+        "address": customer.address,
+        "email": customer.email,
+        "phone": customer.phone,
+        "created_at": customer.created_at.isoformat(),
+    }
+
+
+@app.delete("/billing-customers/{customer_id}")
+def delete_billing_customer(
+    customer_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.BILLING_CUSTOMER_WRITE))],
+    session: Session = Depends(get_session)
+) -> None:
+    customer = session.exec(
+        select(models.BillingCustomer).where(
+            models.BillingCustomer.id == customer_id,
+            models.BillingCustomer.tenant_id == current_user.tenant_id
+        )
+    ).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Billing customer not found")
+    session.delete(customer)
+    session.commit()
+    return None
 
 
 @app.put("/orders/{order_id}/items/{item_id}/status")
