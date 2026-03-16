@@ -105,13 +105,16 @@ export class BookComponent implements OnInit {
     return `${String(nh).padStart(2, '0')}:${String(nm).padStart(2, '0')}`;
   }
 
-  /** Format opening_hours JSON for display (e.g. "Mon–Fri 09:00–22:00, Sat 10:00–20:00, Sun closed"). */
+  /** Format opening_hours JSON for display in current locale (e.g. "Mon–Fri 09:00–22:00, Sat 10:00–20:00, Sun closed"). */
   formatOpeningHours(json: string | null | undefined): string {
     if (!json) return '';
     try {
       const oh = JSON.parse(json);
       const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-      const short = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const locale = this.translate.currentLang || this.translate.defaultLang || 'en';
+      const formatter = new Intl.DateTimeFormat(locale, { weekday: 'short' });
+      const short = days.map((_, i) => formatter.format(new Date(2024, 0, 1 + i)));
+      const closedLabel = this.translate.instant('SETTINGS.CLOSED');
       const parts: string[] = [];
       let i = 0;
       while (i < days.length) {
@@ -121,7 +124,7 @@ export class BookComponent implements OnInit {
           continue;
         }
         if (d.closed) {
-          parts.push(`${short[i]} closed`);
+          parts.push(`${short[i]} ${closedLabel}`);
           i++;
           continue;
         }

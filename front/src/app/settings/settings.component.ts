@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { ApiService, TenantSettings } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { TranslationsComponent } from '../translations/translations.component';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-settings',
@@ -1378,6 +1378,7 @@ import { TranslateModule } from '@ngx-translate/core';
 export class SettingsComponent implements OnInit {
   private api = inject(ApiService);
   private router = inject(Router);
+  private translate = inject(TranslateService);
 
   settings = signal<TenantSettings | null>(null);
   activeSection = signal<'general' | 'contact' | 'hours' | 'payments' | 'email' | 'translations'>('general');
@@ -1625,12 +1626,16 @@ export class SettingsComponent implements OnInit {
     this.serializeOpeningHours();
   }
 
-  /** Formatted opening hours summary, e.g. "Mon–Fri 09:00–22:00, Sat 10:00–20:00, Sun closed". */
+  /** Formatted opening hours summary in current locale, e.g. "Mon–Fri 09:00–22:00, Sat 10:00–20:00, Sun closed". */
   getOpeningHoursSummary(): string {
+    const locale = this.translate.currentLang || this.translate.defaultLang || 'en';
+    const formatter = new Intl.DateTimeFormat(locale, { weekday: 'short' });
     const dayShort = (key: string) => {
       const i = this.daysOfWeek.findIndex(d => d.key === key);
-      return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i] ?? key;
+      if (i < 0) return key;
+      return formatter.format(new Date(2024, 0, 1 + i));
     };
+    const closedLabel = this.translate.instant('SETTINGS.CLOSED');
     const parts: string[] = [];
     let i = 0;
     while (i < this.daysOfWeek.length) {
@@ -1641,7 +1646,7 @@ export class SettingsComponent implements OnInit {
         continue;
       }
       if (d.closed) {
-        parts.push(`${dayShort(day.key)} closed`);
+        parts.push(`${dayShort(day.key)} ${closedLabel}`);
         i++;
         continue;
       }
