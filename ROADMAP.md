@@ -40,16 +40,23 @@
 
 ## Current State Analysis
 
-### ❌ Missing Security Features
-- **No rate limiting** - API endpoints are completely unprotected
-- **No brute force protection** - Login/registration endpoints vulnerable
-- **No request throttling** - Public endpoints can be abused
-- **No upload rate limiting** - File uploads only have size limits (2MB)
-- **No payment protection** - Payment endpoints vulnerable to abuse
-- **No monitoring** - No tracking of abuse patterns
+### ✅ Implemented (Rate Limiting)
+- **Global API rate limiting** – 100 requests/minute per IP (slowapi + Redis; in-memory fallback).
+- **Brute force protection** – Login `POST /token`: 5 attempts per 15 minutes per IP; register `POST /register` and `POST /register/provider`: 3 per hour per IP.
+- **Payment protection** – `create-payment-intent` and `confirm-payment`: 10 requests/minute per IP.
+- **Monitoring** – Each 429 is logged (path, method, client IP). Client IP from `X-Forwarded-For` when behind proxy.
+- **Login UI** – Shows "Too many login attempts. Please try again later." on 429.
+- **Tests** – API test (`test:rate-limit`) and Puppeteer test (`test:rate-limit-puppeteer`). See `docs/0020-rate-limiting-production.md`.
+
+### ❌ Not Yet Implemented
+- **Public menu rate limiting** – `/menu/{table_token}`, `/menu/{table_token}/order` (e.g. 30/min per IP).
+- **Upload rate limiting** – File uploads only have size limits (2MB); no per-user/hour limit.
+- **Admin/management endpoint limits** – e.g. 30/min for `/tenant/settings`, `/tables`, etc.
+- **CAPTCHA** after failed login attempts (recommended after 3 attempts).
+- **Per-order payment attempt limits** – e.g. 3 payment attempts per order per hour (only global 10/min per IP today).
 
 ### ✅ Existing Infrastructure
-- Redis available (can be used for rate limiting storage)
+- Redis available (used for rate limiting storage)
 - JWT authentication in place
 - File size limits (2MB) for uploads
 - CORS middleware configured
@@ -255,18 +262,18 @@ async def login(...):
 
 ## Implementation Priority
 
-### 🔴 High Priority (Implement First)
-1. **Authentication endpoints** (`/token`, `/register`)
-2. **Global API rate limiting**
-3. **Payment endpoints**
+### 🔴 High Priority — ✅ Done
+1. **Authentication endpoints** (`/token`, `/register`) – 5/15min, 3/hour
+2. **Global API rate limiting** – 100/min per IP
+3. **Payment endpoints** – 10/min per IP
 
-### 🟡 Medium Priority
-1. **Public menu endpoints**
-2. **File upload endpoints**
-3. **Database-heavy endpoints**
+### 🟡 Medium Priority (Not Yet Done)
+1. **Public menu endpoints** – 30/min per IP, optional caching
+2. **File upload endpoints** – 10 uploads/hour per user
+3. **Database-heavy endpoints** – 60/min, catalog caching
 
 ### 🟢 Low Priority (Nice to Have)
-1. **Admin endpoints**
+1. **Admin endpoints** – 30/min
 2. **External API rate limiting (scripts)**
 3. **Advanced features** (IP blocklisting, CAPTCHA)
 
@@ -284,7 +291,7 @@ async def login(...):
    - Recommendation: Yes, after 3 failed attempts
 
 4. **Should we log all rate limit violations?**
-   - Recommendation: Yes, for security monitoring
+   - Recommendation: Yes, for security monitoring — **implemented** (each 429 logged with path, method, client)
 
 ---
 
@@ -320,19 +327,19 @@ RATE_LIMIT_ADMIN_PER_MINUTE=30
 
 ## Implementation Checklist
 
-- [ ] Install `slowapi` package
-- [ ] Configure Redis connection for rate limiting
-- [ ] Add global rate limiting middleware
-- [ ] Add authentication endpoint rate limits
-- [ ] Add payment endpoint rate limits
+- [x] Install `slowapi` package
+- [x] Configure Redis connection for rate limiting
+- [x] Add global rate limiting middleware
+- [x] Add authentication endpoint rate limits
+- [x] Add payment endpoint rate limits
 - [ ] Add public menu endpoint rate limits
 - [ ] Add file upload rate limits
-- [ ] Add rate limit headers to responses
-- [ ] Add logging for rate limit violations
-- [ ] Add environment variables for configuration
-- [ ] Test rate limiting with various scenarios
-- [ ] Document rate limits in API documentation
-- [ ] Set up monitoring/alerts for abuse patterns
+- [x] Add rate limit headers to responses
+- [x] Add logging for rate limit violations
+- [x] Add environment variables for configuration
+- [x] Test rate limiting with various scenarios (API + Puppeteer)
+- [x] Document rate limits (`docs/0020-rate-limiting-production.md`)
+- [ ] Set up monitoring/alerts for abuse patterns (logs exist; alerting optional)
 
 ---
 
