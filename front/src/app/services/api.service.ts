@@ -296,12 +296,36 @@ export interface TableCloseResponse {
   message: string;
 }
 
+export interface UpcomingReservationOnTable {
+  reservation_id: number;
+  reservation_time: string;
+  customer_name: string;
+}
+
 export interface CanvasTable extends Table {
   status?: 'available' | 'occupied' | 'reserved';
   assigned_waiter_id?: number | null;
   assigned_waiter_name?: string | null;
   effective_waiter_id?: number | null;
   effective_waiter_name?: string | null;
+  upcoming_reservation?: UpcomingReservationOnTable | null;
+}
+
+export interface OverbookingSlot {
+  reservation_time: string;
+  total_seats: number;
+  total_tables: number;
+  reserved_guests: number;
+  reserved_parties: number;
+  over_seats: boolean;
+  over_tables: boolean;
+}
+
+export interface OverbookingReport {
+  date: string;
+  total_seats: number;
+  total_tables: number;
+  slots: OverbookingSlot[];
 }
 
 export type ReservationStatus = 'booked' | 'seated' | 'finished' | 'cancelled' | 'no_show';
@@ -487,6 +511,7 @@ export interface SalesReport {
     total: number;
     by_source: { source: string; count: number }[];
     by_status?: { status: string; count: number }[];
+    overbooking_slots_count?: number;
   };
 }
 
@@ -762,6 +787,39 @@ export class ApiService {
     return this.http.get<Reservation>(`${this.apiUrl}/reservations/${id}`);
   }
 
+  getOverbookingReport(date: string, timeFrom?: string, timeTo?: string): Observable<OverbookingReport> {
+    let params = new HttpParams().set('date_str', date);
+    if (timeFrom) params = params.set('time_from', timeFrom);
+    if (timeTo) params = params.set('time_to', timeTo);
+    return this.http.get<OverbookingReport>(`${this.apiUrl}/reservations/overbooking-report`, { params });
+  }
+
+  getUpcomingNoTableCount(date: string, reservationId?: number): Observable<{ count: number }> {
+    let params = new HttpParams().set('date_str', date);
+    if (reservationId != null) params = params.set('reservation_id', reservationId.toString());
+    return this.http.get<{ count: number }>(`${this.apiUrl}/reservations/upcoming-no-table-count`, { params });
+  }
+
+  getSlotCapacity(date: string, time: string, excludeReservationId?: number): Observable<{
+    total_seats: number;
+    total_tables: number;
+    reserved_guests: number;
+    reserved_parties: number;
+    seats_left: number;
+    tables_left: number;
+  }> {
+    let params = new HttpParams().set('date_str', date).set('time_str', time);
+    if (excludeReservationId != null) params = params.set('exclude_reservation_id', excludeReservationId.toString());
+    return this.http.get<{
+      total_seats: number;
+      total_tables: number;
+      reserved_guests: number;
+      reserved_parties: number;
+      seats_left: number;
+      tables_left: number;
+    }>(`${this.apiUrl}/reservations/slot-capacity`, { params });
+  }
+
   createReservation(data: ReservationCreate): Observable<Reservation> {
     return this.http.post<Reservation>(`${this.apiUrl}/reservations`, data);
   }
@@ -806,10 +864,10 @@ export class ApiService {
     return this.http.post<Reservation>(`${this.apiUrl}/reservations`, data);
   }
 
-  getNextAvailableReservation(tenantId: number, date: string): Observable<{ date: string; time: string }> {
-    return this.http.get<{ date: string; time: string }>(`${this.apiUrl}/reservations/next-available`, {
-      params: { tenant_id: tenantId.toString(), date },
-    });
+  getNextAvailableReservation(tenantId: number, date: string, partySize?: number): Observable<{ date: string; time: string }> {
+    let params: Record<string, string> = { tenant_id: tenantId.toString(), date };
+    if (partySize != null && partySize > 0) params['party_size'] = String(partySize);
+    return this.http.get<{ date: string; time: string }>(`${this.apiUrl}/reservations/next-available`, { params });
   }
 
   cancelReservationPublic(id: number, token: string): Observable<Reservation> {
@@ -1307,5 +1365,10 @@ export class ApiService {
         u.role === 'kitchen' || u.role === 'bartender' || u.role === 'waiter'
       ))
     );
+  }
+
+  /** Changelog (CHANGELOG.md from project root, served by backend). */
+  getChangelog(): Observable<string> {
+    return this.http.get(`${this.apiUrl}/changelog`, { responseType: 'text' });
   }
 }

@@ -57,6 +57,12 @@
               <span class="card-value">{{ r.reservations.total }}</span>
             </div>
           }
+          @if ((r.reservations?.overbooking_slots_count ?? 0) > 0) {
+            <div class="summary-card overbooking">
+              <span class="card-label">{{ 'REPORTS.OVERBOOKING_SLOTS' | translate }}</span>
+              <span class="card-value">{{ r.reservations?.overbooking_slots_count }}</span>
+            </div>
+          }
         </div>
 
         <!-- Reservations by source -->

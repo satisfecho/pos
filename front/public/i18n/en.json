@@ -104,7 +104,11 @@
     "HELP_DESC": "We're here for you. Report a bug, ask a question, or share an idea.",
     "HELP_INVITE": "Start a discussion for enhancements or open an issue — we'd love to hear from you.",
     "HELP_ISSUES": "Report an issue (GitHub)",
-    "HELP_DISCUSSIONS": "Start a discussion (GitHub)"
+    "HELP_DISCUSSIONS": "Start a discussion (GitHub)",
+    "WHATS_NEW_TITLE": "What's new",
+    "WHATS_NEW_DESC": "Latest changes and new features",
+    "CHANGELOG_TITLE": "Changelog",
+    "CHANGELOG_LOADING": "Loading…"
   },
   "AUTH": {
     "LOGIN": "Login",
@@ -440,6 +444,7 @@
     "RESERVATIONS_TOTAL": "Total reservations",
     "RESERVATIONS_BY_SOURCE": "By source",
     "RESERVATIONS_BY_STATUS": "By status",
+    "OVERBOOKING_SLOTS": "Overbooked slots",
     "RESERVATIONS_SOURCE_PUBLIC": "Public (book page)",
     "RESERVATIONS_SOURCE_STAFF": "Staff",
     "SHARE": "%"
@@ -570,7 +575,12 @@
     "ERROR_FAILED_SEAT": "Failed to seat",
     "ERROR_FAILED": "Failed",
     "ERROR_MISSING_TOKEN": "Missing reservation token. Use the link from your confirmation.",
-    "ERROR_NOT_FOUND": "Reservation not found or link expired."
+    "ERROR_NOT_FOUND": "Reservation not found or link expired.",
+    "OVERBOOKED": "Overbooked",
+    "SEATS_LEFT": "Seats left",
+    "TABLES_LEFT": "Tables left",
+    "UPCOMING_NO_TABLE": "You have {{count}} upcoming reservation(s) today with no table assigned.",
+    "TABLE_UPCOMING": "Table {{table}} has an upcoming reservation at {{time}} ({{name}}). Seat here anyway?"
   },
   "WORKING_PLAN": {
     "TITLE": "Working plan",

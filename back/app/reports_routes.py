@@ -6,7 +6,7 @@ excludes removed and cancelled items. For restaurant owner revenue analysis.
 """
 
 from collections import defaultdict
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from io import BytesIO
 from typing import Annotated
 
@@ -178,6 +178,21 @@ def _build_report_payload(tenant_id: int, session: Session, from_date: date, to_
         source = "public" if r.token else "staff"
         by_source[source] += 1
         by_status[r.status.value] += 1
+
+    # Overbooking: count slots (date, time) in range where reserved_guests > total_seats or reserved_parties > total_tables
+    tables = session.exec(select(models.Table).where(models.Table.tenant_id == tenant_id)).all()
+    total_seats = sum(t.seat_count for t in tables)
+    total_tables = len(tables)
+    active_reservations = [r for r in reservations if r.status in (models.ReservationStatus.booked, models.ReservationStatus.seated)]
+    slot_aggregates: dict[tuple[date, time], tuple[int, int]] = defaultdict(lambda: (0, 0))  # (guests, parties)
+    for r in active_reservations:
+        key = (r.reservation_date, r.reservation_time)
+        g, p = slot_aggregates[key]
+        slot_aggregates[key] = (g + r.party_size, p + 1)
+    overbooking_slots_count = sum(
+        1 for (g, p) in slot_aggregates.values() if g > total_seats or p > total_tables
+    )
+
     reservations_summary = {
         "total": total_reservations,
         "by_source": [
@@ -186,6 +201,7 @@ def _build_report_payload(tenant_id: int, session: Session, from_date: date, to_
         "by_status": [
             {"status": k, "count": v} for k, v in sorted(by_status.items(), key=lambda x: -x[1])
         ],
+        "overbooking_slots_count": overbooking_slots_count,
     }
 
     average_revenue_per_order_cents = (

@@ -16,6 +16,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Angular hydration (NG0505)**: Added `provideClientHydration(withEventReplay())` to the server app config (`app.config.server.ts`) so the server includes serialized hydration data in the response when using SSR. This removes the console warning "Angular hydration was requested on the client, but there was no serialized information present in the server response."
 - **Deploy (amvara9) – front CSS / stale build**: Deploy script now builds the front image with `--no-cache` so each deploy serves assets from the current code (fixes wrong styling e.g. Settings > Opening hours). Nginx in the front container sends `Cache-Control: no-cache` for the HTML document so clients get new hashed asset URLs after deploy. See `docs/0024-deploy-css-fix-amvara9.md`.
 
+## [2.0.3] - 2026-03-17
+
+### Added
+
+- **Reservations – overbooking detection and seating warnings (0025)**: Per-slot capacity checks and warnings. **Backend:** Capacity/demand helpers; `GET /reservations/overbooking-report` (per-slot metrics: over_seats, over_tables); `GET /reservations/slot-capacity` (seats/tables left for create/edit); `GET /reservations/upcoming-no-table-count` (for seat modal); create/update reservation returns 400 when slot would be over capacity; `GET /reservations/next-available` uses capacity (party_size param) instead of "first empty slot"; `GET /tables/with-status` includes `upcoming_reservation` per reserved table; reports payload adds `reservations.overbooking_slots_count`. **Frontend:** Reservations list shows "Overbooked" badge for over-capacity slots; create/edit shows seats left and tables left, keeps form open on 400; seat modal shows "You have N upcoming reservation(s) today with no table assigned" and per-table "Table X has an upcoming reservation at HH:MM (Name). Seat here anyway?"; reports show Overbooked slots card when count > 0. i18n: `RESERVATIONS.OVERBOOKED`, `SEATS_LEFT`, `TABLES_LEFT`, `UPCOMING_NO_TABLE`, `TABLE_UPCOMING`; `REPORTS.OVERBOOKING_SLOTS` (en, es). See `docs/0025-reservation-overbooking-detection.md`.
+
 ## [2.0.2] - 2026-03-17
 
 ### Added

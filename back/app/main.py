@@ -13,7 +13,7 @@ import redis
 import stripe
 from fastapi import Depends, FastAPI, HTTPException, UploadFile, File, status, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel as _BaseModel
@@ -456,6 +456,26 @@ def on_startup() -> None:
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok"}
+
+
+def _changelog_path() -> Path | None:
+    """Resolve CHANGELOG.md: back dir (Docker mount) or project root (local)."""
+    base = Path(__file__).resolve().parent.parent  # back/
+    for candidate in (base / "CHANGELOG.md", base.parent / "CHANGELOG.md"):
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+@app.get("/changelog", response_class=PlainTextResponse)
+def get_changelog(
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+) -> str:
+    """Return the project CHANGELOG.md as plain text. Requires authentication."""
+    path = _changelog_path()
+    if not path:
+        raise HTTPException(status_code=404, detail="Changelog not found")
+    return path.read_text(encoding="utf-8")
 
 
 @app.get("/health/db")
@@ -3091,13 +3111,13 @@ def list_tables_with_status(
     current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_READ))],
     session: Session = Depends(get_session),
 ) -> list[dict]:
-    """List tables with computed status: available, reserved, or occupied."""
+    """List tables with computed status: available, reserved, or occupied. Reserved tables include upcoming_reservation when time is in the future."""
     tables = session.exec(
         select(models.Table).where(models.Table.tenant_id == current_user.tenant_id)
     ).all()
     today_utc = datetime.now(timezone.utc).date()
+    now_utc = datetime.now(timezone.utc).time()
 
-    # Resolve waiter assignments
     waiter_ids = set()
     floor_ids = set()
     for t in tables:
@@ -3125,7 +3145,6 @@ def list_tables_with_status(
 
     result = []
     for table in tables:
-        # Occupied: active order (pending, preparing, ready) or reservation seated at this table
         active_order = session.exec(
             select(models.Order).where(
                 models.Order.table_id == table.id,
@@ -3140,8 +3159,8 @@ def list_tables_with_status(
         ).first()
         if active_order or seated_here:
             status = "occupied"
+            upcoming_reservation = None
         else:
-            # Reserved: a booked reservation is assigned to this table (date >= today)
             reserved_here = session.exec(
                 select(models.Reservation).where(
                     models.Reservation.table_id == table.id,
@@ -3150,29 +3169,37 @@ def list_tables_with_status(
                 )
             ).first()
             status = "reserved" if reserved_here else "available"
+            upcoming_reservation = None
+            if reserved_here and (reserved_here.reservation_date > today_utc or reserved_here.reservation_time > now_utc):
+                upcoming_reservation = {
+                    "reservation_id": reserved_here.id,
+                    "reservation_time": reserved_here.reservation_time.strftime("%H:%M"),
+                    "customer_name": reserved_here.customer_name or "",
+                }
         effective_waiter_id = table.assigned_waiter_id or floor_waiter_map.get(table.floor_id)
 
-        result.append(
-            {
-                "id": table.id,
-                "name": table.name,
-                "token": table.token,
-                "tenant_id": table.tenant_id,
-                "floor_id": table.floor_id,
-                "x_position": table.x_position,
-                "y_position": table.y_position,
-                "rotation": table.rotation,
-                "shape": table.shape,
-                "width": table.width,
-                "height": table.height,
-                "seat_count": table.seat_count,
-                "status": status,
-                "assigned_waiter_id": table.assigned_waiter_id,
-                "assigned_waiter_name": waiter_map.get(table.assigned_waiter_id) if table.assigned_waiter_id else None,
-                "effective_waiter_id": effective_waiter_id,
-                "effective_waiter_name": waiter_map.get(effective_waiter_id) if effective_waiter_id else None,
-            }
-        )
+        row = {
+            "id": table.id,
+            "name": table.name,
+            "token": table.token,
+            "tenant_id": table.tenant_id,
+            "floor_id": table.floor_id,
+            "x_position": table.x_position,
+            "y_position": table.y_position,
+            "rotation": table.rotation,
+            "shape": table.shape,
+            "width": table.width,
+            "height": table.height,
+            "seat_count": table.seat_count,
+            "status": status,
+            "assigned_waiter_id": table.assigned_waiter_id,
+            "assigned_waiter_name": waiter_map.get(table.assigned_waiter_id) if table.assigned_waiter_id else None,
+            "effective_waiter_id": effective_waiter_id,
+            "effective_waiter_name": waiter_map.get(effective_waiter_id) if effective_waiter_id else None,
+        }
+        if upcoming_reservation is not None:
+            row["upcoming_reservation"] = upcoming_reservation
+        result.append(row)
 
     return result
 
@@ -3370,6 +3397,176 @@ def _reservation_to_dict(r: models.Reservation, session: Session | None = None) 
     return out
 
 
+def _capacity_for_tenant(session: Session, tenant_id: int) -> tuple[int, int]:
+    """Return (total_seats, total_tables) for the tenant."""
+    tables = session.exec(
+        select(models.Table).where(models.Table.tenant_id == tenant_id)
+    ).all()
+    total_seats = sum(t.seat_count for t in tables)
+    return (total_seats, len(tables))
+
+
+def _demand_for_slot(
+    session: Session,
+    tenant_id: int,
+    slot_date: date,
+    slot_time: time,
+    exclude_reservation_id: int | None = None,
+) -> tuple[int, int]:
+    """Return (reserved_guests, reserved_parties) for the slot. Active = booked, seated."""
+    q = select(models.Reservation).where(
+        models.Reservation.tenant_id == tenant_id,
+        models.Reservation.reservation_date == slot_date,
+        models.Reservation.reservation_time == slot_time,
+        models.Reservation.status.in_([models.ReservationStatus.booked, models.ReservationStatus.seated]),
+    )
+    if exclude_reservation_id is not None:
+        q = q.where(models.Reservation.id != exclude_reservation_id)
+    reservations = session.exec(q).all()
+    reserved_guests = sum(r.party_size for r in reservations)
+    return (reserved_guests, len(reservations))
+
+
+@app.get("/reservations/slot-capacity")
+def get_slot_capacity(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.RESERVATION_READ))],
+    session: Session = Depends(get_session),
+    date_str: str = Query(..., description="Date YYYY-MM-DD"),
+    time_str: str = Query(..., description="Time HH:MM"),
+    exclude_reservation_id: int | None = Query(None, description="Exclude this reservation (for edit)"),
+) -> dict:
+    """Capacity and demand for one slot (for create/edit form). Staff only."""
+    try:
+        d = _parse_reservation_date(date_str)
+        slot_time = _parse_reservation_time(time_str)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    tenant_id = current_user.tenant_id
+    total_seats, total_tables = _capacity_for_tenant(session, tenant_id)
+    reserved_guests, reserved_parties = _demand_for_slot(
+        session, tenant_id, d, slot_time, exclude_reservation_id=exclude_reservation_id
+    )
+    return {
+        "total_seats": total_seats,
+        "total_tables": total_tables,
+        "reserved_guests": reserved_guests,
+        "reserved_parties": reserved_parties,
+        "seats_left": max(0, total_seats - reserved_guests),
+        "tables_left": max(0, total_tables - reserved_parties),
+    }
+
+
+@app.get("/reservations/upcoming-no-table-count")
+def get_upcoming_reservations_no_table_count(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.RESERVATION_READ))],
+    session: Session = Depends(get_session),
+    date_str: str = Query(..., description="Date YYYY-MM-DD (e.g. reservation date for seat modal)"),
+    reservation_id: int | None = Query(None, description="If seating this reservation, exclude it and count others at same time or later"),
+) -> dict:
+    """Count of other booked reservations on the given date with no table assigned (for seat modal warning). Staff only."""
+    try:
+        d = _parse_reservation_date(date_str)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    tenant_id = current_user.tenant_id
+
+    q = select(models.Reservation).where(
+        models.Reservation.tenant_id == tenant_id,
+        models.Reservation.reservation_date == d,
+        models.Reservation.status == models.ReservationStatus.booked,
+        models.Reservation.table_id.is_(None),
+    )
+    if reservation_id is not None:
+        res = session.exec(
+            select(models.Reservation).where(
+                models.Reservation.id == reservation_id,
+                models.Reservation.tenant_id == tenant_id,
+            )
+        ).first()
+        if res:
+            q = q.where(models.Reservation.id != reservation_id)
+            q = q.where(models.Reservation.reservation_time >= res.reservation_time)
+        # else reservation not found; count all
+    else:
+        today_utc = datetime.now(timezone.utc).date()
+        now_utc = datetime.now(timezone.utc).time()
+        if d == today_utc:
+            q = q.where(models.Reservation.reservation_time > now_utc)
+
+    count = len(session.exec(q).all())
+    return {"count": count}
+
+
+@app.get("/reservations/overbooking-report")
+def get_reservations_overbooking_report(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.RESERVATION_READ))],
+    session: Session = Depends(get_session),
+    date_str: str = Query(..., description="Date YYYY-MM-DD"),
+    time_from: str | None = Query(None, description="Start time HH:MM (optional)"),
+    time_to: str | None = Query(None, description="End time HH:MM (optional)"),
+) -> dict:
+    """Per-slot overbooking metrics for the given date. Staff only."""
+    try:
+        d = _parse_reservation_date(date_str)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    tenant_id = current_user.tenant_id
+    total_seats, total_tables = _capacity_for_tenant(session, tenant_id)
+
+    # Collect slot times: distinct reservation times on that date, or default 08:00–23:00 in 15-min steps
+    reservations_on_date = session.exec(
+        select(models.Reservation.reservation_time).where(
+            models.Reservation.tenant_id == tenant_id,
+            models.Reservation.reservation_date == d,
+            models.Reservation.status.in_([models.ReservationStatus.booked, models.ReservationStatus.seated]),
+        ).distinct()
+    ).all()
+    slot_times_set: set[time] = set(reservations_on_date)
+    if not slot_times_set:
+        for h in range(8, 23):
+            for m in (0, 15, 30, 45):
+                slot_times_set.add(time(h, m))
+    slot_times = sorted(slot_times_set)
+
+    time_from_parsed: time | None = None
+    time_to_parsed: time | None = None
+    if time_from:
+        try:
+            time_from_parsed = _parse_reservation_time(time_from)
+        except ValueError:
+            pass
+    if time_to:
+        try:
+            time_to_parsed = _parse_reservation_time(time_to)
+        except ValueError:
+            pass
+    if time_from_parsed is not None:
+        slot_times = [t for t in slot_times if t >= time_from_parsed]
+    if time_to_parsed is not None:
+        slot_times = [t for t in slot_times if t <= time_to_parsed]
+
+    slots = []
+    for slot_time in slot_times:
+        reserved_guests, reserved_parties = _demand_for_slot(session, tenant_id, d, slot_time)
+        over_seats = reserved_guests > total_seats
+        over_tables = reserved_parties > total_tables
+        slots.append({
+            "reservation_time": slot_time.strftime("%H:%M"),
+            "total_seats": total_seats,
+            "total_tables": total_tables,
+            "reserved_guests": reserved_guests,
+            "reserved_parties": reserved_parties,
+            "over_seats": over_seats,
+            "over_tables": over_tables,
+        })
+    return {
+        "date": d.isoformat(),
+        "total_seats": total_seats,
+        "total_tables": total_tables,
+        "slots": slots,
+    }
+
+
 @app.post("/reservations")
 def create_reservation(
     body: models.ReservationCreate,
@@ -3402,6 +3599,13 @@ def create_reservation(
     if res_date == now_local.date():
         if res_time <= now_local.time():
             raise HTTPException(status_code=400, detail="Reservation time must be in the future")
+    total_seats, total_tables = _capacity_for_tenant(session, tenant_id)
+    reserved_guests, reserved_parties = _demand_for_slot(session, tenant_id, res_date, res_time, exclude_reservation_id=None)
+    if reserved_guests + data.party_size > total_seats or reserved_parties + 1 > total_tables:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Slot is over capacity: {reserved_guests + data.party_size} guests / {reserved_parties + 1} parties for this time (max {total_seats} seats, {total_tables} tables).",
+        )
     token_str = str(uuid4()) if not current_user else None
     reservation = models.Reservation(
         tenant_id=tenant_id,
@@ -3449,17 +3653,18 @@ def list_reservations(
 def get_next_available_reservation_time(
     tenant_id: int = Query(...),
     date_str: str = Query(..., alias="date"),
+    party_size: int = Query(2, ge=1, le=100, description="Party size for capacity check"),
     session: Session = Depends(get_session),
 ) -> dict:
-    """Public: find the next available hourly slot for a reservation."""
+    """Public: find the next slot with capacity (by seats and table count)."""
     tenant = session.get(models.Tenant, tenant_id)
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
 
     tz = ZoneInfo(tenant.timezone) if tenant.timezone else timezone.utc
     now_local = datetime.now(tz)
+    total_seats, total_tables = _capacity_for_tenant(session, tenant_id)
 
-    # Parse opening hours
     opening_hours = {}
     if tenant.opening_hours:
         try:
@@ -3469,7 +3674,6 @@ def get_next_available_reservation_time(
 
     day_names = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
-    # Try the requested date and up to 7 more days
     try:
         check_date = _parse_reservation_date(date_str)
     except ValueError as e:
@@ -3489,28 +3693,17 @@ def get_next_available_reservation_time(
         except (ValueError, AttributeError):
             continue
 
-        # Generate 15-minute slots (:00, :15, :30, :45) from open to before close
         for slot_hour in range(open_h, close_h + 1):
             for slot_min in (0, 15, 30, 45):
                 if slot_hour == close_h and slot_min >= close_m:
                     break
                 slot_time = time(slot_hour, slot_min)
 
-                # Skip past slots if today
                 if d == now_local.date() and slot_time <= now_local.time():
                     continue
 
-                # Check for existing reservations at this slot
-                existing = session.exec(
-                    select(models.Reservation).where(
-                        models.Reservation.tenant_id == tenant_id,
-                        models.Reservation.reservation_date == d,
-                        models.Reservation.reservation_time == slot_time,
-                        models.Reservation.status.in_(["booked", "seated"]),
-                    )
-                ).first()
-
-                if not existing:
+                reserved_guests, reserved_parties = _demand_for_slot(session, tenant_id, d, slot_time, exclude_reservation_id=None)
+                if reserved_guests + party_size <= total_seats and reserved_parties + 1 <= total_tables:
                     return {
                         "date": d.isoformat(),
                         "time": slot_time.strftime("%H:%M"),
@@ -3581,6 +3774,19 @@ def update_reservation(
         reservation.reservation_time = _parse_reservation_time(body.reservation_time)
     if body.party_size is not None:
         reservation.party_size = body.party_size
+    total_seats, total_tables = _capacity_for_tenant(session, current_user.tenant_id)
+    reserved_guests, reserved_parties = _demand_for_slot(
+        session,
+        current_user.tenant_id,
+        reservation.reservation_date,
+        reservation.reservation_time,
+        exclude_reservation_id=reservation_id,
+    )
+    if reserved_guests + reservation.party_size > total_seats or reserved_parties + 1 > total_tables:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Slot is over capacity: {reserved_guests + reservation.party_size} guests / {reserved_parties + 1} parties for this time (max {total_seats} seats, {total_tables} tables).",
+        )
     reservation.updated_at = datetime.now(timezone.utc)
     session.add(reservation)
     session.commit()

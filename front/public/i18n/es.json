@@ -104,7 +104,11 @@
     "HELP_DESC": "Estamos contigo. Reporta un fallo, haz una pregunta o comparte una idea.",
     "HELP_INVITE": "Abre una discusión para mejoras o un issue — nos encantaría saber de ti.",
     "HELP_ISSUES": "Reportar un problema (GitHub)",
-    "HELP_DISCUSSIONS": "Iniciar una discusión (GitHub)"
+    "HELP_DISCUSSIONS": "Iniciar una discusión (GitHub)",
+    "WHATS_NEW_TITLE": "Qué hay de nuevo",
+    "WHATS_NEW_DESC": "Últimos cambios y nuevas funciones",
+    "CHANGELOG_TITLE": "Registro de cambios",
+    "CHANGELOG_LOADING": "Cargando…"
   },
   "AUTH": {
     "LOGIN": "Iniciar sesión",
@@ -441,6 +445,7 @@
     "RESERVATIONS_TOTAL": "Total reservas",
     "RESERVATIONS_BY_SOURCE": "Por origen",
     "RESERVATIONS_BY_STATUS": "Por estado",
+    "OVERBOOKING_SLOTS": "Franjas sobreservadas",
     "RESERVATIONS_SOURCE_PUBLIC": "Público (página reservar)",
     "RESERVATIONS_SOURCE_STAFF": "Personal",
     "SHARE": "%"
@@ -571,7 +576,12 @@
     "ERROR_FAILED_SEAT": "Error al sentar",
     "ERROR_FAILED": "Error",
     "ERROR_MISSING_TOKEN": "Falta el token de reservación. Usa el enlace de tu confirmación.",
-    "ERROR_NOT_FOUND": "Reservación no encontrada o enlace expirado."
+    "ERROR_NOT_FOUND": "Reservación no encontrada o enlace expirado.",
+    "OVERBOOKED": "Sobrereservado",
+    "SEATS_LEFT": "Asientos libres",
+    "TABLES_LEFT": "Mesas libres",
+    "UPCOMING_NO_TABLE": "Tienes {{count}} reserva(s) hoy sin mesa asignada.",
+    "TABLE_UPCOMING": "La mesa {{table}} tiene una reserva a las {{time}} ({{name}}). ¿Sentar aquí igualmente?"
   },
   "WORKING_PLAN": {
     "TITLE": "Plan de trabajo",

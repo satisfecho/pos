@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { LowerCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService, Reservation, ReservationCreate, ReservationUpdate, ReservationStatus, CanvasTable } from '../services/api.service';
+import { ApiService, Reservation, ReservationCreate, ReservationUpdate, ReservationStatus, CanvasTable, OverbookingReport } from '../services/api.service';
 import { PermissionService } from '../services/permission.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { ConfirmationModalComponent } from '../shared/confirmation-modal.component';
@@ -56,6 +56,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                 <span class="res-id">#{{ r.id }}</span>
                 <span class="res-name">{{ r.customer_name }}</span>
                 <span class="status-badge" [class]="r.status">{{ getStatusLabel(r.status) | translate }}</span>
+                @if (isSlotOverbooked(r)) {
+                  <span class="overbooked-badge">{{ 'RESERVATIONS.OVERBOOKED' | translate }}</span>
+                }
               </div>
               <div class="card-body">
                 <div>{{ r.reservation_date }} {{ r.reservation_time }}</div>
@@ -112,19 +115,22 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               </div>
               <div class="form-group">
                 <label>{{ 'RESERVATIONS.DATE' | translate }}</label>
-                <input type="date" [(ngModel)]="formDate" (ngModelChange)="onFormDateChange($event)" />
+                <input type="date" [(ngModel)]="formDate" (ngModelChange)="onFormDateChange($event); loadSlotCapacity()" />
               </div>
               <div class="form-group">
                 <label>{{ 'RESERVATIONS.TIME' | translate }}</label>
-                <input type="time" [(ngModel)]="formTime" />
+                <input type="time" [(ngModel)]="formTime" (ngModelChange)="loadSlotCapacity()" />
                 @if (suggestedTime()) {
                   <small class="suggested-time" (click)="formTime = suggestedTime()!">{{ 'RESERVATIONS.SUGGESTED_TIME' | translate }}: {{ suggestedTime() }}</small>
                 }
               </div>
               <div class="form-group">
                 <label>{{ 'RESERVATIONS.PARTY_SIZE' | translate }}</label>
-                <input type="number" min="1" max="20" [(ngModel)]="formPartySize" />
+                <input type="number" min="1" max="20" [(ngModel)]="formPartySize" (ngModelChange)="loadSlotCapacity()" />
               </div>
+              @if (slotCapacity(); as cap) {
+                <p class="slot-capacity">{{ 'RESERVATIONS.SEATS_LEFT' | translate }}: {{ cap.seats_left }} · {{ 'RESERVATIONS.TABLES_LEFT' | translate }}: {{ cap.tables_left }}</p>
+              }
               @if (formError()) {
                 <div class="form-error">{{ formError() }}</div>
               }
@@ -148,12 +154,20 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               </button>
             </div>
             <div class="modal-body">
+              @if (upcomingNoTableCount() !== null && upcomingNoTableCount()! > 0) {
+                <p class="upcoming-no-table-warning">{{ 'RESERVATIONS.UPCOMING_NO_TABLE' | translate: { count: upcomingNoTableCount()! } }}</p>
+              }
               <p>{{ 'RESERVATIONS.PARTY_SIZE' | translate }}: {{ reservationToSeat()?.party_size }}</p>
               <div class="table-list">
                 @for (t of availableTablesForSeat(); track t.id) {
-                  <button class="table-option" (click)="seatAt(t.id!)">
-                    {{ t.name }} ({{ t.seat_count }} {{ 'TABLES.SEATS' | translate | lowercase }})
-                  </button>
+                  <div class="table-option-wrap">
+                    @if (t.upcoming_reservation) {
+                      <p class="table-upcoming-warning">{{ 'RESERVATIONS.TABLE_UPCOMING' | translate: { table: t.name, time: t.upcoming_reservation.reservation_time, name: t.upcoming_reservation.customer_name } }}</p>
+                    }
+                    <button class="table-option" (click)="seatAt(t.id!)">
+                      {{ t.name }} ({{ t.seat_count }} {{ 'TABLES.SEATS' | translate | lowercase }})
+                    </button>
+                  </div>
                 }
               </div>
               @if (availableTablesForSeat().length === 0) {
@@ -227,6 +241,11 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     .table-option { padding: 0.5rem 1rem; text-align: left; border: 1px solid #e5e7eb; border-radius: 4px; background: #fff; cursor: pointer; }
     .table-option:hover { background: #f3f4f6; }
     .no-tables { color: #6b7280; }
+    .overbooked-badge { font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; background: #fef2f2; color: #b91c1c; margin-left: 0.25rem; }
+    .slot-capacity { font-size: 0.875rem; color: #4b5563; margin-bottom: 0.5rem; }
+    .upcoming-no-table-warning { background: #fef3c7; padding: 0.5rem; border-radius: 4px; margin-bottom: 0.75rem; font-size: 0.875rem; }
+    .table-option-wrap { margin-bottom: 0.5rem; }
+    .table-upcoming-warning { font-size: 0.8rem; color: #b45309; margin-bottom: 0.25rem; }
     .empty-state { text-align: center; padding: 2rem; color: #6b7280; }
     .btn.danger { color: #dc2626; }
     .btn.no-show-btn { color: #b45309; }
@@ -257,6 +276,9 @@ export class ReservationsComponent implements OnInit {
   reservationToCancel = signal<Reservation | null>(null);
   reservationToNoShow = signal<Reservation | null>(null);
   sendingReminderId = signal<number | null>(null);
+  overbookingReport = signal<OverbookingReport | null>(null);
+  slotCapacity = signal<{ seats_left: number; tables_left: number } | null>(null);
+  upcomingNoTableCount = signal<number | null>(null);
 
   canWrite = () => this.permissions.hasPermission(this.permissions.getCurrentUser(), 'reservation:write');
 
@@ -277,6 +299,14 @@ export class ReservationsComponent implements OnInit {
       next: (list) => { this.reservations.set(list); this.loading.set(false); },
       error: () => this.loading.set(false),
     });
+    if (this.filterDate) {
+      this.api.getOverbookingReport(this.filterDate).subscribe({
+        next: (report) => this.overbookingReport.set(report),
+        error: () => this.overbookingReport.set(null),
+      });
+    } else {
+      this.overbookingReport.set(null);
+    }
   }
 
   loadTables() {
@@ -305,6 +335,14 @@ export class ReservationsComponent implements OnInit {
     return this.translate.instant('RESERVATIONS.TABLE_NOT_ASSIGNED');
   }
 
+  isSlotOverbooked(r: Reservation): boolean {
+    const report = this.overbookingReport();
+    if (!report?.slots?.length) return false;
+    const timeKey = r.reservation_time.slice(0, 5);
+    const slot = report.slots.find(s => s.reservation_time === timeKey || s.reservation_time === r.reservation_time);
+    return slot ? (slot.over_seats || slot.over_tables) : false;
+  }
+
   openCreate() {
     this.editingReservation.set(null);
     const today = new Date().toISOString().slice(0, 10);
@@ -315,22 +353,36 @@ export class ReservationsComponent implements OnInit {
     this.formTime = '19:00';
     this.formPartySize = 2;
     this.formError.set(null);
+    this.slotCapacity.set(null);
     this.suggestedTime.set(null);
     this.showForm.set(true);
     this.onFormDateChange(today);
+    this.loadSlotCapacity();
   }
 
   onFormDateChange(dateStr: string) {
     const tenantId = this.permissions.getCurrentUser()?.tenant_id;
     if (!tenantId || !dateStr) return;
-    this.api.getNextAvailableReservation(tenantId, dateStr).subscribe({
+    const partySize = this.formPartySize || 2;
+    this.api.getNextAvailableReservation(tenantId, dateStr, partySize).subscribe({
       next: (res) => {
         this.suggestedTime.set(res.time);
         if (!this.editingReservation()) {
           this.formTime = res.time;
         }
+        this.loadSlotCapacity();
       },
       error: () => this.suggestedTime.set(null),
+    });
+  }
+
+  loadSlotCapacity() {
+    if (!this.formDate || !this.formTime || !this.showForm()) return;
+    const timeNorm = this.formTime.length >= 5 ? this.formTime.slice(0, 5) : this.formTime;
+    const excludeId = this.editingReservation()?.id;
+    this.api.getSlotCapacity(this.formDate, timeNorm, excludeId).subscribe({
+      next: (cap) => this.slotCapacity.set({ seats_left: cap.seats_left, tables_left: cap.tables_left }),
+      error: () => this.slotCapacity.set(null),
     });
   }
 
@@ -343,7 +395,9 @@ export class ReservationsComponent implements OnInit {
     this.formTime = r.reservation_time.length >= 5 ? r.reservation_time.slice(0, 5) : r.reservation_time;
     this.formPartySize = r.party_size;
     this.formError.set(null);
+    this.slotCapacity.set(null);
     this.showForm.set(true);
+    this.loadSlotCapacity();
   }
 
   closeForm() {
@@ -378,12 +432,12 @@ export class ReservationsComponent implements OnInit {
         party_size: payload.party_size,
       };
       this.api.updateReservation(this.editingReservation()!.id, update).subscribe({
-        next: () => { this.closeForm(); this.load(); },
+        next: () => { this.closeForm(); this.load(); this.loadTables(); },
         error: (e) => this.formError.set(e.error?.detail || this.translate.instant('RESERVATIONS.ERROR_FAILED_UPDATE')),
       });
     } else {
       this.api.createReservation(payload).subscribe({
-        next: () => { this.closeForm(); this.load(); },
+        next: () => { this.closeForm(); this.load(); this.loadTables(); },
         error: (e) => this.formError.set(e.error?.detail || this.translate.instant('RESERVATIONS.ERROR_FAILED_CREATE')),
       });
     }
@@ -391,11 +445,18 @@ export class ReservationsComponent implements OnInit {
 
   openSeat(r: Reservation) {
     this.reservationToSeat.set(r);
+    this.upcomingNoTableCount.set(null);
     this.loadTables();
+    const dateStr = r.reservation_date.slice(0, 10);
+    this.api.getUpcomingNoTableCount(dateStr, r.id).subscribe({
+      next: (res) => this.upcomingNoTableCount.set(res.count),
+      error: () => this.upcomingNoTableCount.set(0),
+    });
   }
 
   closeSeatModal() {
     this.reservationToSeat.set(null);
+    this.upcomingNoTableCount.set(null);
   }
 
   availableTablesForSeat = computed(() => {
