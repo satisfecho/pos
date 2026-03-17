@@ -68,7 +68,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               </div>
               <div class="card-actions">
                 @if (r.status === 'booked' && canWrite()) {
-                  @if (r.customer_email) {
+                  @if (r.customer_email || r.customer_phone) {
                     <button class="btn btn-ghost btn-sm" (click)="sendReminder(r)" [disabled]="sendingReminderId() === r.id" [title]="'RESERVATIONS.SEND_REMINDER' | translate">
                       {{ sendingReminderId() === r.id ? ('COMMON.LOADING' | translate) : ('RESERVATIONS.SEND_REMINDER' | translate) }}
                     </button>
@@ -443,15 +443,29 @@ export class ReservationsComponent implements OnInit {
   sendReminder(r: Reservation) {
     this.sendingReminderId.set(r.id);
     this.api.sendReservationReminder(r.id).subscribe({
-      next: () => {
+      next: (res) => {
         this.sendingReminderId.set(null);
-        alert(this.translate.instant('RESERVATIONS.REMINDER_SENT'));
+        const msg = this.reminderSuccessMessage(res);
+        alert(msg);
       },
       error: (e) => {
         this.sendingReminderId.set(null);
         alert(e.error?.detail || this.translate.instant('RESERVATIONS.REMINDER_FAILED'));
       },
     });
+  }
+
+  private reminderSuccessMessage(res: { email_sent: boolean; whatsapp_sent: boolean }): string {
+    if (res.email_sent && res.whatsapp_sent) {
+      return this.translate.instant('RESERVATIONS.REMINDER_SENT_EMAIL_AND_WHATSAPP');
+    }
+    if (res.whatsapp_sent) {
+      return this.translate.instant('RESERVATIONS.REMINDER_SENT_WHATSAPP');
+    }
+    if (res.email_sent) {
+      return this.translate.instant('RESERVATIONS.REMINDER_SENT_EMAIL');
+    }
+    return this.translate.instant('RESERVATIONS.REMINDER_FAILED');
   }
 
   finish(r: Reservation) {

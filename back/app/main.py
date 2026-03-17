@@ -30,6 +30,8 @@ from .translation_service import TranslationService
 from .messages import get_message
 from .permissions import Permission, require_permission, require_role, has_permission
 from . import email_service as email_svc
+from . import whatsapp_service as whatsapp_svc
+from .phone_utils import normalize_phone_to_e164
 
 # Rate limiting (slowapi)
 try:
@@ -2755,6 +2757,200 @@ def assign_waiter_to_floor(
     }
 
 
+# ============ WORKING PLAN (SCHEDULE) ============
+
+def _shift_to_dict(shift: models.Shift, user_name: str, user_role: str) -> dict:
+    """Build shift response with user name and role."""
+    return {
+        "id": shift.id,
+        "tenant_id": shift.tenant_id,
+        "user_id": shift.user_id,
+        "user_name": user_name,
+        "user_role": user_role,
+        "date": shift.shift_date.isoformat() if shift.shift_date else None,
+        "start_time": shift.start_time.strftime("%H:%M") if shift.start_time else None,
+        "end_time": shift.end_time.strftime("%H:%M") if shift.end_time else None,
+        "label": shift.label,
+        "created_at": shift.created_at.isoformat() if shift.created_at else None,
+        "updated_at": shift.updated_at.isoformat() if shift.updated_at else None,
+    }
+
+
+@app.get("/schedule")
+def list_schedule(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SCHEDULE_READ))],
+    session: Session = Depends(get_session),
+    from_date: str = Query(..., description="Start date YYYY-MM-DD"),
+    to_date: str = Query(..., description="End date YYYY-MM-DD"),
+) -> list[dict]:
+    """List shifts for the tenant in the given date range (inclusive)."""
+    from datetime import datetime as dt_parse
+    try:
+        fd = dt_parse.strptime(from_date, "%Y-%m-%d").date()
+        td = dt_parse.strptime(to_date, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format; use YYYY-MM-DD")
+    if fd > td:
+        raise HTTPException(status_code=400, detail="from_date must be <= to_date")
+    shifts = session.exec(
+        select(models.Shift)
+        .where(models.Shift.tenant_id == current_user.tenant_id)
+        .where(models.Shift.shift_date >= fd)
+        .where(models.Shift.shift_date <= td)
+    ).all()
+    user_ids = {s.user_id for s in shifts}
+    user_map: dict[int, tuple[str, str]] = {}
+    if user_ids:
+        users = session.exec(
+            select(models.User).where(models.User.id.in_(user_ids))
+        ).all()
+        for u in users:
+            user_map[u.id] = (u.full_name or u.email or "", u.role.value if u.role else "")
+    return [_shift_to_dict(s, user_map.get(s.user_id, ("", ""))[0], user_map.get(s.user_id, ("", ""))[1]) for s in shifts]
+
+
+@app.get("/schedule/{shift_id}")
+def get_shift(
+    shift_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SCHEDULE_READ))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Get one shift by id."""
+    shift = session.exec(
+        select(models.Shift).where(
+            models.Shift.id == shift_id,
+            models.Shift.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not shift:
+        raise HTTPException(status_code=404, detail="Shift not found")
+    user = session.get(models.User, shift.user_id)
+    user_name = (user.full_name or user.email or "") if user else ""
+    user_role = user.role.value if user and user.role else ""
+    return _shift_to_dict(shift, user_name, user_role)
+
+
+@app.post("/schedule")
+def create_shift(
+    body: models.ShiftCreate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SCHEDULE_WRITE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Create a shift. User must belong to tenant and have role kitchen, bartender, or waiter."""
+    from datetime import datetime as dt_parse
+    if current_user.tenant_id is None:
+        raise HTTPException(status_code=403, detail="Tenant required")
+    user = session.exec(
+        select(models.User).where(
+            models.User.id == body.user_id,
+            models.User.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="User not found")
+    if user.role not in (models.UserRole.kitchen, models.UserRole.bartender, models.UserRole.waiter):
+        raise HTTPException(status_code=400, detail="User must have role kitchen, bartender, or waiter")
+    try:
+        shift_date = dt_parse.strptime(body.date, "%Y-%m-%d").date()
+        start_time = dt_parse.strptime(body.start_time[:5], "%H:%M").time()
+        end_time = dt_parse.strptime(body.end_time[:5], "%H:%M").time()
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=400, detail="Invalid date or time format; use YYYY-MM-DD and HH:MM")
+    if start_time >= end_time:
+        raise HTTPException(status_code=400, detail="start_time must be before end_time")
+    shift = models.Shift(
+        tenant_id=current_user.tenant_id,
+        user_id=body.user_id,
+        shift_date=shift_date,
+        start_time=start_time,
+        end_time=end_time,
+        label=body.label,
+    )
+    session.add(shift)
+    session.commit()
+    session.refresh(shift)
+    user_name = user.full_name or user.email or ""
+    return _shift_to_dict(shift, user_name, user.role.value)
+
+
+@app.put("/schedule/{shift_id}")
+def update_shift(
+    shift_id: int,
+    body: models.ShiftUpdate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SCHEDULE_WRITE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Update a shift."""
+    shift = session.exec(
+        select(models.Shift).where(
+            models.Shift.id == shift_id,
+            models.Shift.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not shift:
+        raise HTTPException(status_code=404, detail="Shift not found")
+    from datetime import datetime as dt_parse
+    if body.user_id is not None:
+        user = session.exec(
+            select(models.User).where(
+                models.User.id == body.user_id,
+                models.User.tenant_id == current_user.tenant_id,
+            )
+        ).first()
+        if not user:
+            raise HTTPException(status_code=400, detail="User not found")
+        if user.role not in (models.UserRole.kitchen, models.UserRole.bartender, models.UserRole.waiter):
+            raise HTTPException(status_code=400, detail="User must have role kitchen, bartender, or waiter")
+        shift.user_id = body.user_id
+    if body.date is not None:
+        try:
+            shift.shift_date = dt_parse.strptime(body.date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid date format; use YYYY-MM-DD")
+    if body.start_time is not None:
+        try:
+            shift.start_time = dt_parse.strptime(body.start_time[:5], "%H:%M").time()
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=400, detail="Invalid start_time; use HH:MM")
+    if body.end_time is not None:
+        try:
+            shift.end_time = dt_parse.strptime(body.end_time[:5], "%H:%M").time()
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=400, detail="Invalid end_time; use HH:MM")
+    if body.label is not None:
+        shift.label = body.label
+    if shift.start_time >= shift.end_time:
+        raise HTTPException(status_code=400, detail="start_time must be before end_time")
+    shift.updated_at = datetime.now(timezone.utc)
+    session.add(shift)
+    session.commit()
+    session.refresh(shift)
+    user = session.get(models.User, shift.user_id)
+    user_name = (user.full_name or user.email or "") if user else ""
+    user_role = user.role.value if user and user.role else ""
+    return _shift_to_dict(shift, user_name, user_role)
+
+
+@app.delete("/schedule/{shift_id}")
+def delete_shift(
+    shift_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SCHEDULE_WRITE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Delete a shift."""
+    shift = session.exec(
+        select(models.Shift).where(
+            models.Shift.id == shift_id,
+            models.Shift.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not shift:
+        raise HTTPException(status_code=404, detail="Shift not found")
+    session.delete(shift)
+    session.commit()
+    return {"deleted": True, "id": shift_id}
+
+
 # ============ TABLES ============
 
 
@@ -2962,6 +3158,7 @@ def delete_table(
     table_id: int,
     current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_WRITE))],
     session: Session = Depends(get_session),
+    reassign_to_table_id: int | None = Query(None, description="Reassign orders and reservations to this table before deleting"),
 ) -> dict:
     table = session.exec(
         select(models.Table).where(
@@ -2972,6 +3169,64 @@ def delete_table(
 
     if not table:
         raise HTTPException(status_code=404, detail="Table not found")
+
+    has_orders = session.exec(
+        select(models.Order).where(
+            models.Order.tenant_id == current_user.tenant_id,
+            models.Order.table_id == table_id,
+        )
+    ).first() is not None
+
+    if has_orders and not reassign_to_table_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete table: it has orders. Reassign to another table or close orders first.",
+        )
+
+    if reassign_to_table_id is not None:
+        if reassign_to_table_id == table_id:
+            raise HTTPException(status_code=400, detail="Reassign target must be a different table.")
+        target = session.exec(
+            select(models.Table).where(
+                models.Table.id == reassign_to_table_id,
+                models.Table.tenant_id == current_user.tenant_id,
+            )
+        ).first()
+        if not target:
+            raise HTTPException(status_code=404, detail="Reassign target table not found.")
+        # Reassign orders
+        orders_linked = session.exec(
+            select(models.Order).where(
+                models.Order.tenant_id == current_user.tenant_id,
+                models.Order.table_id == table_id,
+            )
+        ).all()
+        for order in orders_linked:
+            order.table_id = reassign_to_table_id
+            session.add(order)
+        # Reassign reservations (optional link)
+        reservations_linked = session.exec(
+            select(models.Reservation).where(
+                models.Reservation.tenant_id == current_user.tenant_id,
+                models.Reservation.table_id == table_id,
+            )
+        ).all()
+        for res in reservations_linked:
+            res.table_id = reassign_to_table_id
+            res.updated_at = datetime.now(timezone.utc)
+            session.add(res)
+    else:
+        # No orders: just unlink reservations (set to null) before delete
+        reservations_linked = session.exec(
+            select(models.Reservation).where(
+                models.Reservation.tenant_id == current_user.tenant_id,
+                models.Reservation.table_id == table_id,
+            )
+        ).all()
+        for res in reservations_linked:
+            res.table_id = None
+            res.updated_at = datetime.now(timezone.utc)
+            session.add(res)
 
     session.delete(table)
     session.commit()
@@ -3388,12 +3643,13 @@ def cancel_reservation_public(
 
 
 @app.post("/reservations/{reservation_id}/send-reminder")
-async def send_reservation_reminder_email(
+async def send_reservation_reminder(
     reservation_id: int,
     current_user: Annotated[models.User, Depends(require_permission(Permission.RESERVATION_WRITE))],
     session: Session = Depends(get_session),
 ) -> dict:
-    """Send a reminder email for an upcoming reservation. Staff only. Requires customer_email."""
+    """Send a reminder for an upcoming reservation via email and/or WhatsApp. Staff only.
+    Requires at least one of customer_email or customer_phone (when WhatsApp is configured)."""
     reservation = session.exec(
         select(models.Reservation).where(
             models.Reservation.id == reservation_id,
@@ -3404,29 +3660,66 @@ async def send_reservation_reminder_email(
         raise HTTPException(status_code=404, detail="Reservation not found")
     if reservation.status != models.ReservationStatus.booked:
         raise HTTPException(status_code=400, detail="Can only send reminders for booked reservations")
-    if not reservation.customer_email or not reservation.customer_email.strip():
-        raise HTTPException(status_code=400, detail="Reservation has no email address")
+
+    has_email = bool(reservation.customer_email and reservation.customer_email.strip())
+    has_phone = bool(reservation.customer_phone and reservation.customer_phone.strip())
+    whatsapp_ok = whatsapp_svc.is_whatsapp_configured()
+
+    if not has_email and not (has_phone and whatsapp_ok):
+        raise HTTPException(
+            status_code=400,
+            detail="Reservation has no email address and no phone for WhatsApp reminder (or WhatsApp is not configured)",
+        )
+
     tenant = session.get(models.Tenant, reservation.tenant_id)
     tenant_name = tenant.name if tenant else "Restaurant"
     date_str = reservation.reservation_date.isoformat() if reservation.reservation_date else ""
     time_str = reservation.reservation_time.strftime("%H:%M") if reservation.reservation_time else ""
-    view_url = None
-    if reservation.token:
-        # Frontend can pass base URL via header or we use CORS origin; for now omit link
+    default_country = settings.default_phone_country or "ES"
+    if tenant and tenant.timezone:
+        # Optional: derive country from timezone (e.g. Europe/Madrid -> ES); for now use global default
         pass
-    ok = await email_svc.send_reservation_reminder(
-        to_email=reservation.customer_email.strip(),
-        customer_name=reservation.customer_name,
-        reservation_date=date_str,
-        reservation_time=time_str,
-        party_size=reservation.party_size,
-        tenant_name=tenant_name,
-        view_url=view_url,
-        tenant=tenant,
-    )
-    if not ok:
-        raise HTTPException(status_code=502, detail="Failed to send reminder email")
-    return {"sent": True, "to": reservation.customer_email}
+
+    email_sent = False
+    whatsapp_sent = False
+    to_email = reservation.customer_email.strip() if has_email else None
+    to_phone = None
+
+    if has_email:
+        view_url = None
+        ok = await email_svc.send_reservation_reminder(
+            to_email=reservation.customer_email.strip(),
+            customer_name=reservation.customer_name,
+            reservation_date=date_str,
+            reservation_time=time_str,
+            party_size=reservation.party_size,
+            tenant_name=tenant_name,
+            view_url=view_url,
+            tenant=tenant,
+        )
+        email_sent = ok
+
+    if has_phone and whatsapp_ok:
+        ok_wa = await whatsapp_svc.send_reservation_reminder_whatsapp_async(
+            to_phone=reservation.customer_phone.strip(),
+            customer_name=reservation.customer_name,
+            reservation_date=date_str,
+            reservation_time=time_str,
+            party_size=reservation.party_size,
+            tenant_name=tenant_name,
+            default_country=default_country,
+        )
+        whatsapp_sent = ok_wa
+        if ok_wa:
+            normalized = normalize_phone_to_e164(reservation.customer_phone.strip(), default_country)
+            to_phone = normalized
+
+    return {
+        "email_sent": email_sent,
+        "whatsapp_sent": whatsapp_sent,
+        "to_email": to_email,
+        "to_phone": to_phone,
+    }
 
 
 # ============ TABLE SESSION MANAGEMENT ============

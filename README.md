@@ -47,7 +47,7 @@ The staff dashboard gives quick access to Catalog, Reservations, Kitchen display
 | **Reports** | Sales & revenue at `/reports` (owner/admin): date range, summary (total revenue, order count, average payment per client), reservation count and by source (public/staff), by product/category/table/waiter, charts, CSV/Excel export. See [docs/0016-reports.md](docs/0016-reports.md). |
 | **Payments** | Stripe integration; per-tenant Stripe keys and currency. |
 | **Tables** | Table management, QR codes, canvas view. Table activation and 4-digit PIN so only present guests can order; PIN rate limiting via Redis. |
-| **Reservations** | Staff: list, create, edit, seat, finish, cancel at `/reservations`. **No-show**: mark no-shows (so you can stop calling them “cancelled”) and send reminder emails to the ones who might still show. Public: book at `/book/:tenantId`, view/cancel at `/reservation?token=...`. Table status: available / reserved / occupied. |
+| **Reservations** | Staff: list, create, edit, seat, finish, cancel at `/reservations`. **No-show**: mark no-shows (so you can stop calling them “cancelled”) and **send reminders** by email and/or **WhatsApp** (when Twilio is configured) to the ones who might still show. Public: book at `/book/:tenantId`, view/cancel at `/reservation?token=...`. Table status: available / reserved / occupied. |
 | **Real-time** | WebSocket updates for order status; token-based WS auth (`/ws-token`). |
 | **i18n & currency** | Multiple UI languages (e.g. en, es, ca, de, zh-CN, hi); backend localized messages; per-tenant currency (EUR, USD, MXN, etc.). |
 | **Multi-tenant** | Isolated data per tenant; first user becomes owner; configurable roles (owner, admin, kitchen, bartender, waiter, receptionist) and permissions (e.g. reservation read/write). |
@@ -144,6 +144,8 @@ Key variables in `config.env` (see `config.env.example` for the full list):
 | `CORS_ORIGINS` | Allowed frontend origins (comma-separated) | Yes (production) |
 | `POSTGRES_*` / `DB_*` | Database connection | Yes |
 | `STRIPE_CURRENCY` | Fallback currency if tenant has none | Optional |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM` | Optional; when set, reservation reminders can be sent via WhatsApp (in addition to email) | Optional |
+| `DEFAULT_PHONE_COUNTRY` | ISO country code (e.g. `ES`, `DE`) for normalizing reservation phone numbers to E.164 | Optional (default `ES`) |
 
 Stripe keys are configured per tenant in **Settings** in the admin UI. Settings also include business profile, contact (phone, email, address, **Tax ID**, **CIF**), opening hours, and payment options. For deployment on a domain or IP, see [docs/0004-deployment.md](docs/0004-deployment.md).
 
@@ -161,6 +163,7 @@ Stripe keys are configured per tenant in **Settings** in the admin UI. Settings 
 | [docs/0010-table-reservation-implementation-plan.md](docs/0010-table-reservation-implementation-plan.md) | Reservations design and backend |
 | [docs/0011-table-reservation-user-guide.md](docs/0011-table-reservation-user-guide.md) | URLs and flows for staff and public booking |
 | [docs/0019-no-show-implementation-plan.md](docs/0019-no-show-implementation-plan.md) | No-show status and reminder emails: plan and implementation guide |
+| [docs/0024-whatsapp-reminder-notes.md](docs/0024-whatsapp-reminder-notes.md) | WhatsApp reservation reminder: design, Twilio config, E.164 phone normalization |
 | [docs/0009-table-pin-security.md](docs/0009-table-pin-security.md) | Table activation and PIN validation |
 | [docs/0012-translation-implementation.md](docs/0012-translation-implementation.md) | i18n (frontend + backend + DB content) |
 | [docs/0004-deployment.md](docs/0004-deployment.md) | Domain/IP deployment and env vars |

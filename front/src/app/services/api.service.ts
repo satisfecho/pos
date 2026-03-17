@@ -29,6 +29,36 @@ export interface UserUpdate {
   password?: string;
 }
 
+export interface Shift {
+  id: number;
+  tenant_id: number;
+  user_id: number;
+  user_name: string;
+  user_role: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  label: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ShiftCreate {
+  user_id: number;
+  date: string;
+  start_time: string;
+  end_time: string;
+  label?: string | null;
+}
+
+export interface ShiftUpdate {
+  user_id?: number;
+  date?: string;
+  start_time?: string;
+  end_time?: string;
+  label?: string | null;
+}
+
 export interface AuthResponse {
   access_token: string;
   token_type: string;
@@ -743,8 +773,19 @@ export class ApiService {
     return this.http.put<Reservation>(`${this.apiUrl}/reservations/${id}/finish`, {});
   }
 
-  sendReservationReminder(id: number): Observable<{ sent: boolean; to: string }> {
-    return this.http.post<{ sent: boolean; to: string }>(`${this.apiUrl}/reservations/${id}/send-reminder`, {});
+  /** Response indicates which channel(s) were used. */
+  sendReservationReminder(id: number): Observable<{
+    email_sent: boolean;
+    whatsapp_sent: boolean;
+    to_email?: string | null;
+    to_phone?: string | null;
+  }> {
+    return this.http.post<{
+      email_sent: boolean;
+      whatsapp_sent: boolean;
+      to_email?: string | null;
+      to_phone?: string | null;
+    }>(`${this.apiUrl}/reservations/${id}/send-reminder`, {});
   }
 
   // Reservations (public - no auth)
@@ -776,8 +817,12 @@ export class ApiService {
     return this.http.put<Table>(`${this.apiUrl}/tables/${id}`, data);
   }
 
-  deleteTable(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/tables/${id}`);
+  deleteTable(id: number, reassignToTableId?: number): Observable<{ status: string; id: number }> {
+    let url = `${this.apiUrl}/tables/${id}`;
+    if (reassignToTableId != null) {
+      url += `?reassign_to_table_id=${reassignToTableId}`;
+    }
+    return this.http.delete<{ status: string; id: number }>(url);
   }
 
   // Table Session Management
@@ -1218,5 +1263,35 @@ export class ApiService {
 
   deleteUser(userId: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/users/${userId}`);
+  }
+
+  // Working plan (schedule)
+  getSchedule(fromDate: string, toDate: string): Observable<Shift[]> {
+    const params = new HttpParams().set('from_date', fromDate).set('to_date', toDate);
+    return this.http.get<Shift[]>(`${this.apiUrl}/schedule`, { params });
+  }
+
+  getShift(shiftId: number): Observable<Shift> {
+    return this.http.get<Shift>(`${this.apiUrl}/schedule/${shiftId}`);
+  }
+
+  createShift(data: ShiftCreate): Observable<Shift> {
+    return this.http.post<Shift>(`${this.apiUrl}/schedule`, data);
+  }
+
+  updateShift(shiftId: number, data: ShiftUpdate): Observable<Shift> {
+    return this.http.put<Shift>(`${this.apiUrl}/schedule/${shiftId}`, data);
+  }
+
+  deleteShift(shiftId: number): Observable<{ deleted: boolean; id: number }> {
+    return this.http.delete<{ deleted: boolean; id: number }>(`${this.apiUrl}/schedule/${shiftId}`);
+  }
+
+  getUsersForSchedule(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/users`).pipe(
+      map((users: User[]) => users.filter(u =>
+        u.role === 'kitchen' || u.role === 'bartender' || u.role === 'waiter'
+      ))
+    );
   }
 }

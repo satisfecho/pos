@@ -70,6 +70,21 @@ class Settings(BaseSettings):
     smtp_use_tls: bool = Field(default=True, validation_alias="SMTP_USE_TLS")
     email_from: str = Field(default="noreply@example.com", validation_alias="EMAIL_FROM")
     email_from_name: str = Field(default="POS2 System", validation_alias="EMAIL_FROM_NAME")
+
+    # WhatsApp (Twilio) – optional; when set, reminders can be sent via WhatsApp when customer_phone is present
+    twilio_account_sid: str = Field(default="", validation_alias="TWILIO_ACCOUNT_SID")
+    twilio_auth_token: str = Field(default="", validation_alias="TWILIO_AUTH_TOKEN")
+    twilio_whatsapp_from: str = Field(
+        default="",
+        validation_alias="TWILIO_WHATSAPP_FROM",
+        description="E.g. +14155238886 (Twilio sandbox) or your WhatsApp Business number",
+    )
+    default_phone_country: str = Field(
+        default="ES",
+        validation_alias="DEFAULT_PHONE_COUNTRY",
+        description="ISO 3166-1 alpha-2 country code for normalizing phone numbers without + prefix",
+    )
+
     # Production mode (enables secure cookies, stricter CORS, etc.)
     is_production: bool = Field(default=False, validation_alias="PRODUCTION")
 

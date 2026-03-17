@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Reservations – WhatsApp reminder (024)**: "Send reminder" can now deliver via **email** and/or **WhatsApp**. When the reservation has a phone number and Twilio WhatsApp is configured, the backend sends a reminder via WhatsApp (in addition to email when present). One action for staff; response indicates which channel(s) were used. Backend: `whatsapp_service` (Twilio REST), `phone_utils` (E.164 normalization), `POST /reservations/{id}/send-reminder` returns `email_sent`, `whatsapp_sent`, `to_email`, `to_phone`. Config: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`, `DEFAULT_PHONE_COUNTRY`. Send reminder button shown when reservation has email or phone; UI shows "Reminder sent by email", "by WhatsApp", or "by email and WhatsApp". i18n: `REMINDER_SENT_EMAIL`, `REMINDER_SENT_WHATSAPP`, `REMINDER_SENT_EMAIL_AND_WHATSAPP` (en, de, es, fr, ca, zh-CN, hi).
+
+- **Tables – reassign orders and reservations when deleting**: Deleting a table that has orders no longer only blocks with an error. The UI now offers to **reassign** its orders and reservations to another table, then delete. Backend: `DELETE /tables/{id}?reassign_to_table_id={id}` moves all orders and reservations to the target table (same tenant) and then deletes the source table. List and canvas table views: when delete returns 400 ("has orders"), a modal opens to choose the target table and confirm **Reassign and delete**. i18n: `TABLES.TABLE_DELETED`, `REASSIGN_AND_DELETE_TITLE`, `REASSIGN_AND_DELETE_MESSAGE`, `REASSIGN_TO_TABLE`, `REASSIGN_AND_DELETE` (en, de, es, fr, ca, zh-CN, hi).
+
 - **Reports – revenue graph over time**: On `/reports`, a **Revenue over time** chart shows daily revenue as an SVG line chart with gradient area fill. Uses existing `summary.daily` data; Y-axis shows formatted currency (max, mid, zero), X-axis shows first/middle/last date. Responsive; no new dependencies. i18n: `REPORTS.REVENUE_OVER_TIME` (en, de, es, fr, ca, zh-CN, hi).
 
 ### Fixed
