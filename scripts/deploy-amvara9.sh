@@ -55,17 +55,20 @@ echo "Building back image first..."
 docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml build back
 
 echo "Building front image (no cache) so deployed assets match current code..."
-docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml build front --no-cache
+docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml build --no-cache front
 
-echo "Starting all services..."
-if ! docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml up -d; then
+echo "Starting all services (force-recreate so front uses new image)..."
+if ! docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml up -d --force-recreate; then
   echo "First up failed (possible port race); waiting 10s and retrying..."
   sleep 10
-  docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml up -d
+  docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml up -d --force-recreate
 fi
 
 echo "Waiting for back to be ready..."
 sleep 15
+
+echo "Verifying front serves version in landing page..."
+docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml exec -T front grep -oE 'name="app-version"[^>]*content="[^"]*"' /usr/share/nginx/html/index.html 2>/dev/null || true
 
 # Back container runs as uid 1000; catalog imports need to write to back/uploads
 mkdir -p back/uploads back/uploads/providers
