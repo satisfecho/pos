@@ -586,7 +586,7 @@
     "TITLE": "Working plan",
     "VIEW_WEEK": "Week",
     "VIEW_CALENDAR": "Calendar",
-    "CALENDAR_LEGEND": "Red = day meets personnel requirements (all roles covered).",
+    "CALENDAR_LEGEND": "Red = day has staffing issue (too many or too few people vs requirements).",
     "MON": "Mon",
     "TUE": "Tue",
     "WED": "Wed",

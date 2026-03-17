@@ -56,6 +56,26 @@ def _rate_limit_key(request: Request) -> str:
     return "unknown"
 
 
+def _rate_limit_key_user(request: Request) -> str:
+    """Per-user rate limit key when authenticated, else IP (for upload/admin limits)."""
+    from . import security
+
+    user_key = security.get_rate_limit_user_key(request)
+    return user_key if user_key else _rate_limit_key(request)
+
+
+def _rate_limit_key_payment_order(request: Request) -> str:
+    """Per-order per-IP key for payment attempt limits (e.g. 3/hour per order)."""
+    # Path is /orders/{order_id}/create-payment-intent or /orders/{order_id}/confirm-payment
+    parts = request.url.path.rstrip("/").split("/")
+    order_id = "0"
+    for i, p in enumerate(parts):
+        if p == "orders" and i + 1 < len(parts) and parts[i + 1].isdigit():
+            order_id = parts[i + 1]
+            break
+    return f"po:{order_id}:{_rate_limit_key(request)}"
+
+
 def _rate_limit_exceeded_handler_log(request: Request, exc: "RateLimitExceeded"):
     """Log rate limit violations then return 429 (for security monitoring)."""
     logger.warning(
@@ -1117,7 +1137,12 @@ def update_translations_for_entity(
 
 
 @app.get("/tenant/settings")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
 def get_tenant_settings(
+    request: Request,
     current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_READ))],
     session: Session = Depends(get_session),
 ) -> dict:
@@ -1159,7 +1184,12 @@ def get_tenant_settings(
 
 
 @app.put("/tenant/settings")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
 def update_tenant_settings(
+    request: Request,
     tenant_update: models.TenantUpdate,
     current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
     session: Session = Depends(get_session),
@@ -1372,7 +1402,12 @@ def _infer_content_type_from_filename(filename: str | None) -> str | None:
 
 
 @app.post("/tenant/logo")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_upload_per_hour', 10)}/hour",
+    key_func=_rate_limit_key_user,
+)
 async def upload_tenant_logo(
+    request: Request,
     file: Annotated[UploadFile, File()],
     current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
     session: Session = Depends(get_session),
@@ -1645,7 +1680,12 @@ def delete_product(
 
 
 @app.post("/products/{product_id}/image")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_upload_per_hour', 10)}/hour",
+    key_func=_rate_limit_key_user,
+)
 async def upload_product_image(
+    request: Request,
     product_id: int,
     file: Annotated[UploadFile, File()],
     current_user: Annotated[models.User, Depends(require_permission(Permission.PRODUCT_WRITE))],
@@ -1719,7 +1759,12 @@ async def upload_product_image(
 
 
 @app.get("/providers")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
 def list_providers(
+    request: Request,
     current_user: Annotated[models.User, Depends(require_permission(Permission.CATALOG_READ))],
     session: Session = Depends(get_session),
     active_only: bool = True,
@@ -1732,7 +1777,12 @@ def list_providers(
 
 
 @app.get("/providers/{provider_id}")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
 def get_provider(
+    request: Request,
     provider_id: int,
     current_user: Annotated[models.User, Depends(require_permission(Permission.CATALOG_READ))],
     session: Session = Depends(get_session),
@@ -1747,7 +1797,12 @@ def get_provider(
 
 
 @app.post("/providers")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
 def create_provider(
+    request: Request,
     provider: models.Provider,
     current_user: Annotated[models.User, Depends(require_permission(Permission.CATALOG_WRITE))],
     session: Session = Depends(get_session),
@@ -2315,7 +2370,12 @@ def provider_delete_product(
 
 
 @app.post("/provider/products/{product_id}/image")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_upload_per_hour', 10)}/hour",
+    key_func=_rate_limit_key_user,
+)
 async def provider_upload_product_image(
+    request: Request,
     product_id: int,
     current: Annotated[
         tuple[models.User, models.Provider],
@@ -3074,7 +3134,12 @@ def delete_shift(
 
 
 @app.get("/tables")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
 def list_tables(
+    request: Request,
     current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_READ))],
     session: Session = Depends(get_session),
 ) -> list[dict]:
@@ -3121,7 +3186,12 @@ def list_tables(
 
 
 @app.get("/tables/with-status")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
 def list_tables_with_status(
+    request: Request,
     current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_READ))],
     session: Session = Depends(get_session),
 ) -> list[dict]:
@@ -3219,7 +3289,12 @@ def list_tables_with_status(
 
 
 @app.post("/tables")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
 def create_table(
+    request: Request,
     table_data: models.TableCreate,
     current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_WRITE))],
     session: Session = Depends(get_session),
@@ -3236,7 +3311,12 @@ def create_table(
 
 
 @app.put("/tables/{table_id}")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
 def update_table(
+    request: Request,
     table_id: int,
     table_update: models.TableUpdate,
     current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_WRITE))],
@@ -3280,7 +3360,12 @@ def update_table(
 
 
 @app.delete("/tables/{table_id}")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
 def delete_table(
+    request: Request,
     table_id: int,
     current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_WRITE))],
     session: Session = Depends(get_session),
@@ -4087,7 +4172,12 @@ async def send_reservation_reminder(
 
 
 @app.post("/tables/{table_id}/activate")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
 def activate_table(
+    request: Request,
     table_id: int,
     current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_ACTIVATE))],
     session: Session = Depends(get_session),
@@ -4131,7 +4221,12 @@ def activate_table(
 
 
 @app.post("/tables/{table_id}/close")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
 def close_table(
+    request: Request,
     table_id: int,
     current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_ACTIVATE))],
     session: Session = Depends(get_session),
@@ -4302,7 +4397,11 @@ def validate_table_token(
 
 
 @app.get("/menu/{table_token}")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_public_menu_per_minute', 30)}/minute"
+)
 def get_menu(
+    request: Request,
     table_token: str,
     lang: str = Depends(_get_requested_language),
     session: Session = Depends(get_session),
@@ -4752,10 +4851,14 @@ def get_menu(
 
 
 @app.get("/menu/{table_token}/order")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_public_menu_per_minute', 30)}/minute"
+)
 def get_current_order(
+    request: Request,
     table_token: str,
     session_id: str | None = Query(None, description="Session identifier for order isolation"),
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ) -> dict:
     """Public endpoint - get current active order for a table (if any)."""
     table = session.exec(
@@ -4854,7 +4957,11 @@ def get_current_order(
 
 
 @app.get("/menu/{table_token}/order-history")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_public_menu_per_minute', 30)}/minute"
+)
 def get_table_order_history(
+    request: Request,
     table_token: str,
     limit: int = Query(10, ge=1, le=50),
     session: Session = Depends(get_session),
@@ -4921,6 +5028,9 @@ def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
 
 
 @app.post("/menu/{table_token}/order")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_public_menu_per_minute', 30)}/minute"
+)
 def create_order(
     table_token: str,
     order_data: models.OrderCreate,
@@ -5233,7 +5343,11 @@ class PaymentRequest(_BaseModel):
 
 
 @app.post("/menu/{table_token}/order/{order_id}/request-payment")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_public_menu_per_minute', 30)}/minute"
+)
 def request_payment(
+    request: Request,
     table_token: str,
     order_id: int,
     payment_request: PaymentRequest,
@@ -5306,7 +5420,11 @@ class CallWaiterRequest(_BaseModel):
 
 
 @app.post("/menu/{table_token}/call-waiter")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_public_menu_per_minute', 30)}/minute"
+)
 def call_waiter(
+    request: Request,
     table_token: str,
     waiter_request: CallWaiterRequest,
     session: Session = Depends(get_session),
@@ -6194,7 +6312,11 @@ def remove_order_item_staff(
 # ============ ORDER MODIFICATION (Public - Customer) ============
 
 @app.delete("/menu/{table_token}/order/{order_id}/items/{item_id}")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_public_menu_per_minute', 30)}/minute"
+)
 def remove_order_item(
+    request: Request,
     table_token: str,
     order_id: int,
     item_id: int,
@@ -6283,7 +6405,11 @@ def remove_order_item(
 
 
 @app.put("/menu/{table_token}/order/{order_id}/items/{item_id}")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_public_menu_per_minute', 30)}/minute"
+)
 def update_order_item_quantity(
+    request: Request,
     table_token: str,
     order_id: int,
     item_id: int,
@@ -6375,7 +6501,11 @@ def update_order_item_quantity(
 
 
 @app.delete("/menu/{table_token}/order/{order_id}")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_public_menu_per_minute', 30)}/minute"
+)
 def cancel_order(
+    request: Request,
     table_token: str,
     order_id: int,
     session_id: str | None = Query(None, description="Session identifier for order validation"),
@@ -6452,6 +6582,10 @@ def cancel_order(
 
 @app.post("/orders/{order_id}/create-payment-intent")
 @limiter.limit(f"{getattr(settings, 'rate_limit_payment_per_minute', 10)}/minute")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_payment_per_order_per_hour', 3)}/hour",
+    key_func=_rate_limit_key_payment_order,
+)
 def create_payment_intent(
     request: Request,
     order_id: int, table_token: str, session: Session = Depends(get_session)
@@ -6537,6 +6671,10 @@ def create_payment_intent(
 
 @app.post("/orders/{order_id}/confirm-payment")
 @limiter.limit(f"{getattr(settings, 'rate_limit_payment_per_minute', 10)}/minute")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_payment_per_order_per_hour', 3)}/hour",
+    key_func=_rate_limit_key_payment_order,
+)
 def confirm_payment(
     request: Request,
     order_id: int,

@@ -580,7 +580,7 @@
     "TITLE": "Plan de travail",
     "VIEW_WEEK": "Semaine",
     "VIEW_CALENDAR": "Calendrier",
-    "CALENDAR_LEGEND": "Rouge = le jour satisfait les effectifs requis (tous les rôles couverts).",
+    "CALENDAR_LEGEND": "Rouge = jour avec problème d'effectifs (trop ou pas assez de personnes).",
     "MON": "Lun",
     "TUE": "Mar",
     "WED": "Mer",

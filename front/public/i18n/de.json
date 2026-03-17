@@ -562,7 +562,7 @@
     "TITLE": "Schichtplan",
     "VIEW_WEEK": "Woche",
     "VIEW_CALENDAR": "Kalender",
-    "CALENDAR_LEGEND": "Rot = Tag erfüllt Personalanforderungen (alle Rollen abgedeckt).",
+    "CALENDAR_LEGEND": "Rot = Tag mit Personalproblem (zu viele oder zu wenige Personen).",
     "MON": "Mo",
     "TUE": "Di",
     "WED": "Mi",

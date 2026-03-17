@@ -169,7 +169,7 @@ function fullDayTimeOptions(stepMin: number = STEP_30): string[] {
             @for (row of calendarGrid(); track row.weekIndex) {
               <div class="calendar-row">
                 @for (cell of row.days; track cell.trackId) {
-                  <div class="calendar-cell" [class.calendar-cell-empty]="!cell.day" [class.calendar-day-matches]="cell.matches">
+                  <div class="calendar-cell" [class.calendar-cell-empty]="!cell.day" [class.calendar-day-matches]="cell.hasIssue">
                     @if (cell.day) {
                       <span class="calendar-day-num">{{ cell.day }}</span>
                     }
@@ -447,13 +447,13 @@ export class WorkingPlanComponent implements OnInit {
     const daysInMonth = last.getDate();
     const startOffset = (first.getDay() + 6) % 7;
     const pad = (n: number) => String(n).padStart(2, '0');
-    type Cell = { trackId: string; day?: number; dateStr?: string; matches?: boolean };
+    type Cell = { trackId: string; day?: number; dateStr?: string; hasIssue?: boolean };
     const cells: Cell[] = [];
     let idx = 0;
     for (let i = 0; i < startOffset; i++) cells.push({ trackId: `empty-${idx++}` });
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${year}-${pad(monthIdx + 1)}-${pad(d)}`;
-      cells.push({ trackId: dateStr, day: d, dateStr, matches: this.dayMatchesRequirements(dateStr) });
+      cells.push({ trackId: dateStr, day: d, dateStr, hasIssue: this.dayHasRequirementIssue(dateStr) });
     }
     const total = cells.length;
     const remainder = total % 7;
@@ -559,6 +559,20 @@ export class WorkingPlanComponent implements OnInit {
     }
     const hasAnyRequirement = STAFF_KEYS.some((sk) => this.getRequiredForRole(dayKey, sk) > 0);
     return hasAnyRequirement;
+  }
+
+  /** True if this date has a staffing issue: any role has too many or not enough people vs requirements. */
+  dayHasRequirementIssue(dateStr: string): boolean {
+    const dayKey = DAY_KEYS[new Date(dateStr + 'T12:00:00').getDay()];
+    if (this.isDayClosed(dayKey)) return false;
+    for (const sk of STAFF_KEYS) {
+      const required = this.getRequiredForRole(dayKey, sk);
+      if (required > 0) {
+        const scheduled = this.getScheduledCountForRole(dateStr, sk);
+        if (scheduled < required || scheduled > required) return true;
+      }
+    }
+    return false;
   }
 
   /** Next date in the current week range that is open and has a free slot for the current user's role; else first open day of week. */

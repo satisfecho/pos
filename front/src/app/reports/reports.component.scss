@@ -370,27 +370,43 @@
   td.num {
     font-weight: 600;
     color: var(--color-success);
+
+    &:not(.share-with-bar) {
+      text-align: right;
+    }
   }
 
   td.share-with-bar {
     display: flex;
     align-items: center;
     gap: var(--space-3);
-    min-width: 140px;
+    min-width: 160px;
 
     .bar-track.inline {
       flex: 1;
-      min-width: 60px;
+      min-width: 48px;
       height: 14px;
       background: var(--color-bg);
       border-radius: 7px;
       overflow: hidden;
 
-      .bar-fill.product {
+      .bar-fill {
         height: 100%;
         border-radius: 7px;
         min-width: 2px;
-        background: linear-gradient(90deg, #059669 0%, #34d399 100%);
+
+        &.product {
+          background: linear-gradient(90deg, #059669 0%, #34d399 100%);
+        }
+        &.category {
+          background: linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%);
+        }
+        &.table {
+          background: linear-gradient(90deg, #dc2626 0%, #f87171 100%);
+        }
+        &.waiter {
+          background: linear-gradient(90deg, #ea580c 0%, #fb923c 100%);
+        }
       }
     }
 
@@ -399,7 +415,31 @@
       color: var(--color-success);
       white-space: nowrap;
       flex-shrink: 0;
+      min-width: 4.5ch;
+      text-align: right;
     }
+  }
+}
+
+/* Align report tables: same column widths across By product / category / table / waiter */
+.report-section .data-table {
+  table-layout: fixed;
+
+  th:nth-child(1),
+  td:nth-child(1) {
+    width: 22%;
+  }
+  th:nth-child(2),
+  td:nth-child(2) {
+    width: 18%;
+  }
+  th:nth-child(3),
+  td:nth-child(3) {
+    width: 20%;
+  }
+  th:nth-child(4),
+  td:nth-child(4) {
+    width: 40%;
   }
 }
 

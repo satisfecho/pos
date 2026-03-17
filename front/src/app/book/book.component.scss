@@ -210,9 +210,16 @@
   color: white;
   text-decoration: none;
   text-underline-offset: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
 
   &:hover {
     text-decoration: underline;
+  }
+
+  .whatsapp-icon {
+    flex-shrink: 0;
   }
 }
 

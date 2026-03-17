@@ -19,6 +19,36 @@ _tenant_id_ctx = ContextVar("tenant_id", default=None)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
 
 
+def get_rate_limit_user_key(request: Request) -> str | None:
+    """
+    Return a stable per-user key from JWT (for rate limiting). No DB lookup.
+    Returns None if no valid token; caller should fall back to IP key.
+    """
+    token = request.cookies.get("access_token")
+    if not token and request.headers.get("authorization"):
+        scheme, _, param = get_authorization_scheme_param(
+            request.headers.get("authorization", "")
+        )
+        if scheme and scheme.lower() == "bearer":
+            token = param
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(
+            token, settings.secret_key, algorithms=[settings.algorithm]
+        )
+        sub = payload.get("sub") or ""
+        tid = payload.get("tenant_id")
+        pid = payload.get("provider_id")
+        if tid is not None:
+            return f"u:{tid}:{sub}"
+        if pid is not None:
+            return f"u:p{pid}:{sub}"
+    except JWTError:
+        pass
+    return None
+
+
 def get_tenant_id() -> int | None:
     return _tenant_id_ctx.get()
 

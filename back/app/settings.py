@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -109,6 +109,32 @@ class Settings(BaseSettings):
     rate_limit_payment_per_minute: int = Field(
         default=10, validation_alias="RATE_LIMIT_PAYMENT_PER_MINUTE"
     )
+    rate_limit_public_menu_per_minute: int = Field(
+        default=30, validation_alias="RATE_LIMIT_PUBLIC_MENU_PER_MINUTE"
+    )
+    rate_limit_upload_per_hour: int = Field(
+        default=10, validation_alias="RATE_LIMIT_UPLOAD_PER_HOUR"
+    )
+    rate_limit_admin_per_minute: int = Field(
+        default=30, validation_alias="RATE_LIMIT_ADMIN_PER_MINUTE"
+    )
+    rate_limit_payment_per_order_per_hour: int = Field(
+        default=3, validation_alias="RATE_LIMIT_PAYMENT_PER_ORDER_PER_HOUR"
+    )
+
+    @model_validator(mode="after")
+    def _relax_rate_limits_in_dev(self) -> "Settings":
+        """Use higher rate limits when not in production so DEV is less restrictive."""
+        if not self.is_production:
+            self.rate_limit_global_per_minute = 2000
+            self.rate_limit_login_per_15min = 100
+            self.rate_limit_register_per_hour = 100
+            self.rate_limit_payment_per_minute = 200
+            self.rate_limit_public_menu_per_minute = 500
+            self.rate_limit_upload_per_hour = 500
+            self.rate_limit_admin_per_minute = 500
+            self.rate_limit_payment_per_order_per_hour = 100
+        return self
 
     @property
     def database_url(self) -> str:
