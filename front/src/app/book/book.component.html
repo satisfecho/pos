@@ -44,12 +44,18 @@
             </svg>
             <span>{{ 'BOOK.TITLE' | translate }}</span>
           </div>
-          @if (tenant()?.phone || tenant()?.email) {
+          @if (tenant()?.phone || tenant()?.email || tenant()?.whatsapp) {
             <div class="restaurant-contact">
               @if (tenant()?.phone) {
                 <a [href]="'tel:' + tenant()!.phone" class="contact-link">{{ tenant()!.phone }}</a>
               }
-              @if (tenant()?.phone && tenant()?.email) {
+              @if (tenant()?.phone && (tenant()?.email || tenant()?.whatsapp)) {
+                <span class="contact-sep">·</span>
+              }
+              @if (tenant()?.whatsapp) {
+                <a [href]="getWhatsAppUrl(tenant()?.whatsapp ?? '')" target="_blank" rel="noopener noreferrer" class="contact-link contact-link-whatsapp">{{ 'SETTINGS.WHATSAPP' | translate }}</a>
+              }
+              @if (tenant()?.whatsapp && tenant()?.email) {
                 <span class="contact-sep">·</span>
               }
               @if (tenant()?.email) {

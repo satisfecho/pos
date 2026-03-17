@@ -27,6 +27,18 @@ function getWeekRange(weekStart: Date): { from: string; to: string } {
   };
 }
 
+/** First and last date of the month (YYYY-MM-DD). */
+function getMonthRange(month: Date): { from: string; to: string } {
+  const d = new Date(month.getFullYear(), month.getMonth(), 1);
+  const first = new Date(d);
+  const last = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return {
+    from: `${first.getFullYear()}-${pad(first.getMonth() + 1)}-${pad(first.getDate())}`,
+    to: `${last.getFullYear()}-${pad(last.getMonth() + 1)}-${pad(last.getDate())}`,
+  };
+}
+
 const DAY_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
 
 /** Staff role keys used in opening hours (personnel required per day). */
@@ -125,39 +137,79 @@ function fullDayTimeOptions(stepMin: number = STEP_30): string[] {
       </div>
 
       <div class="filters">
-        <button type="button" class="btn btn-ghost btn-sm" (click)="prevWeek()">‹</button>
-        <span class="week-label">{{ weekLabel() }}</span>
-        <button type="button" class="btn btn-ghost btn-sm" (click)="nextWeek()">›</button>
+        <div class="view-toggle" data-testid="working-plan-view-toggle">
+          <button type="button" class="btn btn-ghost btn-sm" [class.active]="viewMode() === 'week'" (click)="setViewMode('week')" data-testid="working-plan-view-week">{{ 'WORKING_PLAN.VIEW_WEEK' | translate }}</button>
+          <button type="button" class="btn btn-ghost btn-sm" [class.active]="viewMode() === 'calendar'" (click)="setViewMode('calendar')" data-testid="working-plan-view-calendar">{{ 'WORKING_PLAN.VIEW_CALENDAR' | translate }}</button>
+        </div>
+        @if (viewMode() === 'week') {
+          <button type="button" class="btn btn-ghost btn-sm" (click)="prevWeek()">‹</button>
+          <span class="week-label">{{ weekLabel() }}</span>
+          <button type="button" class="btn btn-ghost btn-sm" (click)="nextWeek()">›</button>
+        } @else {
+          <button type="button" class="btn btn-ghost btn-sm" (click)="prevMonth()">‹</button>
+          <span class="week-label">{{ calendarMonthLabel() }}</span>
+          <button type="button" class="btn btn-ghost btn-sm" (click)="nextMonth()">›</button>
+        }
         <button type="button" class="btn btn-ghost btn-sm" (click)="goToToday()">{{ 'WORKING_PLAN.TODAY' | translate }}</button>
         <button type="button" class="btn btn-ghost btn-sm" (click)="load()">{{ 'ORDERS.REFRESH' | translate }}</button>
       </div>
 
-      @if (loading()) {
-        <div class="empty-state"><p>{{ 'COMMON.LOADING' | translate }}</p></div>
-      } @else if (shifts().length === 0) {
-        <div class="empty-state">
-          <p>{{ 'WORKING_PLAN.NO_SHIFTS' | translate }}</p>
-          <button class="btn btn-primary" (click)="openCreate()">{{ 'WORKING_PLAN.ADD_SHIFT' | translate }}</button>
-        </div>
-      } @else {
-        <div class="shift-list">
-          @for (s of shiftsByDate(); track s.id) {
-            <div class="shift-card">
-              <div class="shift-date">{{ s.date }}</div>
-              <div class="shift-details">
-                <span class="shift-time">{{ s.start_time }} – {{ s.end_time }}</span>
-                @if (s.label) {
-                  <span class="shift-label">{{ s.label }}</span>
-                }
-                <span class="shift-user">{{ s.user_name }} ({{ getRoleLabel(s.user_role) }})</span>
-              </div>
-              <div class="shift-actions">
-                <button class="btn btn-ghost btn-sm" (click)="openEdit(s)">{{ 'COMMON.EDIT' | translate }}</button>
-                <button class="btn btn-ghost btn-sm danger" (click)="confirmDelete(s)">{{ 'COMMON.DELETE' | translate }}</button>
-              </div>
+      @if (viewMode() === 'calendar') {
+        <div class="calendar-section" data-testid="working-plan-calendar-section">
+          @if (loading()) {
+            <div class="empty-state"><p>{{ 'COMMON.LOADING' | translate }}</p></div>
+          } @else {
+          <p class="calendar-legend">{{ 'WORKING_PLAN.CALENDAR_LEGEND' | translate }}</p>
+          <div class="calendar-grid" data-testid="working-plan-calendar-grid">
+            <div class="calendar-row calendar-header">
+              @for (wd of weekdayLabels(); track wd) {
+                <div class="calendar-cell calendar-cell-header">{{ wd }}</div>
+              }
             </div>
+            @for (row of calendarGrid(); track row.weekIndex) {
+              <div class="calendar-row">
+                @for (cell of row.days; track cell.trackId) {
+                  <div class="calendar-cell" [class.calendar-cell-empty]="!cell.day" [class.calendar-day-matches]="cell.matches">
+                    @if (cell.day) {
+                      <span class="calendar-day-num">{{ cell.day }}</span>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
           }
         </div>
+      }
+
+      @if (viewMode() === 'week') {
+        @if (loading()) {
+          <div class="empty-state"><p>{{ 'COMMON.LOADING' | translate }}</p></div>
+        } @else if (shifts().length === 0) {
+          <div class="empty-state">
+            <p>{{ 'WORKING_PLAN.NO_SHIFTS' | translate }}</p>
+            <button class="btn btn-primary" (click)="openCreate()">{{ 'WORKING_PLAN.ADD_SHIFT' | translate }}</button>
+          </div>
+        } @else {
+          <div class="shift-list">
+            @for (s of shiftsByDate(); track s.id) {
+              <div class="shift-card">
+                <div class="shift-date">{{ s.date }}</div>
+                <div class="shift-details">
+                  <span class="shift-time">{{ s.start_time }} – {{ s.end_time }}</span>
+                  @if (s.label) {
+                    <span class="shift-label">{{ s.label }}</span>
+                  }
+                  <span class="shift-user">{{ s.user_name }} ({{ getRoleLabel(s.user_role) }})</span>
+                </div>
+                <div class="shift-actions">
+                  <button class="btn btn-ghost btn-sm" (click)="openEdit(s)">{{ 'COMMON.EDIT' | translate }}</button>
+                  <button class="btn btn-ghost btn-sm danger" (click)="confirmDelete(s)">{{ 'COMMON.DELETE' | translate }}</button>
+                </div>
+              </div>
+            }
+          </div>
+        }
       }
 
       @if (showModal()) {
@@ -293,6 +345,21 @@ function fullDayTimeOptions(stepMin: number = STEP_30): string[] {
     .toast.error { border-left: 4px solid var(--danger, #dc2626); }
     .toast-close { background: none; border: none; color: var(--text-muted, #666); cursor: pointer; padding: 0.25rem; }
     .toast-close:hover { color: var(--text, #111); }
+    .view-toggle { display: flex; gap: 0.25rem; }
+    .view-toggle .btn.active { background: var(--border-color, #eee); font-weight: 500; }
+    .calendar-section { margin-bottom: 1.5rem; }
+    .calendar-legend { font-size: 0.875rem; color: var(--text-muted, #666); margin: 0 0 0.5rem 0; }
+    .calendar-grid { display: flex; flex-direction: column; gap: 2px; max-width: 42rem; }
+    .calendar-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+    .calendar-cell {
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border-color, #eee); border-radius: 6px;
+      font-size: 0.875rem; min-width: 0;
+    }
+    .calendar-cell-header { font-weight: 600; background: var(--card-bg, #f8f8f8); aspect-ratio: auto; padding: 0.25rem 0; }
+    .calendar-cell-empty { background: var(--bg-muted, #f5f5f5); border-color: transparent; }
+    .calendar-day-matches { background: rgba(220, 38, 38, 0.25); border-color: var(--danger, #dc2626); }
+    .calendar-day-num { font-weight: 500; }
   `],
 })
 export class WorkingPlanComponent implements OnInit {
@@ -302,7 +369,10 @@ export class WorkingPlanComponent implements OnInit {
   /** Opening hours per day (monday..sunday), from tenant settings. */
   openingHours: Record<string, DayHours> = {};
 
+  viewMode = signal<'week' | 'calendar'>('week');
   weekStart = signal<Date>(new Date());
+  /** First day of the month for calendar view. */
+  calendarMonth = signal<Date>(new Date());
   shifts = signal<Shift[]>([]);
   scheduleUsers = signal<User[]>([]);
   loading = signal(true);
@@ -354,6 +424,43 @@ export class WorkingPlanComponent implements OnInit {
       return (a.start_time || '').localeCompare(b.start_time || '');
     });
     return list;
+  });
+
+  calendarMonthLabel = computed(() => {
+    const d = this.calendarMonth();
+    return `${this.monthShort(d.getMonth())} ${d.getFullYear()}`;
+  });
+
+  /** Short weekday names for calendar header (Mon–Sun). */
+  weekdayLabels = computed(() => {
+    const t = this.translate;
+    return ['WORKING_PLAN.MON', 'WORKING_PLAN.TUE', 'WORKING_PLAN.WED', 'WORKING_PLAN.THU', 'WORKING_PLAN.FRI', 'WORKING_PLAN.SAT', 'WORKING_PLAN.SUN'].map((k) => t.instant(k) !== k ? t.instant(k) : k.replace('WORKING_PLAN.', ''));
+  });
+
+  /** Calendar grid: 6 rows of 7 cells. Cell has trackId; day/dateStr/matches only for real days. */
+  calendarGrid = computed(() => {
+    const month = this.calendarMonth();
+    const year = month.getFullYear();
+    const monthIdx = month.getMonth();
+    const first = new Date(year, monthIdx, 1);
+    const last = new Date(year, monthIdx + 1, 0);
+    const daysInMonth = last.getDate();
+    const startOffset = (first.getDay() + 6) % 7;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    type Cell = { trackId: string; day?: number; dateStr?: string; matches?: boolean };
+    const cells: Cell[] = [];
+    let idx = 0;
+    for (let i = 0; i < startOffset; i++) cells.push({ trackId: `empty-${idx++}` });
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${pad(monthIdx + 1)}-${pad(d)}`;
+      cells.push({ trackId: dateStr, day: d, dateStr, matches: this.dayMatchesRequirements(dateStr) });
+    }
+    const total = cells.length;
+    const remainder = total % 7;
+    if (remainder !== 0) for (let i = 0; i < 7 - remainder; i++) cells.push({ trackId: `empty-${idx++}` });
+    const rows: { weekIndex: number; days: Cell[] }[] = [];
+    for (let r = 0; r < cells.length; r += 7) rows.push({ weekIndex: r / 7, days: cells.slice(r, r + 7) });
+    return rows;
   });
 
   ngOnInit(): void {
@@ -439,6 +546,21 @@ export class WorkingPlanComponent implements OnInit {
     return day?.closed === true;
   }
 
+  /** True if the shift plan for this date meets personnel requirements (scheduled >= required for each role). */
+  dayMatchesRequirements(dateStr: string): boolean {
+    const dayKey = DAY_KEYS[new Date(dateStr + 'T12:00:00').getDay()];
+    if (this.isDayClosed(dayKey)) return false;
+    for (const sk of STAFF_KEYS) {
+      const required = this.getRequiredForRole(dayKey, sk);
+      if (required > 0) {
+        const scheduled = this.getScheduledCountForRole(dateStr, sk);
+        if (scheduled < required) return false;
+      }
+    }
+    const hasAnyRequirement = STAFF_KEYS.some((sk) => this.getRequiredForRole(dayKey, sk) > 0);
+    return hasAnyRequirement;
+  }
+
   /** Next date in the current week range that is open and has a free slot for the current user's role; else first open day of week. */
   getSuggestedDateForNewShift(): string {
     const { from, to } = this.weekRange();
@@ -485,9 +607,9 @@ export class WorkingPlanComponent implements OnInit {
   }
 
   load(): void {
-    const { from, to } = this.weekRange();
     this.loading.set(true);
-    this.api.getSchedule(from, to).subscribe({
+    const range = this.viewMode() === 'calendar' ? getMonthRange(this.calendarMonth()) : this.weekRange();
+    this.api.getSchedule(range.from, range.to).subscribe({
       next: (data) => {
         this.shifts.set(data);
         this.loading.set(false);
@@ -500,6 +622,28 @@ export class WorkingPlanComponent implements OnInit {
       },
       error: () => { this.shifts.set([]); this.loading.set(false); },
     });
+  }
+
+  setViewMode(mode: 'week' | 'calendar'): void {
+    this.viewMode.set(mode);
+    if (mode === 'calendar') {
+      this.calendarMonth.set(new Date(this.weekStart().getFullYear(), this.weekStart().getMonth(), 1));
+    }
+    this.load();
+  }
+
+  prevMonth(): void {
+    const d = new Date(this.calendarMonth());
+    d.setMonth(d.getMonth() - 1);
+    this.calendarMonth.set(d);
+    this.load();
+  }
+
+  nextMonth(): void {
+    const d = new Date(this.calendarMonth());
+    d.setMonth(d.getMonth() + 1);
+    this.calendarMonth.set(d);
+    this.load();
   }
 
   prevWeek(): void {
@@ -517,7 +661,9 @@ export class WorkingPlanComponent implements OnInit {
   }
 
   goToToday(): void {
-    this.weekStart.set(new Date());
+    const now = new Date();
+    this.weekStart.set(now);
+    this.calendarMonth.set(new Date(now.getFullYear(), now.getMonth(), 1));
     this.load();
   }
 

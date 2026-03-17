@@ -16,6 +16,10 @@
  *   LOGIN_PASSWORD Password (or set DEMO_LOGIN_PASSWORD in .env)
  *   TENANT_ID      Tenant for login URL (default 1); use so login uses /login?tenant=1 and user is Owner
  *   HEADLESS       Set to 1 to run headless
+ *
+ * Note: The working-plan route is lazy-loaded. If you don't see UI changes after editing the component,
+ * do a full page refresh (Ctrl+Shift+R / Cmd+Shift+R) or restart the dev server; hot reload often
+ * does not invalidate lazy-loaded chunks.
  */
 
 import { createRequire } from 'module';
@@ -172,8 +176,46 @@ async function main() {
       console.log('   Week navigation present.');
     }
 
+    console.log('5. Switching to Calendar view...');
+    const calendarBtn = await page.$('[data-testid="working-plan-view-calendar"]');
+    if (!calendarBtn) {
+      console.log('   FAIL: Calendar view button (data-testid="working-plan-view-calendar") not found.');
+      console.log('   Tip: Working-plan is lazy-loaded. Do a hard refresh (Cmd+Shift+R) or restart the dev server, then run this test again.');
+      await browser.close();
+      process.exit(1);
+    }
+    await calendarBtn.click();
+    await sleep(3000); // allow month schedule to load
+
+    console.log('6. Checking calendar grid...');
+    const calendarGrid = await page.waitForSelector('[data-testid="working-plan-calendar-grid"]', { timeout: 10000 }).catch(() => null);
+    if (!calendarGrid) {
+      console.log('   FAIL: Calendar grid (data-testid="working-plan-calendar-grid") not found after switching to Calendar view.');
+      await browser.close();
+      process.exit(1);
+    }
+    const hasCalendarStructure = await page.evaluate(() => {
+      const grid = document.querySelector('[data-testid="working-plan-calendar-grid"]');
+      if (!grid) return false;
+      const header = grid.querySelector('.calendar-header');
+      const rows = grid.querySelectorAll('.calendar-row:not(.calendar-header)');
+      const cells = grid.querySelectorAll('.calendar-cell');
+      return !!header && rows.length >= 4 && cells.length >= 28; // at least 4 weeks * 7 days + header row
+    });
+    if (!hasCalendarStructure) {
+      console.log('   FAIL: Calendar grid missing header or day rows.');
+      await browser.close();
+      process.exit(1);
+    }
+    console.log('   Calendar view visible; grid has header and day cells.');
+
+    const redDayCount = await page.evaluate(() =>
+      document.querySelectorAll('.calendar-day-matches').length
+    );
+    console.log('   Days meeting requirements (red):', redDayCount);
+
     await browser.close();
-    console.log('\n>>> RESULT: Working plan smoke test passed.');
+    console.log('\n>>> RESULT: Working plan smoke test passed (week + calendar view).');
     process.exit(0);
   } catch (err) {
     console.error('Error:', err.message);
