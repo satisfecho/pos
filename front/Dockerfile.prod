@@ -26,17 +26,7 @@ RUN node scripts/get-commit-hash.js
 RUN npm run build -- --configuration production-static
 
 # Inject app version into built index.html for smoke test (landing page version check without login)
-RUN node -e " \
-  const fs = require('fs'); \
-  const pkg = JSON.parse(fs.readFileSync('/app/package.json', 'utf8')); \
-  const v = pkg.version || '0.0.0'; \
-  const p = '/app/dist/front/browser/index.html'; \
-  let h = fs.readFileSync(p, 'utf8'); \
-  if (h.indexOf('name=\"app-version\"') === -1) { \
-    h = h.replace('</head>', '<meta name=\"app-version\" content=\"' + v + '\"></head>'); \
-    fs.writeFileSync(p, h); \
-  } \
-"
+RUN node scripts/inject-version-into-index.js
 
 # Production stage
 FROM nginx:alpine
