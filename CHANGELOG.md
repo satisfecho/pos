@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Reports – revenue graph over time**: On `/reports`, a **Revenue over time** chart shows daily revenue as an SVG line chart with gradient area fill. Uses existing `summary.daily` data; Y-axis shows formatted currency (max, mid, zero), X-axis shows first/middle/last date. Responsive; no new dependencies. i18n: `REPORTS.REVENUE_OVER_TIME` (en, de, es, fr, ca, zh-CN, hi).
+
+### Fixed
+
+- **Angular hydration (NG0505)**: Added `provideClientHydration(withEventReplay())` to the server app config (`app.config.server.ts`) so the server includes serialized hydration data in the response when using SSR. This removes the console warning "Angular hydration was requested on the client, but there was no serialized information present in the server response."
+
 ## [1.0.15] - 2025-03-16
 
 ### Added
