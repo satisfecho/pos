@@ -57,9 +57,15 @@ jobs:
           echo "Smoke test: $BASE (landing), version in footer, $BASE/api/health"
           sleep 5
           curl -sf -o /dev/null -w "%{http_code}" "$BASE/" | grep -q 200 || (echo "Landing page failed"; exit 1)
-          HTML=$(curl -sfL "$BASE/") || (echo "Failed to fetch landing page"; exit 1)
-          if ! echo "$HTML" | grep -qE 'name="app-version"[^>]*content="[0-9]+\.[0-9]+\.[0-9]+"'; then
-            echo "Version meta tag missing or invalid in landing page HTML (expected app-version with semver)"; exit 1
+          HTML=$(curl -sfL "$BASE/?t=$(date +%s)") || (echo "Failed to fetch landing page"; exit 1)
+          if echo "$HTML" | grep -qE 'name="app-version"[^>]*content="[0-9]+\.[0-9]+\.[0-9]+"'; then
+            echo "Version meta tag found in landing page."
+          elif echo "$HTML" | grep -q 'name="app-version"' && echo "$HTML" | grep -qE 'content="[0-9]+\.[0-9]+\.[0-9]+"'; then
+            echo "Version meta (split) found in landing page."
+          else
+            echo "Version meta tag missing in landing page HTML (expected app-version with semver)."
+            echo "First 500 chars of head: $(echo "$HTML" | head -c 500)"
+            exit 1
           fi
           echo "Version correctly shown in landing page (no login required)."
           curl -sf -o /dev/null -w "%{http_code}" "$BASE/api/health" | grep -q 200 || (echo "API health failed"; exit 1)

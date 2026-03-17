@@ -54,6 +54,8 @@ sleep 10
 echo "Building back image first..."
 docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml build back
 
+echo "Remove existing front image so build is not skipped..."
+docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml images -q front 2>/dev/null | while read -r id; do docker rmi -f "$id" 2>/dev/null || true; done
 echo "Building front image (no cache) so deployed assets match current code..."
 docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml build --no-cache front
 
