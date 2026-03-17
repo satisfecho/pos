@@ -479,6 +479,7 @@
     "SHAPE_BOOTH_4": "Reservado (4)",
     "SHAPE_BAR_6": "Barra (6)",
     "DEFAULT_TABLE_NAME": "Mesa {{number}}",
+    "DRAG_HINT": "Arrastra al lienzo",
     "ACTIVE": "Activa",
     "INACTIVE": "Inactiva",
     "ACTIVATE": "Activar",

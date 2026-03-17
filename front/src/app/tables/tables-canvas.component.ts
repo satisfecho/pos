@@ -97,17 +97,17 @@ interface TableShape {
               </svg>
             </button>
           }
-          <button 
-            class="floor-tab add-table-btn" 
-            (click)="showAddTableModal = true" 
-            [disabled]="floors().length === 0"
-            [title]="'TABLES.ADD_TABLE' | translate">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
-            </svg>
-            {{ 'TABLES.ADD_TABLE' | translate }}
-          </button>
+          @if (pendingPlacementShape) {
+            <button
+              class="floor-tab add-table-btn active-placement"
+              (click)="pendingPlacementShape = null"
+              [title]="'TABLES.CANCEL' | translate">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 6L6 18M6 6l12 12"/>
+              </svg>
+              {{ 'TABLES.CANCEL' | translate }}
+            </button>
+          }
         </div>
 
         <!-- Main Canvas -->
@@ -348,6 +348,41 @@ interface TableShape {
                     }
                   </g>
                 }
+
+                <!-- Drop preview ghost (while dragging from palette) -->
+                @if (dragPreview(); as preview) {
+                  <g
+                    [attr.transform]="'translate(' + preview.x + ',' + preview.y + ')'"
+                    opacity="0.45"
+                    style="pointer-events: none;"
+                  >
+                    @if (preview.shape.shape === 'circle') {
+                      <ellipse cx="0" cy="0"
+                        [attr.rx]="preview.shape.width / 2"
+                        [attr.ry]="preview.shape.height / 2"
+                        fill="url(#woodGrain)" stroke="#8b7355" stroke-width="2"/>
+                    } @else if (preview.shape.shape === 'oval') {
+                      <ellipse cx="0" cy="0"
+                        [attr.rx]="preview.shape.width / 2"
+                        [attr.ry]="preview.shape.height / 2"
+                        fill="url(#woodGrain)" stroke="#8b7355" stroke-width="2"/>
+                    } @else if (preview.shape.shape === 'bar') {
+                      <rect
+                        [attr.x]="-(preview.shape.width / 2)"
+                        [attr.y]="-(preview.shape.height / 2)"
+                        [attr.width]="preview.shape.width"
+                        [attr.height]="preview.shape.height"
+                        rx="4" fill="#5c4033" stroke="#3d2817" stroke-width="2"/>
+                    } @else {
+                      <rect
+                        [attr.x]="-(preview.shape.width / 2)"
+                        [attr.y]="-(preview.shape.height / 2)"
+                        [attr.width]="preview.shape.width"
+                        [attr.height]="preview.shape.height"
+                        rx="4" fill="url(#woodGrain)" stroke="#8b7355" stroke-width="2"/>
+                    }
+                  </g>
+                }
               </svg>
             }
           </div>
@@ -403,54 +438,46 @@ interface TableShape {
               </div>
             </div>
           }
-        </div>
 
-        <!-- Add Table Modal -->
-        @if (showAddTableModal) {
-          <div class="modal-overlay" (click)="showAddTableModal = false">
-            <div class="modal-content" (click)="$event.stopPropagation()">
-              <div class="modal-header">
+          <!-- Shape Palette (shown when no table selected) -->
+          @if (!selectedTable() && floors().length > 0 && selectedFloorId()) {
+            <div class="shape-palette">
+              <div class="palette-header">
                 <h3>{{ 'TABLES.ADD_TABLE' | translate }}</h3>
-                <button class="close-btn" (click)="showAddTableModal = false">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 6L6 18M6 6l12 12"/>
-                  </svg>
-                </button>
+                <span class="palette-hint">{{ 'TABLES.DRAG_HINT' | translate }}</span>
               </div>
-              <div class="modal-body">
-                <div class="shape-grid">
-                  @for (shape of tableShapes; track shape.id) {
-                    <div
-                      class="shape-option"
-                      [class.selected]="selectedShape?.id === shape.id"
-                      (click)="selectedShape = shape"
-                    >
-                      <div class="shape-preview">
-                        @if (shape.shape === 'rectangle') {
-                          <div class="preview-rect"></div>
-                        } @else if (shape.shape === 'circle') {
-                          <div class="preview-circle"></div>
-                        } @else if (shape.shape === 'oval') {
-                          <div class="preview-oval"></div>
-                        } @else if (shape.shape === 'booth') {
-                          <div class="preview-booth"></div>
-                        } @else if (shape.shape === 'bar') {
-                          <div class="preview-bar"></div>
-                        }
-                      </div>
-                      <span>{{ shape.name }}</span>
-                      <small>{{ shape.seats }} {{ 'TABLES.SEATS' | translate | lowercase }}</small>
+              <div class="palette-shapes">
+                @for (shape of tableShapes; track shape.id) {
+                  <div
+                    class="palette-shape"
+                    [class.active-placement]="pendingPlacementShape?.id === shape.id"
+                    draggable="true"
+                    (dragstart)="onShapeDragStart($event, shape)"
+                    (dragend)="onShapeDragEnd()"
+                    (touchstart)="onShapeTouchStart($event, shape)"
+                    (click)="onShapeTap(shape)"
+                  >
+                    <div class="shape-preview">
+                      @if (shape.shape === 'rectangle') {
+                        <div class="preview-rect"></div>
+                      } @else if (shape.shape === 'circle') {
+                        <div class="preview-circle"></div>
+                      } @else if (shape.shape === 'oval') {
+                        <div class="preview-oval"></div>
+                      } @else if (shape.shape === 'booth') {
+                        <div class="preview-booth"></div>
+                      } @else if (shape.shape === 'bar') {
+                        <div class="preview-bar"></div>
+                      }
                     </div>
-                  }
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button class="btn btn-secondary" (click)="showAddTableModal = false">{{ 'TABLES.CANCEL' | translate }}</button>
-                <button class="btn btn-primary" (click)="addTableFromModal()" [disabled]="!selectedShape">{{ 'TABLES.ADD_TABLE' | translate }}</button>
+                    <span class="palette-shape-name">{{ shape.name }}</span>
+                    <small>{{ shape.seats }} {{ 'TABLES.SEATS' | translate | lowercase }}</small>
+                  </div>
+                }
               </div>
             </div>
-          </div>
-        }
+          }
+        </div>
 
         <!-- Confirmation Modal -->
         @if (confirmationModal().show) {
@@ -896,85 +923,98 @@ interface TableShape {
       color: var(--color-text);
     }
 
-    /* Modal - Mobile-first */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      z-index: 1000;
-      padding: 0;
-    }
-
-    .modal-content {
+    /* Shape Palette - Mobile-first: horizontal strip at bottom of canvas */
+    .shape-palette {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
       background: var(--color-surface);
-      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-      width: 100%;
-      max-height: 85vh;
-      overflow-y: auto;
+      border-top: 1px solid var(--color-border);
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.1);
+      z-index: 10;
+      padding: var(--space-2) var(--space-3);
     }
 
-    .modal-header {
+    .palette-header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: var(--space-4);
-      border-bottom: 1px solid var(--color-border);
-      position: sticky;
-      top: 0;
-      background: var(--color-surface);
-      z-index: 1;
+      justify-content: space-between;
+      margin-bottom: var(--space-2);
     }
-    .modal-header h3 {
-      margin: 0;
-      font-size: 1.125rem;
+    .palette-header h3 {
+      font-size: 0.8125rem;
       font-weight: 600;
+      margin: 0;
       color: var(--color-text);
     }
-
-    .modal-body {
-      padding: var(--space-4);
+    .palette-hint {
+      font-size: 0.6875rem;
+      color: var(--color-text-muted);
     }
 
-    .modal-footer {
+    .palette-shapes {
       display: flex;
-      gap: var(--space-3);
-      padding: var(--space-4);
-      border-top: 1px solid var(--color-border);
-      background: var(--color-bg);
-      position: sticky;
-      bottom: 0;
+      gap: var(--space-2);
+      overflow-x: auto;
+      padding-bottom: var(--space-1);
+      -webkit-overflow-scrolling: touch;
     }
-    .modal-footer .btn {
-      flex: 1;
-    }
+    .palette-shapes::-webkit-scrollbar { height: 3px; }
+    .palette-shapes::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
 
-    /* Shape Grid - 2 columns on mobile */
-    .shape-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: var(--space-3);
-    }
-
-    .shape-option {
+    .palette-shape {
+      flex: 0 0 auto;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--space-2);
-      padding: var(--space-4) var(--space-3);
-      border: 2px solid var(--color-border);
+      gap: 2px;
+      padding: var(--space-2);
+      border: 1.5px solid var(--color-border);
       border-radius: var(--radius-md);
-      cursor: pointer;
-      transition: all 0.15s ease;
-      min-height: 88px;
+      cursor: grab;
+      min-width: 64px;
+      background: var(--color-surface);
+      transition: border-color 0.15s, background 0.15s, transform 0.1s;
+      touch-action: none;
     }
-    .shape-option:hover { border-color: var(--color-text-muted); background: var(--color-bg); }
-    .shape-option:active { transform: scale(0.98); }
-    .shape-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
-    .shape-option span { font-weight: 500; color: var(--color-text); font-size: 0.875rem; }
-    .shape-option small { color: var(--color-text-muted); font-size: 0.75rem; }
+    .palette-shape:hover {
+      border-color: var(--color-primary);
+      background: var(--color-bg);
+    }
+    .palette-shape:active {
+      cursor: grabbing;
+      transform: scale(0.95);
+    }
+    .palette-shape.active-placement {
+      border-color: var(--color-primary);
+      background: var(--color-primary-light, rgba(211, 82, 51, 0.08));
+      box-shadow: 0 0 0 2px var(--color-primary-light, rgba(211, 82, 51, 0.15));
+    }
+
+    .palette-shape-name {
+      font-size: 0.6875rem;
+      font-weight: 500;
+      color: var(--color-text);
+      white-space: nowrap;
+    }
+    .palette-shape small {
+      font-size: 0.5625rem;
+      color: var(--color-text-muted);
+    }
+
+    .palette-shape-ghost {
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      border-color: var(--color-primary);
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+    }
+
+    .add-table-btn.active-placement {
+      background: var(--color-primary);
+      color: white;
+      border-color: var(--color-primary);
+    }
 
     .shape-preview {
       width: 44px;
@@ -1105,58 +1145,49 @@ interface TableShape {
         font-size: 0.875rem;
       }
 
-      /* Modal - Desktop: Centered */
-      .modal-overlay {
-        align-items: center;
-        padding: var(--space-4);
-      }
-
-      .modal-content {
+      /* Shape Palette - Desktop: vertical sidebar */
+      .shape-palette {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        bottom: auto;
+        left: auto;
+        width: 180px;
+        max-height: calc(100% - 2rem);
         border-radius: var(--radius-lg);
-        width: 90%;
-        max-width: 520px;
-        max-height: 85vh;
+        border: 1px solid var(--color-border);
+        border-top: none;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        padding: var(--space-3);
+        overflow-y: auto;
       }
 
-      .modal-header {
-        padding: var(--space-5) var(--space-6);
+      .palette-shapes {
+        flex-direction: column;
+        overflow-x: visible;
       }
 
-      .modal-body {
-        padding: var(--space-5) var(--space-6);
-      }
-
-      .modal-footer {
-        padding: var(--space-5) var(--space-6);
-      }
-      .modal-footer .btn {
-        flex: none;
-      }
-
-      /* Shape Grid - 4 columns on desktop */
-      .shape-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 0.75rem;
-      }
-
-      .shape-option {
-        padding: var(--space-5) var(--space-3);
+      .palette-shape {
+        flex-direction: row;
+        gap: var(--space-2);
+        min-width: unset;
+        padding: var(--space-2) var(--space-3);
       }
 
       .shape-preview {
-        width: 48px;
-        height: 48px;
+        width: 36px;
+        height: 36px;
       }
 
-      .preview-rect { width: 44px; height: 28px; }
-      .preview-circle { width: 36px; height: 36px; }
-      .preview-oval { width: 44px; height: 28px; }
-      .preview-booth { width: 40px; height: 32px; }
-      .preview-booth::before, .preview-booth::after { height: 3px; left: 4px; right: 4px; }
-      .preview-booth::before { top: 4px; }
-      .preview-booth::after { bottom: 4px; }
-      .preview-bar { width: 48px; height: 20px; }
-      .preview-bar::before { top: 3px; left: 4px; right: 4px; }
+      .preview-rect { width: 32px; height: 20px; }
+      .preview-circle { width: 28px; height: 28px; }
+      .preview-oval { width: 32px; height: 20px; }
+      .preview-booth { width: 30px; height: 24px; }
+      .preview-booth::before, .preview-booth::after { height: 2px; left: 3px; right: 3px; }
+      .preview-booth::before { top: 3px; }
+      .preview-booth::after { bottom: 3px; }
+      .preview-bar { width: 36px; height: 14px; }
+      .preview-bar::before { top: 2px; left: 3px; right: 3px; }
     }
   `]
 })
@@ -1178,9 +1209,13 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
 
   selectedTableName = '';
   selectedTableSeats = 4;
-  showAddTableModal = false;
-  selectedShape: TableShape | null = null;
   waiters = signal<User[]>([]);
+
+  // Shape palette drag state
+  dragPreview = signal<{ shape: TableShape; x: number; y: number } | null>(null);
+  private draggedShapeId: string | null = null;
+  private touchDragClone: HTMLElement | null = null;
+  pendingPlacementShape: TableShape | null = null;
 
   // Confirmation Modal State
   confirmationModal = signal<{
@@ -1213,8 +1248,8 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   // Zoom and pan state
   zoomLevel = 1;
   private panOffset = { x: 0, y: 0 };
-  private minZoom = 0.25;
-  private maxZoom = 3;
+  private minZoom = 0.5;
+  private maxZoom = 2;
   private lastPinchDistance = 0;
   private isPanning = false;
   private lastPanPosition = { x: 0, y: 0 };
@@ -1407,11 +1442,11 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   }
 
   zoomIn() {
-    this.setZoom(this.zoomLevel * 1.25);
+    this.setZoom(this.zoomLevel * 1.1);
   }
 
   zoomOut() {
-    this.setZoom(this.zoomLevel / 1.25);
+    this.setZoom(this.zoomLevel / 1.1);
   }
 
   resetZoom() {
@@ -1427,7 +1462,7 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     // Prevent page zoom, only zoom canvas
     event.preventDefault();
 
-    const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
+    const zoomFactor = event.deltaY > 0 ? 0.95 : 1.05;
     this.setZoom(this.zoomLevel * zoomFactor);
   }
 
@@ -1461,27 +1496,117 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     this.lastPinchDistance = currentDistance;
   };
 
-  // Drag handlers
+  // Shape palette drag handlers
+  onShapeDragStart(event: DragEvent, shape: TableShape) {
+    this.draggedShapeId = shape.id;
+    event.dataTransfer!.effectAllowed = 'copy';
+    event.dataTransfer!.setData('text/plain', shape.id);
+    const preview = (event.target as HTMLElement).querySelector('.shape-preview') as HTMLElement;
+    if (preview && event.dataTransfer) {
+      event.dataTransfer.setDragImage(preview, preview.offsetWidth / 2, preview.offsetHeight / 2);
+    }
+  }
+
+  onShapeDragEnd() {
+    this.draggedShapeId = null;
+    this.dragPreview.set(null);
+  }
+
   onCanvasDragOver(event: DragEvent) {
     event.preventDefault();
+    event.dataTransfer!.dropEffect = 'copy';
+    if (this.draggedShapeId) {
+      const shape = this.tableShapes.find(s => s.id === this.draggedShapeId);
+      if (shape) {
+        const svgPoint = this.getSvgPoint(event.clientX, event.clientY);
+        if (svgPoint) {
+          this.dragPreview.set({ shape, x: svgPoint.x, y: svgPoint.y });
+        }
+      }
+    }
   }
 
   onCanvasDrop(event: DragEvent) {
-    // Not used with modal approach
+    event.preventDefault();
+    this.dragPreview.set(null);
+    const shapeId = event.dataTransfer?.getData('text/plain');
+    if (!shapeId || !this.selectedFloorId()) return;
+    const shape = this.tableShapes.find(s => s.id === shapeId);
+    if (!shape) return;
+    const svgPoint = this.getSvgPoint(event.clientX, event.clientY);
+    if (!svgPoint) return;
+    const x = Math.max(50, Math.min(this.canvasWidth - 50, svgPoint.x));
+    const y = Math.max(50, Math.min(this.canvasHeight - 50, svgPoint.y));
+    this.addTableAtPosition(shape, x, y);
+    this.draggedShapeId = null;
   }
 
-  addTableFromModal() {
-    this.error.set('');
-    if (!this.selectedShape || !this.selectedFloorId() || this.floors().length === 0) return;
+  onShapeTap(shape: TableShape) {
+    this.pendingPlacementShape = this.pendingPlacementShape?.id === shape.id ? null : shape;
+  }
 
-    const shape = this.selectedShape;
+  onShapeTouchStart(event: TouchEvent, shape: TableShape) {
+    if (event.touches.length !== 1) return;
+    event.preventDefault();
+    const touch = event.touches[0];
+    const target = event.currentTarget as HTMLElement;
+    const clone = target.cloneNode(true) as HTMLElement;
+    clone.classList.add('palette-shape-ghost');
+    clone.style.position = 'fixed';
+    clone.style.left = `${touch.clientX - 30}px`;
+    clone.style.top = `${touch.clientY - 30}px`;
+    clone.style.pointerEvents = 'none';
+    clone.style.zIndex = '9999';
+    clone.style.opacity = '0.85';
+    document.body.appendChild(clone);
+    this.touchDragClone = clone;
+    this.draggedShapeId = shape.id;
+
+    const onMove = (e: TouchEvent) => {
+      e.preventDefault();
+      const t = e.touches[0];
+      clone.style.left = `${t.clientX - 30}px`;
+      clone.style.top = `${t.clientY - 30}px`;
+      const svgPoint = this.getSvgPoint(t.clientX, t.clientY);
+      if (svgPoint) {
+        this.dragPreview.set({ shape, x: svgPoint.x, y: svgPoint.y });
+      }
+    };
+
+    const onEnd = (e: TouchEvent) => {
+      const t = e.changedTouches[0];
+      clone.remove();
+      this.touchDragClone = null;
+      this.dragPreview.set(null);
+      this.draggedShapeId = null;
+      const canvasEl = this.canvasAreaRef?.nativeElement as HTMLElement;
+      if (canvasEl) {
+        const rect = canvasEl.getBoundingClientRect();
+        if (t.clientX >= rect.left && t.clientX <= rect.right &&
+            t.clientY >= rect.top && t.clientY <= rect.bottom) {
+          const svgPoint = this.getSvgPoint(t.clientX, t.clientY);
+          if (svgPoint) {
+            const x = Math.max(50, Math.min(this.canvasWidth - 50, svgPoint.x));
+            const y = Math.max(50, Math.min(this.canvasHeight - 50, svgPoint.y));
+            this.addTableAtPosition(shape, x, y);
+          }
+        }
+      }
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onEnd);
+      document.removeEventListener('touchcancel', onEnd);
+    };
+
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onEnd);
+    document.addEventListener('touchcancel', onEnd);
+  }
+
+  private addTableAtPosition(shape: TableShape, x: number, y: number) {
+    this.error.set('');
+    if (!this.selectedFloorId() || this.floors().length === 0) return;
     const tableNumber = this.tables().length + 1;
     const tableName = this.translate.instant('TABLES.DEFAULT_TABLE_NAME', { number: tableNumber });
-
-    // Position in center of canvas
-    const x = this.canvasWidth / 2;
-    const y = this.canvasHeight / 2;
-
     this.api.createTable(tableName, this.selectedFloorId()!).subscribe({
       next: table => {
         this.api.updateTable(table.id!, {
@@ -1501,9 +1626,6 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
       },
       error: err => this.error.set(err.error?.detail || 'Failed to create table')
     });
-
-    this.showAddTableModal = false;
-    this.selectedShape = null;
   }
 
   onTableMouseDown(event: MouseEvent, table: CanvasTable) {
@@ -1692,6 +1814,17 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
 
   onCanvasClick(event: MouseEvent) {
     if ((event.target as HTMLElement).closest('.table-group')) return;
+    // Tap-to-place: if a shape is pending, place it at click position
+    if (this.pendingPlacementShape) {
+      const svgPoint = this.getSvgPoint(event.clientX, event.clientY);
+      if (svgPoint) {
+        const x = Math.max(50, Math.min(this.canvasWidth - 50, svgPoint.x));
+        const y = Math.max(50, Math.min(this.canvasHeight - 50, svgPoint.y));
+        this.addTableAtPosition(this.pendingPlacementShape, x, y);
+      }
+      this.pendingPlacementShape = null;
+      return;
+    }
     this.selectedTable.set(null);
   }
 
