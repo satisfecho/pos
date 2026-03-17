@@ -26,6 +26,16 @@ back/uploads/
 # Pre-deploy database backups (created on server by deploy script)
 backups/
 
+# Certbot webroot and HAProxy combined PEM (host-specific; certbot/README.md is tracked)
+certbot/www/
+certbot/haproxy-certs/*.pem
+certbot/haproxy-certs/*.crt
+certbot/haproxy-certs/*.key
+# Legacy path if used
+certs/*.pem
+certs/*.crt
+certs/*.key
+
 # Node / Angular (front has its own .gitignore too, this is just extra safety)
 node_modules/
 dist/

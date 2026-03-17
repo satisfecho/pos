@@ -104,7 +104,11 @@
     "HELP_DESC": "Som aquí per ajudar-te. Reporta un error, fes una pregunta o comparteix una idea.",
     "HELP_INVITE": "Obre una discussió per a millores o un issue — ens encantaria saber de tu.",
     "HELP_ISSUES": "Reportar un problema (GitHub)",
-    "HELP_DISCUSSIONS": "Discussions (GitHub)"
+    "HELP_DISCUSSIONS": "Discussions (GitHub)",
+    "WHATS_NEW_TITLE": "Què hi ha de nou",
+    "WHATS_NEW_DESC": "Últims canvis i noves funcionalitats",
+    "CHANGELOG_TITLE": "Registre de canvis",
+    "CHANGELOG_LOADING": "Carregant…"
   },
   "AUTH": {
     "LOGIN": "Iniciar sessió",

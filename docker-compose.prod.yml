@@ -16,7 +16,10 @@ services:
       - back
 
   # Production: HAProxy is the single entry point for end users (80 + 443)
+  # Mount combined PEM from certbot/haproxy-certs (same path used for certbot on amvara9; survives deploy)
   haproxy:
+    volumes:
+      - ./certbot/haproxy-certs:/etc/haproxy/certs:ro
     ports:
       - "80:80"
       - "443:443"

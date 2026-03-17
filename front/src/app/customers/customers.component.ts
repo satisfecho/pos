@@ -153,7 +153,7 @@ import { TranslateModule } from '@ngx-translate/core';
               </div>
               <div class="modal-actions">
                 <button type="button" class="btn btn-secondary" (click)="closeModal()">{{ 'COMMON.CANCEL' | translate }}</button>
-                <button type="submit" class="btn btn-primary" [disabled]="!form.name?.trim() || saving()">
+                <button type="submit" class="btn btn-primary" [disabled]="!form.name.trim() || saving()">
                   {{ saving() ? ('COMMON.SAVING' | translate) : (editing() ? ('COMMON.SAVE' | translate) : ('CUSTOMERS.CREATE' | translate)) }}
                 </button>
               </div>
@@ -255,7 +255,7 @@ export class CustomersComponent implements OnInit {
   }
 
   save() {
-    if (!this.form.name?.trim()) return;
+    if (!this.form.name.trim()) return;
     this.saving.set(true);
     const payload = {
       name: this.form.name.trim(),

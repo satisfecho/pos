@@ -104,7 +104,11 @@
     "HELP_DESC": "Nous sommes là pour vous. Signaler un bug, poser une question ou partager une idée.",
     "HELP_INVITE": "Ouvrir une discussion pour des améliorations ou un ticket — nous serions ravis de vous lire.",
     "HELP_ISSUES": "Signaler un problème (GitHub)",
-    "HELP_DISCUSSIONS": "Ouvrir une discussion (GitHub)"
+    "HELP_DISCUSSIONS": "Ouvrir une discussion (GitHub)",
+    "WHATS_NEW_TITLE": "Nouveautés",
+    "WHATS_NEW_DESC": "Dernières modifications et nouvelles fonctionnalités",
+    "CHANGELOG_TITLE": "Journal des modifications",
+    "CHANGELOG_LOADING": "Chargement…"
   },
   "AUTH": {
     "LOGIN": "Connexion",

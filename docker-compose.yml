@@ -30,6 +30,7 @@ services:
       - ./back:/app
       - ./back/uploads:/app/uploads
       - ./config.env:/app/config.env:ro
+      - ./CHANGELOG.md:/app/CHANGELOG.md:ro
     depends_on:
       db:
         condition: service_healthy

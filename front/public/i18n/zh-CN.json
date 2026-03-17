@@ -104,7 +104,11 @@
     "HELP_DESC": "我们随时为您服务。报告问题、提问或分享想法。",
     "HELP_INVITE": "发起改进讨论或提交 Issue — 我们期待您的反馈。",
     "HELP_ISSUES": "报告问题 (GitHub)",
-    "HELP_DISCUSSIONS": "发起讨论 (GitHub)"
+    "HELP_DISCUSSIONS": "发起讨论 (GitHub)",
+    "WHATS_NEW_TITLE": "更新内容",
+    "WHATS_NEW_DESC": "最新变更与新功能",
+    "CHANGELOG_TITLE": "更新日志",
+    "CHANGELOG_LOADING": "加载中…"
   },
   "AUTH": {
     "LOGIN": "登录",

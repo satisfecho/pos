@@ -88,6 +88,21 @@ npm run test:working-plan --prefix front
 
 ---
 
+### 2c. Changelog (What's new)
+
+Smoke test for the dashboard "What's new" tile and changelog modal. Logs in, opens the dashboard, clicks the What's new tile, and asserts the changelog is loaded from the API and shown (no 404).
+
+```bash
+npm run test:changelog --prefix front
+# Or: LOGIN_EMAIL=owner@example.com LOGIN_PASSWORD=secret node front/scripts/test-changelog.mjs
+# Headless: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:changelog --prefix front
+```
+
+- **Env:** `BASE_URL`, `LOGIN_EMAIL`/`LOGIN_PASSWORD` or `DEMO_LOGIN_EMAIL`/`DEMO_LOGIN_PASSWORD` (from `.env`). `TENANT_ID` (default `1`). `HEADLESS`.
+- **Asserts:** After login, dashboard "What's new" tile is present; clicking it opens the modal; changelog content loads (no error); body contains version-like headings or "Unreleased". Requires backend to serve `CHANGELOG.md` (single file at project root; Docker: `./CHANGELOG.md` mounted at `/app/CHANGELOG.md` in back container).
+
+---
+
 ### 3. Tables page (view toggle and table view)
 
 Login, open `/tables`, then if the view toggle is present (tables exist), switch to Table view and assert the data table with columns is shown.
@@ -289,6 +304,7 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `test:order-8-status` | `scripts/test-order-8-status.mjs` |
 | `test:register-page` | `scripts/test-register-page.mjs` |
 | `test:reports` | `scripts/test-reports.mjs` (Reports page smoke; owner/admin) |
+| `test:changelog` | `scripts/test-changelog.mjs` (Dashboard What's new → changelog modal; API serves CHANGELOG.md) |
 | `test:bartender-role` | `scripts/test-bartender-role.mjs` (Users → Add user → role dropdown includes Bartender) |
 | `test:kitchen-status-dropdown` | `scripts/test-kitchen-status-dropdown.mjs` (Kitchen display: status dropdown visible, not clipped) |
 | `test:rate-limit` | `scripts/test-rate-limit.mjs` (API rate limiting: login 5/15min, register 3/hour; expects 429 after limit) |

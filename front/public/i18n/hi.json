@@ -104,7 +104,11 @@
     "HELP_DESC": "हम यहाँ हैं। बग रिपोर्ट करें, सवाल पूछें या विचार साझा करें।",
     "HELP_INVITE": "सुधार के लिए चर्चा शुरू करें या Issue खोलें — हम आपसे सुनना पसंद करेंगे।",
     "HELP_ISSUES": "समस्या रिपोर्ट करें (GitHub)",
-    "HELP_DISCUSSIONS": "चर्चा शुरू करें (GitHub)"
+    "HELP_DISCUSSIONS": "चर्चा शुरू करें (GitHub)",
+    "WHATS_NEW_TITLE": "क्या नया है",
+    "WHATS_NEW_DESC": "नवीनतम परिवर्तन और नई सुविधाएं",
+    "CHANGELOG_TITLE": "परिवर्तन सूची",
+    "CHANGELOG_LOADING": "लोड हो रहा है…"
   },
   "AUTH": {
     "LOGIN": "लॉग इन",

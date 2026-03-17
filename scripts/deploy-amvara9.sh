@@ -59,6 +59,9 @@ docker compose --env-file config.env -f docker-compose.yml -f docker-compose.pro
 echo "Building front image (no cache) so deployed assets match current code..."
 docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml build --no-cache front
 
+echo "Ensure certbot dirs exist (webroot for certbot, haproxy-certs for combined PEM; see certbot/README.md)..."
+mkdir -p certbot/www certbot/haproxy-certs
+
 echo "Starting all services (force-recreate so front uses new image)..."
 if ! docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml up -d --force-recreate; then
   echo "First up failed (possible port race); waiting 10s and retrying..."

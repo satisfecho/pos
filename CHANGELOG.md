@@ -8,12 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- **Reservations – WhatsApp reminder (024)**: "Send reminder"
+- **HAProxy SSL (amvara9) – durable certificate path**: SSL cert loaded from `./certbot/haproxy-certs` (same path used for certbot on amvara9). Compose mounts this dir into HAProxy; deploy creates `certbot/www` and `certbot/haproxy-certs` and does not overwrite certs. Workflow: `certbot certonly --webroot -w .../certbot/www`, then `cat fullchain+privkey > certbot/haproxy-certs/satisfecho.de.pem`, then `docker exec pos-haproxy kill -HUP 1`. See `certbot/README.md` and `docs/0026-haproxy-ssl-amvara9.md`.
+- **Deploy**: Script run from server repo (not stdin); version inject via `front/scripts/inject-version-into-index.js`; force-remove front image before build; smoke test cache-bust and 5s delay; deploy step timeout 20 min.
+- **Docs**: `docs/0026-haproxy-ssl-amvara9.md` (SSL durable setup and restore); `certbot/README.md`, `certs/README.md` (point to certbot path).
 
 ### Changed
 
-- **Working plan – Owner and Administrator as workers**: When adding or editing shifts, **Owner** and **Administrator** can now be selected as the worker (in addition to kitchen, bartender, waiter, receptionist). Backend: `create_shift` and `update_shift` accept `owner` and `admin` roles; frontend: `getUsersForSchedule()` includes users with role owner or admin in the dropdown. can now deliver via **email** and/or **WhatsApp**. When the reservation has a phone number and Twilio WhatsApp is configured, the backend sends a reminder via WhatsApp (in addition to email when present). One action for staff; response indicates which channel(s) were used. Backend: `whatsapp_service` (Twilio REST), `phone_utils` (E.164 normalization), `POST /reservations/{id}/send-reminder` returns `email_sent`, `whatsapp_sent`, `to_email`, `to_phone`. Config: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`, `DEFAULT_PHONE_COUNTRY`. Send reminder button shown when reservation has email or phone; UI shows "Reminder sent by email", "by WhatsApp", or "by email and WhatsApp". i18n: `REMINDER_SENT_EMAIL`, `REMINDER_SENT_WHATSAPP`, `REMINDER_SENT_EMAIL_AND_WHATSAPP` (en, de, es, fr, ca, zh-CN, hi).
-
+- **HAProxy**: Bind 443 with `ssl crt /etc/haproxy/certs`; redirect HTTP to HTTPS except `/.well-known/acme-challenge`; removed `daemon` for Docker.
+- **Working plan – Owner and Administrator as workers**: Owner and Administrator can be selected as the worker when adding/editing shifts. Backend: `create_shift`/`update_shift` accept `owner` and `admin`; frontend: `getUsersForSchedule()` includes owner/admin in dropdown.
 
 ### Fixed
 

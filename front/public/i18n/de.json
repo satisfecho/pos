@@ -104,7 +104,11 @@
     "HELP_DESC": "Wir sind für Sie da. Melden Sie einen Fehler, stellen Sie eine Frage oder teilen Sie eine Idee.",
     "HELP_INVITE": "Starten Sie eine Diskussion für Verbesserungen oder öffnen Sie ein Issue — wir freuen uns auf Ihr Feedback.",
     "HELP_ISSUES": "Problem melden (GitHub)",
-    "HELP_DISCUSSIONS": "Diskussion starten (GitHub)"
+    "HELP_DISCUSSIONS": "Diskussion starten (GitHub)",
+    "WHATS_NEW_TITLE": "Was ist neu",
+    "WHATS_NEW_DESC": "Neueste Änderungen und neue Funktionen",
+    "CHANGELOG_TITLE": "Changelog",
+    "CHANGELOG_LOADING": "Wird geladen…"
   },
   "AUTH": {
     "LOGIN": "Anmelden",

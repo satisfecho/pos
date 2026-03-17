@@ -49,7 +49,7 @@
           </div>
           <div class="summary-card avg-payment">
             <span class="card-label">{{ 'REPORTS.AVG_PAYMENT_PER_CLIENT' | translate }}</span>
-            <span class="card-value">{{ formatCurrency(r.summary.average_revenue_per_order_cents ?? 0) }}</span>
+            <span class="card-value">{{ formatCurrency(r.summary.average_revenue_per_order_cents) }}</span>
           </div>
           @if (r.reservations) {
             <div class="summary-card reservations">
