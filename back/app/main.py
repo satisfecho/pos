@@ -2938,7 +2938,7 @@ def create_shift(
     current_user: Annotated[models.User, Depends(require_permission(Permission.SCHEDULE_WRITE))],
     session: Session = Depends(get_session),
 ) -> dict:
-    """Create a shift. User must belong to tenant and have role kitchen, bartender, or waiter."""
+    """Create a shift. User must belong to tenant and have role owner, admin, kitchen, bartender, waiter, or receptionist."""
     from datetime import datetime as dt_parse
     if current_user.tenant_id is None:
         raise HTTPException(status_code=403, detail="Tenant required")
@@ -2950,8 +2950,8 @@ def create_shift(
     ).first()
     if not user:
         raise HTTPException(status_code=400, detail="User not found")
-    if user.role not in (models.UserRole.kitchen, models.UserRole.bartender, models.UserRole.waiter, models.UserRole.receptionist):
-        raise HTTPException(status_code=400, detail="User must have role kitchen, bartender, waiter, or receptionist")
+    if user.role not in (models.UserRole.owner, models.UserRole.admin, models.UserRole.kitchen, models.UserRole.bartender, models.UserRole.waiter, models.UserRole.receptionist):
+        raise HTTPException(status_code=400, detail="User must have role owner, admin, kitchen, bartender, waiter, or receptionist")
     try:
         shift_date = dt_parse.strptime(body.date, "%Y-%m-%d").date()
         start_time = dt_parse.strptime(body.start_time[:5], "%H:%M").time()
@@ -3002,8 +3002,8 @@ def update_shift(
         ).first()
         if not user:
             raise HTTPException(status_code=400, detail="User not found")
-        if user.role not in (models.UserRole.kitchen, models.UserRole.bartender, models.UserRole.waiter):
-            raise HTTPException(status_code=400, detail="User must have role kitchen, bartender, or waiter")
+        if user.role not in (models.UserRole.owner, models.UserRole.admin, models.UserRole.kitchen, models.UserRole.bartender, models.UserRole.waiter, models.UserRole.receptionist):
+            raise HTTPException(status_code=400, detail="User must have role owner, admin, kitchen, bartender, waiter, or receptionist")
         shift.user_id = body.user_id
     if body.date is not None:
         try:

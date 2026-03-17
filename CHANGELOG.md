@@ -8,7 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- **Reservations – WhatsApp reminder (024)**: "Send reminder" can now deliver via **email** and/or **WhatsApp**. When the reservation has a phone number and Twilio WhatsApp is configured, the backend sends a reminder via WhatsApp (in addition to email when present). One action for staff; response indicates which channel(s) were used. Backend: `whatsapp_service` (Twilio REST), `phone_utils` (E.164 normalization), `POST /reservations/{id}/send-reminder` returns `email_sent`, `whatsapp_sent`, `to_email`, `to_phone`. Config: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`, `DEFAULT_PHONE_COUNTRY`. Send reminder button shown when reservation has email or phone; UI shows "Reminder sent by email", "by WhatsApp", or "by email and WhatsApp". i18n: `REMINDER_SENT_EMAIL`, `REMINDER_SENT_WHATSAPP`, `REMINDER_SENT_EMAIL_AND_WHATSAPP` (en, de, es, fr, ca, zh-CN, hi).
+- **Reservations – WhatsApp reminder (024)**: "Send reminder"
+
+### Changed
+
+- **Working plan – Owner and Administrator as workers**: When adding or editing shifts, **Owner** and **Administrator** can now be selected as the worker (in addition to kitchen, bartender, waiter, receptionist). Backend: `create_shift` and `update_shift` accept `owner` and `admin` roles; frontend: `getUsersForSchedule()` includes users with role owner or admin in the dropdown. can now deliver via **email** and/or **WhatsApp**. When the reservation has a phone number and Twilio WhatsApp is configured, the backend sends a reminder via WhatsApp (in addition to email when present). One action for staff; response indicates which channel(s) were used. Backend: `whatsapp_service` (Twilio REST), `phone_utils` (E.164 normalization), `POST /reservations/{id}/send-reminder` returns `email_sent`, `whatsapp_sent`, `to_email`, `to_phone`. Config: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`, `DEFAULT_PHONE_COUNTRY`. Send reminder button shown when reservation has email or phone; UI shows "Reminder sent by email", "by WhatsApp", or "by email and WhatsApp". i18n: `REMINDER_SENT_EMAIL`, `REMINDER_SENT_WHATSAPP`, `REMINDER_SENT_EMAIL_AND_WHATSAPP` (en, de, es, fr, ca, zh-CN, hi).
 
 
 ### Fixed

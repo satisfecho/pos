@@ -1361,9 +1361,10 @@ export class ApiService {
 
   getUsersForSchedule(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/users`).pipe(
-      map((users: User[]) => users.filter(u =>
-        u.role === 'kitchen' || u.role === 'bartender' || u.role === 'waiter'
-      ))
+      map((users: User[]) => users.filter(u => {
+        const r = (u.role ?? '').toLowerCase();
+        return r === 'owner' || r === 'admin' || r === 'kitchen' || r === 'bartender' || r === 'waiter' || r === 'receptionist';
+      }))
     );
   }
 
