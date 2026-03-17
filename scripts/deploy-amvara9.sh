@@ -56,7 +56,9 @@ docker compose --env-file config.env -f docker-compose.yml -f docker-compose.pro
 
 echo "Remove existing front image so build is not skipped..."
 docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml images -q front 2>/dev/null | while read -r id; do docker rmi -f "$id" 2>/dev/null || true; done
-echo "Building front image (no cache) so deployed assets match current code..."
+# Pass git commit hash so UI shows real hash (build context has no .git)
+export COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo '')
+echo "Building front image (no cache) with COMMIT_HASH=$COMMIT_HASH..."
 docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml build --no-cache front
 
 echo "Ensure certbot dirs exist (webroot for certbot, haproxy-certs for combined PEM; see certbot/README.md)..."

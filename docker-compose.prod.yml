@@ -3,6 +3,8 @@ services:
     build:
       context: ./front
       dockerfile: Dockerfile.prod
+      args:
+        COMMIT_HASH: ${COMMIT_HASH:-}
     container_name: pos-front
     restart: unless-stopped
     # No host port in prod: HAProxy terminates all end-user traffic on 80/443

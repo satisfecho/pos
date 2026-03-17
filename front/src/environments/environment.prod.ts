@@ -1,4 +1,4 @@
-import { commitHash } from './commit-hash';
+import { commitHash, version } from './commit-hash';
 
 /** Use same-origin /api when configured URL points to another host (e.g. server has API_URL=http://localhost:4202/api). */
 function getApiUrl(): string {
@@ -32,6 +32,6 @@ export const environment = {
   apiUrl: getApiUrl(),
   wsUrl: getWsUrl(),
   stripePublishableKey: (typeof window !== 'undefined' && (window as any).__STRIPE_PUBLISHABLE_KEY__) || '',
-  version: '2.0.2',
-  commitHash: commitHash,
+  version,
+  commitHash,
 };
