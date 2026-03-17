@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.0.15] - 2025-03-16
+
 ### Added
 
 - **Testing docs – known issues and follow-up**: `docs/testing.md` now has a **Known issues and follow-up (to address later)** section: test-provider-register (unknown state), debug-reservations-public (422/time validation), login tests hitting 429 when run in quick succession, and no test data cleanup for provider/restaurant registration. Coverage summary table includes Kitchen display; cross-reference §5 → §4 fixed.
