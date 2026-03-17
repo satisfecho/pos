@@ -598,6 +598,12 @@ export class MenuComponent implements OnInit, OnDestroy {
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
+  /** Build WhatsApp wa.me link from phone string (e.g. +34 612 345 678 -> https://wa.me/34612345678). */
+  getWhatsAppUrl(phone: string): string {
+    const digits = (phone || '').replace(/\D/g, '');
+    return `https://wa.me/${digits}`;
+  }
+
   getProductImageUrl(product: Product): string | null {
     if (!product.image_filename || !product.tenant_id) return null;
     if (product.image_filename.startsWith('providers/')) {

@@ -29,6 +29,7 @@
     "test:kitchen-status-dropdown": "node scripts/test-kitchen-status-dropdown.mjs",
     "test:rate-limit": "node scripts/test-rate-limit.mjs",
     "test:rate-limit-puppeteer": "node scripts/test-rate-limit-puppeteer.mjs",
+    "test:book-whatsapp": "node scripts/test-book-whatsapp-puppeteer.mjs",
     "capture-screenshots": "node scripts/capture-screenshots.mjs"
   },
   "prettier": {

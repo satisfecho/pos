@@ -512,6 +512,7 @@ class TenantSummary(_BaseModel):
     description: str | None = None
     phone: str | None = None
     email: str | None = None
+    whatsapp: str | None = None
     opening_hours: str | None = None
 
 
@@ -523,6 +524,7 @@ def _tenant_to_summary(t: models.Tenant) -> TenantSummary:
         description=t.description,
         phone=t.phone,
         email=t.email,
+        whatsapp=t.whatsapp,
         opening_hours=t.opening_hours,
     )
 
@@ -534,16 +536,28 @@ def list_public_tenants(session: Session = Depends(get_session)) -> list:
     return [_tenant_to_summary(t) for t in tenants]
 
 
-@app.get("/public/tenants/{tenant_id}", response_model=TenantSummary)
+@app.get("/public/tenants/{tenant_id}")
 def get_public_tenant(
     tenant_id: int,
     session: Session = Depends(get_session),
-) -> TenantSummary:
-    """Get one tenant's public info for book page. Public, no authentication."""
+) -> JSONResponse:
+    """Get one tenant's public info for book page (name, logo, phone, email, whatsapp, opening_hours). Public, no authentication."""
     tenant = session.get(models.Tenant, tenant_id)
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
-    return _tenant_to_summary(tenant)
+    summary = _tenant_to_summary(tenant)
+    # Return explicit JSON so whatsapp is always present (same tenant as /tenant/settings)
+    body = {
+        "id": summary.id,
+        "name": summary.name,
+        "logo_filename": summary.logo_filename,
+        "description": summary.description,
+        "phone": summary.phone,
+        "email": summary.email,
+        "whatsapp": summary.whatsapp,
+        "opening_hours": summary.opening_hours,
+    }
+    return JSONResponse(content=body)
 
 
 # ============ AUTH ============

@@ -86,6 +86,19 @@
           </svg>
           <span>{{ tableGreeting() }}</span>
         </div>
+        @if (tenantPhone() || tenantWhatsapp()) {
+        <div class="restaurant-contact">
+          @if (tenantPhone()) {
+          <a [href]="'tel:' + tenantPhone()" class="contact-link">{{ tenantPhone() }}</a>
+          }
+          @if (tenantPhone() && tenantWhatsapp()) {
+          <span class="contact-sep">·</span>
+          }
+          @if (tenantWhatsapp()) {
+          <a [href]="getWhatsAppUrl(tenantWhatsapp()!)" target="_blank" rel="noopener noreferrer" class="contact-link contact-link-whatsapp">{{ 'SETTINGS.WHATSAPP' | translate }}</a>
+          }
+        </div>
+        }
       </div>
     </div>
   </header>
