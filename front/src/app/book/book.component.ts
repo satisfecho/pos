@@ -96,6 +96,10 @@ export class BookComponent implements OnInit {
         const time = this.roundTimeToQuarter(res.time);
         this.suggestedTime.set(time);
         this.formTime = time;
+        // If the next available slot is on a different date (e.g. tomorrow), show that date so the suggested time is not in the past
+        if (res.date) {
+          this.formDate = res.date;
+        }
       },
       error: () => this.suggestedTime.set(null),
     });
