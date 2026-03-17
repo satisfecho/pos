@@ -26,17 +26,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Working plan – DayHours**: Interface moved above `@Component` so the class is correctly decorated (fixes "Decorators are not valid here" build error).
 - **Working plan – getApiErrorMessage**: Centralised API error extraction (string or validation array) for toast and form error.
 
+## [2.0.2] - 2026-03-17
+
+### Added
+
+- **Dashboard – Working plan card**: Quick-action card for Working plan (shift schedule) on the dashboard, with title and description from i18n.
+- **Reports – revenue graph over time**: On `/reports`, a **Revenue over time** chart shows daily revenue as an SVG line chart with gradient area fill. Uses existing `summary.daily` data; Y-axis shows formatted currency (max, mid, zero), X-axis shows first/middle/last date. i18n: `REPORTS.REVENUE_OVER_TIME` (en, de, es, fr, ca, zh-CN, hi).
+- **Tables – reassign orders and reservations when deleting**: Deleting a table that has orders no longer only blocks with an error. The UI offers to **reassign** its orders and reservations to another table, then delete. List and canvas table views: when delete returns 400 ("has orders"), a modal opens to choose the target table and confirm **Reassign and delete**. i18n: `TABLES.REASSIGN_AND_DELETE_TITLE`, `REASSIGN_AND_DELETE_MESSAGE`, `REASSIGN_TO_TABLE`, `REASSIGN_AND_DELETE`, `VIEW_TILES`, `VIEW_TABLE` (en, de, es, fr, ca, zh-CN, hi).
+- **Tables – view mode persisted**: Tiles/table view preference is stored in `localStorage` and restored on load; view toggle buttons have icons and titles.
+- **Tables – inline edit**: Table list inline edit supports floor dropdown and seat count in separate cells; layout adjusted for clarity.
+- **App – dev favicon**: In development, the app uses a white favicon (`favicon-dev.svg`) to distinguish from production.
+- **Working plan and opening hours – i18n (all locales)**: `WORKING_PLAN` section and `SETTINGS.PERSONNEL_PER_SHIFT`, `STAFF_*` added in ca, es, fr, hi, zh-CN; `NAV.WORKING_PLAN`, `DASHBOARD.WORKING_PLAN_TITLE` / `WORKING_PLAN_DESC` where missing.
+- **.env.example**: Comments for test credentials (`LOGIN_EMAIL`, `LOGIN_PASSWORD`, `TENANT_ID`) for Puppeteer and other scripts.
+- **Docs**: `docs/0022-oauth-social-login-notes.md` (OAuth/social login design notes).
+- **Puppeteer**: `front/scripts/test-settings-logo-upload.mjs` for settings logo upload; `test-tables-page.mjs` improvements.
+
 ## [Unreleased]
 
 ### Added
 
 - **Reservations – WhatsApp reminder (024)**: "Send reminder" can now deliver via **email** and/or **WhatsApp**. When the reservation has a phone number and Twilio WhatsApp is configured, the backend sends a reminder via WhatsApp (in addition to email when present). One action for staff; response indicates which channel(s) were used. Backend: `whatsapp_service` (Twilio REST), `phone_utils` (E.164 normalization), `POST /reservations/{id}/send-reminder` returns `email_sent`, `whatsapp_sent`, `to_email`, `to_phone`. Config: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`, `DEFAULT_PHONE_COUNTRY`. Send reminder button shown when reservation has email or phone; UI shows "Reminder sent by email", "by WhatsApp", or "by email and WhatsApp". i18n: `REMINDER_SENT_EMAIL`, `REMINDER_SENT_WHATSAPP`, `REMINDER_SENT_EMAIL_AND_WHATSAPP` (en, de, es, fr, ca, zh-CN, hi).
 
-- **Tables – reassign orders and reservations when deleting**: Deleting a table that has orders no longer only blocks with an error. The UI now offers to **reassign** its orders and reservations to another table, then delete. Backend: `DELETE /tables/{id}?reassign_to_table_id={id}` moves all orders and reservations to the target table (same tenant) and then deletes the source table. List and canvas table views: when delete returns 400 ("has orders"), a modal opens to choose the target table and confirm **Reassign and delete**. i18n: `TABLES.TABLE_DELETED`, `REASSIGN_AND_DELETE_TITLE`, `REASSIGN_AND_DELETE_MESSAGE`, `REASSIGN_TO_TABLE`, `REASSIGN_AND_DELETE` (en, de, es, fr, ca, zh-CN, hi).
-
-- **Reports – revenue graph over time**: On `/reports`, a **Revenue over time** chart shows daily revenue as an SVG line chart with gradient area fill. Uses existing `summary.daily` data; Y-axis shows formatted currency (max, mid, zero), X-axis shows first/middle/last date. Responsive; no new dependencies. i18n: `REPORTS.REVENUE_OVER_TIME` (en, de, es, fr, ca, zh-CN, hi).
-
-- **Working plan and opening hours – i18n**: Working plan and Settings → Opening hours strings are now translated in all supported locales. Added `WORKING_PLAN` section (title, add/edit shift, labels, delete confirm, etc.) and `SETTINGS.PERSONNEL_PER_SHIFT`, `STAFF_BAR`, `STAFF_WAITER`, `STAFF_KITCHEN`, `STAFF_RECEPTIONIST` in es, fr, ca, hi, zh-CN (en and de already had them). Also added `NAV.WORKING_PLAN` and `DASHBOARD.WORKING_PLAN_TITLE` / `WORKING_PLAN_DESC` where missing so sidebar, dashboard card, and settings “Personnel needed per shift” show in the current language.
 
 ### Fixed
 

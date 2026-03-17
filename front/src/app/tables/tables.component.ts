@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { afterNextRender, Component, effect, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { QRCodeComponent } from 'angularx-qrcode';
@@ -7,6 +7,14 @@ import { SidebarComponent } from '../shared/sidebar.component';
 import { ConfirmationModalComponent } from '../shared/confirmation-modal.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
+
+const TABLES_VIEW_STORAGE_KEY = 'pos.tables.viewMode';
+
+function getInitialTablesViewMode(): 'tiles' | 'table' {
+  if (typeof localStorage === 'undefined') return 'tiles';
+  const v = localStorage.getItem(TABLES_VIEW_STORAGE_KEY);
+  return (v === 'tiles' || v === 'table') ? v : 'tiles';
+}
 
 @Component({
   selector: 'app-tables',
@@ -27,10 +35,19 @@ import { CommonModule } from '@angular/common';
             </a>
             @if (!showForm() && tables().length > 0) {
               <div class="view-toggle">
-                <button type="button" class="btn btn-ghost btn-sm" [class.active]="viewMode() === 'tiles'" (click)="viewMode.set('tiles')">
+                <button type="button" class="btn btn-ghost btn-sm" [class.active]="viewMode() === 'tiles'" (click)="setViewMode('tiles')" [title]="'TABLES.VIEW_TILES' | translate">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+                  </svg>
                   {{ 'TABLES.VIEW_TILES' | translate }}
                 </button>
-                <button type="button" class="btn btn-ghost btn-sm" [class.active]="viewMode() === 'table'" (click)="viewMode.set('table')">
+                <button type="button" class="btn btn-ghost btn-sm" [class.active]="viewMode() === 'table'" (click)="setViewMode('table')" [title]="'TABLES.VIEW_TABLE' | translate">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="1"/>
+                    <line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/>
+                    <line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>
+                  </svg>
                   {{ 'TABLES.VIEW_TABLE' | translate }}
                 </button>
               </div>
@@ -124,19 +141,28 @@ import { CommonModule } from '@angular/common';
                     <tr>
                       <td>
                         @if (editingTableId() === table.id) {
-                          <div class="table-cell-edit">
-                            <input type="text" [(ngModel)]="editingName" class="edit-input-inline" (keydown.enter)="saveTable(table)" (keydown.escape)="cancelEdit()">
-                            <input type="number" [(ngModel)]="editingSeatCount" class="edit-input-inline edit-seats" min="1" max="20" (keydown.enter)="saveTable(table)" (keydown.escape)="cancelEdit()">
-                          </div>
+                          <input type="text" [(ngModel)]="editingName" class="edit-input-inline" (keydown.enter)="saveTable(table)" (keydown.escape)="cancelEdit()">
                         } @else {
                           <span class="table-name" (click)="startEdit(table)">{{ table.name }}</span>
                         }
                       </td>
-                      <td>{{ getFloorName(table.floor_id) }}</td>
+                      <td>
+                        @if (editingTableId() === table.id) {
+                          <select [(ngModel)]="editingFloorId" class="edit-select-inline" (keydown.escape)="cancelEdit()">
+                            @for (floor of floors(); track floor.id) {
+                              <option [ngValue]="floor.id">{{ floor.name }}</option>
+                            }
+                          </select>
+                        } @else {
+                          {{ getFloorName(table.floor_id) }}
+                        }
+                      </td>
                       @if (editingTableId() !== table.id) {
                         <td>{{ table.seat_count ?? '—' }}</td>
                       } @else {
-                        <td>—</td>
+                        <td>
+                          <input type="number" [(ngModel)]="editingSeatCount" class="edit-input-inline edit-seats" min="1" max="20" (keydown.enter)="saveTable(table)" (keydown.escape)="cancelEdit()">
+                        </td>
                       }
                       <td>
                         @if (table.is_active) {
@@ -423,6 +449,35 @@ import { CommonModule } from '@angular/common';
           ></app-confirmation-modal>
         }
 
+        <!-- Reassign orders/reservations to another table before delete -->
+        @if (reassignTableModal()) {
+          <div class="modal-overlay" (click)="cancelReassign()">
+            <div class="modal-content reassign-modal" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h3>{{ 'TABLES.REASSIGN_AND_DELETE_TITLE' | translate }}</h3>
+                <button type="button" class="close-btn" (click)="cancelReassign()" aria-label="Close">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+              <div class="modal-body">
+                <p class="reassign-message">{{ 'TABLES.REASSIGN_AND_DELETE_MESSAGE' | translate }}</p>
+                <label class="reassign-label">{{ 'TABLES.REASSIGN_TO_TABLE' | translate }}</label>
+                <select class="reassign-select" [ngModel]="reassignTargetTableId()" (ngModelChange)="reassignTargetTableId.set($event)">
+                  @for (t of otherTablesForReassign(); track t.id) {
+                    <option [ngValue]="t.id">{{ t.name }}</option>
+                  }
+                </select>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" (click)="cancelReassign()">{{ 'COMMON.CANCEL' | translate }}</button>
+                <button type="button" class="btn btn-primary" (click)="doReassignAndDelete()" [disabled]="!reassignTargetTableId()">
+                  {{ 'TABLES.REASSIGN_AND_DELETE' | translate }}
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
         <!-- Toast (e.g. after close table) -->
         @if (toast()) {
           <div class="toast" [class]="toast()!.type">
@@ -439,6 +494,7 @@ import { CommonModule } from '@angular/common';
     .header-left { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
     .page-header h1 { font-size: 1.5rem; font-weight: 600; color: var(--color-text); margin: 0; }
     .view-toggle { display: flex; gap: 2px; }
+    .view-toggle .btn { display: inline-flex; align-items: center; gap: 6px; }
     .view-toggle .btn.active { background: var(--color-bg); color: var(--color-text); font-weight: 500; }
 
     .btn { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4); border: none; border-radius: var(--radius-md); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.15s ease; text-decoration: none; }
@@ -476,6 +532,18 @@ import { CommonModule } from '@angular/common';
     .toast.error { border-left: 4px solid var(--color-error, #dc2626); }
     .toast-close { background: none; border: none; color: var(--color-text-muted); cursor: pointer; padding: var(--space-1); }
     .toast-close:hover { color: var(--color-text); }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content.reassign-modal { background: var(--color-surface); border-radius: var(--radius-lg); max-width: 400px; width: 90%; box-shadow: var(--shadow-xl); overflow: hidden; }
+    .reassign-modal .modal-header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); border-bottom: 1px solid var(--color-border); }
+    .reassign-modal .modal-header h3 { margin: 0; font-size: 1.125rem; font-weight: 600; }
+    .reassign-modal .close-btn { background: none; border: none; color: var(--color-text-muted); cursor: pointer; padding: var(--space-1); border-radius: var(--radius-sm); }
+    .reassign-modal .close-btn:hover { color: var(--color-text); background: var(--color-bg); }
+    .reassign-modal .modal-body { padding: var(--space-4); }
+    .reassign-modal .reassign-message { margin: 0 0 var(--space-4); color: var(--color-text-muted); font-size: 0.9375rem; }
+    .reassign-modal .reassign-label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: var(--space-2); }
+    .reassign-modal .reassign-select { width: 100%; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.9375rem; background: var(--color-surface); color: var(--color-text); }
+    .reassign-modal .modal-footer { display: flex; justify-content: flex-end; gap: var(--space-2); padding: var(--space-4); border-top: 1px solid var(--color-border); }
 
     .empty-state {
       text-align: center; padding: var(--space-8); background: var(--color-surface);
@@ -684,8 +752,10 @@ import { CommonModule } from '@angular/common';
     .tables-data-table .waiter-inherited-inline { font-size: 0.6875rem; color: var(--color-text-muted); font-style: italic; margin-top: 2px; }
     .tables-data-table .status-inline { display: inline-flex; align-items: center; gap: var(--space-1); }
     .tables-data-table .table-cell-edit { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
-    .tables-data-table .edit-input-inline { padding: var(--space-1) var(--space-2); border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.875rem; }
+    .tables-data-table .edit-input-inline,
+    .tables-data-table .edit-select-inline { padding: var(--space-1) var(--space-2); border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.875rem; }
     .tables-data-table .edit-input-inline.edit-seats { width: 56px; }
+    .tables-data-table .edit-select-inline { min-width: 100px; background: var(--color-bg); }
     .tables-data-table .td-actions { display: flex; gap: var(--space-1); justify-content: flex-end; flex-wrap: wrap; }
 
     @media (max-width: 768px) {
@@ -702,13 +772,14 @@ export class TablesComponent implements OnInit {
   loading = signal(true);
   error = signal('');
   showForm = signal(false);
-  viewMode = signal<'tiles' | 'table'>('tiles');
+  viewMode = signal<'tiles' | 'table'>(getInitialTablesViewMode());
   newTableName = '';
   selectedFloorId: number | null = null;
   tenantSettings = signal<TenantSettings | null>(null);
 
   editingTableId = signal<number | null>(null);
   editingName = '';
+  editingFloorId: number | null = null;
   editingSeatCount: number | null = null;
   copiedTableId = signal<number | null>(null);
   activatingTableId = signal<number | null>(null);
@@ -738,6 +809,51 @@ export class TablesComponent implements OnInit {
 
   private toastTimeout?: ReturnType<typeof setTimeout>;
   toast = signal<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  /** When set, show modal to reassign this table's orders to another table before delete. */
+  reassignTableModal = signal<Table | null>(null);
+  reassignTargetTableId = signal<number | null>(null);
+
+  otherTablesForReassign = computed(() => {
+    const table = this.reassignTableModal();
+    if (!table?.id) return [];
+    return this.tables().filter(t => t.id !== table.id);
+  });
+
+  constructor() {
+    effect(() => {
+      const mode = this.viewMode();
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem(TABLES_VIEW_STORAGE_KEY, mode);
+        }
+      } catch (_) {}
+    });
+    // Restore view mode from localStorage after first browser paint (ensures we run in client context)
+    afterNextRender(() => {
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          const saved = window.localStorage.getItem(TABLES_VIEW_STORAGE_KEY);
+          if (saved === 'tiles' || saved === 'table') {
+            this.viewMode.set(saved);
+          }
+        }
+      } catch (_) {}
+    });
+  }
+
+  /** Set view mode and persist to localStorage immediately (so it survives navigation). */
+  setViewMode(mode: 'tiles' | 'table') {
+    this.viewMode.set(mode);
+    try {
+      const storage = typeof window !== 'undefined' && window.localStorage;
+      if (storage) {
+        storage.setItem(TABLES_VIEW_STORAGE_KEY, mode);
+      }
+    } catch (e) {
+      console.warn('Tables: could not persist view mode to localStorage', e);
+    }
+  }
 
   ngOnInit() {
     this.loadData();
@@ -858,11 +974,44 @@ export class TablesComponent implements OnInit {
     const table = modal.tableToDelete;
     if (table?.id) {
       this.api.deleteTable(table.id).subscribe({
-        next: () => this.tables.update(t => t.filter(x => x.id !== table.id)),
-        error: err => this.error.set(err.error?.detail || 'Failed')
+        next: () => {
+          this.tables.update(t => t.filter(x => x.id !== table.id));
+          this.onConfirmationCancel();
+        },
+        error: err => {
+          const detail = err.error?.detail ?? '';
+          if (err.status === 400 && typeof detail === 'string' && detail.includes('has orders')) {
+            this.confirmationModal.update(m => ({ ...m, show: false }));
+            this.reassignTableModal.set(table);
+            const other = this.tables().filter(t => t.id !== table.id);
+            this.reassignTargetTableId.set(other.length > 0 ? other[0].id ?? null : null);
+          } else {
+            this.error.set(detail || 'Failed');
+          }
+        }
       });
+    } else {
+      this.onConfirmationCancel();
     }
-    this.onConfirmationCancel();
+  }
+
+  cancelReassign() {
+    this.reassignTableModal.set(null);
+    this.reassignTargetTableId.set(null);
+  }
+
+  doReassignAndDelete() {
+    const table = this.reassignTableModal();
+    const targetId = this.reassignTargetTableId();
+    if (!table?.id || targetId == null) return;
+    this.api.deleteTable(table.id, targetId).subscribe({
+      next: () => {
+        this.tables.update(t => t.filter(x => x.id !== table.id));
+        this.cancelReassign();
+        this.showToast('TABLES.TABLE_DELETED', 'success');
+      },
+      error: err => this.error.set(err.error?.detail || 'Failed')
+    });
   }
 
   onConfirmationCancel() {
@@ -939,12 +1088,14 @@ export class TablesComponent implements OnInit {
     if (!table.id) return;
     this.editingTableId.set(table.id);
     this.editingName = table.name;
+    this.editingFloorId = table.floor_id ?? null;
     this.editingSeatCount = table.seat_count || null;
   }
 
   cancelEdit() {
     this.editingTableId.set(null);
     this.editingName = '';
+    this.editingFloorId = null;
     this.editingSeatCount = null;
   }
 
@@ -955,6 +1106,9 @@ export class TablesComponent implements OnInit {
       name: this.editingName.trim()
     };
 
+    if (this.editingFloorId != null) {
+      updates.floor_id = Number(this.editingFloorId);
+    }
     if (this.editingSeatCount !== null && this.editingSeatCount > 0) {
       updates.seat_count = this.editingSeatCount;
     }

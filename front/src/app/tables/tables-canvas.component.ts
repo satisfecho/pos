@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { LowerCasePipe } from '@angular/common';
@@ -491,6 +491,35 @@ interface TableShape {
             (cancel)="onConfirmationCancel()"
           ></app-confirmation-modal>
         }
+
+        <!-- Reassign orders/reservations to another table before delete -->
+        @if (reassignTableModal()) {
+          <div class="modal-overlay" (click)="cancelReassign()">
+            <div class="modal-content reassign-modal" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h3>{{ 'TABLES.REASSIGN_AND_DELETE_TITLE' | translate }}</h3>
+                <button type="button" class="close-btn" (click)="cancelReassign()" aria-label="Close">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+              <div class="modal-body">
+                <p class="reassign-message">{{ 'TABLES.REASSIGN_AND_DELETE_MESSAGE' | translate }}</p>
+                <label class="reassign-label">{{ 'TABLES.REASSIGN_TO_TABLE' | translate }}</label>
+                <select class="reassign-select" [ngModel]="reassignTargetTableId()" (ngModelChange)="reassignTargetTableId.set($event)">
+                  @for (t of otherTablesForReassign(); track t.id) {
+                    <option [ngValue]="t.id">{{ t.name }}</option>
+                  }
+                </select>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" (click)="cancelReassign()">{{ 'COMMON.CANCEL' | translate }}</button>
+                <button type="button" class="btn btn-primary" (click)="doReassignAndDelete()" [disabled]="!reassignTargetTableId()">
+                  {{ 'TABLES.REASSIGN_AND_DELETE' | translate }}
+                </button>
+              </div>
+            </div>
+          </div>
+        }
       </div>
     </app-sidebar>
   `,
@@ -559,6 +588,18 @@ interface TableShape {
     .btn-primary { background: var(--color-primary); color: white; }
     .btn-primary:hover:not(:disabled) { background: var(--color-primary-hover); }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content.reassign-modal { background: var(--color-surface); border-radius: var(--radius-lg); max-width: 400px; width: 90%; box-shadow: var(--shadow-xl); overflow: hidden; }
+    .reassign-modal .modal-header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); border-bottom: 1px solid var(--color-border); }
+    .reassign-modal .modal-header h3 { margin: 0; font-size: 1.125rem; font-weight: 600; }
+    .reassign-modal .close-btn { background: none; border: none; color: var(--color-text-muted); cursor: pointer; padding: var(--space-1); border-radius: var(--radius-sm); }
+    .reassign-modal .close-btn:hover { color: var(--color-text); background: var(--color-bg); }
+    .reassign-modal .modal-body { padding: var(--space-4); }
+    .reassign-modal .reassign-message { margin: 0 0 var(--space-4); color: var(--color-text-muted); font-size: 0.9375rem; }
+    .reassign-modal .reassign-label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: var(--space-2); }
+    .reassign-modal .reassign-select { width: 100%; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.9375rem; background: var(--color-surface); color: var(--color-text); }
+    .reassign-modal .modal-footer { display: flex; justify-content: flex-end; gap: var(--space-2); padding: var(--space-4); border-top: 1px solid var(--color-border); }
     .btn-secondary { background: var(--color-bg); color: var(--color-text); border: 1px solid var(--color-border); }
     .btn-secondary:hover:not(:disabled) { background: var(--color-border); }
     .btn-ghost { background: transparent; color: var(--color-text-muted); }
@@ -1236,6 +1277,14 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     action: null
   });
 
+  reassignTableModal = signal<CanvasTable | null>(null);
+  reassignTargetTableId = signal<number | null>(null);
+  otherTablesForReassign = computed(() => {
+    const table = this.reassignTableModal();
+    if (!table?.id) return [];
+    return this.tables().filter(t => t.id !== table.id);
+  });
+
   canvasWidth = 1200;
   canvasHeight = 800;
 
@@ -1890,7 +1939,36 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
         this.tables.update(tables => tables.filter(t => t.id !== table.id));
         this.selectedTable.set(null);
       },
-      error: err => this.error.set(err.error?.detail || 'Failed to delete table')
+      error: err => {
+        const detail = err.error?.detail ?? '';
+        if (err.status === 400 && typeof detail === 'string' && detail.includes('has orders')) {
+          this.confirmationModal.update(m => ({ ...m, show: false }));
+          this.reassignTableModal.set(table);
+          const other = this.tables().filter(t => t.id !== table.id);
+          this.reassignTargetTableId.set(other.length > 0 ? other[0].id ?? null : null);
+        } else {
+          this.error.set(detail || 'Failed to delete table');
+        }
+      }
+    });
+  }
+
+  cancelReassign() {
+    this.reassignTableModal.set(null);
+    this.reassignTargetTableId.set(null);
+  }
+
+  doReassignAndDelete() {
+    const table = this.reassignTableModal();
+    const targetId = this.reassignTargetTableId();
+    if (!table?.id || targetId == null) return;
+    this.api.deleteTable(table.id, targetId).subscribe({
+      next: () => {
+        this.tables.update(tables => tables.filter(t => t.id !== table.id));
+        this.selectedTable.set(null);
+        this.cancelReassign();
+      },
+      error: err => this.error.set(err.error?.detail || 'Failed')
     });
   }
 

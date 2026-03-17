@@ -132,6 +132,72 @@ export class ReportsComponent implements OnInit {
     return `${Math.min(100, (cents / max) * 100)}%`;
   }
 
+  /** SVG chart dimensions (content area; padding for labels). */
+  readonly chartPad = { left: 44, right: 12, top: 12, bottom: 28 };
+  readonly chartWidth = 520;
+  readonly chartHeight = 200;
+
+  /** Revenue-over-time: polyline points for SVG (x,y from daily data). */
+  revenueChartPoints(): string {
+    const r = this.report();
+    if (!r?.summary.daily?.length) return '';
+    const daily = r.summary.daily;
+    const maxRev = Math.max(1, ...daily.map((d) => d.revenue_cents));
+    const w = this.chartWidth - this.chartPad.left - this.chartPad.right;
+    const h = this.chartHeight - this.chartPad.top - this.chartPad.bottom;
+    const points = daily.map((d, i) => {
+      const x = this.chartPad.left + (i / (daily.length - 1 || 1)) * w;
+      const y = this.chartPad.top + h - (d.revenue_cents / maxRev) * h;
+      return `${x},${y}`;
+    });
+    return points.join(' ');
+  }
+
+  /** Revenue-over-time: area path (fill under the line). */
+  revenueChartAreaPath(): string {
+    const r = this.report();
+    if (!r?.summary.daily?.length) return '';
+    const daily = r.summary.daily;
+    const maxRev = Math.max(1, ...daily.map((d) => d.revenue_cents));
+    const w = this.chartWidth - this.chartPad.left - this.chartPad.right;
+    const h = this.chartHeight - this.chartPad.top - this.chartPad.bottom;
+    const baseY = this.chartPad.top + h;
+    const firstX = this.chartPad.left;
+    const lastX = this.chartPad.left + w;
+    const points = daily.map((d, i) => {
+      const x = this.chartPad.left + (i / (daily.length - 1 || 1)) * w;
+      const y = this.chartPad.top + h - (d.revenue_cents / maxRev) * h;
+      return `${x},${y}`;
+    });
+    return `M ${firstX},${baseY} L ${points.join(' L ')} L ${lastX},${baseY} Z`;
+  }
+
+  /** Y-axis ticks for revenue chart (0, ~50%, 100% of max). */
+  revenueChartYLabels(): { value: number; y: number }[] {
+    const r = this.report();
+    if (!r?.summary.daily?.length) return [];
+    const maxRev = Math.max(1, ...r.summary.daily.map((d) => d.revenue_cents));
+    const h = this.chartHeight - this.chartPad.top - this.chartPad.bottom;
+    return [
+      { value: maxRev, y: this.chartPad.top },
+      { value: Math.round(maxRev / 2), y: this.chartPad.top + h / 2 },
+      { value: 0, y: this.chartPad.top + h },
+    ];
+  }
+
+  /** X-axis date labels (first, middle, last) for revenue chart. */
+  revenueChartXLabels(): { date: string; x: number }[] {
+    const r = this.report();
+    if (!r?.summary.daily?.length) return [];
+    const daily = r.summary.daily;
+    const w = this.chartWidth - this.chartPad.left - this.chartPad.right;
+    const indices = daily.length === 1 ? [0] : [0, Math.floor((daily.length - 1) / 2), daily.length - 1];
+    return indices.map((i) => ({
+      date: this.formatShortDate(daily[i].date),
+      x: this.chartPad.left + (i / (daily.length - 1 || 1)) * w,
+    }));
+  }
+
   /** Format value as percentage of total (e.g. "12.3%" or "0%"). */
   formatPct(value: number, total: number): string {
     if (total <= 0) return '0%';

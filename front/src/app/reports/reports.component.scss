@@ -214,6 +214,49 @@
   margin-top: var(--space-4);
 }
 
+.revenue-graph-block {
+  margin-bottom: var(--space-6);
+
+  .revenue-graph-wrap {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3);
+    overflow: hidden;
+  }
+
+  .revenue-graph {
+    display: block;
+    width: 100%;
+    max-width: 560px;
+    height: auto;
+    min-height: 180px;
+  }
+
+  .revenue-graph-y-label,
+  .revenue-graph-x-label {
+    font-size: 11px;
+    fill: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .revenue-graph-x-label {
+    text-anchor: middle;
+  }
+
+  .revenue-graph-area {
+    vector-effect: non-scaling-stroke;
+  }
+
+  .revenue-graph-line {
+    stroke: var(--color-primary, #0d9488);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+}
+
 .bar-chart {
   display: flex;
   flex-direction: column;

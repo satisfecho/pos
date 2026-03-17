@@ -87,6 +87,35 @@
           </div>
         }
 
+        <!-- Revenue over time (line chart) -->
+        @if (r.summary.daily.length > 0) {
+          <div class="chart-block revenue-graph-block">
+            <h3>{{ 'REPORTS.REVENUE_OVER_TIME' | translate }}</h3>
+            <div class="revenue-graph-wrap">
+              <svg class="revenue-graph" [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                  <linearGradient id="revenueAreaGrad" x1="0" y1="1" x2="0" y2="0">
+                    <stop offset="0%" stop-color="var(--color-primary, #0d9488)" stop-opacity="0.2"/>
+                    <stop offset="100%" stop-color="var(--color-primary, #0d9488)" stop-opacity="0.02"/>
+                  </linearGradient>
+                </defs>
+                <!-- Y-axis labels -->
+                @for (tick of revenueChartYLabels(); track tick.value) {
+                  <text class="revenue-graph-y-label" [attr.x]="chartPad.left - 6" [attr.y]="tick.y + 4" text-anchor="end">{{ formatCurrency(tick.value) }}</text>
+                }
+                <!-- X-axis date labels -->
+                @for (tick of revenueChartXLabels(); track tick.date) {
+                  <text class="revenue-graph-x-label" [attr.x]="tick.x" [attr.y]="chartHeight - 6" text-anchor="middle">{{ tick.date }}</text>
+                }
+                <!-- Area fill -->
+                <path [attr.d]="revenueChartAreaPath()" fill="url(#revenueAreaGrad)" class="revenue-graph-area"/>
+                <!-- Line -->
+                <polyline [attr.points]="revenueChartPoints()" class="revenue-graph-line" fill="none"/>
+              </svg>
+            </div>
+          </div>
+        }
+
         <!-- Sales empty state or daily chart -->
         @if (r.summary.total_orders === 0) {
           <div class="empty-state compact">

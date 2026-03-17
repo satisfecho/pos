@@ -2,6 +2,7 @@ import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import { LanguageService } from './services/language.service';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -36,11 +37,15 @@ export class App implements OnInit, OnDestroy {
   }
 
   private updateFavicon(url: string) {
+    // In development, use white favicon to distinguish from production
+    if (!environment.production) {
+      this.setFavicon('/favicon-dev.svg');
+      return;
+    }
     // Customer-facing menu route uses orange favicon
     // Admin dashboard routes use blue favicon
     const isCustomerMenu = url.startsWith('/menu/');
     const faviconPath = isCustomerMenu ? '/favicon.svg' : '/favicon-admin.svg';
-    
     this.setFavicon(faviconPath);
   }
 
