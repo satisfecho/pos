@@ -148,42 +148,34 @@
 
       @if (r.summary.total_orders > 0) {
       <!-- By product -->
-      <section class="report-section">
+      <section class="report-section" data-testid="reports-by-product">
         <h2>{{ 'REPORTS.BY_PRODUCT' | translate }}</h2>
-        <div class="table-and-chart">
-          <div class="data-table-wrap">
-            <table class="data-table">
-              <thead>
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>{{ 'REPORTS.PRODUCT' | translate }}</th>
+                <th>{{ 'REPORTS.QUANTITY' | translate }}</th>
+                <th>{{ 'REPORTS.REVENUE' | translate }}</th>
+                <th class="num">{{ 'REPORTS.SHARE' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of r.by_product; track p.product_id) {
                 <tr>
-                  <th>{{ 'REPORTS.PRODUCT' | translate }}</th>
-                  <th>{{ 'REPORTS.QUANTITY' | translate }}</th>
-                  <th>{{ 'REPORTS.REVENUE' | translate }}</th>
-                  <th class="num">{{ 'REPORTS.SHARE' | translate }}</th>
+                  <td>{{ p.product_name }}</td>
+                  <td>{{ p.quantity }} ({{ formatPct(p.quantity, totalProductQuantity()) }})</td>
+                  <td class="num">{{ formatCurrency(p.revenue_cents) }}</td>
+                  <td class="num share-with-bar">
+                    <div class="bar-track inline">
+                      <div class="bar-fill product" [style.width.%]="(p.revenue_cents / r.summary.total_revenue_cents) * 100"></div>
+                    </div>
+                    <span class="share-value">{{ formatPct(p.revenue_cents, r.summary.total_revenue_cents) }}</span>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                @for (p of r.by_product; track p.product_id) {
-                  <tr>
-                    <td>{{ p.product_name }}</td>
-                    <td>{{ p.quantity }} ({{ formatPct(p.quantity, totalProductQuantity()) }})</td>
-                    <td class="num">{{ formatCurrency(p.revenue_cents) }}</td>
-                    <td class="num">{{ formatPct(p.revenue_cents, r.summary.total_revenue_cents) }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-          <div class="bar-chart compact">
-            @for (p of r.by_product.slice(0, 10); track p.product_id) {
-              <div class="bar-row">
-                <span class="bar-label" [title]="p.product_name">{{ p.product_name | slice:0:20 }}{{ p.product_name.length > 20 ? '…' : '' }}</span>
-                <div class="bar-track">
-                  <div class="bar-fill product" [style.width]="barWidth(p.revenue_cents)"></div>
-                </div>
-                <span class="bar-value">{{ formatCurrency(p.revenue_cents) }} ({{ formatPct(p.revenue_cents, r.summary.total_revenue_cents) }})</span>
-              </div>
-            }
-          </div>
+              }
+            </tbody>
+          </table>
         </div>
       </section>
 

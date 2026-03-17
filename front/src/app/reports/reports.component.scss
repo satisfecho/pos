@@ -371,6 +371,36 @@
     font-weight: 600;
     color: var(--color-success);
   }
+
+  td.share-with-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 140px;
+
+    .bar-track.inline {
+      flex: 1;
+      min-width: 60px;
+      height: 14px;
+      background: var(--color-bg);
+      border-radius: 7px;
+      overflow: hidden;
+
+      .bar-fill.product {
+        height: 100%;
+        border-radius: 7px;
+        min-width: 2px;
+        background: linear-gradient(90deg, #059669 0%, #34d399 100%);
+      }
+    }
+
+    .share-value {
+      font-weight: 600;
+      color: var(--color-success);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+  }
 }
 
 .btn {

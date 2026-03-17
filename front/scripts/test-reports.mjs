@@ -103,6 +103,42 @@ async function main() {
     }
     console.log('   Reports page loaded; date range present.');
 
+    // Wait for report data to load (summary or by-product section)
+    await page.waitForSelector('.report-section', { timeout: 15000 }).catch(() => null);
+    await sleep(2000);
+
+    console.log('4. Checking "Por producto": single table, bar per row in share column, no duplicate chart...');
+    const byProductLayout = await page.evaluate(() => {
+      const section = document.querySelector('[data-testid="reports-by-product"]');
+      if (!section) return { present: false, ok: true, reason: 'section not rendered (no orders in period)' };
+      const wrap = section.querySelector('.data-table-wrap');
+      if (!wrap) return { present: true, ok: false, reason: 'data-table-wrap not found' };
+      const table = wrap.querySelector('table.data-table');
+      const standaloneChart = wrap.querySelector('.bar-chart.compact');
+      const shareBars = wrap.querySelectorAll('td.share-with-bar .bar-track.inline');
+      const ok = !!table && !standaloneChart && shareBars.length > 0;
+      return {
+        present: true,
+        ok,
+        hasTable: !!table,
+        hasStandaloneChart: !!standaloneChart,
+        shareBarCount: shareBars.length,
+        reason: !table ? 'table not found' : standaloneChart ? 'standalone bar chart still present (should be removed)' : shareBars.length === 0 ? 'no inline bar in share column' : 'ok',
+      };
+    });
+
+    if (byProductLayout.present && !byProductLayout.ok) {
+      console.log('   FAIL:', byProductLayout.reason);
+      console.log('   hasTable:', byProductLayout.hasTable, 'hasStandaloneChart:', byProductLayout.hasStandaloneChart, 'shareBarCount:', byProductLayout.shareBarCount);
+      await browser.close();
+      process.exit(1);
+    }
+    if (byProductLayout.present) {
+      console.log('   By product: single table with inline bar per row (no duplicate chart).');
+    } else {
+      console.log('   By product section not shown (no orders) – layout check skipped.');
+    }
+
     await browser.close();
     console.log('\n>>> RESULT: Reports smoke test passed.');
     process.exit(0);
