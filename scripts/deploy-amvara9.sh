@@ -54,8 +54,11 @@ sleep 10
 echo "Building back image first..."
 docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml build back
 
+echo "Building front image (no cache) so deployed assets match current code..."
+docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml build front --no-cache
+
 echo "Starting all services..."
-if ! docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml up --build -d; then
+if ! docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml up -d; then
   echo "First up failed (possible port race); waiting 10s and retrying..."
   sleep 10
   docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml up -d

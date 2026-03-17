@@ -4,6 +4,33 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- **Reservations – WhatsApp reminder (024)**: "Send reminder" can now deliver via **email** and/or **WhatsApp**. When the reservation has a phone number and Twilio WhatsApp is configured, the backend sends a reminder via WhatsApp (in addition to email when present). One action for staff; response indicates which channel(s) were used. Backend: `whatsapp_service` (Twilio REST), `phone_utils` (E.164 normalization), `POST /reservations/{id}/send-reminder` returns `email_sent`, `whatsapp_sent`, `to_email`, `to_phone`. Config: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`, `DEFAULT_PHONE_COUNTRY`. Send reminder button shown when reservation has email or phone; UI shows "Reminder sent by email", "by WhatsApp", or "by email and WhatsApp". i18n: `REMINDER_SENT_EMAIL`, `REMINDER_SENT_WHATSAPP`, `REMINDER_SENT_EMAIL_AND_WHATSAPP` (en, de, es, fr, ca, zh-CN, hi).
+
+
+### Fixed
+
+- **Angular hydration (NG0505)**: Added `provideClientHydration(withEventReplay())` to the server app config (`app.config.server.ts`) so the server includes serialized hydration data in the response when using SSR. This removes the console warning "Angular hydration was requested on the client, but there was no serialized information present in the server response."
+- **Deploy (amvara9) – front CSS / stale build**: Deploy script now builds the front image with `--no-cache` so each deploy serves assets from the current code (fixes wrong styling e.g. Settings > Opening hours). Nginx in the front container sends `Cache-Control: no-cache` for the HTML document so clients get new hashed asset URLs after deploy. See `docs/0024-deploy-css-fix-amvara9.md`.
+
+## [2.0.2] - 2026-03-17
+
+### Added
+
+- **Dashboard – Working plan card**: Quick-action card for Working plan (shift schedule) on the dashboard, with title and description from i18n.
+- **Reports – revenue graph over time**: On `/reports`, a **Revenue over time** chart shows daily revenue as an SVG line chart with gradient area fill. Uses existing `summary.daily` data; Y-axis shows formatted currency (max, mid, zero), X-axis shows first/middle/last date. i18n: `REPORTS.REVENUE_OVER_TIME` (en, de, es, fr, ca, zh-CN, hi).
+- **Tables – reassign orders and reservations when deleting**: Deleting a table that has orders no longer only blocks with an error. The UI offers to **reassign** its orders and reservations to another table, then delete. List and canvas table views: when delete returns 400 ("has orders"), a modal opens to choose the target table and confirm **Reassign and delete**. i18n: `TABLES.REASSIGN_AND_DELETE_TITLE`, `REASSIGN_AND_DELETE_MESSAGE`, `REASSIGN_TO_TABLE`, `REASSIGN_AND_DELETE`, `VIEW_TILES`, `VIEW_TABLE` (en, de, es, fr, ca, zh-CN, hi).
+- **Tables – view mode persisted**: Tiles/table view preference is stored in `localStorage` and restored on load; view toggle buttons have icons and titles.
+- **Tables – inline edit**: Table list inline edit supports floor dropdown and seat count in separate cells; layout adjusted for clarity.
+- **App – dev favicon**: In development, the app uses a white favicon (`favicon-dev.svg`) to distinguish from production.
+- **Working plan and opening hours – i18n (all locales)**: `WORKING_PLAN` section and `SETTINGS.PERSONNEL_PER_SHIFT`, `STAFF_*` added in ca, es, fr, hi, zh-CN; `NAV.WORKING_PLAN`, `DASHBOARD.WORKING_PLAN_TITLE` / `WORKING_PLAN_DESC` where missing.
+- **.env.example**: Comments for test credentials (`LOGIN_EMAIL`, `LOGIN_PASSWORD`, `TENANT_ID`) for Puppeteer and other scripts.
+- **Docs**: `docs/0022-oauth-social-login-notes.md` (OAuth/social login design notes).
+- **Puppeteer**: `front/scripts/test-settings-logo-upload.mjs` for settings logo upload; `test-tables-page.mjs` improvements.
+
 ## [2.0.1] - 2026-03-17
 
 ### Added
@@ -25,32 +52,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Settings – setStaffRequired**: Method accepts `string` for role key to fix template type error; cast internally.
 - **Working plan – DayHours**: Interface moved above `@Component` so the class is correctly decorated (fixes "Decorators are not valid here" build error).
 - **Working plan – getApiErrorMessage**: Centralised API error extraction (string or validation array) for toast and form error.
-
-## [2.0.2] - 2026-03-17
-
-### Added
-
-- **Dashboard – Working plan card**: Quick-action card for Working plan (shift schedule) on the dashboard, with title and description from i18n.
-- **Reports – revenue graph over time**: On `/reports`, a **Revenue over time** chart shows daily revenue as an SVG line chart with gradient area fill. Uses existing `summary.daily` data; Y-axis shows formatted currency (max, mid, zero), X-axis shows first/middle/last date. i18n: `REPORTS.REVENUE_OVER_TIME` (en, de, es, fr, ca, zh-CN, hi).
-- **Tables – reassign orders and reservations when deleting**: Deleting a table that has orders no longer only blocks with an error. The UI offers to **reassign** its orders and reservations to another table, then delete. List and canvas table views: when delete returns 400 ("has orders"), a modal opens to choose the target table and confirm **Reassign and delete**. i18n: `TABLES.REASSIGN_AND_DELETE_TITLE`, `REASSIGN_AND_DELETE_MESSAGE`, `REASSIGN_TO_TABLE`, `REASSIGN_AND_DELETE`, `VIEW_TILES`, `VIEW_TABLE` (en, de, es, fr, ca, zh-CN, hi).
-- **Tables – view mode persisted**: Tiles/table view preference is stored in `localStorage` and restored on load; view toggle buttons have icons and titles.
-- **Tables – inline edit**: Table list inline edit supports floor dropdown and seat count in separate cells; layout adjusted for clarity.
-- **App – dev favicon**: In development, the app uses a white favicon (`favicon-dev.svg`) to distinguish from production.
-- **Working plan and opening hours – i18n (all locales)**: `WORKING_PLAN` section and `SETTINGS.PERSONNEL_PER_SHIFT`, `STAFF_*` added in ca, es, fr, hi, zh-CN; `NAV.WORKING_PLAN`, `DASHBOARD.WORKING_PLAN_TITLE` / `WORKING_PLAN_DESC` where missing.
-- **.env.example**: Comments for test credentials (`LOGIN_EMAIL`, `LOGIN_PASSWORD`, `TENANT_ID`) for Puppeteer and other scripts.
-- **Docs**: `docs/0022-oauth-social-login-notes.md` (OAuth/social login design notes).
-- **Puppeteer**: `front/scripts/test-settings-logo-upload.mjs` for settings logo upload; `test-tables-page.mjs` improvements.
-
-## [Unreleased]
-
-### Added
-
-- **Reservations – WhatsApp reminder (024)**: "Send reminder" can now deliver via **email** and/or **WhatsApp**. When the reservation has a phone number and Twilio WhatsApp is configured, the backend sends a reminder via WhatsApp (in addition to email when present). One action for staff; response indicates which channel(s) were used. Backend: `whatsapp_service` (Twilio REST), `phone_utils` (E.164 normalization), `POST /reservations/{id}/send-reminder` returns `email_sent`, `whatsapp_sent`, `to_email`, `to_phone`. Config: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`, `DEFAULT_PHONE_COUNTRY`. Send reminder button shown when reservation has email or phone; UI shows "Reminder sent by email", "by WhatsApp", or "by email and WhatsApp". i18n: `REMINDER_SENT_EMAIL`, `REMINDER_SENT_WHATSAPP`, `REMINDER_SENT_EMAIL_AND_WHATSAPP` (en, de, es, fr, ca, zh-CN, hi).
-
-
-### Fixed
-
-- **Angular hydration (NG0505)**: Added `provideClientHydration(withEventReplay())` to the server app config (`app.config.server.ts`) so the server includes serialized hydration data in the response when using SSR. This removes the console warning "Angular hydration was requested on the client, but there was no serialized information present in the server response."
 
 ## [1.0.15] - 2025-03-16
 
