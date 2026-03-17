@@ -4285,7 +4285,12 @@ def close_table(
 
 
 @app.post("/tables/{table_id}/regenerate-pin")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
 def regenerate_table_pin(
+    request: Request,
     table_id: int,
     current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_ACTIVATE))],
     session: Session = Depends(get_session),
@@ -4325,7 +4330,12 @@ def regenerate_table_pin(
 
 
 @app.put("/tables/{table_id}/assign-waiter")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
 def assign_waiter_to_table(
+    request: Request,
     table_id: int,
     body: dict,
     current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_WRITE))],

@@ -343,7 +343,7 @@ See `AGENTS.md` for full seed and deploy notes.
 | **Catalog** | `test-catalog.mjs` | Cards and image placeholders. |
 | **Menu (customer)** | `test-menu-logo.mjs` | Logo on `/menu/:token`. |
 | **WebSocket** | `test-websocket.mjs` | Post-login WS (ws-bridge required). |
-| **Rate limiting** | `test-rate-limit.mjs`, `test-rate-limit-puppeteer.mjs` | API: 429 after limit; Puppeteer: login page shows error banner (e.g. "Too many login attempts") when rate limited. |
+| **Rate limiting** | `test-rate-limit.mjs`, `test-rate-limit-puppeteer.mjs` | API: 429 after limit; Puppeteer: login page shows error banner (e.g. "Too many login attempts") when rate limited. See `docs/0020-rate-limiting-production.md` for all limits (login, register, payment, public menu, upload, admin). |
 
 **Not covered (or partial):** No automated cleanup of test-created data (e.g. provider/restaurant registration leaves DB entries). No Puppeteer tests for settings, inventory, or tables canvas. Unit tests (Karma/Jasmine) are separate; see `npm test` in front.
 

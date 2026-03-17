@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Rate limiting (extended)**: Public menu endpoints 30/min per IP; file uploads (tenant logo, product image, provider product image) 10/hour per user; admin/management endpoints (tenant settings, tables, providers) 30/min per user; per-order payment attempts 3/hour per IP. See `docs/0020-rate-limiting-production.md` and ROADMAP.md.
+
 - **HAProxy SSL (amvara9) – durable certificate path**: SSL cert loaded from `./certbot/haproxy-certs` (same path used for certbot on amvara9). Compose mounts this dir into HAProxy; deploy creates `certbot/www` and `certbot/haproxy-certs` and does not overwrite certs. Workflow: `certbot certonly --webroot -w .../certbot/www`, then `cat fullchain+privkey > certbot/haproxy-certs/satisfecho.de.pem`, then `docker exec pos-haproxy kill -HUP 1`. See `certbot/README.md` and `docs/0026-haproxy-ssl-amvara9.md`.
 - **Deploy**: Script run from server repo (not stdin); version inject via `front/scripts/inject-version-into-index.js`; force-remove front image before build; smoke test cache-bust and 5s delay; deploy step timeout 20 min.
 - **Docs**: `docs/0026-haproxy-ssl-amvara9.md` (SSL durable setup and restore); `certbot/README.md`, `certs/README.md` (point to certbot path).

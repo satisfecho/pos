@@ -24,7 +24,7 @@
 - **Orders – Print invoice**: Each order card on `/orders` has a **Print invoice** button; opens a print-optimized invoice (business name, logo, address, Tax ID, CIF, order lines, total) and the browser print dialog for customer handover.
 - **Billing customers (Factura)**: Register customers that need a tax invoice with company details. **Customers** at `/customers`: list, search, add, edit, delete. From Orders (any tab): **Print Factura** lets staff select a billing customer and print an invoice with “Bill to” block; optional link to save customer on the order. See `docs/0017-billing-customers-factura.md`.
 - **Customer accounts**: End-customer registration, login, email verification, MFA, account-based order history, and customer-facing invoice generation. See `docs/0002-customer-features-plan.md` for scope and API summary.
-- **Rate limiting**: Global (100/min), login (5/15min), register (3/hour), payment (10/min) per IP; Redis storage, X-Forwarded-For, 429 logging. See `docs/0020-rate-limiting-production.md`.
+- **Rate limiting**: Global (100/min), login (5/15min), register (3/hour), payment (10/min + 3/order/hour) per IP; public menu 30/min per IP; uploads 10/hour per user; admin/management 30/min per user; Redis storage, X-Forwarded-For, 429 logging. See `docs/0020-rate-limiting-production.md`.
 
 ### ❌ Missing Features / To Be Implemented
 - **Order management Phase 4 (advanced)**: Batch status updates, status/audit history, item replacement, modification after payment/refund, analytics. See `docs/0007-implementation-verification.md` § "NOT IMPLEMENTED (Phase 4)".
@@ -43,17 +43,16 @@
 ### ✅ Implemented (Rate Limiting)
 - **Global API rate limiting** – 100 requests/minute per IP (slowapi + Redis; in-memory fallback).
 - **Brute force protection** – Login `POST /token`: 5 attempts per 15 minutes per IP; register `POST /register` and `POST /register/provider`: 3 per hour per IP.
-- **Payment protection** – `create-payment-intent` and `confirm-payment`: 10 requests/minute per IP.
+- **Payment protection** – `create-payment-intent` and `confirm-payment`: 10 requests/minute per IP; **3 attempts per order per hour** per IP.
+- **Public menu rate limiting** – `/menu/{table_token}`, `/menu/{table_token}/order`, order-history, call-waiter, request-payment, order item updates: 30 requests/minute per IP.
+- **Upload rate limiting** – `POST /tenant/logo`, `POST /products/{id}/image`, `POST /provider/products/{id}/image`: 10 uploads per hour per authenticated user.
+- **Admin/management limits** – `/tenant/settings`, `/tables` (and table actions), `/providers`: 30 requests/minute per authenticated user.
 - **Monitoring** – Each 429 is logged (path, method, client IP). Client IP from `X-Forwarded-For` when behind proxy.
 - **Login UI** – Shows "Too many login attempts. Please try again later." on 429.
 - **Tests** – API test (`test:rate-limit`) and Puppeteer test (`test:rate-limit-puppeteer`). See `docs/0020-rate-limiting-production.md`.
 
 ### ❌ Not Yet Implemented
-- **Public menu rate limiting** – `/menu/{table_token}`, `/menu/{table_token}/order` (e.g. 30/min per IP).
-- **Upload rate limiting** – File uploads only have size limits (2MB); no per-user/hour limit.
-- **Admin/management endpoint limits** – e.g. 30/min for `/tenant/settings`, `/tables`, etc.
 - **CAPTCHA** after failed login attempts (recommended after 3 attempts).
-- **Per-order payment attempt limits** – e.g. 3 payment attempts per order per hour (only global 10/min per IP today).
 
 ### ✅ Existing Infrastructure
 - Redis available (used for rate limiting storage)
@@ -267,13 +266,13 @@ async def login(...):
 2. **Global API rate limiting** – 100/min per IP
 3. **Payment endpoints** – 10/min per IP
 
-### 🟡 Medium Priority (Not Yet Done)
-1. **Public menu endpoints** – 30/min per IP, optional caching
+### 🟡 Medium Priority — ✅ Done
+1. **Public menu endpoints** – 30/min per IP
 2. **File upload endpoints** – 10 uploads/hour per user
-3. **Database-heavy endpoints** – 60/min, catalog caching
+3. **Admin endpoints** – 30/min per user
 
 ### 🟢 Low Priority (Nice to Have)
-1. **Admin endpoints** – 30/min
+1. **Database-heavy endpoints** – 60/min, catalog caching (optional)
 2. **External API rate limiting (scripts)**
 3. **Advanced features** (IP blocklisting, CAPTCHA)
 
@@ -318,6 +317,13 @@ RATE_LIMIT_UPLOAD_PER_HOUR=10
 
 # Payment Endpoints
 RATE_LIMIT_PAYMENT_PER_MINUTE=10
+RATE_LIMIT_PAYMENT_PER_ORDER_PER_HOUR=3
+
+# Public Menu
+RATE_LIMIT_PUBLIC_MENU_PER_MINUTE=30
+
+# File Uploads
+RATE_LIMIT_UPLOAD_PER_HOUR=10
 
 # Admin Endpoints
 RATE_LIMIT_ADMIN_PER_MINUTE=30
@@ -332,8 +338,10 @@ RATE_LIMIT_ADMIN_PER_MINUTE=30
 - [x] Add global rate limiting middleware
 - [x] Add authentication endpoint rate limits
 - [x] Add payment endpoint rate limits
-- [ ] Add public menu endpoint rate limits
-- [ ] Add file upload rate limits
+- [x] Add public menu endpoint rate limits
+- [x] Add file upload rate limits
+- [x] Add admin/management endpoint rate limits
+- [x] Add per-order payment attempt rate limits
 - [x] Add rate limit headers to responses
 - [x] Add logging for rate limit violations
 - [x] Add environment variables for configuration
