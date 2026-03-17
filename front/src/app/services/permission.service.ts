@@ -47,7 +47,10 @@ export type Permission =
   | 'report:read'
   // Billing customers (Factura)
   | 'billing_customer:read'
-  | 'billing_customer:write';
+  | 'billing_customer:write'
+  // Working plan (schedule)
+  | 'schedule:read'
+  | 'schedule:write';
 
 /**
  * Role to permissions mapping (mirrors backend ROLE_PERMISSIONS)
@@ -69,18 +72,21 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'inventory:read', 'inventory:write',
     'translation:read', 'translation:write',
     'report:read',
+    'schedule:read', 'schedule:write',
   ]),
 
   kitchen: new Set([
     'product:read',
     'catalog:read',
     'order:read', 'order:item_status',
+    'schedule:read', 'schedule:write',
   ]),
 
   bartender: new Set([
     'product:read',
     'catalog:read',
     'order:read', 'order:item_status',
+    'schedule:read', 'schedule:write',
   ]),
 
   waiter: new Set([
@@ -92,6 +98,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'order:read', 'order:update_status', 'order:item_status',
     'order:mark_paid', 'order:remove_item',
     'billing_customer:read', 'billing_customer:write',
+    'schedule:read', 'schedule:write',
   ]),
 
   receptionist: new Set([
@@ -102,6 +109,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'floor:read',
     'order:read',
     'billing_customer:read',
+    'schedule:read', 'schedule:write',
   ]),
 
   provider: new Set([]), // Provider portal uses provider_id scoping, not tenant permissions
@@ -124,6 +132,7 @@ const ROUTE_ROLES: Record<string, UserRole[]> = {
   '/reports': ['owner', 'admin'],
   '/settings': ['owner', 'admin'],
   '/users': ['owner', 'admin'],
+  '/working-plan': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
 };
 
 @Injectable({
@@ -171,15 +180,17 @@ export class PermissionService {
     // Normalize route - remove trailing slashes and query params
     const normalizedRoute = route.split('?')[0].replace(/\/$/, '') || '/';
 
+    const userRole = user.role ? String(user.role).toLowerCase() : '';
+
     // Check for exact match first
     if (ROUTE_ROLES[normalizedRoute]) {
-      return ROUTE_ROLES[normalizedRoute].includes(user.role);
+      return ROUTE_ROLES[normalizedRoute].some((r) => String(r).toLowerCase() === userRole);
     }
 
     // Check for parent route match (e.g., /inventory/items matches /inventory)
     for (const [routePattern, roles] of Object.entries(ROUTE_ROLES)) {
       if (normalizedRoute.startsWith(routePattern + '/') || normalizedRoute === routePattern) {
-        return roles.includes(user.role);
+        return roles.some((r) => String(r).toLowerCase() === userRole);
       }
     }
 
@@ -192,7 +203,8 @@ export class PermissionService {
    */
   hasRole(user: User | null, ...roles: UserRole[]): boolean {
     if (!user) return false;
-    return roles.includes(user.role);
+    const userRole = user.role ? String(user.role).toLowerCase() : '';
+    return roles.some((r) => String(r).toLowerCase() === userRole);
   }
 
   /**

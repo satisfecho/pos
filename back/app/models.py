@@ -98,6 +98,10 @@ class Tenant(SQLModel, table=True):
     email_from: str | None = Field(default=None)
     email_from_name: str | None = Field(default=None)
 
+    # Working plan: notify owner when staff update the schedule
+    working_plan_updated_at: datetime | None = Field(default=None)
+    working_plan_owner_seen_at: datetime | None = Field(default=None)
+
     users: list["User"] = Relationship(back_populates="tenant")
 
 
@@ -283,6 +287,19 @@ class Table(TenantMixin, table=True):
     is_active: bool = Field(default=False, index=True)  # Whether table is accepting orders
     active_order_id: int | None = Field(default=None)  # Current shared order for this table
     activated_at: datetime | None = Field(default=None)  # When table was activated
+
+
+class Shift(TenantMixin, table=True):
+    """Working plan: who is scheduled to work on which date and time slot (kitchen, bar, waiters)."""
+    __tablename__ = "shift"
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    shift_date: date = Field(sa_column=Column(Date, nullable=False))
+    start_time: time = Field(sa_column=Column(Time, nullable=False))
+    end_time: time = Field(sa_column=Column(Time, nullable=False))
+    label: str | None = Field(default=None, max_length=64)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class ReservationStatus(str, Enum):
@@ -502,6 +519,22 @@ class FloorUpdate(SQLModel):
     name: str | None = None
     sort_order: int | None = None
     default_waiter_id: int | None = None
+
+
+class ShiftCreate(SQLModel):
+    user_id: int
+    date: str  # YYYY-MM-DD
+    start_time: str  # HH:MM or HH:MM:SS
+    end_time: str  # HH:MM or HH:MM:SS
+    label: str | None = None
+
+
+class ShiftUpdate(SQLModel):
+    user_id: int | None = None
+    date: str | None = None  # YYYY-MM-DD
+    start_time: str | None = None
+    end_time: str | None = None
+    label: str | None = None
 
 
 class OrderItemCreate(SQLModel):

@@ -73,6 +73,21 @@ npm run test:demo-data --prefix front
 
 ---
 
+### 2b. Working plan (schedule roles)
+
+Smoke test for the Working plan (shift schedule) page. Logs in as a user with schedule access (e.g. owner), opens `/working-plan`, and asserts the page and Add shift button are present.
+
+```bash
+npm run test:working-plan --prefix front
+# Or: LOGIN_EMAIL=owner@example.com LOGIN_PASSWORD=secret node front/scripts/test-working-plan.mjs
+# Headless: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/test-working-plan.mjs
+```
+
+- **Env:** `BASE_URL`, `LOGIN_EMAIL`/`LOGIN_PASSWORD` or `ADMIN_EMAIL`/`ADMIN_PASSWORD` or `DEMO_LOGIN_EMAIL`/`DEMO_LOGIN_PASSWORD` (from `.env`). `TENANT_ID` (default `1`) — login uses `/login?tenant=1` so the user is in the correct tenant. User must have schedule access (owner, admin, kitchen, bartender, waiter, receptionist). `HEADLESS`.
+- **Asserts:** After login, `/working-plan` loads; `[data-testid="working-plan-page"]` and `[data-testid="working-plan-add-shift"]` are present; week navigation is present.
+
+---
+
 ### 3. Tables page (view toggle and table view)
 
 Login, open `/tables`, then if the view toggle is present (tables exist), switch to Table view and assert the data table with columns is shown.

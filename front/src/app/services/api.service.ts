@@ -565,6 +565,9 @@ export class ApiService {
 
 
   private userSubject = new BehaviorSubject<User | null>(null);
+
+  /** True when current user is owner and working plan was updated by someone else (show '*' in nav). */
+  workingPlanHasUpdates = signal(false);
   private orderUpdates = new Subject<any>();
   private ws: WebSocket | null = null;
 
@@ -578,7 +581,13 @@ export class ApiService {
   // Check authentication status with backend (cookies)
   checkAuth(): Observable<User | null> {
     return this.http.get<User>(`${this.apiUrl}/users/me`).pipe(
-      tap(user => this.userSubject.next(user)),
+      tap(user => {
+        // Normalize role to lowercase so guards work regardless of API serialization
+        const normalized = user?.role
+          ? { ...user, role: String(user.role).toLowerCase() as UserRole }
+          : user;
+        this.userSubject.next(normalized ?? null);
+      }),
       catchError(() => {
         this.userSubject.next(null);
         return of(null); // Return null on error
@@ -1269,6 +1278,11 @@ export class ApiService {
   getSchedule(fromDate: string, toDate: string): Observable<Shift[]> {
     const params = new HttpParams().set('from_date', fromDate).set('to_date', toDate);
     return this.http.get<Shift[]>(`${this.apiUrl}/schedule`, { params });
+  }
+
+  /** Whether the owner has unseen working plan updates (for '*' in sidebar). */
+  getScheduleNotification(): Observable<{ has_updates: boolean }> {
+    return this.http.get<{ has_updates: boolean }>(`${this.apiUrl}/schedule/notification`);
   }
 
   getShift(shiftId: number): Observable<Shift> {

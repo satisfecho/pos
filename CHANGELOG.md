@@ -4,6 +4,28 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.1] - 2026-03-17
+
+### Added
+
+- **Working plan (shift schedule) – full feature (0021)**: Shift CRUD with opening-hours alignment, personnel-per-shift in Settings (bar, waiter, kitchen, receptionist), owner notification (* in sidebar when staff update the plan), time step (30 min / 1 h), and "use any hour" option for cleaning. Schedule access for owner, admin, kitchen, bartender, waiter, receptionist. Backend: `Shift` model, GET/POST/PUT/DELETE `/schedule`, GET `/schedule/notification`; tenant fields `working_plan_updated_at` / `working_plan_owner_seen_at`. Frontend: `/working-plan` week view, add/edit/delete modal. See `docs/0021-working-plan.md`.
+- **Working plan – suggested date**: When adding a shift, the form suggests the next open day with a free slot for the current user's role; closed days (e.g. Monday) are skipped. Owner/admin see the first day with any role gap; fallback is the first open day of the week. Current user is pre-selected when in the schedule list.
+- **Working plan – toast notifications**: Success toasts on create ("Shift saved."), update ("Shift updated."), delete ("Shift removed."); error toasts with API message (e.g. role restriction). i18n: `WORKING_PLAN.SAVED`, `UPDATED`, `SAVE_FAILED`, `DELETED`, `DELETE_FAILED` (en, de).
+- **AGENTS.md – compilation errors rule**: MUST ALWAYS DO rule: when working on the frontend, always check `docker compose logs --tail=80 front` for TypeScript/Angular build errors before concluding a change is done.
+
+### Changed
+
+- **Working plan – owner seen**: The asterisk (*) next to "Working plan" in the sidebar is cleared when the owner visits the page; backend now commits the "seen" timestamp after `_mark_working_plan_seen_by_owner` in GET `/schedule`.
+- **Backend – shift assignment**: Receptionist can be assigned to shifts; `create_shift` allows kitchen, bartender, waiter, and receptionist (error message updated).
+- **Docs**: `docs/0021-working-plan.md` added (implementation plan and status); `docs/0023-prioritisation-019-022.md` marks 0021 as Done; `docs/testing.md` Working plan test described as schedule roles (owner, admin, kitchen, bartender, waiter, receptionist).
+
+### Fixed
+
+- **Working plan – confirmation modal**: Fixed NG8002 (removed invalid `[open]` and other bindings on `app-confirmation-modal`; use conditional render and correct inputs).
+- **Settings – setStaffRequired**: Method accepts `string` for role key to fix template type error; cast internally.
+- **Working plan – DayHours**: Interface moved above `@Component` so the class is correctly decorated (fixes "Decorators are not valid here" build error).
+- **Working plan – getApiErrorMessage**: Centralised API error extraction (string or validation array) for toast and form error.
+
 ## [Unreleased]
 
 ### Added
@@ -13,6 +35,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Tables – reassign orders and reservations when deleting**: Deleting a table that has orders no longer only blocks with an error. The UI now offers to **reassign** its orders and reservations to another table, then delete. Backend: `DELETE /tables/{id}?reassign_to_table_id={id}` moves all orders and reservations to the target table (same tenant) and then deletes the source table. List and canvas table views: when delete returns 400 ("has orders"), a modal opens to choose the target table and confirm **Reassign and delete**. i18n: `TABLES.TABLE_DELETED`, `REASSIGN_AND_DELETE_TITLE`, `REASSIGN_AND_DELETE_MESSAGE`, `REASSIGN_TO_TABLE`, `REASSIGN_AND_DELETE` (en, de, es, fr, ca, zh-CN, hi).
 
 - **Reports – revenue graph over time**: On `/reports`, a **Revenue over time** chart shows daily revenue as an SVG line chart with gradient area fill. Uses existing `summary.daily` data; Y-axis shows formatted currency (max, mid, zero), X-axis shows first/middle/last date. Responsive; no new dependencies. i18n: `REPORTS.REVENUE_OVER_TIME` (en, de, es, fr, ca, zh-CN, hi).
+
+- **Working plan and opening hours – i18n**: Working plan and Settings → Opening hours strings are now translated in all supported locales. Added `WORKING_PLAN` section (title, add/edit shift, labels, delete confirm, etc.) and `SETTINGS.PERSONNEL_PER_SHIFT`, `STAFF_BAR`, `STAFF_WAITER`, `STAFF_KITCHEN`, `STAFF_RECEPTIONIST` in es, fr, ca, hi, zh-CN (en and de already had them). Also added `NAV.WORKING_PLAN` and `DASHBOARD.WORKING_PLAN_TITLE` / `WORKING_PLAN_DESC` where missing so sidebar, dashboard card, and settings “Personnel needed per shift” show in the current language.
 
 ### Fixed
 

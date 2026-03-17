@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService, TenantSettings } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { TranslationsComponent } from '../translations/translations.component';
@@ -130,7 +131,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                     <div class="logo-upload-wrapper">
                       @if (logoPreview() || settings()?.logo_filename) {
                         <div class="current-logo">
-                          <img [src]="logoPreview() || getLogoUrl()" alt="Logo" />
+                          <img [src]="getDisplayLogoSrc()" alt="Logo" />
                           <button type="button" class="btn-icon-danger" (click)="removeLogo()" title="{{ 'SETTINGS.REMOVE_LOGO' | translate }}">✕</button>
                         </div>
                       }
@@ -349,6 +350,20 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                                 <input type="checkbox" [checked]="openingHours[day.key]?.hasBreak" (change)="toggleBreak(day.key, $event)">
                                 {{ 'SETTINGS.HAS_BREAK' | translate }}
                               </label>
+                            </div>
+                            <div class="personnel-per-shift">
+                              <span class="personnel-label">{{ 'SETTINGS.PERSONNEL_PER_SHIFT' | translate }}</span>
+                              <div class="personnel-inputs">
+                                @for (role of staffRoleKeys; track role.key) {
+                                  <div class="personnel-field">
+                                    <label [for]="'staff-' + day.key + '-' + role.key">{{ role.labelKey | translate }}</label>
+                                    <input type="number" [id]="'staff-' + day.key + '-' + role.key"
+                                      [value]="getStaffRequired(day.key, role.key)"
+                                      (input)="setStaffRequired(day.key, role.key, $any($event.target).value)"
+                                      min="0" max="99" class="input-number" />
+                                  </div>
+                                }
+                              </div>
                             </div>
                           </div>
                         } @else {
@@ -1035,6 +1050,38 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       }
     }
 
+    .personnel-per-shift {
+      margin-top: var(--space-3);
+      padding-top: var(--space-3);
+      border-top: 1px dashed var(--color-border);
+    }
+    .personnel-label {
+      display: block;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      margin-bottom: var(--space-2);
+    }
+    .personnel-inputs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-4);
+    }
+    .personnel-field {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      label { font-size: 0.8125rem; color: var(--color-text-muted); white-space: nowrap; }
+    }
+    .personnel-field .input-number {
+      width: 3rem;
+      padding: var(--space-1) var(--space-2);
+      font-size: 0.875rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      text-align: center;
+    }
+
     .closed-badge {
       display: inline-block;
       padding: var(--space-2) var(--space-3);
@@ -1379,6 +1426,7 @@ export class SettingsComponent implements OnInit {
   private api = inject(ApiService);
   private router = inject(Router);
   private translate = inject(TranslateService);
+  private sanitizer = inject(DomSanitizer);
 
   settings = signal<TenantSettings | null>(null);
   activeSection = signal<'general' | 'contact' | 'hours' | 'payments' | 'email' | 'translations'>('general');
@@ -1412,6 +1460,14 @@ export class SettingsComponent implements OnInit {
 
   copyFromDayKey = 'monday';
 
+  /** Role keys for personnel-per-shift (stored in opening_hours JSON per day). */
+  readonly staffRoleKeys: { key: string; labelKey: string }[] = [
+    { key: 'bar', labelKey: 'SETTINGS.STAFF_BAR' },
+    { key: 'waiter', labelKey: 'SETTINGS.STAFF_WAITER' },
+    { key: 'kitchen', labelKey: 'SETTINGS.STAFF_KITCHEN' },
+    { key: 'receptionist', labelKey: 'SETTINGS.STAFF_RECEPTIONIST' },
+  ];
+
   openingHours: Record<string, {
     open: string;
     close: string;
@@ -1421,6 +1477,10 @@ export class SettingsComponent implements OnInit {
     morningClose?: string;
     eveningOpen?: string;
     eveningClose?: string;
+    bar?: number;
+    waiter?: number;
+    kitchen?: number;
+    receptionist?: number;
   }> = {};
 
   formData: Partial<TenantSettings> = {
@@ -1530,7 +1590,11 @@ export class SettingsComponent implements OnInit {
         morningOpen: '09:00',
         morningClose: '14:00',
         eveningOpen: '17:00',
-        eveningClose: '22:00'
+        eveningClose: '22:00',
+        bar: 0,
+        waiter: 0,
+        kitchen: 0,
+        receptionist: 0,
       };
     });
 
@@ -1541,6 +1605,7 @@ export class SettingsComponent implements OnInit {
         this.daysOfWeek.forEach(day => {
           if (parsed[day.key]) {
             const dayData = parsed[day.key];
+            const num = (v: unknown) => (typeof v === 'number' && v >= 0 && Number.isInteger(v) ? v : 0);
             this.openingHours[day.key] = {
               open: this.roundTimeToQuarter(dayData.open || '09:00'),
               close: this.roundTimeToQuarter(dayData.close || '22:00'),
@@ -1549,7 +1614,11 @@ export class SettingsComponent implements OnInit {
               morningOpen: this.roundTimeToQuarter(dayData.morningOpen || dayData.open || '09:00'),
               morningClose: this.roundTimeToQuarter(dayData.morningClose || '14:00'),
               eveningOpen: this.roundTimeToQuarter(dayData.eveningOpen || '17:00'),
-              eveningClose: this.roundTimeToQuarter(dayData.eveningClose || dayData.close || '22:00')
+              eveningClose: this.roundTimeToQuarter(dayData.eveningClose || dayData.close || '22:00'),
+              bar: num(dayData.bar),
+              waiter: num(dayData.waiter),
+              kitchen: num(dayData.kitchen),
+              receptionist: num(dayData.receptionist),
             };
           }
         });
@@ -1621,6 +1690,10 @@ export class SettingsComponent implements OnInit {
         morningClose: source.morningClose,
         eveningOpen: source.eveningOpen,
         eveningClose: source.eveningClose,
+        bar: source.bar ?? 0,
+        waiter: source.waiter ?? 0,
+        kitchen: source.kitchen ?? 0,
+        receptionist: source.receptionist ?? 0,
       };
     });
     this.serializeOpeningHours();
@@ -1679,6 +1752,12 @@ export class SettingsComponent implements OnInit {
     const serialized: Record<string, any> = {};
     this.daysOfWeek.forEach(day => {
       const dayData = this.openingHours[day.key];
+      const staff = {
+        bar: dayData.bar ?? 0,
+        waiter: dayData.waiter ?? 0,
+        kitchen: dayData.kitchen ?? 0,
+        receptionist: dayData.receptionist ?? 0,
+      };
       if (dayData.hasBreak) {
         serialized[day.key] = {
           closed: dayData.closed,
@@ -1687,19 +1766,32 @@ export class SettingsComponent implements OnInit {
           morningClose: dayData.morningClose,
           eveningOpen: dayData.eveningOpen,
           eveningClose: dayData.eveningClose,
-          // Keep open/close for backward compatibility
           open: dayData.morningOpen,
-          close: dayData.eveningClose
+          close: dayData.eveningClose,
+          ...staff,
         };
       } else {
         serialized[day.key] = {
           closed: dayData.closed,
           open: dayData.open,
-          close: dayData.close
+          close: dayData.close,
+          ...staff,
         };
       }
     });
     this.formData.opening_hours = JSON.stringify(serialized);
+  }
+
+  getStaffRequired(dayKey: string, roleKey: string): number {
+    const day = this.openingHours[dayKey];
+    return day && typeof (day as any)[roleKey] === 'number' ? (day as any)[roleKey] : 0;
+  }
+
+  setStaffRequired(dayKey: string, roleKey: string, value: number): void {
+    const role = roleKey as 'bar' | 'waiter' | 'kitchen' | 'receptionist';
+    const n = Math.max(0, Math.min(99, Math.floor(Number(value)) || 0));
+    (this.openingHours[dayKey] as any)[role] = n;
+    this.serializeOpeningHours();
   }
 
   onLogoSelected(event: Event) {
@@ -1731,6 +1823,14 @@ export class SettingsComponent implements OnInit {
     const settings = this.settings();
     if (!settings?.logo_filename || !settings.id) return null;
     return this.api.getTenantLogoUrl(settings.logo_filename, settings.id);
+  }
+
+  /** Safe URL for logo img (avoids Angular stripping API URL). Use for server logo; data URL from preview is used as-is. */
+  getDisplayLogoSrc(): string | SafeResourceUrl | null {
+    const preview = this.logoPreview();
+    if (preview) return preview;
+    const url = this.getLogoUrl();
+    return url ? this.sanitizer.bypassSecurityTrustResourceUrl(url) : null;
   }
 
   formatFileSize(bytes: number): string {

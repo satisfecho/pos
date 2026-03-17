@@ -69,6 +69,10 @@ class Permission(str, Enum):
     BILLING_CUSTOMER_READ = "billing_customer:read"
     BILLING_CUSTOMER_WRITE = "billing_customer:write"
 
+    # Working plan (shift schedule for kitchen, bar, waiters)
+    SCHEDULE_READ = "schedule:read"
+    SCHEDULE_WRITE = "schedule:write"
+
 
 # Map roles to their permissions
 ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
@@ -115,6 +119,9 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         Permission.TRANSLATION_WRITE,
         # Reports
         Permission.REPORT_READ,
+        # Working plan
+        Permission.SCHEDULE_READ,
+        Permission.SCHEDULE_WRITE,
     },
     
     UserRole.kitchen: {
@@ -124,6 +131,9 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         # Orders (view and update item status)
         Permission.ORDER_READ,
         Permission.ORDER_ITEM_STATUS,
+        # Working plan (add/edit own shifts)
+        Permission.SCHEDULE_READ,
+        Permission.SCHEDULE_WRITE,
     },
     
     UserRole.bartender: {
@@ -133,6 +143,9 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         # Orders (view and update item status for drinks/beverages)
         Permission.ORDER_READ,
         Permission.ORDER_ITEM_STATUS,
+        # Working plan (add/edit own shifts)
+        Permission.SCHEDULE_READ,
+        Permission.SCHEDULE_WRITE,
     },
     
     UserRole.waiter: {
@@ -154,6 +167,9 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         Permission.ORDER_REMOVE_ITEM,
         Permission.BILLING_CUSTOMER_READ,
         Permission.BILLING_CUSTOMER_WRITE,
+        # Working plan (add/edit shifts)
+        Permission.SCHEDULE_READ,
+        Permission.SCHEDULE_WRITE,
     },
     
     UserRole.receptionist: {
@@ -170,6 +186,9 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         # Orders (view only)
         Permission.ORDER_READ,
         Permission.BILLING_CUSTOMER_READ,
+        # Working plan (add/edit shifts)
+        Permission.SCHEDULE_READ,
+        Permission.SCHEDULE_WRITE,
     },
 }
 

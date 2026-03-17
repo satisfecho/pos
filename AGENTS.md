@@ -9,6 +9,7 @@ These instructions apply to all work in this repository:
 - Run tests or tooling inside containers whenever possible.
 - If a command must run outside containers, only use existing folders (no new host-wide installs).
 - Always check container logs after making changes, to spot errors.
+- **MUST ALWAYS DO — Compilation errors in logs:** When working on the frontend (or any change that can affect build/runtime), **always** look for compilation errors in the relevant logfile. The frontend dev server runs in the `front` container; if the Angular build fails, the UI will not update and the user will not see changes. **Check `docker compose logs --tail=80 front`** (or the front container’s log output) for TypeScript/Angular build errors (e.g. `TS2345`, `NG8002`, “Decorators are not valid here”, “Application bundle generation failed”). Fix any compilation errors before concluding that a change is done. This rule applies every time you edit frontend code or dependencies.
 - Never use `npm install`; always use `npm ci --ignore-scripts`, pin versions in package.json/package-lock.json, and avoid running scripts on install (supply chain risk). The front app has `front/.npmrc` with `save-exact=true` and `ignore-scripts=true` so new deps are pinned and install scripts never run.
 
 ## Project overview

@@ -119,6 +119,18 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                <span>{{ 'NAV.REPORTS' | translate }}</span>
              </a>
            }
+           @if (canViewWorkingPlan()) {
+             <a routerLink="/working-plan" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                 <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+               </svg>
+               <span>{{ 'NAV.WORKING_PLAN' | translate }}</span>
+               @if (api.workingPlanHasUpdates()) {
+                 <span class="nav-update-star" aria-label="Updated">*</span>
+               }
+             </a>
+           }
            <!-- Inventory Module (Admin only) -->
            @if (canViewInventory()) {
              <div class="nav-section">
@@ -207,7 +219,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   styleUrl: './sidebar.component.scss'
 })
 export class SidebarComponent implements OnInit {
-  private api = inject(ApiService);
+  api = inject(ApiService);
   private router = inject(Router);
   private permissions = inject(PermissionService);
   private translate = inject(TranslateService);
@@ -226,10 +238,21 @@ export class SidebarComponent implements OnInit {
   canViewSettings = computed(() => this.permissions.isAdmin(this.user()));
   canViewInventory = computed(() => this.permissions.isAdmin(this.user()));
   canViewReports = computed(() => this.permissions.isAdmin(this.user()));
+  canViewWorkingPlan = computed(() => this.permissions.hasPermission(this.user(), 'schedule:read'));
   canViewUsers = computed(() => this.permissions.isAdmin(this.user()));
 
   ngOnInit() {
-    this.api.user$.subscribe(user => this.user.set(user));
+    this.api.user$.subscribe(user => {
+      this.user.set(user);
+      if (user && String(user.role).toLowerCase() === 'owner') {
+        this.api.getScheduleNotification().subscribe({
+          next: (n) => this.api.workingPlanHasUpdates.set(n.has_updates),
+          error: () => this.api.workingPlanHasUpdates.set(false),
+        });
+      } else {
+        this.api.workingPlanHasUpdates.set(false);
+      }
+    });
     // Auto-open inventory submenu if on an inventory route
     if (this.router.url.startsWith('/inventory')) {
       this.inventoryOpen.set(true);

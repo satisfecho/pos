@@ -13,7 +13,7 @@ import redis
 import stripe
 from fastapi import Depends, FastAPI, HTTPException, UploadFile, File, status, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel as _BaseModel
@@ -250,7 +250,20 @@ AVIF_QUALITY = 85  # AVIF quality (1-100)
 STATIC_DIR = Path(__file__).parent.parent
 STATIC_DIR.mkdir(exist_ok=True)
 
-# Mount static files for serving images
+# Serve tenant logos via explicit route so path resolution is reliable (StaticFiles 404 in some setups)
+@app.get("/uploads/{tenant_id}/logo/{filename}", include_in_schema=False)
+def serve_tenant_logo(tenant_id: int, filename: str):
+    """Serve a tenant logo file. Filename must be a single path component (no slashes)."""
+    if "/" in filename or "\\" in filename or filename.startswith("."):
+        raise HTTPException(status_code=404, detail="Invalid filename")
+    path = UPLOADS_DIR / str(tenant_id) / "logo" / filename
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="Logo not found")
+    media_type = "image/svg+xml" if filename.lower().endswith(".svg") else None
+    return FileResponse(path, media_type=media_type)
+
+
+# Mount static files for serving images (product images, provider images, etc.)
 app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 # Register Inventory API router
@@ -1090,8 +1103,10 @@ def get_tenant_settings(
         )
         logo_size = get_file_size(logo_path)
 
-    # Convert tenant to dict and add file size
-    tenant_dict = tenant.model_dump()
+    # Convert tenant to dict and add file size (ensure id is present for client logo URL)
+    # Exclude relationship to avoid serialization issues (users list)
+    tenant_dict = tenant.model_dump(exclude={"users"})
+    tenant_dict["id"] = tenant.id
     tenant_dict["logo_size_bytes"] = logo_size
     tenant_dict["logo_size_formatted"] = format_file_size(logo_size)
 
@@ -1285,8 +1300,10 @@ def update_tenant_settings(
         )
         logo_size = get_file_size(logo_path)
 
-    # Convert tenant to dict and add file size
-    tenant_dict = tenant.model_dump()
+    # Convert tenant to dict and add file size (ensure id for client logo URL)
+    # Exclude relationship to avoid serialization issues (users list)
+    tenant_dict = tenant.model_dump(exclude={"users"})
+    tenant_dict["id"] = tenant.id
     tenant_dict["logo_size_bytes"] = logo_size
     tenant_dict["logo_size_formatted"] = format_file_size(logo_size)
 
@@ -1304,12 +1321,28 @@ def update_tenant_settings(
     return tenant_dict
 
 
+def _infer_content_type_from_filename(filename: str | None) -> str | None:
+    """Infer image content type from file extension when client does not send Content-Type."""
+    if not filename:
+        return None
+    ext = Path(filename).suffix.lower()
+    mapping = {
+        ".svg": "image/svg+xml",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".webp": "image/webp",
+        ".avif": "image/avif",
+    }
+    return mapping.get(ext)
+
+
 @app.post("/tenant/logo")
 async def upload_tenant_logo(
     file: Annotated[UploadFile, File()],
     current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
     session: Session = Depends(get_session),
-) -> models.Tenant:
+) -> dict:
     """Upload a logo for the tenant/business."""
     tenant = session.exec(
         select(models.Tenant).where(models.Tenant.id == current_user.tenant_id)
@@ -1319,8 +1352,10 @@ async def upload_tenant_logo(
         raise HTTPException(status_code=404, detail="Tenant not found")
 
     # Validate content type (logo allows SVG in addition to raster images)
+    # Some clients do not send Content-Type for multipart file; infer from filename
     allowed_logo_types = ALLOWED_IMAGE_TYPES | {"image/svg+xml"}
-    if file.content_type not in allowed_logo_types:
+    content_type = file.content_type or _infer_content_type_from_filename(file.filename)
+    if content_type not in allowed_logo_types:
         raise HTTPException(
             status_code=400,
             detail=f"Invalid file type. Allowed: {', '.join(sorted(allowed_logo_types))}",
@@ -1334,10 +1369,10 @@ async def upload_tenant_logo(
             detail=f"File too large. Max size: {MAX_IMAGE_SIZE // (1024 * 1024)}MB",
         )
 
-    is_svg = file.content_type == "image/svg+xml"
+    is_svg = content_type == "image/svg+xml"
     if not is_svg:
         # Optimize raster image locally (SVG is stored as-is)
-        contents = optimize_image(contents, file.content_type)
+        contents = optimize_image(contents, content_type)
 
     # Create tenant logo directory
     tenant_dir = UPLOADS_DIR / str(current_user.tenant_id) / "logo"
@@ -1368,11 +1403,23 @@ async def upload_tenant_logo(
     session.commit()
     session.refresh(tenant)
 
-    # Get file size for response
+    # Get file size for response (ensure id for client logo URL)
+    # Exclude relationship to avoid serialization issues (users list)
     logo_size = get_file_size(file_path)
-    tenant_dict = tenant.model_dump()
+    tenant_dict = tenant.model_dump(exclude={"users"})
+    tenant_dict["id"] = tenant.id
     tenant_dict["logo_size_bytes"] = logo_size
     tenant_dict["logo_size_formatted"] = format_file_size(logo_size)
+
+    # Don't expose full secret key - only show last 4 characters for verification
+    if tenant_dict.get("stripe_secret_key"):
+        secret_key = tenant_dict["stripe_secret_key"]
+        tenant_dict["stripe_secret_key"] = (
+            f"{secret_key[:7]}...{secret_key[-4:]}" if len(secret_key) > 11 else "***"
+        )
+    # Don't expose SMTP password; indicate if configured
+    if tenant_dict.get("smtp_password"):
+        tenant_dict["smtp_password"] = "********"
 
     return tenant_dict
 
@@ -2776,6 +2823,38 @@ def _shift_to_dict(shift: models.Shift, user_name: str, user_role: str) -> dict:
     }
 
 
+def _mark_working_plan_updated(session: Session, tenant_id: int) -> None:
+    """Set tenant.working_plan_updated_at so owner sees the '*' in nav."""
+    tenant = session.get(models.Tenant, tenant_id)
+    if tenant:
+        tenant.working_plan_updated_at = datetime.now(timezone.utc)
+        session.add(tenant)
+
+
+def _mark_working_plan_seen_by_owner(session: Session, tenant_id: int) -> None:
+    """Set tenant.working_plan_owner_seen_at when owner views the working plan."""
+    tenant = session.get(models.Tenant, tenant_id)
+    if tenant:
+        tenant.working_plan_owner_seen_at = datetime.now(timezone.utc)
+        session.add(tenant)
+
+
+@app.get("/schedule/notification")
+def schedule_notification(
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Return whether the owner has unseen working plan updates (for '*' in nav). Only owners get has_updates."""
+    if current_user.tenant_id is None or current_user.role != models.UserRole.owner:
+        return {"has_updates": False}
+    tenant = session.get(models.Tenant, current_user.tenant_id)
+    if not tenant or not tenant.working_plan_updated_at:
+        return {"has_updates": False}
+    if not tenant.working_plan_owner_seen_at:
+        return {"has_updates": True}
+    return {"has_updates": tenant.working_plan_updated_at > tenant.working_plan_owner_seen_at}
+
+
 @app.get("/schedule")
 def list_schedule(
     current_user: Annotated[models.User, Depends(require_permission(Permission.SCHEDULE_READ))],
@@ -2806,6 +2885,9 @@ def list_schedule(
         ).all()
         for u in users:
             user_map[u.id] = (u.full_name or u.email or "", u.role.value if u.role else "")
+    if current_user.role == models.UserRole.owner and current_user.tenant_id:
+        _mark_working_plan_seen_by_owner(session, current_user.tenant_id)
+        session.commit()
     return [_shift_to_dict(s, user_map.get(s.user_id, ("", ""))[0], user_map.get(s.user_id, ("", ""))[1]) for s in shifts]
 
 
@@ -2848,8 +2930,8 @@ def create_shift(
     ).first()
     if not user:
         raise HTTPException(status_code=400, detail="User not found")
-    if user.role not in (models.UserRole.kitchen, models.UserRole.bartender, models.UserRole.waiter):
-        raise HTTPException(status_code=400, detail="User must have role kitchen, bartender, or waiter")
+    if user.role not in (models.UserRole.kitchen, models.UserRole.bartender, models.UserRole.waiter, models.UserRole.receptionist):
+        raise HTTPException(status_code=400, detail="User must have role kitchen, bartender, waiter, or receptionist")
     try:
         shift_date = dt_parse.strptime(body.date, "%Y-%m-%d").date()
         start_time = dt_parse.strptime(body.start_time[:5], "%H:%M").time()
@@ -2867,6 +2949,7 @@ def create_shift(
         label=body.label,
     )
     session.add(shift)
+    _mark_working_plan_updated(session, current_user.tenant_id)
     session.commit()
     session.refresh(shift)
     user_name = user.full_name or user.email or ""
@@ -2923,6 +3006,7 @@ def update_shift(
         raise HTTPException(status_code=400, detail="start_time must be before end_time")
     shift.updated_at = datetime.now(timezone.utc)
     session.add(shift)
+    _mark_working_plan_updated(session, current_user.tenant_id)
     session.commit()
     session.refresh(shift)
     user = session.get(models.User, shift.user_id)
@@ -2946,6 +3030,7 @@ def delete_shift(
     ).first()
     if not shift:
         raise HTTPException(status_code=404, detail="Shift not found")
+    _mark_working_plan_updated(session, current_user.tenant_id)
     session.delete(shift)
     session.commit()
     return {"deleted": True, "id": shift_id}

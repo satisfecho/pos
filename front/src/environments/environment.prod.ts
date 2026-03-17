@@ -31,6 +31,6 @@ export const environment = {
   apiUrl: getApiUrl(),
   wsUrl: getWsUrl(),
   stripePublishableKey: (typeof window !== 'undefined' && (window as any).__STRIPE_PUBLISHABLE_KEY__) || '',
-  version: '1.0.14',
+  version: '2.0.1',
   commitHash: commitHash,
 };
