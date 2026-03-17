@@ -47,12 +47,17 @@ jobs:
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=60 -o ServerAliveCountMax=10 \
             "${DEPLOY_USER}@${DEPLOY_HOST}" "cd ${DEPLOY_PATH} && git fetch origin && git checkout master && git reset --hard origin/master && bash -s" < scripts/deploy-amvara9.sh
 
-      - name: Smoke test (landing and API health)
+      - name: Smoke test (landing, version, API health)
         env:
           SMOKE_TEST_BASE_URL: ${{ vars.SMOKE_TEST_BASE_URL || 'https://www.satisfecho.de' }}
         run: |
           BASE="${SMOKE_TEST_BASE_URL}"
-          echo "Smoke test: $BASE and $BASE/api/health"
+          echo "Smoke test: $BASE (landing), version in footer, $BASE/api/health"
           curl -sf -o /dev/null -w "%{http_code}" "$BASE/" | grep -q 200 || (echo "Landing page failed"; exit 1)
+          HTML=$(curl -sfL "$BASE/") || (echo "Failed to fetch landing page"; exit 1)
+          if ! echo "$HTML" | grep -qE 'name="app-version"[^>]*content="[0-9]+\.[0-9]+\.[0-9]+"'; then
+            echo "Version meta tag missing or invalid in landing page HTML (expected app-version with semver)"; exit 1
+          fi
+          echo "Version correctly shown in landing page (no login required)."
           curl -sf -o /dev/null -w "%{http_code}" "$BASE/api/health" | grep -q 200 || (echo "API health failed"; exit 1)
           echo "Smoke test passed."
