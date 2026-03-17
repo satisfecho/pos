@@ -3372,6 +3372,38 @@ def _parse_reservation_time(s: str) -> time:
         raise ValueError(f"Invalid time format: {s[:8]!r}. Use HH:MM or HH:MM:SS.") from e
 
 
+def _closing_time_for_date(tenant: models.Tenant, res_date: date) -> time | None:
+    """Return closing time for the given date from tenant opening_hours, or None if closed/no hours."""
+    opening_hours: dict = {}
+    if tenant.opening_hours:
+        try:
+            opening_hours = json.loads(tenant.opening_hours)
+        except (json.JSONDecodeError, TypeError):
+            return None
+    day_names = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+    day_key = day_names[res_date.weekday()]
+    day_hours = opening_hours.get(day_key, {})
+    if day_hours.get("closed", False) or not day_hours.get("open") or not day_hours.get("close"):
+        return None
+    close_str = day_hours.get("eveningClose") or day_hours.get("close")
+    if not close_str:
+        return None
+    try:
+        parts = close_str.split(":")
+        close_h, close_m = int(parts[0]), int(parts[1]) if len(parts) > 1 else 0
+        return time(close_h, close_m)
+    except (ValueError, AttributeError):
+        return None
+
+
+def _reservation_time_allowed_before_closing(reservation_time: time, closing_time: time) -> bool:
+    """True if reservation_time is at least 1 hour before closing_time."""
+    close_mins = closing_time.hour * 60 + closing_time.minute
+    last_mins = (close_mins - 60) % (24 * 60)
+    res_mins = reservation_time.hour * 60 + reservation_time.minute
+    return res_mins <= last_mins
+
+
 def _reservation_to_dict(r: models.Reservation, session: Session | None = None) -> dict:
     """Serialize reservation for JSON (date/time as ISO strings). Includes table_name when table_id set if session provided."""
     out = {
@@ -3599,6 +3631,13 @@ def create_reservation(
     if res_date == now_local.date():
         if res_time <= now_local.time():
             raise HTTPException(status_code=400, detail="Reservation time must be in the future")
+    # Only accept reservations until 1 hour before closing
+    closing_time = _closing_time_for_date(tenant, res_date)
+    if closing_time is not None and not _reservation_time_allowed_before_closing(res_time, closing_time):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Reservations are only accepted until 1 hour before closing (closing at {closing_time.strftime('%H:%M')}).",
+        )
     total_seats, total_tables = _capacity_for_tenant(session, tenant_id)
     reserved_guests, reserved_parties = _demand_for_slot(session, tenant_id, res_date, res_time, exclude_reservation_id=None)
     if reserved_guests + data.party_size > total_seats or reserved_parties + 1 > total_tables:
@@ -3689,15 +3728,21 @@ def get_next_available_reservation_time(
 
         try:
             open_h, open_m = map(int, day_hours["open"].split(":"))
-            close_h, close_m = map(int, day_hours["close"].split(":"))
-        except (ValueError, AttributeError):
+            close_str = day_hours.get("eveningClose") or day_hours["close"]
+            close_h, close_m = map(int, close_str.split(":"))
+        except (ValueError, AttributeError, KeyError):
             continue
+
+        closing_time = time(close_h, close_m)
 
         for slot_hour in range(open_h, close_h + 1):
             for slot_min in (0, 15, 30, 45):
                 if slot_hour == close_h and slot_min >= close_m:
                     break
                 slot_time = time(slot_hour, slot_min)
+
+                if not _reservation_time_allowed_before_closing(slot_time, closing_time):
+                    continue
 
                 if d == now_local.date() and slot_time <= now_local.time():
                     continue
@@ -3774,6 +3819,17 @@ def update_reservation(
         reservation.reservation_time = _parse_reservation_time(body.reservation_time)
     if body.party_size is not None:
         reservation.party_size = body.party_size
+    # Only accept reservations until 1 hour before closing
+    tenant = session.get(models.Tenant, reservation.tenant_id)
+    if tenant:
+        closing_time = _closing_time_for_date(tenant, reservation.reservation_date)
+        if closing_time is not None and not _reservation_time_allowed_before_closing(
+            reservation.reservation_time, closing_time
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Reservations are only accepted until 1 hour before closing (closing at {closing_time.strftime('%H:%M')}).",
+            )
     total_seats, total_tables = _capacity_for_tenant(session, current_user.tenant_id)
     reserved_guests, reserved_parties = _demand_for_slot(
         session,
