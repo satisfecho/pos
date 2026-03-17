@@ -36,17 +36,17 @@ export class App implements OnInit, OnDestroy {
     this.routerSub?.unsubscribe();
   }
 
-  private updateFavicon(url: string) {
-    // In development, use white favicon to distinguish from production
+  private updateFavicon(_url: string) {
+    // Dev: white | Staging: blue | Production: orange (all routes)
     if (!environment.production) {
       this.setFavicon('/favicon-dev.svg');
       return;
     }
-    // Customer-facing menu route uses orange favicon
-    // Admin dashboard routes use blue favicon
-    const isCustomerMenu = url.startsWith('/menu/');
-    const faviconPath = isCustomerMenu ? '/favicon.svg' : '/favicon-admin.svg';
-    this.setFavicon(faviconPath);
+    if (environment.staging) {
+      this.setFavicon('/favicon-admin.svg');
+      return;
+    }
+    this.setFavicon('/favicon.svg');
   }
 
   private setFavicon(path: string) {

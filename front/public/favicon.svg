@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- PRODUCTION default: orange. Do not replace with white (white = favicon-dev.svg for dev only). -->
   <!-- 2x2 grid of hollow squares in orange/reddish color for customer frontend -->
   <rect x="3" y="3" width="7" height="7" fill="none" stroke="#FF6B35" stroke-width="2" rx="0.5"/>
   <rect x="14" y="3" width="7" height="7" fill="none" stroke="#FF6B35" stroke-width="2" rx="0.5"/>

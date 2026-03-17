@@ -9,6 +9,7 @@ const getWindowConfig = (key: string, fallback: string): string => {
 
 export const environment = {
   production: false,
+  staging: false,
   apiUrl: getWindowConfig('__API_URL__', '/api'),
   wsUrl: getWindowConfig('__WS_URL__', '/ws'),
   stripePublishableKey: getWindowConfig('__STRIPE_PUBLISHABLE_KEY__', ''),

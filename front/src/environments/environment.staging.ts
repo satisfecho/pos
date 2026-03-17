@@ -1,6 +1,6 @@
 import { commitHash } from './commit-hash';
 
-/** Use same-origin /api when configured URL points to another host (e.g. server has API_URL=http://localhost:4202/api). */
+/** Same as prod: same-origin /api when configured URL points to another host. */
 function getApiUrl(): string {
   if (typeof window === 'undefined') return '/api';
   const raw = (window as any).__API_URL__;
@@ -28,7 +28,7 @@ function getWsUrl(): string {
 
 export const environment = {
   production: true,
-  staging: false,
+  staging: true,
   apiUrl: getApiUrl(),
   wsUrl: getWsUrl(),
   stripePublishableKey: (typeof window !== 'undefined' && (window as any).__STRIPE_PUBLISHABLE_KEY__) || '',
