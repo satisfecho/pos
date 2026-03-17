@@ -9,6 +9,7 @@ These instructions apply to all work in this repository:
 - Run tests or tooling inside containers whenever possible.
 - If a command must run outside containers, only use existing folders (no new host-wide installs).
 - Always check container logs after making changes, to spot errors.
+- **Prefer removing or simplifying over adding:** Removing overcomplicated code is better than adding new code. Think twice before adding; consider simplifying or deleting first. Prefer fewer, clearer paths over more features or branches.
 - **MUST ALWAYS DO — Angular/front compiler check:** When touching Angular/front code (or any change that can affect the frontend build), **always** check for compiler errors before concluding the change is done. With hot reload in DEV, the front container rebuilds on save; **check `docker compose logs --tail=80 front`** (or the front container’s log output) for TypeScript/Angular build errors (e.g. `TS2345`, `NG8002`, “Decorators are not valid here”, “Application bundle generation failed”). Fix any errors shown there. Do not report that a frontend change is complete until the build succeeds (no errors in the logs). This rule applies every time you edit frontend code or dependencies.
 - Never use `npm install`; always use `npm ci --ignore-scripts`, pin versions in package.json/package-lock.json, and avoid running scripts on install (supply chain risk). The front app has `front/.npmrc` with `save-exact=true` and `ignore-scripts=true` so new deps are pinned and install scripts never run.
 
