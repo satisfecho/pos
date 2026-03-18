@@ -40,6 +40,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Deploy (amvara9) – front CSS / stale build**: Deploy script now builds the front image with `--no-cache` so each deploy serves assets from the current code (fixes wrong styling e.g. Settings > Opening hours). Nginx in the front container sends `Cache-Control: no-cache` for the HTML document so clients get new hashed asset URLs after deploy. See `docs/0024-deploy-css-fix-amvara9.md`.
 - **Deploy (amvara9) – version not updating**: Fixed `docker compose build` flag order (`build --no-cache front`); added `up -d --force-recreate` so the front container is recreated with the new image; added a post-deploy step that prints the version served by the front container for verification.
 
+## [2.0.5] - 2026-03-18
+
+### Fixed
+
+- **Tables view – 500 when assigning waiter or activating table**: Rate-limited table endpoints (`PUT /tables/{id}/assign-waiter`, `POST /tables/{id}/activate`, `POST /tables/{id}/close`, `POST /tables/{id}/regenerate-pin`) now return `JSONResponse` so slowapi can inject rate-limit headers (fixes "parameter response must be an instance of starlette.responses.Response").
+
 ## [2.0.4] - 2026-03-18
 
 ### Fixed
