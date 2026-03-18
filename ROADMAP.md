@@ -31,7 +31,7 @@
 - **Stricter “immediate payment” (optional)**: Today the menu auto-opens payment after place order; customers can still close the modal. A strict “cannot place another order or proceed without paying” flow is not enforced.
 
 ### Documentation reference
-- **`docs/`**: `0008-order-management-logic.md`, `0007-implementation-verification.md`, `0010-table-reservation-implementation-plan.md`, `0011-table-reservation-user-guide.md`, `0009-table-pin-security.md`, `0012-translation-implementation.md`, `0004-deployment.md`, `0002-customer-features-plan.md`, `0005-email-sending-options.md`, `0006-gmail-setup-instructions.md`, `0013-verification-alternatives.md`, `0015-kitchen-display.md`, `0016-reports.md`, `0014-provider-portal.md`, `0020-rate-limiting-production.md`.
+- **`docs/`**: `0008-order-management-logic.md`, `0007-implementation-verification.md`, `0010-table-reservation-implementation-plan.md`, `0011-table-reservation-user-guide.md`, `0009-table-pin-security.md`, `0012-translation-implementation.md`, `0004-deployment.md`, `0002-customer-features-plan.md`, `0005-email-sending-options.md`, `0013-verification-alternatives.md`, `0015-kitchen-display.md`, `0016-reports.md`, `0014-provider-portal.md`, `0020-rate-limiting-production.md`.
 - **`CHANGELOG.md`**: Tracks unreleased and released changes (reservations, order history, WebSocket, fixes).
 
 ---

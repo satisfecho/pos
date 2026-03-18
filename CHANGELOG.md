@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Docs – consolidation**: Removed `docs/0006-gmail-setup-instructions.md` (redundant with `docs/0018-gmail-setup.md`); all references (README, ROADMAP, config.env.example) now point to 0018. Merged `docs/0003-deploy-server.md` into `docs/0004-deployment.md`: single deployment guide with configuration (API_URL, WS_URL, CORS) and deploy steps (git pull, compose, migrations, seeds). Deleted 0003; docs index and CHANGELOG updated.
+
 ### Added
 
 - **Rate limiting (extended)**: Public menu endpoints 30/min per IP; file uploads (tenant logo, product image, provider product image) 10/hour per user; admin/management endpoints (tenant settings, tables, providers) 30/min per user; per-order payment attempts 3/hour per IP. See `docs/0020-rate-limiting-production.md` and ROADMAP.md.
@@ -303,7 +307,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Demo products**: Seed script `back/app/seeds/seed_demo_products.py` (default menu for tenant 1: main courses + beverages; idempotent, no images). Deploy runs it after demo tables so the Demo Restaurant has tables and products on new deployment.
 - **Puppeteer test (demo data)**: `front/scripts/test-demo-data.mjs` checks ≥10 tables, ≥10 products, and public /book/:id; use `LOGIN_EMAIL`/`LOGIN_PASSWORD` for full check. Optional `BOOK_TENANT_ID` (default 1). `npm run test:demo-data` or `node front/scripts/test-demo-data.mjs`.
 - **Seeds for all tenants**: `seed_demo_tables` and `seed_demo_products` now run for every tenant that has no tables/products (not only tenant 1), so e.g. ralf@roeber.de (tenant 2) gets demo data on deploy. Table seed sets `is_active=false` for prod NOT NULL.
-- **Deploy guide**: `docs/0003-deploy-server.md` for deploying latest master to a server (e.g. amvara8 at `/development/pos`).
+- **Deploy guide**: `docs/0004-deployment.md` for configuration and deploying latest master to a server (e.g. amvara8 at `/development/pos`).
 - **Reservation tests (localhost + production)**: Script `scripts/run-reservation-tests.sh` runs public (and optional staff) Puppeteer reservation tests against configurable `BASE_URLS` (default: `http://127.0.0.1:4203` and `http://satisfecho.de`). See AGENTS.md.
 - **CI/CD (amvara9)**: GitHub Actions workflow `.github/workflows/deploy-amvara9.yml` deploys to amvara9 on push to master/main (SSH key in repo secret `SSH_PRIVATE_KEY_AMVARA9`). Server setup: deploy key in `authorized_keys`, repo at `/development/pos`, `config.env` from example. See `docs/0001-ci-cd-amvara9.md`.
 

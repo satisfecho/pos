@@ -158,6 +158,7 @@ Stripe keys are configured per tenant in **Settings** in the admin UI. Settings 
 | [ROADMAP.md](ROADMAP.md) | Implemented vs planned features; rate limiting and security roadmap |
 | [CHANGELOG.md](CHANGELOG.md) | Release notes and unreleased changes |
 | [AGENTS.md](AGENTS.md) | How to find the app port and view logs (for developers/agents) |
+| [docs/README.md](docs/README.md) | **Index of all documentation** (deployment, email, features, plans, testing) |
 | [docs/0008-order-management-logic.md](docs/0008-order-management-logic.md) | Order lifecycle, session rules, status reset |
 | [docs/0007-implementation-verification.md](docs/0007-implementation-verification.md) | What’s implemented vs Phase 4 (batch, audit, etc.) |
 | [docs/0010-table-reservation-implementation-plan.md](docs/0010-table-reservation-implementation-plan.md) | Reservations design and backend |
@@ -169,7 +170,6 @@ Stripe keys are configured per tenant in **Settings** in the admin UI. Settings 
 | [docs/0004-deployment.md](docs/0004-deployment.md) | Domain/IP deployment and env vars |
 | [docs/0002-customer-features-plan.md](docs/0002-customer-features-plan.md) | Customer accounts: registration, login, MFA, order history, invoices |
 | [docs/0005-email-sending-options.md](docs/0005-email-sending-options.md) | Email configuration options |
-| [docs/0006-gmail-setup-instructions.md](docs/0006-gmail-setup-instructions.md) | Gmail SMTP setup |
 | [docs/0013-verification-alternatives.md](docs/0013-verification-alternatives.md) | Verification flow alternatives |
 | [docs/0014-provider-portal.md](docs/0014-provider-portal.md) | Provider registration, login, and catalog management |
 | [docs/0015-kitchen-display.md](docs/0015-kitchen-display.md) | Kitchen display: full-screen view, auto-refresh, optional sound |
