@@ -720,8 +720,18 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                 </button>
               </div>
               
-              @if (error()) { <div class="toast error">{{ error() }}</div> }
-              @if (success()) { <div class="toast success">{{ success() }}</div> }
+              @if (error()) {
+                <div class="toast error">
+                  <span>{{ error() }}</span>
+                  <button type="button" class="toast-close" (click)="error.set(null)" aria-label="Dismiss">×</button>
+                </div>
+              }
+              @if (success()) {
+                <div class="toast success">
+                  <span>{{ success() }}</span>
+                  <button type="button" class="toast-close" (click)="success.set(null)" aria-label="Dismiss">×</button>
+                </div>
+              }
               
             </form>
           }
@@ -1563,7 +1573,10 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       font-weight: 500;
       animation: slideUp 0.3s ease;
       z-index: 100;
-      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
 
       &.success {
         background: var(--color-success);
@@ -1572,6 +1585,20 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       &.error {
         background: var(--color-error);
       }
+    }
+
+    .toast-close {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.9);
+      cursor: pointer;
+      padding: var(--space-1);
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+
+    .toast-close:hover {
+      color: white;
     }
 
     @media (min-width: 640px) {
@@ -1995,7 +2022,8 @@ export class SettingsComponent implements OnInit {
 
   saveProviderProduct() {
     const provider = this.selectedProviderForProduct();
-    if (!provider?.id) return;
+    const providerId = provider?.id;
+    if (providerId == null) return;
     this.providerProductError.set('');
     const name = this.newProductName?.trim();
     if (!name) {
@@ -2008,12 +2036,12 @@ export class SettingsComponent implements OnInit {
       category: this.newProductCategory?.trim() || undefined,
       availability: this.newProductOnSale,
     };
-    this.api.createProductForProvider(provider.id, body).subscribe({
+    this.api.createProductForProvider(providerId, body).subscribe({
       next: () => {
         this.closeAddProductModal();
-        this.api.listProviderProducts(provider.id).subscribe({
+        this.api.listProviderProducts(providerId).subscribe({
           next: (products) => {
-            this.providerProductsMap.update((m) => ({ ...m, [provider.id!]: products }));
+            this.providerProductsMap.update((m) => ({ ...m, [providerId]: products }));
           },
         });
       },
@@ -2343,7 +2371,6 @@ export class SettingsComponent implements OnInit {
         this.settings.set(updatedSettings);
         this.success.set('Settings saved successfully!');
         this.saving.set(false);
-        setTimeout(() => this.success.set(null), 3000);
       },
       error: (err) => {
         this.error.set('Failed to save settings. Please try again.');
@@ -2367,13 +2394,11 @@ export class SettingsComponent implements OnInit {
         (error) => {
           console.error('Error getting location:', error);
           this.error.set('Could not get your location. Please enter coordinates manually.');
-          setTimeout(() => this.error.set(null), 3000);
         },
         { timeout: 10000, maximumAge: 60000 }
       );
     } else {
       this.error.set('Geolocation is not supported by your browser.');
-      setTimeout(() => this.error.set(null), 3000);
     }
   }
 }

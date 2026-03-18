@@ -3854,8 +3854,11 @@ def _reservation_time_allowed_before_closing(reservation_time: time, closing_tim
     return res_mins <= last_mins
 
 
-def _reservation_to_dict(r: models.Reservation, session: Session | None = None) -> dict:
-    """Serialize reservation for JSON (date/time as ISO strings). Includes table_name when table_id set if session provided."""
+def _reservation_to_dict(
+    r: models.Reservation, session: Session | None = None, include_client_tech: bool = False
+) -> dict:
+    """Serialize reservation for JSON (date/time as ISO strings). Includes table_name when table_id set if session provided.
+    include_client_tech: when True (staff), include client_ip, user_agent, fingerprint, screen; never expose to public."""
     out = {
         "id": r.id,
         "tenant_id": r.tenant_id,
@@ -3870,12 +3873,20 @@ def _reservation_to_dict(r: models.Reservation, session: Session | None = None) 
         "token": r.token,
         "created_at": r.created_at.isoformat() if r.created_at else None,
         "updated_at": r.updated_at.isoformat() if r.updated_at else None,
+        "client_notes": r.client_notes,
+        "owner_notes": r.owner_notes,
     }
     if session and r.table_id is not None:
         table = session.get(models.Table, r.table_id)
         out["table_name"] = table.name if table else None
     else:
         out["table_name"] = None
+    if include_client_tech:
+        out["client_ip"] = r.client_ip
+        out["client_user_agent"] = r.client_user_agent
+        out["client_fingerprint"] = r.client_fingerprint
+        out["client_screen_width"] = r.client_screen_width
+        out["client_screen_height"] = r.client_screen_height
     return out
 
 
@@ -4049,8 +4060,19 @@ def get_reservations_overbooking_report(
     }
 
 
+def _client_ip_from_request(request: Request) -> str | None:
+    """Client IP: X-Forwarded-For (first hop) or request.client.host."""
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    if request.client:
+        return request.client.host
+    return None
+
+
 @app.post("/reservations")
 def create_reservation(
+    request: Request,
     body: models.ReservationCreate,
     current_user: Annotated[models.User | None, Depends(security.get_current_user_optional)],
     session: Session = Depends(get_session),
@@ -4096,6 +4118,8 @@ def create_reservation(
             detail=f"Slot is over capacity: {reserved_guests + data.party_size} guests / {reserved_parties + 1} parties for this time (max {total_seats} seats, {total_tables} tables).",
         )
     token_str = str(uuid4()) if not current_user else None
+    client_ip = _client_ip_from_request(request)
+    user_agent = (request.headers.get("user-agent") or "")[:512]
     reservation = models.Reservation(
         tenant_id=tenant_id,
         customer_name=data.customer_name,
@@ -4106,11 +4130,18 @@ def create_reservation(
         party_size=data.party_size,
         status=models.ReservationStatus.booked,
         token=token_str,
+        client_notes=data.client_notes,
+        owner_notes=None,
+        client_ip=client_ip,
+        client_user_agent=user_agent or None,
+        client_fingerprint=data.client_fingerprint,
+        client_screen_width=data.client_screen_width,
+        client_screen_height=data.client_screen_height,
     )
     session.add(reservation)
     session.commit()
     session.refresh(reservation)
-    return _reservation_to_dict(reservation, session)
+    return _reservation_to_dict(reservation, session, include_client_tech=current_user is not None)
 
 
 @app.get("/reservations")
@@ -4135,7 +4166,7 @@ def list_reservations(
         q = q.where(models.Reservation.customer_phone.contains(phone.strip()))
     q = q.order_by(models.Reservation.reservation_date, models.Reservation.reservation_time)
     reservations = session.exec(q).all()
-    return [_reservation_to_dict(r, session) for r in reservations]
+    return [_reservation_to_dict(r, session, include_client_tech=True) for r in reservations]
 
 
 @app.get("/reservations/next-available")
@@ -4236,7 +4267,7 @@ def get_reservation(
     ).first()
     if not reservation:
         raise HTTPException(status_code=404, detail="Reservation not found")
-    return _reservation_to_dict(reservation, session)
+    return _reservation_to_dict(reservation, session, include_client_tech=True)
 
 
 @app.put("/reservations/{reservation_id}")
@@ -4263,6 +4294,10 @@ def update_reservation(
         reservation.customer_phone = body.customer_phone
     if body.customer_email is not None:
         reservation.customer_email = body.customer_email
+    if body.client_notes is not None:
+        reservation.client_notes = body.client_notes
+    if body.owner_notes is not None:
+        reservation.owner_notes = body.owner_notes
     if body.reservation_date is not None:
         reservation.reservation_date = _parse_reservation_date(body.reservation_date)
     if body.reservation_time is not None:
@@ -4297,7 +4332,7 @@ def update_reservation(
     session.add(reservation)
     session.commit()
     session.refresh(reservation)
-    return _reservation_to_dict(reservation, session)
+    return _reservation_to_dict(reservation, session, include_client_tech=True)
 
 
 @app.put("/reservations/{reservation_id}/status")
@@ -4331,7 +4366,7 @@ def update_reservation_status(
     session.add(reservation)
     session.commit()
     session.refresh(reservation)
-    return _reservation_to_dict(reservation, session)
+    return _reservation_to_dict(reservation, session, include_client_tech=True)
 
 
 @app.put("/reservations/{reservation_id}/seat")
@@ -4386,7 +4421,7 @@ def seat_reservation(
     session.add(reservation)
     session.commit()
     session.refresh(reservation)
-    return _reservation_to_dict(reservation, session)
+    return _reservation_to_dict(reservation, session, include_client_tech=True)
 
 
 @app.put("/reservations/{reservation_id}/finish")
@@ -4410,7 +4445,7 @@ def finish_reservation(
     session.add(reservation)
     session.commit()
     session.refresh(reservation)
-    return _reservation_to_dict(reservation, session)
+    return _reservation_to_dict(reservation, session, include_client_tech=True)
 
 
 @app.put("/reservations/{reservation_id}/cancel")
@@ -5223,7 +5258,7 @@ def get_menu(
             if display_address != tenant.address:
                 tenant_data["display_tenant_address"] = display_address
 
-    return tenant_data
+    return JSONResponse(content=tenant_data)
 
 
 @app.get("/menu/{table_token}/order")
@@ -5292,8 +5327,8 @@ def get_current_order(
             active_order = None
 
     if not active_order:
-        return {"order": None}
-    
+        return JSONResponse(content={"order": None})
+
     # Get order items (exclude removed items for customer view)
     # Order by ID descending so newest items appear first (for customer view)
     items = session.exec(
@@ -5306,8 +5341,8 @@ def get_current_order(
     # Compute order status from items
     all_items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == active_order.id)).all()
     computed_status = compute_order_status_from_items(all_items)
-    
-    return {
+
+    payload = {
         "order": {
             "id": active_order.id,
             "status": computed_status.value,
@@ -5323,7 +5358,7 @@ def get_current_order(
                     "quantity": item.quantity,
                     "price_cents": item.price_cents,
                     "notes": item.notes,
-                    "status": item.status.value if hasattr(item.status, 'value') else str(item.status),
+                    "status": item.status.value if hasattr(item.status, "value") else str(item.status),
                     "tax_rate_percent": getattr(item, "tax_rate_percent", None),
                     "tax_amount_cents": getattr(item, "tax_amount_cents", None),
                 }
@@ -5332,6 +5367,7 @@ def get_current_order(
             "total_cents": sum(item.price_cents * item.quantity for item in items),
         }
     }
+    return JSONResponse(content=payload)
 
 
 @app.get("/menu/{table_token}/order-history")
@@ -5386,7 +5422,7 @@ def get_table_order_history(
             ],
             "total_cents": total_cents,
         })
-    return result
+    return JSONResponse(content=result)
 
 
 def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -5760,13 +5796,13 @@ def create_order(
         "status": order.status.value,
         "created_at": order.created_at.isoformat()
     }, table_id=table.id)
-    
-    return {
+
+    return JSONResponse(content={
         "status": "created" if is_new_order else "updated",
         "order_id": order.id,
         "session_id": order.session_id,
-        "customer_name": order.customer_name
-    }
+        "customer_name": order.customer_name,
+    })
 
 
 # ============ PUBLIC: PAYMENT REQUEST & CALL WAITER ============
@@ -5843,11 +5879,11 @@ def request_payment(
         "assigned_waiter_name": effective_waiter_name,
     }, table_id=table.id)
 
-    return {
+    return JSONResponse(content={
         "status": "payment_requested",
         "order_id": order.id,
         "payment_method": payment_request.payment_method,
-    }
+    })
 
 
 class CallWaiterRequest(_BaseModel):
@@ -5900,10 +5936,10 @@ def call_waiter(
         "assigned_waiter_name": effective_waiter_name,
     }, table_id=table.id)
 
-    return {
+    return JSONResponse(content={
         "status": "waiter_called",
         "table_name": table.name,
-    }
+    })
 
 
 # ============ ORDERS (Protected) ============
@@ -6832,14 +6868,14 @@ def remove_order_item(
         "table_name": table.name,
         "new_total_cents": new_total
     }, table_id=order.table_id)
-    
-    return {
+
+    return JSONResponse(content={
         "status": "item_removed",
         "order_id": order.id,
         "removed_item_id": item.id,
         "new_total_cents": new_total,
-        "items_remaining": len(active_items)
-    }
+        "items_remaining": len(active_items),
+    })
 
 
 @app.put("/menu/{table_token}/order/{order_id}/items/{item_id}")
@@ -6928,14 +6964,14 @@ def update_order_item_quantity(
         "table_name": table.name,
         "new_total_cents": new_total
     }, table_id=order.table_id)
-    
-    return {
+
+    return JSONResponse(content={
         "status": "item_updated",
         "order_id": order.id,
         "item_id": item.id,
         "new_quantity": item.quantity,
-        "new_total_cents": new_total
-    }
+        "new_total_cents": new_total,
+    })
 
 
 @app.delete("/menu/{table_token}/order/{order_id}")
@@ -7007,12 +7043,12 @@ def cancel_order(
         "table_name": table.name,
         "cancelled_items": len(items)
     }, table_id=order.table_id)
-    
-    return {
+
+    return JSONResponse(content={
         "status": "order_cancelled",
         "order_id": order.id,
-        "cancelled_items": len(items)
-    }
+        "cancelled_items": len(items),
+    })
 
 
 # ============ PAYMENTS (Public - for customer checkout) ============

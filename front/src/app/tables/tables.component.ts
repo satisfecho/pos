@@ -1020,8 +1020,8 @@ export class TablesComponent implements OnInit {
 
   showToast(messageKey: string, type: 'success' | 'error') {
     if (this.toastTimeout) clearTimeout(this.toastTimeout);
+    this.toastTimeout = undefined;
     this.toast.set({ message: messageKey, type });
-    this.toastTimeout = setTimeout(() => this.dismissToast(), 4000);
   }
 
   dismissToast() {

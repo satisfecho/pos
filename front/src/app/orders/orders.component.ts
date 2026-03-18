@@ -263,14 +263,10 @@ ModuleRegistry.registerModules([
                         }
                       </div>
                       <div class="order-actions">
-                        <button type="button" class="btn btn-print" (click)="printInvoice(order)" [title]="'ORDERS.PRINT_INVOICE' | translate">
+                        <button type="button" class="btn btn-print" (click)="openFacturaModal(order)" [title]="'CUSTOMERS.PRINT_FACTURA' | translate">
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
                           </svg>
-                          {{ 'ORDERS.PRINT_INVOICE' | translate }}
-                        </button>
-                        <button type="button" class="btn btn-print" (click)="openFacturaModal(order)" [title]="'CUSTOMERS.PRINT_FACTURA' | translate">
-                          {{ 'CUSTOMERS.PRINT_FACTURA' | translate }}
                         </button>
                       </div>
                     </div>
@@ -399,14 +395,10 @@ ModuleRegistry.registerModules([
                           }
                         </div>
                         <div class="order-actions">
-                          <button type="button" class="btn btn-print" (click)="printInvoice(order)" [title]="'ORDERS.PRINT_INVOICE' | translate">
+                          <button type="button" class="btn btn-print" (click)="openFacturaModal(order)" [title]="'CUSTOMERS.PRINT_FACTURA' | translate">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                               <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
                             </svg>
-                            {{ 'ORDERS.PRINT_INVOICE' | translate }}
-                          </button>
-                          <button type="button" class="btn btn-print" (click)="openFacturaModal(order)" [title]="'CUSTOMERS.PRINT_FACTURA' | translate">
-                            {{ 'CUSTOMERS.PRINT_FACTURA' | translate }}
                           </button>
                         </div>
                       </div>
@@ -592,6 +584,9 @@ ModuleRegistry.registerModules([
             <div class="waiter-alert-text">
               <strong>{{ waiterAlert()!.tableName }}</strong>
               <span>{{ waiterAlert()!.type === 'call_waiter' ? ('NOTIFICATIONS.CALL_WAITER_YOURS' | translate) : ('NOTIFICATIONS.PAYMENT_REQUEST_YOURS' | translate) }}</span>
+              @if (waiterAlert()!.message) {
+                <span class="waiter-alert-message">"{{ waiterAlert()!.message }}"</span>
+              }
             </div>
             <button class="waiter-alert-dismiss" (click)="waiterAlert.set(null)">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1298,6 +1293,10 @@ ModuleRegistry.registerModules([
       font-size: 0.875rem;
       opacity: 0.9;
     }
+    .waiter-alert-message {
+      font-style: italic;
+      margin-top: 2px;
+    }
     .waiter-alert-dismiss {
       background: rgba(255,255,255,0.2);
       border: none;
@@ -1537,14 +1536,15 @@ export class OrdersComponent implements OnInit, OnDestroy {
       },
       {
         headerName: '',
-        width: 130,
+        width: 56,
         sortable: false,
         filter: false,
         cellRenderer: (params: ICellRendererParams) => {
           const id = params.data?.id;
           if (id == null) return '';
-          const label = this.translate.instant('CUSTOMERS.PRINT_FACTURA');
-          return `<button type="button" class="btn-factura-row" data-order-id="${id}">${label}</button>`;
+          const title = this.translate.instant('CUSTOMERS.PRINT_FACTURA');
+          const icon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/></svg>';
+          return `<button type="button" class="btn-factura-row" data-order-id="${id}" title="${title}">${icon}</button>`;
         },
       },
     ];
@@ -1632,11 +1632,9 @@ export class OrdersComponent implements OnInit, OnDestroy {
   showToast(message: string, type: 'success' | 'error') {
     if (this.toastTimeout) {
       clearTimeout(this.toastTimeout);
+      this.toastTimeout = undefined;
     }
     this.toast.set({ message, type });
-    this.toastTimeout = setTimeout(() => {
-      this.toast.set(null);
-    }, 4000);
   }
 
   openConfirmModal(message: string, onConfirm: () => void, options?: { confirmText?: string; requireReason?: boolean }) {

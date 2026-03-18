@@ -606,8 +606,8 @@ export class ProviderDashboardComponent implements OnInit {
 
   private showToast(message: string, type: 'success' | 'error' = 'success') {
     if (this.toastTimeout) clearTimeout(this.toastTimeout);
+    this.toastTimeout = undefined;
     this.toast.set({ message, type });
-    this.toastTimeout = setTimeout(() => this.dismissToast(), 4000);
   }
 
   saveCompany() {

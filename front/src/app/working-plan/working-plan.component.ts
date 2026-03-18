@@ -777,8 +777,8 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
 
   showToast(message: string, type: 'success' | 'error'): void {
     if (this.toastTimeout) clearTimeout(this.toastTimeout);
+    this.toastTimeout = undefined;
     this.toast.set({ message, type });
-    this.toastTimeout = setTimeout(() => this.dismissToast(), 4000);
   }
 
   dismissToast(): void {
