@@ -84,6 +84,13 @@ class Settings(BaseSettings):
         validation_alias="DEFAULT_PHONE_COUNTRY",
         description="ISO 3166-1 alpha-2 country code for normalizing phone numbers without + prefix",
     )
+    # Base URL of the public frontend (for links in emails, e.g. reservation view/cancel).
+    # When set, reservation reminder emails include a link to /reservation?token=...
+    public_app_base_url: str = Field(
+        default="",
+        validation_alias="PUBLIC_APP_BASE_URL",
+        description="e.g. https://example.com or http://localhost:4200",
+    )
 
     # Production mode (enables secure cookies, stricter CORS, etc.)
     is_production: bool = Field(default=False, validation_alias="PRODUCTION")
