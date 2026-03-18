@@ -74,6 +74,25 @@ fi
 echo "Waiting for back to be ready..."
 sleep 15
 
+# Verify back serves upload routes (explicit routes fix menu/catalog/product images; see docs/0027-amvara9-menu-images-troubleshooting.md)
+echo "Verifying back has upload image routes..."
+if docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml exec -T back python3 -c "
+import sys, urllib.request
+try:
+    urllib.request.urlopen(urllib.request.Request('http://localhost:8020/uploads/1/products/__deploy_check__.jpg', method='GET'), timeout=5)
+except urllib.error.HTTPError as e:
+    body = e.read().decode()
+    if e.code == 404 and ('Image not found' in body or 'Invalid filename' in body):
+        sys.exit(0)  # Route is present
+    sys.exit(1)
+except Exception:
+    sys.exit(2)
+" 2>/dev/null; then
+  echo "Back upload routes OK (menu/product images will be served)."
+else
+  echo "Warning: Back may be missing explicit upload routes; menu/catalog images could 404. See docs/0027-amvara9-menu-images-troubleshooting.md"
+fi
+
 echo "Verifying front serves version in landing page..."
 docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml exec -T front grep -oE 'name="app-version"[^>]*content="[^"]*"' /usr/share/nginx/html/index.html 2>/dev/null || true
 
