@@ -25,6 +25,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Deploy (amvara9) – front CSS / stale build**: Deploy script now builds the front image with `--no-cache` so each deploy serves assets from the current code (fixes wrong styling e.g. Settings > Opening hours). Nginx in the front container sends `Cache-Control: no-cache` for the HTML document so clients get new hashed asset URLs after deploy. See `docs/0024-deploy-css-fix-amvara9.md`.
 - **Deploy (amvara9) – version not updating**: Fixed `docker compose build` flag order (`build --no-cache front`); added `up -d --force-recreate` so the front container is recreated with the new image; added a post-deploy step that prints the version served by the front container for verification.
 
+## [2.0.4] - 2026-03-18
+
+### Fixed
+
+- **Production build (TS2367)**: Cast `version` to `string` in `environment.ts` so the comparison with `'0.0.0'` is valid when the build injects the real version from package.json (fixes "This comparison appears to be unintentional because the types have no overlap" during `production-static` build).
+
 ## [2.0.3] - 2026-03-17
 
 ### Added
