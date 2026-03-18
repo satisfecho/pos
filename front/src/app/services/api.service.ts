@@ -349,6 +349,14 @@ export interface Reservation {
   token?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
+  client_notes?: string | null;
+  owner_notes?: string | null;
+  /** Present only for staff responses */
+  client_ip?: string | null;
+  client_user_agent?: string | null;
+  client_fingerprint?: string | null;
+  client_screen_width?: number | null;
+  client_screen_height?: number | null;
 }
 
 export interface ReservationCreate {
@@ -359,6 +367,10 @@ export interface ReservationCreate {
   reservation_date: string;
   reservation_time: string;
   party_size: number;
+  client_notes?: string | null;
+  client_fingerprint?: string | null;
+  client_screen_width?: number | null;
+  client_screen_height?: number | null;
 }
 
 export interface ReservationUpdate {
@@ -368,6 +380,8 @@ export interface ReservationUpdate {
   reservation_date?: string;
   reservation_time?: string;
   party_size?: number;
+  client_notes?: string | null;
+  owner_notes?: string | null;
 }
 
 export interface OrderItem {

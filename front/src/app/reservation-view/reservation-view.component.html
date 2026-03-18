@@ -77,6 +77,9 @@
             @if (reservation()?.customer_email) {
               <p><strong>{{ 'RESERVATIONS.CUSTOMER_EMAIL' | translate }}:</strong> {{ reservation()?.customer_email }}</p>
             }
+            @if (reservation()?.client_notes) {
+              <p><strong>{{ 'RESERVATIONS.CLIENT_NOTES' | translate }}:</strong> {{ reservation()?.client_notes }}</p>
+            }
             <p><strong>{{ 'RESERVATIONS.STATUS' | translate }}:</strong> {{ getStatusKey() | translate }}</p>
           </div>
           @if (reservation()?.status === 'booked' || reservation()?.status === 'seated') {

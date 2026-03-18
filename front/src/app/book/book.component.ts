@@ -31,6 +31,7 @@ export class BookComponent implements OnInit {
   formName = '';
   formPhone = '';
   formEmail = '';
+  formClientNotes = '';
   submitting = signal(false);
   error = signal<string | null>(null);
   successReservation = signal<Reservation | null>(null);
@@ -160,6 +161,21 @@ export class BookComponent implements OnInit {
     }
   }
 
+  /** Build a simple browser fingerprint string (hash of userAgent, screen, timezone). */
+  private getClientFingerprint(): string {
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+    const w = typeof screen !== 'undefined' ? screen.width : 0;
+    const h = typeof screen !== 'undefined' ? screen.height : 0;
+    const tz = typeof Intl !== 'undefined' && Intl.DateTimeFormat ? Intl.DateTimeFormat().resolvedOptions().timeZone : '';
+    const lang = typeof navigator !== 'undefined' ? navigator.language : '';
+    const s = `${ua}|${w}x${h}|${tz}|${lang}`;
+    let hc = 0;
+    for (let i = 0; i < s.length; i++) {
+      hc = ((hc << 5) - hc + s.charCodeAt(i)) | 0;
+    }
+    return String(hc >>> 0);
+  }
+
   submit() {
     this.error.set(null);
     const tid = this.tenantId();
@@ -176,6 +192,10 @@ export class BookComponent implements OnInit {
       reservation_date: this.formDate,
       reservation_time: this.formTime,
       party_size: this.formPartySize,
+      client_notes: this.formClientNotes.trim() || undefined,
+      client_fingerprint: this.getClientFingerprint(),
+      client_screen_width: typeof screen !== 'undefined' ? screen.width : undefined,
+      client_screen_height: typeof screen !== 'undefined' ? screen.height : undefined,
     };
     this.api.createReservationPublic(body).subscribe({
       next: (res) => {

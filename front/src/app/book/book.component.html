@@ -113,6 +113,10 @@
               <label for="book-email">{{ 'RESERVATIONS.CUSTOMER_EMAIL' | translate }}</label>
               <input type="email" id="book-email" [(ngModel)]="formEmail" name="email" placeholder="your@email.com" autocomplete="email" />
             </div>
+            <div class="form-group">
+              <label for="book-notes">{{ 'RESERVATIONS.CLIENT_NOTES' | translate }}</label>
+              <textarea id="book-notes" [(ngModel)]="formClientNotes" name="clientNotes" rows="3" placeholder="{{ 'RESERVATIONS.CLIENT_NOTES_PLACEHOLDER' | translate }}"></textarea>
+            </div>
             @if (error()) {
               <div class="form-error">{{ error() }}</div>
             }

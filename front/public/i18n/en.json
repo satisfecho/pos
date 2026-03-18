@@ -556,6 +556,10 @@
     "CUSTOMER_NAME": "Customer name",
     "CUSTOMER_PHONE": "Phone",
     "CUSTOMER_EMAIL": "Email",
+    "CLIENT_NOTES": "Notes (optional)",
+    "CLIENT_NOTES_PLACEHOLDER": "e.g. dietary requirements, high chair, outdoor seating",
+    "OWNER_NOTES": "Staff notes",
+    "OWNER_NOTES_PLACEHOLDER": "Internal notes (e.g. VIP, allergies)",
     "DATE": "Date",
     "TIME": "Time",
     "EDIT": "Edit",
@@ -589,7 +593,12 @@
     "SEATS_LEFT": "Seats left",
     "TABLES_LEFT": "Tables left",
     "UPCOMING_NO_TABLE": "You have {{count}} upcoming reservation(s) today with no table assigned.",
-    "TABLE_UPCOMING": "Table {{table}} has an upcoming reservation at {{time}} ({{name}}). Seat here anyway?"
+    "TABLE_UPCOMING": "Table {{table}} has an upcoming reservation at {{time}} ({{name}}). Seat here anyway?",
+    "CLIENT_TECH_SUMMARY": "Client technical info",
+    "CLIENT_TECH_IP": "IP",
+    "CLIENT_TECH_USER_AGENT": "Browser",
+    "CLIENT_TECH_FINGERPRINT": "Fingerprint",
+    "CLIENT_TECH_SCREEN": "Screen"
   },
   "WORKING_PLAN": {
     "TITLE": "Working plan",

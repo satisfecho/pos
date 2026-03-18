@@ -376,6 +376,15 @@ class Reservation(TenantMixin, table=True):
     token: str | None = Field(default=None, unique=True, index=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    # Notes: from client at booking; from restaurant owner/staff
+    client_notes: str | None = Field(default=None)
+    owner_notes: str | None = Field(default=None)
+    # Client technical info (who created the reservation): IP, user-agent, fingerprint, screen
+    client_ip: str | None = Field(default=None, max_length=45)
+    client_user_agent: str | None = Field(default=None, max_length=512)
+    client_fingerprint: str | None = Field(default=None, max_length=256)
+    client_screen_width: int | None = Field(default=None)
+    client_screen_height: int | None = Field(default=None)
 
 
 class BillingCustomer(TenantMixin, table=True):
@@ -538,6 +547,11 @@ class ReservationCreate(SQLModel):
     reservation_time: str  # HH:MM or HH:MM:SS
     party_size: int
     tenant_id: int | None = None  # Required only for public (no auth); staff ignore
+    client_notes: str | None = None
+    # Optional client technical info (sent by public booking form)
+    client_fingerprint: str | None = None
+    client_screen_width: int | None = None
+    client_screen_height: int | None = None
 
 
 class ReservationUpdate(SQLModel):
@@ -547,6 +561,8 @@ class ReservationUpdate(SQLModel):
     reservation_date: str | None = None
     reservation_time: str | None = None
     party_size: int | None = None
+    client_notes: str | None = None
+    owner_notes: str | None = None
 
 
 class ReservationStatusUpdate(SQLModel):
@@ -566,6 +582,10 @@ class PublicReservationCreate(SQLModel):
     reservation_date: str
     reservation_time: str
     party_size: int
+    client_notes: str | None = None
+    client_fingerprint: str | None = None
+    client_screen_width: int | None = None
+    client_screen_height: int | None = None
 
 
 class FloorCreate(SQLModel):

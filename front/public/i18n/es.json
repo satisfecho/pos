@@ -557,6 +557,10 @@
     "CUSTOMER_NAME": "Nombre del cliente",
     "CUSTOMER_PHONE": "Teléfono",
     "CUSTOMER_EMAIL": "Correo electrónico",
+    "CLIENT_NOTES": "Notas (opcional)",
+    "CLIENT_NOTES_PLACEHOLDER": "ej. restricciones dietéticas, trona, terraza",
+    "OWNER_NOTES": "Notas del personal",
+    "OWNER_NOTES_PLACEHOLDER": "Notas internas (ej. VIP, alergias)",
     "DATE": "Fecha",
     "TIME": "Hora",
     "EDIT": "Editar",
@@ -590,7 +594,12 @@
     "SEATS_LEFT": "Asientos libres",
     "TABLES_LEFT": "Mesas libres",
     "UPCOMING_NO_TABLE": "Tienes {{count}} reserva(s) hoy sin mesa asignada.",
-    "TABLE_UPCOMING": "La mesa {{table}} tiene una reserva a las {{time}} ({{name}}). ¿Sentar aquí igualmente?"
+    "TABLE_UPCOMING": "La mesa {{table}} tiene una reserva a las {{time}} ({{name}}). ¿Sentar aquí igualmente?",
+    "CLIENT_TECH_SUMMARY": "Datos técnicos del cliente",
+    "CLIENT_TECH_IP": "IP",
+    "CLIENT_TECH_USER_AGENT": "Navegador",
+    "CLIENT_TECH_FINGERPRINT": "Huella",
+    "CLIENT_TECH_SCREEN": "Pantalla"
   },
   "WORKING_PLAN": {
     "TITLE": "Plan de trabajo",
