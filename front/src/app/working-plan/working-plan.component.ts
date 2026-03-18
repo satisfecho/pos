@@ -366,8 +366,8 @@ export class WorkingPlanComponent implements OnInit {
   private api = inject(ApiService);
   private translate = inject(TranslateService);
 
-  /** Opening hours per day (monday..sunday), from tenant settings. */
-  openingHours: Record<string, DayHours> = {};
+  /** Opening hours per day (monday..sunday), from tenant settings. Signal so calendar grid recomputes when loaded. */
+  openingHours = signal<Record<string, DayHours>>({});
 
   viewMode = signal<'week' | 'calendar'>('week');
   weekStart = signal<Date>(new Date());
@@ -401,7 +401,7 @@ export class WorkingPlanComponent implements OnInit {
     if (this.formUseAnyHour) return fullDayTimeOptions(step);
     if (!this.formDate) return defaultTimeOptions(step);
     const dayKey = DAY_KEYS[new Date(this.formDate + 'T12:00:00').getDay()];
-    const day = this.openingHours[dayKey];
+    const day = this.openingHours()[dayKey];
     if (!day || day.closed || !day.open || !day.close) return defaultTimeOptions(step);
     const open = day.hasBreak && day.morningOpen ? day.morningOpen : day.open;
     const close = day.hasBreak && day.eveningClose ? day.eveningClose : day.close;
@@ -476,17 +476,20 @@ export class WorkingPlanComponent implements OnInit {
   }
 
   private parseOpeningHours(json: string | null | undefined): void {
-    this.openingHours = {};
+    const hours: Record<string, DayHours> = {};
     DAY_KEYS.forEach((key) => {
-      this.openingHours[key] = { open: '09:00', close: '22:00', closed: false };
+      hours[key] = { open: '09:00', close: '22:00', closed: false };
     });
-    if (!json?.trim()) return;
+    if (!json?.trim()) {
+      this.openingHours.set(hours);
+      return;
+    }
     try {
       const parsed = JSON.parse(json) as Record<string, Partial<DayHours>>;
       DAY_KEYS.forEach((key) => {
         if (parsed[key]) {
           const d = parsed[key];
-          this.openingHours[key] = {
+          hours[key] = {
             open: d.open ?? '09:00',
             close: d.close ?? '22:00',
             closed: d.closed ?? false,
@@ -502,8 +505,9 @@ export class WorkingPlanComponent implements OnInit {
           };
         }
       });
+      this.openingHours.set(hours);
     } catch {
-      // keep defaults
+      this.openingHours.set(hours);
     }
   }
 
@@ -529,7 +533,7 @@ export class WorkingPlanComponent implements OnInit {
 
   /** Required headcount for a role on a day (from opening hours personnel settings). */
   private getRequiredForRole(dayKey: string, staffKey: StaffKey): number {
-    const day = this.openingHours[dayKey];
+    const day = this.openingHours()[dayKey];
     if (!day) return 0;
     const n = (day as unknown as Record<string, number | undefined>)[staffKey];
     return typeof n === 'number' ? Math.max(0, n) : 0;
@@ -542,7 +546,7 @@ export class WorkingPlanComponent implements OnInit {
 
   /** True if the given week-day key is marked closed in opening hours. */
   private isDayClosed(dayKey: string): boolean {
-    const day = this.openingHours[dayKey];
+    const day = this.openingHours()[dayKey];
     return day?.closed === true;
   }
 
