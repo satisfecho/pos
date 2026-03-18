@@ -13,7 +13,7 @@ import redis
 import stripe
 from fastapi import Depends, FastAPI, HTTPException, UploadFile, File, status, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel as _BaseModel
@@ -1143,6 +1143,7 @@ def update_translations_for_entity(
 )
 def get_tenant_settings(
     request: Request,
+    response: Response,
     current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_READ))],
     session: Session = Depends(get_session),
 ) -> dict:
@@ -1190,6 +1191,7 @@ def get_tenant_settings(
 )
 def update_tenant_settings(
     request: Request,
+    response: Response,
     tenant_update: models.TenantUpdate,
     current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
     session: Session = Depends(get_session),
@@ -1247,6 +1249,13 @@ def update_tenant_settings(
         )
     if tenant_update.immediate_payment_required is not None:
         tenant.immediate_payment_required = tenant_update.immediate_payment_required
+    if tenant_update.default_tax_id is not None:
+        # Validate tax belongs to tenant
+        if tenant_update.default_tax_id:
+            tax = session.get(models.Tax, tenant_update.default_tax_id)
+            if not tax or tax.tenant_id != current_user.tenant_id:
+                raise HTTPException(status_code=400, detail="Invalid default tax")
+        tenant.default_tax_id = tenant_update.default_tax_id or None
 
     if tenant_update.currency_code is not None:
         currency_code = (
@@ -1385,6 +1394,157 @@ def update_tenant_settings(
     return tenant_dict
 
 
+# ============ TAXES (IVA) ============
+
+
+@app.get("/taxes")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def list_taxes(
+    request: Request,
+    response: Response,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_READ))],
+    session: Session = Depends(get_session),
+    current_only: bool = Query(True, description="If true, only return taxes valid today"),
+) -> list[dict]:
+    """List taxes for the current tenant. Optionally filter to those valid today."""
+    query = select(models.Tax).where(models.Tax.tenant_id == current_user.tenant_id)
+    if current_only:
+        today = date.today()
+        query = query.where(models.Tax.valid_from <= today).where(
+            (models.Tax.valid_to.is_(None)) | (models.Tax.valid_to >= today)
+        )
+    taxes = session.exec(query.order_by(models.Tax.valid_from.desc())).all()
+    return [
+        {
+            "id": t.id,
+            "tenant_id": t.tenant_id,
+            "name": t.name,
+            "rate_percent": t.rate_percent,
+            "valid_from": t.valid_from.isoformat() if t.valid_from else None,
+            "valid_to": t.valid_to.isoformat() if t.valid_to else None,
+            "created_at": t.created_at.isoformat() if t.created_at else None,
+        }
+        for t in taxes
+    ]
+
+
+@app.post("/taxes")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def create_tax(
+    request: Request,
+    response: Response,
+    data: models.TaxCreate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Create a tax rate for the tenant."""
+    if data.valid_to is not None and data.valid_from > data.valid_to:
+        raise HTTPException(status_code=400, detail="valid_from must be before valid_to")
+    tax = models.Tax(
+        tenant_id=current_user.tenant_id,
+        name=data.name,
+        rate_percent=data.rate_percent,
+        valid_from=data.valid_from,
+        valid_to=data.valid_to,
+    )
+    session.add(tax)
+    session.commit()
+    session.refresh(tax)
+    return {
+        "id": tax.id,
+        "tenant_id": tax.tenant_id,
+        "name": tax.name,
+        "rate_percent": tax.rate_percent,
+        "valid_from": tax.valid_from.isoformat(),
+        "valid_to": tax.valid_to.isoformat() if tax.valid_to else None,
+        "created_at": tax.created_at.isoformat() if tax.created_at else None,
+    }
+
+
+@app.put("/taxes/{tax_id}")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def update_tax(
+    request: Request,
+    response: Response,
+    tax_id: int,
+    data: models.TaxUpdate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Update a tax (e.g. set valid_to when rate changes)."""
+    tax = session.exec(
+        select(models.Tax).where(
+            models.Tax.id == tax_id,
+            models.Tax.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not tax:
+        raise HTTPException(status_code=404, detail="Tax not found")
+    if data.name is not None:
+        tax.name = data.name
+    if data.rate_percent is not None:
+        tax.rate_percent = data.rate_percent
+    if data.valid_from is not None:
+        tax.valid_from = data.valid_from
+    if data.valid_to is not None:
+        tax.valid_to = data.valid_to
+    if tax.valid_to is not None and tax.valid_from > tax.valid_to:
+        raise HTTPException(status_code=400, detail="valid_from must be before valid_to")
+    session.add(tax)
+    session.commit()
+    session.refresh(tax)
+    return {
+        "id": tax.id,
+        "tenant_id": tax.tenant_id,
+        "name": tax.name,
+        "rate_percent": tax.rate_percent,
+        "valid_from": tax.valid_from.isoformat(),
+        "valid_to": tax.valid_to.isoformat() if tax.valid_to else None,
+        "created_at": tax.created_at.isoformat() if tax.created_at else None,
+    }
+
+
+@app.delete("/taxes/{tax_id}")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def delete_tax(
+    request: Request,
+    response: Response,
+    tax_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Delete a tax. Fails if it is the tenant default or used by products."""
+    tax = session.exec(
+        select(models.Tax).where(
+            models.Tax.id == tax_id,
+            models.Tax.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not tax:
+        raise HTTPException(status_code=404, detail="Tax not found")
+    tenant = session.get(models.Tenant, current_user.tenant_id)
+    if tenant and getattr(tenant, "default_tax_id", None) == tax_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete the default tax. Set another tax as default first.",
+        )
+    session.delete(tax)
+    session.commit()
+    return {"status": "deleted", "id": tax_id}
+
+
 def _infer_content_type_from_filename(filename: str | None) -> str | None:
     """Infer image content type from file extension when client does not send Content-Type."""
     if not filename:
@@ -1408,6 +1568,7 @@ def _infer_content_type_from_filename(filename: str | None) -> str | None:
 )
 async def upload_tenant_logo(
     request: Request,
+    response: Response,
     file: Annotated[UploadFile, File()],
     current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
     session: Session = Depends(get_session),
@@ -1651,8 +1812,32 @@ def update_product(
         product.category = product_update.category
     if product_update.subcategory is not None:
         product.subcategory = product_update.subcategory
+    if product_update.tax_id is not None:
+        if product_update.tax_id:
+            tax = session.get(models.Tax, product_update.tax_id)
+            if not tax or tax.tenant_id != current_user.tenant_id:
+                raise HTTPException(status_code=400, detail="Invalid tax")
+        product.tax_id = product_update.tax_id or None
+    if product_update.available_from is not None:
+        product.available_from = product_update.available_from
+    if product_update.available_until is not None:
+        product.available_until = product_update.available_until
 
     session.add(product)
+    # Sync availability dates to linked TenantProduct(s) so customer menu stays consistent
+    if product_update.available_from is not None or product_update.available_until is not None:
+        linked = session.exec(
+            select(models.TenantProduct).where(
+                models.TenantProduct.product_id == product.id,
+                models.TenantProduct.tenant_id == current_user.tenant_id,
+            )
+        ).all()
+        for tp in linked:
+            if product_update.available_from is not None:
+                tp.available_from = product_update.available_from
+            if product_update.available_until is not None:
+                tp.available_until = product_update.available_until
+            session.add(tp)
     session.commit()
     session.refresh(product)
     return product
@@ -1769,8 +1954,10 @@ def list_providers(
     session: Session = Depends(get_session),
     active_only: bool = True,
 ) -> list[models.Provider]:
-    """List all product providers."""
-    query = select(models.Provider)
+    """List product providers: global (tenant_id is null) and this tenant's personal providers."""
+    query = select(models.Provider).where(
+        (models.Provider.tenant_id.is_(None)) | (models.Provider.tenant_id == current_user.tenant_id)
+    )
     if active_only:
         query = query.where(models.Provider.is_active == True)
     return session.exec(query.order_by(models.Provider.name)).all()
@@ -1787,11 +1974,13 @@ def get_provider(
     current_user: Annotated[models.User, Depends(require_permission(Permission.CATALOG_READ))],
     session: Session = Depends(get_session),
 ) -> models.Provider:
-    """Get a specific provider."""
+    """Get a specific provider (global or owned by current tenant)."""
     provider = session.exec(
         select(models.Provider).where(models.Provider.id == provider_id)
     ).first()
     if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    if provider.tenant_id is not None and provider.tenant_id != current_user.tenant_id:
         raise HTTPException(status_code=404, detail="Provider not found")
     return provider
 
@@ -1803,11 +1992,31 @@ def get_provider(
 )
 def create_provider(
     request: Request,
-    provider: models.Provider,
+    body: models.ProviderCreate,
     current_user: Annotated[models.User, Depends(require_permission(Permission.CATALOG_WRITE))],
     session: Session = Depends(get_session),
 ) -> models.Provider:
-    """Create a new provider (admin function)."""
+    """Create a personal provider for the current tenant (owner/admin). Name is unique per tenant."""
+    if current_user.tenant_id is None:
+        raise HTTPException(status_code=403, detail="Tenant required")
+    existing = session.exec(
+        select(models.Provider).where(
+            models.Provider.tenant_id == current_user.tenant_id,
+            models.Provider.name == body.name,
+        )
+    ).first()
+    if existing:
+        raise HTTPException(status_code=409, detail="A provider with this name already exists")
+    provider = models.Provider(
+        tenant_id=current_user.tenant_id,
+        name=body.name,
+        url=body.url,
+        full_company_name=body.full_company_name,
+        address=body.address,
+        tax_number=body.tax_number,
+        phone=body.phone,
+        email=body.email,
+    )
     session.add(provider)
     session.commit()
     session.refresh(provider)
@@ -1819,12 +2028,14 @@ def create_provider(
 
 @app.get("/catalog")
 async def list_catalog(
+    request: Request,
+    response: Response,
     current_user: Annotated[models.User, Depends(require_permission(Permission.CATALOG_READ))],
     session: Session = Depends(get_session),
     category: str | None = None,
     subcategory: str | None = None,
     search: str | None = None,
-) -> list[dict]:
+):
     """List products from catalog with price comparison across providers."""
     query = select(models.ProductCatalog)
 
@@ -1948,11 +2159,13 @@ async def list_catalog(
             }
         )
 
-    return result
+    return JSONResponse(content=result)
 
 
 @app.get("/catalog/categories")
 async def get_catalog_categories(
+    request: Request,
+    response: Response,
     current_user: Annotated[models.User, Depends(require_permission(Permission.CATALOG_READ))],
     session: Session = Depends(get_session),
 ) -> dict:
@@ -1967,11 +2180,13 @@ async def get_catalog_categories(
             if item.subcategory:
                 categories[item.category].add(item.subcategory)
 
-    return {cat: sorted(list(subcats)) for cat, subcats in categories.items()}
+    return JSONResponse(content={cat: sorted(list(subcats)) for cat, subcats in categories.items()})
 
 
 @app.get("/catalog/{catalog_id}")
 async def get_catalog_item(
+    request: Request,
+    response: Response,
     catalog_id: int,
     current_user: Annotated[models.User, Depends(require_permission(Permission.CATALOG_READ))],
     session: Session = Depends(get_session),
@@ -2050,7 +2265,7 @@ async def get_catalog_item(
         aromas = providers_data[0].get("aromas")
         elaboration = providers_data[0].get("elaboration")
 
-    return {
+    payload = {
         "id": catalog_item.id,
         "name": catalog_item.name,
         "description": catalog_item.description,
@@ -2076,6 +2291,7 @@ async def get_catalog_item(
             [p["price_cents"] for p in providers_data if p["price_cents"]], default=None
         ),
     }
+    return JSONResponse(content=payload)
 
 
 # ============ PROVIDER PRODUCTS ============
@@ -2087,11 +2303,13 @@ def list_provider_products(
     current_user: Annotated[models.User, Depends(require_permission(Permission.CATALOG_READ))],
     session: Session = Depends(get_session),
 ) -> list[models.ProviderProduct]:
-    """List all products from a specific provider."""
+    """List all products from a specific provider (global or owned by current tenant)."""
     provider = session.exec(
         select(models.Provider).where(models.Provider.id == provider_id)
     ).first()
     if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    if provider.tenant_id is not None and provider.tenant_id != current_user.tenant_id:
         raise HTTPException(status_code=404, detail="Provider not found")
 
     return session.exec(
@@ -2099,6 +2317,95 @@ def list_provider_products(
         .where(models.ProviderProduct.provider_id == provider_id)
         .order_by(models.ProviderProduct.name)
     ).all()
+
+
+@app.post("/providers/{provider_id}/products")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def create_provider_product_for_tenant(
+    request: Request,
+    provider_id: int,
+    body: models.ProviderProductCreate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.CATALOG_WRITE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Create a product on a tenant-owned (personal) provider. Only allowed when provider.tenant_id == current tenant."""
+    provider = session.exec(
+        select(models.Provider).where(models.Provider.id == provider_id)
+    ).first()
+    if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    if provider.tenant_id is None or provider.tenant_id != current_user.tenant_id:
+        raise HTTPException(
+            status_code=403,
+            detail="You can only add products to providers you created",
+        )
+    try:
+        catalog_id = body.catalog_id
+        if catalog_id is not None:
+            catalog_item = session.get(models.ProductCatalog, catalog_id)
+            if not catalog_item:
+                raise HTTPException(status_code=404, detail="Catalog item not found")
+            name = body.name or catalog_item.name
+        else:
+            normalized = _catalog_normalized_name(body.name)
+            existing = session.exec(
+                select(models.ProductCatalog).where(
+                    models.ProductCatalog.normalized_name == normalized
+                )
+            ).first()
+            if existing:
+                catalog_item = existing
+                name = body.name or catalog_item.name
+            else:
+                catalog_item = models.ProductCatalog(
+                    name=body.name,
+                    normalized_name=normalized,
+                    category=body.category,
+                    subcategory=body.subcategory,
+                    description=body.description,
+                    brand=body.brand,
+                    barcode=body.barcode,
+                )
+                session.add(catalog_item)
+                session.commit()
+                session.refresh(catalog_item)
+                name = body.name
+            catalog_id = catalog_item.id
+        external_id = body.external_id or f"pp-{provider.id}-{uuid4().hex[:12]}"
+        pp = models.ProviderProduct(
+            catalog_id=catalog_id,
+            provider_id=provider.id,
+            external_id=external_id,
+            name=name,
+            price_cents=body.price_cents,
+            availability=body.availability,
+            country=body.country,
+            region=body.region,
+            grape_variety=body.grape_variety,
+            volume_ml=body.volume_ml,
+            unit=body.unit,
+            detailed_description=body.detailed_description,
+            wine_style=body.wine_style,
+            vintage=body.vintage,
+            winery=body.winery,
+            aromas=body.aromas,
+            elaboration=body.elaboration,
+        )
+        session.add(pp)
+        session.commit()
+        session.refresh(pp)
+        return pp.model_dump(mode="json")
+    except HTTPException:
+        raise
+    except Exception as e:  # noqa: BLE001
+        session.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to create product: {e!s}",
+        ) from e
 
 
 # ============ PROVIDER PORTAL (provider-scoped auth) ============
@@ -2430,6 +2737,8 @@ async def provider_upload_product_image(
 
 @app.get("/tenant-products")
 def list_tenant_products(
+    request: Request,
+    response: Response,
     current_user: Annotated[models.User, Depends(require_permission(Permission.PRODUCT_READ))],
     session: Session = Depends(get_session),
     active_only: bool = True,
@@ -2486,10 +2795,12 @@ def list_tenant_products(
                 "catalog_name": catalog_item.name if catalog_item else None,
                 "provider_info": provider_info,
                 "product_id": tp.product_id,  # For backward compatibility
+                "available_from": tp.available_from.isoformat() if tp.available_from else None,
+                "available_until": tp.available_until.isoformat() if tp.available_until else None,
             }
         )
 
-    return result
+    return JSONResponse(content=result)
 
 
 @app.post("/tenant-products")
@@ -2564,6 +2875,8 @@ def create_tenant_product(
         image_filename=image_filename,
         category=category,
         subcategory=subcategory,
+        available_from=product_data.available_from,
+        available_until=product_data.available_until,
     )
     session.add(product)
     session.commit()
@@ -2577,6 +2890,8 @@ def create_tenant_product(
         product_id=product.id,  # Link to the actual Product
         name=product_name,
         price_cents=price_cents,
+        available_from=product_data.available_from,
+        available_until=product_data.available_until,
     )
 
     session.add(tenant_product)
@@ -2697,6 +3012,16 @@ def update_tenant_product(
         tenant_product.price_cents = product_update.price_cents
     if product_update.is_active is not None:
         tenant_product.is_active = product_update.is_active
+    if product_update.tax_id is not None:
+        if product_update.tax_id:
+            tax = session.get(models.Tax, product_update.tax_id)
+            if not tax or tax.tenant_id != current_user.tenant_id:
+                raise HTTPException(status_code=400, detail="Invalid tax")
+        tenant_product.tax_id = product_update.tax_id or None
+    if product_update.available_from is not None:
+        tenant_product.available_from = product_update.available_from
+    if product_update.available_until is not None:
+        tenant_product.available_until = product_update.available_until
 
     session.add(tenant_product)
     session.commit()
@@ -3140,6 +3465,7 @@ def delete_shift(
 )
 def list_tables(
     request: Request,
+    response: Response,
     current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_READ))],
     session: Session = Depends(get_session),
 ) -> list[dict]:
@@ -3192,6 +3518,7 @@ def list_tables(
 )
 def list_tables_with_status(
     request: Request,
+    response: Response,
     current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_READ))],
     session: Session = Depends(get_session),
 ) -> list[dict]:
@@ -4494,6 +4821,21 @@ def get_menu(
         select(models.Tenant).where(models.Tenant.id == table.tenant_id)
     ).first()
 
+    # Customer-facing: only show products available today (within available_from..available_until)
+    try:
+        tz = ZoneInfo(tenant.timezone) if tenant and tenant.timezone else timezone.utc
+    except Exception:
+        tz = timezone.utc
+    today = datetime.now(tz).date()
+    def _is_available(available_from, available_until):
+        if available_from is not None and available_from > today:
+            return False
+        if available_until is not None and available_until < today:
+            return False
+        return True
+    tenant_products = [tp for tp in tenant_products if _is_available(tp.available_from, tp.available_until)]
+    legacy_products = [p for p in legacy_products if _is_available(p.available_from, p.available_until)]
+
     # Combine products from both sources
     products_list = []
 
@@ -4957,7 +5299,9 @@ def get_current_order(
                     "quantity": item.quantity,
                     "price_cents": item.price_cents,
                     "notes": item.notes,
-                    "status": item.status.value if hasattr(item.status, 'value') else str(item.status)
+                    "status": item.status.value if hasattr(item.status, 'value') else str(item.status),
+                    "tax_rate_percent": getattr(item, "tax_rate_percent", None),
+                    "tax_amount_cents": getattr(item, "tax_amount_cents", None),
                 }
                 for item in items
             ],
@@ -5035,6 +5379,42 @@ def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     
     return R * c
+
+
+def _get_effective_tax(
+    session: Session,
+    tenant_id: int,
+    product_tax_id: int | None,
+    as_of: date | None = None,
+) -> models.Tax | None:
+    """
+    Resolve the tax to apply for a product: product override or tenant default, valid at as_of date.
+    Returns the Tax row or None (meaning 0% / exempt).
+    """
+    as_of = as_of or date.today()
+    tax_id = product_tax_id
+    if not tax_id:
+        tenant = session.get(models.Tenant, tenant_id)
+        if tenant and getattr(tenant, "default_tax_id", None):
+            tax_id = tenant.default_tax_id
+    if not tax_id:
+        return None
+    tax = session.get(models.Tax, tax_id)
+    if not tax or tax.tenant_id != tenant_id:
+        return None
+    if tax.valid_from and as_of < tax.valid_from:
+        return None
+    if tax.valid_to is not None and as_of > tax.valid_to:
+        return None
+    return tax
+
+
+def _tax_amount_cents_inclusive(price_cents: int, quantity: int, rate_percent: int) -> int:
+    """Tax amount from tax-inclusive price. rate_percent e.g. 10, 21, 0."""
+    if rate_percent <= 0:
+        return 0
+    total_incl = price_cents * quantity
+    return round(total_incl * rate_percent / (100 + rate_percent))
 
 
 @app.post("/menu/{table_token}/order")
@@ -5187,10 +5567,12 @@ def create_order(
     is_new_order = False  # We're always adding to existing shared order
 
     # Add order items
+    order_date = order.created_at.date() if order.created_at else date.today()
     for item in order_data.items:
         # Use source indicator if provided, otherwise try TenantProduct first, then legacy Product
         product_name = None
         price_cents = None
+        product_tax_id: int | None = None
         effective_product_id: int  # Must be Product.id (OrderItem.product_id FK references product.id)
 
         if item.source == "tenant_product":
@@ -5205,6 +5587,7 @@ def create_order(
                 raise HTTPException(status_code=400, detail=f"TenantProduct {item.product_id} not found")
             product_name = tenant_product.name
             price_cents = tenant_product.price_cents
+            product_tax_id = getattr(tenant_product, "tax_id", None)
             if tenant_product.product_id is not None:
                 effective_product_id = tenant_product.product_id
             else:
@@ -5231,6 +5614,7 @@ def create_order(
                 raise HTTPException(status_code=400, detail=f"Product {item.product_id} not found")
             product_name = product.name
             price_cents = product.price_cents
+            product_tax_id = getattr(product, "tax_id", None)
             effective_product_id = product.id
         else:
             # No source specified - try TenantProduct first, then fallback to legacy Product
@@ -5244,6 +5628,7 @@ def create_order(
             if tenant_product:
                 product_name = tenant_product.name
                 price_cents = tenant_product.price_cents
+                product_tax_id = getattr(tenant_product, "tax_id", None)
                 if tenant_product.product_id is not None:
                     effective_product_id = tenant_product.product_id
                 else:
@@ -5269,7 +5654,14 @@ def create_order(
                     raise HTTPException(status_code=400, detail=f"Product {item.product_id} not found")
                 product_name = product.name
                 price_cents = product.price_cents
+                product_tax_id = getattr(product, "tax_id", None)
                 effective_product_id = product.id
+
+        # Resolve tax for this line (product override or tenant default)
+        effective_tax = _get_effective_tax(session, table.tenant_id, product_tax_id, order_date)
+        tax_id = effective_tax.id if effective_tax else None
+        tax_rate = effective_tax.rate_percent if effective_tax else 0
+        line_tax_cents = _tax_amount_cents_inclusive(price_cents, item.quantity, tax_rate) if effective_tax else 0
 
         # Check if this product already exists in the order (only active, non-removed items)
         # Match by effective_product_id (Product.id) so we merge same product regardless of TenantProduct id
@@ -5290,6 +5682,12 @@ def create_order(
                 )
             if location_flagged:
                 existing_item.location_flagged = True
+            # Recompute tax for new total quantity
+            existing_item.tax_id = tax_id
+            existing_item.tax_rate_percent = tax_rate if effective_tax else None
+            existing_item.tax_amount_cents = _tax_amount_cents_inclusive(
+                price_cents, existing_item.quantity, tax_rate
+            ) if effective_tax else None
             session.add(existing_item)
         else:
             order_item = models.OrderItem(
@@ -5301,7 +5699,10 @@ def create_order(
                 notes=item.notes,
                 status=models.OrderItemStatus.pending,
                 added_by_session=order_data.session_id,
-                location_flagged=location_flagged
+                location_flagged=location_flagged,
+                tax_id=tax_id,
+                tax_rate_percent=tax_rate if effective_tax else None,
+                tax_amount_cents=line_tax_cents if effective_tax else None,
             )
             session.add(order_item)
     
@@ -5609,7 +6010,10 @@ def list_orders(
                     "status": item.status.value if hasattr(item.status, 'value') else str(item.status),
                     "removed_by_customer": item.removed_by_customer,
                     "removed_at": item.removed_at.isoformat() if item.removed_at else None,
-                    "removed_reason": item.removed_reason
+                    "removed_reason": item.removed_reason,
+                    "tax_id": getattr(item, "tax_id", None),
+                    "tax_rate_percent": getattr(item, "tax_rate_percent", None),
+                    "tax_amount_cents": getattr(item, "tax_amount_cents", None),
                 }
                 for item in items
             ],
