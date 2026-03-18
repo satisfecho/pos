@@ -3649,7 +3649,7 @@ def create_table(
     table_data: models.TableCreate,
     current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_WRITE))],
     session: Session = Depends(get_session),
-) -> models.Table:
+) -> JSONResponse:
     table = models.Table(
         name=table_data.name,
         tenant_id=current_user.tenant_id,
@@ -3658,7 +3658,11 @@ def create_table(
     session.add(table)
     session.commit()
     session.refresh(table)
-    return table
+    # Return JSONResponse so slowapi can inject rate-limit headers (it requires a Response instance)
+    return JSONResponse(
+        content=table.model_dump(mode="json"),
+        status_code=status.HTTP_201_CREATED,
+    )
 
 
 @app.put("/tables/{table_id}")
@@ -4519,6 +4523,9 @@ async def send_reservation_reminder(
 
     if has_email:
         view_url = None
+        if reservation.token and settings.public_app_base_url:
+            base = settings.public_app_base_url.rstrip("/")
+            view_url = f"{base}/reservation?token={reservation.token}"
         ok = await email_svc.send_reservation_reminder(
             to_email=reservation.customer_email.strip(),
             customer_name=reservation.customer_name,
