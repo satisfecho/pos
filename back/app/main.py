@@ -283,7 +283,31 @@ def serve_tenant_logo(tenant_id: int, filename: str):
     return FileResponse(path, media_type=media_type)
 
 
-# Mount static files for serving images (product images, provider images, etc.)
+# Serve provider product images via explicit route (StaticFiles often 404s on nested paths behind a proxy)
+@app.get("/uploads/providers/{provider_token}/products/{filename}", include_in_schema=False)
+def serve_provider_product_image(provider_token: str, filename: str):
+    """Serve a provider product image. Filename must be a single path component (no slashes)."""
+    if "/" in filename or "\\" in filename or filename.startswith("."):
+        raise HTTPException(status_code=404, detail="Invalid filename")
+    path = UPLOADS_DIR / "providers" / provider_token / "products" / filename
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="Image not found")
+    return FileResponse(path)
+
+
+# Serve tenant product images (StaticFiles often 404s on nested paths behind a proxy)
+@app.get("/uploads/{tenant_id}/products/{filename}", include_in_schema=False)
+def serve_tenant_product_image(tenant_id: int, filename: str):
+    """Serve a tenant product image. Filename must be a single path component (no slashes)."""
+    if "/" in filename or "\\" in filename or filename.startswith("."):
+        raise HTTPException(status_code=404, detail="Invalid filename")
+    path = UPLOADS_DIR / str(tenant_id) / "products" / filename
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="Image not found")
+    return FileResponse(path)
+
+
+# Mount static files for serving images (fallback for any other uploads paths)
 app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 # Register Inventory API router
