@@ -1799,7 +1799,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     .total-row { font-weight: 700; font-size: 1.1rem; border-top: 2px solid #333; }
     .total-row td { padding-top: 12px; }
     .footer { margin-top: 24px; font-size: 11px; color: #888; text-align: center; }
-    .invoice-oss { margin-top: 24px; padding-top: 12px; border-top: 2px solid #333; font-size: 9px; color: #999; text-align: center; line-height: 1.3; }
+    .invoice-oss { margin-top: 24px; padding-top: 12px; border-top: 1px solid #999; font-size: 9px; color: #999; text-align: center; line-height: 1.3; }
   </style>
 </head>
 <body>
