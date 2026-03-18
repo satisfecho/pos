@@ -4596,14 +4596,14 @@ def activate_table(
     session.commit()
     session.refresh(table)
 
-    return {
+    return JSONResponse(content={
         "id": table.id,
         "name": table.name,
         "pin": pin,
         "is_active": True,
         "active_order_id": None,
         "activated_at": table.activated_at.isoformat() if table.activated_at else None,
-    }
+    })
 
 
 @app.post("/tables/{table_id}/close")
@@ -4662,12 +4662,12 @@ def close_table(
         table_id=table_id,
     )
 
-    return {
+    return JSONResponse(content={
         "id": table.id,
         "name": table.name,
         "is_active": False,
         "message": "Table closed successfully",
-    }
+    })
 
 
 @app.post("/tables/{table_id}/regenerate-pin")
@@ -4707,12 +4707,12 @@ def regenerate_table_pin(
     session.commit()
     session.refresh(table)
 
-    return {
+    return JSONResponse(content={
         "id": table.id,
         "name": table.name,
         "pin": pin,
         "is_active": True,
-    }
+    })
 
 
 @app.put("/tables/{table_id}/assign-waiter")
@@ -4762,11 +4762,11 @@ def assign_waiter_to_table(
         w = session.get(models.User, table.assigned_waiter_id)
         waiter_name = w.full_name or w.email if w else None
 
-    return {
+    return JSONResponse(content={
         "table_id": table.id,
         "assigned_waiter_id": table.assigned_waiter_id,
         "assigned_waiter_name": waiter_name,
-    }
+    })
 
 
 # ============ INTERNAL VALIDATION (for ws-bridge) ============
