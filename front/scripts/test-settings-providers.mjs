@@ -91,7 +91,7 @@ async function main() {
   const browser = await puppeteer.launch({
     executablePath: CHROME_PATH,
     headless,
-    defaultViewport: headless ? { width: 1280, height: 720 } : null,
+    defaultViewport: { width: 1280, height: 720 }, // wide enough so tab labels (e.g. Providers) are visible
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
 

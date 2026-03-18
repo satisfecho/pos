@@ -1,0 +1,17 @@
+---
+description: When working on front, run a quick headless browser smoke test to verify the app works
+globs: front/**
+alwaysApply: false
+---
+
+# Frontend – Run Headless Smoke Test
+
+When you change code under `front/` (Angular app):
+
+1. **After your changes**, run a quick headless-browser smoke test so the app is still working.
+2. Use the project’s existing Puppeteer scripts. From the repo root, with the app reachable (e.g. via Docker on 4202):
+   - **Quick smoke:** `BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:landing-version --prefix front`
+   - Or another fast script such as `test:landing-provider-links` or a test that touches the area you changed (e.g. `test:working-plan` for working-plan changes).
+3. If the test fails, fix the cause before considering the change done.
+
+This keeps regressions from frontend edits from going unnoticed.

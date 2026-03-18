@@ -13,10 +13,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
-- **Backend 500 (slowapi)**: Endpoints that return dict/list under global rate limiting now inject `response: Response` and/or return `JSONResponse` so slowapi can set rate-limit headers. Fixed for `/catalog`, `/catalog/categories`, `/catalog/{id}`, `/tenant-products`, `/tables/with-status`, tenant settings, tenant logo, and tax CRUD. Repair migration `20260318130000_ensure_provider_tenant_id.sql` ensures `provider.tenant_id` exists when schema version was applied without the column.
+- **Backend 500 (slowapi)**: Endpoints that return dict/list under global rate limiting now inject `response: Response` and/or return `JSONResponse` so slowapi can set rate-limit headers. Fixed for `/catalog`, `/catalog/categories`, `/catalog/{id}`, `/tenant-products`, `/tables/with-status`, tenant settings, tenant logo, and tax CRUD. **Public menu endpoints** now return `JSONResponse`: `GET /menu/{token}`, `GET /menu/{token}/order`, `GET /menu/{token}/order-history`, `POST /menu/{token}/order`, `POST /menu/{token}/order/{id}/request-payment`, `POST /menu/{token}/call-waiter`, `DELETE`/`PUT` order items, `DELETE` order (fixes 500 when opening table menu or requesting payment). Repair migration `20260318130000_ensure_provider_tenant_id.sql` ensures `provider.tenant_id` exists when schema version was applied without the column.
 
 ### Changed
 
+- **Toasts – dismiss only on action**: Success and error toasts no longer auto-dismiss; they stay until the user closes them. Applies to Orders, Working plan, Tables, Provider dashboard, and Settings (Settings success/error toasts now have a dismiss button).
+- **Orders – waiter alert shows customer message**: When a customer sends a message with “Call waiter” or “Request payment”, the staff alert banner now displays that message (in quotes) below the table name.
 - **Docs – consolidation**: Removed `docs/0006-gmail-setup-instructions.md` (redundant with `docs/0018-gmail-setup.md`); all references (README, ROADMAP, config.env.example) now point to 0018. Merged `docs/0003-deploy-server.md` into `docs/0004-deployment.md`: single deployment guide with configuration (API_URL, WS_URL, CORS) and deploy steps (git pull, compose, migrations, seeds). Deleted 0003; docs index and CHANGELOG updated.
 
 ### Added

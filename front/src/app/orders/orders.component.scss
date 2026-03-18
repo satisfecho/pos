@@ -167,16 +167,24 @@
     overflow: hidden;
 
     ::ng-deep .btn-factura-row {
-        padding: 4px 10px;
-        font-size: 0.75rem;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        padding: 0 !important;
         cursor: pointer;
-        background: var(--color-primary);
-        color: white;
-        border: none;
-        border-radius: 4px;
+        background: #fff !important;
+        color: #333 !important;
+        border: 1px solid #ddd !important;
+        border-radius: 8px;
+        transition: background 0.15s ease;
     }
     ::ng-deep .btn-factura-row:hover {
-        opacity: 0.9;
+        background: #f5f5f5 !important;
+    }
+    ::ng-deep .btn-factura-row svg {
+        flex-shrink: 0;
     }
 }
 

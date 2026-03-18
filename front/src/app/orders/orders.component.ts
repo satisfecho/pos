@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { environment } from '../../environments/environment';
 import { ApiService, Order, OrderItem, TenantSettings, BillingCustomer } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
+import { WaiterAlertService, WaiterAlertItem } from '../services/waiter-alert.service';
 import { PermissionService, Permission } from '../services/permission.service';
 import { Subscription } from 'rxjs';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -588,7 +589,7 @@ ModuleRegistry.registerModules([
                 <span class="waiter-alert-message">"{{ waiterAlert()!.message }}"</span>
               }
             </div>
-            <button class="waiter-alert-dismiss" (click)="waiterAlert.set(null)">
+            <button class="waiter-alert-dismiss" (click)="dismissWaiterAlert()">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M18 6L6 18M6 6l12 12"/>
               </svg>
@@ -1080,6 +1081,26 @@ ModuleRegistry.registerModules([
       border-radius: var(--radius-lg);
       overflow: hidden;
     }
+    .grid-container .btn-factura-row {
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      padding: 0 !important;
+      cursor: pointer;
+      background: #fff !important;
+      color: #333 !important;
+      border: 1px solid #ddd !important;
+      border-radius: 8px;
+      transition: background 0.15s ease;
+    }
+    .grid-container .btn-factura-row:hover {
+      background: #f5f5f5 !important;
+    }
+    .grid-container .btn-factura-row svg {
+      flex-shrink: 0;
+    }
 
     .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 56px; background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: 0 var(--space-4); align-items: center; gap: var(--space-3); z-index: 99; }
     .menu-toggle { display: flex; flex-direction: column; gap: 4px; background: none; border: none; padding: var(--space-2); cursor: pointer; }
@@ -1349,6 +1370,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private audio = inject(AudioService);
   private translate = inject(TranslateService);
+  private waiterAlerts = inject(WaiterAlertService);
   private permissions = inject(PermissionService);
 
   // Permission checks for UI
@@ -1393,7 +1415,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   // Toast notification system (replaces native alerts)
   toast = signal<{ message: string; type: 'success' | 'error' } | null>(null);
-  waiterAlert = signal<{ message: string; tableName: string; type: 'call_waiter' | 'payment_requested' } | null>(null);
+  waiterAlert = signal<WaiterAlertItem | null>(null);
 
   // Confirmation modal (replaces native confirm)
   confirmAction = signal<{
@@ -1544,7 +1566,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
           if (id == null) return '';
           const title = this.translate.instant('CUSTOMERS.PRINT_FACTURA');
           const icon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/></svg>';
-          return `<button type="button" class="btn-factura-row" data-order-id="${id}" title="${title}">${icon}</button>`;
+          const safeTitle = (title || '').replace(/"/g, '&quot;');
+          return `<button type="button" class="btn-factura-row" data-order-id="${id}" title="${safeTitle}" style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;cursor:pointer;background:#fff;color:#333;border:1px solid #ddd;border-radius:8px;">${icon}</button>`;
         },
       },
     ];
@@ -1571,15 +1594,13 @@ export class OrdersComponent implements OnInit, OnDestroy {
             const isManager = currentUser?.role === 'admin' || currentUser?.role === 'owner';
 
             if (isMyTable || isManager) {
-              // Prominent alert for assigned waiter or manager/admin
+              const item = this.waiterAlerts.add(
+                update.table_name || 'Table',
+                update.message || '',
+                update.type
+              );
+              this.waiterAlert.set(item);
               this.audio.playUrgentWaiterAlert();
-              this.waiterAlert.set({
-                message: update.message || '',
-                tableName: update.table_name || 'Table',
-                type: update.type,
-              });
-              // Auto-dismiss after 15 seconds
-              setTimeout(() => this.waiterAlert.set(null), 15000);
             } else {
               // Regular notification for other staff
               this.audio.playRestaurantOrderChange();
@@ -1596,6 +1617,13 @@ export class OrdersComponent implements OnInit, OnDestroy {
       });
     } catch (error) {
       console.warn('WebSocket connection failed, continuing without real-time updates:', error);
+    }
+
+    // Restore any unconfirmed waiter alerts when (re)entering Orders
+    const first = this.waiterAlerts.firstPending();
+    if (first) {
+      this.waiterAlert.set(first);
+      this.audio.playUrgentWaiterAlert();
     }
 
     // Close dropdowns when clicking outside
@@ -1627,6 +1655,15 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   getItemStatusLabel(status: string): string {
     return this.translate.instant(`ITEM_STATUS.${status}`) || status;
+  }
+
+  dismissWaiterAlert(): void {
+    const current = this.waiterAlert();
+    if (current) {
+      this.waiterAlerts.remove(current.id);
+      const next = this.waiterAlerts.firstPending();
+      this.waiterAlert.set(next ?? null);
+    }
   }
 
   showToast(message: string, type: 'success' | 'error') {
