@@ -79,3 +79,16 @@ export const orderAccessGuard: CanActivateFn = roleGuard(['owner', 'admin', 'kit
  * Route guard that allows all staff who can add/edit the working plan (schedule)
  */
 export const scheduleGuard: CanActivateFn = roleGuard(['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist']);
+
+const WORKING_PLAN_VIEW_KEY = 'workingPlanView';
+const VALID_VIEWS = ['week', 'calendar'] as const;
+
+/**
+ * Redirects /working-plan to /working-plan/:view using the last-opened view from localStorage (default: week).
+ */
+export const workingPlanViewRedirectGuard: CanActivateFn = () => {
+  const router = inject(Router);
+  const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(WORKING_PLAN_VIEW_KEY) : null;
+  const view = raw && VALID_VIEWS.includes(raw as (typeof VALID_VIEWS)[number]) ? raw : 'week';
+  return router.createUrlTree(['/working-plan', view]);
+};

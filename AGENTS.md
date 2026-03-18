@@ -95,6 +95,10 @@ When debugging the running app (e.g. frontend not loading a route, API issues):
    - HAProxy (HTTP/WS access, redirects): `docker compose logs --tail=30 haproxy`
    - Use these to confirm the app is running, see recent requests, and spot build or runtime errors (e.g. Angular build failures in `front` logs).
 
+3. **Restarting the backend without losing data**
+ - To restart only the backend: `docker compose restart back` or `docker compose up -d back`.
+ - **Do not use** `docker compose down -v` or `./run.sh --clean` when you only mean to restart the backend. The `-v` flag removes **named volumes** (e.g. `pos_pgdata`), which wipes the database. Image **files** live in the host directory `back/uploads/` (bind-mounted), so they are not deleted by `down -v`, but all **references** to them (Product.image_filename, ProviderProduct.image_filename, Tenant.logo_filename) are in the DB. After a DB wipe, the app will show no images until data is re-seeded or re-imported.
+
 ## Reservation tests (Puppeteer)
 
 Run these from the repo root or from `front/` when the app is up (e.g. on port 4203 or 4202). Chrome must be installed (e.g. `/Applications/Google Chrome.app` on macOS). Scripts auto-detect the first responding port among 4203, 4202, 4200.

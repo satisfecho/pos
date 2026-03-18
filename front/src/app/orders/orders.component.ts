@@ -1753,13 +1753,31 @@ export class OrdersComponent implements OnInit, OnDestroy {
     const items = (order.items || []).filter(i => !i.removed_by_customer);
     const rows = items.map(i => {
       const lineTotal = (i.price_cents || 0) * (i.quantity || 1);
+      const taxCents = i.tax_amount_cents ?? 0;
       return `<tr>
         <td>${this.escapeHtml(i.product_name || '')}</td>
         <td style="text-align:center">${i.quantity || 1}</td>
         <td style="text-align:right">${this.formatPrice(i.price_cents || 0)}</td>
+        <td style="text-align:right">${taxCents > 0 ? this.formatPrice(taxCents) : '—'}</td>
         <td style="text-align:right">${this.formatPrice(lineTotal)}</td>
       </tr>`;
     }).join('');
+
+    // Totals by tax rate for invoice breakdown
+    const taxByRate: Record<number, number> = {};
+    items.forEach(i => {
+      const rate = i.tax_rate_percent ?? 0;
+      const cents = i.tax_amount_cents ?? 0;
+      if (rate > 0 && cents > 0) {
+        taxByRate[rate] = (taxByRate[rate] ?? 0) + cents;
+      }
+    });
+    const totalTaxCents = Object.values(taxByRate).reduce((a, b) => a + b, 0);
+    const taxSummaryRows = Object.entries(taxByRate)
+      .sort(([a], [b]) => Number(a) - Number(b))
+      .map(([rate, cents]) =>
+        `<tr><td colspan="4" style="text-align:right; font-size: 12px; color: #555;">IVA ${rate}%</td><td style="text-align:right">${this.formatPrice(cents)}</td></tr>`
+      ).join('');
 
     const html = `<!DOCTYPE html>
 <html lang="en">
@@ -1775,8 +1793,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
     .meta { font-size: 12px; color: #555; margin-bottom: 20px; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
     th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #666; border-bottom: 1px solid #ddd; padding: 8px 4px; }
-    th:nth-child(2), th:nth-child(3), th:nth-child(4) { text-align: right; }
     th:nth-child(2) { text-align: center; }
+    th:nth-child(3), th:nth-child(4), th:nth-child(5) { text-align: right; }
     td { padding: 10px 4px; border-bottom: 1px solid #eee; }
     .total-row { font-weight: 700; font-size: 1.1rem; border-top: 2px solid #333; }
     .total-row td { padding-top: 12px; }
@@ -1812,14 +1830,17 @@ export class OrdersComponent implements OnInit, OnDestroy {
         <th>${this.translate.instant('COMMON.NAME')}</th>
         <th>${this.translate.instant('COMMON.QUANTITY')}</th>
         <th>${this.translate.instant('COMMON.PRICE')}</th>
+        <th>${this.translate.instant('ORDERS.TAX')}</th>
         <th>${this.translate.instant('ORDERS.TOTAL')}</th>
       </tr>
     </thead>
     <tbody>
       ${rows}
     </tbody>
+    ${taxSummaryRows}
+    ${totalTaxCents > 0 ? `<tr><td colspan="4" style="text-align:right; font-size: 12px;">${this.translate.instant('ORDERS.TOTAL_TAX')}</td><td style="text-align:right">${this.formatPrice(totalTaxCents)}</td></tr>` : ''}
     <tr class="total-row">
-      <td colspan="3">${this.translate.instant('ORDERS.TOTAL')}</td>
+      <td colspan="4">${this.translate.instant('ORDERS.TOTAL')}</td>
       <td style="text-align:right">${this.formatPrice(order.total_cents || 0)}</td>
     </tr>
   </table>

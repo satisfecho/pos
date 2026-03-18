@@ -103,6 +103,21 @@ npm run test:changelog --prefix front
 
 ---
 
+### 2d. Settings → Providers (personal providers)
+
+Smoke test for the personal providers feature (issue #25). Logs in with tenant=1 (using `.env` credentials), opens Settings, clicks the Providers tab, and asserts the Providers section and Add provider button are present.
+
+```bash
+npm run test:settings-providers --prefix front
+# Uses .env: DEMO_LOGIN_EMAIL, DEMO_LOGIN_PASSWORD; TENANT_ID=1
+# Or: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:settings-providers --prefix front
+```
+
+- **Env:** `BASE_URL`, `LOGIN_EMAIL`/`LOGIN_PASSWORD` or `DEMO_LOGIN_EMAIL`/`DEMO_LOGIN_PASSWORD` (from `.env`). `TENANT_ID` (default `1`). `HEADLESS`.
+- **Asserts:** After login, `/settings` loads; Providers tab is present; clicking it shows the Providers section and the Add provider button (`data-testid="settings-providers-section"`, `data-testid="settings-add-provider-btn"`).
+
+---
+
 ### 3. Tables page (view toggle and table view)
 
 Login, open `/tables`, then if the view toggle is present (tables exist), switch to Table view and assert the data table with columns is shown.
@@ -305,6 +320,7 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `test:register-page` | `scripts/test-register-page.mjs` |
 | `test:reports` | `scripts/test-reports.mjs` (Reports page smoke; owner/admin) |
 | `test:changelog` | `scripts/test-changelog.mjs` (Dashboard What's new → changelog modal; API serves CHANGELOG.md) |
+| `test:settings-providers` | `scripts/test-settings-providers.mjs` (Settings → Providers tab; personal providers smoke; uses .env, tenant=1) |
 | `test:bartender-role` | `scripts/test-bartender-role.mjs` (Users → Add user → role dropdown includes Bartender) |
 | `test:kitchen-status-dropdown` | `scripts/test-kitchen-status-dropdown.mjs` (Kitchen display: status dropdown visible, not clipped) |
 | `test:rate-limit` | `scripts/test-rate-limit.mjs` (API rate limiting: login 5/15min, register 3/hour; expects 429 after limit) |

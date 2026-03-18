@@ -189,8 +189,69 @@ async function main() {
       console.log('   No error message; assuming save in progress or success (no failure text).');
     }
 
+    // --- 7. Sidebar navigation: visit every link and ensure no 5xx errors ---
+    console.log('\n7. Sidebar navigation smoke: visiting each nav link...');
+    const failedResponses = [];
+    const responseHandler = async (response) => {
+      const status = response.status();
+      if (status >= 500) {
+        const url = response.url();
+        failedResponses.push({ url, status });
+      }
+    };
+    page.on('response', responseHandler);
+
+    // Expand inventory section so sublinks are in the DOM and visible
+    await page.evaluate(() => {
+      const invHeader = document.querySelector('.nav-section-header');
+      if (invHeader && invHeader.textContent && invHeader.textContent.includes('Inventory')) {
+        invHeader.click();
+      }
+    });
+    await sleep(600);
+
+    const getSidebarPaths = async () => {
+      return await page.evaluate(() => {
+        const paths = new Set();
+        document.querySelectorAll('.sidebar a.nav-link[href], .sidebar a.nav-sublink[href]').forEach((a) => {
+          const href = a.getAttribute('href');
+          if (href && href.startsWith('/') && !href.startsWith('//')) {
+            const path = href.split('?')[0];
+            if (path !== '') paths.add(path);
+          }
+        });
+        return Array.from(paths);
+      });
+    };
+
+    const paths = await getSidebarPaths();
+    const sortedPaths = [...paths].sort();
+    console.log('   Nav paths to check:', sortedPaths.join(', ') || '(none)');
+
+    for (const path of sortedPaths) {
+      failedResponses.length = 0;
+      const url = new URL(path, baseUrl).href;
+      try {
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: 15000 });
+      } catch (e) {
+        console.log('   FAIL: Navigation to', path, ':', e.message);
+        await browser.close();
+        process.exit(1);
+      }
+      await sleep(800);
+      if (failedResponses.length > 0) {
+        console.log('   FAIL: Page', path, 'returned server errors:', failedResponses);
+        await browser.close();
+        process.exit(1);
+      }
+      console.log('   OK:', path);
+    }
+
+    page.off('response', responseHandler);
+    console.log('   All', sortedPaths.length, 'sidebar routes loaded without 5xx.');
+
     await browser.close();
-    console.log('\n>>> RESULT: Logo upload test passed (no upload failure).');
+    console.log('\n>>> RESULT: Logo upload and sidebar navigation smoke test passed.');
     process.exit(0);
   } catch (err) {
     console.error('Error:', err.message);

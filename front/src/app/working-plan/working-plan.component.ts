@@ -1,5 +1,6 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
 import {
   ApiService,
   Shift,
@@ -117,6 +118,14 @@ function fullDayTimeOptions(stepMin: number = STEP_30): string[] {
     opts.push(`${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`);
   }
   return opts;
+}
+
+const WORKING_PLAN_VIEW_KEY = 'workingPlanView';
+const VALID_VIEWS = ['week', 'calendar'] as const;
+type ViewMode = (typeof VALID_VIEWS)[number];
+
+function isValidView(v: string | null): v is ViewMode {
+  return v === 'week' || v === 'calendar';
 }
 
 @Component({
@@ -362,14 +371,17 @@ function fullDayTimeOptions(stepMin: number = STEP_30): string[] {
     .calendar-day-num { font-weight: 500; }
   `],
 })
-export class WorkingPlanComponent implements OnInit {
+export class WorkingPlanComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private translate = inject(TranslateService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private routeParamSub?: { unsubscribe: () => void };
 
   /** Opening hours per day (monday..sunday), from tenant settings. Signal so calendar grid recomputes when loaded. */
   openingHours = signal<Record<string, DayHours>>({});
 
-  viewMode = signal<'week' | 'calendar'>('week');
+  viewMode = signal<ViewMode>('week');
   weekStart = signal<Date>(new Date());
   /** First day of the month for calendar view. */
   calendarMonth = signal<Date>(new Date());
@@ -437,9 +449,11 @@ export class WorkingPlanComponent implements OnInit {
     return ['WORKING_PLAN.MON', 'WORKING_PLAN.TUE', 'WORKING_PLAN.WED', 'WORKING_PLAN.THU', 'WORKING_PLAN.FRI', 'WORKING_PLAN.SAT', 'WORKING_PLAN.SUN'].map((k) => t.instant(k) !== k ? t.instant(k) : k.replace('WORKING_PLAN.', ''));
   });
 
-  /** Calendar grid: 6 rows of 7 cells. Cell has trackId; day/dateStr/matches only for real days. */
+  /** Calendar grid: 6 rows of 7 cells. Cell has trackId; day/dateStr/hasIssue only for real days. */
   calendarGrid = computed(() => {
     const month = this.calendarMonth();
+    void this.openingHours(); // ensure grid recomputes when opening hours load (async from getTenantSettings)
+    void this.shifts(); // ensure grid recomputes when schedule loads
     const year = month.getFullYear();
     const monthIdx = month.getMonth();
     const first = new Date(year, monthIdx, 1);
@@ -464,7 +478,26 @@ export class WorkingPlanComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.load();
+    const applyView = (view: string | null): boolean => {
+      if (isValidView(view)) {
+        this.viewMode.set(view);
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem(WORKING_PLAN_VIEW_KEY, view);
+        }
+        return true;
+      }
+      if (view != null) {
+        this.router.navigate(['/working-plan', 'week'], { replaceUrl: true });
+      }
+      return false;
+    };
+    const initialView = this.route.snapshot.paramMap.get('view');
+    applyView(initialView);
+    this.routeParamSub = this.route.paramMap.subscribe((params) => {
+      if (applyView(params.get('view'))) {
+        this.load();
+      }
+    });
     this.api.getUsersForSchedule().subscribe({
       next: (users) => this.scheduleUsers.set(users),
       error: () => this.scheduleUsers.set([]),
@@ -473,6 +506,10 @@ export class WorkingPlanComponent implements OnInit {
       next: (settings) => this.parseOpeningHours(settings.opening_hours),
       error: () => {},
     });
+  }
+
+  ngOnDestroy(): void {
+    this.routeParamSub?.unsubscribe();
   }
 
   private parseOpeningHours(json: string | null | undefined): void {
@@ -642,11 +679,15 @@ export class WorkingPlanComponent implements OnInit {
     });
   }
 
-  setViewMode(mode: 'week' | 'calendar'): void {
+  setViewMode(mode: ViewMode): void {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(WORKING_PLAN_VIEW_KEY, mode);
+    }
     this.viewMode.set(mode);
     if (mode === 'calendar') {
       this.calendarMonth.set(new Date(this.weekStart().getFullYear(), this.weekStart().getMonth(), 1));
     }
+    this.router.navigate(['/working-plan', mode]);
     this.load();
   }
 

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { ApiService, TenantSettings } from '../services/api.service';
+import { ApiService, Provider, ProviderCreate, ProviderProduct, ProviderProductCreate, Tax, TenantSettings } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { TranslationsComponent } from '../translations/translations.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -85,6 +85,28 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           <button 
             type="button" 
             class="tab" 
+            [class.active]="activeSection() === 'taxes'"
+            (click)="activeSection.set('taxes'); loadTaxesAll()">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+            </svg>
+            <span>{{ 'SETTINGS.TAXES' | translate }}</span>
+          </button>
+          <button 
+            type="button" 
+            class="tab" 
+            data-testid="settings-providers-tab"
+            [class.active]="activeSection() === 'providers'"
+            (click)="activeSection.set('providers'); loadProviders()">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <span>{{ 'SETTINGS.PROVIDERS' | translate }}</span>
+          </button>
+          <button 
+            type="button" 
+            class="tab" 
             [class.active]="activeSection() === 'translations'"
             (click)="activeSection.set('translations')">
             <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -103,9 +125,188 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
             <div class="spinner"></div>
             <p>{{ 'SETTINGS.LOADING_SETTINGS' | translate }}</p>
           </div>
-        } @else {
+        } @else if (activeSection() === 'taxes') {
+          <!-- Taxes (IVA) Section -->
+          <div class="section">
+            <div class="section-header">
+              <h2>{{ 'SETTINGS.TAXES' | translate }}</h2>
+              <p>{{ 'SETTINGS.TAXES_SUBTITLE' | translate }}</p>
+            </div>
+            <div class="taxes-list">
+              <table class="settings-table">
+                <thead>
+                  <tr>
+                    <th>{{ 'SETTINGS.TAX_NAME' | translate }}</th>
+                    <th>{{ 'SETTINGS.TAX_RATE' | translate }}</th>
+                    <th>{{ 'SETTINGS.TAX_VALID_FROM' | translate }}</th>
+                    <th>{{ 'SETTINGS.TAX_VALID_TO' | translate }}</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (t of taxes(); track t.id) {
+                    <tr>
+                      <td>{{ t.name }}</td>
+                      <td>{{ t.rate_percent }}%</td>
+                      <td>{{ t.valid_from }}</td>
+                      <td>{{ t.valid_to || '—' }}</td>
+                      <td>
+                        <button type="button" class="btn btn-sm btn-secondary" (click)="deleteTax(t.id)" [disabled]="settings()?.default_tax_id === t.id">
+                          {{ 'COMMON.DELETE' | translate }}
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <div class="form-card" style="margin-top: 1rem;">
+              <h3>{{ 'SETTINGS.ADD_TAX' | translate }}</h3>
+              <form (ngSubmit)="addTax()" class="form-inline">
+                <input type="text" [(ngModel)]="newTaxName" name="newTaxName" [placeholder]="'SETTINGS.TAX_NAME_PLACEHOLDER' | translate" required />
+                <input type="number" min="0" max="100" [(ngModel)]="newTaxRate" name="newTaxRate" placeholder="10" style="width: 4rem;" />
+                <span>%</span>
+                <input type="date" [(ngModel)]="newTaxValidFrom" name="newTaxValidFrom" required />
+                <input type="date" [(ngModel)]="newTaxValidTo" name="newTaxValidTo" placeholder="Optional" />
+                <button type="submit" class="btn btn-primary">{{ 'SETTINGS.ADD_TAX_BUTTON' | translate }}</button>
+              </form>
+              @if (taxError()) {
+                <p class="field-error">{{ taxError() }}</p>
+              }
+            </div>
+          </div>
+        } @else if (activeSection() === 'providers') {
+          <!-- Providers Section -->
+          <div class="section" data-testid="settings-providers-section">
+            <div class="section-header">
+              <h2>{{ 'SETTINGS.PROVIDERS' | translate }}</h2>
+              <p>{{ 'SETTINGS.PROVIDERS_SUBTITLE' | translate }}</p>
+            </div>
+            @if (providersLoading()) {
+              <div class="loading-state"><div class="spinner"></div><p>{{ 'SETTINGS.LOADING_SETTINGS' | translate }}</p></div>
+            } @else {
+              <div class="form-card" style="margin-bottom: 1rem;">
+                <button type="button" class="btn btn-primary" data-testid="settings-add-provider-btn" (click)="openAddProviderModal()">{{ 'SETTINGS.ADD_PROVIDER' | translate }}</button>
+              </div>
+              <table class="settings-table">
+                <thead>
+                  <tr>
+                    <th>{{ 'SETTINGS.PROVIDER_NAME' | translate }}</th>
+                    <th>{{ 'SETTINGS.PROVIDER_TYPE' | translate }}</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (p of providers(); track p.id) {
+                    <tr>
+                      <td>{{ p.name }}</td>
+                      <td>{{ isOwnProvider(p) ? ('SETTINGS.PROVIDER_PERSONAL' | translate) : ('SETTINGS.PROVIDER_CATALOG' | translate) }}</td>
+                      <td>
+                        @if (isOwnProvider(p)) {
+                          <button type="button" class="btn btn-sm btn-secondary" (click)="openAddProductModal(p)">{{ 'SETTINGS.ADD_PRODUCT_TO_PROVIDER' | translate }}</button>
+                          <button type="button" class="btn btn-sm btn-secondary" (click)="toggleProviderProducts(p)" style="margin-left: 0.25rem;">
+                            {{ (p.id != null && providerProductsExpanded().has(p.id)) ? ('SETTINGS.HIDE_PRODUCTS' | translate) : ('SETTINGS.SHOW_PRODUCTS' | translate) }}
+                          </button>
+                        }
+                      </td>
+                    </tr>
+                    @if (isOwnProvider(p) && p.id != null && providerProductsExpanded().has(p.id)) {
+                      <tr>
+                        <td colspan="3" style="padding-left: 1.5rem;">
+                          @if ((providerProductsMap()[p.id] || []).length === 0) {
+                            <span class="hint">{{ 'SETTINGS.NO_PRODUCTS_YET' | translate }}</span>
+                          } @else {
+                            <ul class="provider-products-list">
+                              @for (prod of providerProductsMap()[p.id] || []; track prod.id) {
+                                <li>{{ prod.name }} – {{ formatProviderPrice(prod.price_cents) }}</li>
+                              }
+                            </ul>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+              @if (providersError()) {
+                <p class="field-error">{{ providersError() }}</p>
+              }
+            }
+          </div>
+          <!-- Add Provider Modal -->
+          @if (showAddProviderModal()) {
+            <div class="modal-overlay" (click)="closeAddProviderModal()">
+              <div class="modal-content" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                  <h3>{{ 'SETTINGS.ADD_PROVIDER' | translate }}</h3>
+                  <button type="button" class="btn-icon" (click)="closeAddProviderModal()">×</button>
+                </div>
+                <form (ngSubmit)="saveProvider()">
+                  <div class="modal-body">
+                    <div class="form-group">
+                      <label for="newProviderName">{{ 'SETTINGS.PROVIDER_NAME' | translate }} *</label>
+                      <input id="newProviderName" type="text" [(ngModel)]="newProviderName" name="newProviderName" required />
+                    </div>
+                    <div class="form-group">
+                      <label for="newProviderPhone">{{ 'SETTINGS.PROVIDER_PHONE' | translate }}</label>
+                      <input id="newProviderPhone" type="text" [(ngModel)]="newProviderPhone" name="newProviderPhone" />
+                    </div>
+                    <div class="form-group">
+                      <label for="newProviderEmail">{{ 'SETTINGS.PROVIDER_EMAIL' | translate }}</label>
+                      <input id="newProviderEmail" type="email" [(ngModel)]="newProviderEmail" name="newProviderEmail" />
+                    </div>
+                    @if (providerError()) {
+                      <p class="field-error">{{ providerError() }}</p>
+                    }
+                  </div>
+                  <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" (click)="closeAddProviderModal()">{{ 'COMMON.CANCEL' | translate }}</button>
+                    <button type="submit" class="btn btn-primary">{{ 'COMMON.SAVE' | translate }}</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          }
+          <!-- Add Product to Provider Modal -->
+          @if (showAddProductModal()) {
+            <div class="modal-overlay" (click)="closeAddProductModal()">
+              <div class="modal-content" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                  <h3>{{ 'SETTINGS.ADD_PRODUCT_TO_PROVIDER' | translate }} – {{ selectedProviderForProduct()?.name }}</h3>
+                  <button type="button" class="btn-icon" (click)="closeAddProductModal()">×</button>
+                </div>
+                <form (ngSubmit)="saveProviderProduct()">
+                  <div class="modal-body">
+                    <div class="form-group">
+                      <label for="newProductName">{{ 'SETTINGS.PRODUCT_NAME' | translate }} *</label>
+                      <input id="newProductName" type="text" [(ngModel)]="newProductName" name="newProductName" required />
+                    </div>
+                    <div class="form-group">
+                      <label for="newProductPrice">{{ 'SETTINGS.PRODUCT_PRICE_CENTS' | translate }}</label>
+                      <input id="newProductPrice" type="number" min="0" [(ngModel)]="newProductPrice" name="newProductPrice" placeholder="0" />
+                    </div>
+                    <div class="form-group">
+                      <label for="newProductCategory">{{ 'SETTINGS.PRODUCT_CATEGORY_OPTIONAL' | translate }}</label>
+                      <input id="newProductCategory" type="text" [(ngModel)]="newProductCategory" name="newProductCategory" placeholder="e.g. Supplies" />
+                    </div>
+                    <div class="form-group checkbox-small">
+                      <input id="newProductOnSale" type="checkbox" [(ngModel)]="newProductOnSale" name="newProductOnSale" />
+                      <label for="newProductOnSale">{{ 'SETTINGS.PRODUCT_ON_SALE' | translate }}</label>
+                    </div>
+                    @if (providerProductError()) {
+                      <p class="field-error">{{ providerProductError() }}</p>
+                    }
+                  </div>
+                  <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" (click)="closeAddProductModal()">{{ 'COMMON.CANCEL' | translate }}</button>
+                    <button type="submit" class="btn btn-primary">{{ 'COMMON.SAVE' | translate }}</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          }
+        } @else if (activeSection() === 'translations') {
           <!-- Translations Section (Independent) -->
-          @if (activeSection() === 'translations') {
             <div class="section">
               <div class="section-header">
                 <h2>{{ 'SETTINGS.TRANSLATIONS_TITLE' | translate }}</h2>
@@ -254,6 +455,16 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                       <label for="cif">{{ 'SETTINGS.CIF' | translate }}</label>
                       <input type="text" id="cif" [(ngModel)]="formData.cif" name="cif" [placeholder]="'SETTINGS.CIF_PLACEHOLDER' | translate" />
                     </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="default_tax_id">{{ 'SETTINGS.DEFAULT_TAX' | translate }}</label>
+                    <select id="default_tax_id" [(ngModel)]="formData.default_tax_id" name="default_tax_id">
+                      <option [ngValue]="null">{{ 'SETTINGS.NO_DEFAULT_TAX' | translate }}</option>
+                      @for (t of taxes(); track t.id) {
+                        <option [ngValue]="t.id">{{ t.name }} ({{ t.rate_percent }}%)</option>
+                      }
+                    </select>
+                    <small class="field-hint">{{ 'SETTINGS.DEFAULT_TAX_HINT' | translate }}</small>
                   </div>
                 </div>
               }
@@ -514,7 +725,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               
             </form>
           }
-        }
       </div>
     </app-sidebar>
   `,
@@ -1410,6 +1620,59 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       color: var(--color-warning, #e67e22);
     }
 
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: var(--color-surface, #fff);
+      border-radius: var(--radius-lg, 12px);
+      max-width: 420px;
+      width: 90%;
+      max-height: 90vh;
+      overflow: auto;
+      box-shadow: var(--shadow-xl, 0 20px 25px -5px rgba(0,0,0,0.1));
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .modal-header h3 { margin: 0; font-size: 1.125rem; }
+    .modal-body { padding: var(--space-4); }
+    .modal-actions {
+      display: flex;
+      gap: var(--space-3);
+      justify-content: flex-end;
+      padding: var(--space-4);
+      border-top: 1px solid var(--color-border);
+    }
+    .btn-icon {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--color-text-muted);
+      padding: 0 var(--space-2);
+      line-height: 1;
+    }
+    .provider-products-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .provider-products-list li {
+      padding: var(--space-1) 0;
+      font-size: 0.875rem;
+    }
+
     @keyframes slideUp {
       from {
         transform: translateY(100%);
@@ -1429,13 +1692,37 @@ export class SettingsComponent implements OnInit {
   private sanitizer = inject(DomSanitizer);
 
   settings = signal<TenantSettings | null>(null);
-  activeSection = signal<'general' | 'contact' | 'hours' | 'payments' | 'email' | 'translations'>('general');
+  taxes = signal<Tax[]>([]);
+  taxError = signal('');
+  newTaxName = '';
+  newTaxRate = 10;
+  newTaxValidFrom = new Date().toISOString().slice(0, 10);
+  newTaxValidTo = '';
+  activeSection = signal<'general' | 'contact' | 'hours' | 'payments' | 'email' | 'taxes' | 'providers' | 'translations'>('general');
   loading = signal<boolean>(false);
   saving = signal<boolean>(false);
   error = signal<string | null>(null);
   success = signal<string | null>(null);
   logoPreview = signal<string | null>(null);
   logoFile: File | null = null;
+
+  providers = signal<Provider[]>([]);
+  providersLoading = signal(false);
+  providersError = signal('');
+  providerProductsMap = signal<Record<number, ProviderProduct[]>>({});
+  providerProductsExpanded = signal<Set<number>>(new Set());
+  showAddProviderModal = signal(false);
+  showAddProductModal = signal(false);
+  selectedProviderForProduct = signal<Provider | null>(null);
+  newProviderName = '';
+  newProviderPhone = '';
+  newProviderEmail = '';
+  providerError = signal('');
+  newProductName = '';
+  newProductPrice: number | null = null;
+  newProductCategory = '';
+  newProductOnSale = true;
+  providerProductError = signal('');
 
   daysOfWeek = [
     { key: 'monday', label: 'SETTINGS.DAY_MONDAY' },
@@ -1494,6 +1781,7 @@ export class SettingsComponent implements OnInit {
     website: null,
     tax_id: null,
     cif: null,
+    default_tax_id: null,
     opening_hours: null,
     currency: null,
     stripe_secret_key: null,
@@ -1540,6 +1828,7 @@ export class SettingsComponent implements OnInit {
           website: settings.website || null,
           tax_id: settings.tax_id || null,
           cif: settings.cif || null,
+          default_tax_id: settings.default_tax_id ?? null,
           opening_hours: settings.opening_hours || null,
           currency: settings.currency || null,
           stripe_secret_key: null,
@@ -1556,6 +1845,7 @@ export class SettingsComponent implements OnInit {
         };
         this.timezoneSearch = settings.timezone || '';
         this.parseOpeningHours(settings.opening_hours);
+        this.loadTaxes();
         this.loading.set(false);
       },
       error: (err) => {
@@ -1563,6 +1853,171 @@ export class SettingsComponent implements OnInit {
         this.loading.set(false);
         console.error('Error loading settings:', err);
       }
+    });
+  }
+
+  loadTaxes() {
+    this.api.getTaxes(true).subscribe({
+      next: (list) => this.taxes.set(list),
+      error: () => this.taxes.set([]),
+    });
+  }
+
+  loadTaxesAll() {
+    this.api.getTaxes(false).subscribe({
+      next: (list) => this.taxes.set(list),
+      error: () => this.taxes.set([]),
+    });
+  }
+
+  addTax() {
+    this.taxError.set('');
+    const validFrom = this.newTaxValidFrom || new Date().toISOString().slice(0, 10);
+    const validTo = this.newTaxValidTo?.trim() || null;
+    this.api.createTax({
+      name: this.newTaxName.trim(),
+      rate_percent: this.newTaxRate,
+      valid_from: validFrom,
+      valid_to: validTo ?? undefined,
+    }).subscribe({
+      next: () => {
+        this.newTaxName = '';
+        this.newTaxRate = 10;
+        this.newTaxValidFrom = new Date().toISOString().slice(0, 10);
+        this.newTaxValidTo = '';
+        this.loadTaxesAll();
+        this.loadTaxes();
+      },
+      error: (err) => this.taxError.set(err?.error?.detail || 'Failed to add tax'),
+    });
+  }
+
+  deleteTax(id: number) {
+    if (!confirm(this.translate.instant('SETTINGS.CONFIRM_DELETE_TAX'))) return;
+    this.taxError.set('');
+    this.api.deleteTax(id).subscribe({
+      next: () => {
+        this.loadTaxesAll();
+        this.loadTaxes();
+      },
+      error: (err) => this.taxError.set(err?.error?.detail || 'Failed to delete tax'),
+    });
+  }
+
+  loadProviders() {
+    this.providersLoading.set(true);
+    this.providersError.set('');
+    this.api.getProviders(true).subscribe({
+      next: (list) => {
+        this.providers.set(list);
+        this.providersLoading.set(false);
+      },
+      error: (err) => {
+        this.providersError.set(err?.error?.detail || 'Failed to load providers');
+        this.providersLoading.set(false);
+      },
+    });
+  }
+
+  isOwnProvider(p: Provider): boolean {
+    const tenantId = this.api.getCurrentUser()?.tenant_id;
+    return p.tenant_id != null && tenantId != null && p.tenant_id === tenantId;
+  }
+
+  toggleProviderProducts(p: Provider) {
+    const id = p.id!;
+    const expanded = new Set(this.providerProductsExpanded());
+    if (expanded.has(id)) {
+      expanded.delete(id);
+    } else {
+      expanded.add(id);
+      this.api.listProviderProducts(id).subscribe({
+        next: (products) => {
+          this.providerProductsMap.update((m) => ({ ...m, [id]: products }));
+        },
+      });
+    }
+    this.providerProductsExpanded.set(expanded);
+  }
+
+  formatProviderPrice(cents: number | null | undefined): string {
+    if (cents == null) return '—';
+    return (cents / 100).toFixed(2) + ' €';
+  }
+
+  openAddProviderModal() {
+    this.newProviderName = '';
+    this.newProviderPhone = '';
+    this.newProviderEmail = '';
+    this.providerError.set('');
+    this.showAddProviderModal.set(true);
+  }
+
+  closeAddProviderModal() {
+    this.showAddProviderModal.set(false);
+  }
+
+  saveProvider() {
+    this.providerError.set('');
+    const name = this.newProviderName?.trim();
+    if (!name) {
+      this.providerError.set(this.translate.instant('SETTINGS.PROVIDER_NAME_REQUIRED'));
+      return;
+    }
+    const body: ProviderCreate = {
+      name,
+      phone: this.newProviderPhone?.trim() || undefined,
+      email: this.newProviderEmail?.trim() || undefined,
+    };
+    this.api.createProvider(body).subscribe({
+      next: () => {
+        this.closeAddProviderModal();
+        this.loadProviders();
+      },
+      error: (err) => this.providerError.set(err?.error?.detail || 'Failed to add provider'),
+    });
+  }
+
+  openAddProductModal(p: Provider) {
+    this.selectedProviderForProduct.set(p);
+    this.newProductName = '';
+    this.newProductPrice = null;
+    this.newProductCategory = '';
+    this.newProductOnSale = true;
+    this.providerProductError.set('');
+    this.showAddProductModal.set(true);
+  }
+
+  closeAddProductModal() {
+    this.showAddProductModal.set(false);
+    this.selectedProviderForProduct.set(null);
+  }
+
+  saveProviderProduct() {
+    const provider = this.selectedProviderForProduct();
+    if (!provider?.id) return;
+    this.providerProductError.set('');
+    const name = this.newProductName?.trim();
+    if (!name) {
+      this.providerProductError.set(this.translate.instant('SETTINGS.PRODUCT_NAME_REQUIRED'));
+      return;
+    }
+    const body: ProviderProductCreate = {
+      name,
+      price_cents: this.newProductPrice ?? undefined,
+      category: this.newProductCategory?.trim() || undefined,
+      availability: this.newProductOnSale,
+    };
+    this.api.createProductForProvider(provider.id, body).subscribe({
+      next: () => {
+        this.closeAddProductModal();
+        this.api.listProviderProducts(provider.id).subscribe({
+          next: (products) => {
+            this.providerProductsMap.update((m) => ({ ...m, [provider.id!]: products }));
+          },
+        });
+      },
+      error: (err) => this.providerProductError.set(err?.error?.detail || 'Failed to add product'),
     });
   }
 

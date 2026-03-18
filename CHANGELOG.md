@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Tax system (IVA)**: Tax-inclusive pricing with per-line and per-rate totals on invoices. Backend: `Tax` model (name, rate_percent, valid_from, valid_to), tenant default tax, product-level tax override; order items store applied tax snapshot (tax_id, tax_rate_percent, tax_amount_cents). Spanish IVA: 10% (food/drinks immediate consumption), 21% (services), 0% (exempt). Settings: default tax dropdown, Taxes tab with CRUD; Products: tax override dropdown. Seed: `back/app/seeds/seed_spanish_taxes.py`. Migrations: `20260318100000_add_tax_system.sql`, product availability dates, provider tenant_id, `20260318130000_ensure_provider_tenant_id.sql` (idempotent repair).
+- **Smoke test – sidebar navigation**: `test-settings-logo-upload.mjs` now visits every sidebar link after the logo flow and asserts no 5xx responses (catalog, tenant-products, tables, etc.).
+
+### Fixed
+
+- **Backend 500 (slowapi)**: Endpoints that return dict/list under global rate limiting now inject `response: Response` and/or return `JSONResponse` so slowapi can set rate-limit headers. Fixed for `/catalog`, `/catalog/categories`, `/catalog/{id}`, `/tenant-products`, `/tables/with-status`, tenant settings, tenant logo, and tax CRUD. Repair migration `20260318130000_ensure_provider_tenant_id.sql` ensures `provider.tenant_id` exists when schema version was applied without the column.
+
 ### Changed
 
 - **Docs – consolidation**: Removed `docs/0006-gmail-setup-instructions.md` (redundant with `docs/0018-gmail-setup.md`); all references (README, ROADMAP, config.env.example) now point to 0018. Merged `docs/0003-deploy-server.md` into `docs/0004-deployment.md`: single deployment guide with configuration (API_URL, WS_URL, CORS) and deploy steps (git pull, compose, migrations, seeds). Deleted 0003; docs index and CHANGELOG updated.

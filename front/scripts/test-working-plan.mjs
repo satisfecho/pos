@@ -185,7 +185,7 @@ async function main() {
       process.exit(1);
     }
     await calendarBtn.click();
-    await sleep(3000); // allow month schedule to load
+    await sleep(5000); // allow month schedule + tenant settings to load so staffing-issue (red) cells can render
 
     console.log('6. Checking calendar grid...');
     const calendarGrid = await page.waitForSelector('[data-testid="working-plan-calendar-grid"]', { timeout: 10000 }).catch(() => null);
@@ -212,7 +212,7 @@ async function main() {
     const redDayCount = await page.evaluate(() =>
       document.querySelectorAll('.calendar-day-matches').length
     );
-    console.log('   Days meeting requirements (red):', redDayCount);
+    console.log('   Days with staffing issue (red):', redDayCount);
 
     await browser.close();
     console.log('\n>>> RESULT: Working plan smoke test passed (week + calendar view).');

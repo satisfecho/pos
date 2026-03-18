@@ -6,6 +6,40 @@ from sqlalchemy import Column, Date, Time
 from sqlmodel import Field, Relationship, SQLModel
 
 
+# ============ TAX (VAT/IVA) ============
+
+
+class Tax(SQLModel, table=True):
+    """
+    Per-tenant tax rates (e.g. IVA 10%, 21%, 0%) with validity period.
+    Prices are tax-inclusive; used for invoice breakdown and reporting.
+    """
+    __tablename__ = "tax"
+    id: int | None = Field(default=None, primary_key=True)
+    tenant_id: int = Field(foreign_key="tenant.id", index=True)
+    name: str = Field(max_length=128)  # e.g. "IVA 10%", "IVA reducido"
+    rate_percent: int = Field()  # 0, 10, 21
+    valid_from: date = Field(sa_column=Column(Date, nullable=False))
+    valid_to: date | None = Field(default=None, sa_column=Column(Date, nullable=True))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class TaxCreate(SQLModel):
+    """Create a tax rate (e.g. IVA 10%, 21%, 0%)."""
+    name: str = Field(max_length=128)
+    rate_percent: int = Field(ge=0, le=100)
+    valid_from: date
+    valid_to: date | None = None
+
+
+class TaxUpdate(SQLModel):
+    """Update tax (e.g. set valid_to when rate changes)."""
+    name: str | None = None
+    rate_percent: int | None = Field(default=None, ge=0, le=100)
+    valid_from: date | None = None
+    valid_to: date | None = None
+
+
 class OrderStatus(str, Enum):
     pending = "pending"
     preparing = "preparing"
@@ -102,6 +136,9 @@ class Tenant(SQLModel, table=True):
     working_plan_updated_at: datetime | None = Field(default=None)
     working_plan_owner_seen_at: datetime | None = Field(default=None)
 
+    # Default tax (IVA) applied system-wide when product has no tax override
+    default_tax_id: int | None = Field(default=None, foreign_key="tax.id", index=True)
+
     users: list["User"] = Relationship(back_populates="tenant")
 
 
@@ -137,16 +174,26 @@ class Product(TenantMixin, table=True):
     subcategory: str | None = Field(
         default=None, index=True
     )  # Subcategory: "Red Wine", "Appetizers", etc.
+    tax_id: int | None = Field(default=None, foreign_key="tax.id", index=True)  # Override default tax
+    # Availability window: customer-facing menu shows product only when today is in [available_from, available_until]
+    available_from: date | None = Field(default=None, sa_column=Column(Date, nullable=True))
+    available_until: date | None = Field(default=None, sa_column=Column(Date, nullable=True))
 
 
 # ============ PROVIDER & CATALOG SYSTEM ============
 
 
 class Provider(SQLModel, table=True):
-    """Product providers (wine suppliers, food distributors, etc.)"""
+    """Product providers (wine suppliers, food distributors, etc.).
+    When tenant_id is set, the provider is owned by that tenant (personal provider);
+    only that tenant can add products to it. When tenant_id is None, it is a global
+    provider (self-registered or platform); only provider users manage its products."""
 
     id: int | None = Field(default=None, primary_key=True)
-    name: str = Field(unique=True, index=True)  # e.g., "Tusumiller", "Sysco"
+    tenant_id: int | None = Field(
+        default=None, foreign_key="tenant.id", index=True
+    )  # If set, tenant-owned (personal) provider
+    name: str = Field(index=True)  # Unique per tenant: (tenant_id, name)
     token: str = Field(
         default_factory=lambda: str(uuid4()), unique=True, index=True
     )  # Unique hash for secure URL access
@@ -249,6 +296,10 @@ class TenantProduct(SQLModel, table=True):
     image_filename: str | None = None  # Restaurant's own image
     ingredients: str | None = None
     is_active: bool = Field(default=True, index=True)
+    tax_id: int | None = Field(default=None, foreign_key="tax.id", index=True)  # Override default tax
+    # Availability window: customer-facing menu shows product only when today is in [available_from, available_until]
+    available_from: date | None = Field(default=None, sa_column=Column(Date, nullable=True))
+    available_until: date | None = Field(default=None, sa_column=Column(Date, nullable=True))
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -385,8 +436,12 @@ class OrderItem(SQLModel, table=True):
     product_id: int = Field(foreign_key="product.id")
     product_name: str  # Snapshot of product name at order time
     quantity: int
-    price_cents: int  # Snapshot of price at order time
+    price_cents: int  # Snapshot of price at order time (tax-inclusive)
     notes: str | None = None  # Item-specific notes (e.g., "no onions")
+    # Tax snapshot at order time for invoice breakdown
+    tax_id: int | None = Field(default=None, foreign_key="tax.id", index=True)
+    tax_rate_percent: int | None = None  # e.g. 10, 21, 0
+    tax_amount_cents: int | None = None  # Total tax for this line (quantity * unit_tax)
     
     # Item-level status tracking
     status: OrderItemStatus = Field(default=OrderItemStatus.pending, index=True)
@@ -452,6 +507,9 @@ class ProductUpdate(SQLModel):
     ingredients: str | None = None
     category: str | None = None
     subcategory: str | None = None
+    tax_id: int | None = None  # Override default tax; null = use tenant default
+    available_from: date | None = None
+    available_until: date | None = None
 
 
 class TableCreate(SQLModel):
@@ -630,6 +688,8 @@ class TenantUpdate(SQLModel):
     default_language: str | None = None
     timezone: str | None = None
 
+    default_tax_id: int | None = None  # FK to tax.id; system-wide default IVA
+
     stripe_secret_key: str | None = None
     stripe_publishable_key: str | None = None
     # inventory_tracking_enabled: bool | None = None  # Commented out - migration not applied
@@ -655,6 +715,20 @@ class TenantProductCreate(SQLModel):
     provider_product_id: int | None = None
     name: str | None = None
     price_cents: int | None = None
+    available_from: date | None = None
+    available_until: date | None = None
+
+
+class ProviderCreate(SQLModel):
+    """Body for tenant creating a personal provider (name required; optional contact)."""
+
+    name: str
+    url: str | None = None
+    full_company_name: str | None = None
+    address: str | None = None
+    tax_number: str | None = None
+    phone: str | None = None
+    email: str | None = None
 
 
 class ProviderRegister(SQLModel):
@@ -735,6 +809,9 @@ class TenantProductUpdate(SQLModel):
     name: str | None = None
     price_cents: int | None = None
     is_active: bool | None = None
+    tax_id: int | None = None  # Override default tax; null = use tenant default
+    available_from: date | None = None
+    available_until: date | None = None
 
 
 class I18nText(SQLModel, table=True):

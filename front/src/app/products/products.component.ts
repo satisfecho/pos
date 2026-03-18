@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ApiService, Product } from '../services/api.service';
+import { ApiService, Product, Tax } from '../services/api.service';
 import { PermissionService } from '../services/permission.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { CommonModule } from '@angular/common';
@@ -119,6 +119,28 @@ import { CategoriesComponent } from './categories.component';
                            <option [value]="subcat">{{ subcat }}</option>
                          }
                        </select>
+                     </div>
+                   </div>
+                   <div class="form-group">
+                     <label for="product_tax_id">{{ 'PRODUCTS.TAX_OVERRIDE' | translate }}</label>
+                     <select id="product_tax_id" [(ngModel)]="formData.tax_id" name="tax_id" [disabled]="!canEditProducts()">
+                       <option [ngValue]="null">{{ 'PRODUCTS.USE_DEFAULT_TAX' | translate }}</option>
+                       @for (t of productTaxes(); track t.id) {
+                         <option [ngValue]="t.id">{{ t.name }} ({{ t.rate_percent }}%)</option>
+                       }
+                     </select>
+                     <small class="field-hint">{{ 'PRODUCTS.TAX_OVERRIDE_HINT' | translate }}</small>
+                   </div>
+                   <div class="form-row">
+                     <div class="form-group">
+                       <label for="available_from">{{ 'PRODUCTS.AVAILABLE_FROM' | translate }}</label>
+                       <input id="available_from" type="date" [(ngModel)]="formData.available_from" name="available_from" [readonly]="!canEditProducts()">
+                       <small class="field-hint">{{ 'PRODUCTS.AVAILABLE_FROM_HINT' | translate }}</small>
+                     </div>
+                     <div class="form-group">
+                       <label for="available_until">{{ 'PRODUCTS.AVAILABLE_UNTIL' | translate }}</label>
+                       <input id="available_until" type="date" [(ngModel)]="formData.available_until" name="available_until" [readonly]="!canEditProducts()">
+                       <small class="field-hint">{{ 'PRODUCTS.AVAILABLE_UNTIL_HINT' | translate }}</small>
                      </div>
                    </div>
                    <div class="form-group">
@@ -387,7 +409,8 @@ export class ProductsComponent implements OnInit {
   error = signal('');
   /** Set when submit was attempted with invalid required fields; cleared on edit or cancel */
   productFormErrors = signal<{ name?: boolean; price?: boolean } | null>(null);
-  formData = { name: '', price: 0, ingredients: '', description: '', category: '', subcategory: '' };
+  formData: { name: string; price: number; ingredients: string; description: string; category: string; subcategory: string; tax_id?: number | null; available_from?: string; available_until?: string } = { name: '', price: 0, ingredients: '', description: '', category: '', subcategory: '' };
+  productTaxes = signal<Tax[]>([]);
   uploading = signal(false);
   pendingImageFile = signal<File | null>(null);
   pendingImagePreview = signal<string | null>(null);
@@ -409,6 +432,7 @@ export class ProductsComponent implements OnInit {
     this.loadTenantSettings();
     this.loadProducts();
     this.loadCategories();
+    this.api.getTaxes(true).subscribe({ next: (list) => this.productTaxes.set(list), error: () => this.productTaxes.set([]) });
   }
 
   loadCategories() {
@@ -668,7 +692,10 @@ export class ProductsComponent implements OnInit {
       ingredients: product.ingredients || '',
       description: product.description || '',
       category: product.category || '',
-      subcategory: product.subcategory || ''
+      subcategory: product.subcategory || '',
+      tax_id: product.tax_id ?? null,
+      available_from: product.available_from || '',
+      available_until: product.available_until || '',
     };
     this.onCategoryChange(); // Update available subcategories
     this.showAddForm.set(false);
@@ -676,13 +703,14 @@ export class ProductsComponent implements OnInit {
 
   openAddForm() {
     this.productFormErrors.set(null);
+    this.formData = { name: '', price: 0, ingredients: '', description: '', category: '', subcategory: '', tax_id: null, available_from: '', available_until: '' };
     this.showAddForm.set(true);
   }
 
   cancelForm() {
     this.showAddForm.set(false);
     this.editingProduct.set(null);
-    this.formData = { name: '', price: 0, ingredients: '', description: '', category: '', subcategory: '' };
+    this.formData = { name: '', price: 0, ingredients: '', description: '', category: '', subcategory: '', tax_id: null, available_from: '', available_until: '' };
     this.availableSubcategories.set([]);
     this.productFormErrors.set(null);
     this.clearPendingImage();
@@ -727,7 +755,10 @@ export class ProductsComponent implements OnInit {
       ingredients: this.formData.ingredients || undefined,
       description: this.formData.description || undefined,
       category: this.formData.category || undefined,
-      subcategory: this.formData.subcategory || undefined
+      subcategory: this.formData.subcategory || undefined,
+      tax_id: this.formData.tax_id,
+      available_from: this.formData.available_from?.trim() || null,
+      available_until: this.formData.available_until?.trim() || null,
     };
 
     const editing = this.editingProduct();

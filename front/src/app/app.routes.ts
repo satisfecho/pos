@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './auth/auth.guard';
-import { roleGuard, adminGuard, tableAccessGuard, orderAccessGuard, scheduleGuard } from './auth/role.guard';
+import { roleGuard, adminGuard, tableAccessGuard, orderAccessGuard, scheduleGuard, workingPlanViewRedirectGuard } from './auth/role.guard';
 import { reservationAccessGuard } from './auth/reservation-access.guard';
 import { providerGuard } from './auth/provider.guard';
 
@@ -50,7 +50,9 @@ export const routes: Routes = [
   { path: 'reports', canActivate: [authGuard, adminGuard], loadComponent: () => import('./reports/reports.component').then(m => m.ReportsComponent) },
 
   // Working plan (shift schedule) - all staff can add/edit; owner sees '*' when updated by others
-  { path: 'working-plan', canActivate: [authGuard, scheduleGuard], loadComponent: () => import('./working-plan/working-plan.component').then(m => m.WorkingPlanComponent) },
+  // pathMatch full + guard: redirect to /working-plan/week or /working-plan/calendar (guard runs first; loadComponent satisfies route config)
+  { path: 'working-plan', pathMatch: 'full', canActivate: [authGuard, scheduleGuard, workingPlanViewRedirectGuard], loadComponent: () => import('./working-plan/working-plan.component').then(m => m.WorkingPlanComponent) },
+  { path: 'working-plan/:view', canActivate: [authGuard, scheduleGuard], loadComponent: () => import('./working-plan/working-plan.component').then(m => m.WorkingPlanComponent) },
 
   { path: '**', redirectTo: '' }
 ];

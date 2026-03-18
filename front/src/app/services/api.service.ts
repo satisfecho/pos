@@ -225,6 +225,9 @@ export interface Product {
   image_size_formatted?: string | null;
   category?: string; // Main category: "Starters", "Main Course", "Desserts", "Beverages", "Sides"
   subcategory?: string; // Subcategory: "Red Wine", "Appetizers", etc.
+  tax_id?: number | null; // Override default tax for this product
+  available_from?: string | null; // YYYY-MM-DD; customer menu shows from this date
+  available_until?: string | null; // YYYY-MM-DD; customer menu shows until this date
   // Legacy fields (for menu products from catalog)
   category_code?: string; // Category code for i18n: "STARTERS", "MAIN_COURSE", "BEVERAGES", etc.
   subcategory_codes?: string[]; // Subcategory codes for i18n: ["WINE_RED", "WINE_BY_GLASS"], etc.
@@ -377,6 +380,9 @@ export interface OrderItem {
   removed_by_customer?: boolean;
   removed_at?: string;
   removed_reason?: string;
+  tax_id?: number | null;
+  tax_rate_percent?: number | null;
+  tax_amount_cents?: number | null;
 }
 
 /** Billing customer for Factura (tax invoice) */
@@ -430,6 +436,17 @@ export interface MenuResponse {
   products: Product[];
 }
 
+/** Tax (IVA) rate with validity period */
+export interface Tax {
+  id: number;
+  tenant_id: number;
+  name: string;
+  rate_percent: number;
+  valid_from: string;
+  valid_to: string | null;
+  created_at?: string;
+}
+
 export interface TenantSettings {
   id?: number;
   name: string;
@@ -442,6 +459,7 @@ export interface TenantSettings {
   website?: string | null;
   tax_id?: string | null;
   cif?: string | null;
+  default_tax_id?: number | null;
   logo_filename?: string | null;
   opening_hours?: string | null;
   immediate_payment_required?: boolean;
@@ -519,11 +537,27 @@ export interface SalesReport {
 // Provider & Catalog Interfaces
 export interface Provider {
   id?: number;
+  tenant_id?: number | null; // If set, tenant-owned (personal) provider; only that tenant can add products
   name: string;
   url?: string | null;
   api_endpoint?: string | null;
   is_active?: boolean;
   created_at?: string;
+  full_company_name?: string | null;
+  address?: string | null;
+  tax_number?: string | null;
+  phone?: string | null;
+  email?: string | null;
+}
+
+export interface ProviderCreate {
+  name: string;
+  url?: string | null;
+  full_company_name?: string | null;
+  address?: string | null;
+  tax_number?: string | null;
+  phone?: string | null;
+  email?: string | null;
 }
 
 export interface CatalogItem {
@@ -562,6 +596,14 @@ export interface ProviderInfo {
   unit?: string | null;
 }
 
+export interface TenantProductUpdate {
+  name?: string;
+  price_cents?: number;
+  is_active?: boolean;
+  available_from?: string | null;
+  available_until?: string | null;
+}
+
 export interface TenantProduct {
   id?: number;
   tenant_id?: number;
@@ -573,6 +615,9 @@ export interface TenantProduct {
   image_filename?: string | null;
   ingredients?: string | null;
   is_active?: boolean;
+  tax_id?: number | null; // Override default tax for this product
+  available_from?: string | null;
+  available_until?: string | null;
   catalog_name?: string | null;
   provider_info?: {
     provider_id: number;
@@ -1122,6 +1167,24 @@ export class ApiService {
     return this.http.put<TenantSettings>(`${this.apiUrl}/tenant/settings`, settings);
   }
 
+  getTaxes(currentOnly = true): Observable<Tax[]> {
+    return this.http.get<Tax[]>(`${this.apiUrl}/taxes`, {
+      params: { current_only: currentOnly }
+    });
+  }
+
+  createTax(data: { name: string; rate_percent: number; valid_from: string; valid_to?: string | null }): Observable<Tax> {
+    return this.http.post<Tax>(`${this.apiUrl}/taxes`, data);
+  }
+
+  updateTax(id: number, data: Partial<{ name: string; rate_percent: number; valid_from: string; valid_to: string | null }>): Observable<Tax> {
+    return this.http.put<Tax>(`${this.apiUrl}/taxes/${id}`, data);
+  }
+
+  deleteTax(id: number): Observable<{ status: string; id: number }> {
+    return this.http.delete<{ status: string; id: number }>(`${this.apiUrl}/taxes/${id}`);
+  }
+
   uploadTenantLogo(file: File): Observable<TenantSettings> {
     const formData = new FormData();
     formData.append('file', file);
@@ -1258,8 +1321,13 @@ export class ApiService {
     return this.http.get<Provider>(`${this.apiUrl}/providers/${id}`);
   }
 
-  createProvider(provider: Provider): Observable<Provider> {
-    return this.http.post<Provider>(`${this.apiUrl}/providers`, provider);
+  createProvider(body: ProviderCreate): Observable<Provider> {
+    return this.http.post<Provider>(`${this.apiUrl}/providers`, body);
+  }
+
+  /** Create a product on a tenant-owned (personal) provider (admin/settings). */
+  createProductForProvider(providerId: number, body: ProviderProductCreate): Observable<ProviderProduct> {
+    return this.http.post<ProviderProduct>(`${this.apiUrl}/providers/${providerId}/products`, body);
   }
 
   // Catalog
@@ -1299,7 +1367,7 @@ export class ApiService {
     return this.http.post<TenantProduct>(`${this.apiUrl}/tenant-products`, body);
   }
 
-  updateTenantProduct(id: number, updates: { name?: string; price_cents?: number; is_active?: boolean }): Observable<TenantProduct> {
+  updateTenantProduct(id: number, updates: TenantProductUpdate): Observable<TenantProduct> {
     return this.http.put<TenantProduct>(`${this.apiUrl}/tenant-products/${id}`, updates);
   }
 
