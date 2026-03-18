@@ -92,6 +92,14 @@ import { CategoriesComponent } from './categories.component';
                          <span class="field-error" role="alert">{{ 'PRODUCTS.PRICE_REQUIRED' | translate }}</span>
                        }
                      </div>
+                     <div class="form-group form-group-sm">
+                       <label for="cost">{{ 'PRODUCTS.COST_PRICE' | translate }}</label>
+                       <div class="price-input">
+                         <span class="currency">{{ currency() }}</span>
+                         <input id="cost" type="number" step="0.01" [(ngModel)]="formData.cost" name="cost" [placeholder]="'PRODUCTS.COST_PLACEHOLDER' | translate" [readonly]="!canEditProducts()">
+                       </div>
+                       <small class="field-hint">{{ 'PRODUCTS.COST_HINT' | translate }}</small>
+                     </div>
                    </div>
                    <div class="form-group">
                      <label for="ingredients">{{ 'PRODUCTS.INGREDIENTS_LABEL' | translate }}</label>
@@ -279,6 +287,7 @@ import { CategoriesComponent } from './categories.component';
                        <th>{{ 'PRODUCTS.CATEGORY_HEADER' | translate }}</th>
                        <th>{{ 'PRODUCTS.SUBCATEGORY_HEADER' | translate }}</th>
                        <th>{{ 'PRODUCTS.PRICE_HEADER' | translate }}</th>
+                       <th>{{ 'PRODUCTS.COST_HEADER' | translate }}</th>
                        <th></th>
                      </tr>
                    </thead>
@@ -349,6 +358,7 @@ import { CategoriesComponent } from './categories.component';
                           }
                         </td>
                         <td class="price">{{ formatPrice(product.price_cents) }}</td>
+                        <td class="price">{{ product.cost_cents != null ? formatPrice(product.cost_cents) : '—' }}</td>
                         <td class="actions">
                           <button class="icon-btn" (click)="startEdit(product)" [attr.title]="'PRODUCTS.EDIT_TOOLTIP' | translate">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -409,7 +419,7 @@ export class ProductsComponent implements OnInit {
   error = signal('');
   /** Set when submit was attempted with invalid required fields; cleared on edit or cancel */
   productFormErrors = signal<{ name?: boolean; price?: boolean } | null>(null);
-  formData: { name: string; price: number; ingredients: string; description: string; category: string; subcategory: string; tax_id?: number | null; available_from?: string; available_until?: string } = { name: '', price: 0, ingredients: '', description: '', category: '', subcategory: '' };
+  formData: { name: string; price: number; cost: number | null; ingredients: string; description: string; category: string; subcategory: string; tax_id?: number | null; available_from?: string; available_until?: string } = { name: '', price: 0, cost: null, ingredients: '', description: '', category: '', subcategory: '' };
   productTaxes = signal<Tax[]>([]);
   uploading = signal(false);
   pendingImageFile = signal<File | null>(null);
@@ -689,6 +699,7 @@ export class ProductsComponent implements OnInit {
     this.formData = {
       name: product.name,
       price: product.price_cents / 100,
+      cost: product.cost_cents != null ? product.cost_cents / 100 : null,
       ingredients: product.ingredients || '',
       description: product.description || '',
       category: product.category || '',
@@ -703,14 +714,14 @@ export class ProductsComponent implements OnInit {
 
   openAddForm() {
     this.productFormErrors.set(null);
-    this.formData = { name: '', price: 0, ingredients: '', description: '', category: '', subcategory: '', tax_id: null, available_from: '', available_until: '' };
+    this.formData = { name: '', price: 0, cost: null, ingredients: '', description: '', category: '', subcategory: '', tax_id: null, available_from: '', available_until: '' };
     this.showAddForm.set(true);
   }
 
   cancelForm() {
     this.showAddForm.set(false);
     this.editingProduct.set(null);
-    this.formData = { name: '', price: 0, ingredients: '', description: '', category: '', subcategory: '', tax_id: null, available_from: '', available_until: '' };
+    this.formData = { name: '', price: 0, cost: null, ingredients: '', description: '', category: '', subcategory: '', tax_id: null, available_from: '', available_until: '' };
     this.availableSubcategories.set([]);
     this.productFormErrors.set(null);
     this.clearPendingImage();
@@ -752,6 +763,7 @@ export class ProductsComponent implements OnInit {
     const productData = {
       name: this.formData.name,
       price_cents: Math.round(this.formData.price * 100),
+      cost_cents: this.formData.cost != null && this.formData.cost >= 0 ? Math.round(this.formData.cost * 100) : undefined,
       ingredients: this.formData.ingredients || undefined,
       description: this.formData.description || undefined,
       category: this.formData.category || undefined,

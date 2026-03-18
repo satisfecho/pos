@@ -1830,6 +1830,8 @@ def update_product(
         product.name = product_update.name
     if product_update.price_cents is not None:
         product.price_cents = product_update.price_cents
+    if product_update.cost_cents is not None:
+        product.cost_cents = product_update.cost_cents
     if product_update.ingredients is not None:
         product.ingredients = product_update.ingredients
     if product_update.category is not None:
@@ -2872,6 +2874,10 @@ def create_tenant_product(
         price_cents = provider_product.price_cents
     if price_cents is None:
         raise HTTPException(status_code=400, detail="Price is required")
+    # Cost: optional; default from provider price when adding from catalog
+    cost_cents = product_data.cost_cents
+    if cost_cents is None and provider_product and provider_product.price_cents is not None:
+        cost_cents = provider_product.price_cents
 
     # Determine category and subcategory from catalog
     category = catalog_item.category
@@ -2895,6 +2901,7 @@ def create_tenant_product(
         tenant_id=current_user.tenant_id,
         name=product_name,
         price_cents=price_cents,
+        cost_cents=cost_cents,
         description=catalog_item.description,
         image_filename=image_filename,
         category=category,
@@ -2914,6 +2921,7 @@ def create_tenant_product(
         product_id=product.id,  # Link to the actual Product
         name=product_name,
         price_cents=price_cents,
+        cost_cents=cost_cents,
         available_from=product_data.available_from,
         available_until=product_data.available_until,
     )
@@ -3034,6 +3042,8 @@ def update_tenant_product(
         tenant_product.name = product_update.name
     if product_update.price_cents is not None:
         tenant_product.price_cents = product_update.price_cents
+    if product_update.cost_cents is not None:
+        tenant_product.cost_cents = product_update.cost_cents
     if product_update.is_active is not None:
         tenant_product.is_active = product_update.is_active
     if product_update.tax_id is not None:
@@ -5639,6 +5649,7 @@ def create_order(
         # Use source indicator if provided, otherwise try TenantProduct first, then legacy Product
         product_name = None
         price_cents = None
+        cost_cents: int | None = None
         product_tax_id: int | None = None
         effective_product_id: int  # Must be Product.id (OrderItem.product_id FK references product.id)
 
@@ -5654,6 +5665,7 @@ def create_order(
                 raise HTTPException(status_code=400, detail=f"TenantProduct {item.product_id} not found")
             product_name = tenant_product.name
             price_cents = tenant_product.price_cents
+            cost_cents = getattr(tenant_product, "cost_cents", None)
             product_tax_id = getattr(tenant_product, "tax_id", None)
             if tenant_product.product_id is not None:
                 effective_product_id = tenant_product.product_id
@@ -5662,6 +5674,7 @@ def create_order(
                 new_product = models.Product(
                     name=tenant_product.name,
                     price_cents=tenant_product.price_cents,
+                    cost_cents=cost_cents,
                     tenant_id=table.tenant_id,
                 )
                 session.add(new_product)
@@ -5681,6 +5694,7 @@ def create_order(
                 raise HTTPException(status_code=400, detail=f"Product {item.product_id} not found")
             product_name = product.name
             price_cents = product.price_cents
+            cost_cents = getattr(product, "cost_cents", None)
             product_tax_id = getattr(product, "tax_id", None)
             effective_product_id = product.id
         else:
@@ -5695,6 +5709,7 @@ def create_order(
             if tenant_product:
                 product_name = tenant_product.name
                 price_cents = tenant_product.price_cents
+                cost_cents = getattr(tenant_product, "cost_cents", None)
                 product_tax_id = getattr(tenant_product, "tax_id", None)
                 if tenant_product.product_id is not None:
                     effective_product_id = tenant_product.product_id
@@ -5702,6 +5717,7 @@ def create_order(
                     new_product = models.Product(
                         name=tenant_product.name,
                         price_cents=tenant_product.price_cents,
+                        cost_cents=cost_cents,
                         tenant_id=table.tenant_id,
                     )
                     session.add(new_product)
@@ -5721,6 +5737,7 @@ def create_order(
                     raise HTTPException(status_code=400, detail=f"Product {item.product_id} not found")
                 product_name = product.name
                 price_cents = product.price_cents
+                cost_cents = getattr(product, "cost_cents", None)
                 product_tax_id = getattr(product, "tax_id", None)
                 effective_product_id = product.id
 
@@ -5763,6 +5780,7 @@ def create_order(
                 product_name=product_name,
                 quantity=item.quantity,
                 price_cents=price_cents,
+                cost_cents=cost_cents,
                 notes=item.notes,
                 status=models.OrderItemStatus.pending,
                 added_by_session=order_data.session_id,

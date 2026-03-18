@@ -81,6 +81,9 @@ def _get_revenue_items(
             product = session.get(models.Product, item.product_id)
             category = (product.category or "Uncategorized") if product else "Uncategorized"
             subcategory = (product.subcategory or "") if product else ""
+            unit_cost = getattr(item, "cost_cents", None) or 0
+            revenue_cents = item.quantity * item.price_cents
+            cost_cents = item.quantity * unit_cost
             result.append({
                 "order_id": order.id,
                 "date": rev_date,
@@ -94,7 +97,9 @@ def _get_revenue_items(
                 "subcategory": subcategory,
                 "quantity": item.quantity,
                 "price_cents": item.price_cents,
-                "revenue_cents": item.quantity * item.price_cents,
+                "cost_cents": cost_cents,
+                "revenue_cents": revenue_cents,
+                "profit_cents": revenue_cents - cost_cents,
             })
     return result
 
@@ -106,61 +111,113 @@ def _build_report_payload(tenant_id: int, session: Session, from_date: date, to_
     rows = _get_revenue_items(session, tenant_id, from_date, to_date)
 
     # Summary by day
-    by_day: dict[str, dict] = defaultdict(lambda: {"revenue_cents": 0, "order_count": set()})
+    by_day_agg: dict[str, dict] = defaultdict(
+        lambda: {"revenue_cents": 0, "cost_cents": 0, "profit_cents": 0, "order_count": set()}
+    )
     for r in rows:
         day = r["date"].strftime("%Y-%m-%d") if hasattr(r["date"], "strftime") else str(r["date"])[:10]
-        by_day[day]["revenue_cents"] += r["revenue_cents"]
-        by_day[day]["order_count"].add(r["order_id"])
+        by_day_agg[day]["revenue_cents"] += r["revenue_cents"]
+        by_day_agg[day]["cost_cents"] += r["cost_cents"]
+        by_day_agg[day]["profit_cents"] += r["profit_cents"]
+        by_day_agg[day]["order_count"].add(r["order_id"])
     summary_daily = [
-        {"date": d, "revenue_cents": data["revenue_cents"], "order_count": len(data["order_count"])}
-        for d, data in sorted(by_day.items())
+        {
+            "date": d,
+            "revenue_cents": data["revenue_cents"],
+            "cost_cents": data["cost_cents"],
+            "profit_cents": data["profit_cents"],
+            "order_count": len(data["order_count"]),
+        }
+        for d, data in sorted(by_day_agg.items())
     ]
     total_revenue_cents = sum(r["revenue_cents"] for r in rows)
+    total_cost_cents = sum(r["cost_cents"] for r in rows)
+    total_profit_cents = total_revenue_cents - total_cost_cents
     total_orders = len(set(r["order_id"] for r in rows))
 
     # By product
-    by_product: dict[tuple[int, str], dict] = defaultdict(lambda: {"quantity": 0, "revenue_cents": 0, "category": ""})
+    by_product: dict[tuple[int, str], dict] = defaultdict(
+        lambda: {"quantity": 0, "revenue_cents": 0, "cost_cents": 0, "profit_cents": 0, "category": ""}
+    )
     for r in rows:
         key = (r["product_id"], r["product_name"])
         by_product[key]["quantity"] += r["quantity"]
         by_product[key]["revenue_cents"] += r["revenue_cents"]
+        by_product[key]["cost_cents"] += r["cost_cents"]
+        by_product[key]["profit_cents"] += r["profit_cents"]
         if not by_product[key]["category"]:
             by_product[key]["category"] = r.get("category") or "Uncategorized"
     by_product_list = [
-        {"product_id": k[0], "product_name": k[1], "category": v["category"], "quantity": v["quantity"], "revenue_cents": v["revenue_cents"]}
+        {
+            "product_id": k[0],
+            "product_name": k[1],
+            "category": v["category"],
+            "quantity": v["quantity"],
+            "revenue_cents": v["revenue_cents"],
+            "cost_cents": v["cost_cents"],
+            "profit_cents": v["profit_cents"],
+        }
         for k, v in sorted(by_product.items(), key=lambda x: -x[1]["revenue_cents"])
     ]
 
     # By category
-    by_category: dict[str, dict] = defaultdict(lambda: {"quantity": 0, "revenue_cents": 0})
+    by_category: dict[str, dict] = defaultdict(
+        lambda: {"quantity": 0, "revenue_cents": 0, "cost_cents": 0, "profit_cents": 0}
+    )
     for r in rows:
         c = r["category"] or "Uncategorized"
         by_category[c]["quantity"] += r["quantity"]
         by_category[c]["revenue_cents"] += r["revenue_cents"]
+        by_category[c]["cost_cents"] += r["cost_cents"]
+        by_category[c]["profit_cents"] += r["profit_cents"]
     by_category_list = [
-        {"category": k, "quantity": v["quantity"], "revenue_cents": v["revenue_cents"]}
+        {
+            "category": k,
+            "quantity": v["quantity"],
+            "revenue_cents": v["revenue_cents"],
+            "cost_cents": v["cost_cents"],
+            "profit_cents": v["profit_cents"],
+        }
         for k, v in sorted(by_category.items(), key=lambda x: -x[1]["revenue_cents"])
     ]
 
     # By table
-    by_table: dict[str, dict] = defaultdict(lambda: {"revenue_cents": 0, "order_count": set()})
+    by_table: dict[str, dict] = defaultdict(lambda: {"revenue_cents": 0, "cost_cents": 0, "profit_cents": 0, "order_count": set()})
     for r in rows:
         t = r["table_name"]
         by_table[t]["revenue_cents"] += r["revenue_cents"]
+        by_table[t]["cost_cents"] += r["cost_cents"]
+        by_table[t]["profit_cents"] += r["profit_cents"]
         by_table[t]["order_count"].add(r["order_id"])
     by_table_list = [
-        {"table_name": k, "revenue_cents": v["revenue_cents"], "order_count": len(v["order_count"])}
+        {
+            "table_name": k,
+            "revenue_cents": v["revenue_cents"],
+            "cost_cents": v["cost_cents"],
+            "profit_cents": v["profit_cents"],
+            "order_count": len(v["order_count"]),
+        }
         for k, v in sorted(by_table.items(), key=lambda x: -x[1]["revenue_cents"])
     ]
 
     # By waiter
-    by_waiter: dict[str, dict] = defaultdict(lambda: {"revenue_cents": 0, "order_count": set()})
+    by_waiter: dict[str, dict] = defaultdict(
+        lambda: {"revenue_cents": 0, "cost_cents": 0, "profit_cents": 0, "order_count": set()}
+    )
     for r in rows:
         w = r["waiter_name"]
         by_waiter[w]["revenue_cents"] += r["revenue_cents"]
+        by_waiter[w]["cost_cents"] += r["cost_cents"]
+        by_waiter[w]["profit_cents"] += r["profit_cents"]
         by_waiter[w]["order_count"].add(r["order_id"])
     by_waiter_list = [
-        {"waiter_name": k, "revenue_cents": v["revenue_cents"], "order_count": len(v["order_count"])}
+        {
+            "waiter_name": k,
+            "revenue_cents": v["revenue_cents"],
+            "cost_cents": v["cost_cents"],
+            "profit_cents": v["profit_cents"],
+            "order_count": len(v["order_count"]),
+        }
         for k, v in sorted(by_waiter.items(), key=lambda x: -x[1]["revenue_cents"])
     ]
 
@@ -212,6 +269,8 @@ def _build_report_payload(tenant_id: int, session: Session, from_date: date, to_
         "to_date": to_date.isoformat(),
         "summary": {
             "total_revenue_cents": total_revenue_cents,
+            "total_cost_cents": total_cost_cents,
+            "total_profit_cents": total_profit_cents,
             "total_orders": total_orders,
             "average_revenue_per_order_cents": average_revenue_per_order_cents,
             "daily": summary_daily,
@@ -270,11 +329,24 @@ def export_report(
         # Summary sheet
         ws = wb.active
         ws.title = "Summary"
-        ws.append(["Date", "Revenue (cents)", "Orders"])
+        ws.append(["Date", "Revenue (cents)", "Cost (cents)", "Profit (cents)", "Orders"])
         for row in data["summary"]["daily"]:
-            ws.append([row["date"], row["revenue_cents"], row["order_count"]])
+            ws.append([
+                row["date"],
+                row["revenue_cents"],
+                row.get("cost_cents", 0),
+                row.get("profit_cents", 0),
+                row["order_count"],
+            ])
         ws.append([])
-        ws.append(["Total", data["summary"]["total_revenue_cents"], data["summary"]["total_orders"]])
+        s = data["summary"]
+        ws.append([
+            "Total",
+            s["total_revenue_cents"],
+            s.get("total_cost_cents", 0),
+            s.get("total_profit_cents", 0),
+            s["total_orders"],
+        ])
         # Reservations
         res = data.get("reservations", {})
         ws_res = wb.create_sheet("Reservations")
@@ -289,24 +361,49 @@ def export_report(
         ws_res.append(["Total", res.get("total", 0)])
         # Products
         ws2 = wb.create_sheet("By Product")
-        ws2.append(["Product", "Category", "Quantity", "Revenue (cents)"])
+        ws2.append(["Product", "Category", "Quantity", "Revenue (cents)", "Cost (cents)", "Profit (cents)"])
         for p in data["by_product"]:
-            ws2.append([p["product_name"], p.get("category", ""), p["quantity"], p["revenue_cents"]])
+            ws2.append([
+                p["product_name"],
+                p.get("category", ""),
+                p["quantity"],
+                p["revenue_cents"],
+                p.get("cost_cents", 0),
+                p.get("profit_cents", 0),
+            ])
         # Category
         ws3 = wb.create_sheet("By Category")
-        ws3.append(["Category", "Quantity", "Revenue (cents)"])
+        ws3.append(["Category", "Quantity", "Revenue (cents)", "Cost (cents)", "Profit (cents)"])
         for c in data["by_category"]:
-            ws3.append([c["category"], c["quantity"], c["revenue_cents"]])
+            ws3.append([
+                c["category"],
+                c["quantity"],
+                c["revenue_cents"],
+                c.get("cost_cents", 0),
+                c.get("profit_cents", 0),
+            ])
         # Table
         ws4 = wb.create_sheet("By Table")
-        ws4.append(["Table", "Revenue (cents)", "Orders"])
+        ws4.append(["Table", "Revenue (cents)", "Cost (cents)", "Profit (cents)", "Orders"])
         for t in data["by_table"]:
-            ws4.append([t["table_name"], t["revenue_cents"], t["order_count"]])
+            ws4.append([
+                t["table_name"],
+                t["revenue_cents"],
+                t.get("cost_cents", 0),
+                t.get("profit_cents", 0),
+                t["order_count"],
+            ])
         # Waiter
         ws5 = wb.create_sheet("By Waiter")
-        ws5.append(["Waiter", "Revenue (cents)", "Orders"])
+        ws5.append(["Waiter", "Revenue (cents)", "Cost (cents)", "Profit (cents)", "Orders"])
         for w in data["by_waiter"]:
-            ws5.append([w["waiter_name"], w["revenue_cents"], w["order_count"]])
+            ws5.append([
+                w["waiter_name"],
+                w["revenue_cents"],
+                w.get("cost_cents", 0),
+                w.get("profit_cents", 0),
+                w["order_count"],
+            ])
         buf = BytesIO()
         wb.save(buf)
         buf.seek(0)
@@ -318,20 +415,29 @@ def export_report(
 
     # CSV: single report type
     if report == "summary":
-        rows = [{"date": r["date"], "revenue_cents": r["revenue_cents"], "order_count": r["order_count"]} for r in data["summary"]["daily"]]
-        headers = ["date", "revenue_cents", "order_count"]
+        rows = [
+            {
+                "date": r["date"],
+                "revenue_cents": r["revenue_cents"],
+                "cost_cents": r.get("cost_cents", 0),
+                "profit_cents": r.get("profit_cents", 0),
+                "order_count": r["order_count"],
+            }
+            for r in data["summary"]["daily"]
+        ]
+        headers = ["date", "revenue_cents", "cost_cents", "profit_cents", "order_count"]
     elif report == "products":
         rows = data["by_product"]
-        headers = ["product_name", "quantity", "revenue_cents"]
+        headers = ["product_name", "quantity", "revenue_cents", "cost_cents", "profit_cents"]
     elif report == "category":
         rows = data["by_category"]
-        headers = ["category", "quantity", "revenue_cents"]
+        headers = ["category", "quantity", "revenue_cents", "cost_cents", "profit_cents"]
     elif report == "table":
         rows = data["by_table"]
-        headers = ["table_name", "revenue_cents", "order_count"]
+        headers = ["table_name", "revenue_cents", "cost_cents", "profit_cents", "order_count"]
     elif report == "waiter":
         rows = data["by_waiter"]
-        headers = ["waiter_name", "revenue_cents", "order_count"]
+        headers = ["waiter_name", "revenue_cents", "cost_cents", "profit_cents", "order_count"]
     else:
         rows = data["summary"]["daily"]
         headers = ["date", "revenue_cents", "order_count"]

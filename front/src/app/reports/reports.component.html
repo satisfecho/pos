@@ -43,6 +43,16 @@
             <span class="card-label">{{ 'REPORTS.TOTAL_REVENUE' | translate }}</span>
             <span class="card-value">{{ formatCurrency(r.summary.total_revenue_cents) }}</span>
           </div>
+          @if ((r.summary.total_cost_cents ?? 0) > 0 || (r.summary.total_profit_cents ?? 0) !== 0) {
+            <div class="summary-card cost">
+              <span class="card-label">{{ 'REPORTS.TOTAL_COST' | translate }}</span>
+              <span class="card-value">{{ formatCurrency(r.summary.total_cost_cents ?? 0) }}</span>
+            </div>
+            <div class="summary-card profit">
+              <span class="card-label">{{ 'REPORTS.TOTAL_PROFIT' | translate }}</span>
+              <span class="card-value">{{ formatCurrency(r.summary.total_profit_cents ?? 0) }}</span>
+            </div>
+          }
           <div class="summary-card orders">
             <span class="card-label">{{ 'REPORTS.TOTAL_ORDERS' | translate }}</span>
             <span class="card-value">{{ r.summary.total_orders }}</span>
@@ -157,6 +167,10 @@
                 <th>{{ 'REPORTS.PRODUCT' | translate }}</th>
                 <th>{{ 'REPORTS.QUANTITY' | translate }}</th>
                 <th>{{ 'REPORTS.REVENUE' | translate }}</th>
+                @if ((r.summary.total_cost_cents ?? 0) > 0) {
+                  <th class="num">{{ 'REPORTS.COST' | translate }}</th>
+                  <th class="num">{{ 'REPORTS.PROFIT' | translate }}</th>
+                }
                 <th class="num">{{ 'REPORTS.SHARE' | translate }}</th>
               </tr>
             </thead>
@@ -166,6 +180,10 @@
                   <td>{{ p.product_name }}</td>
                   <td>{{ p.quantity }} ({{ formatPct(p.quantity, totalProductQuantity()) }})</td>
                   <td class="num">{{ formatCurrency(p.revenue_cents) }}</td>
+                  @if ((r.summary.total_cost_cents ?? 0) > 0) {
+                    <td class="num">{{ formatCurrency(p.cost_cents ?? 0) }}</td>
+                    <td class="num">{{ formatCurrency(p.profit_cents ?? 0) }}</td>
+                  }
                   <td class="num share-with-bar">
                     <div class="bar-track inline">
                       <div class="bar-fill product" [style.width.%]="(p.revenue_cents / r.summary.total_revenue_cents) * 100"></div>
@@ -189,6 +207,10 @@
                 <th>{{ 'REPORTS.CATEGORY' | translate }}</th>
                 <th>{{ 'REPORTS.QUANTITY' | translate }}</th>
                 <th>{{ 'REPORTS.REVENUE' | translate }}</th>
+                @if ((r.summary.total_cost_cents ?? 0) > 0) {
+                  <th class="num">{{ 'REPORTS.COST' | translate }}</th>
+                  <th class="num">{{ 'REPORTS.PROFIT' | translate }}</th>
+                }
                 <th class="num">{{ 'REPORTS.SHARE' | translate }}</th>
               </tr>
             </thead>
@@ -198,6 +220,10 @@
                   <td>{{ c.category }}</td>
                   <td>{{ c.quantity }} ({{ formatPct(c.quantity, totalCategoryQuantity()) }})</td>
                   <td class="num">{{ formatCurrency(c.revenue_cents) }}</td>
+                  @if ((r.summary.total_cost_cents ?? 0) > 0) {
+                    <td class="num">{{ formatCurrency(c.cost_cents ?? 0) }}</td>
+                    <td class="num">{{ formatCurrency(c.profit_cents ?? 0) }}</td>
+                  }
                   <td class="num share-with-bar">
                     <div class="bar-track inline">
                       <div class="bar-fill category" [style.width.%]="(c.revenue_cents / r.summary.total_revenue_cents) * 100"></div>
@@ -221,6 +247,10 @@
                 <th>{{ 'REPORTS.TABLE' | translate }}</th>
                 <th>{{ 'REPORTS.TOTAL_ORDERS' | translate }}</th>
                 <th>{{ 'REPORTS.REVENUE' | translate }}</th>
+                @if ((r.summary.total_cost_cents ?? 0) > 0) {
+                  <th class="num">{{ 'REPORTS.COST' | translate }}</th>
+                  <th class="num">{{ 'REPORTS.PROFIT' | translate }}</th>
+                }
                 <th class="num">{{ 'REPORTS.SHARE' | translate }}</th>
               </tr>
             </thead>
@@ -230,6 +260,10 @@
                   <td>{{ t.table_name }}</td>
                   <td>{{ t.order_count }}</td>
                   <td class="num">{{ formatCurrency(t.revenue_cents) }}</td>
+                  @if ((r.summary.total_cost_cents ?? 0) > 0) {
+                    <td class="num">{{ formatCurrency(t.cost_cents ?? 0) }}</td>
+                    <td class="num">{{ formatCurrency(t.profit_cents ?? 0) }}</td>
+                  }
                   <td class="num share-with-bar">
                     <div class="bar-track inline">
                       <div class="bar-fill table" [style.width.%]="(t.revenue_cents / r.summary.total_revenue_cents) * 100"></div>
@@ -253,6 +287,10 @@
                 <th>{{ 'REPORTS.WAITER' | translate }}</th>
                 <th>{{ 'REPORTS.TOTAL_ORDERS' | translate }}</th>
                 <th>{{ 'REPORTS.REVENUE' | translate }}</th>
+                @if ((r.summary.total_cost_cents ?? 0) > 0) {
+                  <th class="num">{{ 'REPORTS.COST' | translate }}</th>
+                  <th class="num">{{ 'REPORTS.PROFIT' | translate }}</th>
+                }
                 <th class="num">{{ 'REPORTS.SHARE' | translate }}</th>
               </tr>
             </thead>
@@ -262,6 +300,10 @@
                   <td>{{ w.waiter_name }}</td>
                   <td>{{ w.order_count }}</td>
                   <td class="num">{{ formatCurrency(w.revenue_cents) }}</td>
+                  @if ((r.summary.total_cost_cents ?? 0) > 0) {
+                    <td class="num">{{ formatCurrency(w.cost_cents ?? 0) }}</td>
+                    <td class="num">{{ formatCurrency(w.profit_cents ?? 0) }}</td>
+                  }
                   <td class="num share-with-bar">
                     <div class="bar-track inline">
                       <div class="bar-fill waiter" [style.width.%]="(w.revenue_cents / r.summary.total_revenue_cents) * 100"></div>

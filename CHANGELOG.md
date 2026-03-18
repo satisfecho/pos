@@ -40,6 +40,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Deploy (amvara9) – front CSS / stale build**: Deploy script now builds the front image with `--no-cache` so each deploy serves assets from the current code (fixes wrong styling e.g. Settings > Opening hours). Nginx in the front container sends `Cache-Control: no-cache` for the HTML document so clients get new hashed asset URLs after deploy. See `docs/0024-deploy-css-fix-amvara9.md`.
 - **Deploy (amvara9) – version not updating**: Fixed `docker compose build` flag order (`build --no-cache front`); added `up -d --force-recreate` so the front container is recreated with the new image; added a post-deploy step that prints the version served by the front container for verification.
 
+## [2.0.6] - 2026-03-18
+
+### Added
+
+- **Cost price and profit**: Optional cost price per product for profit calculation. **Backend:** `cost_cents` on Product, TenantProduct, and OrderItem (snapshot when item is added); migration `20260318150000_add_product_cost_cents.sql`; product/tenant-product CRUD and order item creation accept and store cost; when adding from catalog, cost defaults from provider price; sales reports and CSV/Excel export include total cost, total profit, and per-product/category/table/waiter cost and profit. **Frontend:** Products form and table: cost price field and column; Reports: Total cost and Total profit summary cards, Cost and Profit columns in by-product/category/table/waiter when cost data exists; i18n for cost/profit labels (en, es, ca, de, fr, hi, zh-CN).
+
 ## [2.0.5] - 2026-03-18
 
 ### Fixed

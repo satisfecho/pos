@@ -165,6 +165,7 @@ class Product(TenantMixin, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str
     price_cents: int
+    cost_cents: int | None = None  # Cost price for profit calculation
     description: str | None = None
     image_filename: str | None = None  # Stored in uploads/{tenant_id}/products/
     ingredients: str | None = None  # Comma-separated list
@@ -293,6 +294,7 @@ class TenantProduct(SQLModel, table=True):
     # Restaurant's own data
     name: str  # Restaurant can customize the name
     price_cents: int  # Restaurant's selling price (can add markup)
+    cost_cents: int | None = None  # Cost price for profit calculation
     image_filename: str | None = None  # Restaurant's own image
     ingredients: str | None = None
     is_active: bool = Field(default=True, index=True)
@@ -446,6 +448,7 @@ class OrderItem(SQLModel, table=True):
     product_name: str  # Snapshot of product name at order time
     quantity: int
     price_cents: int  # Snapshot of price at order time (tax-inclusive)
+    cost_cents: int | None = None  # Snapshot of cost at order time for profit
     notes: str | None = None  # Item-specific notes (e.g., "no onions")
     # Tax snapshot at order time for invoice breakdown
     tax_id: int | None = Field(default=None, foreign_key="tax.id", index=True)
@@ -513,6 +516,7 @@ class UserResponse(SQLModel):
 class ProductUpdate(SQLModel):
     name: str | None = None
     price_cents: int | None = None
+    cost_cents: int | None = None
     ingredients: str | None = None
     category: str | None = None
     subcategory: str | None = None
@@ -735,6 +739,7 @@ class TenantProductCreate(SQLModel):
     provider_product_id: int | None = None
     name: str | None = None
     price_cents: int | None = None
+    cost_cents: int | None = None
     available_from: date | None = None
     available_until: date | None = None
 
@@ -828,6 +833,7 @@ class ProviderProductUpdate(SQLModel):
 class TenantProductUpdate(SQLModel):
     name: str | None = None
     price_cents: int | None = None
+    cost_cents: int | None = None
     is_active: bool | None = None
     tax_id: int | None = None  # Override default tax; null = use tenant default
     available_from: date | None = None

@@ -218,6 +218,7 @@ export interface Product {
   id?: number;
   name: string;
   price_cents: number;
+  cost_cents?: number | null;
   tenant_id?: number;
   image_filename?: string;
   ingredients?: string;
@@ -389,6 +390,7 @@ export interface OrderItem {
   product_name: string;
   quantity: number;
   price_cents: number;
+  cost_cents?: number | null;
   notes?: string;
   status?: string;  // pending, preparing, ready, delivered, cancelled
   removed_by_customer?: boolean;
@@ -532,14 +534,16 @@ export interface SalesReport {
   to_date: string;
   summary: {
     total_revenue_cents: number;
+    total_cost_cents?: number;
+    total_profit_cents?: number;
     total_orders: number;
     average_revenue_per_order_cents: number;
-    daily: { date: string; revenue_cents: number; order_count: number }[];
+    daily: { date: string; revenue_cents: number; cost_cents?: number; profit_cents?: number; order_count: number }[];
   };
-  by_product: { product_id: number; product_name: string; category?: string; quantity: number; revenue_cents: number }[];
-  by_category: { category: string; quantity: number; revenue_cents: number }[];
-  by_table: { table_name: string; revenue_cents: number; order_count: number }[];
-  by_waiter: { waiter_name: string; revenue_cents: number; order_count: number }[];
+  by_product: { product_id: number; product_name: string; category?: string; quantity: number; revenue_cents: number; cost_cents?: number; profit_cents?: number }[];
+  by_category: { category: string; quantity: number; revenue_cents: number; cost_cents?: number; profit_cents?: number }[];
+  by_table: { table_name: string; revenue_cents: number; cost_cents?: number; profit_cents?: number; order_count: number }[];
+  by_waiter: { waiter_name: string; revenue_cents: number; cost_cents?: number; profit_cents?: number; order_count: number }[];
   reservations?: {
     total: number;
     by_source: { source: string; count: number }[];
@@ -613,6 +617,7 @@ export interface ProviderInfo {
 export interface TenantProductUpdate {
   name?: string;
   price_cents?: number;
+  cost_cents?: number | null;
   is_active?: boolean;
   available_from?: string | null;
   available_until?: string | null;
@@ -626,6 +631,7 @@ export interface TenantProduct {
   product_id?: number | null;
   name: string;
   price_cents: number;
+  cost_cents?: number | null;
   image_filename?: string | null;
   ingredients?: string | null;
   is_active?: boolean;
@@ -1373,11 +1379,12 @@ export class ApiService {
     return this.http.get<TenantProduct[]>(`${this.apiUrl}/tenant-products`, { params });
   }
 
-  createTenantProduct(catalogId: number, providerProductId?: number, name?: string, priceCents?: number): Observable<TenantProduct> {
-    const body: any = { catalog_id: catalogId };
+  createTenantProduct(catalogId: number, providerProductId?: number, name?: string, priceCents?: number, costCents?: number | null): Observable<TenantProduct> {
+    const body: Record<string, unknown> = { catalog_id: catalogId };
     if (providerProductId) body.provider_product_id = providerProductId;
     if (name) body.name = name;
     if (priceCents !== undefined) body.price_cents = priceCents;
+    if (costCents !== undefined && costCents !== null) body.cost_cents = costCents;
     return this.http.post<TenantProduct>(`${this.apiUrl}/tenant-products`, body);
   }
 
