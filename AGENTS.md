@@ -97,7 +97,7 @@ When debugging the running app (e.g. frontend not loading a route, API issues):
 
 3. **Restarting the backend without losing data**
  - To restart only the backend: `docker compose restart back` or `docker compose up -d back`.
- - **Do not use** `docker compose down -v` or `./run.sh --clean` when you only mean to restart the backend. The `-v` flag removes **named volumes** (e.g. `pos_pgdata`), which wipes the database. Image **files** live in the host directory `back/uploads/` (bind-mounted), so they are not deleted by `down -v`, but all **references** to them (Product.image_filename, ProviderProduct.image_filename, Tenant.logo_filename) are in the DB. After a DB wipe, the app will show no images until data is re-seeded or re-imported.
+ - **Do not use** `docker compose down -v` or `./run.sh --clean` when you only mean to restart the backend. The `-v` flag removes **named volumes** (e.g. `pos_pgdata`), which wipes the database. Image **files** live in the host directory `back/uploads/` (bind-mounted), so they are not deleted by `down -v`, but all **references** to them (Product.image_filename, ProviderProduct.image_filename, Tenant.logo_filename, Tenant.header_background_filename) are in the DB. After a DB wipe, the app will show no images until data is re-seeded or re-imported.
 
 ## Reservation tests (Puppeteer)
 

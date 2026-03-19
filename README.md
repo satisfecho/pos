@@ -54,6 +54,7 @@ The staff dashboard gives quick access to Catalog, Reservations, Kitchen display
 | **Multi-tenant** | Isolated data per tenant; first user becomes owner; configurable roles (owner, admin, kitchen, bartender, waiter, receptionist) and permissions (e.g. reservation read/write). |
 | **Products & images** | Staff manage products at `/products`. On deploy, demo products are linked to catalog provider products so the Products page shows images (beer/pizza/wine import); first load of `/products` backfills image URLs. |
 | **Provider portal** | Suppliers register at `/provider/register`, log in at `/provider/login`, and manage their catalog at `/provider` (tile/list view, search, add/edit/delete products, company details). See [docs/0014-provider-portal.md](docs/0014-provider-portal.md). |
+| **Tenant branding (public)** | Per-tenant **background colour** (hex, e.g. RAL5002 Azul) and **header background image** for book, menu, and reservation-view pages. Set in Settings → Business profile; optional dark overlay when a header image is used. See [docs/0028-tenant-public-branding.md](docs/0028-tenant-public-branding.md). |
 
 Planned but not yet implemented: batch order operations, and stricter “must pay before continuing” flow. See [ROADMAP.md](ROADMAP.md).
 

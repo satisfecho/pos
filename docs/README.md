@@ -47,6 +47,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | [0015-kitchen-display.md](0015-kitchen-display.md) | Kitchen display: full-screen at `/kitchen`, auto-refresh, WebSocket, optional sound. |
 | [0016-reports.md](0016-reports.md) | Reports (Sales & Revenue): date range, summary, by product/category/table/waiter, CSV/Excel export. |
 | [0017-billing-customers-factura.md](0017-billing-customers-factura.md) | Billing customers (Factura): register company details, search, print invoice with “Bill to”. |
+| [0028-tenant-public-branding.md](0028-tenant-public-branding.md) | Tenant public branding: background colour and header image for book, menu, reservation-view. |
 
 ---
 
