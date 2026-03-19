@@ -1,4 +1,4 @@
-<div class="menu-page">
+<div class="menu-page" [style.--color-bg]="tenantPublicBackgroundColor() ?? null">
   @if (loading()) {
   <div class="loading-screen">
     <div class="loading-content">
@@ -62,7 +62,7 @@
   </div>
   } @else {
   <!-- Hero Header -->
-  <header class="hero-header">
+  <header class="hero-header" [class.has-bg-image]="tenantHeaderBackgroundFilename()" [style.background-image]="headerBackgroundStyle()">
     <div class="hero-overlay"></div>
     <app-language-picker class="menu-language-picker"></app-language-picker>
     <div class="hero-content">

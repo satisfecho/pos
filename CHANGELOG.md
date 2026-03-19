@@ -40,6 +40,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Deploy (amvara9) – front CSS / stale build**: Deploy script now builds the front image with `--no-cache` so each deploy serves assets from the current code (fixes wrong styling e.g. Settings > Opening hours). Nginx in the front container sends `Cache-Control: no-cache` for the HTML document so clients get new hashed asset URLs after deploy. See `docs/0024-deploy-css-fix-amvara9.md`.
 - **Deploy (amvara9) – version not updating**: Fixed `docker compose build` flag order (`build --no-cache front`); added `up -d --force-recreate` so the front container is recreated with the new image; added a post-deploy step that prints the version served by the front container for verification.
 
+## [2.0.7] - 2026-03-19
+
+### Added
+
+- **Tenant branding (public theme)**: Public background color (hex) and header background image for customer-facing pages. **Backend:** `Tenant.public_background_color`, `Tenant.header_background_filename`; migrations `20260319100000_add_tenant_public_background_color.sql`, `20260319110000_add_tenant_header_background.sql`; settings API and upload/delete for header image; public tenant and menu endpoints expose theme. **Frontend:** Settings > Appearance: color picker and header image upload; book, menu, and reservation-view use tenant background color and header image. i18n: `SETTINGS.PUBLIC_BACKGROUND_COLOR`, `HEADER_BACKGROUND`, etc. (en, es, ca, de, fr).
+- **HAProxy self-signed certificate**: Base `docker-compose.yml` mounts `./haproxy/certs` (contains `default.pem`) so HAProxy can bind 443 without a real certificate. Fixes "unable to stat SSL certificate" when `certbot/haproxy-certs` is missing. Production override still uses `certbot/haproxy-certs`. See `haproxy/certs/README.md`.
+- **Cursor rule – commit/changelog/version**: `.cursor/rules/commit-changelog-version.mdc` reminds to review CHANGELOG, README, and docs on "commit" and to bump version when changelog has substantial changes.
+- **Smoke test – amvara9**: `front/scripts/test-amvara9-smoke.mjs` for amvara9 smoke runs.
+
 ## [2.0.6] - 2026-03-18
 
 ### Added

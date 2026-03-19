@@ -1,5 +1,5 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy, HostListener } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, SafeStyle } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { CommonModule, SlicePipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
@@ -65,6 +65,8 @@ export class MenuComponent implements OnInit, OnDestroy {
   tenantCurrency = signal<string>('$');
   tenantCurrencyCode = signal<string | null>(null);
   immediatePaymentRequired = signal(false);
+  tenantPublicBackgroundColor = signal<string | null>(null);
+  tenantHeaderBackgroundFilename = signal<string | null>(null);
 
   // Cart & Orders
   cart = signal<CartItem[]>([]);
@@ -254,6 +256,8 @@ export class MenuComponent implements OnInit, OnDestroy {
         this.tenantCurrency.set(data.tenant_currency || '$');
         this.tenantCurrencyCode.set(data.tenant_currency_code || null);
         this.immediatePaymentRequired.set(data.tenant_immediate_payment_required || false);
+        this.tenantPublicBackgroundColor.set(data.tenant_public_background_color ?? null);
+        this.tenantHeaderBackgroundFilename.set(data.tenant_header_background_filename ?? null);
 
         if (data.tenant_stripe_publishable_key) {
           this.api.setTenantStripeKey(data.tenant_stripe_publishable_key);
@@ -305,6 +309,8 @@ export class MenuComponent implements OnInit, OnDestroy {
           this.closedTableName.set(detail.table_name || '');
           this.closedTenantName.set(detail.tenant_name || '');
           this.closedTenantId.set(detail.tenant_id || null);
+          this.tenantPublicBackgroundColor.set(detail.tenant_public_background_color ?? null);
+          this.tenantHeaderBackgroundFilename.set(detail.tenant_header_background_filename ?? null);
           if (detail.tenant_logo && detail.tenant_id) {
             this.closedTenantLogo.set(
               `${environment.apiUrl}/uploads/${detail.tenant_id}/logo/${detail.tenant_logo}`
@@ -596,6 +602,13 @@ export class MenuComponent implements OnInit, OnDestroy {
   getLogoSafeUrl(url: string | null): SafeResourceUrl | null {
     if (!url) return null;
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+  headerBackgroundStyle(): SafeStyle | null {
+    const fn = this.tenantHeaderBackgroundFilename();
+    if (!fn || !this.tenantId) return null;
+    const url = this.api.getTenantHeaderBackgroundUrl(fn, this.tenantId);
+    return url ? this.sanitizer.bypassSecurityTrustStyle('url("' + url + '")') : null;
   }
 
   /** Build WhatsApp wa.me link from phone string (e.g. +34 612 345 678 -> https://wa.me/34612345678). */

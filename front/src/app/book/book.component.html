@@ -1,4 +1,4 @@
-<div class="book-page">
+<div class="book-page" [style.--color-bg]="tenant()?.public_background_color ?? null">
   @if (loading()) {
     <div class="loading-screen">
       <div class="loading-content">
@@ -21,7 +21,7 @@
     </div>
   } @else {
     <!-- Hero Header (same structure as /menu) -->
-    <header class="hero-header">
+    <header class="hero-header" [class.has-bg-image]="tenant()?.header_background_filename" [style.background-image]="headerBackgroundStyle()">
       <div class="hero-overlay"></div>
       <app-language-picker class="book-language-picker"></app-language-picker>
       <div class="hero-content">

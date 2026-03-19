@@ -85,6 +85,9 @@ class Tenant(SQLModel, table=True):
     tax_id: str | None = None  # Tax ID / VAT number (e.g. DE123456789)
     cif: str | None = None  # CIF / NIF (Spain: B12345678)
     logo_filename: str | None = None  # Stored in uploads/{tenant_id}/logo/
+    header_background_filename: str | None = None  # Stored in uploads/{tenant_id}/header/
+    # Public-facing pages (book, menu, reservation view): background color as hex (e.g. #1E22AA for RAL5002 Azul)
+    public_background_color: str | None = None
     opening_hours: str | None = (
         None  # JSON string: {"monday": {"open": "09:00", "close": "22:00", "closed": false}, ...}
     )
@@ -732,6 +735,9 @@ class TenantUpdate(SQLModel):
     smtp_password: str | None = None
     email_from: str | None = None
     email_from_name: str | None = None
+
+    # Public-facing pages background color (hex, e.g. #1E22AA for RAL5002 Azul)
+    public_background_color: str | None = None
 
 
 class TenantProductCreate(SQLModel):

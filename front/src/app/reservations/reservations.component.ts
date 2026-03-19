@@ -1,5 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { LowerCasePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService, Reservation, ReservationCreate, ReservationUpdate, ReservationStatus, CanvasTable, OverbookingReport } from '../services/api.service';
 import { PermissionService } from '../services/permission.service';
@@ -10,19 +11,24 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 @Component({
   selector: 'app-reservations',
   standalone: true,
-  imports: [FormsModule, SidebarComponent, TranslateModule, ConfirmationModalComponent, LowerCasePipe],
+  imports: [FormsModule, RouterLink, SidebarComponent, TranslateModule, ConfirmationModalComponent, LowerCasePipe],
   template: `
     <app-sidebar>
       <div class="page-header">
         <h1>{{ 'RESERVATIONS.TITLE' | translate }}</h1>
-        @if (canWrite()) {
+        <div class="page-header-actions">
+          @if (tenantId != null) {
+            <a [routerLink]="['/book', tenantId]" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">{{ 'RESERVATIONS.VIEW_PUBLIC_PAGE' | translate }}</a>
+          }
+          @if (canWrite()) {
           <button class="btn btn-primary" (click)="openCreate()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
             {{ 'RESERVATIONS.NEW' | translate }}
           </button>
-        }
+          }
+        </div>
       </div>
 
       <div class="filters">
@@ -231,6 +237,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   `,
   styles: [`
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .page-header-actions { display: flex; align-items: center; gap: 0.5rem; }
     .filters { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; }
     .filter-input, .filter-select { padding: 0.35rem 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
     .reservation-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
@@ -316,6 +323,10 @@ export class ReservationsComponent implements OnInit {
   upcomingNoTableCount = signal<number | null>(null);
 
   canWrite = () => this.permissions.hasPermission(this.permissions.getCurrentUser(), 'reservation:write');
+
+  get tenantId(): number | undefined {
+    return this.permissions.getCurrentUser()?.tenant_id;
+  }
 
   ngOnInit() {
     const today = new Date().toISOString().slice(0, 10);

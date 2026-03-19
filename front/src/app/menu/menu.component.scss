@@ -185,10 +185,12 @@ $cart-expanded-max: 60vh;
 // ============================================
 .hero-header {
   position: relative;
-  background: var(--color-primary); // Removed gradient
+  background: var(--color-primary);
   padding: var(--space-5) var(--space-4) var(--space-6);
   color: white;
   overflow: hidden;
+  background-size: cover;
+  background-position: center;
 
   &::before {
     content: '';
@@ -197,12 +199,16 @@ $cart-expanded-max: 60vh;
     background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     pointer-events: none;
   }
+
+  &.has-bg-image .hero-overlay {
+    background: rgba(0, 0, 0, 0.35);
+  }
 }
 
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: transparent; // Removed gradient overlay
+  background: transparent;
 }
 
 .hero-content {

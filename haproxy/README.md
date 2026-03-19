@@ -2,8 +2,8 @@
 
 HAProxy is the single entry point for end-user traffic:
 
-- **Production**: listens on **80** (HTTP) and **443** (HTTPS). Configure SSL on 443 in `haproxy.cfg` if needed.
-- **Development**: listens on **4202** only (no root, no conflict with other services).
+- **Production**: listens on **80** (HTTP) and **443** (HTTPS). SSL on 443 uses certificates from `certbot/haproxy-certs` (mounted by `docker-compose.prod.yml`).
+- **Development**: listens on **4202**, **80**, and **443**. Base compose mounts `./haproxy/certs` with a self-signed cert so 443 works without certbot; browsers will show a security warning. See `haproxy/certs/README.md`.
 
 ## Routing
 

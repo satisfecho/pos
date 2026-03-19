@@ -477,6 +477,7 @@
   },
   "RESERVATIONS": {
     "TITLE": "Reservierungen",
+    "VIEW_PUBLIC_PAGE": "Öffentliche Buchungsseite anzeigen",
     "RESERVATION_NUMBER": "Reservierungsnummer",
     "NEW": "Neue Reservierung",
     "LOADING": "Laden...",

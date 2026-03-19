@@ -24,6 +24,6 @@ docker exec pos-haproxy kill -HUP 1
 
 ## After deploy
 
-Deploy runs `mkdir -p certbot/www certbot/haproxy-certs` and mounts `certbot/haproxy-certs` into HAProxy. If `satisfecho.de.pem` already exists on the host (e.g. from the steps above), HAProxy will use it. No need to copy certs elsewhere.
+Deploy runs `mkdir -p certbot/www certbot/haproxy-certs` and mounts `certbot/haproxy-certs` into HAProxy. If `satisfecho.de.pem` already exists on the host (e.g. from the steps above), HAProxy will use it. No need to copy certs elsewhere. **Without the prod override**, base compose uses the self-signed cert in `haproxy/certs/` so 443 still works (dev only).
 
 See **docs/0026-haproxy-ssl-amvara9.md** for full context and restore steps.

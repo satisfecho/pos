@@ -1,5 +1,5 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, SafeStyle } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService, Reservation, ReservationCreate, TenantSummary } from '../services/api.service';
@@ -81,6 +81,14 @@ export class BookComponent implements OnInit {
   getLogoSafeUrl(url: string | null): SafeResourceUrl | null {
     if (!url) return null;
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+  /** Safe style for hero header background image (for use with [style.background-image]). */
+  headerBackgroundStyle(): SafeStyle | null {
+    const t = this.tenant();
+    const url = t?.header_background_filename && t?.id
+      ? this.api.getTenantHeaderBackgroundUrl(t.header_background_filename, t.id) : null;
+    return url ? this.sanitizer.bypassSecurityTrustStyle('url("' + url + '")') : null;
   }
 
   /** Build WhatsApp wa.me link from phone string (e.g. +34 612 345 678 -> https://wa.me/34612345678). */

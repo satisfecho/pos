@@ -352,6 +352,32 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                     </div>
                   </div>
 
+                  <!-- Header background image -->
+                  <div class="form-group">
+                    <label>{{ 'SETTINGS.HEADER_BACKGROUND' | translate }}</label>
+                    <div class="logo-upload-wrapper">
+                      @if (headerBackgroundPreview() || settings()?.header_background_filename) {
+                        <div class="current-logo header-bg-preview">
+                          <img [src]="getHeaderBackgroundDisplaySrc()" alt="Header background" />
+                          <button type="button" class="btn-icon-danger" (click)="removeHeaderBackground()" title="{{ 'SETTINGS.REMOVE_HEADER_BACKGROUND' | translate }}">✕</button>
+                        </div>
+                      }
+                      <div class="upload-controls">
+                        <input
+                          type="file"
+                          id="header-bg-upload"
+                          accept="image/jpeg,image/png,image/webp,image/avif"
+                          (change)="onHeaderBackgroundSelected($event)"
+                          hidden
+                        />
+                        <label for="header-bg-upload" class="btn btn-secondary">
+                          {{ 'SETTINGS.UPLOAD_HEADER_BACKGROUND' | translate }}
+                        </label>
+                        <span class="hint">{{ 'SETTINGS.HEADER_BACKGROUND_HINT' | translate }}</span>
+                      </div>
+                    </div>
+                  </div>
+
                   <!-- Basic Info -->
                   <div class="form-row">
                     <div class="form-group">
@@ -374,6 +400,30 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                   <div class="form-group">
                     <label for="description">{{ 'SETTINGS.DESCRIPTION' | translate }}</label>
                     <textarea id="description" [(ngModel)]="formData.description" name="description" rows="3"></textarea>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="public_background_color">{{ 'SETTINGS.PUBLIC_BACKGROUND_COLOR' | translate }}</label>
+                    <div class="background-color-row">
+                      <input
+                        type="color"
+                        id="public_background_color"
+                        [value]="formData.public_background_color || '#f5f5f5'"
+                        (input)="formData.public_background_color = $any($event.target).value"
+                        class="color-input"
+                      />
+                      <input
+                        type="text"
+                        [(ngModel)]="formData.public_background_color"
+                        name="public_background_color_hex"
+                        placeholder="#1E22AA"
+                        class="hex-input"
+                      />
+                      <button type="button" class="btn btn-secondary btn-sm" (click)="formData.public_background_color = '#1E22AA'" title="RAL5002 Azul">
+                        {{ 'SETTINGS.PRESET_RAL5002' | translate }}
+                      </button>
+                    </div>
+                    <small class="field-hint">{{ 'SETTINGS.PUBLIC_BACKGROUND_COLOR_HINT' | translate }}</small>
                   </div>
 
                   <div class="form-group">
@@ -958,6 +1008,36 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
         font-family: monospace;
         font-size: 0.875rem;
       }
+    }
+
+    .background-color-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .background-color-row .color-input {
+      width: 44px;
+      height: 44px;
+      padding: 2px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+    }
+    .background-color-row .hex-input {
+      flex: 1;
+      min-width: 100px;
+      font-family: monospace;
+    }
+
+    .header-bg-preview {
+      max-width: 320px;
+    }
+    .header-bg-preview img {
+      width: 100%;
+      height: auto;
+      max-height: 120px;
+      object-fit: cover;
     }
 
     @media (min-width: 640px) {
@@ -1732,6 +1812,8 @@ export class SettingsComponent implements OnInit {
   success = signal<string | null>(null);
   logoPreview = signal<string | null>(null);
   logoFile: File | null = null;
+  headerBackgroundPreview = signal<string | null>(null);
+  headerBackgroundFile: File | null = null;
 
   providers = signal<Provider[]>([]);
   providersLoading = signal(false);
@@ -1822,6 +1904,7 @@ export class SettingsComponent implements OnInit {
     smtp_password: null,
     email_from: null,
     email_from_name: null,
+    public_background_color: null,
   };
 
   allTimezones: string[] = [];
@@ -1869,6 +1952,7 @@ export class SettingsComponent implements OnInit {
           smtp_password: null,
           email_from: settings.email_from ?? null,
           email_from_name: settings.email_from_name ?? null,
+          public_background_color: settings.public_background_color ?? null,
         };
         this.timezoneSearch = settings.timezone || '';
         this.parseOpeningHours(settings.opening_hours);
@@ -2302,6 +2386,48 @@ export class SettingsComponent implements OnInit {
     // For now, just clear the preview
   }
 
+  onHeaderBackgroundSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input?.files?.[0];
+    input.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/') || !['image/jpeg', 'image/png', 'image/webp', 'image/avif'].includes(file.type)) {
+      this.error.set('Please select a JPG, PNG, WebP or AVIF image.');
+      return;
+    }
+    this.headerBackgroundFile = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.headerBackgroundPreview.set(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+    this.error.set(null);
+  }
+
+  removeHeaderBackground() {
+    this.headerBackgroundFile = null;
+    this.headerBackgroundPreview.set(null);
+    this.api.deleteTenantHeaderBackground().subscribe({
+      next: (updated) => {
+        this.settings.set(updated);
+      },
+      error: () => {},
+    });
+  }
+
+  getHeaderBackgroundUrl(): string | null {
+    const s = this.settings();
+    if (!s?.header_background_filename || !s.id) return null;
+    return this.api.getTenantHeaderBackgroundUrl(s.header_background_filename, s.id);
+  }
+
+  getHeaderBackgroundDisplaySrc(): SafeResourceUrl | null {
+    const preview = this.headerBackgroundPreview();
+    if (preview) return preview;
+    const url = this.getHeaderBackgroundUrl();
+    return url ? this.sanitizer.bypassSecurityTrustResourceUrl(url) : null;
+  }
+
   getLogoUrl(): string | null {
     const settings = this.settings();
     if (!settings?.logo_filename || !settings.id) return null;
@@ -2331,24 +2457,42 @@ export class SettingsComponent implements OnInit {
     this.error.set(null);
     this.success.set(null);
 
-    // First upload logo if selected
-    if (this.logoFile) {
-      this.api.uploadTenantLogo(this.logoFile).subscribe({
+    const doLogoUpload = () => {
+      if (this.logoFile) {
+        this.api.uploadTenantLogo(this.logoFile).subscribe({
+          next: (updatedSettings) => {
+            this.settings.set(updatedSettings);
+            this.logoFile = null;
+            this.logoPreview.set(null);
+            this.updateSettings();
+          },
+          error: (err) => {
+            this.error.set('Failed to upload logo. Please try again.');
+            this.saving.set(false);
+            console.error('Error uploading logo:', err);
+          }
+        });
+      } else {
+        this.updateSettings();
+      }
+    };
+
+    if (this.headerBackgroundFile) {
+      this.api.uploadTenantHeaderBackground(this.headerBackgroundFile).subscribe({
         next: (updatedSettings) => {
           this.settings.set(updatedSettings);
-          this.logoFile = null;
-          this.logoPreview.set(null);
-          // Then update other settings
-          this.updateSettings();
+          this.headerBackgroundFile = null;
+          this.headerBackgroundPreview.set(null);
+          doLogoUpload();
         },
         error: (err) => {
-          this.error.set('Failed to upload logo. Please try again.');
+          this.error.set('Failed to upload header background. Please try again.');
           this.saving.set(false);
-          console.error('Error uploading logo:', err);
+          console.error('Error uploading header background:', err);
         }
       });
     } else {
-      this.updateSettings();
+      doLogoUpload();
     }
   }
 

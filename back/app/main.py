@@ -283,6 +283,18 @@ def serve_tenant_logo(tenant_id: int, filename: str):
     return FileResponse(path, media_type=media_type)
 
 
+@app.get("/uploads/{tenant_id}/header/{filename}", include_in_schema=False)
+def serve_tenant_header_background(tenant_id: int, filename: str):
+    """Serve tenant header background image. Filename must be a single path component (no slashes)."""
+    if "/" in filename or "\\" in filename or filename.startswith("."):
+        raise HTTPException(status_code=404, detail="Invalid filename")
+    path = UPLOADS_DIR / str(tenant_id) / "header" / filename
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="Header image not found")
+    media_type = "image/svg+xml" if filename.lower().endswith(".svg") else None
+    return FileResponse(path, media_type=media_type)
+
+
 # Serve provider product images via explicit route (StaticFiles often 404s on nested paths behind a proxy)
 @app.get("/uploads/providers/{provider_token}/products/{filename}", include_in_schema=False)
 def serve_provider_product_image(provider_token: str, filename: str):
@@ -553,11 +565,13 @@ class TenantSummary(_BaseModel):
     id: int
     name: str
     logo_filename: str | None = None
+    header_background_filename: str | None = None
     description: str | None = None
     phone: str | None = None
     email: str | None = None
     whatsapp: str | None = None
     opening_hours: str | None = None
+    public_background_color: str | None = None
 
 
 def _tenant_to_summary(t: models.Tenant) -> TenantSummary:
@@ -565,11 +579,13 @@ def _tenant_to_summary(t: models.Tenant) -> TenantSummary:
         id=t.id,
         name=t.name,
         logo_filename=t.logo_filename,
+        header_background_filename=t.header_background_filename,
         description=t.description,
         phone=t.phone,
         email=t.email,
         whatsapp=t.whatsapp,
         opening_hours=t.opening_hours,
+        public_background_color=t.public_background_color,
     )
 
 
@@ -595,11 +611,13 @@ def get_public_tenant(
         "id": summary.id,
         "name": summary.name,
         "logo_filename": summary.logo_filename,
+        "header_background_filename": summary.header_background_filename,
         "description": summary.description,
         "phone": summary.phone,
         "email": summary.email,
         "whatsapp": summary.whatsapp,
         "opening_hours": summary.opening_hours,
+        "public_background_color": summary.public_background_color,
     }
     return JSONResponse(content=body)
 
@@ -1385,6 +1403,22 @@ def update_tenant_settings(
             else None
         )
 
+    if tenant_update.public_background_color is not None:
+        val = (
+            tenant_update.public_background_color.strip()
+            if isinstance(tenant_update.public_background_color, str)
+            else None
+        )
+        if val:
+            if not val.startswith("#"):
+                val = "#" + val
+            if len(val) <= 20 and all(c in "0123456789abcdefABCDEF#" for c in val):
+                tenant.public_background_color = val
+            else:
+                tenant.public_background_color = None
+        else:
+            tenant.public_background_color = None
+
     session.add(tenant)
     session.commit()
     session.refresh(tenant)
@@ -1675,6 +1709,116 @@ async def upload_tenant_logo(
     if tenant_dict.get("smtp_password"):
         tenant_dict["smtp_password"] = "********"
 
+    return tenant_dict
+
+
+@app.post("/tenant/header-background")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_upload_per_hour', 10)}/hour",
+    key_func=_rate_limit_key_user,
+)
+async def upload_tenant_header_background(
+    request: Request,
+    response: Response,
+    file: Annotated[UploadFile, File()],
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Upload a header background image for public-facing pages (book, menu, reservation view)."""
+    tenant = session.exec(
+        select(models.Tenant).where(models.Tenant.id == current_user.tenant_id)
+    ).first()
+
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    content_type = file.content_type or _infer_content_type_from_filename(file.filename)
+    if content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file type. Allowed: {', '.join(sorted(ALLOWED_IMAGE_TYPES))}",
+        )
+
+    contents = await file.read()
+    if len(contents) > MAX_IMAGE_SIZE:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File too large. Max size: {MAX_IMAGE_SIZE // (1024 * 1024)}MB",
+        )
+
+    contents = optimize_image(contents, content_type)
+
+    tenant_dir = UPLOADS_DIR / str(current_user.tenant_id) / "header"
+    tenant_dir.mkdir(parents=True, exist_ok=True)
+
+    if tenant.header_background_filename:
+        old_path = tenant_dir / tenant.header_background_filename
+        if old_path.exists():
+            old_path.unlink()
+
+    ext = Path(file.filename or "header.jpg").suffix.lower()
+    if ext not in [".jpg", ".jpeg", ".png", ".webp", ".avif"]:
+        ext = ".jpg"
+    new_filename = f"{uuid4()}{ext}"
+
+    file_path = tenant_dir / new_filename
+    file_path.write_bytes(contents)
+
+    tenant.header_background_filename = new_filename
+    session.add(tenant)
+    session.commit()
+    session.refresh(tenant)
+
+    tenant_dict = tenant.model_dump(exclude={"users"})
+    tenant_dict["id"] = tenant.id
+    if tenant_dict.get("stripe_secret_key"):
+        secret_key = tenant_dict["stripe_secret_key"]
+        tenant_dict["stripe_secret_key"] = (
+            f"{secret_key[:7]}...{secret_key[-4:]}" if len(secret_key) > 11 else "***"
+        )
+    if tenant_dict.get("smtp_password"):
+        tenant_dict["smtp_password"] = "********"
+    return tenant_dict
+
+
+@app.delete("/tenant/header-background")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def delete_tenant_header_background(
+    request: Request,
+    response: Response,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Remove the tenant header background image."""
+    tenant = session.exec(
+        select(models.Tenant).where(models.Tenant.id == current_user.tenant_id)
+    ).first()
+
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    if tenant.header_background_filename:
+        tenant_dir = UPLOADS_DIR / str(current_user.tenant_id) / "header"
+        path = tenant_dir / tenant.header_background_filename
+        if path.exists():
+            path.unlink()
+        tenant.header_background_filename = None
+        session.add(tenant)
+        session.commit()
+        session.refresh(tenant)
+
+    tenant_dict = tenant.model_dump(exclude={"users"})
+    tenant_dict["id"] = tenant.id
+    if tenant_dict.get("stripe_secret_key"):
+        secret_key = tenant_dict["stripe_secret_key"]
+        tenant_dict["stripe_secret_key"] = (
+            f"{secret_key[:7]}...{secret_key[-4:]}" if len(secret_key) > 11 else "***"
+        )
+    if tenant_dict.get("smtp_password"):
+        tenant_dict["smtp_password"] = "********"
     return tenant_dict
 
 
@@ -4877,7 +5021,9 @@ def get_menu(
                 "table_name": table.name,
                 "tenant_name": tenant.name if tenant else None,
                 "tenant_logo": tenant.logo_filename if tenant else None,
+                "tenant_header_background_filename": tenant.header_background_filename if tenant else None,
                 "tenant_id": table.tenant_id,
+                "tenant_public_background_color": tenant.public_background_color if tenant else None,
             },
         )
 
@@ -5224,6 +5370,7 @@ def get_menu(
         "tenant_id": table.tenant_id,  # For WebSocket connection
         "tenant_name": tenant.name if tenant else "Unknown",
         "tenant_logo": tenant.logo_filename if tenant else None,
+        "tenant_header_background_filename": tenant.header_background_filename if tenant else None,
         "tenant_description": tenant.description if tenant else None,
         "tenant_phone": tenant.phone if tenant else None,
         "tenant_whatsapp": tenant.whatsapp if tenant else None,
@@ -5237,6 +5384,7 @@ def get_menu(
         "tenant_immediate_payment_required": tenant.immediate_payment_required
         if tenant
         else False,
+        "tenant_public_background_color": tenant.public_background_color if tenant else None,
         # Table session status
         "table_is_active": table.is_active,
         "table_requires_pin": table.is_active and table.order_pin is not None,

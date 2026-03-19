@@ -207,11 +207,14 @@ export interface TenantSummary {
   id: number;
   name: string;
   logo_filename: string | null;
+  header_background_filename?: string | null;
   description?: string | null;
   phone?: string | null;
   email?: string | null;
   whatsapp?: string | null;
   opening_hours?: string | null;
+  /** Background color for public pages (hex, e.g. #1E22AA for RAL5002 Azul). */
+  public_background_color?: string | null;
 }
 
 export interface Product {
@@ -445,6 +448,8 @@ export interface MenuResponse {
   tenant_currency_code?: string | null;
   tenant_stripe_publishable_key?: string | null;
   tenant_immediate_payment_required?: boolean;
+  tenant_public_background_color?: string | null;
+  tenant_header_background_filename?: string | null;
   // Table session status
   table_is_active?: boolean;
   table_requires_pin?: boolean;
@@ -477,6 +482,7 @@ export interface TenantSettings {
   cif?: string | null;
   default_tax_id?: number | null;
   logo_filename?: string | null;
+  header_background_filename?: string | null;
   opening_hours?: string | null;
   immediate_payment_required?: boolean;
   currency?: string | null;
@@ -500,6 +506,8 @@ export interface TenantSettings {
   smtp_password?: string | null;
   email_from?: string | null;
   email_from_name?: string | null;
+  /** Background color for public-facing pages (hex, e.g. #1E22AA for RAL5002 Azul). */
+  public_background_color?: string | null;
 }
 
 export interface OrderItemCreate {
@@ -1214,6 +1222,21 @@ export class ApiService {
   getTenantLogoUrl(logoFilename: string | null | undefined, tenantId: number | null | undefined): string | null {
     if (!logoFilename || !tenantId) return null;
     return `${this.apiUrl}/uploads/${tenantId}/logo/${logoFilename}`;
+  }
+
+  getTenantHeaderBackgroundUrl(filename: string | null | undefined, tenantId: number | null | undefined): string | null {
+    if (!filename || !tenantId) return null;
+    return `${this.apiUrl}/uploads/${tenantId}/header/${filename}`;
+  }
+
+  uploadTenantHeaderBackground(file: File): Observable<TenantSettings> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<TenantSettings>(`${this.apiUrl}/tenant/header-background`, formData);
+  }
+
+  deleteTenantHeaderBackground(): Observable<TenantSettings> {
+    return this.http.delete<TenantSettings>(`${this.apiUrl}/tenant/header-background`);
   }
 
   /** List all tenants (public, no auth). For landing page tenant picker. */

@@ -1,5 +1,5 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, SafeStyle } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService, Reservation, TenantSummary } from '../services/api.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -35,6 +35,13 @@ export class ReservationViewComponent implements OnInit {
   getLogoSafeUrl(url: string | null): SafeResourceUrl | null {
     if (!url) return null;
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+  headerBackgroundStyle(): SafeStyle | null {
+    const t = this.tenant();
+    const url = t?.header_background_filename && t?.id
+      ? this.api.getTenantHeaderBackgroundUrl(t.header_background_filename, t.id) : null;
+    return url ? this.sanitizer.bypassSecurityTrustStyle('url("' + url + '")') : null;
   }
 
   ngOnInit() {
