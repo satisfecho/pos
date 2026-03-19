@@ -1381,10 +1381,10 @@ export class ApiService {
 
   createTenantProduct(catalogId: number, providerProductId?: number, name?: string, priceCents?: number, costCents?: number | null): Observable<TenantProduct> {
     const body: Record<string, unknown> = { catalog_id: catalogId };
-    if (providerProductId) body.provider_product_id = providerProductId;
-    if (name) body.name = name;
-    if (priceCents !== undefined) body.price_cents = priceCents;
-    if (costCents !== undefined && costCents !== null) body.cost_cents = costCents;
+    if (providerProductId) body['provider_product_id'] = providerProductId;
+    if (name) body['name'] = name;
+    if (priceCents !== undefined) body['price_cents'] = priceCents;
+    if (costCents !== undefined && costCents !== null) body['cost_cents'] = costCents;
     return this.http.post<TenantProduct>(`${this.apiUrl}/tenant-products`, body);
   }
 
