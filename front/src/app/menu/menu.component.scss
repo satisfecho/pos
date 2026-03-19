@@ -185,7 +185,7 @@ $cart-expanded-max: 60vh;
 // ============================================
 .hero-header {
   position: relative;
-  background: var(--color-primary);
+  background: var(--hero-header-bg, var(--color-primary));
   padding: var(--space-5) var(--space-4) var(--space-6);
   color: white;
   overflow: hidden;
@@ -854,13 +854,24 @@ $cart-expanded-max: 60vh;
     }
   }
 
-  .item-name {
+  .item-name-block {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .item-name {
     font-size: 0.9375rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .item-customization {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
   }
 
   .item-price {
@@ -1569,6 +1580,13 @@ $cart-expanded-max: 60vh;
     white-space: nowrap;
   }
 
+  .cart-item-customization {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+  }
+
   .cart-item-price {
     font-size: 0.875rem;
     color: var(--color-text-muted);
@@ -2052,6 +2070,53 @@ $cart-expanded-max: 60vh;
   font-size: 0.9375rem;
   color: var(--color-text-muted);
   margin: 0 0 var(--space-4);
+}
+
+.customization-question {
+  margin-bottom: var(--space-4);
+
+  .question-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text);
+    margin-bottom: var(--space-2);
+  }
+
+  .question-select {
+    width: 100%;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 0.9375rem;
+    background: var(--color-surface);
+  }
+
+  .question-scale {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+
+    .question-range {
+      flex: 1;
+      accent-color: var(--color-primary);
+    }
+
+    .scale-value {
+      min-width: 2rem;
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+  }
+
+  .question-text {
+    width: 100%;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 0.9375rem;
+    resize: vertical;
+  }
 }
 
 .close-btn {

@@ -178,6 +178,9 @@ ModuleRegistry.registerModules([
                               }
                             </span>
                             <span class="item-name">{{ item.product_name }}</span>
+                            @if (item.customization_answers && Object.keys(item.customization_answers).length > 0) {
+                              <span class="item-customization">{{ formatCustomization(item.customization_answers) }}</span>
+                            }
                           </div>
                           <div class="item-details-row">
                             <span class="item-price">
@@ -370,6 +373,9 @@ ModuleRegistry.registerModules([
                             <div class="item-name-row">
                               <span class="item-qty">{{ item.quantity }}x</span>
                               <span class="item-name">{{ item.product_name }}</span>
+                              @if (item.customization_answers && Object.keys(item.customization_answers).length > 0) {
+                                <span class="item-customization">{{ formatCustomization(item.customization_answers) }}</span>
+                              }
                             </div>
                             <div class="item-details-row">
                               <span class="item-price">
@@ -732,6 +738,7 @@ ModuleRegistry.registerModules([
     }
     .item-name-row { 
       display: flex; 
+      flex-wrap: wrap;
       align-items: center;
       gap: var(--space-2);
     }
@@ -770,6 +777,11 @@ ModuleRegistry.registerModules([
     .item-name { 
       color: var(--color-text); 
       font-weight: 500;
+    }
+    .item-customization {
+      width: 100%;
+      font-size: 0.8125rem;
+      color: var(--color-text-muted);
     }
     .item-price { 
       color: var(--color-text-muted); 
@@ -1655,6 +1667,11 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   getItemStatusLabel(status: string): string {
     return this.translate.instant(`ITEM_STATUS.${status}`) || status;
+  }
+
+  formatCustomization(answers: Record<string, string | number>): string {
+    if (!answers || Object.keys(answers).length === 0) return '';
+    return Object.values(answers).join(' · ');
   }
 
   dismissWaiterAlert(): void {

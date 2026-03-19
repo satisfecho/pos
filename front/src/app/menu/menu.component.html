@@ -1,4 +1,4 @@
-<div class="menu-page" [style.--color-bg]="tenantPublicBackgroundColor() ?? null">
+<div class="menu-page" [style.--hero-header-bg]="tenantPublicBackgroundColor() ?? null">
   @if (loading()) {
   <div class="loading-screen">
     <div class="loading-content">
@@ -186,7 +186,7 @@
         @if (ordersExpanded()) {
         <div class="order-tracker-body">
           <div class="order-items-list">
-            @for (item of order.items; track getProductKey(item.product)) {
+            @for (item of order.items; track getProductKey(item.product, item.customization_answers) + (item.itemId ?? 0)) {
             <div class="order-item-row">
               <div class="item-status-dot" [class]="'status-' + (item.status || 'pending')"></div>
               <span class="item-qty-badge">
@@ -198,7 +198,12 @@
                 {{ item.quantity }}×
                 }
               </span>
-              <span class="item-name">{{ item.product.name }}</span>
+              <div class="item-name-block">
+                <span class="item-name">{{ item.product.name }}</span>
+                @if (formatCustomizationSummary(item.customization_answers)) {
+                <span class="item-customization">{{ formatCustomizationSummary(item.customization_answers) }}</span>
+                }
+              </div>
               <span class="item-price">{{ formatPrice(item.product.price_cents * item.quantity) }}</span>
               @if (item.status) {
               <span class="item-status-label" [class]="'status-' + item.status">
@@ -314,7 +319,7 @@
             <h3 class="featured-name">{{ product.name }}</h3>
             <span class="featured-price">{{ formatPrice(product.price_cents) }}</span>
           </div>
-          <button class="quick-add-btn" (click)="addToCart(product); $event.stopPropagation()">
+          <button class="quick-add-btn" (click)="addToCartWithQuestions(product); $event.stopPropagation()">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
@@ -425,7 +430,7 @@
           </div>
 
           <!-- Add Button -->
-          <button class="add-to-cart-btn" (click)="addToCart(product); $event.stopPropagation()">
+          <button class="add-to-cart-btn" (click)="addToCartWithQuestions(product); $event.stopPropagation()">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
@@ -479,10 +484,13 @@
     @if (cartExpanded()) {
     <div class="cart-expanded-content">
       <div class="cart-items-list">
-        @for (item of cart(); track getProductKey(item.product)) {
+        @for (item of cart(); track getProductKey(item.product, item.customization_answers)) {
         <div class="cart-item-card">
           <div class="cart-item-info">
             <span class="cart-item-name">{{ item.product.name }}</span>
+            @if (formatCustomizationSummary(item.customization_answers)) {
+            <span class="cart-item-customization">{{ formatCustomizationSummary(item.customization_answers) }}</span>
+            }
             <span class="cart-item-price">{{ formatPrice(item.product.price_cents * item.quantity) }}</span>
           </div>
           <div class="cart-item-controls">
@@ -666,7 +674,7 @@
 
       <!-- Add to Cart sticky button -->
       <div class="detail-footer">
-        <button class="detail-add-btn" (click)="addToCart(selectedProduct()!); closeProductDetail()">
+        <button class="detail-add-btn" (click)="addToCartFromDetail()">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
@@ -699,6 +707,50 @@
         <div class="modal-actions">
           <button class="btn-secondary" (click)="skipName()">{{ 'COMMON.SKIP' | translate }}</button>
           <button class="btn-primary" (click)="confirmName()">{{ 'COMMON.OK' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Product questions modal (customization before add to cart) -->
+  @if (productToAddWithQuestions()) {
+  <div class="modal-overlay" (click)="cancelQuestionsModal()">
+    <div class="modal-sheet" (click)="$event.stopPropagation()">
+      <div class="modal-handle">
+        <span class="handle-bar"></span>
+      </div>
+      <div class="modal-content">
+        <h3 class="modal-title">{{ productToAddWithQuestions()!.name }}</h3>
+        <p class="modal-subtitle">{{ 'MENU.CUSTOMIZE_OPTIONS' | translate }}</p>
+        @for (q of productToAddWithQuestions()!.questions; track q.id) {
+        <div class="customization-question">
+          <label class="question-label">{{ q.label }}{{ q.required ? ' *' : '' }}</label>
+          @if (q.type === 'choice' && q.options && Array.isArray(q.options)) {
+          <select class="question-select" [value]="customizationAnswersForm()[q.id] ?? ''"
+            (change)="setCustomizationAnswer(q.id, $any($event.target).value)">
+            <option value="">{{ 'COMMON.SELECT' | translate }}</option>
+            @for (opt of q.options; track opt) {
+            <option [value]="opt">{{ opt }}</option>
+            }
+          </select>
+          } @else if (q.type === 'scale' && q.options && typeof q.options === 'object' && 'min' in q.options && 'max' in q.options) {
+          <div class="question-scale">
+            <input type="range" class="question-range" [min]="q.options.min" [max]="q.options.max"
+              [value]="customizationAnswersForm()[q.id] ?? q.options.min"
+              (input)="setCustomizationAnswer(q.id, +$any($event.target).value)" />
+            <span class="scale-value">{{ customizationAnswersForm()[q.id] ?? q.options.min }}</span>
+          </div>
+          } @else if (q.type === 'text') {
+          <textarea class="question-text" [placeholder]="q.label" rows="2"
+            [value]="customizationAnswersForm()[q.id] ?? ''"
+            (input)="setCustomizationAnswer(q.id, $any($event.target).value)"></textarea>
+          }
+        </div>
+        }
+        <div class="modal-actions">
+          <button class="btn-secondary" (click)="cancelQuestionsModal()">{{ 'COMMON.CANCEL' | translate }}</button>
+          <button class="btn-primary" (click)="confirmAddWithQuestions()">{{ 'MENU.ADD_TO_CART' | translate }}</button>
         </div>
       </div>
     </div>
@@ -793,6 +845,30 @@
             </svg>
             }
           </button>
+
+          @if (tenantRevolutConfigured()) {
+          <button class="payment-option-btn" (click)="selectPayRevolut()" [disabled]="paymentRequestSending()">
+            <div class="payment-option-icon">
+              @if (paymentRequestSending()) {
+              <span class="spinner-small"></span>
+              } @else {
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+                <line x1="1" y1="10" x2="23" y2="10" />
+              </svg>
+              }
+            </div>
+            <div class="payment-option-text">
+              <span class="payment-option-title">{{ paymentRequestSending() ? ('PAYMENTS.PROCESSING' | translate) : ('PAYMENTS.PAY_WITH_REVOLUT' | translate) }}</span>
+              <span class="payment-option-desc">{{ 'PAYMENTS.PAY_WITH_REVOLUT_DESC' | translate }}</span>
+            </div>
+            @if (!paymentRequestSending()) {
+            <svg class="payment-option-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9,18 15,12 9,6" />
+            </svg>
+            }
+          </button>
+          }
 
           <button class="payment-option-btn" (click)="selectPayCard()">
             <div class="payment-option-icon">

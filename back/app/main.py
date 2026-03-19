@@ -1,7 +1,10 @@
+import asyncio
 import json
 import logging
 import os
 from datetime import date, timedelta, datetime, time, timezone
+
+import requests
 from zoneinfo import ZoneInfo
 from io import BytesIO
 from pathlib import Path
@@ -11,7 +14,7 @@ from uuid import uuid4
 from PIL import Image
 import redis
 import stripe
-from fastapi import Depends, FastAPI, HTTPException, UploadFile, File, status, Query, Request
+from fastapi import BackgroundTasks, Body, Depends, FastAPI, HTTPException, UploadFile, File, status, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.security import OAuth2PasswordRequestForm
@@ -20,7 +23,7 @@ from pydantic import BaseModel as _BaseModel
 from sqlmodel import Session, select
 
 from . import models, security
-from .db import check_db_connection, create_db_and_tables, get_session
+from .db import check_db_connection, create_db_and_tables, get_session, engine
 from .settings import settings
 from .inventory_routes import router as inventory_router
 from .reports_routes import router as reports_router
@@ -572,9 +575,38 @@ class TenantSummary(_BaseModel):
     whatsapp: str | None = None
     opening_hours: str | None = None
     public_background_color: str | None = None
+    take_away_table_token: str | None = None  # Token for take-away/home ordering if a table is configured
+    # Reservation rules (for book page and reservation view)
+    reservation_prepayment_cents: int | None = None
+    reservation_prepayment_text: str | None = None
+    reservation_cancellation_policy: str | None = None
+    reservation_arrival_tolerance_minutes: int | None = None
+    reservation_dress_code: str | None = None
 
 
-def _tenant_to_summary(t: models.Tenant) -> TenantSummary:
+TAKE_AWAY_TABLE_NAMES = ("take away", "home ordering", "takeaway", "take-away")
+
+
+def _is_take_away_table(table) -> bool:
+    """True if table name indicates take-away/home ordering (no PIN required for ordering)."""
+    if not table or not getattr(table, "name", None):
+        return False
+    return (table.name or "").strip().lower() in TAKE_AWAY_TABLE_NAMES
+
+
+def _take_away_table_token(session: Session, tenant_id: int) -> str | None:
+    """Return token of the first active table named 'Take away' or 'Home ordering' (case-insensitive) for tenant."""
+    tables = session.exec(
+        select(models.Table).where(models.Table.tenant_id == tenant_id).where(models.Table.is_active == True)
+    ).all()
+    for t in tables:
+        if _is_take_away_table(t):
+            return t.token
+    return None
+
+
+def _tenant_to_summary(t: models.Tenant, session: Session) -> TenantSummary:
+    take_away_token = _take_away_table_token(session, t.id)
     return TenantSummary(
         id=t.id,
         name=t.name,
@@ -586,6 +618,12 @@ def _tenant_to_summary(t: models.Tenant) -> TenantSummary:
         whatsapp=t.whatsapp,
         opening_hours=t.opening_hours,
         public_background_color=t.public_background_color,
+        take_away_table_token=take_away_token,
+        reservation_prepayment_cents=t.reservation_prepayment_cents,
+        reservation_prepayment_text=t.reservation_prepayment_text,
+        reservation_cancellation_policy=t.reservation_cancellation_policy,
+        reservation_arrival_tolerance_minutes=t.reservation_arrival_tolerance_minutes,
+        reservation_dress_code=t.reservation_dress_code,
     )
 
 
@@ -593,7 +631,7 @@ def _tenant_to_summary(t: models.Tenant) -> TenantSummary:
 def list_public_tenants(session: Session = Depends(get_session)) -> list:
     """List all tenants (id, name, logo, description, phone, email). Public, no authentication."""
     tenants = session.exec(select(models.Tenant).order_by(models.Tenant.name)).all()
-    return [_tenant_to_summary(t) for t in tenants]
+    return [_tenant_to_summary(t, session) for t in tenants]
 
 
 @app.get("/public/tenants/{tenant_id}")
@@ -605,7 +643,7 @@ def get_public_tenant(
     tenant = session.get(models.Tenant, tenant_id)
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
-    summary = _tenant_to_summary(tenant)
+    summary = _tenant_to_summary(tenant, session)
     # Return explicit JSON so whatsapp is always present (same tenant as /tenant/settings)
     body = {
         "id": summary.id,
@@ -618,6 +656,12 @@ def get_public_tenant(
         "whatsapp": summary.whatsapp,
         "opening_hours": summary.opening_hours,
         "public_background_color": summary.public_background_color,
+        "take_away_table_token": summary.take_away_table_token,
+        "reservation_prepayment_cents": summary.reservation_prepayment_cents,
+        "reservation_prepayment_text": summary.reservation_prepayment_text,
+        "reservation_cancellation_policy": summary.reservation_cancellation_policy,
+        "reservation_arrival_tolerance_minutes": summary.reservation_arrival_tolerance_minutes,
+        "reservation_dress_code": summary.reservation_dress_code,
     }
     return JSONResponse(content=body)
 
@@ -763,6 +807,15 @@ def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    # If OTP is enabled, require second factor; do not issue tokens yet
+    if getattr(user, "otp_enabled", False) and getattr(user, "otp_secret", None):
+        token_data = _token_data_for_user(user)
+        temp_token = security.create_otp_pending_token(token_data)
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content={"detail": "OTP required", "require_otp": True, "temp_token": temp_token},
+        )
+
     token_data = _token_data_for_user(user)
 
     access_token = security.create_access_token(
@@ -799,6 +852,80 @@ def login_for_access_token(
         max_age=settings.refresh_token_expire_days * 24 * 60 * 60,
     )
     
+    return response
+
+
+class OTPVerifyBody(_BaseModel):
+    """Body for POST /token/otp: exchange temp token + OTP code for real tokens."""
+    temp_token: str
+    code: str
+
+
+@app.post("/token/otp")
+@limiter.limit(f"{getattr(settings, 'rate_limit_login_per_15min', 5)}/15 minutes")
+def login_with_otp(
+    request: Request,
+    body: OTPVerifyBody,
+    session: Session = Depends(get_session),
+) -> JSONResponse:
+    """After password login returned require_otp, submit OTP code to get access and refresh tokens."""
+    try:
+        payload = security.decode_otp_pending_token(body.temp_token)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired OTP session. Please log in again.",
+        )
+    email = payload.get("sub")
+    tenant_id = payload.get("tenant_id")
+    provider_id = payload.get("provider_id")
+    if not email:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    statement = select(models.User).where(models.User.email == email)
+    if tenant_id is not None:
+        statement = statement.where(models.User.tenant_id == tenant_id)
+    elif provider_id is not None:
+        statement = statement.where(models.User.provider_id == provider_id)
+    else:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    user = session.exec(statement).first()
+    if not user or not getattr(user, "otp_secret", None) or not getattr(user, "otp_enabled", False):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid OTP session")
+    import pyotp
+    totp = pyotp.TOTP(user.otp_secret)
+    if not totp.verify(body.code, valid_window=1):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired OTP code",
+        )
+    token_data = _token_data_for_user(user)
+    access_token = security.create_access_token(
+        data=token_data,
+        expires_delta=security.timedelta(minutes=settings.access_token_expire_minutes),
+    )
+    refresh_token = security.create_refresh_token(
+        data=token_data,
+        expires_delta=security.timedelta(days=settings.refresh_token_expire_days),
+    )
+    response = JSONResponse(content={"status": "success", "message": "Logged in"})
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=settings.is_production,
+        samesite="lax",
+        path="/",
+        max_age=settings.access_token_expire_minutes * 60,
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=settings.is_production,
+        samesite="lax",
+        path="/",
+        max_age=settings.refresh_token_expire_days * 24 * 60 * 60,
+    )
     return response
 
 
@@ -868,6 +995,84 @@ def read_users_me(
     current_user: Annotated[models.User, Depends(security.get_current_user)],
 ) -> models.User:
     return current_user
+
+
+# ============ USER OTP (optional two-factor) ============
+
+
+@app.get("/users/me/otp/status")
+def get_otp_status(
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+) -> dict:
+    """Return whether OTP is enabled for the current user (no secret)."""
+    return {"otp_enabled": getattr(current_user, "otp_enabled", False)}
+
+
+class OTPConfirmBody(_BaseModel):
+    code: str
+
+
+@app.post("/users/me/otp/setup")
+def otp_setup(
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Generate a new OTP secret and return provisioning URI and secret for QR. OTP is not enabled until confirm is called."""
+    import pyotp
+    secret = pyotp.random_base32()
+    totp = pyotp.TOTP(secret)
+    issuer = "POS"
+    label = current_user.email or "user"
+    provisioning_uri = totp.provisioning_uri(name=label, issuer_name=issuer)
+    # Store secret but do not enable OTP until user confirms with a code
+    user = session.get(models.User, current_user.id)
+    if user:
+        user.otp_secret = secret
+        user.otp_enabled = False
+        session.add(user)
+        session.commit()
+    return {"secret": secret, "provisioning_uri": provisioning_uri}
+
+
+@app.post("/users/me/otp/confirm")
+def otp_confirm(
+    body: OTPConfirmBody,
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Verify the OTP code and enable OTP for this user."""
+    import pyotp
+    user = session.get(models.User, current_user.id)
+    if not user or not getattr(user, "otp_secret", None):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Run setup first")
+    totp = pyotp.TOTP(user.otp_secret)
+    if not totp.verify(body.code, valid_window=1):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired code")
+    user.otp_enabled = True
+    session.add(user)
+    session.commit()
+    return {"status": "ok", "otp_enabled": True}
+
+
+@app.post("/users/me/otp/disable")
+def otp_disable(
+    body: OTPConfirmBody,
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Verify the OTP code and disable OTP for this user."""
+    import pyotp
+    user = session.get(models.User, current_user.id)
+    if not user or not getattr(user, "otp_secret", None):
+        return {"status": "ok", "otp_enabled": False}
+    totp = pyotp.TOTP(user.otp_secret)
+    if not totp.verify(body.code, valid_window=1):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired code")
+    user.otp_secret = None
+    user.otp_enabled = False
+    session.add(user)
+    session.commit()
+    return {"status": "ok", "otp_enabled": False}
 
 
 # ============ USER MANAGEMENT ============
@@ -1218,6 +1423,11 @@ def get_tenant_settings(
         tenant_dict["stripe_secret_key"] = (
             f"{secret_key[:7]}...{secret_key[-4:]}" if len(secret_key) > 11 else "***"
         )
+    if tenant_dict.get("revolut_merchant_secret"):
+        sk = tenant_dict["revolut_merchant_secret"]
+        tenant_dict["revolut_merchant_secret"] = (
+            f"{sk[:7]}...{sk[-4:]}" if len(sk) > 11 else "***"
+        )
 
     # Don't expose SMTP password; indicate if configured
     if tenant_dict.get("smtp_password"):
@@ -1367,6 +1577,13 @@ def update_tenant_settings(
             and tenant_update.stripe_publishable_key.strip()
             else None
         )
+    if tenant_update.revolut_merchant_secret is not None:
+        if (
+            isinstance(tenant_update.revolut_merchant_secret, str)
+            and tenant_update.revolut_merchant_secret.strip()
+        ):
+            tenant.revolut_merchant_secret = tenant_update.revolut_merchant_secret.strip()
+        # Empty = don't change (same as Stripe secret)
 
     # Per-tenant SMTP / email (optional; fallback to global config)
     if tenant_update.smtp_host is not None:
@@ -1419,6 +1636,39 @@ def update_tenant_settings(
         else:
             tenant.public_background_color = None
 
+    # Reservation options (pre-payment, policies, reminders)
+    if tenant_update.reservation_prepayment_cents is not None:
+        v = tenant_update.reservation_prepayment_cents
+        tenant.reservation_prepayment_cents = v if v >= 0 else None
+    if tenant_update.reservation_prepayment_text is not None:
+        tenant.reservation_prepayment_text = (
+            tenant_update.reservation_prepayment_text.strip()
+            if isinstance(tenant_update.reservation_prepayment_text, str)
+            and tenant_update.reservation_prepayment_text.strip()
+            else None
+        )
+    if tenant_update.reservation_cancellation_policy is not None:
+        tenant.reservation_cancellation_policy = (
+            tenant_update.reservation_cancellation_policy.strip()
+            if isinstance(tenant_update.reservation_cancellation_policy, str)
+            and tenant_update.reservation_cancellation_policy.strip()
+            else None
+        )
+    if tenant_update.reservation_arrival_tolerance_minutes is not None:
+        v = tenant_update.reservation_arrival_tolerance_minutes
+        tenant.reservation_arrival_tolerance_minutes = v if v >= 0 else None
+    if tenant_update.reservation_dress_code is not None:
+        tenant.reservation_dress_code = (
+            tenant_update.reservation_dress_code.strip()
+            if isinstance(tenant_update.reservation_dress_code, str)
+            and tenant_update.reservation_dress_code.strip()
+            else None
+        )
+    if tenant_update.reservation_reminder_24h_enabled is not None:
+        tenant.reservation_reminder_24h_enabled = tenant_update.reservation_reminder_24h_enabled
+    if tenant_update.reservation_reminder_2h_enabled is not None:
+        tenant.reservation_reminder_2h_enabled = tenant_update.reservation_reminder_2h_enabled
+
     session.add(tenant)
     session.commit()
     session.refresh(tenant)
@@ -1443,6 +1693,11 @@ def update_tenant_settings(
         secret_key = tenant_dict["stripe_secret_key"]
         tenant_dict["stripe_secret_key"] = (
             f"{secret_key[:7]}...{secret_key[-4:]}" if len(secret_key) > 11 else "***"
+        )
+    if tenant_dict.get("revolut_merchant_secret"):
+        sk = tenant_dict["revolut_merchant_secret"]
+        tenant_dict["revolut_merchant_secret"] = (
+            f"{sk[:7]}...{sk[-4:]}" if len(sk) > 11 else "***"
         )
 
     # Don't expose SMTP password; indicate if configured
@@ -1705,6 +1960,11 @@ async def upload_tenant_logo(
         tenant_dict["stripe_secret_key"] = (
             f"{secret_key[:7]}...{secret_key[-4:]}" if len(secret_key) > 11 else "***"
         )
+    if tenant_dict.get("revolut_merchant_secret"):
+        sk = tenant_dict["revolut_merchant_secret"]
+        tenant_dict["revolut_merchant_secret"] = (
+            f"{sk[:7]}...{sk[-4:]}" if len(sk) > 11 else "***"
+        )
     # Don't expose SMTP password; indicate if configured
     if tenant_dict.get("smtp_password"):
         tenant_dict["smtp_password"] = "********"
@@ -1719,7 +1979,6 @@ async def upload_tenant_logo(
 )
 async def upload_tenant_header_background(
     request: Request,
-    response: Response,
     file: Annotated[UploadFile, File()],
     current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
     session: Session = Depends(get_session),
@@ -1769,16 +2028,21 @@ async def upload_tenant_header_background(
     session.commit()
     session.refresh(tenant)
 
-    tenant_dict = tenant.model_dump(exclude={"users"})
+    tenant_dict = tenant.model_dump(mode="json", exclude={"users"})
     tenant_dict["id"] = tenant.id
     if tenant_dict.get("stripe_secret_key"):
         secret_key = tenant_dict["stripe_secret_key"]
         tenant_dict["stripe_secret_key"] = (
             f"{secret_key[:7]}...{secret_key[-4:]}" if len(secret_key) > 11 else "***"
         )
+    if tenant_dict.get("revolut_merchant_secret"):
+        sk = tenant_dict["revolut_merchant_secret"]
+        tenant_dict["revolut_merchant_secret"] = (
+            f"{sk[:7]}...{sk[-4:]}" if len(sk) > 11 else "***"
+        )
     if tenant_dict.get("smtp_password"):
         tenant_dict["smtp_password"] = "********"
-    return tenant_dict
+    return JSONResponse(content=tenant_dict)
 
 
 @app.delete("/tenant/header-background")
@@ -1788,7 +2052,6 @@ async def upload_tenant_header_background(
 )
 def delete_tenant_header_background(
     request: Request,
-    response: Response,
     current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
     session: Session = Depends(get_session),
 ) -> dict:
@@ -1810,16 +2073,21 @@ def delete_tenant_header_background(
         session.commit()
         session.refresh(tenant)
 
-    tenant_dict = tenant.model_dump(exclude={"users"})
+    tenant_dict = tenant.model_dump(mode="json", exclude={"users"})
     tenant_dict["id"] = tenant.id
     if tenant_dict.get("stripe_secret_key"):
         secret_key = tenant_dict["stripe_secret_key"]
         tenant_dict["stripe_secret_key"] = (
             f"{secret_key[:7]}...{secret_key[-4:]}" if len(secret_key) > 11 else "***"
         )
+    if tenant_dict.get("revolut_merchant_secret"):
+        sk = tenant_dict["revolut_merchant_secret"]
+        tenant_dict["revolut_merchant_secret"] = (
+            f"{sk[:7]}...{sk[-4:]}" if len(sk) > 11 else "***"
+        )
     if tenant_dict.get("smtp_password"):
         tenant_dict["smtp_password"] = "********"
-    return tenant_dict
+    return JSONResponse(content=tenant_dict)
 
 
 # ============ PRODUCTS ============
@@ -2108,6 +2376,88 @@ async def upload_product_image(
     product_dict["image_size_formatted"] = format_file_size(image_size)
 
     return product_dict
+
+
+@app.get("/products/{product_id}/questions")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def list_product_questions(
+    request: Request,
+    product_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.PRODUCT_READ))],
+    session: Session = Depends(get_session),
+) -> list[dict]:
+    """List customization questions for a product (staff)."""
+    product = session.exec(
+        select(models.Product).where(
+            models.Product.id == product_id,
+            models.Product.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    questions = session.exec(
+        select(models.ProductQuestion).where(
+            models.ProductQuestion.product_id == product_id,
+            models.ProductQuestion.tenant_id == current_user.tenant_id,
+        ).order_by(models.ProductQuestion.sort_order, models.ProductQuestion.id)
+    ).all()
+    return [
+        {
+            "id": q.id,
+            "type": q.type.value if hasattr(q.type, "value") else str(q.type),
+            "label": q.label,
+            "options": q.options,
+            "sort_order": q.sort_order,
+            "required": q.required,
+        }
+        for q in questions
+    ]
+
+
+@app.post("/products/{product_id}/questions")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def create_product_question(
+    request: Request,
+    product_id: int,
+    body: models.ProductQuestionCreate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.PRODUCT_WRITE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Add a customization question to a product (staff)."""
+    product = session.exec(
+        select(models.Product).where(
+            models.Product.id == product_id,
+            models.Product.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    question = models.ProductQuestion(
+        tenant_id=current_user.tenant_id,
+        product_id=product_id,
+        type=body.type,
+        label=body.label,
+        options=body.options,
+        sort_order=body.sort_order,
+        required=body.required,
+    )
+    session.add(question)
+    session.commit()
+    session.refresh(question)
+    return {
+        "id": question.id,
+        "type": question.type.value if hasattr(question.type, "value") else str(question.type),
+        "label": question.label,
+        "options": question.options,
+        "sort_order": question.sort_order,
+        "required": question.required,
+    }
 
 
 # ============ PROVIDERS ============
@@ -4032,7 +4382,9 @@ def _reservation_to_dict(
         "created_at": r.created_at.isoformat() if r.created_at else None,
         "updated_at": r.updated_at.isoformat() if r.updated_at else None,
         "client_notes": r.client_notes,
+        "customer_notes": getattr(r, "customer_notes", None),
         "owner_notes": r.owner_notes,
+        "delay_notice": getattr(r, "delay_notice", None),
     }
     if session and r.table_id is not None:
         table = session.get(models.Table, r.table_id)
@@ -4228,11 +4580,40 @@ def _client_ip_from_request(request: Request) -> str | None:
     return None
 
 
+def _send_reservation_confirmation_background(tenant_id: int, reservation_id: int) -> None:
+    """Background task: load tenant and reservation, send confirmation email (public bookings only)."""
+    with Session(engine) as session:
+        tenant = session.get(models.Tenant, tenant_id)
+        reservation = session.get(models.Reservation, reservation_id)
+        if not tenant or not reservation or not (reservation.customer_email and reservation.customer_email.strip()):
+            return
+        if not tenant.smtp_user or not tenant.smtp_password:
+            return
+        view_url = None
+        if settings.public_app_base_url and reservation.token:
+            view_url = f"{settings.public_app_base_url.rstrip('/')}/reservation?token={reservation.token}"
+        date_str = reservation.reservation_date.isoformat() if reservation.reservation_date else ""
+        time_str = reservation.reservation_time.strftime("%H:%M") if reservation.reservation_time else ""
+        asyncio.run(
+            email_svc.send_reservation_confirmation(
+                to_email=reservation.customer_email.strip(),
+                customer_name=reservation.customer_name,
+                reservation_date=date_str,
+                reservation_time=time_str,
+                party_size=reservation.party_size,
+                tenant_name=tenant.name,
+                view_url=view_url,
+                tenant=tenant,
+            )
+        )
+
+
 @app.post("/reservations")
 def create_reservation(
     request: Request,
     body: models.ReservationCreate,
     current_user: Annotated[models.User | None, Depends(security.get_current_user_optional)],
+    background_tasks: BackgroundTasks,
     session: Session = Depends(get_session),
 ) -> dict:
     """Create a reservation. Authenticated: tenant from user. Public: tenant_id required in body."""
@@ -4289,6 +4670,7 @@ def create_reservation(
         status=models.ReservationStatus.booked,
         token=token_str,
         client_notes=data.client_notes,
+        customer_notes=getattr(data, "customer_notes", None),
         owner_notes=None,
         client_ip=client_ip,
         client_user_agent=user_agent or None,
@@ -4299,6 +4681,9 @@ def create_reservation(
     session.add(reservation)
     session.commit()
     session.refresh(reservation)
+    # Send confirmation email for public bookings when customer email and tenant SMTP are set
+    if not current_user and reservation.customer_email and reservation.customer_email.strip() and reservation.token:
+        background_tasks.add_task(_send_reservation_confirmation_background, tenant_id, reservation.id)
     return _reservation_to_dict(reservation, session, include_client_tech=current_user is not None)
 
 
@@ -4454,8 +4839,12 @@ def update_reservation(
         reservation.customer_email = body.customer_email
     if body.client_notes is not None:
         reservation.client_notes = body.client_notes
+    if body.customer_notes is not None:
+        reservation.customer_notes = body.customer_notes
     if body.owner_notes is not None:
         reservation.owner_notes = body.owner_notes
+    if body.delay_notice is not None:
+        reservation.delay_notice = body.delay_notice
     if body.reservation_date is not None:
         reservation.reservation_date = _parse_reservation_date(body.reservation_date)
     if body.reservation_time is not None:
@@ -4625,6 +5014,38 @@ def cancel_reservation_public(
         return _reservation_to_dict(reservation, session)
     reservation.status = models.ReservationStatus.cancelled
     reservation.table_id = None
+    reservation.updated_at = datetime.now(timezone.utc)
+    session.add(reservation)
+    session.commit()
+    session.refresh(reservation)
+    return _reservation_to_dict(reservation, session)
+
+
+@app.put("/reservations/{reservation_id}/public")
+def update_reservation_public(
+    reservation_id: int,
+    token: str = Query(..., description="Reservation token from booking confirmation"),
+    body: models.PublicReservationUpdate | None = Body(None),
+    session: Session = Depends(get_session),
+) -> dict:
+    """Public: update reservation by token (delay notice, reservation notes, customer notes). Only when status is booked."""
+    reservation = session.exec(
+        select(models.Reservation).where(
+            models.Reservation.id == reservation_id,
+            models.Reservation.token == token,
+        )
+    ).first()
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    if reservation.status != models.ReservationStatus.booked:
+        raise HTTPException(status_code=400, detail="Can only update a booked reservation")
+    if body:
+        if body.delay_notice is not None:
+            reservation.delay_notice = body.delay_notice.strip() if isinstance(body.delay_notice, str) and body.delay_notice.strip() else None
+        if body.client_notes is not None:
+            reservation.client_notes = body.client_notes.strip() if isinstance(body.client_notes, str) and body.client_notes.strip() else None
+        if body.customer_notes is not None:
+            reservation.customer_notes = body.customer_notes.strip() if isinstance(body.customer_notes, str) and body.customer_notes.strip() else None
     reservation.updated_at = datetime.now(timezone.utc)
     session.add(reservation)
     session.commit()
@@ -5058,6 +5479,26 @@ def get_menu(
     tenant_products = [tp for tp in tenant_products if _is_available(tp.available_from, tp.available_until)]
     legacy_products = [p for p in legacy_products if _is_available(p.available_from, p.available_until)]
 
+    # Load product questions for all effective product IDs (for customization e.g. doneness, spice level)
+    effective_product_ids = [tp.product_id for tp in tenant_products if tp.product_id is not None]
+    effective_product_ids.extend(lp.id for lp in legacy_products)
+    questions_by_product: dict[int, list[dict]] = {}
+    if effective_product_ids:
+        product_questions = session.exec(
+            select(models.ProductQuestion).where(
+                models.ProductQuestion.tenant_id == table.tenant_id,
+                models.ProductQuestion.product_id.in_(effective_product_ids),
+            ).order_by(models.ProductQuestion.sort_order, models.ProductQuestion.id)
+        ).all()
+        for q in product_questions:
+            questions_by_product.setdefault(q.product_id, []).append({
+                "id": q.id,
+                "type": q.type.value if hasattr(q.type, "value") else str(q.type),
+                "label": q.label,
+                "options": q.options,
+                "required": q.required,
+            })
+
     # Combine products from both sources
     products_list = []
 
@@ -5285,6 +5726,12 @@ def get_menu(
         if subcategory_codes:
             product_data["subcategory_codes"] = subcategory_codes
 
+        # Product customization questions (e.g. doneness, spice level)
+        if tp.product_id is not None:
+            product_data["questions"] = questions_by_product.get(tp.product_id, [])
+        else:
+            product_data["questions"] = []
+
         # Add detailed wine information from provider product
         if provider_product:
             if provider_product.detailed_description:
@@ -5361,6 +5808,9 @@ def get_menu(
             if subcategory_codes:
                 product_data["subcategory_codes"] = subcategory_codes
 
+        # Product customization questions
+        product_data["questions"] = questions_by_product.get(lp.id, [])
+
         products_list.append(product_data)
 
     # Build tenant response data
@@ -5381,13 +5831,22 @@ def get_menu(
         "tenant_stripe_publishable_key": tenant.stripe_publishable_key
         if tenant
         else None,
+        "tenant_revolut_configured": bool(
+            tenant
+            and (
+                (tenant.revolut_merchant_secret and tenant.revolut_merchant_secret.strip())
+                or (settings.revolut_merchant_secret and settings.revolut_merchant_secret.strip())
+            )
+        ),
         "tenant_immediate_payment_required": tenant.immediate_payment_required
         if tenant
         else False,
         "tenant_public_background_color": tenant.public_background_color if tenant else None,
-        # Table session status
+        # Table session status (take-away/home ordering tables do not require PIN)
         "table_is_active": table.is_active,
-        "table_requires_pin": table.is_active and table.order_pin is not None,
+        "table_requires_pin": False
+        if _is_take_away_table(table)
+        else (table.is_active and table.order_pin is not None),
         "active_order_id": table.active_order_id,
         "products": products_list,
     }
@@ -5523,6 +5982,7 @@ def get_current_order(
                     "quantity": item.quantity,
                     "price_cents": item.price_cents,
                     "notes": item.notes,
+                    "customization_answers": getattr(item, "customization_answers", None) or None,
                     "status": item.status.value if hasattr(item.status, "value") else str(item.status),
                     "tax_rate_percent": getattr(item, "tax_rate_percent", None),
                     "tax_amount_cents": getattr(item, "tax_amount_cents", None),
@@ -5582,6 +6042,7 @@ def get_table_order_history(
                     "product_name": item.product_name,
                     "quantity": item.quantity,
                     "price_cents": item.price_cents,
+                    "customization_answers": getattr(item, "customization_answers", None) or None,
                 }
                 for item in items
             ],
@@ -5674,53 +6135,53 @@ def create_order(
             detail="Table is not accepting orders. Please ask staff to activate the table."
         )
 
-    # Validate PIN (with rate limiting)
-    redis_conn = get_redis()
-    attempts_key = None
-    lock_key = None
-    if redis_conn:
-        client_key = get_pin_client_key(request, order_data.session_id)
-        attempts_key = f"pin_attempts:{table_token}:{client_key}"
-        lock_key = f"pin_lock:{table_token}:{client_key}"
-        lock_ttl = redis_conn.ttl(lock_key)
-        if lock_ttl and lock_ttl > 0:
-            raise HTTPException(
-                status_code=429,
-                detail=f"Too many PIN attempts. Try again in {lock_ttl} seconds."
-            )
-    else:
-        logger.warning(
-            "Redis is unavailable -- PIN rate limiting is disabled. "
-            "Brute-force protection will not work until Redis is restored."
-        )
-
-    # Validate PIN
-    if not order_data.pin:
-        raise HTTPException(
-            status_code=403, 
-            detail="PIN required. Please enter the table PIN to place an order."
-        )
-    
-    if order_data.pin != table.order_pin:
-        if redis_conn and attempts_key and lock_key:
-            attempts = redis_conn.incr(attempts_key)
-            if attempts == 1:
-                redis_conn.expire(attempts_key, PIN_ATTEMPT_WINDOW_SECONDS)
-            if attempts >= PIN_MAX_ATTEMPTS:
-                redis_conn.setex(lock_key, PIN_LOCKOUT_SECONDS, "1")
-                redis_conn.delete(attempts_key)
+    # Validate PIN (with rate limiting). Skip for take-away/home ordering tables.
+    if not _is_take_away_table(table):
+        redis_conn = get_redis()
+        attempts_key = None
+        lock_key = None
+        if redis_conn:
+            client_key = get_pin_client_key(request, order_data.session_id)
+            attempts_key = f"pin_attempts:{table_token}:{client_key}"
+            lock_key = f"pin_lock:{table_token}:{client_key}"
+            lock_ttl = redis_conn.ttl(lock_key)
+            if lock_ttl and lock_ttl > 0:
                 raise HTTPException(
                     status_code=429,
-                    detail=f"Too many PIN attempts. Try again in {PIN_LOCKOUT_SECONDS} seconds."
+                    detail=f"Too many PIN attempts. Try again in {lock_ttl} seconds."
                 )
-        raise HTTPException(
-            status_code=403, 
-            detail="Invalid PIN. Please check the PIN displayed at your table."
-        )
+        else:
+            logger.warning(
+                "Redis is unavailable -- PIN rate limiting is disabled. "
+                "Brute-force protection will not work until Redis is restored."
+            )
 
-    if redis_conn and attempts_key and lock_key:
-        redis_conn.delete(attempts_key)
-        redis_conn.delete(lock_key)
+        if not order_data.pin:
+            raise HTTPException(
+                status_code=403,
+                detail="PIN required. Please enter the table PIN to place an order."
+            )
+
+        if order_data.pin != table.order_pin:
+            if redis_conn and attempts_key and lock_key:
+                attempts = redis_conn.incr(attempts_key)
+                if attempts == 1:
+                    redis_conn.expire(attempts_key, PIN_ATTEMPT_WINDOW_SECONDS)
+                if attempts >= PIN_MAX_ATTEMPTS:
+                    redis_conn.setex(lock_key, PIN_LOCKOUT_SECONDS, "1")
+                    redis_conn.delete(attempts_key)
+                    raise HTTPException(
+                        status_code=429,
+                        detail=f"Too many PIN attempts. Try again in {PIN_LOCKOUT_SECONDS} seconds."
+                    )
+            raise HTTPException(
+                status_code=403,
+                detail="Invalid PIN. Please check the PIN displayed at your table."
+            )
+
+        if redis_conn and attempts_key and lock_key:
+            redis_conn.delete(attempts_key)
+            redis_conn.delete(lock_key)
 
     # ============ GET OR CREATE SHARED ORDER ============
     # Order is created when table is activated only as a slot; we create it on first item add.
@@ -5895,16 +6356,23 @@ def create_order(
         tax_rate = effective_tax.rate_percent if effective_tax else 0
         line_tax_cents = _tax_amount_cents_inclusive(price_cents, item.quantity, tax_rate) if effective_tax else 0
 
-        # Check if this product already exists in the order (only active, non-removed items)
-        # Match by effective_product_id (Product.id) so we merge same product regardless of TenantProduct id
-        existing_item = session.exec(
+        # Check if this product already exists in the order with same customization (only active, non-removed items)
+        # Match by effective_product_id and same customization_answers so we merge only when preferences match
+        item_answers = (item.customization_answers or {}) if hasattr(item, "customization_answers") else {}
+        existing_items = session.exec(
             select(models.OrderItem).where(
                 models.OrderItem.order_id == order.id,
                 models.OrderItem.product_id == effective_product_id,
                 models.OrderItem.removed_by_customer == False,
                 models.OrderItem.status != models.OrderItemStatus.delivered
             )
-        ).first()
+        ).all()
+        existing_item = None
+        for ei in existing_items:
+            ei_answers = ei.customization_answers or {}
+            if ei_answers == item_answers:
+                existing_item = ei
+                break
 
         if existing_item:
             existing_item.quantity += item.quantity
@@ -5930,6 +6398,7 @@ def create_order(
                 price_cents=price_cents,
                 cost_cents=cost_cents,
                 notes=item.notes,
+                customization_answers=item_answers if item_answers else None,
                 status=models.OrderItemStatus.pending,
                 added_by_session=order_data.session_id,
                 location_flagged=location_flagged,
@@ -6240,6 +6709,7 @@ def list_orders(
                     "quantity": item.quantity,
                     "price_cents": item.price_cents,
                     "notes": item.notes,
+                    "customization_answers": getattr(item, "customization_answers", None) or None,
                     "status": item.status.value if hasattr(item.status, 'value') else str(item.status),
                     "removed_by_customer": item.removed_by_customer,
                     "removed_at": item.removed_at.isoformat() if item.removed_at else None,
@@ -7224,6 +7694,54 @@ def cancel_order(
     })
 
 
+# ============ REVOLUT MERCHANT API ============
+
+REVOLUT_API_BASE = "https://merchant.revolut.com/api/1.0"
+REVOLUT_API_VERSION = "2024-05-01"
+
+
+def _revolut_create_order(
+    *,
+    secret: str,
+    amount_cents: int,
+    currency: str,
+    merchant_order_ext_ref: str,
+    redirect_url: str | None = None,
+    cancel_url: str | None = None,
+) -> dict:
+    """Create a Revolut Merchant order. Returns dict with id, checkout_url, and optionally token/public_id."""
+    url = f"{REVOLUT_API_BASE}/order"
+    headers = {
+        "Authorization": f"Bearer {secret}",
+        "Revolut-Api-Version": REVOLUT_API_VERSION,
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "amount": amount_cents,
+        "currency": currency.upper(),
+        "merchant_order_ext_ref": merchant_order_ext_ref,
+    }
+    if redirect_url:
+        payload["redirect_url"] = redirect_url
+    if cancel_url:
+        payload["cancel_url"] = cancel_url
+    resp = requests.post(url, json=payload, headers=headers, timeout=15)
+    resp.raise_for_status()
+    return resp.json()
+
+
+def _revolut_retrieve_order(secret: str, revolut_order_id: str) -> dict:
+    """Retrieve a Revolut order by id. Returns order dict with state."""
+    url = f"{REVOLUT_API_BASE}/order/{revolut_order_id}"
+    headers = {
+        "Authorization": f"Bearer {secret}",
+        "Revolut-Api-Version": REVOLUT_API_VERSION,
+    }
+    resp = requests.get(url, headers=headers, timeout=10)
+    resp.raise_for_status()
+    return resp.json()
+
+
 # ============ PAYMENTS (Public - for customer checkout) ============
 
 
@@ -7406,3 +7924,197 @@ def confirm_payment(
         return {"status": "paid", "order_id": order.id}
     except stripe.error.StripeError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/orders/{order_id}/create-revolut-order")
+@limiter.limit(f"{getattr(settings, 'rate_limit_payment_per_minute', 10)}/minute")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_payment_per_order_per_hour', 3)}/hour",
+    key_func=_rate_limit_key_payment_order,
+)
+def create_revolut_order(
+    request: Request,
+    order_id: int,
+    table_token: str,
+    session: Session = Depends(get_session),
+) -> dict:
+    """Create a Revolut Merchant order and return checkout_url for redirect."""
+    table = session.exec(
+        select(models.Table).where(models.Table.token == table_token)
+    ).first()
+    if not table:
+        raise HTTPException(status_code=404, detail="Invalid table")
+
+    order = session.exec(
+        select(models.Order).where(
+            models.Order.id == order_id, models.Order.table_id == table.id
+        )
+    ).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    items = session.exec(
+        select(models.OrderItem).where(models.OrderItem.order_id == order_id)
+    ).all()
+    total_cents = sum(item.price_cents * item.quantity for item in items)
+    if total_cents <= 0:
+        raise HTTPException(status_code=400, detail="Order has no items")
+
+    tenant = session.exec(
+        select(models.Tenant).where(models.Tenant.id == order.tenant_id)
+    ).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    revolut_secret = tenant.revolut_merchant_secret or settings.revolut_merchant_secret
+    if not revolut_secret or not revolut_secret.strip():
+        raise HTTPException(
+            status_code=400, detail="Revolut is not configured for this tenant"
+        )
+
+    currency = "EUR"
+    if tenant.currency_code and isinstance(tenant.currency_code, str):
+        currency = tenant.currency_code.strip().upper()
+    else:
+        c = _get_stripe_currency_code(tenant.currency) or settings.stripe_currency
+        if c:
+            currency = c.upper()
+
+    redirect_url = None
+    cancel_url = None
+    if settings.public_app_base_url:
+        base = settings.public_app_base_url.rstrip("/")
+        redirect_url = f"{base}/menu/{table_token}/payment-success?order_id={order_id}"
+        cancel_url = f"{base}/menu/{table_token}"
+
+    try:
+        rev_order = _revolut_create_order(
+            secret=revolut_secret.strip(),
+            amount_cents=total_cents,
+            currency=currency,
+            merchant_order_ext_ref=str(order.id),
+            redirect_url=redirect_url,
+            cancel_url=cancel_url,
+        )
+    except requests.RequestException as e:
+        logger.exception("Revolut create order failed")
+        detail = str(e)
+        if getattr(e, "response", None) is not None and hasattr(e.response, "text"):
+            try:
+                detail = e.response.text or detail
+            except Exception:
+                pass
+        raise HTTPException(status_code=502, detail=f"Revolut request failed: {detail}") from e
+
+    revolut_id = rev_order.get("id") or rev_order.get("order_id")
+    checkout_url = rev_order.get("checkout_url")
+    if not revolut_id or not checkout_url:
+        raise HTTPException(
+            status_code=502,
+            detail="Invalid response from Revolut (missing id or checkout_url)",
+        )
+
+    order.revolut_order_id = str(revolut_id)
+    session.add(order)
+    session.commit()
+
+    return {
+        "checkout_url": checkout_url,
+        "revolut_order_id": str(revolut_id),
+        "order_id": order.id,
+    }
+
+
+@app.post("/orders/{order_id}/confirm-revolut-payment")
+@limiter.limit(f"{getattr(settings, 'rate_limit_payment_per_minute', 10)}/minute")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_payment_per_order_per_hour', 3)}/hour",
+    key_func=_rate_limit_key_payment_order,
+)
+def confirm_revolut_payment(
+    request: Request,
+    order_id: int,
+    table_token: str,
+    session: Session = Depends(get_session),
+) -> dict:
+    """Verify Revolut order is completed and mark our order as paid."""
+    table = session.exec(
+        select(models.Table).where(models.Table.token == table_token)
+    ).first()
+    if not table:
+        raise HTTPException(status_code=404, detail="Invalid table")
+
+    order = session.exec(
+        select(models.Order).where(
+            models.Order.id == order_id, models.Order.table_id == table.id
+        )
+    ).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    if not order.revolut_order_id:
+        raise HTTPException(
+            status_code=400,
+            detail="No Revolut order linked; create a Revolut checkout first",
+        )
+
+    tenant = session.exec(
+        select(models.Tenant).where(models.Tenant.id == order.tenant_id)
+    ).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    revolut_secret = tenant.revolut_merchant_secret or settings.revolut_merchant_secret
+    if not revolut_secret or not revolut_secret.strip():
+        raise HTTPException(
+            status_code=400, detail="Revolut is not configured for this tenant"
+        )
+
+    try:
+        rev_order = _revolut_retrieve_order(
+            revolut_secret.strip(), order.revolut_order_id
+        )
+    except requests.RequestException as e:
+        logger.exception("Revolut retrieve order failed")
+        raise HTTPException(
+            status_code=502,
+            detail="Revolut request failed",
+        ) from e
+
+    state = (rev_order.get("state") or rev_order.get("status") or "").upper()
+    if state not in ("COMPLETED", "AUTHORISED", "CAPTURED"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Revolut order not completed (state: {state})",
+        )
+
+    items = session.exec(
+        select(models.OrderItem).where(models.OrderItem.order_id == order_id)
+    ).all()
+    total_cents = sum(item.price_cents * item.quantity for item in items)
+    rev_amount = rev_order.get("order_amount") or rev_order.get("amount")
+    if rev_amount is not None and int(rev_amount) != total_cents:
+        raise HTTPException(
+            status_code=400,
+            detail="Payment amount does not match order total",
+        )
+
+    order.status = models.OrderStatus.paid
+    order.payment_method = "revolut"
+    order.paid_at = datetime.now(timezone.utc)
+    order.notes = f"{order.notes or ''}\n[PAID: Revolut {order.revolut_order_id}]".strip()
+    session.add(order)
+    session.commit()
+
+    publish_order_update(
+        order.tenant_id,
+        {
+            "type": "order_paid",
+            "order_id": order.id,
+            "table_name": table.name,
+            "status": order.status.value,
+        },
+        table_id=order.table_id,
+    )
+
+    return {"status": "paid", "order_id": order.id}

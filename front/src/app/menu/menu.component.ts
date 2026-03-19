@@ -13,6 +13,8 @@ interface CartItem {
   product: Product;
   quantity: number;
   notes: string;
+  /** Answers to product questions: { question_id: value } */
+  customization_answers?: Record<string, string | number>;
   status?: string;  // Item status from backend
   itemId?: number;  // Backend item ID for editing
 }
@@ -66,6 +68,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   tenantCurrencyCode = signal<string | null>(null);
   immediatePaymentRequired = signal(false);
   tenantPublicBackgroundColor = signal<string | null>(null);
+  tenantRevolutConfigured = signal(false);
   tenantHeaderBackgroundFilename = signal<string | null>(null);
 
   // Cart & Orders
@@ -88,6 +91,10 @@ export class MenuComponent implements OnInit, OnDestroy {
   isScrolled = signal(false);
   cartExpanded = signal(false);
   selectedProduct = signal<Product | null>(null);
+  /** When set, show modal to collect product question answers before adding to cart */
+  productToAddWithQuestions = signal<Product | null>(null);
+  /** Collected answers for productToAddWithQuestions (question_id -> value) */
+  customizationAnswersForm = signal<Record<string, string | number>>({});
 
   // Customer identity
   customerName = signal('');
@@ -262,6 +269,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         if (data.tenant_stripe_publishable_key) {
           this.api.setTenantStripeKey(data.tenant_stripe_publishable_key);
         }
+        this.tenantRevolutConfigured.set(!!data.tenant_revolut_configured);
 
         // Table session status
         this.tableIsActive.set(data.table_is_active !== false);  // Default true for backward compatibility
@@ -626,13 +634,16 @@ export class MenuComponent implements OnInit, OnDestroy {
     }
   }
 
-  getProductKey(product: Product): string {
+  getProductKey(product: Product, customizationAnswers?: Record<string, string | number>): string {
     if (!product) return 'null-product';
     const source = product._source || 'unknown';
     const id = product.id ?? 'no-id';
     const name = product.name || 'no-name';
     const price = product.price_cents ?? 0;
-    return `${source}-${id}-${name}-${price}`;
+    const answersKey = customizationAnswers && Object.keys(customizationAnswers).length > 0
+      ? JSON.stringify(customizationAnswers)
+      : '';
+    return `${source}-${id}-${name}-${price}${answersKey ? '-' + answersKey : ''}`;
   }
 
   getWineTypeClass(wineType: string): string {
@@ -717,14 +728,14 @@ export class MenuComponent implements OnInit, OnDestroy {
   // ============================================
   // CART OPERATIONS
   // ============================================
-  addToCart(product: Product) {
-    const productKey = this.getProductKey(product);
+  addToCart(product: Product, customizationAnswers?: Record<string, string | number>) {
+    const productKey = this.getProductKey(product, customizationAnswers);
     this.cart.update(items => {
-      const existing = items.find(i => this.getProductKey(i.product) === productKey);
+      const existing = items.find(i => this.getProductKey(i.product, i.customization_answers) === productKey);
       if (existing) {
-        return items.map(i => this.getProductKey(i.product) === productKey ? { ...i, quantity: i.quantity + 1 } : i);
+        return items.map(i => this.getProductKey(i.product, i.customization_answers) === productKey ? { ...i, quantity: i.quantity + 1 } : i);
       }
-      return [...items, { product, quantity: 1, notes: '' }];
+      return [...items, { product, quantity: 1, notes: '', customization_answers: customizationAnswers }];
     });
     // Auto-expand cart when adding first item
     if (this.cart().length === 1) {
@@ -732,17 +743,63 @@ export class MenuComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Open questions modal for a product that has customization questions. */
+  addToCartWithQuestions(product: Product) {
+    if (product.questions && product.questions.length > 0) {
+      this.productToAddWithQuestions.set(product);
+      this.customizationAnswersForm.set({});
+      return;
+    }
+    this.addToCart(product);
+  }
+
+  setCustomizationAnswer(questionId: number, value: string | number) {
+    this.customizationAnswersForm.update(prev => ({ ...prev, [questionId]: value }));
+  }
+
+  confirmAddWithQuestions() {
+    const product = this.productToAddWithQuestions();
+    if (!product) return;
+    const answers = this.customizationAnswersForm();
+    const required = product.questions?.filter(q => q.required) ?? [];
+    const missing = required.filter(q => answers[q.id] === undefined || answers[q.id] === '' || answers[q.id] === null);
+    if (missing.length > 0) {
+      return; // could show validation message
+    }
+    this.addToCart(product, Object.keys(answers).length ? answers : undefined);
+    this.productToAddWithQuestions.set(null);
+    this.customizationAnswersForm.set({});
+    if (this.selectedProduct()?.id === product.id) {
+      this.closeProductDetail();
+    }
+  }
+
+  cancelQuestionsModal() {
+    this.productToAddWithQuestions.set(null);
+    this.customizationAnswersForm.set({});
+  }
+
+  /** Add to cart from product detail sheet; close detail if no questions. */
+  addToCartFromDetail() {
+    const product = this.selectedProduct();
+    if (!product) return;
+    this.addToCartWithQuestions(product);
+    if (!product.questions?.length) {
+      this.closeProductDetail();
+    }
+  }
+
   incrementItem(item: CartItem) {
-    const productKey = this.getProductKey(item.product);
-    this.cart.update(items => items.map(i => this.getProductKey(i.product) === productKey ? { ...i, quantity: i.quantity + 1 } : i));
+    const productKey = this.getProductKey(item.product, item.customization_answers);
+    this.cart.update(items => items.map(i => this.getProductKey(i.product, i.customization_answers) === productKey ? { ...i, quantity: i.quantity + 1 } : i));
   }
 
   decrementItem(item: CartItem) {
-    const productKey = this.getProductKey(item.product);
+    const productKey = this.getProductKey(item.product, item.customization_answers);
     if (item.quantity <= 1) {
-      this.cart.update(items => items.filter(i => this.getProductKey(i.product) !== productKey));
+      this.cart.update(items => items.filter(i => this.getProductKey(i.product, i.customization_answers) !== productKey));
     } else {
-      this.cart.update(items => items.map(i => this.getProductKey(i.product) === productKey ? { ...i, quantity: i.quantity - 1 } : i));
+      this.cart.update(items => items.map(i => this.getProductKey(i.product, i.customization_answers) === productKey ? { ...i, quantity: i.quantity - 1 } : i));
     }
   }
 
@@ -825,7 +882,8 @@ export class MenuComponent implements OnInit, OnDestroy {
       product_id: item.product.id!,
       quantity: item.quantity,
       notes: item.notes || undefined,
-      source: item.product._source || undefined
+      source: item.product._source || undefined,
+      customization_answers: item.customization_answers && Object.keys(item.customization_answers).length > 0 ? item.customization_answers : undefined
     }));
 
     // Try to get location (optional, non-blocking)
@@ -936,6 +994,12 @@ export class MenuComponent implements OnInit, OnDestroy {
     return labels[status] || status;
   }
 
+  /** Human-readable summary of customization answers for display (e.g. "Medium, 7"). */
+  formatCustomizationSummary(answers: Record<string, string | number> | undefined): string {
+    if (!answers || Object.keys(answers).length === 0) return '';
+    return Object.values(answers).join(' · ');
+  }
+
   getItemStatusLabel(status: string): string {
     const labels: Record<string, string> = {
       pending: 'Pending',
@@ -972,6 +1036,7 @@ export class MenuComponent implements OnInit, OnDestroy {
               } as Product,
               quantity: item.quantity,
               notes: item.notes || '',
+              customization_answers: item.customization_answers || undefined,
               status: item.status,
               itemId: item.id
             } as CartItem))),
@@ -1133,6 +1198,25 @@ export class MenuComponent implements OnInit, OnDestroy {
     // Show loading state in the payment options sheet while we create the intent
     this.paymentRequestSending.set(true);
     this.doStripeCheckout();
+  }
+
+  selectPayRevolut() {
+    if (!this.currentOrderId || !this.tableToken) return;
+    this.paymentRequestSending.set(true);
+    this.api.createRevolutOrder(this.currentOrderId, this.tableToken).subscribe({
+      next: (res) => {
+        if (res.checkout_url) {
+          window.location.href = res.checkout_url;
+        } else {
+          this.paymentRequestSending.set(false);
+          alert('Invalid response from payment provider.');
+        }
+      },
+      error: (err) => {
+        this.paymentRequestSending.set(false);
+        alert(err.error?.detail || 'Failed to start Revolut payment.');
+      },
+    });
   }
 
   selectPayCash() {

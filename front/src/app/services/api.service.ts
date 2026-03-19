@@ -215,6 +215,14 @@ export interface TenantSummary {
   opening_hours?: string | null;
   /** Background color for public pages (hex, e.g. #1E22AA for RAL5002 Azul). */
   public_background_color?: string | null;
+  /** Token for take-away/home ordering menu when a table is configured (e.g. named "Take away"). */
+  take_away_table_token?: string | null;
+  /** Reservation rules (for book page and reservation view) */
+  reservation_prepayment_cents?: number | null;
+  reservation_prepayment_text?: string | null;
+  reservation_cancellation_policy?: string | null;
+  reservation_arrival_tolerance_minutes?: number | null;
+  reservation_dress_code?: string | null;
 }
 
 export interface Product {
@@ -248,6 +256,17 @@ export interface Product {
   aromas?: string;
   elaboration?: string;
   _source?: string; // "tenant_product" or "product" to distinguish between TenantProduct and legacy Product
+  /** Optional customization questions (e.g. doneness, spice level) */
+  questions?: ProductQuestion[];
+}
+
+/** Product customization question (e.g. meat doneness, spice 1–10) */
+export interface ProductQuestion {
+  id: number;
+  type: 'choice' | 'scale' | 'text';
+  label: string;
+  options?: string[] | { min: number; max: number } | null;
+  required?: boolean;
 }
 
 export interface CatalogCategories {
@@ -354,7 +373,9 @@ export interface Reservation {
   created_at?: string | null;
   updated_at?: string | null;
   client_notes?: string | null;
+  customer_notes?: string | null;
   owner_notes?: string | null;
+  delay_notice?: string | null;
   /** Present only for staff responses */
   client_ip?: string | null;
   client_user_agent?: string | null;
@@ -372,6 +393,7 @@ export interface ReservationCreate {
   reservation_time: string;
   party_size: number;
   client_notes?: string | null;
+  customer_notes?: string | null;
   client_fingerprint?: string | null;
   client_screen_width?: number | null;
   client_screen_height?: number | null;
@@ -385,7 +407,16 @@ export interface ReservationUpdate {
   reservation_time?: string;
   party_size?: number;
   client_notes?: string | null;
+  customer_notes?: string | null;
   owner_notes?: string | null;
+  delay_notice?: string | null;
+}
+
+/** Public update by token: delay notice, reservation notes, customer notes. */
+export interface PublicReservationUpdate {
+  delay_notice?: string | null;
+  client_notes?: string | null;
+  customer_notes?: string | null;
 }
 
 export interface OrderItem {
@@ -395,6 +426,8 @@ export interface OrderItem {
   price_cents: number;
   cost_cents?: number | null;
   notes?: string;
+  /** Answers to product questions: { question_id: value } */
+  customization_answers?: Record<string, string | number> | null;
   status?: string;  // pending, preparing, ready, delivered, cancelled
   removed_by_customer?: boolean;
   removed_at?: string;
@@ -447,6 +480,7 @@ export interface MenuResponse {
   tenant_currency?: string | null;
   tenant_currency_code?: string | null;
   tenant_stripe_publishable_key?: string | null;
+  tenant_revolut_configured?: boolean;
   tenant_immediate_payment_required?: boolean;
   tenant_public_background_color?: string | null;
   tenant_header_background_filename?: string | null;
@@ -491,6 +525,7 @@ export interface TenantSettings {
   timezone?: string | null;
   stripe_secret_key?: string | null;
   stripe_publishable_key?: string | null;
+  revolut_merchant_secret?: string | null;
   logo_size_bytes?: number | null;
   logo_size_formatted?: string | null;
   // Location verification settings
@@ -508,6 +543,14 @@ export interface TenantSettings {
   email_from_name?: string | null;
   /** Background color for public-facing pages (hex, e.g. #1E22AA for RAL5002 Azul). */
   public_background_color?: string | null;
+  /** Reservation options (pre-payment, policies, reminders) */
+  reservation_prepayment_cents?: number | null;
+  reservation_prepayment_text?: string | null;
+  reservation_cancellation_policy?: string | null;
+  reservation_arrival_tolerance_minutes?: number | null;
+  reservation_dress_code?: string | null;
+  reservation_reminder_24h_enabled?: boolean | null;
+  reservation_reminder_2h_enabled?: boolean | null;
 }
 
 export interface OrderItemCreate {
@@ -515,6 +558,8 @@ export interface OrderItemCreate {
   quantity: number;
   notes?: string;
   source?: string; // "tenant_product" or "product" to distinguish between TenantProduct and legacy Product
+  /** Answers to product questions: { question_id: value } (string for choice/text, number for scale) */
+  customization_answers?: Record<string, string | number>;
 }
 
 export interface OrderCreate {
@@ -709,18 +754,48 @@ export class ApiService {
     return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, null, { params });
   }
 
-  login(credentials: FormData, tenantId?: number, scope?: 'tenant' | 'provider'): Observable<any> {
-    let params = new HttpParams();
+  /** Login: sends username/password as application/x-www-form-urlencoded (required by backend OAuth2PasswordRequestForm). May return 403 with require_otp + temp_token when OTP is enabled. */
+  login(username: string, password: string, tenantId?: number, scope?: 'tenant' | 'provider'): Observable<any> {
+    let queryParams = new HttpParams();
     if (scope === 'provider') {
-      params = params.set('scope', 'provider');
+      queryParams = queryParams.set('scope', 'provider');
     } else if (tenantId != null) {
-      params = params.set('tenant_id', tenantId.toString());
+      queryParams = queryParams.set('tenant_id', tenantId.toString());
     }
-    return this.http.post<any>(`${this.apiUrl}/token`, credentials, { params }).pipe(
+    const body = new HttpParams().set('username', username).set('password', password).toString();
+    return this.http.post<any>(`${this.apiUrl}/token`, body, {
+      params: queryParams,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    }).pipe(
       tap(() => {
         this.checkAuth().subscribe();
       })
     );
+  }
+
+  /** After login returned 403 with require_otp, submit OTP code to get tokens. */
+  loginWithOtp(tempToken: string, code: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/token/otp`, { temp_token: tempToken, code }).pipe(
+      tap(() => {
+        this.checkAuth().subscribe();
+      })
+    );
+  }
+
+  getOtpStatus(): Observable<{ otp_enabled: boolean }> {
+    return this.http.get<{ otp_enabled: boolean }>(`${this.apiUrl}/users/me/otp/status`);
+  }
+
+  setupOtp(): Observable<{ secret: string; provisioning_uri: string }> {
+    return this.http.post<{ secret: string; provisioning_uri: string }>(`${this.apiUrl}/users/me/otp/setup`, {});
+  }
+
+  confirmOtp(code: string): Observable<{ status: string; otp_enabled: boolean }> {
+    return this.http.post<{ status: string; otp_enabled: boolean }>(`${this.apiUrl}/users/me/otp/confirm`, { code });
+  }
+
+  disableOtp(code: string): Observable<{ status: string; otp_enabled: boolean }> {
+    return this.http.post<{ status: string; otp_enabled: boolean }>(`${this.apiUrl}/users/me/otp/disable`, { code });
   }
 
   registerProvider(data: ProviderRegisterData): Observable<RegisterResponse> {
@@ -948,6 +1023,11 @@ export class ApiService {
     return this.http.put<Reservation>(`${this.apiUrl}/reservations/${id}/cancel`, {}, { params: { token } });
   }
 
+  /** Public: update reservation by token (delay notice, reservation notes, customer notes). */
+  updateReservationPublic(id: number, token: string, body: PublicReservationUpdate): Observable<Reservation> {
+    return this.http.put<Reservation>(`${this.apiUrl}/reservations/${id}/public`, body ?? {}, { params: { token } });
+  }
+
   createTable(name: string, floorId?: number): Observable<Table> {
     const body: { name: string; floor_id?: number } = { name };
     if (floorId !== undefined) body.floor_id = floorId;
@@ -1144,6 +1224,20 @@ export class ApiService {
   confirmPayment(orderId: number, tableToken: string, paymentIntentId: string): Observable<any> {
     return this.http.post(
       `${this.apiUrl}/orders/${orderId}/confirm-payment?table_token=${tableToken}&payment_intent_id=${paymentIntentId}`,
+      {}
+    );
+  }
+
+  createRevolutOrder(orderId: number, tableToken: string): Observable<{ checkout_url: string; revolut_order_id: string; order_id: number }> {
+    return this.http.post<{ checkout_url: string; revolut_order_id: string; order_id: number }>(
+      `${this.apiUrl}/orders/${orderId}/create-revolut-order?table_token=${tableToken}`,
+      {}
+    );
+  }
+
+  confirmRevolutPayment(orderId: number, tableToken: string): Observable<{ status: string; order_id: number }> {
+    return this.http.post<{ status: string; order_id: number }>(
+      `${this.apiUrl}/orders/${orderId}/confirm-revolut-payment?table_token=${tableToken}`,
       {}
     );
   }

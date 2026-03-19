@@ -3,6 +3,7 @@ from enum import Enum
 from uuid import uuid4
 
 from sqlalchemy import Column, Date, Time
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -115,6 +116,10 @@ class Tenant(SQLModel, table=True):
         default=None
     )  # Stripe publishable key for this tenant
 
+    revolut_merchant_secret: str | None = Field(
+        default=None
+    )  # Revolut Merchant API secret for this tenant (online payments via Revolut)
+
     # Inventory Management (commented out - migration not applied)
     # inventory_tracking_enabled: bool = Field(
     #     default=False
@@ -139,6 +144,15 @@ class Tenant(SQLModel, table=True):
     working_plan_updated_at: datetime | None = Field(default=None)
     working_plan_owner_seen_at: datetime | None = Field(default=None)
 
+    # Reservation options: pre-payment (discounted on meal), policies, reminders
+    reservation_prepayment_cents: int | None = Field(default=None)
+    reservation_prepayment_text: str | None = Field(default=None)  # Configurable text for end user
+    reservation_cancellation_policy: str | None = Field(default=None)
+    reservation_arrival_tolerance_minutes: int | None = Field(default=None)  # e.g. 15
+    reservation_dress_code: str | None = Field(default=None)
+    reservation_reminder_24h_enabled: bool = Field(default=False)
+    reservation_reminder_2h_enabled: bool = Field(default=False)
+
     # Default tax (IVA) applied system-wide when product has no tax override
     default_tax_id: int | None = Field(default=None, foreign_key="tax.id", index=True)
 
@@ -158,6 +172,10 @@ class User(SQLModel, table=True):
 
     # Provider users: tenant_id is None, provider_id set; they manage provider catalog
     provider_id: int | None = Field(default=None, foreign_key="provider.id", index=True)
+
+    # Optional TOTP (one-time password) for two-factor authentication
+    otp_secret: str | None = Field(default=None, exclude=True)  # Never serialized in API responses
+    otp_enabled: bool = Field(default=False)
 
 
 class TenantMixin(SQLModel):
@@ -182,6 +200,38 @@ class Product(TenantMixin, table=True):
     # Availability window: customer-facing menu shows product only when today is in [available_from, available_until]
     available_from: date | None = Field(default=None, sa_column=Column(Date, nullable=True))
     available_until: date | None = Field(default=None, sa_column=Column(Date, nullable=True))
+
+
+class ProductQuestionType(str, Enum):
+    """Type of product customization question."""
+    choice = "choice"   # Single choice from options (e.g. Rare, Medium, Well done)
+    scale = "scale"     # Numeric scale (e.g. spiciness 1-10)
+    text = "text"       # Free text (e.g. personal note)
+
+
+class ProductQuestion(TenantMixin, table=True):
+    """
+    Optional question/customization attached to a product (e.g. meat doneness, spice level).
+    Linked to Product so it applies to both legacy products and products linked from TenantProduct.
+    """
+    __tablename__ = "product_question"
+    id: int | None = Field(default=None, primary_key=True)
+    product_id: int = Field(foreign_key="product.id", index=True)
+    type: ProductQuestionType = Field(index=True)
+    label: str = Field(max_length=256)  # e.g. "How would you like your meat?"
+    # JSON: for choice list of options ["Rare", "Medium", "Well done"]; for scale {"min": 1, "max": 10}; for text null
+    options: dict | None = Field(default=None, sa_column=Column(JSONB, nullable=True))
+    sort_order: int = Field(default=0)
+    required: bool = Field(default=False)
+
+
+class ProductQuestionCreate(SQLModel):
+    """Create a product customization question."""
+    type: ProductQuestionType
+    label: str = Field(max_length=256)
+    options: dict | None = None  # choice: ["Rare", "Medium"], scale: {"min": 1, "max": 10}, text: null
+    sort_order: int = 0
+    required: bool = False
 
 
 # ============ PROVIDER & CATALOG SYSTEM ============
@@ -381,9 +431,11 @@ class Reservation(TenantMixin, table=True):
     token: str | None = Field(default=None, unique=True, index=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    # Notes: from client at booking; from restaurant owner/staff
-    client_notes: str | None = Field(default=None)
+    # Notes: reservation notes (this visit, e.g. baby stroller); customer profile (e.g. allergies); owner/internal
+    client_notes: str | None = Field(default=None)  # Reservation notes (e.g. "We will arrive with a baby stroller")
+    customer_notes: str | None = Field(default=None)  # Customer profile notes (e.g. "Allergic to nuts")
     owner_notes: str | None = Field(default=None)
+    delay_notice: str | None = Field(default=None)  # Customer-notified delay (e.g. "We will arrive 1 hour late")
     # Client technical info (who created the reservation): IP, user-agent, fingerprint, screen
     client_ip: str | None = Field(default=None, max_length=45)
     client_user_agent: str | None = Field(default=None, max_length=512)
@@ -425,7 +477,8 @@ class Order(TenantMixin, table=True):
     # Payment tracking
     paid_at: datetime | None = None
     paid_by_user_id: int | None = None  # Who marked it as paid (staff)
-    payment_method: str | None = None  # 'stripe', 'cash', 'terminal', etc.
+    payment_method: str | None = None  # 'stripe', 'cash', 'terminal', 'revolut', etc.
+    revolut_order_id: str | None = None  # Revolut Merchant order id when paying via Revolut
 
     # Location verification tracking
     location_verified: bool | None = Field(default=None)  # None=not checked, True=inside, False=outside
@@ -453,6 +506,8 @@ class OrderItem(SQLModel, table=True):
     price_cents: int  # Snapshot of price at order time (tax-inclusive)
     cost_cents: int | None = None  # Snapshot of cost at order time for profit
     notes: str | None = None  # Item-specific notes (e.g., "no onions")
+    # Structured answers to product questions: {"question_id": value} (value: str for choice/text, int for scale)
+    customization_answers: dict | None = Field(default=None, sa_column=Column(JSONB, nullable=True))
     # Tax snapshot at order time for invoice breakdown
     tax_id: int | None = Field(default=None, foreign_key="tax.id", index=True)
     tax_rate_percent: int | None = None  # e.g. 10, 21, 0
@@ -554,7 +609,8 @@ class ReservationCreate(SQLModel):
     reservation_time: str  # HH:MM or HH:MM:SS
     party_size: int
     tenant_id: int | None = None  # Required only for public (no auth); staff ignore
-    client_notes: str | None = None
+    client_notes: str | None = None  # Reservation notes (e.g. baby stroller)
+    customer_notes: str | None = None  # Customer profile (e.g. allergies)
     # Optional client technical info (sent by public booking form)
     client_fingerprint: str | None = None
     client_screen_width: int | None = None
@@ -569,7 +625,9 @@ class ReservationUpdate(SQLModel):
     reservation_time: str | None = None
     party_size: int | None = None
     client_notes: str | None = None
+    customer_notes: str | None = None
     owner_notes: str | None = None
+    delay_notice: str | None = None
 
 
 class ReservationStatusUpdate(SQLModel):
@@ -590,9 +648,17 @@ class PublicReservationCreate(SQLModel):
     reservation_time: str
     party_size: int
     client_notes: str | None = None
+    customer_notes: str | None = None
     client_fingerprint: str | None = None
     client_screen_width: int | None = None
     client_screen_height: int | None = None
+
+
+class PublicReservationUpdate(SQLModel):
+    """Public update by token: delay notice, reservation notes, customer notes (only when status is booked)."""
+    delay_notice: str | None = None
+    client_notes: str | None = None
+    customer_notes: str | None = None
 
 
 class FloorCreate(SQLModel):
@@ -627,6 +693,7 @@ class OrderItemCreate(SQLModel):
     quantity: int
     notes: str | None = None
     source: str | None = None  # "tenant_product" or "product" to distinguish between TenantProduct and legacy Product
+    customization_answers: dict | None = None  # {"question_id": value} for product questions
 
 
 class OrderCreate(SQLModel):
@@ -719,6 +786,7 @@ class TenantUpdate(SQLModel):
 
     stripe_secret_key: str | None = None
     stripe_publishable_key: str | None = None
+    revolut_merchant_secret: str | None = None
     # inventory_tracking_enabled: bool | None = None  # Commented out - migration not applied
 
     # Location verification settings
@@ -738,6 +806,15 @@ class TenantUpdate(SQLModel):
 
     # Public-facing pages background color (hex, e.g. #1E22AA for RAL5002 Azul)
     public_background_color: str | None = None
+
+    # Reservation options (pre-payment, policies, reminders)
+    reservation_prepayment_cents: int | None = None
+    reservation_prepayment_text: str | None = None
+    reservation_cancellation_policy: str | None = None
+    reservation_arrival_tolerance_minutes: int | None = None
+    reservation_dress_code: str | None = None
+    reservation_reminder_24h_enabled: bool | None = None
+    reservation_reminder_2h_enabled: bool | None = None
 
 
 class TenantProductCreate(SQLModel):

@@ -25,7 +25,7 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
   template: `
     <div class="kitchen-view">
       <header class="kitchen-header">
-        <a routerLink="/orders" class="back-link">
+        <a routerLink="/staff/orders" class="back-link">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="15,18 9,12 15,6"/>
           </svg>
@@ -78,6 +78,9 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
                       <li class="order-item">
                         <span class="item-qty">{{ item.quantity }}×</span>
                         <span class="item-name">{{ item.product_name }}</span>
+                        @if (item.customization_answers && Object.keys(item.customization_answers).length > 0) {
+                          <span class="item-customization">{{ formatCustomization(item.customization_answers) }}</span>
+                        }
                         @if (item.notes) {
                           <span class="item-notes">{{ item.notes }}</span>
                         }
@@ -284,6 +287,11 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
       font-size: 0.9375rem;
       color: var(--color-text-muted);
       font-style: italic;
+    }
+    .item-customization {
+      grid-column: 2 / 4;
+      font-size: 0.8125rem;
+      color: var(--color-text-muted);
     }
     .item-status {
       font-size: 0.8125rem;
@@ -502,6 +510,12 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
 
   getItemStatusLabel(status: string): string {
     return this.translate.instant('ITEM_STATUS.' + status) || status;
+  }
+
+  /** Format customization answers for display (e.g. "Medium · 7"). */
+  formatCustomization(answers: Record<string, string | number>): string {
+    if (!answers || Object.keys(answers).length === 0) return '';
+    return Object.values(answers).join(' · ');
   }
 
   /** Items sorted by status; for kitchen we only show pending and preparing. */
