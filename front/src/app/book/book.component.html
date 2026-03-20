@@ -1,4 +1,4 @@
-<div class="book-page" [style.--color-bg]="tenant()?.public_background_color ?? null">
+<div class="book-page" [style.--color-bg]="tenant()?.public_background_color ?? null" [style.--hero-header-bg]="tenant()?.public_background_color ?? null">
   @if (loading()) {
     <div class="loading-screen">
       <div class="loading-content">
@@ -80,6 +80,35 @@
 
     <main class="book-content">
       @if (!successReservation()) {
+        @if (tenant()?.reservation_cancellation_policy || tenant()?.reservation_prepayment_text || tenant()?.reservation_arrival_tolerance_minutes != null || tenant()?.reservation_dress_code) {
+          <div class="book-card book-guidelines">
+            <h3 class="guidelines-title">{{ 'BOOK.RESTAURANT_GUIDELINES' | translate }}</h3>
+            @if (tenant()?.reservation_prepayment_cents != null && (tenant()?.reservation_prepayment_cents ?? 0) > 0) {
+              <div class="guideline-item">
+                <span class="guideline-label">{{ 'BOOK.PREPAYMENT' | translate }}:</span>
+                <span class="guideline-text">{{ tenant()?.reservation_prepayment_text || ('BOOK.PREPAYMENT_DEFAULT' | translate) }}</span>
+              </div>
+            }
+            @if (tenant()?.reservation_cancellation_policy) {
+              <div class="guideline-item">
+                <span class="guideline-label">{{ 'BOOK.CANCELLATION_POLICY' | translate }}:</span>
+                <span class="guideline-text">{{ tenant()?.reservation_cancellation_policy }}</span>
+              </div>
+            }
+            @if (tenant()?.reservation_arrival_tolerance_minutes != null && (tenant()?.reservation_arrival_tolerance_minutes ?? 0) > 0) {
+              <div class="guideline-item">
+                <span class="guideline-label">{{ 'BOOK.ARRIVAL_TOLERANCE' | translate }}:</span>
+                <span class="guideline-text">{{ 'BOOK.ARRIVAL_TOLERANCE_MINUTES' | translate: { minutes: tenant()?.reservation_arrival_tolerance_minutes } }}</span>
+              </div>
+            }
+            @if (tenant()?.reservation_dress_code) {
+              <div class="guideline-item">
+                <span class="guideline-label">{{ 'BOOK.DRESS_CODE' | translate }}:</span>
+                <span class="guideline-text">{{ tenant()?.reservation_dress_code }}</span>
+              </div>
+            }
+          </div>
+        }
         <div class="book-card">
           <form (ngSubmit)="submit()" class="book-form">
             <div class="form-group">
@@ -114,8 +143,12 @@
               <input type="email" id="book-email" [(ngModel)]="formEmail" name="email" placeholder="your@email.com" autocomplete="email" />
             </div>
             <div class="form-group">
-              <label for="book-notes">{{ 'RESERVATIONS.CLIENT_NOTES' | translate }}</label>
-              <textarea id="book-notes" [(ngModel)]="formClientNotes" name="clientNotes" rows="3" placeholder="{{ 'RESERVATIONS.CLIENT_NOTES_PLACEHOLDER' | translate }}"></textarea>
+              <label for="book-notes">{{ 'RESERVATIONS.RESERVATION_NOTES' | translate }}</label>
+              <textarea id="book-notes" [(ngModel)]="formClientNotes" name="clientNotes" rows="2" [placeholder]="'RESERVATIONS.RESERVATION_NOTES_PLACEHOLDER' | translate"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="book-customer-notes">{{ 'RESERVATIONS.CUSTOMER_NOTES' | translate }}</label>
+              <textarea id="book-customer-notes" [(ngModel)]="formCustomerNotes" name="customerNotes" rows="2" [placeholder]="'RESERVATIONS.CUSTOMER_NOTES_PLACEHOLDER' | translate"></textarea>
             </div>
             @if (error()) {
               <div class="form-error">{{ error() }}</div>

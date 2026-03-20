@@ -90,8 +90,8 @@ const VIEW_CATEGORY: Record<string, string> = {
                       <li class="order-item">
                         <span class="item-qty">{{ item.quantity }}×</span>
                         <span class="item-name">{{ item.product_name }}</span>
-                        @if (item.customization_answers && Object.keys(item.customization_answers).length > 0) {
-                          <span class="item-customization">{{ formatCustomization(item.customization_answers) }}</span>
+                        @if (hasCustomization(item)) {
+                          <span class="item-customization">{{ formatCustomization(item.customization_answers ?? {}) }}</span>
                         }
                         @if (item.notes) {
                           <span class="item-notes">{{ item.notes }}</span>
@@ -761,6 +761,11 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
   }
 
   /** Format customization answers for display (e.g. "Medium · 7"). */
+  hasCustomization(item: OrderItem): boolean {
+    const a = item?.customization_answers;
+    return !!a && typeof a === 'object' && Object.keys(a).length > 0;
+  }
+
   formatCustomization(answers: Record<string, string | number>): string {
     if (!answers || Object.keys(answers).length === 0) return '';
     return Object.values(answers).join(' · ');

@@ -6,6 +6,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ApiService, Product, OrderItemCreate, OrderHistoryItem } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
 import { environment } from '../../environments/environment';
+import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { LanguagePickerComponent } from '../shared/language-picker.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -30,7 +31,7 @@ interface PlacedOrder {
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [CommonModule, FormsModule, LanguagePickerComponent, TranslateModule, SlicePipe],
+  imports: [CommonModule, FormsModule, FocusFirstInputDirective, LanguagePickerComponent, TranslateModule, SlicePipe],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss'
 })
@@ -755,6 +756,14 @@ export class MenuComponent implements OnInit, OnDestroy {
 
   setCustomizationAnswer(questionId: number, value: string | number) {
     this.customizationAnswersForm.update(prev => ({ ...prev, [questionId]: value }));
+  }
+
+  isChoiceOptionsArray(q: { type: string; options?: unknown }): boolean {
+    return q.type === 'choice' && Array.isArray(q.options);
+  }
+
+  getChoiceOptions(q: { options?: unknown }): string[] {
+    return Array.isArray(q.options) ? (q.options as string[]) : [];
   }
 
   confirmAddWithQuestions() {

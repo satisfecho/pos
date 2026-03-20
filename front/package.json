@@ -30,6 +30,7 @@
     "test:settings-providers": "node scripts/test-settings-providers.mjs",
     "test:bartender-role": "node scripts/test-bartender-role.mjs",
     "test:kitchen-status-dropdown": "node scripts/test-kitchen-status-dropdown.mjs",
+    "test:kitchen-timer": "node scripts/test-kitchen-timer.mjs",
     "test:rate-limit": "node scripts/test-rate-limit.mjs",
     "test:rate-limit-puppeteer": "node scripts/test-rate-limit-puppeteer.mjs",
     "test:book-whatsapp": "node scripts/test-book-whatsapp-puppeteer.mjs",

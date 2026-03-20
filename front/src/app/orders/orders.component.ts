@@ -9,6 +9,7 @@ import { PermissionService, Permission } from '../services/permission.service';
 import { Subscription } from 'rxjs';
 import { AgGridAngular } from 'ag-grid-angular';
 import { SidebarComponent } from '../shared/sidebar.component';
+import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   ColDef,
@@ -31,7 +32,7 @@ ModuleRegistry.registerModules([
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [AgGridAngular, SidebarComponent, FormsModule, TranslateModule],
+  imports: [AgGridAngular, SidebarComponent, FormsModule, FocusFirstInputDirective, TranslateModule],
   template: `
     <app-sidebar>
         <div class="page-header">
@@ -178,8 +179,8 @@ ModuleRegistry.registerModules([
                               }
                             </span>
                             <span class="item-name">{{ item.product_name }}</span>
-                            @if (item.customization_answers && Object.keys(item.customization_answers).length > 0) {
-                              <span class="item-customization">{{ formatCustomization(item.customization_answers) }}</span>
+                            @if (hasItemCustomization(item)) {
+                              <span class="item-customization">{{ formatCustomization(item.customization_answers!) }}</span>
                             }
                           </div>
                           <div class="item-details-row">
@@ -373,8 +374,8 @@ ModuleRegistry.registerModules([
                             <div class="item-name-row">
                               <span class="item-qty">{{ item.quantity }}x</span>
                               <span class="item-name">{{ item.product_name }}</span>
-                              @if (item.customization_answers && Object.keys(item.customization_answers).length > 0) {
-                                <span class="item-customization">{{ formatCustomization(item.customization_answers) }}</span>
+                              @if (hasItemCustomization(item)) {
+                                <span class="item-customization">{{ formatCustomization(item.customization_answers!) }}</span>
                               }
                             </div>
                             <div class="item-details-row">
@@ -460,7 +461,7 @@ ModuleRegistry.registerModules([
         <!-- Print Factura Modal -->
         @if (facturaOrder()) {
           <div class="modal-overlay" (click)="closeFacturaModal()">
-            <div class="modal" (click)="$event.stopPropagation()">
+            <div class="modal" (click)="$event.stopPropagation()" appFocusFirstInput>
               <div class="modal-header">
                 <h3>{{ 'CUSTOMERS.PRINT_FACTURA' | translate }}</h3>
                 <button class="icon-btn" (click)="closeFacturaModal()">
@@ -494,7 +495,7 @@ ModuleRegistry.registerModules([
         <!-- Mark as Paid Modal -->
         @if (orderToMarkPaid()) {
           <div class="modal-overlay" (click)="closePaymentModal()">
-            <div class="modal" (click)="$event.stopPropagation()">
+            <div class="modal" (click)="$event.stopPropagation()" appFocusFirstInput>
               <div class="modal-header">
                 <h3>{{ 'ORDERS.MARK_ORDER_AS_PAID' | translate }}</h3>
                 <button class="icon-btn" (click)="closePaymentModal()">
@@ -528,7 +529,7 @@ ModuleRegistry.registerModules([
         <!-- Confirmation Modal (replaces native confirm/prompt) -->
         @if (confirmAction()) {
           <div class="modal-overlay" (click)="closeConfirmModal()">
-            <div class="modal" (click)="$event.stopPropagation()">
+            <div class="modal" (click)="$event.stopPropagation()" appFocusFirstInput>
               <div class="modal-header">
                 <h3>{{ 'COMMON.CONFIRM' | translate }}</h3>
                 <button class="icon-btn" (click)="closeConfirmModal()">
@@ -1667,6 +1668,11 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   getItemStatusLabel(status: string): string {
     return this.translate.instant(`ITEM_STATUS.${status}`) || status;
+  }
+
+  hasItemCustomization(item: { customization_answers?: Record<string, string | number> | null }): boolean {
+    const a = item?.customization_answers;
+    return !!a && typeof a === 'object' && Object.keys(a).length > 0;
   }
 
   formatCustomization(answers: Record<string, string | number>): string {

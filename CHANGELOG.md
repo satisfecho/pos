@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **Kitchen/bar timer and frontend build**: Timer settings button and per-order “Waiting” timer now appear after fixing Angular template errors: use component methods instead of `Object.keys`/`Array.isArray` in templates (kitchen-display, orders, menu); optional chaining for `tenant()` in book and reservation-view. Added Puppeteer test `test-kitchen-timer.mjs` and npm script `test:kitchen-timer`.
 - **Backend 500 (slowapi)**: Endpoints that return dict/list under global rate limiting now inject `response: Response` and/or return `JSONResponse` so slowapi can set rate-limit headers. Fixed for `/catalog`, `/catalog/categories`, `/catalog/{id}`, `/tenant-products`, `/tables/with-status`, tenant settings, tenant logo, and tax CRUD. **Public menu endpoints** now return `JSONResponse`: `GET /menu/{token}`, `GET /menu/{token}/order`, `GET /menu/{token}/order-history`, `POST /menu/{token}/order`, `POST /menu/{token}/order/{id}/request-payment`, `POST /menu/{token}/call-waiter`, `DELETE`/`PUT` order items, `DELETE` order (fixes 500 when opening table menu or requesting payment). Repair migration `20260318130000_ensure_provider_tenant_id.sql` ensures `provider.tenant_id` exists when schema version was applied without the column.
 
 ### Changed

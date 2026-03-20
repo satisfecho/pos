@@ -1,4 +1,4 @@
-<div class="view-page" [style.--color-bg]="tenant()?.public_background_color ?? null">
+<div class="view-page" [style.--hero-header-bg]="tenant()?.public_background_color ?? null">
   @if (loading()) {
     <div class="loading-screen">
       <div class="loading-content">
@@ -64,6 +64,20 @@
       </header>
     }
     <main class="view-content">
+      @if (tenant() && (tenant()?.reservation_cancellation_policy || tenant()?.reservation_arrival_tolerance_minutes != null || tenant()?.reservation_dress_code)) {
+        <div class="view-card view-guidelines">
+          <h3 class="guidelines-title">{{ 'RESERVATIONS.RESTAURANT_GUIDELINES' | translate }}</h3>
+          @if (tenant()?.reservation_cancellation_policy) {
+            <p class="guideline-item"><strong>{{ 'RESERVATIONS.CANCELLATION_POLICY' | translate }}:</strong> {{ tenant()?.reservation_cancellation_policy }}</p>
+          }
+          @if (tenant()?.reservation_arrival_tolerance_minutes != null && (tenant()?.reservation_arrival_tolerance_minutes ?? 0) > 0) {
+            <p class="guideline-item"><strong>{{ 'RESERVATIONS.ARRIVAL_TOLERANCE' | translate }}:</strong> {{ 'RESERVATIONS.ARRIVAL_TOLERANCE_MINUTES' | translate: { minutes: tenant()?.reservation_arrival_tolerance_minutes } }}</p>
+          }
+          @if (tenant()?.reservation_dress_code) {
+            <p class="guideline-item"><strong>{{ 'RESERVATIONS.DRESS_CODE' | translate }}:</strong> {{ tenant()?.reservation_dress_code }}</p>
+          }
+        </div>
+      }
       <div class="view-card">
         @if (reservation()?.status === 'cancelled') {
           <p class="status-cancelled">{{ 'RESERVATIONS.STATUS_CANCELLED' | translate }}</p>
@@ -78,11 +92,29 @@
               <p><strong>{{ 'RESERVATIONS.CUSTOMER_EMAIL' | translate }}:</strong> {{ reservation()?.customer_email }}</p>
             }
             @if (reservation()?.client_notes) {
-              <p><strong>{{ 'RESERVATIONS.CLIENT_NOTES' | translate }}:</strong> {{ reservation()?.client_notes }}</p>
+              <p><strong>{{ 'RESERVATIONS.RESERVATION_NOTES' | translate }}:</strong> {{ reservation()?.client_notes }}</p>
+            }
+            @if (reservation()?.customer_notes) {
+              <p><strong>{{ 'RESERVATIONS.CUSTOMER_NOTES' | translate }}:</strong> {{ reservation()?.customer_notes }}</p>
+            }
+            @if (reservation()?.delay_notice) {
+              <p class="delay-notice"><strong>{{ 'RESERVATIONS.DELAY_NOTICE' | translate }}:</strong> {{ reservation()?.delay_notice }}</p>
             }
             <p><strong>{{ 'RESERVATIONS.STATUS' | translate }}:</strong> {{ getStatusKey() | translate }}</p>
           </div>
-          @if (reservation()?.status === 'booked' || reservation()?.status === 'seated') {
+          @if ((reservation()?.status === 'booked' || reservation()?.status === 'seated') && tenant()) {
+            <div class="delay-form">
+              <label for="delay-notice">{{ 'RESERVATIONS.NOTIFY_DELAY' | translate }}</label>
+              <div class="delay-form-row">
+                <input id="delay-notice" type="text" [(ngModel)]="delayNotice" name="delayNotice" [placeholder]="'RESERVATIONS.NOTIFY_DELAY_PLACEHOLDER' | translate" />
+                <button type="button" class="btn btn-secondary" [disabled]="updatingDelay()" (click)="submitDelayNotice()">
+                  {{ updatingDelay() ? ('RESERVATIONS.SENDING' | translate) : ('RESERVATIONS.SEND_DELAY' | translate) }}
+                </button>
+              </div>
+              @if (delaySuccess()) {
+                <p class="delay-success">{{ 'RESERVATIONS.DELAY_SENT' | translate }}</p>
+              }
+            </div>
             <button type="button" class="btn btn-danger" (click)="showCancelConfirm.set(true)">{{ 'RESERVATIONS.CANCEL' | translate }}</button>
           }
         }
