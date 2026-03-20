@@ -591,6 +591,7 @@
   },
   "RESERVATIONS": {
     "TITLE": "Reservaciones",
+    "EDIT_RESERVATION_OPTIONS": "Editar opciones de reservas",
     "RESERVATION_NUMBER": "Número de reserva",
     "NEW": "Nueva reservación",
     "LOADING": "Cargando...",
@@ -622,6 +623,9 @@
     "CANCEL": "Cancelar",
     "FINISH": "Finalizar",
     "SEARCH_PHONE": "Buscar por teléfono",
+    "PREFILL_FROM_PHONE": "Rellenar desde anterior",
+    "PREFILL_SUCCESS": "Datos rellenados desde una reserva anterior.",
+    "PREFILL_NONE": "No se encontró ninguna reserva anterior con este teléfono.",
     "SUGGESTED_TIME": "Hora sugerida",
     "SEAT_AT_TABLE": "Sentar en mesa",
     "NO_AVAILABLE_TABLES": "No hay mesas disponibles para este tamaño de grupo.",

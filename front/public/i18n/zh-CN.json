@@ -511,6 +511,7 @@
   },
   "RESERVATIONS": {
     "TITLE": "预订管理",
+    "EDIT_RESERVATION_OPTIONS": "编辑预订选项",
     "RESERVATION_NUMBER": "预订编号",
     "NEW": "新建预订",
     "LOADING": "加载中...",
@@ -534,6 +535,9 @@
     "CANCEL": "取消",
     "FINISH": "完成",
     "SEARCH_PHONE": "按电话搜索",
+    "PREFILL_FROM_PHONE": "从以往预订填充",
+    "PREFILL_SUCCESS": "已从以往预订填充。",
+    "PREFILL_NONE": "未找到此电话的以往预订。",
     "SUGGESTED_TIME": "建议时间",
     "SEAT_AT_TABLE": "安排入座",
     "NO_AVAILABLE_TABLES": "没有适合该人数的可用餐桌。",

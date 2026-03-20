@@ -511,6 +511,7 @@
   },
   "RESERVATIONS": {
     "TITLE": "आरक्षण",
+    "EDIT_RESERVATION_OPTIONS": "आरक्षण विकल्प संपादित करें",
     "RESERVATION_NUMBER": "आरक्षण संख्या",
     "NEW": "नया आरक्षण",
     "LOADING": "लोड हो रहा है...",
@@ -534,6 +535,9 @@
     "CANCEL": "रद्द करें",
     "FINISH": "समाप्त करें",
     "SEARCH_PHONE": "फ़ोन से खोजें",
+    "PREFILL_FROM_PHONE": "पिछले से भरें",
+    "PREFILL_SUCCESS": "पिछले रिज़र्वेशन से भर दिया गया।",
+    "PREFILL_NONE": "इस फ़ोन के लिए कोई पिछला रिज़र्वेशन नहीं मिला।",
     "SUGGESTED_TIME": "सुझाया गया समय",
     "SEAT_AT_TABLE": "टेबल पर बैठाएँ",
     "NO_AVAILABLE_TABLES": "इस समूह के आकार के लिए कोई उपलब्ध टेबल नहीं है।",

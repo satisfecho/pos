@@ -504,6 +504,7 @@
   "RESERVATIONS": {
     "TITLE": "Reservierungen",
     "VIEW_PUBLIC_PAGE": "Öffentliche Buchungsseite anzeigen",
+    "EDIT_RESERVATION_OPTIONS": "Reservierungseinstellungen bearbeiten",
     "RESERVATION_NUMBER": "Reservierungsnummer",
     "NEW": "Neue Reservierung",
     "LOADING": "Laden...",
@@ -527,6 +528,9 @@
     "CANCEL": "Stornieren",
     "FINISH": "Beenden",
     "SEARCH_PHONE": "Nach Telefon suchen",
+    "PREFILL_FROM_PHONE": "Aus Vorreservierung übernehmen",
+    "PREFILL_SUCCESS": "Aus einer früheren Reservierung übernommen.",
+    "PREFILL_NONE": "Keine frühere Reservierung für diese Telefonnummer gefunden.",
     "SUGGESTED_TIME": "Vorgeschlagene Zeit",
     "SEAT_AT_TABLE": "Am Tisch platzieren",
     "NO_AVAILABLE_TABLES": "Keine verfügbaren Tische für diese Anzahl Gäste.",

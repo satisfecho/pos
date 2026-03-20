@@ -569,6 +569,7 @@
   },
   "RESERVATIONS": {
     "TITLE": "Réservations",
+    "EDIT_RESERVATION_OPTIONS": "Modifier les options de réservation",
     "RESERVATION_NUMBER": "Numéro de réservation",
     "NEW": "Nouvelle réservation",
     "LOADING": "Chargement…",
@@ -592,6 +593,9 @@
     "CANCEL": "Annuler",
     "FINISH": "Terminer",
     "SEARCH_PHONE": "Rechercher par téléphone",
+    "PREFILL_FROM_PHONE": "Remplir depuis une précédente",
+    "PREFILL_SUCCESS": "Rempli à partir d'une réservation précédente.",
+    "PREFILL_NONE": "Aucune réservation précédente pour ce numéro.",
     "SUGGESTED_TIME": "Heure proposée",
     "SEAT_AT_TABLE": "Installer à la table",
     "NO_AVAILABLE_TABLES": "Aucune table disponible pour ce nombre de personnes.",

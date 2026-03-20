@@ -498,6 +498,7 @@
   },
   "RESERVATIONS": {
     "TITLE": "Reserves",
+    "EDIT_RESERVATION_OPTIONS": "Editar opcions de reserves",
     "RESERVATION_NUMBER": "Número de reserva",
     "NEW": "Nova reserva",
     "LOADING": "Carregant...",
@@ -521,6 +522,9 @@
     "CANCEL": "Cancel·lar",
     "FINISH": "Finalitzar",
     "SEARCH_PHONE": "Cercar per telèfon",
+    "PREFILL_FROM_PHONE": "Omplir des d'anterior",
+    "PREFILL_SUCCESS": "Dades omplertes des d'una reserva anterior.",
+    "PREFILL_NONE": "No s'ha trobat cap reserva anterior amb aquest telèfon.",
     "SUGGESTED_TIME": "Hora suggerida",
     "SEAT_AT_TABLE": "Asseure a la taula",
     "NO_AVAILABLE_TABLES": "No hi ha taules disponibles per a aquesta mida de grup.",

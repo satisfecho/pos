@@ -592,6 +592,7 @@
   "RESERVATIONS": {
     "TITLE": "Reservations",
     "VIEW_PUBLIC_PAGE": "View public booking page",
+    "EDIT_RESERVATION_OPTIONS": "Edit reservation options",
     "RESERVATION_NUMBER": "Reservation number",
     "NEW": "New reservation",
     "LOADING": "Loading...",
@@ -623,6 +624,9 @@
     "CANCEL": "Cancel",
     "FINISH": "Finish",
     "SEARCH_PHONE": "Search by phone",
+    "PREFILL_FROM_PHONE": "Look up from previous",
+    "PREFILL_SUCCESS": "Prefilled from a previous reservation.",
+    "PREFILL_NONE": "No previous reservation found for this phone.",
     "SUGGESTED_TIME": "Suggested time",
     "SEAT_AT_TABLE": "Seat at table",
     "NO_AVAILABLE_TABLES": "No available tables for this party size.",
