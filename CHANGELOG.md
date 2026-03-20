@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Tables – canvas header**: `/tables/canvas` now shows the same header options as `/tables`: title "Tables", Floor Plan (active), List View link, Tiles/Table view links, Add Table button (focuses shape palette), and Save Layout when there are unsaved changes.
+
 ### Added
 
 - **Orders – pre-pay (mark as paid before delivery)**: Staff can mark an order as paid on `/staff/orders` even when not all items are delivered (e.g. customer pays while kitchen is still preparing). Backend: `PUT /orders/{id}/mark-paid` no longer requires order status “completed”; it only rejects already-paid or cancelled orders. Frontend: “Mark as paid” appears in the order status dropdown for any non-paid, non-cancelled order (pending, preparing, ready, partially_delivered, completed).

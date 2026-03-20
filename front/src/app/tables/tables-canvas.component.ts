@@ -5,6 +5,7 @@ import { LowerCasePipe } from '@angular/common';
 import { ApiService, Floor, CanvasTable, User } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { ConfirmationModalComponent } from '../shared/confirmation-modal.component';
+import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 interface TableShape {
@@ -19,25 +20,60 @@ interface TableShape {
 @Component({
   selector: 'app-tables-canvas',
   standalone: true,
-  imports: [FormsModule, SidebarComponent, RouterLink, TranslateModule, LowerCasePipe, ConfirmationModalComponent],
+  imports: [FormsModule, SidebarComponent, RouterLink, TranslateModule, LowerCasePipe, ConfirmationModalComponent, FocusFirstInputDirective],
   template: `
     <app-sidebar>
       <div class="canvas-container">
-        <!-- Header -->
+        <!-- Header: same options as /tables -->
         <div class="page-header">
           <div class="header-left">
-            <h1>{{ 'TABLES.FLOOR_PLAN' | translate }}</h1>
+            <h1>{{ 'TABLES.TITLE' | translate }}</h1>
+            <span class="btn btn-ghost btn-sm active" aria-current="page">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>
+                <line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/>
+              </svg>
+              {{ 'TABLES.FLOOR_PLAN' | translate }}
+            </span>
             <a routerLink="/tables" class="btn btn-ghost btn-sm">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-                <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
               </svg>
               {{ 'TABLES.LIST_VIEW' | translate }}
             </a>
+            @if (floors().length > 0 && tables().length > 0) {
+              <div class="view-toggle">
+                <a routerLink="/tables" class="btn btn-ghost btn-sm" [title]="'TABLES.VIEW_TILES' | translate">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+                  </svg>
+                  {{ 'TABLES.VIEW_TILES' | translate }}
+                </a>
+                <a routerLink="/tables" class="btn btn-ghost btn-sm" [title]="'TABLES.VIEW_TABLE' | translate">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="1"/>
+                    <line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/>
+                    <line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>
+                  </svg>
+                  {{ 'TABLES.VIEW_TABLE' | translate }}
+                </a>
+              </div>
+            }
           </div>
           <div class="header-actions">
             @if (hasUnsavedChanges()) {
               <span class="unsaved-indicator">{{ 'TABLES.UNSAVED_CHANGES' | translate }}</span>
+            }
+            @if (floors().length > 0) {
+              <button type="button" class="btn btn-primary" (click)="focusAddTablePalette()" [title]="'TABLES.ADD_TABLE' | translate">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                {{ 'TABLES.ADD_TABLE' | translate }}
+              </button>
             }
             <button class="btn btn-primary" (click)="saveAllPositions()" [disabled]="!hasUnsavedChanges()">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -441,7 +477,7 @@ interface TableShape {
 
           <!-- Shape Palette (shown when no table selected) -->
           @if (!selectedTable() && floors().length > 0 && selectedFloorId()) {
-            <div class="shape-palette">
+            <div class="shape-palette" #shapePalette>
               <div class="palette-header">
                 <h3>{{ 'TABLES.ADD_TABLE' | translate }}</h3>
                 <span class="palette-hint">{{ 'TABLES.DRAG_HINT' | translate }}</span>
@@ -495,7 +531,7 @@ interface TableShape {
         <!-- Reassign orders/reservations to another table before delete -->
         @if (reassignTableModal()) {
           <div class="modal-overlay" (click)="cancelReassign()">
-            <div class="modal-content reassign-modal" (click)="$event.stopPropagation()">
+            <div class="modal-content reassign-modal" (click)="$event.stopPropagation()" appFocusFirstInput>
               <div class="modal-header">
                 <h3>{{ 'TABLES.REASSIGN_AND_DELETE_TITLE' | translate }}</h3>
                 <button type="button" class="close-btn" (click)="cancelReassign()" aria-label="Close">
@@ -551,6 +587,10 @@ interface TableShape {
       color: var(--color-text);
       margin: 0;
     }
+
+    .view-toggle { display: flex; gap: 2px; }
+    .view-toggle .btn { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+    .header-left .btn.active { background: var(--color-bg); color: var(--color-text); font-weight: 500; cursor: default; }
 
     .header-actions {
       display: flex;
@@ -1238,6 +1278,7 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
 
   @ViewChild('canvasArea') canvasAreaRef!: ElementRef;
   @ViewChild('canvasSvg') canvasSvgRef!: ElementRef<SVGSVGElement>;
+  @ViewChild('shapePalette') shapePaletteRef?: ElementRef<HTMLElement>;
 
   error = signal('');
   floors = signal<Floor[]>([]);
@@ -1370,6 +1411,17 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   selectFloor(id: number) {
     this.selectedFloorId.set(id);
     this.selectedTable.set(null);
+  }
+
+  /** Focus the add-table shape palette (used by header Add Table button). */
+  focusAddTablePalette() {
+    this.selectedTable.set(null);
+    if (this.floors().length > 0 && !this.selectedFloorId()) {
+      this.selectedFloorId.set(this.floors()[0].id!);
+    }
+    setTimeout(() => {
+      this.shapePaletteRef?.nativeElement?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
+    }, 100);
   }
 
   addFloor() {
