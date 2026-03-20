@@ -31,10 +31,17 @@ certbot/www/
 certbot/haproxy-certs/*.pem
 certbot/haproxy-certs/*.crt
 certbot/haproxy-certs/*.key
+# HAProxy base compose self-signed dev cert (generate locally; see haproxy/certs/README.md)
+haproxy/certs/*.pem
+haproxy/certs/*.crt
+haproxy/certs/*.key
 # Legacy path if used
 certs/*.pem
 certs/*.crt
 certs/*.key
+
+# Revolut sandbox certificates and private key (never commit)
+revolut-certs/
 
 # Node / Angular (front has its own .gitignore too, this is just extra safety)
 node_modules/
