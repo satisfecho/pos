@@ -381,6 +381,23 @@
   }
 }
 
+// Success card buttons: always high contrast so they stay readable on any tenant background
+.book-success-card .btn {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+.book-success-card .btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+.book-success-card .btn-secondary {
+  background: #fff;
+  color: #1a1a1a;
+
+  &:hover {
+    background: #e5e5e5;
+  }
+}
+
 .book-success-card {
   text-align: center;
 }

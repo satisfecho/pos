@@ -55,6 +55,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Deploy (amvara9) – front CSS / stale build**: Deploy script now builds the front image with `--no-cache` so each deploy serves assets from the current code (fixes wrong styling e.g. Settings > Opening hours). Nginx in the front container sends `Cache-Control: no-cache` for the HTML document so clients get new hashed asset URLs after deploy. See `docs/0024-deploy-css-fix-amvara9.md`.
 - **Deploy (amvara9) – version not updating**: Fixed `docker compose build` flag order (`build --no-cache front`); added `up -d --force-recreate` so the front container is recreated with the new image; added a post-deploy step that prints the version served by the front container for verification.
 
+## [2.0.8] - 2026-03-20
+
+### Fixed
+
+- **Public reservation – confirmation button**: Button on the confirmation page ("View or Cancel") now uses high-contrast styling (white background, dark text) so it remains readable when the tenant sets a blue or other colored public background.
+
 ## [2.0.7] - 2026-03-19
 
 ### Added
