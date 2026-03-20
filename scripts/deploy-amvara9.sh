@@ -45,13 +45,7 @@ else
   echo "Database container not running; skipping backup (virgin or first deploy)."
 fi
 
-echo "Stopping existing containers..."
-docker compose $COMPOSE_OPTS down --remove-orphans || true
-echo "Force-remove haproxy container if present (avoids port 4202 already in use)..."
-docker rm -f pos-haproxy 2>/dev/null || true
-echo "Waiting for ports to be released..."
-sleep 10
-
+# Build while current stack is still running so downtime is only for the switch (down → migrate → up).
 echo "Building back image first..."
 docker compose $COMPOSE_OPTS build back
 
@@ -64,6 +58,13 @@ docker compose $COMPOSE_OPTS build --no-cache front
 
 echo "Ensure certbot dirs exist (webroot for certbot, haproxy-certs for combined PEM; see certbot/README.md)..."
 mkdir -p certbot/www certbot/haproxy-certs
+
+echo "Stopping existing containers (downtime starts here)..."
+docker compose $COMPOSE_OPTS down --remove-orphans || true
+echo "Force-remove haproxy container if present (avoids port 4202 already in use)..."
+docker rm -f pos-haproxy 2>/dev/null || true
+echo "Waiting for ports to be released..."
+sleep 10
 
 echo "Starting db and redis only for migrations..."
 docker compose $COMPOSE_OPTS up -d db redis
