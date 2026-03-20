@@ -1669,6 +1669,14 @@ def update_tenant_settings(
     if tenant_update.reservation_reminder_2h_enabled is not None:
         tenant.reservation_reminder_2h_enabled = tenant_update.reservation_reminder_2h_enabled
 
+    # Kitchen/Bar display timer thresholds (minutes)
+    if tenant_update.kitchen_display_timer_yellow_minutes is not None:
+        tenant.kitchen_display_timer_yellow_minutes = max(0, tenant_update.kitchen_display_timer_yellow_minutes)
+    if tenant_update.kitchen_display_timer_orange_minutes is not None:
+        tenant.kitchen_display_timer_orange_minutes = max(0, tenant_update.kitchen_display_timer_orange_minutes)
+    if tenant_update.kitchen_display_timer_red_minutes is not None:
+        tenant.kitchen_display_timer_red_minutes = max(0, tenant_update.kitchen_display_timer_red_minutes)
+
     session.add(tenant)
     session.commit()
     session.refresh(tenant)
@@ -1705,6 +1713,56 @@ def update_tenant_settings(
         tenant_dict["smtp_password"] = "********"
 
     return tenant_dict
+
+
+# Kitchen/Bar display timer settings (read/update by anyone with order access)
+@app.get("/tenant/kitchen-display-settings")
+def get_kitchen_display_settings(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.ORDER_READ))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Get kitchen/bar display timer thresholds (minutes). Used for wait-time card colors."""
+    tenant = session.exec(
+        select(models.Tenant).where(models.Tenant.id == current_user.tenant_id)
+    ).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    return {
+        "yellow_minutes": tenant.kitchen_display_timer_yellow_minutes if tenant.kitchen_display_timer_yellow_minutes is not None else 5,
+        "orange_minutes": tenant.kitchen_display_timer_orange_minutes if tenant.kitchen_display_timer_orange_minutes is not None else 10,
+        "red_minutes": tenant.kitchen_display_timer_red_minutes if tenant.kitchen_display_timer_red_minutes is not None else 15,
+    }
+
+
+@app.put("/tenant/kitchen-display-settings")
+def update_kitchen_display_settings(
+    body: dict,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.ORDER_READ))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Update kitchen/bar display timer thresholds (minutes)."""
+    tenant = session.exec(
+        select(models.Tenant).where(models.Tenant.id == current_user.tenant_id)
+    ).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    yellow = body.get("yellow_minutes")
+    orange = body.get("orange_minutes")
+    red = body.get("red_minutes")
+    if yellow is not None:
+        tenant.kitchen_display_timer_yellow_minutes = max(0, int(yellow))
+    if orange is not None:
+        tenant.kitchen_display_timer_orange_minutes = max(0, int(orange))
+    if red is not None:
+        tenant.kitchen_display_timer_red_minutes = max(0, int(red))
+    session.add(tenant)
+    session.commit()
+    session.refresh(tenant)
+    return {
+        "yellow_minutes": tenant.kitchen_display_timer_yellow_minutes or 5,
+        "orange_minutes": tenant.kitchen_display_timer_orange_minutes or 10,
+        "red_minutes": tenant.kitchen_display_timer_red_minutes or 15,
+    }
 
 
 # ============ TAXES (IVA) ============
@@ -2470,6 +2528,7 @@ def create_product_question(
 )
 def list_providers(
     request: Request,
+    response: Response,
     current_user: Annotated[models.User, Depends(require_permission(Permission.CATALOG_READ))],
     session: Session = Depends(get_session),
     active_only: bool = True,
@@ -2490,6 +2549,7 @@ def list_providers(
 )
 def get_provider(
     request: Request,
+    response: Response,
     provider_id: int,
     current_user: Annotated[models.User, Depends(require_permission(Permission.CATALOG_READ))],
     session: Session = Depends(get_session),
@@ -2512,6 +2572,7 @@ def get_provider(
 )
 def create_provider(
     request: Request,
+    response: Response,
     body: models.ProviderCreate,
     current_user: Annotated[models.User, Depends(require_permission(Permission.CATALOG_WRITE))],
     session: Session = Depends(get_session),
@@ -6674,6 +6735,15 @@ def list_orders(
         if len(active_items) == 0:
             continue
         total_cents = sum(item.price_cents * item.quantity for item in active_items)
+
+        # Product categories for kitchen/bar display filtering (one query per order)
+        product_ids = list({i.product_id for i in items})
+        product_map = {}
+        if product_ids:
+            products = session.exec(
+                select(models.Product).where(models.Product.id.in_(product_ids))
+            ).all()
+            product_map = {p.id: p for p in products}
         
         # Billing customer for Factura (if set)
         billing_customer = None
@@ -6717,6 +6787,7 @@ def list_orders(
                     "tax_id": getattr(item, "tax_id", None),
                     "tax_rate_percent": getattr(item, "tax_rate_percent", None),
                     "tax_amount_cents": getattr(item, "tax_amount_cents", None),
+                    "category": getattr(product_map.get(item.product_id), "category", None),
                 }
                 for item in items
             ],

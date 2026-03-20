@@ -153,6 +153,11 @@ class Tenant(SQLModel, table=True):
     reservation_reminder_24h_enabled: bool = Field(default=False)
     reservation_reminder_2h_enabled: bool = Field(default=False)
 
+    # Kitchen/Bar display: wait-time thresholds (minutes) for card color (green -> yellow -> orange -> red)
+    kitchen_display_timer_yellow_minutes: int | None = Field(default=5)
+    kitchen_display_timer_orange_minutes: int | None = Field(default=10)
+    kitchen_display_timer_red_minutes: int | None = Field(default=15)
+
     # Default tax (IVA) applied system-wide when product has no tax override
     default_tax_id: int | None = Field(default=None, foreign_key="tax.id", index=True)
 
@@ -815,6 +820,11 @@ class TenantUpdate(SQLModel):
     reservation_dress_code: str | None = None
     reservation_reminder_24h_enabled: bool | None = None
     reservation_reminder_2h_enabled: bool | None = None
+
+    # Kitchen/Bar display timer thresholds (minutes)
+    kitchen_display_timer_yellow_minutes: int | None = None
+    kitchen_display_timer_orange_minutes: int | None = None
+    kitchen_display_timer_red_minutes: int | None = None
 
 
 class TenantProductCreate(SQLModel):

@@ -68,7 +68,15 @@
     "AT_TABLE_HINT": "Déjà à table ? Saisissez le code sur votre table pour commander.",
     "TABLE_CODE_PLACEHOLDER": "Code table",
     "GO": "Aller",
-    "BOOK_TABLE": "Réserver une table"
+    "BOOK_TABLE": "Réserver une table",
+    "ORDER_TAKEAWAY": "À emporter / Commande à domicile"
+  },
+  "ORDERS_PUBLIC": {
+    "TITLE": "À emporter et livraison",
+    "SUBTITLE": "Choisissez un restaurant pour commander à emporter ou en livraison",
+    "NO_TAKEAWAY": "Aucun restaurant avec commande à emporter disponible pour le moment.",
+    "ORDER_TAKEAWAY": "Commander à emporter",
+    "BACK_HOME": "Retour à l'accueil"
   },
   "DASHBOARD": {
     "TITLE": "Tableau de bord",
@@ -176,6 +184,7 @@
     "DESCRIPTION": "Description",
     "AROMAS": "Arômes",
     "NO_PRODUCTS": "Aucun produit trouvé",
+    "BACK_TO_MENU": "Retour au menu",
     "WHATS_YOUR_NAME": "Comment vous appelez-vous ?",
     "NAME_OPTIONAL": "(optionnel)",
     "ENTER_NAME": "Entrez votre nom",
@@ -411,7 +420,17 @@
     "NO_ACTIVE_ORDERS_DESC": "Les nouvelles commandes s'afficheront ici.",
     "NOTES": "Notes",
     "MARK_READY": "Prêt",
-    "UPDATING": "…"
+    "UPDATING": "…",
+    "WAITING": "En attente",
+    "TIMER_SETTINGS": "Réglages du minuteur",
+    "TIMER_SETTINGS_TITLE": "Minuteur d'attente",
+    "TIMER_SETTINGS_DESC": "La couleur de la carte change après ces minutes (vert → jaune → orange → rouge).",
+    "TIMER_YELLOW_MINUTES": "Jaune après (min)",
+    "TIMER_ORANGE_MINUTES": "Orange après (min)",
+    "TIMER_RED_MINUTES": "Rouge après (min)"
+  },
+  "BAR_DISPLAY": {
+    "TITLE": "Écran bar"
   },
   "REPORTS": {
     "TITLE": "Ventes et chiffre d'affaires",
@@ -534,7 +553,14 @@
     "VIEW_OR_CANCEL": "Voir ou annuler ma réservation",
     "VIEW_TITLE": "Ma réservation",
     "ERROR_INVALID_LINK": "Lien invalide. Utilisez le lien fourni par le restaurant.",
-    "ERROR_FAILED": "La réservation a échoué. Réessayez."
+    "ERROR_FAILED": "La réservation a échoué. Réessayez.",
+    "RESTAURANT_GUIDELINES": "Règles du restaurant",
+    "PREPAYMENT": "Prépaiement",
+    "PREPAYMENT_DEFAULT": "Un prépaiement peut être demandé ; il sera déduit de votre repas.",
+    "CANCELLATION_POLICY": "Politique d'annulation",
+    "ARRIVAL_TOLERANCE": "Tolérance d'arrivée",
+    "ARRIVAL_TOLERANCE_MINUTES": "Merci d'arriver dans les {{minutes}} minutes suivant votre heure.",
+    "DRESS_CODE": "Tenue"
   },
   "RESERVATIONS": {
     "TITLE": "Réservations",
@@ -582,7 +608,22 @@
     "ERROR_FAILED_SEAT": "Échec de l'installation",
     "ERROR_FAILED": "Échec",
     "ERROR_MISSING_TOKEN": "Lien de réservation manquant. Utilisez le lien de votre confirmation.",
-    "ERROR_NOT_FOUND": "Réservation introuvable ou lien expiré."
+    "ERROR_NOT_FOUND": "Réservation introuvable ou lien expiré.",
+    "RESERVATION_NOTES": "Notes de réservation",
+    "RESERVATION_NOTES_PLACEHOLDER": "ex. Nous arriverons avec une poussette",
+    "CUSTOMER_NOTES": "Allergies / besoins particuliers",
+    "CUSTOMER_NOTES_PLACEHOLDER": "ex. Allergique aux fruits à coque",
+    "RESTAURANT_GUIDELINES": "Règles du restaurant",
+    "CANCELLATION_POLICY": "Politique d'annulation",
+    "ARRIVAL_TOLERANCE": "Tolérance d'arrivée",
+    "ARRIVAL_TOLERANCE_MINUTES": "Merci d'arriver dans les {{minutes}} minutes.",
+    "DRESS_CODE": "Tenue",
+    "DELAY_NOTICE": "Avis de retard",
+    "NOTIFY_DELAY": "Prévenir si vous serez en retard",
+    "NOTIFY_DELAY_PLACEHOLDER": "ex. Nous arriverons 1 h en retard",
+    "SEND_DELAY": "Envoyer l'avis de retard",
+    "SENDING": "Envoi...",
+    "DELAY_SENT": "Avis envoyé. Nous avons été informés."
   },
   "WORKING_PLAN": {
     "TITLE": "Plan de travail",
@@ -696,6 +737,9 @@
     "STRIPE_SECRET_KEY": "Clé secrète Stripe",
     "STRIPE_SECRET_PLACEHOLDER": "sk_test_... ou vide pour conserver",
     "STRIPE_SECRET_HINT": "Votre clé secrète Stripe. Laisser vide pour conserver la valeur actuelle.",
+    "REVOLUT_INTEGRATION": "Intégration Revolut",
+    "REVOLUT_MERCHANT_SECRET": "Revolut Merchant API Secret",
+    "REVOLUT_MERCHANT_SECRET_HINT": "Clé secrète Revolut Business. Laisser vide pour conserver. Active « Payer avec Revolut » sur le menu.",
     "IMMEDIATE_PAYMENT": "Paiement obligatoire à la commande",
     "IMMEDIATE_PAYMENT_HINT": "Si activé, le client doit payer pour valider sa commande.",
     "PUBLIC_BACKGROUND_COLOR": "Couleur de fond du site public",
@@ -716,7 +760,26 @@
     "LONGITUDE": "Longitude",
     "LOCATION_RADIUS": "Rayon (mètres)",
     "LOCATION_RADIUS_HINT": "Les commandes hors de ce rayon seront signalées",
-    "USE_CURRENT_LOCATION": "Utiliser la position actuelle"
+    "USE_CURRENT_LOCATION": "Utiliser la position actuelle",
+    "RESERVATIONS": "Réservations",
+    "RESERVATIONS_SUBTITLE": "Prépaiement, règles et rappels pour les réservations",
+    "RESERVATION_PREPAYMENT": "Montant prépaiement (centimes)",
+    "RESERVATION_PREPAYMENT_PLACEHOLDER": "ex. 500 = 5 € (0 = désactivé)",
+    "RESERVATION_PREPAYMENT_TEXT": "Texte prépaiement pour les clients",
+    "RESERVATION_PREPAYMENT_TEXT_PLACEHOLDER": "Texte optionnel (ex. Sera déduit de votre repas.)",
+    "RESERVATION_PREPAYMENT_TEXT_HINT": "Affiché sur la page de réservation.",
+    "RESERVATION_CANCELLATION_POLICY": "Politique d'annulation",
+    "RESERVATION_CANCELLATION_POLICY_PLACEHOLDER": "ex. Annulation gratuite jusqu'à 24 h avant.",
+    "RESERVATION_ARRIVAL_TOLERANCE": "Tolérance d'arrivée (minutes)",
+    "RESERVATION_ARRIVAL_TOLERANCE_HINT": "Délai de tenue de la table (ex. 15).",
+    "RESERVATION_DRESS_CODE": "Tenue",
+    "RESERVATION_DRESS_CODE_PLACEHOLDER": "ex. Tenue décontractée (optionnel)",
+    "REMINDER_SCHEDULE": "Rappels",
+    "REMINDER_SCHEDULE_DESC": "Choisissez quels rappels envoyer avant une réservation. Utilisez « Envoyer rappel » dans la liste ou configurez un cron.",
+    "RESERVATION_REMINDER_24H": "Rappel 24 h avant",
+    "RESERVATION_REMINDER_24H_HINT": "Si activé, un rappel peut être envoyé (manuel ou automatisé) un jour avant.",
+    "RESERVATION_REMINDER_2H": "Rappel 2 h avant",
+    "RESERVATION_REMINDER_2H_HINT": "Si activé, un rappel peut être envoyé (manuel ou automatisé) deux heures avant."
   },
   "PAYMENTS": {
     "PAYMENT": "Paiement",
@@ -732,6 +795,10 @@
     "HOW_TO_PAY": "Comment souhaitez-vous payer ?",
     "PAY_ONLINE": "Payer en ligne",
     "PAY_ONLINE_DESC": "Payer par carte en toute sécurité",
+    "PAY_WITH_REVOLUT": "Payer avec Revolut",
+    "PAY_WITH_REVOLUT_DESC": "Payer via Revolut (carte, Revolut Pay, etc.)",
+    "SUCCESS_TITLE": "Paiement réussi",
+    "SUCCESS_MESSAGE": "Merci. Votre paiement a bien été reçu.",
     "PAY_CARD_TERMINAL": "Payer par carte à table",
     "PAY_CARD_TERMINAL_DESC": "Un serveur apportera le terminal",
     "PAY_CASH": "Payer en espèces",

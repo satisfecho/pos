@@ -15,7 +15,10 @@ export const routes: Routes = [
   // Provider portal (protected)
   { path: 'provider', canActivate: [providerGuard], loadComponent: () => import('./provider/provider-dashboard.component').then(m => m.ProviderDashboardComponent) },
   { path: 'menu/:token', loadComponent: () => import('./menu/menu.component').then(m => m.MenuComponent) },
+  { path: 'menu/:token/payment-success', loadComponent: () => import('./menu/payment-success.component').then(m => m.PaymentSuccessComponent) },
   { path: 'book/:tenantId', loadComponent: () => import('./book/book.component').then(m => m.BookComponent) },
+  // Public take-away / home ordering: list tenants with ordering link
+  { path: 'orders', loadComponent: () => import('./orders-public/orders-public.component').then(m => m.OrdersPublicComponent) },
   // Staff reservations (must be before 'reservation' so /reservations matches here, not the public route)
   { path: 'reservations', canActivate: [authGuard, reservationAccessGuard], loadComponent: () => import('./reservations/reservations.component').then(m => m.ReservationsComponent) },
   { path: 'reservation', loadComponent: () => import('./reservation-view/reservation-view.component').then(m => m.ReservationViewComponent) },
@@ -31,12 +34,13 @@ export const routes: Routes = [
   { path: 'tables', canActivate: [authGuard, tableAccessGuard], loadComponent: () => import('./tables/tables.component').then(m => m.TablesComponent) },
   { path: 'tables/canvas', canActivate: [authGuard, adminGuard], loadComponent: () => import('./tables/tables-canvas.component').then(m => m.TablesCanvasComponent) },
 
-  // Orders - all roles can view (but actions are permission-controlled)
-  { path: 'orders', canActivate: [authGuard, orderAccessGuard], loadComponent: () => import('./orders/orders.component').then(m => m.OrdersComponent) },
+  // Staff orders (list and manage orders)
+  { path: 'staff/orders', canActivate: [authGuard, orderAccessGuard], loadComponent: () => import('./orders/orders.component').then(m => m.OrdersComponent) },
   // Billing customers (Factura)
   { path: 'customers', canActivate: [authGuard, orderAccessGuard], loadComponent: () => import('./customers/customers.component').then(m => m.CustomersComponent) },
-  // Kitchen display - dedicated large view, auto-refresh, optional sound (same access as orders)
-  { path: 'kitchen', canActivate: [authGuard, orderAccessGuard], loadComponent: () => import('./kitchen-display/kitchen-display.component').then(m => m.KitchenDisplayComponent) },
+  // Kitchen display (cocina: main course) and Bar display (beverages only) - same component, filtered by category
+  { path: 'kitchen', canActivate: [authGuard, orderAccessGuard], loadComponent: () => import('./kitchen-display/kitchen-display.component').then(m => m.KitchenDisplayComponent), data: { view: 'kitchen' } },
+  { path: 'bar', canActivate: [authGuard, orderAccessGuard], loadComponent: () => import('./kitchen-display/kitchen-display.component').then(m => m.KitchenDisplayComponent), data: { view: 'bar' } },
 
   // Admin-only routes
   { path: 'translations', redirectTo: 'settings', pathMatch: 'full' },

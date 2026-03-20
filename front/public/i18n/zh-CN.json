@@ -412,7 +412,17 @@
     "NO_ACTIVE_ORDERS_DESC": "顾客下单后新订单将显示在此处",
     "NOTES": "备注",
     "MARK_READY": "就绪",
-    "UPDATING": "…"
+    "UPDATING": "…",
+    "WAITING": "等待",
+    "TIMER_SETTINGS": "计时器设置",
+    "TIMER_SETTINGS_TITLE": "等待时间计时器",
+    "TIMER_SETTINGS_DESC": "订单卡片颜色在以下分钟数后变化（绿→黄→橙→红）。",
+    "TIMER_YELLOW_MINUTES": "黄色（分钟）",
+    "TIMER_ORANGE_MINUTES": "橙色（分钟）",
+    "TIMER_RED_MINUTES": "红色（分钟）"
+  },
+  "BAR_DISPLAY": {
+    "TITLE": "酒吧显示屏"
   },
   "TABLES": {
     "TITLE": "餐桌",

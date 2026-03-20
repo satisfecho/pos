@@ -7,21 +7,28 @@ import {
   OnDestroy,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { ApiService, Order, OrderItem } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
 import { PermissionService } from '../services/permission.service';
 import { Subscription } from 'rxjs';
+import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 const REFRESH_INTERVAL_MS = 15000;
 const SOUND_STORAGE_KEY = 'kitchen-display-sound';
+/** Category filter: kitchen = main course only, bar = beverages only. */
+const VIEW_CATEGORY: Record<string, string> = {
+  kitchen: 'Main Course',
+  bar: 'Beverages',
+};
 
 @Component({
   selector: 'app-kitchen-display',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, TranslateModule],
+  imports: [RouterLink, TranslateModule, FormsModule, FocusFirstInputDirective],
   template: `
     <div class="kitchen-view">
       <header class="kitchen-header">
@@ -31,8 +38,12 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
           </svg>
           {{ 'KITCHEN_DISPLAY.BACK_TO_ORDERS' | translate }}
         </a>
-        <h1 class="kitchen-title">{{ 'KITCHEN_DISPLAY.TITLE' | translate }}</h1>
+        <h1 class="kitchen-title">{{ pageTitle() }}</h1>
         <div class="header-actions">
+          <button type="button" class="timer-settings-btn" (click)="openTimerSettingsModal()" [title]="'KITCHEN_DISPLAY.TIMER_SETTINGS' | translate">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            {{ 'KITCHEN_DISPLAY.TIMER_SETTINGS' | translate }}
+          </button>
           <label class="sound-toggle">
             <input type="checkbox" [checked]="soundEnabled()" (change)="toggleSound($event)" />
             <span class="sound-label">{{ soundEnabled() ? ('KITCHEN_DISPLAY.SOUND_ON' | translate) : ('KITCHEN_DISPLAY.SOUND_OFF' | translate) }}</span>
@@ -60,7 +71,7 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
         } @else {
           <div class="order-grid">
             @for (order of activeOrders(); track order.id) {
-              <article class="order-card" [class]="'status-' + order.status">
+              <article class="order-card status-{{ order.status }} {{ getTimerColorClass(order) }}">
                 <div class="order-header">
                   <div class="order-meta">
                     <span class="order-id">#{{ order.id }}</span>
@@ -69,8 +80,9 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
                       <span class="order-customer">{{ 'ORDERS.CUSTOMER' | translate }}: {{ order.customer_name }}</span>
                     }
                     <span class="order-time" [title]="formatExactTime(order.created_at)">{{ formatOrderTime(order.created_at) }}</span>
+                    <span class="order-waiting" [title]="formatExactTime(order.created_at)">{{ 'KITCHEN_DISPLAY.WAITING' | translate }}: {{ formatWaitingTime(order.created_at) }}</span>
                   </div>
-                  <span class="status-badge" [class]="order.status">{{ getStatusLabel(order.status) }}</span>
+                  <span class="status-badge status-{{ order.status }}">{{ getStatusLabel(order.status) }}</span>
                 </div>
                 <ul class="order-items">
                   @for (item of getSortedItems(order.items); track item.id) {
@@ -139,6 +151,31 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
           </div>
         }
       </main>
+      @if (timerSettingsModalOpen()) {
+        <div class="modal-backdrop" (click)="closeTimerSettingsModal()"></div>
+        <div class="modal timer-settings-modal" role="dialog" aria-labelledby="timer-settings-title" appFocusFirstInput>
+          <h2 id="timer-settings-title" class="modal-title">{{ 'KITCHEN_DISPLAY.TIMER_SETTINGS_TITLE' | translate }}</h2>
+          <p class="modal-desc">{{ 'KITCHEN_DISPLAY.TIMER_SETTINGS_DESC' | translate }}</p>
+          <div class="timer-settings-form">
+            <label>
+              <span>{{ 'KITCHEN_DISPLAY.TIMER_YELLOW_MINUTES' | translate }}</span>
+              <input type="number" min="0" step="1" [ngModel]="timerSettingsForm().yellow_minutes" (ngModelChange)="updateTimerFormYellow($event)" />
+            </label>
+            <label>
+              <span>{{ 'KITCHEN_DISPLAY.TIMER_ORANGE_MINUTES' | translate }}</span>
+              <input type="number" min="0" step="1" [ngModel]="timerSettingsForm().orange_minutes" (ngModelChange)="updateTimerFormOrange($event)" />
+            </label>
+            <label>
+              <span>{{ 'KITCHEN_DISPLAY.TIMER_RED_MINUTES' | translate }}</span>
+              <input type="number" min="0" step="1" [ngModel]="timerSettingsForm().red_minutes" (ngModelChange)="updateTimerFormRed($event)" />
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="closeTimerSettingsModal()">{{ 'COMMON.CANCEL' | translate }}</button>
+            <button type="button" class="btn-primary" (click)="saveTimerSettings()">{{ 'COMMON.SAVE' | translate }}</button>
+          </div>
+        </div>
+      }
     </div>
   `,
   styles: [`
@@ -179,7 +216,22 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
       display: flex;
       align-items: center;
       gap: var(--space-5);
+      flex-wrap: wrap;
     }
+    .timer-settings-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: var(--color-primary);
+      background: transparent;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+    }
+    .timer-settings-btn:hover { background: var(--color-bg); }
     .sound-toggle {
       display: flex;
       align-items: center;
@@ -225,6 +277,10 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
     }
     .order-card.status-preparing { border-left-color: #3B82F6; }
     .order-card.status-ready { border-left-color: var(--color-success); }
+    .order-card.timer-green { border-left-color: #22c55e; }
+    .order-card.timer-yellow { border-left-color: #eab308; }
+    .order-card.timer-orange { border-left-color: #f97316; }
+    .order-card.timer-red { border-left-color: #ef4444; }
     .order-header {
       display: flex;
       justify-content: space-between;
@@ -250,6 +306,7 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
     }
     .order-customer { font-size: 1rem; color: var(--color-text-muted); }
     .order-time { font-size: 1rem; color: var(--color-text-muted); }
+    .order-waiting { font-size: 1.125rem; font-weight: 700; color: var(--color-text); }
     .status-badge {
       padding: var(--space-2) var(--space-4);
       border-radius: 20px;
@@ -396,6 +453,68 @@ const SOUND_STORAGE_KEY = 'kitchen-display-sound';
       color: var(--color-text);
       border-top: 1px solid var(--color-border);
     }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 1000;
+    }
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: var(--space-6);
+      z-index: 1001;
+      min-width: 320px;
+      max-width: 90vw;
+    }
+    .modal-title { margin: 0 0 var(--space-2); font-size: 1.25rem; }
+    .modal-desc { margin: 0 0 var(--space-4); color: var(--color-text-muted); font-size: 0.9375rem; }
+    .timer-settings-form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      margin-bottom: var(--space-5);
+    }
+    .timer-settings-form label {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .timer-settings-form label span { min-width: 140px; font-weight: 500; }
+    .timer-settings-form input {
+      width: 80px;
+      padding: var(--space-2) var(--space-3);
+      font-size: 1rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-3);
+    }
+    .modal-actions .btn-primary, .modal-actions .btn-secondary {
+      padding: var(--space-2) var(--space-4);
+      font-size: 1rem;
+      font-weight: 500;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+    }
+    .modal-actions .btn-primary {
+      background: var(--color-primary);
+      color: white;
+      border: none;
+    }
+    .modal-actions .btn-secondary {
+      background: var(--color-bg);
+      color: var(--color-text);
+      border: 1px solid var(--color-border);
+    }
   `],
 })
 export class KitchenDisplayComponent implements OnInit, OnDestroy {
@@ -403,30 +522,64 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
   private audio = inject(AudioService);
   private translate = inject(TranslateService);
   private permissions = inject(PermissionService);
+  private route = inject(ActivatedRoute);
 
   private refreshIntervalId: ReturnType<typeof setInterval> | null = null;
   private wsSub: Subscription | null = null;
+  private routeDataSub: Subscription | null = null;
 
   orders = signal<Order[]>([]);
   loading = signal(true);
   lastRefreshAt = signal<Date | null>(null);
   soundEnabled = signal(true);
   itemStatusDropdownOpen = signal<string | null>(null);
+  /** 'kitchen' = cocina (Main Course), 'bar' = beverages only */
+  viewMode = signal<'kitchen' | 'bar'>('kitchen');
+  /** Current time for live timer (updates every second). */
+  now = signal(Date.now());
+  /** Timer thresholds (minutes) for card color. Defaults 5, 10, 15. */
+  timerSettings = signal<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }>({
+    yellow_minutes: 5,
+    orange_minutes: 10,
+    red_minutes: 15,
+  });
+  timerSettingsModalOpen = signal(false);
+  timerSettingsForm = signal<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }>({
+    yellow_minutes: 5,
+    orange_minutes: 10,
+    red_minutes: 15,
+  });
+  private tickIntervalId: ReturnType<typeof setInterval> | null = null;
 
   canUpdateItemStatus = computed(() =>
     this.permissions.hasPermission(this.permissions.getCurrentUser(), 'order:item_status')
   );
 
-  /** Orders that are active and have at least one item still pending or preparing (kitchen work to do). */
-  activeOrders = computed(() =>
-    this.orders().filter((o) => {
-      if (!['pending', 'preparing', 'ready', 'partially_delivered'].includes(o.status)) return false;
-      const hasPendingOrPreparing = (o.items ?? []).some(
-        (i) => !i.removed_by_customer && (i.status === 'pending' || i.status === 'preparing')
-      );
-      return hasPendingOrPreparing;
-    })
+  pageTitle = computed(() =>
+    this.viewMode() === 'bar'
+      ? this.translate.instant('BAR_DISPLAY.TITLE')
+      : this.translate.instant('KITCHEN_DISPLAY.TITLE')
   );
+
+  /** Orders that are active and have at least one item (pending/preparing) in this view's category; items filtered by category. */
+  activeOrders = computed(() => {
+    const view = this.viewMode();
+    const category = VIEW_CATEGORY[view] ?? '';
+    const list = this.orders().filter((o) => {
+      if (!['pending', 'preparing', 'ready', 'partially_delivered'].includes(o.status)) return false;
+      const items = (o.items ?? []).filter(
+        (i) =>
+          !i.removed_by_customer &&
+          (i.status === 'pending' || i.status === 'preparing') &&
+          i.category === category
+      );
+      return items.length > 0;
+    });
+    return list.map((o) => ({
+      ...o,
+      items: (o.items ?? []).filter((i) => i.category === category),
+    }));
+  });
 
   lastRefreshRelative = computed(() => {
     const at = this.lastRefreshAt();
@@ -448,8 +601,17 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
     this.soundEnabled.set(stored !== 'false');
     this.audio.setEnabled(this.soundEnabled());
 
+    const view = (this.route.snapshot.data['view'] as 'kitchen' | 'bar') || 'kitchen';
+    this.viewMode.set(view);
+    this.routeDataSub = this.route.data.subscribe((data) => {
+      const v = (data['view'] as 'kitchen' | 'bar') || 'kitchen';
+      this.viewMode.set(v);
+    });
+
+    this.loadTimerSettings();
     this.loadOrders();
     this.refreshIntervalId = setInterval(() => this.loadOrders(), REFRESH_INTERVAL_MS);
+    this.tickIntervalId = setInterval(() => this.now.set(Date.now()), 1000);
 
     try {
       this.api.connectWebSocket();
@@ -474,8 +636,94 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
       clearInterval(this.refreshIntervalId);
       this.refreshIntervalId = null;
     }
+    if (this.tickIntervalId) {
+      clearInterval(this.tickIntervalId);
+      this.tickIntervalId = null;
+    }
     this.wsSub?.unsubscribe();
+    this.routeDataSub?.unsubscribe();
     document.removeEventListener('click', this.closeItemStatusDropdown);
+  }
+
+  loadTimerSettings(): void {
+    this.api.getKitchenDisplaySettings().subscribe({
+      next: (s) => this.timerSettings.set(s),
+      error: () => {},
+    });
+  }
+
+  /** Elapsed minutes since order created_at (uses live now() for updates). */
+  getElapsedMinutes(createdAt: string): number {
+    const created = this.parseOrderDate(createdAt);
+    if (!created) return 0;
+    return (this.now() - created) / 60000;
+  }
+
+  /** CSS class for timer-based card color: timer-green, timer-yellow, timer-orange, timer-red. */
+  getTimerColorClass(order: Order): string {
+    const min = this.getElapsedMinutes(order.created_at);
+    const s = this.timerSettings();
+    if (min >= (s.red_minutes ?? 15)) return 'timer-red';
+    if (min >= (s.orange_minutes ?? 10)) return 'timer-orange';
+    if (min >= (s.yellow_minutes ?? 5)) return 'timer-yellow';
+    return 'timer-green';
+  }
+
+  /** Format waiting time as "Xm Ys" (updates every second via now()). */
+  formatWaitingTime(createdAt: string): string {
+    const created = this.parseOrderDate(createdAt);
+    if (!created) return '—';
+    const totalSeconds = Math.floor((this.now() - created) / 1000);
+    if (totalSeconds < 0) return '0s';
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    if (m >= 60) {
+      const h = Math.floor(m / 60);
+      const mins = m % 60;
+      return `${h}h ${mins}m`;
+    }
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+  }
+
+  private parseOrderDate(dateString: string): number | null {
+    if (!dateString) return null;
+    const str =
+      dateString.endsWith('Z') || dateString.includes('+') || dateString.includes('-', 10)
+        ? dateString
+        : dateString + 'Z';
+    const date = new Date(str).getTime();
+    return isNaN(date) ? null : date;
+  }
+
+  openTimerSettingsModal(): void {
+    this.timerSettingsForm.set({ ...this.timerSettings() });
+    this.timerSettingsModalOpen.set(true);
+  }
+
+  closeTimerSettingsModal(): void {
+    this.timerSettingsModalOpen.set(false);
+  }
+
+  updateTimerFormYellow(v: number): void {
+    this.timerSettingsForm.update((f) => ({ ...f, yellow_minutes: Math.max(0, Number(v) || 0) }));
+  }
+  updateTimerFormOrange(v: number): void {
+    this.timerSettingsForm.update((f) => ({ ...f, orange_minutes: Math.max(0, Number(v) || 0) }));
+  }
+  updateTimerFormRed(v: number): void {
+    this.timerSettingsForm.update((f) => ({ ...f, red_minutes: Math.max(0, Number(v) || 0) }));
+  }
+
+  saveTimerSettings(): void {
+    const form = this.timerSettingsForm();
+    this.api.updateKitchenDisplaySettings(form).subscribe({
+      next: (s) => {
+        this.timerSettings.set(s);
+        this.closeTimerSettingsModal();
+      },
+      error: () => {},
+    });
   }
 
   private closeItemStatusDropdown = (e: Event): void => {

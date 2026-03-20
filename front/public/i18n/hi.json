@@ -412,7 +412,17 @@
     "NO_ACTIVE_ORDERS_DESC": "ग्राहकों के ऑर्डर देने पर यहां नए ऑर्डर दिखेंगे",
     "NOTES": "नोट्स",
     "MARK_READY": "तैयार",
-    "UPDATING": "…"
+    "UPDATING": "…",
+    "WAITING": "प्रतीक्षा",
+    "TIMER_SETTINGS": "टाइमर सेटिंग्स",
+    "TIMER_SETTINGS_TITLE": "प्रतीक्षा टाइमर",
+    "TIMER_SETTINGS_DESC": "इन मिनटों के बाद ऑर्डर कार्ड का रंग बदलता है (हरा → पीला → नारंगी → लाल)।",
+    "TIMER_YELLOW_MINUTES": "पीला (मिनट)",
+    "TIMER_ORANGE_MINUTES": "नारंगी (मिनट)",
+    "TIMER_RED_MINUTES": "लाल (मिनट)"
+  },
+  "BAR_DISPLAY": {
+    "TITLE": "बार डिस्प्ले"
   },
   "TABLES": {
     "TITLE": "टेबल",

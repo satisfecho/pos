@@ -435,6 +435,8 @@ export interface OrderItem {
   tax_id?: number | null;
   tax_rate_percent?: number | null;
   tax_amount_cents?: number | null;
+  /** Product category for kitchen/bar display filtering: "Beverages", "Main Course", etc. */
+  category?: string | null;
 }
 
 /** Billing customer for Factura (tax invoice) */
@@ -1287,6 +1289,24 @@ export class ApiService {
 
   updateTenantSettings(settings: Partial<TenantSettings>): Observable<TenantSettings> {
     return this.http.put<TenantSettings>(`${this.apiUrl}/tenant/settings`, settings);
+  }
+
+  /** Kitchen/Bar display: wait-time thresholds (minutes) for card color. */
+  getKitchenDisplaySettings(): Observable<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }> {
+    return this.http.get<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }>(
+      `${this.apiUrl}/tenant/kitchen-display-settings`
+    );
+  }
+
+  updateKitchenDisplaySettings(settings: {
+    yellow_minutes: number;
+    orange_minutes: number;
+    red_minutes: number;
+  }): Observable<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }> {
+    return this.http.put<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }>(
+      `${this.apiUrl}/tenant/kitchen-display-settings`,
+      settings
+    );
   }
 
   getTaxes(currentOnly = true): Observable<Tax[]> {

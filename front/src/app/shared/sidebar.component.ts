@@ -43,7 +43,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
              </svg>
              <span>{{ 'NAV.HOME' | translate }}</span>
            </a>
-           <a routerLink="/orders" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+           <a routerLink="/staff/orders" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
                <polyline points="14,2 14,8 20,8"/>
@@ -80,7 +80,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
              </svg>
              <span>{{ 'NAV.KITCHEN_DISPLAY' | translate }}</span>
            </a>
-           <a routerLink="/kitchen" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+           <a routerLink="/bar" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                <path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/>
                <path d="M9 14h6M9 18h6"/>
