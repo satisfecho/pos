@@ -355,6 +355,38 @@ class MigrationRunner:
             logger.info(f"All migrations applied successfully: version {current_version} → {final_version}")
             return final_version
 
+    def run_sync_idempotent(self) -> None:
+        """
+        Re-run every migration file's SQL without updating schema_version.
+        Use when schema_version was set incorrectly (e.g. manual or partial run)
+        and the DB is missing columns. All migration SQL must use IF NOT EXISTS
+        or be otherwise idempotent.
+        """
+        if not self.migrations_dir.exists():
+            logger.warning(f"Migrations directory not found: {self.migrations_dir}")
+            return
+
+        migration_files = self.get_migration_files()
+        if not migration_files:
+            logger.info("No migration files to sync")
+            return
+
+        with Session(engine) as session:
+            self.ensure_version_table(session)
+        for version, file_path in migration_files:
+            version_type = "timestamp" if len(str(version)) == 14 else "sequential"
+            logger.info(f"Sync (idempotent): {file_path.name} (version: {version}, type: {version_type})")
+            sql = file_path.read_text(encoding="utf-8")
+            statements = self._split_sql_statements(sql)
+            for stmt in statements:
+                try:
+                    with Session(engine) as session:
+                        session.exec(text(stmt))
+                        session.commit()
+                except Exception as e:
+                    logger.debug(f"Statement skipped (may already exist): {e}")
+        logger.info("Sync-idempotent finished (missing columns/tables may now be present)")
+
 
 def main():
     """Main entry point."""
@@ -369,6 +401,11 @@ def main():
         "--check",
         action="store_true",
         help="Check for pending migrations without applying them",
+    )
+    parser.add_argument(
+        "--sync-idempotent",
+        action="store_true",
+        help="Re-run all migration SQL without updating schema_version (repair when schema_version was wrong)",
     )
     parser.add_argument(
         "--migrations-dir",
@@ -391,6 +428,9 @@ def main():
     runner = MigrationRunner(migrations_dir)
     
     try:
+        if args.sync_idempotent:
+            runner.run_sync_idempotent()
+            return
         version = runner.run_migrations(dry_run=args.check)
         if not args.check:
             print(f"✅ Database schema version: {version}")

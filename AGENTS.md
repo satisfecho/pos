@@ -81,6 +81,8 @@ See **Reservation tests (Puppeteer)** and **Demo tables** below for more test sc
 
 **Compose files:** Local dev = `docker compose -f docker-compose.yml -f docker-compose.dev.yml`. Production (amvara9) = `docker compose -f docker-compose.yml -f docker-compose.prod.yml`. Use the same `-f` list for `ps`, `logs`, `exec`, etc.
 
+**Deploy (amvara9) – migrations:** `scripts/deploy-amvara9.sh` starts only db+redis, runs `python -m app.migrate` then `python -m app.migrate --sync-idempotent` (repair when schema_version was wrong), then starts all services. So the app never serves traffic before migrations. On the server, path is `/development/pos`.
+
 When debugging the running app (e.g. frontend not loading a route, API issues):
 
 1. **Check if containers are up and which port the app is on**
