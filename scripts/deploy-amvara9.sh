@@ -80,11 +80,11 @@ docker compose $COMPOSE_OPTS run --rm back python -m app.migrate || true
 echo "Running migration sync (repair if schema_version was wrong)..."
 docker compose $COMPOSE_OPTS run --rm back python -m app.migrate --sync-idempotent || true
 
-echo "Starting all services (force-recreate so front uses new image)..."
-if ! docker compose $COMPOSE_OPTS up -d --force-recreate; then
+echo "Starting all services (back, front, haproxy, ws-bridge use newly built images)..."
+if ! docker compose $COMPOSE_OPTS up -d; then
   echo "First up failed (possible port race); waiting 10s and retrying..."
   sleep 10
-  docker compose $COMPOSE_OPTS up -d --force-recreate
+  docker compose $COMPOSE_OPTS up -d
 fi
 
 echo "Waiting for back to be ready..."
