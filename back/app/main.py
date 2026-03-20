@@ -4742,14 +4742,18 @@ def _send_reservation_confirmation_background(tenant_id: int, reservation_id: in
         if not (reservation.customer_email and reservation.customer_email.strip()):
             logger.info("Reservation confirmation skipped: reservation_id=%s has no customer_email", reservation_id)
             return
-        if not tenant.smtp_user or not tenant.smtp_password:
+        # Use tenant SMTP if configured; else fall back to global config.env SMTP
+        has_tenant_smtp = bool(tenant.smtp_user and tenant.smtp_password)
+        has_global_smtp = bool(settings.smtp_user and settings.smtp_password)
+        if not has_tenant_smtp and not has_global_smtp:
             logger.warning(
-                "Reservation confirmation skipped: tenant_id=%s (name=%s) has no SMTP configured (smtp_user/smtp_password). "
-                "Configure Email settings in Settings → Email for this tenant, or set global SMTP_* in config.env.",
+                "Reservation confirmation skipped: tenant_id=%s (name=%s) has no SMTP and global SMTP not set. "
+                "Configure Settings → Email for this tenant or set SMTP_* in config.env.",
                 tenant_id,
                 tenant.name,
             )
             return
+        smtp_tenant = tenant if has_tenant_smtp else None  # None => email_svc uses global config
         view_url = None
         if settings.public_app_base_url and reservation.token:
             view_url = f"{settings.public_app_base_url.rstrip('/')}/reservation?token={reservation.token}"
@@ -4765,7 +4769,7 @@ def _send_reservation_confirmation_background(tenant_id: int, reservation_id: in
                     party_size=reservation.party_size,
                     tenant_name=tenant.name,
                     view_url=view_url,
-                    tenant=tenant,
+                    tenant=smtp_tenant,
                 )
             )
             logger.info("Reservation confirmation email sent for reservation_id=%s to %s", reservation_id, reservation.customer_email.strip())
