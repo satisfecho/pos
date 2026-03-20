@@ -718,10 +718,12 @@ export class ApiService {
   /** True when current user is owner and working plan was updated by someone else (show '*' in nav). */
   workingPlanHasUpdates = signal(false);
   private orderUpdates = new Subject<any>();
+  private reservationUpdates = new Subject<any>();
   private ws: WebSocket | null = null;
 
   user$ = this.userSubject.asObservable();
   orderUpdates$ = this.orderUpdates.asObservable();
+  reservationUpdates$ = this.reservationUpdates.asObservable();
 
   constructor() {
     this.checkAuth().subscribe();
@@ -935,6 +937,17 @@ export class ApiService {
     if (params?.status) httpParams = httpParams.set('status', params.status);
     if (params?.phone) httpParams = httpParams.set('phone', params.phone);
     return this.http.get<Reservation[]>(`${this.apiUrl}/reservations`, { params: httpParams });
+  }
+
+  /** Get most recent reservation by phone for pre-filling new reservation form. Returns null if none found. */
+  getReservationPrefillByPhone(phone: string): Observable<Reservation | null> {
+    const trimmed = phone?.trim();
+    if (!trimmed) return of(null);
+    return this.http.get<Reservation>(`${this.apiUrl}/reservations/prefill-by-phone`, {
+      params: { phone: trimmed },
+    }).pipe(
+      catchError(() => of(null)),
+    );
   }
 
   getReservation(id: number): Observable<Reservation> {
@@ -1440,7 +1453,15 @@ export class ApiService {
       this.ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          this.orderUpdates.next(data);
+          const isReservation = data?.type && [
+            'new_reservation', 'reservation_updated', 'reservation_status',
+            'reservation_seated', 'reservation_finished', 'reservation_cancelled'
+          ].includes(data.type);
+          if (isReservation) {
+            this.reservationUpdates.next(data);
+          } else {
+            this.orderUpdates.next(data);
+          }
         } catch (e) {
           console.error('WebSocket parse error:', e);
         }

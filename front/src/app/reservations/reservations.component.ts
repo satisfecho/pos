@@ -1,4 +1,5 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { LowerCasePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -18,6 +19,12 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       <div class="page-header">
         <h1>{{ 'RESERVATIONS.TITLE' | translate }}</h1>
         <div class="page-header-actions">
+          <a [routerLink]="['/settings']" [queryParams]="{ section: 'reservations' }" class="btn btn-ghost btn-sm btn-icon" [title]="'RESERVATIONS.EDIT_RESERVATION_OPTIONS' | translate" aria-label="{{ 'RESERVATIONS.EDIT_RESERVATION_OPTIONS' | translate }}">
+            <svg class="icon-settings" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            <span class="btn-icon-label">{{ 'RESERVATIONS.EDIT_RESERVATION_OPTIONS' | translate }}</span>
+          </a>
           @if (tenantId != null) {
             <a [routerLink]="['/book', tenantId]" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">{{ 'RESERVATIONS.VIEW_PUBLIC_PAGE' | translate }}</a>
           }
@@ -131,7 +138,17 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               </div>
               <div class="form-group">
                 <label>{{ 'RESERVATIONS.CUSTOMER_PHONE' | translate }}</label>
-                <input type="text" [(ngModel)]="formPhone" />
+                <div class="phone-with-prefill">
+                  <input type="text" [(ngModel)]="formPhone" />
+                  @if (!editingReservation()) {
+                    <button type="button" class="btn btn-ghost btn-sm" (click)="prefillFromPhone()" [disabled]="prefillLoading() || !formPhone.trim()" [title]="'RESERVATIONS.PREFILL_FROM_PHONE' | translate">
+                      {{ prefillLoading() ? ('COMMON.LOADING' | translate) : ('RESERVATIONS.PREFILL_FROM_PHONE' | translate) }}
+                    </button>
+                  }
+                </div>
+                @if (prefillMessage()) {
+                  <small class="prefill-message" [class.prefill-success]="prefillSuccess()">{{ prefillMessage() }}</small>
+                }
               </div>
               <div class="form-group">
                 <label>{{ 'RESERVATIONS.CUSTOMER_EMAIL' | translate }}</label>
@@ -140,6 +157,10 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               <div class="form-group">
                 <label>{{ 'RESERVATIONS.CLIENT_NOTES' | translate }}</label>
                 <textarea [(ngModel)]="formClientNotes" rows="2" placeholder="{{ 'RESERVATIONS.CLIENT_NOTES_PLACEHOLDER' | translate }}"></textarea>
+              </div>
+              <div class="form-group">
+                <label>{{ 'RESERVATIONS.CUSTOMER_NOTES' | translate }}</label>
+                <textarea [(ngModel)]="formCustomerNotes" rows="2" placeholder="{{ 'RESERVATIONS.CUSTOMER_NOTES_PLACEHOLDER' | translate }}"></textarea>
               </div>
               <div class="form-group">
                 <label>{{ 'RESERVATIONS.OWNER_NOTES' | translate }}</label>
@@ -238,7 +259,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   `,
   styles: [`
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-    .page-header-actions { display: flex; align-items: center; gap: 0.5rem; }
+    .page-header-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .btn-icon { display: inline-flex; align-items: center; gap: 0.35rem; }
+    .btn-icon .icon-settings { flex-shrink: 0; }
     .filters { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; }
     .filter-input, .filter-select { padding: 0.35rem 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
     .reservation-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
@@ -290,9 +313,13 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     .client-tech summary { cursor: pointer; }
     .client-tech-inner { margin-top: 0.25rem; padding-left: 0.5rem; }
     .client-tech .ua { word-break: break-all; }
+    .phone-with-prefill { display: flex; gap: 0.5rem; align-items: center; }
+    .phone-with-prefill input { flex: 1; }
+    .prefill-message { display: block; margin-top: 0.25rem; font-size: 0.8rem; color: #6b7280; }
+    .prefill-message.prefill-success { color: #15803d; }
   `],
 })
-export class ReservationsComponent implements OnInit {
+export class ReservationsComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private permissions = inject(PermissionService);
   private translate = inject(TranslateService);
@@ -309,6 +336,7 @@ export class ReservationsComponent implements OnInit {
   formPhone = '';
   formEmail = '';
   formClientNotes = '';
+  formCustomerNotes = '';
   formOwnerNotes = '';
   formDate = '';
   formTime = '';
@@ -322,6 +350,9 @@ export class ReservationsComponent implements OnInit {
   overbookingReport = signal<OverbookingReport | null>(null);
   slotCapacity = signal<{ seats_left: number; tables_left: number } | null>(null);
   upcomingNoTableCount = signal<number | null>(null);
+  prefillLoading = signal(false);
+  prefillMessage = signal<string | null>(null);
+  prefillSuccess = signal(false);
 
   canWrite = () => this.permissions.hasPermission(this.permissions.getCurrentUser(), 'reservation:write');
 
@@ -330,11 +361,26 @@ export class ReservationsComponent implements OnInit {
     return tid ?? undefined;
   }
 
+  private wsSub?: Subscription;
+
   ngOnInit() {
     const today = new Date().toISOString().slice(0, 10);
     this.filterDate = today;
     this.load();
     this.loadTables();
+    try {
+      this.api.connectWebSocket();
+      this.wsSub = this.api.reservationUpdates$.subscribe(() => {
+        this.load();
+        this.loadTables();
+      });
+    } catch {
+      // continue without WebSocket
+    }
+  }
+
+  ngOnDestroy() {
+    this.wsSub?.unsubscribe();
   }
 
   load() {
@@ -398,11 +444,13 @@ export class ReservationsComponent implements OnInit {
     this.formPhone = '';
     this.formEmail = '';
     this.formClientNotes = '';
+    this.formCustomerNotes = '';
     this.formOwnerNotes = '';
     this.formDate = today;
     this.formTime = '19:00';
     this.formPartySize = 2;
     this.formError.set(null);
+    this.prefillMessage.set(null);
     this.slotCapacity.set(null);
     this.suggestedTime.set(null);
     this.showForm.set(true);
@@ -436,12 +484,42 @@ export class ReservationsComponent implements OnInit {
     });
   }
 
+  prefillFromPhone() {
+    if (this.editingReservation() || !this.formPhone.trim()) return;
+    this.prefillMessage.set(null);
+    this.prefillLoading.set(true);
+    this.api.getReservationPrefillByPhone(this.formPhone).subscribe({
+      next: (r) => {
+        this.prefillLoading.set(false);
+        if (r) {
+          this.formName = r.customer_name ?? '';
+          this.formEmail = r.customer_email ?? '';
+          this.formClientNotes = r.client_notes ?? '';
+          this.formCustomerNotes = r.customer_notes ?? '';
+          this.formOwnerNotes = r.owner_notes ?? '';
+          this.formPartySize = r.party_size ?? this.formPartySize;
+          this.prefillSuccess.set(true);
+          this.prefillMessage.set(this.translate.instant('RESERVATIONS.PREFILL_SUCCESS'));
+        } else {
+          this.prefillSuccess.set(false);
+          this.prefillMessage.set(this.translate.instant('RESERVATIONS.PREFILL_NONE'));
+        }
+      },
+      error: () => {
+        this.prefillLoading.set(false);
+        this.prefillSuccess.set(false);
+        this.prefillMessage.set(this.translate.instant('RESERVATIONS.PREFILL_NONE'));
+      },
+    });
+  }
+
   openEdit(r: Reservation) {
     this.editingReservation.set(r);
     this.formName = r.customer_name;
     this.formPhone = r.customer_phone;
     this.formEmail = r.customer_email ?? '';
     this.formClientNotes = r.client_notes ?? '';
+    this.formCustomerNotes = r.customer_notes ?? '';
     this.formOwnerNotes = r.owner_notes ?? '';
     this.formDate = r.reservation_date.slice(0, 10);
     this.formTime = r.reservation_time.length >= 5 ? r.reservation_time.slice(0, 5) : r.reservation_time;
@@ -455,6 +533,7 @@ export class ReservationsComponent implements OnInit {
   closeForm() {
     this.showForm.set(false);
     this.editingReservation.set(null);
+    this.prefillMessage.set(null);
   }
 
   saveReservation() {
@@ -473,6 +552,7 @@ export class ReservationsComponent implements OnInit {
       reservation_time: this.formTime,
       party_size: this.formPartySize,
       client_notes: this.formClientNotes.trim() || undefined,
+      customer_notes: this.formCustomerNotes.trim() || undefined,
     };
     if (!this.editingReservation() && tenantId) (payload as ReservationCreate).tenant_id = tenantId;
     if (this.editingReservation()) {
@@ -484,6 +564,7 @@ export class ReservationsComponent implements OnInit {
         reservation_time: payload.reservation_time,
         party_size: payload.party_size,
         client_notes: this.formClientNotes.trim() || undefined,
+        customer_notes: this.formCustomerNotes.trim() || undefined,
         owner_notes: this.formOwnerNotes.trim() || undefined,
       };
       this.api.updateReservation(this.editingReservation()!.id, update).subscribe({

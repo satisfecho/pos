@@ -2,8 +2,9 @@
 WebSocket Bridge Microservice
 
 Subscribes to Redis pub/sub channels and broadcasts messages to connected WebSocket clients.
-- Table-specific channel: orders:table:{table_id} (for customers)
-- Tenant-wide channel: orders:tenant:{tenant_id} (for restaurant owners)
+- orders:table:{table_id} (for customers)
+- orders:tenant:{tenant_id} (for restaurant owners - orders)
+- reservations:tenant:{tenant_id} (for restaurant owners - reservations)
 """
 import asyncio
 import json
@@ -75,20 +76,21 @@ async def redis_listener():
             r = redis.from_url(redis_url)
             pubsub = r.pubsub()
             
-            # Subscribe to both table-specific and tenant-wide channels
-            await pubsub.psubscribe("orders:table:*", "orders:tenant:*")
-            
+            # Subscribe to orders and reservations channels
+            await pubsub.psubscribe("orders:table:*", "orders:tenant:*", "reservations:tenant:*")
+
             async for message in pubsub.listen():
                 if message["type"] == "pmessage":
                     channel = message["channel"].decode()
                     data = message["data"].decode()
-                    
-                    # Parse channel: orders:table:{table_id} or orders:tenant:{tenant_id}
+
+                    # Parse channel: orders:table:{id}, orders:tenant:{id}, or reservations:tenant:{id}
                     parts = channel.split(":")
                     if len(parts) == 3:
                         channel_type = parts[1]  # "table" or "tenant"
                         entity_id = int(parts[2])
-                        
+                        # orders:tenant:* and reservations:tenant:* both use tenant_connections
+
                         dead_connections = set()
                         
                         if channel_type == "table":

@@ -498,6 +498,18 @@ def publish_order_update(tenant_id: int, order_data: dict, table_id: int | None 
             pass  # Fail silently if Redis unavailable
 
 
+def publish_reservation_update(tenant_id: int, reservation_data: dict) -> None:
+    """Publish reservation update to Redis for WebSocket bridge.
+    Channel: reservations:tenant:{tenant_id} (for restaurant owners).
+    """
+    r = get_redis()
+    if r:
+        try:
+            r.publish(f"reservations:tenant:{tenant_id}", json.dumps(reservation_data))
+        except Exception:
+            pass  # Fail silently if Redis unavailable
+
+
 @app.on_event("startup")
 async def on_startup() -> None:
     logger.info("Starting application...")
@@ -4724,27 +4736,41 @@ def _send_reservation_confirmation_background(tenant_id: int, reservation_id: in
     with Session(engine) as session:
         tenant = session.get(models.Tenant, tenant_id)
         reservation = session.get(models.Reservation, reservation_id)
-        if not tenant or not reservation or not (reservation.customer_email and reservation.customer_email.strip()):
+        if not tenant or not reservation:
+            logger.warning("Reservation confirmation skipped: tenant_id=%s reservation_id=%s not found", tenant_id, reservation_id)
+            return
+        if not (reservation.customer_email and reservation.customer_email.strip()):
+            logger.info("Reservation confirmation skipped: reservation_id=%s has no customer_email", reservation_id)
             return
         if not tenant.smtp_user or not tenant.smtp_password:
+            logger.warning(
+                "Reservation confirmation skipped: tenant_id=%s (name=%s) has no SMTP configured (smtp_user/smtp_password). "
+                "Configure Email settings in Settings → Email for this tenant, or set global SMTP_* in config.env.",
+                tenant_id,
+                tenant.name,
+            )
             return
         view_url = None
         if settings.public_app_base_url and reservation.token:
             view_url = f"{settings.public_app_base_url.rstrip('/')}/reservation?token={reservation.token}"
         date_str = reservation.reservation_date.isoformat() if reservation.reservation_date else ""
         time_str = reservation.reservation_time.strftime("%H:%M") if reservation.reservation_time else ""
-        asyncio.run(
-            email_svc.send_reservation_confirmation(
-                to_email=reservation.customer_email.strip(),
-                customer_name=reservation.customer_name,
-                reservation_date=date_str,
-                reservation_time=time_str,
-                party_size=reservation.party_size,
-                tenant_name=tenant.name,
-                view_url=view_url,
-                tenant=tenant,
+        try:
+            asyncio.run(
+                email_svc.send_reservation_confirmation(
+                    to_email=reservation.customer_email.strip(),
+                    customer_name=reservation.customer_name,
+                    reservation_date=date_str,
+                    reservation_time=time_str,
+                    party_size=reservation.party_size,
+                    tenant_name=tenant.name,
+                    view_url=view_url,
+                    tenant=tenant,
+                )
             )
-        )
+            logger.info("Reservation confirmation email sent for reservation_id=%s to %s", reservation_id, reservation.customer_email.strip())
+        except Exception as e:
+            logger.exception("Reservation confirmation email failed for reservation_id=%s: %s", reservation_id, e)
 
 
 @app.post("/reservations")
@@ -4823,7 +4849,9 @@ def create_reservation(
     # Send confirmation email for public bookings when customer email and tenant SMTP are set
     if not current_user and reservation.customer_email and reservation.customer_email.strip() and reservation.token:
         background_tasks.add_task(_send_reservation_confirmation_background, tenant_id, reservation.id)
-    return _reservation_to_dict(reservation, session, include_client_tech=current_user is not None)
+    out = _reservation_to_dict(reservation, session, include_client_tech=current_user is not None)
+    publish_reservation_update(tenant_id, {"type": "new_reservation", "reservation": out})
+    return out
 
 
 @app.get("/reservations")
@@ -4849,6 +4877,31 @@ def list_reservations(
     q = q.order_by(models.Reservation.reservation_date, models.Reservation.reservation_time)
     reservations = session.exec(q).all()
     return [_reservation_to_dict(r, session, include_client_tech=True) for r in reservations]
+
+
+@app.get("/reservations/prefill-by-phone")
+def get_reservation_prefill_by_phone(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.RESERVATION_READ))],
+    session: Session = Depends(get_session),
+    phone: str = Query(..., min_length=1, description="Customer phone (partial match)"),
+) -> dict:
+    """Return the most recent reservation for this tenant matching the phone, for pre-filling a new reservation form. Staff only."""
+    if not phone or not phone.strip():
+        raise HTTPException(status_code=400, detail="Phone is required")
+    q = (
+        select(models.Reservation)
+        .where(models.Reservation.tenant_id == current_user.tenant_id)
+        .where(models.Reservation.customer_phone.contains(phone.strip()))
+        .order_by(
+            models.Reservation.reservation_date.desc(),
+            models.Reservation.reservation_time.desc(),
+        )
+        .limit(1)
+    )
+    r = session.exec(q).first()
+    if not r:
+        raise HTTPException(status_code=404, detail="No previous reservation found for this phone")
+    return _reservation_to_dict(r, session, include_client_tech=False)
 
 
 @app.get("/reservations/next-available")
@@ -5018,7 +5071,9 @@ def update_reservation(
     session.add(reservation)
     session.commit()
     session.refresh(reservation)
-    return _reservation_to_dict(reservation, session, include_client_tech=True)
+    out = _reservation_to_dict(reservation, session, include_client_tech=True)
+    publish_reservation_update(current_user.tenant_id, {"type": "reservation_updated", "reservation": out})
+    return out
 
 
 @app.put("/reservations/{reservation_id}/status")
@@ -5052,7 +5107,9 @@ def update_reservation_status(
     session.add(reservation)
     session.commit()
     session.refresh(reservation)
-    return _reservation_to_dict(reservation, session, include_client_tech=True)
+    out = _reservation_to_dict(reservation, session, include_client_tech=True)
+    publish_reservation_update(current_user.tenant_id, {"type": "reservation_status", "reservation": out})
+    return out
 
 
 @app.put("/reservations/{reservation_id}/seat")
@@ -5107,7 +5164,9 @@ def seat_reservation(
     session.add(reservation)
     session.commit()
     session.refresh(reservation)
-    return _reservation_to_dict(reservation, session, include_client_tech=True)
+    out = _reservation_to_dict(reservation, session, include_client_tech=True)
+    publish_reservation_update(current_user.tenant_id, {"type": "reservation_seated", "reservation": out})
+    return out
 
 
 @app.put("/reservations/{reservation_id}/finish")
@@ -5131,7 +5190,9 @@ def finish_reservation(
     session.add(reservation)
     session.commit()
     session.refresh(reservation)
-    return _reservation_to_dict(reservation, session, include_client_tech=True)
+    out = _reservation_to_dict(reservation, session, include_client_tech=True)
+    publish_reservation_update(current_user.tenant_id, {"type": "reservation_finished", "reservation": out})
+    return out
 
 
 @app.put("/reservations/{reservation_id}/cancel")
@@ -5157,7 +5218,9 @@ def cancel_reservation_public(
     session.add(reservation)
     session.commit()
     session.refresh(reservation)
-    return _reservation_to_dict(reservation, session)
+    out = _reservation_to_dict(reservation, session)
+    publish_reservation_update(reservation.tenant_id, {"type": "reservation_cancelled", "reservation": out})
+    return out
 
 
 @app.put("/reservations/{reservation_id}/public")
@@ -5189,7 +5252,9 @@ def update_reservation_public(
     session.add(reservation)
     session.commit()
     session.refresh(reservation)
-    return _reservation_to_dict(reservation, session)
+    out = _reservation_to_dict(reservation, session)
+    publish_reservation_update(reservation.tenant_id, {"type": "reservation_updated", "reservation": out})
+    return out
 
 
 @app.post("/reservations/{reservation_id}/send-reminder")
