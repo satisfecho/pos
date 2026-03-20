@@ -2,7 +2,7 @@ import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../environments/environment';
-import { ApiService, Order, OrderItem, TenantSettings, BillingCustomer } from '../services/api.service';
+import { ApiService, Order, OrderItem, TenantSettings, BillingCustomer, TenantProduct, OrderItemCreate } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
 import { WaiterAlertService, WaiterAlertItem } from '../services/waiter-alert.service';
 import { PermissionService, Permission } from '../services/permission.service';
@@ -90,7 +90,7 @@ ModuleRegistry.registerModules([
             @if (viewMode() === 'active' && activeOrders().length > 0) {
               <div class="order-grid">
                 @for (order of activeOrders(); track order.id) {
-                  <div class="order-card" [class]="'status-' + order.status">
+                  <div class="order-card" [id]="'order-card-' + order.id" [class]="'status-' + order.status + (statusDropdownOpen() === order.id ? ' status-dropdown-open' : '')">
                     <div class="order-header">
                       <div class="order-header-main">
                         <span class="order-id">#{{ order.id }}</span>
@@ -101,6 +101,13 @@ ModuleRegistry.registerModules([
                         <span class="order-time" [title]="formatExactTime(order.created_at)">{{ 'ORDERS.ORDER_TIME' | translate }}: {{ formatOrderTime(order.created_at) }}</span>
                       </div>
                       <div class="order-header-actions">
+                        <button type="button" class="btn btn-edit-order" (click)="openOrderEdit(order)" [title]="'ORDERS.EDIT_ORDER' | translate">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                          </svg>
+                          {{ 'COMMON.EDIT' | translate }}
+                        </button>
                         <div class="status-control">
                           <button 
                             class="status-badge-btn" 
@@ -156,9 +163,30 @@ ModuleRegistry.registerModules([
                                   </button>
                                 </div>
                               }
+                              @if (order.status === 'paid' && canMarkPaid()) {
+                                <div class="dropdown-section">
+                                  <button 
+                                    class="dropdown-item backward"
+                                    (click)="unmarkPaid(order)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                      <polyline points="15,18 9,12 15,6"/>
+                                    </svg>
+                                    {{ 'ORDERS.UNMARK_PAID' | translate }}
+                                  </button>
+                                </div>
+                              }
                             </div>
                           }
                         </div>
+                        @if (canDeleteOrder()) {
+                          <button type="button" class="btn btn-delete-order" (click)="deleteOrder(order)" [title]="'ORDERS.DELETE_ORDER' | translate">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                              <line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+                            </svg>
+                            {{ 'ORDERS.DELETE_ORDER' | translate }}
+                          </button>
+                        }
                       </div>
                     </div>
 
@@ -167,7 +195,7 @@ ModuleRegistry.registerModules([
                         <div class="order-item" [class.removed]="item.removed_by_customer">
                           <div class="item-name-row">
                             <span class="item-qty">
-                              @if (!item.removed_by_customer && item.status !== 'delivered') {
+                              @if (!item.removed_by_customer && item.status !== 'cancelled' && item.status !== 'delivered') {
                                 <input type="number" 
                                   [value]="item.quantity" 
                                   (change)="updateItemQuantity(order.id, item.id!, +$any($event.target).value)"
@@ -191,7 +219,7 @@ ModuleRegistry.registerModules([
                               }
                             </span>
                             <div class="item-actions">
-                              @if (!item.removed_by_customer && item.status !== 'delivered') {
+                              @if (!item.removed_by_customer && item.status !== 'cancelled') {
                                 <button class="btn-remove-item" (click)="removeItemStaff(order.id, item.id!, item.status ?? 'pending')" [title]="'ORDERS.REMOVE_ITEM' | translate">
                                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M18 6L6 18M6 6l12 12"/>
@@ -304,7 +332,7 @@ ModuleRegistry.registerModules([
               @if (notPaidOrders().length > 0) {
                 <div class="order-grid">
                   @for (order of notPaidOrders(); track order.id) {
-                    <div class="order-card" [class]="'status-' + order.status">
+                    <div class="order-card" [id]="'order-card-' + order.id" [class]="'status-' + order.status + (statusDropdownOpen() === order.id ? ' status-dropdown-open' : '')">
                       <div class="order-header">
                         <div class="order-header-main">
                           <span class="order-id">#{{ order.id }}</span>
@@ -315,6 +343,13 @@ ModuleRegistry.registerModules([
                           <span class="order-time" [title]="formatExactTime(order.created_at)">{{ 'ORDERS.ORDER_TIME' | translate }}: {{ formatOrderTime(order.created_at) }}</span>
                         </div>
                         <div class="order-header-actions">
+                          <button type="button" class="btn btn-edit-order" (click)="openOrderEdit(order)" [title]="'ORDERS.EDIT_ORDER' | translate">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            {{ 'COMMON.EDIT' | translate }}
+                          </button>
                           <div class="status-control">
                             <button 
                               class="status-badge-btn" 
@@ -358,7 +393,7 @@ ModuleRegistry.registerModules([
                                     }
                                   </div>
                                 }
-                                @if (canMarkPaid()) {
+                                @if (order.status !== 'paid' && order.status !== 'cancelled' && canMarkPaid()) {
                                   <div class="dropdown-section">
                                     <button 
                                       class="dropdown-item forward"
@@ -370,17 +405,49 @@ ModuleRegistry.registerModules([
                                     </button>
                                   </div>
                                 }
+                                @if (order.status === 'paid' && canMarkPaid()) {
+                                  <div class="dropdown-section">
+                                    <button 
+                                      class="dropdown-item backward"
+                                      (click)="unmarkPaid(order)">
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="15,18 9,12 15,6"/>
+                                      </svg>
+                                      {{ 'ORDERS.UNMARK_PAID' | translate }}
+                                    </button>
+                                  </div>
+                                }
                               </div>
                             }
                           </div>
                         </div>
+                        @if (canDeleteOrder()) {
+                          <button type="button" class="btn btn-delete-order" (click)="deleteOrder(order)" [title]="'ORDERS.DELETE_ORDER' | translate">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                              <line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+                            </svg>
+                            {{ 'ORDERS.DELETE_ORDER' | translate }}
+                          </button>
+                        }
                       </div>
 
                       <div class="order-items">
-                        @for (item of order.items; track item.id) {
+                        @for (item of getSortedItems(order.items); track item.id) {
                           <div class="order-item" [class.removed]="item.removed_by_customer">
                             <div class="item-name-row">
-                              <span class="item-qty">{{ item.quantity }}x</span>
+                              <span class="item-qty">
+                                @if (!item.removed_by_customer && item.status !== 'cancelled' && item.status !== 'delivered') {
+                                  <input type="number"
+                                    [value]="item.quantity"
+                                    (change)="updateItemQuantity(order.id, item.id!, +$any($event.target).value)"
+                                    min="1"
+                                    class="quantity-input"
+                                  />
+                                } @else {
+                                  {{ item.quantity }}x
+                                }
+                              </span>
                               <span class="item-name">{{ item.product_name }}</span>
                               @if (hasItemCustomization(item)) {
                                 <span class="item-customization">{{ formatCustomization(item.customization_answers!) }}</span>
@@ -393,12 +460,72 @@ ModuleRegistry.registerModules([
                                   <span class="price-total">({{ formatPrice(item.price_cents * item.quantity) }} total)</span>
                                 }
                               </span>
-                              @if (item.status && !item.removed_by_customer) {
-                                <span class="item-status-badge" [class]="'status-' + item.status">
-                                  {{ getItemStatusLabel(item.status) }}
-                                </span>
-                              }
+                              <div class="item-actions">
+                                @if (!item.removed_by_customer && item.status !== 'cancelled') {
+                                  <button class="btn-remove-item" (click)="removeItemStaff(order.id, item.id!, item.status ?? 'pending')" [title]="'ORDERS.REMOVE_ITEM' | translate">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                      <path d="M18 6L6 18M6 6l12 12"/>
+                                    </svg>
+                                  </button>
+                                }
+                                @if (item.status && !item.removed_by_customer) {
+                                  <div class="item-status-control">
+                                    <button
+                                      class="item-status-badge clickable"
+                                      [class]="'status-' + item.status"
+                                      (click)="toggleItemStatusDropdown(order.id, item.id!)"
+                                      [title]="'ORDERS.CLICK_TO_CHANGE_STATUS' | translate">
+                                      {{ getItemStatusLabel(item.status) }}
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="6,9 12,15 18,9"/>
+                                      </svg>
+                                    </button>
+                                    @if (itemStatusDropdownOpen() === order.id + '-' + item.id) {
+                                      <div class="status-dropdown item-status-dropdown" (click)="$event.stopPropagation()">
+                                        @if (getItemStatusTransitions(item.status).backward.length > 0) {
+                                          <div class="dropdown-section">
+                                            <div class="dropdown-label">{{ 'ORDERS.GO_BACK' | translate }}</div>
+                                            @for (status of getItemStatusTransitions(item.status).backward; track status) {
+                                              <button
+                                                class="dropdown-item backward"
+                                                (click)="updateItemStatus(order.id, item.id!, status); itemStatusDropdownOpen.set(null)">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                  <polyline points="15,18 9,12 15,6"/>
+                                                </svg>
+                                                {{ getItemStatusLabel(status) }}
+                                              </button>
+                                            }
+                                          </div>
+                                        }
+                                        @if (getItemStatusTransitions(item.status).forward.length > 0) {
+                                          <div class="dropdown-section">
+                                            <div class="dropdown-label">{{ 'ORDERS.MOVE_FORWARD' | translate }}</div>
+                                            @for (status of getItemStatusTransitions(item.status).forward; track status) {
+                                              <button
+                                                class="dropdown-item forward"
+                                                (click)="updateItemStatus(order.id, item.id!, status); itemStatusDropdownOpen.set(null)">
+                                                {{ getItemStatusLabel(status) }}
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                  <polyline points="9,18 15,12 9,6"/>
+                                                </svg>
+                                              </button>
+                                            }
+                                          </div>
+                                        }
+                                      </div>
+                                    }
+                                  </div>
+                                }
+                              </div>
                             </div>
+                            @if (item.removed_by_customer) {
+                              <div class="removed-indicator">
+                                <span class="removed-label">{{ 'ORDERS.REMOVED_BY_CUSTOMER' | translate }}</span>
+                                @if (item.removed_at) {
+                                  <span class="removed-time">{{ formatTime(item.removed_at) }}</span>
+                                }
+                              </div>
+                            }
                           </div>
                         }
                       </div>
@@ -474,12 +601,91 @@ ModuleRegistry.registerModules([
           }
         </div>
 
+        <!-- Order Edit Widget Modal (add/remove/change items, billing, print) -->
+        @if (editOrder(); as order) {
+          <div class="modal-overlay" (click)="closeOrderEdit()">
+            <div class="modal modal-order-edit" (click)="$event.stopPropagation()" appFocusFirstInput>
+              <div class="modal-header">
+                <h3>{{ 'ORDERS.EDIT_ORDER' | translate }} — #{{ order.id }} {{ order.table_name }}</h3>
+                <button class="icon-btn" (click)="closeOrderEdit()">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="modal-body">
+                <p class="order-summary">{{ 'ORDERS.TOTAL' | translate }}: {{ formatPrice(order.total_cents) }}{{ order.customer_name ? ' · ' + ('ORDERS.CUSTOMER' | translate) + ': ' + order.customer_name : '' }}</p>
+
+                <div class="edit-order-items">
+                  <div class="edit-order-label">{{ 'ORDERS.ITEMS' | translate }}</div>
+                  @for (item of getSortedItems(order.items); track item.id) {
+                    @if (!item.removed_by_customer) {
+                      <div class="edit-order-row">
+                        <span class="edit-item-name">{{ item.product_name }}</span>
+                        <input type="number" class="quantity-input" [value]="item.quantity" min="1"
+                          (change)="updateEditItemQuantity(order.id, item.id!, +$any($event.target).value)"
+                        />
+                        <select class="form-select edit-item-status" [ngModel]="item.status"
+                          (ngModelChange)="updateEditItemStatus(order.id, item.id!, $event)"
+                          [name]="'edit-status-' + item.id">
+                          @for (s of ['pending','preparing','ready','delivered','cancelled']; track s) {
+                            <option [value]="s">{{ getItemStatusLabel(s) }}</option>
+                          }
+                        </select>
+                        <button type="button" class="btn btn-sm btn-remove-item" (click)="removeEditItem(order.id, item.id!, item.status ?? 'pending')" [title]="'ORDERS.REMOVE_ITEM' | translate">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                      </div>
+                    }
+                  }
+                </div>
+
+                @if (canAddItemsToOrder(order)) {
+                  <div class="form-group add-items-section">
+                    <div class="edit-order-label">{{ 'ORDERS.ADD_ITEM' | translate }}</div>
+                    <div class="add-items-row">
+                      <select class="form-select" [(ngModel)]="addItemProductId" name="addProduct">
+                        <option [ngValue]="null">{{ 'COMMON.SELECT' | translate }}</option>
+                        @for (p of editOrderTenantProducts(); track p.id) {
+                          <option [ngValue]="p.id">{{ p.name }} — {{ formatPrice(p.price_cents) }}</option>
+                        }
+                      </select>
+                      <input type="number" class="quantity-input" [(ngModel)]="addItemQuantity" min="1" name="addQty" />
+                      <button type="button" class="btn btn-primary" (click)="addItemToEditOrder()" [disabled]="!addItemProductId || addItemQuantity < 1 || addingItem()">
+                        {{ addingItem() ? ('COMMON.LOADING' | translate) : ('COMMON.ADD' | translate) }}
+                      </button>
+                    </div>
+                  </div>
+                }
+
+                <div class="form-group">
+                  <label for="edit-billing-customer">{{ 'CUSTOMERS.SELECT_FOR_FACTURA' | translate }}</label>
+                  <select id="edit-billing-customer" class="form-select" [(ngModel)]="editOrderBillingId" name="editBillingCustomer">
+                    <option [ngValue]="null">{{ 'COMMON.NONE' | translate }}</option>
+                    @for (c of editOrderBillingCustomers(); track c.id) {
+                      <option [ngValue]="c.id">{{ c.company_name || c.name }}{{ c.tax_id ? ' (' + c.tax_id + ')' : '' }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+              <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" (click)="closeOrderEdit()">{{ 'COMMON.CLOSE' | translate }}</button>
+                <button type="button" class="btn btn-secondary" (click)="saveEditOrderBilling()">{{ 'COMMON.SAVE' | translate }}</button>
+                <button type="button" class="btn btn-secondary" (click)="printEditOrderInvoice()">{{ 'ORDERS.PRINT_INVOICE' | translate }}</button>
+                @if (order.status !== 'paid' && order.status !== 'cancelled' && canMarkPaid()) {
+                  <button type="button" class="btn btn-primary" (click)="markEditOrderAsPaid(order)">{{ 'ORDERS.MARK_AS_PAID' | translate }}</button>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
         <!-- Print Factura Modal -->
         @if (facturaOrder()) {
           <div class="modal-overlay" (click)="closeFacturaModal()">
-            <div class="modal" (click)="$event.stopPropagation()" appFocusFirstInput>
+            <div class="modal modal-edit-order" (click)="$event.stopPropagation()" appFocusFirstInput>
               <div class="modal-header">
-                <h3>{{ 'CUSTOMERS.PRINT_FACTURA' | translate }}</h3>
+                <h3>{{ facturaModalEditMode() ? ('ORDERS.EDIT_ORDER' | translate) : ('CUSTOMERS.PRINT_FACTURA' | translate) }}</h3>
                 <button class="icon-btn" (click)="closeFacturaModal()">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M18 6L6 18M6 6l12 12"/>
@@ -487,7 +693,7 @@ ModuleRegistry.registerModules([
                 </button>
               </div>
               <div class="modal-body">
-                <p>{{ 'ORDERS.ORDER_ID' | translate }}{{ facturaOrder()!.id }} — {{ facturaOrder()!.table_name }} — {{ formatPrice(facturaOrder()!.total_cents) }}</p>
+                <p class="order-summary">{{ 'ORDERS.ORDER_ID' | translate }}{{ facturaOrder()!.id }} — {{ facturaOrder()!.table_name }} — {{ formatPrice(facturaOrder()!.total_cents) }}</p>
                 <div class="form-group">
                   <label for="factura-customer">{{ 'CUSTOMERS.SELECT_FOR_FACTURA' | translate }}</label>
                   <select id="factura-customer" class="form-select" [(ngModel)]="facturaCustomerId" name="facturaCustomer">
@@ -500,9 +706,18 @@ ModuleRegistry.registerModules([
               </div>
               <div class="modal-actions">
                 <button type="button" class="btn btn-secondary" (click)="closeFacturaModal()">{{ 'COMMON.CANCEL' | translate }}</button>
-                <button type="button" class="btn btn-primary" (click)="printFacturaAndClose()">
-                  {{ 'ORDERS.PRINT_INVOICE' | translate }}
-                </button>
+                @if (facturaModalEditMode()) {
+                  <button type="button" class="btn btn-secondary" (click)="printFacturaAndClose()">
+                    {{ 'ORDERS.PRINT_INVOICE' | translate }}
+                  </button>
+                  <button type="button" class="btn btn-primary" (click)="saveFacturaCustomerAndClose()">
+                    {{ 'COMMON.SAVE' | translate }}
+                  </button>
+                } @else {
+                  <button type="button" class="btn btn-primary" (click)="printFacturaAndClose()">
+                    {{ 'ORDERS.PRINT_INVOICE' | translate }}
+                  </button>
+                }
               </div>
             </div>
           </div>
@@ -699,6 +914,7 @@ ModuleRegistry.registerModules([
     }
 
     .order-card {
+      position: relative;
       background: var(--color-surface);
       border: 1px solid var(--color-border);
       border-left: 4px solid transparent;
@@ -707,9 +923,13 @@ ModuleRegistry.registerModules([
       box-shadow: var(--shadow-sm);
       transition: box-shadow 0.2s ease, transform 0.2s ease;
       max-width: 100%;
+      z-index: 1;
       &:hover {
         box-shadow: var(--shadow-md);
         transform: translateY(-2px);
+      }
+      &.status-dropdown-open {
+        z-index: 9998;
       }
       &.status-pending { border-left-color: var(--color-warning); }
       &.status-preparing { border-left-color: #3B82F6; }
@@ -720,7 +940,23 @@ ModuleRegistry.registerModules([
 
     .order-header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); border-bottom: 1px solid var(--color-border); margin-bottom: var(--space-3); }
     .order-header-main { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
-    .order-header-actions { flex-shrink: 0; }
+    .order-header-actions { flex-shrink: 0; display: flex; align-items: center; gap: var(--space-2); }
+    .btn-edit-order {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-2) var(--space-3); min-height: 44px;
+      border-radius: 14px; font-size: 0.875rem; font-weight: 500;
+      border: 1px solid var(--color-border); background: var(--color-surface);
+      color: var(--color-text); cursor: pointer; transition: all 0.15s;
+    }
+    .btn-edit-order:hover { background: var(--color-bg); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    .btn-delete-order {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-2) var(--space-3); min-height: 44px;
+      border-radius: 14px; font-size: 0.875rem; font-weight: 500;
+      border: 1px solid var(--color-border); background: var(--color-surface);
+      color: var(--color-text-muted); cursor: pointer; transition: all 0.15s;
+    }
+    .btn-delete-order:hover { background: rgba(220, 38, 38, 0.08); color: var(--color-error, #dc2626); border-color: rgba(220, 38, 38, 0.3); }
     .order-id { font-weight: 600; color: var(--color-text); }
     .order-table { color: var(--color-text-muted); font-size: 0.875rem; }
     .order-customer { color: var(--color-primary); font-size: 0.875rem; font-weight: 500; }
@@ -988,6 +1224,10 @@ ModuleRegistry.registerModules([
     .status-control {
       position: relative;
       overflow: visible;
+      z-index: 1;
+    }
+    .order-card.status-dropdown-open .status-control {
+      z-index: 9999;
     }
     
     .status-badge-btn {
@@ -1023,32 +1263,20 @@ ModuleRegistry.registerModules([
     .status-dropdown {
       position: absolute;
       top: 100%;
-      right: 0;
-      left: auto;
+      left: 0;
+      right: auto;
       margin-top: 6px;
-      margin-bottom: 0;
+      margin-left: 0;
       background: var(--color-surface);
       border: 1px solid var(--color-border);
       border-radius: var(--radius-md);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      z-index: 100;
+      z-index: 10000;
       min-width: 220px;
       overflow: hidden;
-      animation: slideDown 0.2s ease;
     }
     .item-status-dropdown {
       min-width: 200px;
-    }
-    
-    @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-4px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
     }
     
     .dropdown-section {
@@ -1112,7 +1340,8 @@ ModuleRegistry.registerModules([
       border-radius: var(--radius-lg);
       overflow: hidden;
     }
-    .grid-container .btn-factura-row {
+    .grid-container .btn-factura-row,
+    .grid-container .btn-edit-order-row {
       display: inline-flex !important;
       align-items: center;
       justify-content: center;
@@ -1126,10 +1355,12 @@ ModuleRegistry.registerModules([
       border-radius: 8px;
       transition: background 0.15s ease;
     }
-    .grid-container .btn-factura-row:hover {
+    .grid-container .btn-factura-row:hover,
+    .grid-container .btn-edit-order-row:hover {
       background: #f5f5f5 !important;
     }
-    .grid-container .btn-factura-row svg {
+    .grid-container .btn-factura-row svg,
+    .grid-container .btn-edit-order-row svg {
       flex-shrink: 0;
     }
 
@@ -1198,6 +1429,23 @@ ModuleRegistry.registerModules([
       font-weight: 500;
     }
 
+    .modal-order-edit { max-width: 520px; }
+    .modal-order-edit .modal-body { max-height: 70vh; overflow-y: auto; }
+    .edit-order-items { margin-bottom: var(--space-4); }
+    .edit-order-label { font-size: 0.75rem; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: var(--space-2); }
+    .edit-order-row {
+      display: flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border);
+    }
+    .edit-order-row .edit-item-name { flex: 1; min-width: 0; font-size: 0.9375rem; }
+    .edit-order-row .quantity-input { width: 56px; }
+    .edit-order-row .edit-item-status { width: 120px; }
+    .edit-order-row .btn-remove-item { flex-shrink: 0; padding: var(--space-2); color: var(--color-text-muted); border: none; background: none; cursor: pointer; border-radius: 6px; }
+    .edit-order-row .btn-remove-item:hover { color: var(--color-error, #dc2626); background: rgba(0,0,0,0.05); }
+    .add-items-section .add-items-row { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+    .add-items-section .add-items-row .form-select { flex: 1; min-width: 160px; }
+    .add-items-section .add-items-row .quantity-input { width: 56px; }
+
     .form-group {
       margin-bottom: var(--space-4);
     }
@@ -1228,10 +1476,18 @@ ModuleRegistry.registerModules([
 
     .modal-actions {
       display: flex;
+      flex-wrap: wrap;
       gap: var(--space-3);
       justify-content: flex-end;
+      align-items: center;
+      width: 100%;
+      box-sizing: border-box;
       padding: var(--space-4);
       border-top: 1px solid var(--color-border);
+    }
+    .modal-actions .btn {
+      flex: 0 1 auto;
+      min-width: 6rem;
     }
 
     @media (max-width: 768px) {
@@ -1250,8 +1506,6 @@ ModuleRegistry.registerModules([
       }
       
       .status-dropdown {
-        right: 0;
-        left: auto;
         min-width: 200px;
       }
       .item-status-dropdown {
@@ -1410,6 +1664,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   canMarkPaid = computed(() => this.permissions.hasPermission(this.api.getCurrentUser(), 'order:mark_paid'));
   canCancelOrder = computed(() => this.permissions.hasPermission(this.api.getCurrentUser(), 'order:cancel'));
   canRemoveItem = computed(() => this.permissions.hasPermission(this.api.getCurrentUser(), 'order:remove_item'));
+  canDeleteOrder = computed(() => this.permissions.hasPermission(this.api.getCurrentUser(), 'order:delete'));
 
   // Get browser's timezone automatically
   private getBrowserTimezone(): string {
@@ -1443,6 +1698,18 @@ export class OrdersComponent implements OnInit, OnDestroy {
   facturaOrder = signal<Order | null>(null);
   facturaCustomers = signal<BillingCustomer[]>([]);
   facturaCustomerId: number | null = null;
+  /** When true, modal is in "Edit order" mode (Save primary); when false, "Print Factura" mode (Print primary). */
+  facturaModalEditMode = signal<boolean>(false);
+
+  /** Full order edit widget: add/remove/change items, billing, print. Same modal from cards and history. */
+  editOrder = signal<Order | null>(null);
+  editOrderTenantProducts = signal<TenantProduct[]>([]);
+  editOrderBillingCustomers = signal<BillingCustomer[]>([]);
+  editOrderBillingId: number | null = null;
+  addItemProductId: number | null = null;
+  addItemQuantity = 1;
+  addingItem = signal(false);
+  staffMenuToken: string | null = null;
 
   // Toast notification system (replaces native alerts)
   toast = signal<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -1461,11 +1728,12 @@ export class OrdersComponent implements OnInit, OnDestroy {
   loadingAction = signal<string | null>(null);
 
   // Computed signals for separating active and completed orders
+  // Paid orders stay active until delivered (status → completed), so waiters/kitchen/bar still see them
   activeOrders = computed(() =>
-    this.orders().filter(o => ['pending', 'preparing', 'ready', 'partially_delivered'].includes(o.status))
+    this.orders().filter(o => ['pending', 'preparing', 'ready', 'partially_delivered', 'paid'].includes(o.status))
   );
   completedOrders = computed(() =>
-    this.orders().filter(o => ['completed', 'paid', 'cancelled'].includes(o.status))
+    this.orders().filter(o => ['completed', 'cancelled', 'paid'].includes(o.status))
   );
   notPaidOrders = computed(() =>
     this.orders().filter(o => o.status === 'completed' && !o.paid_at)
@@ -1595,6 +1863,20 @@ export class OrdersComponent implements OnInit, OnDestroy {
         cellRenderer: (params: ICellRendererParams) => {
           const id = params.data?.id;
           if (id == null) return '';
+          const editTitle = this.translate.instant('ORDERS.EDIT_ORDER');
+          const safeEditTitle = (editTitle || 'Edit').replace(/"/g, '&quot;');
+          const editIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+          return `<button type="button" class="btn-edit-order-row" data-order-id="${id}" title="${safeEditTitle}" style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;cursor:pointer;background:#fff;color:#333;border:1px solid #ddd;border-radius:8px;">${editIcon}</button>`;
+        },
+      },
+      {
+        headerName: '',
+        width: 56,
+        sortable: false,
+        filter: false,
+        cellRenderer: (params: ICellRendererParams) => {
+          const id = params.data?.id;
+          if (id == null) return '';
           const title = this.translate.instant('CUSTOMERS.PRINT_FACTURA');
           const icon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/></svg>';
           const safeTitle = (title || '').replace(/"/g, '&quot;');
@@ -1678,6 +1960,101 @@ export class OrdersComponent implements OnInit, OnDestroy {
       next: orders => { this.orders.set(orders); this.loading.set(false); },
       error: () => this.loading.set(false)
     });
+  }
+
+  /** Refresh orders list and update editOrder with the latest order so the edit modal stays in sync. */
+  refreshEditOrder(orderId: number) {
+    this.api.getOrders(this.showRemovedItems).subscribe({
+      next: orders => {
+        this.orders.set(orders);
+        const o = orders.find(ord => ord.id === orderId);
+        if (o) this.editOrder.set(o);
+      }
+    });
+  }
+
+  canAddItemsToOrder(order: Order): boolean {
+    return !!(order.table_id != null && order.table_token && order.status !== 'paid' && order.status !== 'cancelled');
+  }
+
+  updateEditItemQuantity(orderId: number, itemId: number, quantity: number) {
+    if (quantity < 1) return;
+    this.api.updateOrderItemQuantityStaff(orderId, itemId, quantity).subscribe({
+      next: () => this.refreshEditOrder(orderId),
+      error: () => this.showToast(this.translate.instant('ORDERS.FAILED_TO_UPDATE_ITEM'), 'error')
+    });
+  }
+
+  updateEditItemStatus(orderId: number, itemId: number, status: string) {
+    this.api.updateOrderItemStatus(orderId, itemId, status).subscribe({
+      next: () => this.refreshEditOrder(orderId),
+      error: () => this.showToast(this.translate.instant('ORDERS.FAILED_TO_UPDATE_STATUS'), 'error')
+    });
+  }
+
+  removeEditItem(orderId: number, itemId: number, itemStatus: string) {
+    this.removeItemStaff(orderId, itemId, itemStatus, () => this.refreshEditOrder(orderId));
+  }
+
+  addItemToEditOrder() {
+    const order = this.editOrder();
+    if (!order?.table_token || !this.addItemProductId || this.addItemQuantity < 1 || !this.staffMenuToken) return;
+    this.addingItem.set(true);
+    const items: OrderItemCreate[] = [{
+      product_id: this.addItemProductId,
+      quantity: this.addItemQuantity,
+      source: 'tenant_product'
+    }];
+    this.api.submitOrder(order.table_token, { items, staff_access: this.staffMenuToken }).subscribe({
+      next: () => {
+        this.addingItem.set(false);
+        this.addItemProductId = null;
+        this.addItemQuantity = 1;
+        this.refreshEditOrder(order.id);
+      },
+      error: () => {
+        this.addingItem.set(false);
+        this.showToast(this.translate.instant('ORDERS.FAILED_TO_UPDATE_ITEM'), 'error');
+      }
+    });
+  }
+
+  saveEditOrderBilling() {
+    const order = this.editOrder();
+    if (!order) return;
+    const customer = this.editOrderBillingId != null
+      ? this.editOrderBillingCustomers().find(c => c.id === this.editOrderBillingId)
+      : null;
+    this.api.setOrderBillingCustomer(order.id, this.editOrderBillingId).subscribe({
+      next: () => {
+        this.orders.update(list =>
+          list.map(o => o.id === order.id ? { ...o, billing_customer_id: this.editOrderBillingId, billing_customer: customer ?? undefined } : o)
+        );
+        this.editOrder.set(this.orders().find(o => o.id === order.id) ?? null);
+        this.showToast(this.translate.instant('ORDERS.ITEM_UPDATED'), 'success');
+      },
+      error: () => this.showToast(this.translate.instant('ORDERS.FAILED_TO_UPDATE_ITEM'), 'error')
+    });
+  }
+
+  printEditOrderInvoice() {
+    const order = this.editOrder();
+    if (!order) return;
+    const customer = this.editOrderBillingId != null
+      ? this.editOrderBillingCustomers().find(c => c.id === this.editOrderBillingId)
+      : undefined;
+    this.printInvoice(order, customer ?? undefined);
+    if (this.editOrderBillingId != null) {
+      this.api.setOrderBillingCustomer(order.id, this.editOrderBillingId).subscribe({
+        next: () => this.refreshEditOrder(order.id),
+        error: () => {}
+      });
+    }
+  }
+
+  markEditOrderAsPaid(order: Order) {
+    this.closeOrderEdit();
+    this.orderToMarkPaid.set(order);
   }
 
   getStatusLabel(status: string): string {
@@ -1781,6 +2158,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   }
 
   openFacturaModal(order: Order) {
+    this.facturaModalEditMode.set(false);
     this.facturaOrder.set(order);
     this.facturaCustomerId = order.billing_customer_id ?? null;
     this.api.getBillingCustomers().subscribe({
@@ -1789,18 +2167,79 @@ export class OrdersComponent implements OnInit, OnDestroy {
     });
   }
 
+  openOrderEdit(order: Order) {
+    this.editOrder.set(order);
+    this.editOrderBillingId = order.billing_customer_id ?? null;
+    this.addItemProductId = null;
+    this.addItemQuantity = 1;
+    this.api.getTenantProducts(true).subscribe({
+      next: list => this.editOrderTenantProducts.set(list),
+      error: () => this.editOrderTenantProducts.set([])
+    });
+    this.api.getBillingCustomers().subscribe({
+      next: list => this.editOrderBillingCustomers.set(list),
+      error: () => this.editOrderBillingCustomers.set([])
+    });
+    if (order.table_id != null) {
+      this.api.getStaffMenuToken(order.table_id).subscribe({
+        next: res => { this.staffMenuToken = res.token; },
+        error: () => { this.staffMenuToken = null; }
+      });
+    } else {
+      this.staffMenuToken = null;
+    }
+  }
+
+  closeOrderEdit() {
+    this.editOrder.set(null);
+    this.editOrderTenantProducts.set([]);
+    this.editOrderBillingCustomers.set([]);
+    this.staffMenuToken = null;
+  }
+
+  openEditOrderModal(order: Order) {
+    this.openOrderEdit(order);
+  }
+
   closeFacturaModal() {
     this.facturaOrder.set(null);
     this.facturaCustomers.set([]);
+    this.facturaModalEditMode.set(false);
   }
 
   onGridClick(event: Event) {
-    const btn = (event.target as HTMLElement).closest('.btn-factura-row');
-    if (btn) {
-      const id = +(btn.getAttribute('data-order-id') || 0);
+    const target = event.target as HTMLElement;
+    const facturaBtn = target.closest('.btn-factura-row');
+    const editBtn = target.closest('.btn-edit-order-row');
+    if (editBtn) {
+      const id = +(editBtn.getAttribute('data-order-id') || 0);
+      const order = this.orders().find(o => o.id === id);
+      if (order) this.openEditOrderModal(order);
+      return;
+    }
+    if (facturaBtn) {
+      const id = +(facturaBtn.getAttribute('data-order-id') || 0);
       const order = this.orders().find(o => o.id === id);
       if (order) this.openFacturaModal(order);
     }
+  }
+
+  saveFacturaCustomerAndClose() {
+    const order = this.facturaOrder();
+    if (!order) return;
+    const customer = this.facturaCustomerId != null
+      ? this.facturaCustomers().find(c => c.id === this.facturaCustomerId)
+      : null;
+    this.api.setOrderBillingCustomer(order.id, this.facturaCustomerId).subscribe({
+      next: () => {
+        this.orders.update(list =>
+          list.map(o => o.id === order.id ? { ...o, billing_customer_id: this.facturaCustomerId, billing_customer: customer ?? undefined } : o)
+        );
+        this.showToast(this.translate.instant('ORDERS.ITEM_UPDATED') || 'Saved', 'success');
+        this.closeFacturaModal();
+      },
+      error: () => this.showToast(this.translate.instant('ORDERS.FAILED_TO_UPDATE_ITEM') || 'Failed to save', 'error')
+    });
   }
 
   printFacturaAndClose() {
@@ -2090,7 +2529,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
       ready: { forward: ['completed'], backward: ['preparing'] },
       completed: { forward: [], backward: ['ready'] }, // Paid is handled via modal
       partially_delivered: { forward: ['completed'], backward: [] },
-      paid: { forward: [], backward: ['completed'] },
+      paid: { forward: [], backward: [] }, // Unmark paid is a separate action (clears paid mark only)
       cancelled: { forward: [], backward: [] }
     };
     const key = (currentStatus ?? '').toString().toLowerCase();
@@ -2108,6 +2547,11 @@ export class OrdersComponent implements OnInit, OnDestroy {
     };
     const key = (currentStatus ?? '').toString().toLowerCase();
     return transitions[key] ?? { forward: [], backward: [] };
+  }
+
+  scrollToOrder(orderId: number) {
+    const el = document.getElementById(`order-card-${orderId}`);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
   toggleStatusDropdown(orderId: number) {
@@ -2128,6 +2572,41 @@ export class OrdersComponent implements OnInit, OnDestroy {
         );
       }
     });
+  }
+
+  unmarkPaid(order: Order) {
+    this.statusDropdownOpen.set(null);
+    this.api.unmarkOrderPaid(order.id).subscribe({
+      next: (res) => {
+        this.orders.update(list =>
+          list.map(o => {
+            if (o.id !== order.id) return o;
+            return {
+              ...o,
+              status: res.new_status,
+              paid_at: null,
+              payment_method: null
+            };
+          })
+        );
+      }
+    });
+  }
+
+  deleteOrder(order: Order) {
+    this.openConfirmModal(
+      this.translate.instant('ORDERS.DELETE_ORDER_CONFIRM'),
+      () => {
+        this.api.deleteOrder(order.id).subscribe({
+          next: () => {
+            this.orders.update(list => list.filter(o => o.id !== order.id));
+            this.showToast(this.translate.instant('ORDERS.DELETE_ORDER_DONE'), 'success');
+          },
+          error: () => this.showToast(this.translate.instant('ORDERS.DELETE_ORDER_FAILED'), 'error')
+        });
+      },
+      { confirmText: this.translate.instant('ORDERS.DELETE_ORDER') }
+    );
   }
 
   updateItemStatus(orderId: number, itemId: number, status: string) {
@@ -2195,9 +2674,9 @@ export class OrdersComponent implements OnInit, OnDestroy {
     }, 400);
   }
 
-  removeItemStaff(orderId: number, itemId: number, itemStatus: string) {
-    // If item is ready, require reason via confirmation modal
-    if (itemStatus === 'ready') {
+  removeItemStaff(orderId: number, itemId: number, itemStatus: string, onSuccess?: () => void) {
+    // Reason required for ready/delivered (audit and tax)
+    if (itemStatus === 'ready' || itemStatus === 'delivered') {
       this.openConfirmModal(
         this.translate.instant('ORDERS.REMOVAL_REASON'),
         () => {
@@ -2205,25 +2684,25 @@ export class OrdersComponent implements OnInit, OnDestroy {
             this.showToast(this.translate.instant('ORDERS.REMOVAL_REASON_REQUIRED'), 'error');
             return;
           }
-          this.doRemoveItem(orderId, itemId, this.confirmReason);
+          this.doRemoveItem(orderId, itemId, this.confirmReason, onSuccess);
         },
         { requireReason: true, confirmText: this.translate.instant('COMMON.CONFIRM') }
       );
     } else {
-      // For non-ready items, simple confirmation
       this.openConfirmModal(
         this.translate.instant('ORDERS.REMOVE_ITEM_CONFIRM'),
-        () => this.doRemoveItem(orderId, itemId),
+        () => this.doRemoveItem(orderId, itemId, undefined, onSuccess),
         { confirmText: this.translate.instant('COMMON.CONFIRM') }
       );
     }
   }
 
-  private doRemoveItem(orderId: number, itemId: number, reason?: string) {
+  private doRemoveItem(orderId: number, itemId: number, reason?: string, onSuccess?: () => void) {
     this.api.removeOrderItemStaff(orderId, itemId, reason).subscribe({
       next: () => {
         this.showToast(this.translate.instant('ORDERS.ITEM_REMOVED'), 'success');
         this.loadOrders();
+        onSuccess?.();
       },
       error: () => {
         this.showToast(this.translate.instant('ORDERS.FAILED_TO_REMOVE_ITEM'), 'error');

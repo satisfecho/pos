@@ -120,13 +120,9 @@
     }
 }
 
-// Status dropdown positioning
+// Status dropdown positioning (directly below the status button)
 .status-dropdown {
-    animation: slideDown 0.2s ease;
-
     @include for-phone-only {
-        right: 0;
-        left: auto;
         min-width: 200px;
     }
 }
@@ -166,7 +162,8 @@
     border-radius: var(--radius-lg);
     overflow: hidden;
 
-    ::ng-deep .btn-factura-row {
+    ::ng-deep .btn-factura-row,
+    ::ng-deep .btn-edit-order-row {
         display: inline-flex !important;
         align-items: center;
         justify-content: center;
@@ -180,10 +177,12 @@
         border-radius: 8px;
         transition: background 0.15s ease;
     }
-    ::ng-deep .btn-factura-row:hover {
+    ::ng-deep .btn-factura-row:hover,
+    ::ng-deep .btn-edit-order-row:hover {
         background: #f5f5f5 !important;
     }
-    ::ng-deep .btn-factura-row svg {
+    ::ng-deep .btn-factura-row svg,
+    ::ng-deep .btn-edit-order-row svg {
         flex-shrink: 0;
     }
 }

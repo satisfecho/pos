@@ -223,6 +223,21 @@ npm run test:order-8-status --prefix front
 
 ---
 
+### 7b. Orders – order edit widget and status popover
+
+Review test for the staff Orders page: Edit button on cards and in History grid, order edit modal (add/remove/change items, billing, print), and status popover visibility (z-index). Logs in with tenant=1 (using `.env` credentials), opens `/staff/orders`, clicks Edit on the first order card and verifies the order edit modal opens; then checks the status dropdown is visible with sufficient z-index; then switches to Order History and clicks Edit in the grid and verifies the same modal opens.
+
+```bash
+node front/scripts/review-order-edit-puppeteer.mjs
+# Or: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 node front/scripts/review-order-edit-puppeteer.mjs
+```
+
+- **Env:** `BASE_URL` (default `http://127.0.0.1:4202`), `LOGIN_EMAIL`/`LOGIN_PASSWORD` or `DEMO_LOGIN_EMAIL`/`DEMO_LOGIN_PASSWORD` (from `.env`), `TENANT_ID` (default `1`), `HEADLESS`.
+- **Asserts:** Edit button on card found; clicking it opens the order edit modal (title, items, billing). Status button opens dropdown that is visible (z-index ≥ 100). In History tab, Edit button in grid opens the same order edit modal. If the modal does not open from the card, the script still passes when it opens from the History grid (and suggests rebuilding/refreshing the frontend). On failure, a screenshot is saved to `front/scripts/screenshots/review-edit-modal-fail.png`.
+- No npm script; run with `node` from repo root.
+
+---
+
 ### 8. Reports (Sales & Revenue) smoke test
 
 Login as **owner or admin**, open `/reports`, and assert the Reports page loads (date range inputs and `[data-testid="reports-page"]` present). Use after Reports feature work.
@@ -326,7 +341,7 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `test:rate-limit` | `scripts/test-rate-limit.mjs` (API rate limiting: login 5/15min, register 3/hour; expects 429 after limit) |
 | `test:rate-limit-puppeteer` | `scripts/test-rate-limit-puppeteer.mjs` (Puppeteer: login page, 6 wrong attempts, expects error banner) |
 
-`test-menu-logo` and `test-websocket` have no npm script; run via `node front/scripts/<name>.mjs`.
+`test-menu-logo`, `test-websocket`, and `review-order-edit-puppeteer` have no npm script; run via `node front/scripts/<name>.mjs`.
 
 ---
 
@@ -352,7 +367,7 @@ See `AGENTS.md` for full seed and deploy notes.
 | **Landing** | Version, provider links | Version bar; footer links to provider login/register. |
 | **Provider portal** | Register, add-product, landing links | No dedicated “login only” test; add-product covers login + dashboard. |
 | **Staff auth** | Register page content, full register | Who-is-this-for; full registration (no cleanup). |
-| **Orders** | Order #8 status dropdown | Requires existing order in Active Orders. |
+| **Orders** | Order #8 status dropdown; `review-order-edit-puppeteer.mjs` (Edit button, order edit modal, status popover) | Order #8: requires existing order in Active Orders. Review script: login, /staff/orders, card + History Edit, status dropdown z-index. |
 | **Reports** | `test-reports.mjs` | Smoke: page loads (owner/admin). |
 | **Users / Bartender role** | `test-bartender-role.mjs` | Admin/owner: /users → Add user → role dropdown includes Bartender. |
 | **Kitchen display** | `test-kitchen-status-dropdown.mjs` | Status dropdown visible and not clipped on /kitchen. |
