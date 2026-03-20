@@ -139,8 +139,8 @@ async function main() {
       await sleep(10000);
     }
 
-    console.log('3. Navigating to /orders (triggers tenant WebSocket)');
-    await page.goto(new URL('/orders', BASE_URL).href, { waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {});
+    console.log('3. Navigating to /staff/orders (triggers tenant WebSocket)');
+    await page.goto(new URL('/staff/orders', BASE_URL).href, { waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {});
     await sleep(6000);
 
     if (wsOpened) {

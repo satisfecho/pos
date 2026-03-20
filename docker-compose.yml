@@ -1,3 +1,6 @@
+# Base stack. Use with an overlay:
+#   Local:  docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#   Prod:   docker compose -f docker-compose.yml -f docker-compose.prod.yml up
 services:
   back:
     build: ./back
@@ -122,10 +125,9 @@ services:
       - "80"     # prod
       - "443"    # prod (HTTPS)
     # Published ports: override (dev) → 4202 only; prod → 80 and 443.
-    # SSL: base uses self-signed cert in haproxy/certs/; prod override mounts certbot/haproxy-certs.
+    # haproxy.cfg has no 443/certs; prod override uses haproxy.prod.cfg + certbot/haproxy-certs.
     volumes:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
-      - ./haproxy/certs:/etc/haproxy/certs:ro
     depends_on:
       - front
       - back

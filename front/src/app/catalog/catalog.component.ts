@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, CatalogItem, TenantProduct } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
+import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { environment } from '../../environments/environment';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-catalog',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, TranslateModule],
+  imports: [CommonModule, FormsModule, SidebarComponent, FocusFirstInputDirective, TranslateModule],
   template: `
     <app-sidebar>
       <div class="page-header">
@@ -189,7 +190,7 @@ import { TranslateModule } from '@ngx-translate/core';
         <!-- Add Product Dialog -->
         @if (selectedItem()) {
           <div class="modal-overlay" (click)="closeAddDialog()">
-            <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-content" (click)="$event.stopPropagation()" appFocusFirstInput>
                <div class="modal-header">
                  <h3>{{ 'CATALOG.ADD_TO_MENU_TITLE' | translate }}</h3>
                  <button class="icon-btn" (click)="closeAddDialog()">

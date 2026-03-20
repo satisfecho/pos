@@ -9,13 +9,14 @@
 #   HEADLESS      Set to 1 to run headless
 #   STAFF_TEST    Set to 1 to also run staff reservation test (needs LOGIN_EMAIL, LOGIN_PASSWORD or .env)
 #   TENANT_ID     Tenant id for book page (default 1)
+# For local dev (ng serve / docker dev) front often runs on 4202; set BASE_URLS="http://127.0.0.1:4202" if needed.
 
 set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$REPO_ROOT"
 
-BASE_URLS="${BASE_URLS:-http://127.0.0.1:4203 http://satisfecho.de}"
+BASE_URLS="${BASE_URLS:-http://127.0.0.1:4202 http://127.0.0.1:4203 http://satisfecho.de}"
 HEADLESS="${HEADLESS:-1}"
 STAFF_TEST="${STAFF_TEST:-0}"
 TENANT_ID="${TENANT_ID:-1}"

@@ -31,7 +31,9 @@ Full-stack Point of Sale (POS) system.
 ├── front/              # Angular Frontend
 │   ├── src/            # Source code
 │   └── package.json    # Angular dependencies & scripts
-├── docker-compose.yml  # Services (DB, front, back, haproxy)
+├── docker-compose.yml       # Base services (DB, front, back, haproxy)
+├── docker-compose.dev.yml   # Local overlay (HAProxy port 4202, no HTTPS)
+├── docker-compose.prod.yml  # Production overlay (amvara9: 80/443, SSL certs)
 └── run.sh              # Main development entry script
 ```
 
@@ -77,26 +79,28 @@ See **Reservation tests (Puppeteer)** and **Demo tables** below for more test sc
 
 ## Docker: status, port, and logs
 
+**Compose files:** Local dev = `docker compose -f docker-compose.yml -f docker-compose.dev.yml`. Production (amvara9) = `docker compose -f docker-compose.yml -f docker-compose.prod.yml`. Use the same `-f` list for `ps`, `logs`, `exec`, etc.
+
 When debugging the running app (e.g. frontend not loading a route, API issues):
 
 1. **Check if containers are up and which port the app is on**
-   - From the repo root: `docker compose ps`
-   - The **frontend** is exposed via **HAProxy**. In the PORTS column, find the `haproxy` service: it shows `HOST_PORT->4202/tcp` (e.g. `0.0.0.0:4203->4202/tcp`). The **host port** (e.g. 4203 or 4202) is the one to use in the browser: `http://127.0.0.1:4203` or `http://localhost:4202`. The port comes from `FRONTEND_PORT` in the environment (default in docker-compose is 4202).
+   - From the repo root: `docker compose -f docker-compose.yml -f docker-compose.dev.yml ps` (or with `.prod.yml` if on production).
+   - The **frontend** is exposed via **HAProxy**. In the PORTS column, find the `haproxy` service: it shows `HOST_PORT->4202/tcp` (e.g. `0.0.0.0:4202->4202/tcp`). The **host port** is the one to use in the browser (e.g. `http://localhost:4202`). With dev overlay the default is 4202; with prod overlay HAProxy publishes 80 and 443.
 
 2. **Frontend dev server: live reload in Docker**
-   - The `front` container runs `ng serve` with **`--poll 2000`** so that file changes on the host (volume `./front:/app`) are detected and the app rebuilds immediately. You should never need to rebuild the image or restart the container for frontend code changes; if the UI doesn’t update, check `docker compose logs --tail=50 front` for build errors.
-   - If you still see stale frontend after editing: ensure the container was started with the current docker-compose (no cached run), then hard-refresh the browser (Ctrl+Shift+R / Cmd+Shift+R).
-   - **First time after this change:** rebuild the front image so the dev server runs with `--poll`: `docker compose build front && docker compose up -d`.
+   - The `front` container runs `ng serve` with **`--poll 2000`** so that file changes on the host (volume `./front:/app`) are detected and the app rebuilds immediately. You should never need to rebuild the image or restart the container for frontend code changes; if the UI doesn’t update, check `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=50 front` for build errors.
+   - If you still see stale frontend after editing: ensure the container was started with the current compose (no cached run), then hard-refresh the browser (Ctrl+Shift+R / Cmd+Shift+R).
+   - **First time after this change:** rebuild the front image so the dev server runs with `--poll`: `docker compose -f docker-compose.yml -f docker-compose.dev.yml build front && docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d front`.
 
 3. **Review logs and last requests**
-   - All services: `docker compose logs -f` (follow) or `docker compose logs --tail=100`
-   - Frontend (build errors, dev server): `docker compose logs --tail=80 front`
-   - Backend (API requests, errors): `docker compose logs --tail=50 back`
-   - HAProxy (HTTP/WS access, redirects): `docker compose logs --tail=30 haproxy`
+   - All services: `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs -f` (or `--tail=100`).
+   - Frontend (build errors, dev server): `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=80 front`
+   - Backend (API requests, errors): `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=50 back`
+   - HAProxy (HTTP/WS access, redirects): `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=30 haproxy`
    - Use these to confirm the app is running, see recent requests, and spot build or runtime errors (e.g. Angular build failures in `front` logs).
 
-3. **Restarting the backend without losing data**
- - To restart only the backend: `docker compose restart back` or `docker compose up -d back`.
+4. **Restarting the backend without losing data**
+   - To restart only the backend: `docker compose -f docker-compose.yml -f docker-compose.dev.yml restart back` or `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d back`.
  - **Do not use** `docker compose down -v` or `./run.sh --clean` when you only mean to restart the backend. The `-v` flag removes **named volumes** (e.g. `pos_pgdata`), which wipes the database. Image **files** live in the host directory `back/uploads/` (bind-mounted), so they are not deleted by `down -v`, but all **references** to them (Product.image_filename, ProviderProduct.image_filename, Tenant.logo_filename, Tenant.header_background_filename) are in the DB. After a DB wipe, the app will show no images until data is re-seeded or re-imported.
 
 ## Reservation tests (Puppeteer)

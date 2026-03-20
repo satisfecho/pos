@@ -1,9 +1,9 @@
 # HAProxy Configuration
 
-HAProxy is the single entry point for end-user traffic:
+HAProxy is the single entry point for end-user traffic. There are two config files:
 
-- **Production**: listens on **80** (HTTP) and **443** (HTTPS). SSL on 443 uses certificates from `certbot/haproxy-certs` (mounted by `docker-compose.prod.yml`).
-- **Development**: listens on **4202**, **80**, and **443**. Base compose mounts `./haproxy/certs` with a self-signed cert so 443 works without certbot; browsers will show a security warning. See `haproxy/certs/README.md`.
+- **`haproxy.cfg`** — Used with **docker-compose.dev.yml** (local). Listens on **80** and **4202** only; no HTTPS, no certs. Use `http://localhost:4202/`.
+- **`haproxy.prod.cfg`** — Used with **docker-compose.prod.yml** (amvara9/production). Listens on **80** and **443**; HTTP→HTTPS redirect; SSL certs from `certbot/haproxy-certs`. See `certbot/README.md` and `docs/0026-haproxy-ssl-amvara9.md`.
 
 ## Routing
 
@@ -23,8 +23,8 @@ You can override these by setting environment variables:
 
 ## Usage
 
-- **Development**: `docker compose up` (uses `docker-compose.override.yml`). HAProxy is published on **4202**; use `http://localhost:4202/`.
-- **Production**: `docker compose -f docker-compose.yml -f docker-compose.prod.yml up`. HAProxy is published on **80** and **443**; no port in URL.
+- **Local (dev):** `docker compose -f docker-compose.yml -f docker-compose.dev.yml up`. HAProxy published on **4202**; use `http://localhost:4202/`.
+- **Production (amvara9):** `docker compose -f docker-compose.yml -f docker-compose.prod.yml up`. HAProxy on **80** and **443**; certs from `certbot/haproxy-certs`.
 
 ## Testing
 

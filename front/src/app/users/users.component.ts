@@ -5,12 +5,13 @@ import { SidebarComponent } from '../shared/sidebar.component';
 import { ApiService, User, UserRole, UserCreate, UserUpdate } from '../services/api.service';
 import { PermissionService } from '../services/permission.service';
 import { ConfirmationModalComponent } from '../shared/confirmation-modal.component';
+import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, ConfirmationModalComponent, TranslateModule],
+  imports: [CommonModule, FormsModule, SidebarComponent, ConfirmationModalComponent, FocusFirstInputDirective, TranslateModule],
   template: `
     <app-sidebar>
       <div class="users-page">
@@ -73,7 +74,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
         <!-- Create/Edit Modal -->
         @if (showModal()) {
           <div class="modal-overlay" (click)="closeModal()">
-            <div class="modal" (click)="$event.stopPropagation()">
+            <div class="modal" (click)="$event.stopPropagation()" appFocusFirstInput>
               <div class="modal-header">
                 <h2>{{ editingUser() ? ('USERS.EDIT_USER' | translate) : ('USERS.ADD_USER' | translate) }}</h2>
                 <button class="btn-close" (click)="closeModal()">

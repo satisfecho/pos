@@ -5,13 +5,14 @@ import { Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService, Provider, ProviderCreate, ProviderProduct, ProviderProductCreate, Tax, TenantSettings } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
+import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { TranslationsComponent } from '../translations/translations.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, TranslateModule, TranslationsComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent, FocusFirstInputDirective, TranslateModule, TranslationsComponent],
   template: `
     <app-sidebar>
       <div class="page-header">
@@ -81,6 +82,17 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
             </svg>
             <span>{{ 'SETTINGS.EMAIL_SETTINGS' | translate }}</span>
           </button>
+          <button 
+            type="button" 
+            class="tab" 
+            [class.active]="activeSection() === 'reservations'"
+            (click)="activeSection.set('reservations')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span>{{ 'SETTINGS.RESERVATIONS' | translate }}</span>
+          </button>
           
           <button 
             type="button" 
@@ -115,6 +127,17 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
             </svg>
             <span>{{ 'SETTINGS.TRANSLATIONS_TITLE' | translate }}</span>
+          </button>
+          <button 
+            type="button" 
+            class="tab" 
+            [class.active]="activeSection() === 'security'"
+            (click)="activeSection.set('security'); loadOtpStatus()">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0110 0v4"/>
+            </svg>
+            <span>{{ 'SETTINGS.SECURITY' | translate }}</span>
           </button>
         </div>
       </div>
@@ -236,7 +259,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           <!-- Add Provider Modal -->
           @if (showAddProviderModal()) {
             <div class="modal-overlay" (click)="closeAddProviderModal()">
-              <div class="modal-content" (click)="$event.stopPropagation()">
+              <div class="modal-content" (click)="$event.stopPropagation()" appFocusFirstInput>
                 <div class="modal-header">
                   <h3>{{ 'SETTINGS.ADD_PROVIDER' | translate }}</h3>
                   <button type="button" class="btn-icon" (click)="closeAddProviderModal()">×</button>
@@ -270,7 +293,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           <!-- Add Product to Provider Modal -->
           @if (showAddProductModal()) {
             <div class="modal-overlay" (click)="closeAddProductModal()">
-              <div class="modal-content" (click)="$event.stopPropagation()">
+              <div class="modal-content" (click)="$event.stopPropagation()" appFocusFirstInput>
                 <div class="modal-header">
                   <h3>{{ 'SETTINGS.ADD_PRODUCT_TO_PROVIDER' | translate }} – {{ selectedProviderForProduct()?.name }}</h3>
                   <button type="button" class="btn-icon" (click)="closeAddProductModal()">×</button>
@@ -314,6 +337,61 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               </div>
               <app-translations></app-translations>
             </div>
+          } @else if (activeSection() === 'security') {
+          <!-- Security (OTP) Section -->
+          <div class="section" data-testid="settings-security-section">
+            <div class="section-header">
+              <h2>{{ 'SETTINGS.SECURITY' | translate }}</h2>
+              <p>{{ 'SETTINGS.SECURITY_SUBTITLE' | translate }}</p>
+            </div>
+            @if (otpStatusLoading()) {
+              <div class="loading-state"><div class="spinner"></div><p>{{ 'SETTINGS.LOADING_SETTINGS' | translate }}</p></div>
+            } @else if (otpSetupResult()) {
+              <div class="form-card">
+                <h3>{{ 'SETTINGS.OTP_SCAN_OR_ENTER' | translate }}</h3>
+                <p class="hint">{{ 'SETTINGS.OTP_ADD_TO_APP' | translate }}</p>
+                <div class="otp-secret-row">
+                  <code class="otp-secret">{{ otpSetupResult()?.secret }}</code>
+                  <button type="button" class="btn btn-secondary btn-sm" (click)="copyOtpSecret()">{{ 'COMMON.COPY' | translate }}</button>
+                </div>
+                <div class="form-group" style="margin-top: 1rem;">
+                  <label for="otp-confirm-code">{{ 'SETTINGS.OTP_ENTER_CODE' | translate }}</label>
+                  <input id="otp-confirm-code" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" [(ngModel)]="otpConfirmCode" name="otpConfirmCode" [placeholder]="'SETTINGS.OTP_CODE_PLACEHOLDER' | translate" />
+                  <button type="button" class="btn btn-primary" (click)="confirmOtpEnable()" [disabled]="!otpConfirmCode || otpConfirmCode.length !== 6 || otpConfirming()">
+                    {{ otpConfirming() ? ('SETTINGS.OTP_CONFIRMING' | translate) : ('SETTINGS.OTP_ENABLE' | translate) }}
+                  </button>
+                  <button type="button" class="btn btn-secondary" (click)="cancelOtpSetup()">{{ 'COMMON.CANCEL' | translate }}</button>
+                </div>
+                @if (otpError()) {
+                  <p class="field-error">{{ otpError() }}</p>
+                }
+              </div>
+            } @else if (otpStatus()?.otp_enabled) {
+              <div class="form-card">
+                <p class="otp-enabled-msg">{{ 'SETTINGS.OTP_ENABLED' | translate }}</p>
+                <div class="form-group">
+                  <label for="otp-disable-code">{{ 'SETTINGS.OTP_DISABLE_ENTER_CODE' | translate }}</label>
+                  <input id="otp-disable-code" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" [(ngModel)]="otpDisableCode" name="otpDisableCode" [placeholder]="'SETTINGS.OTP_CODE_PLACEHOLDER' | translate" />
+                  <button type="button" class="btn btn-secondary" (click)="disableOtp()" [disabled]="!otpDisableCode || otpDisableCode.length !== 6 || otpDisabling()">
+                    {{ otpDisabling() ? ('SETTINGS.OTP_DISABLING' | translate) : ('SETTINGS.OTP_DISABLE' | translate) }}
+                  </button>
+                </div>
+                @if (otpError()) {
+                  <p class="field-error">{{ otpError() }}</p>
+                }
+              </div>
+            } @else {
+              <div class="form-card">
+                <p class="hint">{{ 'SETTINGS.OTP_DESCRIPTION' | translate }}</p>
+                <button type="button" class="btn btn-primary" (click)="startOtpSetup()" [disabled]="otpSettingUp()">
+                  {{ otpSettingUp() ? ('SETTINGS.OTP_SETTING_UP' | translate) : ('SETTINGS.OTP_ENABLE_BUTTON' | translate) }}
+                </button>
+                @if (otpError()) {
+                  <p class="field-error">{{ otpError() }}</p>
+                }
+              </div>
+            }
+          </div>
           } @else {
             <!-- Tenant Settings Sections (Shared Form) -->
             <form (ngSubmit)="saveSettings()" class="settings-form">
@@ -660,6 +738,13 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                     <label>{{ 'SETTINGS.STRIPE_SECRET_KEY' | translate }}</label>
                     <input type="password" [(ngModel)]="formData.stripe_secret_key" name="stripe_secret_key" placeholder="••••••••••••••••" />
                   </div>
+
+                  <h3>{{ 'SETTINGS.REVOLUT_INTEGRATION' | translate }}</h3>
+                  <div class="form-group">
+                    <label>{{ 'SETTINGS.REVOLUT_MERCHANT_SECRET' | translate }}</label>
+                    <input type="password" [(ngModel)]="formData.revolut_merchant_secret" name="revolut_merchant_secret" placeholder="••••••••••••••••" />
+                    <p class="hint">{{ 'SETTINGS.REVOLUT_MERCHANT_SECRET_HINT' | translate }}</p>
+                  </div>
                   
                   <div class="form-group checkbox-row">
                     <label class="switch">
@@ -714,6 +799,61 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                       </button>
                     </div>
                   }
+                </div>
+              }
+
+              <!-- Reservations Section -->
+              @if (activeSection() === 'reservations') {
+                <div class="section">
+                  <div class="section-header">
+                    <h2>{{ 'SETTINGS.RESERVATIONS' | translate }}</h2>
+                    <p>{{ 'SETTINGS.RESERVATIONS_SUBTITLE' | translate }}</p>
+                  </div>
+                  <div class="form-group">
+                    <label for="reservation_prepayment_cents">{{ 'SETTINGS.RESERVATION_PREPAYMENT' | translate }}</label>
+                    <input type="number" id="reservation_prepayment_cents" min="0" step="1" [(ngModel)]="formData.reservation_prepayment_cents" name="reservation_prepayment_cents" [placeholder]="'SETTINGS.RESERVATION_PREPAYMENT_PLACEHOLDER' | translate" />
+                    <small class="field-hint">{{ 'SETTINGS.RESERVATION_PREPAYMENT_HINT' | translate }}</small>
+                  </div>
+                  <div class="form-group">
+                    <label for="reservation_prepayment_text">{{ 'SETTINGS.RESERVATION_PREPAYMENT_TEXT' | translate }}</label>
+                    <textarea id="reservation_prepayment_text" [(ngModel)]="formData.reservation_prepayment_text" name="reservation_prepayment_text" rows="3" [placeholder]="'SETTINGS.RESERVATION_PREPAYMENT_TEXT_PLACEHOLDER' | translate"></textarea>
+                    <small class="field-hint">{{ 'SETTINGS.RESERVATION_PREPAYMENT_TEXT_HINT' | translate }}</small>
+                  </div>
+                  <div class="form-group">
+                    <label for="reservation_cancellation_policy">{{ 'SETTINGS.RESERVATION_CANCELLATION_POLICY' | translate }}</label>
+                    <textarea id="reservation_cancellation_policy" [(ngModel)]="formData.reservation_cancellation_policy" name="reservation_cancellation_policy" rows="2" [placeholder]="'SETTINGS.RESERVATION_CANCELLATION_POLICY_PLACEHOLDER' | translate"></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label for="reservation_arrival_tolerance_minutes">{{ 'SETTINGS.RESERVATION_ARRIVAL_TOLERANCE' | translate }}</label>
+                    <input type="number" id="reservation_arrival_tolerance_minutes" min="0" max="120" [(ngModel)]="formData.reservation_arrival_tolerance_minutes" name="reservation_arrival_tolerance_minutes" placeholder="15" />
+                    <small class="field-hint">{{ 'SETTINGS.RESERVATION_ARRIVAL_TOLERANCE_HINT' | translate }}</small>
+                  </div>
+                  <div class="form-group">
+                    <label for="reservation_dress_code">{{ 'SETTINGS.RESERVATION_DRESS_CODE' | translate }}</label>
+                    <input type="text" id="reservation_dress_code" [(ngModel)]="formData.reservation_dress_code" name="reservation_dress_code" [placeholder]="'SETTINGS.RESERVATION_DRESS_CODE_PLACEHOLDER' | translate" />
+                  </div>
+                  <h3 class="subsection-title">{{ 'SETTINGS.REMINDER_SCHEDULE' | translate }}</h3>
+                  <p class="subsection-desc">{{ 'SETTINGS.REMINDER_SCHEDULE_DESC' | translate }}</p>
+                  <div class="form-group checkbox-row">
+                    <label class="switch">
+                      <input type="checkbox" [(ngModel)]="formData.reservation_reminder_24h_enabled" name="reservation_reminder_24h_enabled">
+                      <span class="slider round"></span>
+                    </label>
+                    <div>
+                      <label class="check-label">{{ 'SETTINGS.RESERVATION_REMINDER_24H' | translate }}</label>
+                      <p class="hint">{{ 'SETTINGS.RESERVATION_REMINDER_24H_HINT' | translate }}</p>
+                    </div>
+                  </div>
+                  <div class="form-group checkbox-row">
+                    <label class="switch">
+                      <input type="checkbox" [(ngModel)]="formData.reservation_reminder_2h_enabled" name="reservation_reminder_2h_enabled">
+                      <span class="slider round"></span>
+                    </label>
+                    <div>
+                      <label class="check-label">{{ 'SETTINGS.RESERVATION_REMINDER_2H' | translate }}</label>
+                      <p class="hint">{{ 'SETTINGS.RESERVATION_REMINDER_2H_HINT' | translate }}</p>
+                    </div>
+                  </div>
                 </div>
               }
 
@@ -1517,7 +1657,16 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       font-weight: 600;
       margin: 0 0 var(--space-3) 0;
     }
-    
+    .subsection-title {
+      margin-top: var(--space-4);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--color-border);
+    }
+    .subsection-desc {
+      color: var(--color-text-muted);
+      font-size: 0.8125rem;
+      margin: 0 0 var(--space-3) 0;
+    }
     @media (min-width: 640px) {
       h3 {
         font-size: 1rem;
@@ -1780,6 +1929,25 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       font-size: 0.875rem;
     }
 
+    .otp-secret-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+    }
+    .otp-secret {
+      font-family: monospace;
+      font-size: 0.875rem;
+      padding: var(--space-2) var(--space-3);
+      background: var(--color-bg);
+      border-radius: var(--radius-sm);
+      word-break: break-all;
+    }
+    .otp-enabled-msg {
+      margin-bottom: var(--space-4);
+      color: var(--color-text);
+    }
+
     @keyframes slideUp {
       from {
         transform: translateY(100%);
@@ -1805,7 +1973,7 @@ export class SettingsComponent implements OnInit {
   newTaxRate = 10;
   newTaxValidFrom = new Date().toISOString().slice(0, 10);
   newTaxValidTo = '';
-  activeSection = signal<'general' | 'contact' | 'hours' | 'payments' | 'email' | 'taxes' | 'providers' | 'translations'>('general');
+  activeSection = signal<'general' | 'contact' | 'hours' | 'payments' | 'email' | 'reservations' | 'taxes' | 'providers' | 'translations' | 'security'>('general');
   loading = signal<boolean>(false);
   saving = signal<boolean>(false);
   error = signal<string | null>(null);
@@ -1832,6 +2000,16 @@ export class SettingsComponent implements OnInit {
   newProductCategory = '';
   newProductOnSale = true;
   providerProductError = signal('');
+
+  otpStatus = signal<{ otp_enabled: boolean } | null>(null);
+  otpStatusLoading = signal(false);
+  otpSetupResult = signal<{ secret: string; provisioning_uri: string } | null>(null);
+  otpConfirmCode = '';
+  otpError = signal<string | null>(null);
+  otpConfirming = signal(false);
+  otpDisableCode = '';
+  otpDisabling = signal(false);
+  otpSettingUp = signal(false);
 
   daysOfWeek = [
     { key: 'monday', label: 'SETTINGS.DAY_MONDAY' },
@@ -1895,6 +2073,7 @@ export class SettingsComponent implements OnInit {
     currency: null,
     stripe_secret_key: null,
     stripe_publishable_key: null,
+    revolut_merchant_secret: null,
     immediate_payment_required: false,
     timezone: null,
     smtp_host: null,
@@ -1905,6 +2084,13 @@ export class SettingsComponent implements OnInit {
     email_from: null,
     email_from_name: null,
     public_background_color: null,
+    reservation_prepayment_cents: null,
+    reservation_prepayment_text: null,
+    reservation_cancellation_policy: null,
+    reservation_arrival_tolerance_minutes: null,
+    reservation_dress_code: null,
+    reservation_reminder_24h_enabled: false,
+    reservation_reminder_2h_enabled: false,
   };
 
   allTimezones: string[] = [];
@@ -1943,6 +2129,7 @@ export class SettingsComponent implements OnInit {
           currency: settings.currency || null,
           stripe_secret_key: null,
           stripe_publishable_key: settings.stripe_publishable_key || null,
+          revolut_merchant_secret: null,
           immediate_payment_required: settings.immediate_payment_required || false,
           timezone: settings.timezone || null,
           smtp_host: settings.smtp_host ?? null,
@@ -1953,6 +2140,13 @@ export class SettingsComponent implements OnInit {
           email_from: settings.email_from ?? null,
           email_from_name: settings.email_from_name ?? null,
           public_background_color: settings.public_background_color ?? null,
+          reservation_prepayment_cents: settings.reservation_prepayment_cents ?? null,
+          reservation_prepayment_text: settings.reservation_prepayment_text ?? null,
+          reservation_cancellation_policy: settings.reservation_cancellation_policy ?? null,
+          reservation_arrival_tolerance_minutes: settings.reservation_arrival_tolerance_minutes ?? null,
+          reservation_dress_code: settings.reservation_dress_code ?? null,
+          reservation_reminder_24h_enabled: settings.reservation_reminder_24h_enabled ?? false,
+          reservation_reminder_2h_enabled: settings.reservation_reminder_2h_enabled ?? false,
         };
         this.timezoneSearch = settings.timezone || '';
         this.parseOpeningHours(settings.opening_hours);
@@ -2130,6 +2324,85 @@ export class SettingsComponent implements OnInit {
         });
       },
       error: (err) => this.providerProductError.set(err?.error?.detail || 'Failed to add product'),
+    });
+  }
+
+  loadOtpStatus() {
+    this.otpStatusLoading.set(true);
+    this.otpError.set(null);
+    this.api.getOtpStatus().subscribe({
+      next: (status) => {
+        this.otpStatus.set(status);
+        this.otpStatusLoading.set(false);
+      },
+      error: () => {
+        this.otpStatus.set(null);
+        this.otpStatusLoading.set(false);
+      },
+    });
+  }
+
+  startOtpSetup() {
+    this.otpError.set(null);
+    this.otpSettingUp.set(true);
+    this.api.setupOtp().subscribe({
+      next: (result) => {
+        this.otpSetupResult.set(result);
+        this.otpSettingUp.set(false);
+      },
+      error: (err) => {
+        this.otpError.set(err?.error?.detail || 'Failed to setup OTP');
+        this.otpSettingUp.set(false);
+      },
+    });
+  }
+
+  copyOtpSecret() {
+    const secret = this.otpSetupResult()?.secret;
+    if (secret && navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(secret);
+    }
+  }
+
+  confirmOtpEnable() {
+    if (!this.otpConfirmCode || this.otpConfirmCode.length !== 6) return;
+    this.otpError.set(null);
+    this.otpConfirming.set(true);
+    this.api.confirmOtp(this.otpConfirmCode).subscribe({
+      next: () => {
+        this.otpStatus.set({ otp_enabled: true });
+        this.otpSetupResult.set(null);
+        this.otpConfirmCode = '';
+        this.otpConfirming.set(false);
+      },
+      error: (err) => {
+        this.otpError.set(err?.error?.detail || 'Invalid code');
+        this.otpConfirming.set(false);
+      },
+    });
+  }
+
+  cancelOtpSetup() {
+    this.otpSetupResult.set(null);
+    this.otpConfirmCode = '';
+    this.otpError.set(null);
+    this.loadOtpStatus();
+  }
+
+  disableOtp() {
+    if (!this.otpDisableCode || this.otpDisableCode.length !== 6) return;
+    this.otpError.set(null);
+    this.otpDisabling.set(true);
+    this.api.disableOtp(this.otpDisableCode).subscribe({
+      next: () => {
+        this.otpStatus.set({ otp_enabled: false });
+        this.otpDisableCode = '';
+        this.otpDisabling.set(false);
+      },
+      error: (err) => {
+        this.otpError.set(err?.error?.detail || 'Invalid code');
+        this.otpDisabling.set(false);
+      },
     });
   }
 
@@ -2503,8 +2776,15 @@ export class SettingsComponent implements OnInit {
     // Prepare update data - only include stripe_secret_key if it was actually changed
     const updateData = { ...this.formData };
 
+    // Always send reminder options so they are persisted (default false if unset)
+    updateData.reservation_reminder_24h_enabled = this.formData.reservation_reminder_24h_enabled ?? false;
+    updateData.reservation_reminder_2h_enabled = this.formData.reservation_reminder_2h_enabled ?? false;
+
     if (updateData.stripe_secret_key === '') {
       delete updateData.stripe_secret_key;
+    }
+    if (updateData.revolut_merchant_secret === '') {
+      delete updateData.revolut_merchant_secret;
     }
     if (updateData.smtp_password === '') {
       delete updateData.smtp_password;

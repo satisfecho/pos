@@ -727,7 +727,7 @@
         <div class="customization-question">
           <label class="question-label">{{ q.label }}{{ q.required ? ' *' : '' }}</label>
           @if (isChoiceOptionsArray(q)) {
-          <select class="question-select" [value]="customizationAnswersForm()[q.id] ?? ''"
+          <select class="question-select" [value]="customizationAnswersForm()[q.id]"
             (change)="setCustomizationAnswer(q.id, $any($event.target).value)">
             <option value="">{{ 'COMMON.SELECT' | translate }}</option>
             @for (opt of getChoiceOptions(q); track opt) {
@@ -737,13 +737,13 @@
           } @else if (q.type === 'scale' && q.options && typeof q.options === 'object' && 'min' in q.options && 'max' in q.options) {
           <div class="question-scale">
             <input type="range" class="question-range" [min]="q.options.min" [max]="q.options.max"
-              [value]="customizationAnswersForm()[q.id] ?? q.options.min"
+              [value]="customizationAnswersForm()[q.id]"
               (input)="setCustomizationAnswer(q.id, +$any($event.target).value)" />
-            <span class="scale-value">{{ customizationAnswersForm()[q.id] ?? q.options.min }}</span>
+            <span class="scale-value">{{ customizationAnswersForm()[q.id] }}</span>
           </div>
           } @else if (q.type === 'text') {
           <textarea class="question-text" [placeholder]="q.label" rows="2"
-            [value]="customizationAnswersForm()[q.id] ?? ''"
+            [value]="customizationAnswersForm()[q.id]"
             (input)="setCustomizationAnswer(q.id, $any($event.target).value)"></textarea>
           }
         </div>

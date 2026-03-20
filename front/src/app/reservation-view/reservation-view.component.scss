@@ -77,7 +77,7 @@
 
 .hero-header {
   position: relative;
-  background: var(--color-primary);
+  background: var(--hero-header-bg, var(--color-primary));
   padding: var(--space-5) var(--space-4) var(--space-6);
   color: white;
   overflow: hidden;
@@ -247,6 +247,50 @@
 .view-card-standalone {
   max-width: 420px;
   margin: 0 auto;
+}
+
+.view-guidelines {
+  margin-bottom: var(--space-4);
+  .guidelines-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 var(--space-3) 0;
+  }
+  .guideline-item {
+    margin-bottom: var(--space-2);
+    font-size: 0.9375rem;
+  }
+}
+
+.delay-form {
+  margin: var(--space-4) 0;
+  label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: var(--space-2);
+  }
+  .delay-form-row {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+    input {
+      flex: 1;
+      padding: var(--space-2) var(--space-3);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+    }
+  }
+  .delay-success {
+    color: var(--color-success, green);
+    font-size: 0.875rem;
+    margin: 0;
+  }
+}
+
+.delay-notice {
+  background: var(--color-bg);
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
 }
 
 .view-card .error {

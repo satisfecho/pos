@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl, SafeStyle } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { ApiService, Reservation, TenantSummary } from '../services/api.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterLink } from '@angular/router';
@@ -10,7 +11,7 @@ import { LanguagePickerComponent } from '../shared/language-picker.component';
 @Component({
   selector: 'app-reservation-view',
   standalone: true,
-  imports: [TranslateModule, RouterLink, ConfirmationModalComponent, LanguagePickerComponent],
+  imports: [FormsModule, TranslateModule, RouterLink, ConfirmationModalComponent, LanguagePickerComponent],
   templateUrl: './reservation-view.component.html',
   styleUrl: './reservation-view.component.scss',
 })
@@ -26,6 +27,9 @@ export class ReservationViewComponent implements OnInit {
   tenant = signal<TenantSummary | null>(null);
   logoUrl = signal<string | null>(null);
   showCancelConfirm = signal(false);
+  delayNotice = '';
+  updatingDelay = signal(false);
+  delaySuccess = signal(false);
 
   getStatusKey(): string {
     const s = this.reservation()?.status;
@@ -85,6 +89,23 @@ export class ReservationViewComponent implements OnInit {
         this.showCancelConfirm.set(false);
       },
       error: () => this.showCancelConfirm.set(false),
+    });
+  }
+
+  submitDelayNotice() {
+    const r = this.reservation();
+    const token = this.route.snapshot.queryParamMap.get('token');
+    if (!r || !token) return;
+    this.updatingDelay.set(true);
+    this.delaySuccess.set(false);
+    this.api.updateReservationPublic(r.id, token, { delay_notice: this.delayNotice.trim() || null }).subscribe({
+      next: (updated) => {
+        this.reservation.set(updated);
+        this.delayNotice = '';
+        this.updatingDelay.set(false);
+        this.delaySuccess.set(true);
+      },
+      error: () => this.updatingDelay.set(false),
     });
   }
 }

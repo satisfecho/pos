@@ -13,5 +13,5 @@ When you change code under `front/` (Angular app):
    - **Quick smoke:** `BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:landing-version --prefix front`
    - Or another fast script such as `test:landing-provider-links` or a test that touches the area you changed (e.g. `test:working-plan` for working-plan changes).
 3. If the test fails, fix the cause before considering the change done.
-
+4. Review for errors and warnings in frontend log. Fix them all.
 This keeps regressions from frontend edits from going unnoticed.

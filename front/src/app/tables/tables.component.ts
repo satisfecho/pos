@@ -5,6 +5,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
 import { ApiService, Table, TenantSettings, Floor, TableActivateResponse, User } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { ConfirmationModalComponent } from '../shared/confirmation-modal.component';
+import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 
@@ -19,7 +20,7 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
 @Component({
   selector: 'app-tables',
   standalone: true,
-  imports: [CommonModule, FormsModule, QRCodeComponent, SidebarComponent, RouterLink, TranslateModule, ConfirmationModalComponent],
+  imports: [CommonModule, FormsModule, QRCodeComponent, SidebarComponent, RouterLink, TranslateModule, ConfirmationModalComponent, FocusFirstInputDirective],
   template: `
     <app-sidebar>
         <div class="page-header">
@@ -452,7 +453,7 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
         <!-- Reassign orders/reservations to another table before delete -->
         @if (reassignTableModal()) {
           <div class="modal-overlay" (click)="cancelReassign()">
-            <div class="modal-content reassign-modal" (click)="$event.stopPropagation()">
+            <div class="modal-content reassign-modal" (click)="$event.stopPropagation()" appFocusFirstInput>
               <div class="modal-header">
                 <h3>{{ 'TABLES.REASSIGN_AND_DELETE_TITLE' | translate }}</h3>
                 <button type="button" class="close-btn" (click)="cancelReassign()" aria-label="Close">

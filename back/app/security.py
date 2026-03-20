@@ -81,6 +81,13 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     return encoded_jwt
 
 
+def create_otp_pending_token(data: dict) -> str:
+    """Create a short-lived token for OTP step (password already verified). Expires in 5 minutes."""
+    to_encode = data.copy()
+    to_encode.update({"exp": datetime.now(timezone.utc) + timedelta(minutes=5), "type": "otp_pending"})
+    return jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
+
+
 def create_refresh_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """
     Create a refresh token with longer expiry and 'refresh' type.
@@ -182,6 +189,14 @@ async def get_current_user(
         return user
     except JWTError:
         raise credentials_exception
+
+
+def decode_otp_pending_token(token: str) -> dict:
+    """Decode and validate OTP-pending token; return payload. Raises JWTError if invalid or not type otp_pending."""
+    payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+    if payload.get("type") != "otp_pending":
+        raise JWTError("Invalid token type")
+    return payload
 
 
 def validate_refresh_token(refresh_token: str, session: Session) -> User:

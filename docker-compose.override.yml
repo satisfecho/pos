@@ -1,6 +1,0 @@
-# Loaded automatically for local dev (docker compose up). Not used by deploy.
-# Development only: publish haproxy on 4202 so the app is reachable without root or 80/443.
-services:
-  haproxy:
-    ports:
-      - "0.0.0.0:${FRONTEND_PORT:-4202}:4202"

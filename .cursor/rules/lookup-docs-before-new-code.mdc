@@ -1,0 +1,27 @@
+---
+description: Look up relevant MD docs before writing new code for extra context
+alwaysApply: true
+---
+
+# Look Up Docs Before New Code
+
+When creating new code, **first look up relevant MD files** that might give extra insights.
+
+## Where to Look
+
+- **`docs/`** – Implementation plans, user guides, and feature docs (e.g. `docs/0011-*.md`, `docs/REVOLUT.md`)
+- **`README.md`** – Project overview, setup, and main flows
+- **`AGENTS.md`** – Agent instructions and constraints
+- **Root or feature-specific `.md`** – Any markdown next to the area you’re changing
+
+## What to Do
+
+1. Before implementing a feature or refactor, search or list `**/*.md` (and `docs/**`) for topics that match the feature (e.g. reservations, payments, tenant, menu).
+2. Skim the relevant docs for: accepted behaviour, API contracts, security notes, and existing patterns.
+3. Use that context to align new code with the project’s design and avoid redoing or conflicting with documented decisions.
+
+## Example
+
+- Adding a new public ordering flow → check `docs/` for reservation/booking or menu ordering docs.
+- Adding payment logic → check `docs/REVOLUT.md` or payment-related docs.
+- Adding tenant/restaurant behaviour → check README and any tenant/branding docs.

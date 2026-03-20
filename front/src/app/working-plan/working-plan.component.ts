@@ -10,6 +10,7 @@ import {
 } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { ConfirmationModalComponent } from '../shared/confirmation-modal.component';
+import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 function getWeekRange(weekStart: Date): { from: string; to: string } {
@@ -131,7 +132,7 @@ function isValidView(v: string | null): v is ViewMode {
 @Component({
   selector: 'app-working-plan',
   standalone: true,
-  imports: [FormsModule, SidebarComponent, TranslateModule, ConfirmationModalComponent],
+  imports: [FormsModule, SidebarComponent, TranslateModule, ConfirmationModalComponent, FocusFirstInputDirective],
   template: `
     <app-sidebar>
       <div class="working-plan-page" data-testid="working-plan-page">
@@ -223,7 +224,7 @@ function isValidView(v: string | null): v is ViewMode {
 
       @if (showModal()) {
         <div class="modal-overlay" (click)="closeModal()">
-          <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-content" (click)="$event.stopPropagation()" appFocusFirstInput>
             <div class="modal-header">
               <h3>{{ editingShift() ? ('WORKING_PLAN.EDIT_SHIFT' | translate) : ('WORKING_PLAN.ADD_SHIFT' | translate) }}</h3>
               <button type="button" class="close-btn" (click)="closeModal()">

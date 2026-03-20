@@ -2,13 +2,14 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { FormsModule } from '@angular/forms';
 import { ApiService } from '../services/api.service';
 import { LanguagePickerComponent } from '../shared/language-picker.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, TranslateModule, LanguagePickerComponent],
+  imports: [ReactiveFormsModule, FormsModule, RouterLink, TranslateModule, LanguagePickerComponent],
   template: `
     <div class="auth-page">
       <div class="auth-card">
@@ -22,6 +23,32 @@ import { LanguagePickerComponent } from '../shared/language-picker.component';
           </div>
         </div>
 
+        @if (showOtpStep()) {
+          <p class="otp-prompt">{{ 'AUTH.OTP_ENTER_CODE' | translate }}</p>
+          <form (ngSubmit)="onSubmitOtp()">
+            <div class="form-group">
+              <label for="otp-code">{{ 'AUTH.OTP_CODE' | translate }}</label>
+              <input 
+                id="otp-code" 
+                type="text" 
+                inputmode="numeric" 
+                pattern="[0-9]*" 
+                maxlength="6"
+                [(ngModel)]="otpCode" 
+                name="otpCode"
+                [placeholder]="'AUTH.OTP_CODE_PLACEHOLDER' | translate"
+                autocomplete="one-time-code"
+              >
+            </div>
+            @if (error()) {
+              <div class="error-banner">{{ error() }}</div>
+            }
+            <button type="submit" class="btn-submit" [disabled]="!otpCode || otpCode.length !== 6 || loading()">
+              {{ loading() ? ('AUTH.VERIFYING' | translate) : ('AUTH.VERIFY_OTP' | translate) }}
+            </button>
+            <button type="button" class="btn-back" (click)="backToPassword()">{{ 'AUTH.BACK' | translate }}</button>
+          </form>
+        } @else {
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
           <div class="form-group">
             <label for="email">{{ 'AUTH.EMAIL' | translate }}</label>
@@ -64,6 +91,7 @@ import { LanguagePickerComponent } from '../shared/language-picker.component';
             {{ loading() ? ('AUTH.SIGNING_IN' | translate) : ('AUTH.SIGN_IN' | translate) }}
           </button>
         </form>
+        }
 
         <div class="auth-footer">
           <span>{{ 'AUTH.DONT_HAVE_ACCOUNT' | translate }}</span>
@@ -188,6 +216,26 @@ import { LanguagePickerComponent } from '../shared/language-picker.component';
         }
       }
     }
+
+    .otp-prompt {
+      color: var(--color-text-muted);
+      font-size: 0.9375rem;
+      margin-bottom: var(--space-4);
+    }
+    .btn-back {
+      width: 100%;
+      margin-top: var(--space-3);
+      padding: var(--space-3);
+      background: transparent;
+      color: var(--color-text-muted);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      font-size: 0.9375rem;
+      cursor: pointer;
+    }
+    .btn-back:hover {
+      background: var(--color-bg);
+    }
   `]
 })
 export class LoginComponent {
@@ -199,6 +247,9 @@ export class LoginComponent {
 
   error = signal<string>('');
   loading = signal(false);
+  showOtpStep = signal(false);
+  otpTempToken = signal<string | null>(null);
+  otpCode = '';
 
   form = this.fb.group({
     username: ['', [Validators.required, Validators.email]],
@@ -211,19 +262,21 @@ export class LoginComponent {
       this.error.set('');
       this.loading.set(true);
 
-      const formData = new FormData();
-      formData.append('username', this.form.get('username')?.value || '');
-      formData.append('password', this.form.get('password')?.value || '');
-
+      const username = this.form.get('username')?.value ?? '';
+      const password = this.form.get('password')?.value ?? '';
       const tenantId = this.route.snapshot.queryParams['tenant'];
       const id = tenantId != null ? parseInt(tenantId, 10) : undefined;
-      this.api.login(formData, isNaN(id as number) ? undefined : id).subscribe({
+      this.api.login(username, password, isNaN(id as number) ? undefined : id).subscribe({
         next: () => {
           this.router.navigate(['/dashboard']);
         },
         error: (err) => {
           this.loading.set(false);
-          if (err.status === 429) {
+          if (err.status === 403 && err.error?.require_otp && err.error?.temp_token) {
+            this.otpTempToken.set(err.error.temp_token);
+            this.showOtpStep.set(true);
+            this.error.set('');
+          } else if (err.status === 429) {
             this.error.set(err.error?.detail || 'Too many login attempts. Please try again later.');
           } else {
             this.error.set(err.error?.detail || 'Login failed');
@@ -231,5 +284,28 @@ export class LoginComponent {
         }
       });
     }
+  }
+
+  onSubmitOtp() {
+    const token = this.otpTempToken();
+    if (!token || !this.otpCode || this.otpCode.length !== 6) return;
+    this.error.set('');
+    this.loading.set(true);
+    this.api.loginWithOtp(token, this.otpCode).subscribe({
+      next: () => {
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        this.loading.set(false);
+        this.error.set(err?.error?.detail || 'Invalid or expired code');
+      }
+    });
+  }
+
+  backToPassword() {
+    this.showOtpStep.set(false);
+    this.otpTempToken.set(null);
+    this.otpCode = '';
+    this.error.set('');
   }
 }

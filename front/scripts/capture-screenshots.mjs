@@ -149,7 +149,7 @@ async function main() {
       waitSelector: '.quick-actions, .page-header, app-sidebar',
       delayMs: 1000,
     });
-    await capture(page, baseUrl, '/orders', 'orders.png', {
+    await capture(page, baseUrl, '/staff/orders', 'orders.png', {
       waitSelector: '.orders-page, [data-testid="orders-page"], app-orders, main',
       delayMs: 1000,
     });

@@ -85,8 +85,8 @@ async function main() {
     console.log('   Logged in, URL:', page.url());
 
     // 2. Go to orders
-    console.log('2. Navigating to /orders...');
-    await page.goto(new URL('/orders', baseUrl).href, { waitUntil: 'networkidle2', timeout: 15000 });
+    console.log('2. Navigating to /staff/orders...');
+    await page.goto(new URL('/staff/orders', baseUrl).href, { waitUntil: 'networkidle2', timeout: 15000 });
     await page.waitForSelector('.order-grid .order-card, .order-card, app-orders', { timeout: 10000 }).catch(() => {});
     await sleep(1500);
 

@@ -102,18 +102,23 @@ async function main() {
       ({ name, phone, dateVal, timeVal, partySize }) => {
         const form = document.querySelector('.book-form');
         if (!form) return;
-        const inputs = form.querySelectorAll('input');
-        // Order in template: date, time, party size, name, phone
-        const [dateIn, timeIn, numIn, nameIn, phoneIn] = inputs;
         const setAndDispatch = (el, value) => {
           if (!el) return;
           el.value = value;
           el.dispatchEvent(new Event('input', { bubbles: true }));
           el.dispatchEvent(new Event('change', { bubbles: true }));
         };
+        const dateIn = form.querySelector('input[name="date"]');
+        const timeSelect = form.querySelector('select[name="time"]');
+        const partyIn = form.querySelector('input[name="partySize"]');
+        const nameIn = form.querySelector('input[name="name"]');
+        const phoneIn = form.querySelector('input[name="phone"]');
         setAndDispatch(dateIn, dateVal);
-        setAndDispatch(timeIn, timeVal);
-        setAndDispatch(numIn, String(partySize));
+        if (timeSelect) {
+          timeSelect.value = timeVal;
+          timeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        setAndDispatch(partyIn, String(partySize));
         setAndDispatch(nameIn, name);
         setAndDispatch(phoneIn, phone);
       },

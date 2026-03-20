@@ -1,3 +1,6 @@
+# Production overlay (amvara9 / deploy). Use with base:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up
+# HAProxy uses haproxy.prod.cfg + certbot/haproxy-certs; ports 80 and 443.
 services:
   front:
     build:
@@ -17,10 +20,10 @@ services:
       - ws-bridge
       - back
 
-  # Production: HAProxy is the single entry point for end users (80 + 443)
-  # Mount combined PEM from certbot/haproxy-certs (same path used for certbot on amvara9; survives deploy)
+  # Production: HAProxy with HTTPS and HTTP→HTTPS redirect; certs from certbot/haproxy-certs.
   haproxy:
     volumes:
+      - ./haproxy/haproxy.prod.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
       - ./certbot/haproxy-certs:/etc/haproxy/certs:ro
     ports:
       - "80:80"

@@ -6,8 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Orders – unmark paid**: Staff can revert a paid order to unpaid. "Unmark paid" in the status popover clears the paid mark only; order status is restored from item statuses. Backend: `PUT /orders/{id}/unmark-paid`; permission `order:mark_paid`. i18n: `ORDERS.UNMARK_PAID` (en, es, ca, de, fr, zh-CN, hi).
+- **Orders – soft-delete**: Orders can be marked as deleted (excluded from list and book-keeping) for test/cleanup. Backend: `Order.deleted_at`, `deleted_by_user_id`; migration `20260320100000_add_order_deleted_at.sql`; `DELETE /orders/{id}` (soft-delete, clears table active_order_id); permission `order:delete` (owner, admin); list, reports, and public order history exclude deleted orders. Frontend: "Delete order" button on order cards and in history grid (with confirmation); i18n: `ORDERS.DELETE_ORDER`, `DELETE_ORDER_CONFIRM`, etc.
+
 ### Changed
 
+- **Orders – status popover**: Popover opens directly below the status button, has no animation, and uses a higher z-index so it appears above adjacent order cards.
 - **Tables – canvas header**: `/tables/canvas` now shows the same header options as `/tables`: title "Tables", Floor Plan (active), List View link, Tiles/Table view links, Add Table button (focuses shape palette), and Save Layout when there are unsaved changes.
 
 ### Added
@@ -20,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **Orders – history tab**: "Historial de Pedidos" now includes paid orders (`completedOrders` filter includes status `paid`) so paid invoices appear in the history list.
 - **Kitchen/bar timer and frontend build**: Timer settings button and per-order “Waiting” timer now appear after fixing Angular template errors: use component methods instead of `Object.keys`/`Array.isArray` in templates (kitchen-display, orders, menu); optional chaining for `tenant()` in book and reservation-view. Added Puppeteer test `test-kitchen-timer.mjs` and npm script `test:kitchen-timer`.
 - **Backend 500 (slowapi)**: Endpoints that return dict/list under global rate limiting now inject `response: Response` and/or return `JSONResponse` so slowapi can set rate-limit headers. Fixed for `/catalog`, `/catalog/categories`, `/catalog/{id}`, `/tenant-products`, `/tables/with-status`, tenant settings, tenant logo, and tax CRUD. **Public menu endpoints** now return `JSONResponse`: `GET /menu/{token}`, `GET /menu/{token}/order`, `GET /menu/{token}/order-history`, `POST /menu/{token}/order`, `POST /menu/{token}/order/{id}/request-payment`, `POST /menu/{token}/call-waiter`, `DELETE`/`PUT` order items, `DELETE` order (fixes 500 when opening table menu or requesting payment). Repair migration `20260318130000_ensure_provider_tenant_id.sql` ensures `provider.tenant_id` exists when schema version was applied without the column.
 

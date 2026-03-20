@@ -49,7 +49,7 @@ cleanup() {
     echo ""
     echo "Shutting down services..."
     if [ "$DEV_MODE" = true ]; then
-        docker compose $ENV_FILE down
+        docker compose $ENV_FILE -f docker-compose.yml -f docker-compose.dev.yml down
     else
         docker compose $ENV_FILE -f docker-compose.yml -f docker-compose.prod.yml down
     fi
@@ -70,8 +70,8 @@ remove_all() {
     
     # Stop and remove containers with volumes
     echo "Stopping and removing containers..."
-    docker compose $ENV_FILE down -v 2>/dev/null || true
-    docker compose $ENV_FILE -f docker-compose.prod.yml down -v 2>/dev/null || true
+    docker compose $ENV_FILE -f docker-compose.yml -f docker-compose.dev.yml down -v 2>/dev/null || true
+    docker compose $ENV_FILE -f docker-compose.yml -f docker-compose.prod.yml down -v 2>/dev/null || true
     
     # Remove all POS-related volumes (more robust)
     echo "Removing volumes..."
@@ -251,7 +251,7 @@ fi
 # Determine which compose file to use
 if [ "$DEV_MODE" = true ]; then
     echo "Starting POS Application in DEVELOPMENT mode..."
-    COMPOSE_FILE=""
+    COMPOSE_FILE="-f docker-compose.yml -f docker-compose.dev.yml"
     MODE_DESC="Development (hot reload + LAN access)"
     echo "📱 LAN access enabled for mobile testing"
     export CORS_ORIGINS="*"

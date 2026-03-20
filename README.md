@@ -96,12 +96,11 @@ The quickest way to try POS out is to head over to [https://satisfecho.de/](http
    For local development the defaults are fine. For production or a custom domain, set `API_URL`, `WS_URL`, `CORS_ORIGINS`, and `SECRET_KEY`. See [docs/0004-deployment.md](docs/0004-deployment.md).
 
 3. **Start all services**
-   ```bash
-   docker compose --env-file config.env up -d
-   ```
+   - **Local (development):** `docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file config.env up -d`
+   - **Production (e.g. amvara9):** `docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file config.env up -d`
 
 4. **Find the app URL**  
-   Run `docker compose ps` and check the **PORTS** column for the `haproxy` service (e.g. `0.0.0.0:4202->4202/tcp` or `0.0.0.0:4203->4202/tcp`). The **host port** (4202 or 4203) is your app URL.
+   Run `docker compose -f docker-compose.yml -f docker-compose.dev.yml ps` (or with `.prod.yml` if you used prod) and check the **PORTS** column for the `haproxy` service (e.g. `0.0.0.0:4202->4202/tcp` or `0.0.0.0:4203->4202/tcp`). The **host port** (4202 or 4203) is your app URL.
 
    - **App (recommended):** http://localhost:4202 (or the port shown for haproxy)
    - **API docs:** http://localhost:4202/api/docs  
@@ -204,8 +203,8 @@ Browser → Frontend (Angular) → Backend (FastAPI) → PostgreSQL
 
 ### Logs and port
 
-- **Port:** `docker compose ps` → PORTS for `haproxy` → use that host port in the browser.
-- **Logs:** `docker compose logs -f` (all); `docker compose logs --tail=50 back`; `docker compose logs --tail=80 front`; `docker compose logs --tail=30 haproxy`.
+- **Port:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml ps` → PORTS for `haproxy` → use that host port in the browser.
+- **Logs:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs -f` (all); same `-f` list with `logs --tail=50 back`, `logs --tail=80 front`, `logs --tail=30 haproxy`.
 
 See [AGENTS.md](AGENTS.md) for more detail.
 
@@ -213,8 +212,8 @@ See [AGENTS.md](AGENTS.md) for more detail.
 
 Migrations live in `back/migrations/` and run automatically on backend startup.
 
-- **Apply manually:** `docker compose exec back python -m app.migrate`
-- **Check pending:** `docker compose exec back python -m app.migrate --check`
+- **Apply manually:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back python -m app.migrate`
+- **Check pending:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back python -m app.migrate --check`
 - **New migration:** Use timestamped names, e.g. `back/migrations/YYYYMMDDHHMMSS_description.sql`. See `back/migrations/README.md`.
 
 Do not edit existing migration files; add a new migration to change schema.
@@ -226,7 +225,7 @@ Do not edit existing migration files; add a new migration to change schema.
 ### Stopping
 
 ```bash
-docker compose --env-file config.env down
+docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file config.env down
 ```
 
 ---
@@ -258,7 +257,7 @@ For a custom domain or IP, set in `config.env`:
 - `API_URL` and `WS_URL` to your backend base URL (use `https://` and `wss://` for production).
 - `CORS_ORIGINS` to your frontend origin(s).
 
-Then restart: `docker compose --env-file config.env up -d`.
+Then restart: `docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file config.env up -d`.
 
 Full guide: [docs/0004-deployment.md](docs/0004-deployment.md).
 
@@ -285,9 +284,9 @@ Full guide: [docs/0004-deployment.md](docs/0004-deployment.md).
 
 | Issue | What to try |
 |------|-------------|
-| **Services won’t start** | Check port conflicts; ensure `config.env` exists and is valid; run `docker compose logs`. |
+| **Services won’t start** | Check port conflicts; ensure `config.env` exists and is valid; run `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs`. |
 | **Frontend can’t reach API** | Confirm `API_URL` and `WS_URL` match how the browser reaches the app (e.g. through HAProxy). Check CORS and browser console. |
-| **Wrong port** | Run `docker compose ps`, find the host port for `haproxy`, and open that URL (e.g. `http://localhost:4202`). |
-| **DB connection errors** | Ensure `db` is healthy (`docker compose ps`); with Compose, use `DB_HOST=db`. Check credentials in `config.env`. |
+| **Wrong port** | Run `docker compose -f docker-compose.yml -f docker-compose.dev.yml ps`, find the host port for `haproxy`, and open that URL (e.g. `http://localhost:4202`). |
+| **DB connection errors** | Ensure `db` is healthy (`docker compose -f docker-compose.yml -f docker-compose.dev.yml ps`); with Compose, use `DB_HOST=db`. Check credentials in `config.env`. |
 
 More: [docs/0004-deployment.md](docs/0004-deployment.md) and [AGENTS.md](AGENTS.md).

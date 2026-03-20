@@ -35,9 +35,11 @@ async function main() {
     }
     baseUrl = baseUrl || 'http://localhost:4202';
   }
+  const tenantId = process.env.TENANT_ID || '1';
   const BASE_URL = baseUrl;
   console.log('Launching Chrome at', CHROME_PATH);
   console.log('App URL:', BASE_URL);
+  console.log('Tenant ID:', tenantId);
   console.log('---');
 
   const headless = process.env.HEADLESS === '1' || process.env.HEADLESS === 'true';
@@ -68,11 +70,13 @@ async function main() {
   });
 
   try {
-    console.log('1. Navigating to', BASE_URL);
-    await page.goto(BASE_URL, { waitUntil: 'networkidle2', timeout: 15000 });
-    console.log('   URL after load:', page.url());
-
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    // Navigate to login with tenant=1 so demouser lands in correct tenant
+    const loginUrl = new URL('/login', BASE_URL);
+    loginUrl.searchParams.set('tenant', tenantId);
+    console.log('1. Navigating to', loginUrl.href);
+    await page.goto(loginUrl.href, { waitUntil: 'networkidle2', timeout: 15000 });
+    console.log('   URL after load:', page.url());
 
     const hasLogin = await page.evaluate(() => {
       return !!document.querySelector('input[type="email"], input[type="password"], a[href*="login"]');
@@ -139,12 +143,12 @@ async function main() {
       const modal = await page.$('.modal-overlay .modal-content');
       if (modal) {
         await page.waitForSelector('.modal-body input[type="date"]', { timeout: 3000 }).catch(() => null);
-        // Set form values via DOM so Angular binds correctly (avoids typing/format issues)
+        // Modal order: name, phone, email, date, time, party size (staff form)
         await page.evaluate(
           ({ name, phone, dateVal, timeVal, partySize }) => {
             const inputs = document.querySelectorAll('.modal-body input');
-            if (inputs.length >= 5) {
-              const [nameIn, phoneIn, dateIn, timeIn, numIn] = inputs;
+            if (inputs.length >= 6) {
+              const [nameIn, phoneIn, emailIn, dateIn, timeIn, numIn] = inputs;
               const setAndDispatch = (el, value) => {
                 el.value = value;
                 el.dispatchEvent(new Event('input', { bubbles: true }));
@@ -152,6 +156,7 @@ async function main() {
               };
               setAndDispatch(nameIn, name);
               setAndDispatch(phoneIn, phone);
+              setAndDispatch(emailIn, '');
               setAndDispatch(dateIn, dateVal);
               setAndDispatch(timeIn, timeVal);
               setAndDispatch(numIn, String(partySize));

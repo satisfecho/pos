@@ -78,8 +78,8 @@ async function main() {
     await page.click('button[type="submit"]');
     await sleep(4000);
 
-    console.log('Open /orders...');
-    await page.goto(new URL('/orders', baseUrl).href, { waitUntil: 'networkidle2', timeout: 15000 });
+    console.log('Open /staff/orders...');
+    await page.goto(new URL('/staff/orders', baseUrl).href, { waitUntil: 'networkidle2', timeout: 15000 });
     await sleep(2500);
 
     const activePath = join(screenshotDir, 'orders-active.png');

@@ -153,10 +153,9 @@ export class ProviderLoginComponent {
     if (!this.form.valid) return;
     this.error.set('');
     this.loading.set(true);
-    const formData = new FormData();
-    formData.append('username', this.form.get('username')?.value ?? '');
-    formData.append('password', this.form.get('password')?.value ?? '');
-    this.api.login(formData, undefined, 'provider').subscribe({
+    const username = this.form.get('username')?.value ?? '';
+    const password = this.form.get('password')?.value ?? '';
+    this.api.login(username, password, undefined, 'provider').subscribe({
       next: () => this.router.navigate(['/provider']),
       error: (err) => {
         this.loading.set(false);

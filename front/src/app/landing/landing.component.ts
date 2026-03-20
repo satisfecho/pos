@@ -32,6 +32,9 @@ import { environment } from '../../environments/environment';
             {{ 'LANDING.GO' | translate }}
           </button>
         </div>
+        <p class="takeaway-hint">
+          <a routerLink="/orders" class="link-takeaway">{{ 'LANDING.ORDER_TAKEAWAY' | translate }}</a>
+        </p>
       </section>
 
       @if (loading()) {
@@ -205,6 +208,23 @@ import { environment } from '../../environments/environment';
 
     .btn-go:hover {
       background: var(--color-primary-hover);
+    }
+
+    .takeaway-hint {
+      margin: var(--space-4) 0 0;
+      text-align: center;
+      font-size: 0.9375rem;
+      color: var(--color-text-muted);
+    }
+
+    .link-takeaway {
+      color: var(--color-primary);
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .link-takeaway:hover {
+      text-decoration: underline;
     }
 
     .tenant-name {

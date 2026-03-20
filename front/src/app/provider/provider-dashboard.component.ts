@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService, ProviderInfo, ProviderProductItem, ProviderProductCreate, ProviderUpdateData } from '../services/api.service';
+import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-provider-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FocusFirstInputDirective],
   template: `
     <div class="provider-portal">
       <header class="portal-header">
@@ -160,7 +161,7 @@ import { environment } from '../../environments/environment';
 
     @if (showModal()) {
       <div class="modal-backdrop" (click)="closeModal()"></div>
-      <div class="modal" role="dialog">
+      <div class="modal" role="dialog" appFocusFirstInput>
         <div class="modal-header">
           <h2>{{ editingId() != null ? 'Edit product' : 'Add product' }}</h2>
           <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close">&times;</button>
@@ -254,7 +255,7 @@ import { environment } from '../../environments/environment';
 
     @if (showCompanyModal()) {
       <div class="modal-backdrop" (click)="closeCompanyModal()"></div>
-      <div class="modal modal-company" role="dialog">
+      <div class="modal modal-company" role="dialog" appFocusFirstInput>
         <div class="modal-header">
           <h2>Company details</h2>
           <button type="button" class="btn-close" (click)="closeCompanyModal()" aria-label="Close">&times;</button>

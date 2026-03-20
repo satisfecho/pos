@@ -6,12 +6,13 @@ import { ApiService, Reservation, ReservationCreate, ReservationUpdate, Reservat
 import { PermissionService } from '../services/permission.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { ConfirmationModalComponent } from '../shared/confirmation-modal.component';
+import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-reservations',
   standalone: true,
-  imports: [FormsModule, RouterLink, SidebarComponent, TranslateModule, ConfirmationModalComponent, LowerCasePipe],
+  imports: [FormsModule, RouterLink, SidebarComponent, TranslateModule, ConfirmationModalComponent, FocusFirstInputDirective, LowerCasePipe],
   template: `
     <app-sidebar>
       <div class="page-header">
@@ -116,7 +117,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       <!-- Create/Edit modal -->
       @if (showForm()) {
         <div class="modal-overlay" (click)="closeForm()">
-          <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-content" (click)="$event.stopPropagation()" appFocusFirstInput>
             <div class="modal-header">
               <h3>{{ editingReservation() ? ('RESERVATIONS.EDIT' | translate) : ('RESERVATIONS.NEW' | translate) }}</h3>
               <button class="close-btn" (click)="closeForm()">
@@ -325,7 +326,8 @@ export class ReservationsComponent implements OnInit {
   canWrite = () => this.permissions.hasPermission(this.permissions.getCurrentUser(), 'reservation:write');
 
   get tenantId(): number | undefined {
-    return this.permissions.getCurrentUser()?.tenant_id;
+    const tid = this.permissions.getCurrentUser()?.tenant_id;
+    return tid ?? undefined;
   }
 
   ngOnInit() {

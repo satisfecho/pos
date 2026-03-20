@@ -32,6 +32,7 @@ export class BookComponent implements OnInit {
   formPhone = '';
   formEmail = '';
   formClientNotes = '';
+  formCustomerNotes = '';
   submitting = signal(false);
   error = signal<string | null>(null);
   successReservation = signal<Reservation | null>(null);
@@ -201,6 +202,7 @@ export class BookComponent implements OnInit {
       reservation_time: this.formTime,
       party_size: this.formPartySize,
       client_notes: this.formClientNotes.trim() || undefined,
+      customer_notes: this.formCustomerNotes.trim() || undefined,
       client_fingerprint: this.getClientFingerprint(),
       client_screen_width: typeof screen !== 'undefined' ? screen.width : undefined,
       client_screen_height: typeof screen !== 'undefined' ? screen.height : undefined,

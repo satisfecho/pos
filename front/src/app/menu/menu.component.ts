@@ -136,6 +136,8 @@ export class MenuComponent implements OnInit, OnDestroy {
   private tenantId = 0;
   private ws: WebSocket | null = null;
   private sessionId = '';
+  /** When set (from staff link), PIN is not required; sent with getMenu and submitOrder. */
+  private staffAccess: string | null = null;
 
   // Computed
   tableGreeting = computed(() => {
@@ -168,6 +170,12 @@ export class MenuComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.tableToken = this.route.snapshot.params['token'];
+    this.staffAccess =
+      this.route.snapshot.queryParams['staff_access'] ??
+      (typeof window !== 'undefined' && window.location.search
+        ? new URLSearchParams(window.location.search).get('staff_access')
+        : null) ??
+      null;
     this.initializeSession();
     this.loadMenu();
     this.loadStoredOrders();
@@ -228,7 +236,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   // MENU LOADING
   // ============================================
   loadMenu() {
-    this.api.getMenu(this.tableToken).subscribe({
+    this.api.getMenu(this.tableToken, this.staffAccess ?? undefined).subscribe({
       next: data => {
         const productsWithSource = data.products.map((product: Product) => ({
           ...product,
@@ -922,6 +930,7 @@ export class MenuComponent implements OnInit, OnDestroy {
       session_id: this.sessionId,
       customer_name: this.customerName() || undefined,
       pin: this.currentPin || undefined,
+      staff_access: this.staffAccess ?? undefined,
       latitude,
       longitude
     }).subscribe({

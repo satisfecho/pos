@@ -561,16 +561,16 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
       : this.translate.instant('KITCHEN_DISPLAY.TITLE')
   );
 
-  /** Orders that are active and have at least one item (pending/preparing) in this view's category; items filtered by category. */
+  /** Orders that are active (including paid but not yet delivered) and have at least one item not delivered in this view's category; items filtered by category. */
   activeOrders = computed(() => {
     const view = this.viewMode();
     const category = VIEW_CATEGORY[view] ?? '';
     const list = this.orders().filter((o) => {
-      if (!['pending', 'preparing', 'ready', 'partially_delivered'].includes(o.status)) return false;
+      if (!['pending', 'preparing', 'ready', 'partially_delivered', 'paid'].includes(o.status)) return false;
       const items = (o.items ?? []).filter(
         (i) =>
           !i.removed_by_customer &&
-          (i.status === 'pending' || i.status === 'preparing') &&
+          (i.status === 'pending' || i.status === 'preparing' || i.status === 'ready') &&
           i.category === category
       );
       return items.length > 0;
@@ -669,21 +669,18 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
     return 'timer-green';
   }
 
-  /** Format waiting time as "Xm Ys" (updates every second via now()). */
+  /** Format waiting time with seconds (mm:ss or h:mm:ss) so it ticks every second. */
   formatWaitingTime(createdAt: string): string {
     const created = this.parseOrderDate(createdAt);
     if (!created) return '—';
     const totalSeconds = Math.floor((this.now() - created) / 1000);
-    if (totalSeconds < 0) return '0s';
-    const m = Math.floor(totalSeconds / 60);
+    if (totalSeconds < 0) return '0:00';
     const s = totalSeconds % 60;
-    if (m >= 60) {
-      const h = Math.floor(m / 60);
-      const mins = m % 60;
-      return `${h}h ${mins}m`;
-    }
-    if (m > 0) return `${m}m ${s}s`;
-    return `${s}s`;
+    const m = Math.floor(totalSeconds / 60) % 60;
+    const h = Math.floor(totalSeconds / 3600);
+    const pad = (n: number) => (n < 10 ? '0' + n : String(n));
+    if (h > 0) return `${h}:${pad(m)}:${pad(s)}`;
+    return `${m}:${pad(s)}`;
   }
 
   private parseOrderDate(dateString: string): number | null {
@@ -771,7 +768,7 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
     return Object.values(answers).join(' · ');
   }
 
-  /** Items sorted by status; for kitchen we only show pending and preparing. */
+  /** Items sorted by status; show pending, preparing, and ready (hide delivered/cancelled so paid orders stay until delivered). */
   getSortedItems(items: OrderItem[]): OrderItem[] {
     const order: Record<string, number> = {
       pending: 0,
@@ -780,10 +777,10 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
       delivered: 3,
       cancelled: 4,
     };
-    const pendingOrPreparing = [...items].filter(
-      (i) => !i.removed_by_customer && (i.status === 'pending' || i.status === 'preparing')
+    const notYetDelivered = [...items].filter(
+      (i) => !i.removed_by_customer && (i.status === 'pending' || i.status === 'preparing' || i.status === 'ready')
     );
-    return pendingOrPreparing.sort((a, b) => {
+    return notYetDelivered.sort((a, b) => {
       const aOrder = order[a.status || 'pending'] ?? 5;
       const bOrder = order[b.status || 'pending'] ?? 5;
       return aOrder - bOrder;
