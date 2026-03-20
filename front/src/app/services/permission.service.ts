@@ -37,6 +37,7 @@ export type Permission =
   | 'order:mark_paid'
   | 'order:cancel'
   | 'order:remove_item'
+  | 'order:delete'
   // Inventory
   | 'inventory:read'
   | 'inventory:write'
@@ -67,7 +68,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'reservation:read', 'reservation:write',
     'floor:read', 'floor:write',
     'order:read', 'order:update_status', 'order:item_status',
-    'order:mark_paid', 'order:cancel', 'order:remove_item',
+    'order:mark_paid', 'order:cancel', 'order:remove_item', 'order:delete',
     'billing_customer:read', 'billing_customer:write',
     'inventory:read', 'inventory:write',
     'translation:read', 'translation:write',
