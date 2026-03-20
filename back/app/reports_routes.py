@@ -49,6 +49,7 @@ def _get_revenue_items(
     orders = session.exec(
         select(models.Order)
         .where(models.Order.tenant_id == tenant_id)
+        .where(models.Order.deleted_at.is_(None))
         .where(models.Order.status.in_([s.value for s in REVENUE_STATUSES]))
         .order_by(models.Order.created_at.asc())
     ).all()

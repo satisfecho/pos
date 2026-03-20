@@ -454,6 +454,8 @@ export interface BillingCustomer {
 export interface Order {
   id: number;
   table_name: string;
+  table_id?: number | null;
+  table_token?: string | null;
   status: string;
   notes?: string;
   session_id?: string;
@@ -570,6 +572,7 @@ export interface OrderCreate {
   session_id?: string;  // Session identifier for order isolation
   customer_name?: string;  // Optional customer name
   pin?: string;  // Required PIN for table ordering
+  staff_access?: string;  // Staff link token: when valid, PIN is not required
   latitude?: number | null;  // Optional GPS latitude for location verification
   longitude?: number | null;  // Optional GPS longitude for location verification
 }
@@ -1081,6 +1084,13 @@ export class ApiService {
     return this.http.get<Order[]>(`${this.apiUrl}/orders`, params);
   }
 
+  /** Staff-only: get a short-lived token to open the public menu for a table without PIN. */
+  getStaffMenuToken(tableId: number): Observable<{ token: string; table_token: string; expires_in: number }> {
+    return this.http.get<{ token: string; table_token: string; expires_in: number }>(
+      `${this.apiUrl}/tables/${tableId}/staff-menu-token`
+    );
+  }
+
   updateOrderStatus(orderId: number, status: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/orders/${orderId}/status`, { status });
   }
@@ -1126,6 +1136,17 @@ export class ApiService {
   // Restaurant staff endpoints
   markOrderPaid(orderId: number, paymentMethod: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/orders/${orderId}/mark-paid`, { payment_method: paymentMethod });
+  }
+
+  unmarkOrderPaid(orderId: number): Observable<{ status: string; order_id: number; new_status: string }> {
+    return this.http.put<{ status: string; order_id: number; new_status: string }>(
+      `${this.apiUrl}/orders/${orderId}/unmark-paid`,
+      {}
+    );
+  }
+
+  deleteOrder(orderId: number): Observable<{ status: string; order_id: number }> {
+    return this.http.delete<{ status: string; order_id: number }>(`${this.apiUrl}/orders/${orderId}`);
   }
 
   setOrderBillingCustomer(orderId: number, billingCustomerId: number | null): Observable<{ order_id: number; billing_customer_id: number | null }> {
@@ -1195,9 +1216,13 @@ export class ApiService {
     });
   }
 
-  // Public Menu (no auth)
-  getMenu(tableToken: string): Observable<MenuResponse> {
-    return this.http.get<MenuResponse>(`${this.apiUrl}/menu/${tableToken}`);
+  // Public Menu (no auth). staffAccess: when set (from staff link), backend returns table_requires_pin false.
+  getMenu(tableToken: string, staffAccess?: string): Observable<MenuResponse> {
+    let params = new HttpParams();
+    if (staffAccess) {
+      params = params.set('staff_access', staffAccess);
+    }
+    return this.http.get<MenuResponse>(`${this.apiUrl}/menu/${tableToken}`, { params });
   }
 
   submitOrder(tableToken: string, order: OrderCreate): Observable<any> {

@@ -326,6 +326,11 @@
     "REMOVED_BY_CUSTOMER": "被顾客删除",
     "REMOVE_ITEM": "删除项目",
     "MARK_AS_PAID": "标记为已付款",
+    "UNMARK_PAID": "取消已付款",
+    "DELETE_ORDER": "删除订单",
+    "DELETE_ORDER_CONFIRM": "从列表和账务（报表）中移除此订单？它将不再显示在任何地方。此操作无法撤销。",
+    "DELETE_ORDER_DONE": "订单已移除",
+    "DELETE_ORDER_FAILED": "删除订单失败",
     "MARK_ORDER_AS_PAID": "将订单标记为已付款",
     "PAYMENT_METHOD": "支付方式",
     "CASH": "现金",
@@ -720,6 +725,7 @@
     "TRANSLATIONS_SUBTITLE": "选择您的首选语言",
     "CONTACT_INFO_SUBTITLE": "管理餐厅联系信息",
     "OPENING_HOURS_SUBTITLE": "配置餐厅营业时间",
+    "RESERVATION_PREPAYMENT_HINT": "确认预订时收取的金额（分）。设为 0 可禁用。",
     "PAYMENT_SETTINGS_SUBTITLE": "配置支付方式"
   },
   "PAYMENTS": {

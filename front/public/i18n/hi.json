@@ -326,6 +326,11 @@
     "REMOVED_BY_CUSTOMER": "ग्राहक द्वारा हटाया गया",
     "REMOVE_ITEM": "आइटम हटाएं",
     "MARK_AS_PAID": "भुगतान के रूप में चिह्नित करें",
+    "UNMARK_PAID": "भुगतान अचिह्नित करें",
+    "DELETE_ORDER": "ऑर्डर हटाएं",
+    "DELETE_ORDER_CONFIRM": "इस ऑर्डर को सूची और बुक-कीपिंग (रिपोर्ट) से हटाएं? यह कहीं दिखाई नहीं देगा। इसे पूर्ववत नहीं किया जा सकता।",
+    "DELETE_ORDER_DONE": "ऑर्डर हटा दिया गया",
+    "DELETE_ORDER_FAILED": "ऑर्डर हटाने में विफल",
     "MARK_ORDER_AS_PAID": "ऑर्डर को भुगतान के रूप में चिह्नित करें",
     "PAYMENT_METHOD": "भुगतान विधि",
     "CASH": "नकद",
@@ -720,7 +725,8 @@
     "TRANSLATIONS_SUBTITLE": "अपनी पसंदीदा भाषा चुनें",
     "CONTACT_INFO_SUBTITLE": "रेस्तरां संपर्क जानकारी प्रबंधित करें",
     "OPENING_HOURS_SUBTITLE": "रेस्तरां खुलने का समय कॉन्फ़िगर करें",
-    "PAYMENT_SETTINGS_SUBTITLE": "भुगतान विधियां कॉन्फ़िगर करें"
+    "PAYMENT_SETTINGS_SUBTITLE": "भुगतान विधियां कॉन्फ़िगर करें",
+    "RESERVATION_PREPAYMENT_HINT": "ग्राहक द्वारा पुष्टि पर लिया जाने वाला सेंट में राशि। अक्षम करने के लिए 0 सेट करें।"
   },
   "PAYMENTS": {
     "PAYMENT": "भुगतान",

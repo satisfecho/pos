@@ -447,6 +447,9 @@ class Reservation(TenantMixin, table=True):
     client_fingerprint: str | None = Field(default=None, max_length=256)
     client_screen_width: int | None = Field(default=None)
     client_screen_height: int | None = Field(default=None)
+    # When each reminder was sent (by staff or by heartbeat); null = not sent yet
+    reminder_24h_sent_at: datetime | None = Field(default=None)
+    reminder_2h_sent_at: datetime | None = Field(default=None)
 
 
 class BillingCustomer(TenantMixin, table=True):
@@ -489,6 +492,10 @@ class Order(TenantMixin, table=True):
     location_verified: bool | None = Field(default=None)  # None=not checked, True=inside, False=outside
     flagged_for_review: bool = Field(default=False)  # Order needs staff attention
     flag_reason: str | None = Field(default=None)  # Why order was flagged
+
+    # Soft delete: exclude from orders list and book-keeping (e.g. test orders)
+    deleted_at: datetime | None = Field(default=None)  # When marked as deleted
+    deleted_by_user_id: int | None = Field(default=None, foreign_key="user.id")  # Who deleted it
     
     items: list["OrderItem"] = Relationship(back_populates="order")
     billing_customer: BillingCustomer | None = Relationship(back_populates="orders")
@@ -707,6 +714,7 @@ class OrderCreate(SQLModel):
     session_id: str | None = None  # Session identifier for order isolation
     customer_name: str | None = None  # Optional customer name
     pin: str | None = None  # Required PIN for table ordering
+    staff_access: str | None = None  # Staff link token: when valid, PIN is not required
     latitude: float | None = None  # Optional GPS latitude for location verification
     longitude: float | None = None  # Optional GPS longitude for location verification
 

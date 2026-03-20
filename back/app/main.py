@@ -499,7 +499,7 @@ def publish_order_update(tenant_id: int, order_data: dict, table_id: int | None 
 
 
 @app.on_event("startup")
-def on_startup() -> None:
+async def on_startup() -> None:
     logger.info("Starting application...")
     create_db_and_tables()
     # Run database migrations
@@ -514,6 +514,30 @@ def on_startup() -> None:
     except Exception as e:
         # Log but don't fail startup - migrations can be run manually
         logger.warning(f"Migration check failed: {e}", exc_info=True)
+    # Autonomous reservation reminder heartbeat (no cron needed)
+    from .reservation_reminder_heartbeat import reservation_reminder_heartbeat_loop
+
+    stop_heartbeat = asyncio.Event()
+    heartbeat_task = asyncio.create_task(reservation_reminder_heartbeat_loop(stop=stop_heartbeat))
+    app.state.reservation_reminder_stop = stop_heartbeat
+    app.state.reservation_reminder_task = heartbeat_task
+    logger.info("Reservation reminder heartbeat started (runs every 5 minutes)")
+
+
+@app.on_event("shutdown")
+async def on_shutdown() -> None:
+    """Cancel the reservation reminder heartbeat so it exits cleanly."""
+    stop = getattr(app.state, "reservation_reminder_stop", None)
+    task = getattr(app.state, "reservation_reminder_task", None)
+    if stop:
+        stop.set()
+    if task and not task.done():
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
+    logger.info("Reservation reminder heartbeat stopped")
 
 
 @app.get("/health")
@@ -4288,7 +4312,7 @@ def update_table(
     table_update: models.TableUpdate,
     current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_WRITE))],
     session: Session = Depends(get_session),
-) -> models.Table:
+) -> JSONResponse:
     """Update table properties including canvas layout."""
     table = session.exec(
         select(models.Table).where(
@@ -4323,7 +4347,11 @@ def update_table(
     session.add(table)
     session.commit()
     session.refresh(table)
-    return table
+    # Return JSONResponse so slowapi can inject rate-limit headers (it requires a Response instance)
+    return JSONResponse(
+        content=table.model_dump(mode="json"),
+        status_code=status.HTTP_200_OK,
+    )
 
 
 @app.delete("/tables/{table_id}")
@@ -4337,7 +4365,7 @@ def delete_table(
     current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_WRITE))],
     session: Session = Depends(get_session),
     reassign_to_table_id: int | None = Query(None, description="Reassign orders and reservations to this table before deleting"),
-) -> dict:
+) -> JSONResponse:
     table = session.exec(
         select(models.Table).where(
             models.Table.id == table_id,
@@ -4408,7 +4436,10 @@ def delete_table(
 
     session.delete(table)
     session.commit()
-    return {"status": "deleted", "id": table_id}
+    return JSONResponse(
+        content={"status": "deleted", "id": table_id},
+        status_code=status.HTTP_200_OK,
+    )
 
 
 # ============ RESERVATIONS ============
@@ -5236,6 +5267,13 @@ async def send_reservation_reminder(
             normalized = normalize_phone_to_e164(reservation.customer_phone.strip(), default_country)
             to_phone = normalized
 
+    # Mark both reminder slots as sent so the autonomous heartbeat won't send again
+    now_utc = datetime.now(timezone.utc)
+    reservation.reminder_24h_sent_at = now_utc
+    reservation.reminder_2h_sent_at = now_utc
+    session.add(reservation)
+    session.commit()
+
     return {
         "email_sent": email_sent,
         "whatsapp_sent": whatsapp_sent,
@@ -5517,7 +5555,8 @@ def get_menu(
     session: Session = Depends(get_session),
 ) -> dict:
     """Public endpoint - get menu for a table by its token."""
-    print(f"[DEBUG] Menu request for token: {table_token}")
+    if staff_access and not _verify_staff_menu_token(table_token, staff_access):
+        logger.warning("Menu staff_access token invalid or expired for table_token=%s", table_token[:8] + "...")
     # Use raw SQL to avoid SQLAlchemy model issues
     from sqlalchemy import text
 
@@ -6149,6 +6188,7 @@ def get_table_order_history(
         select(models.Order)
         .where(
             models.Order.table_id == table.id,
+            models.Order.deleted_at.is_(None),
             models.Order.status.in_([models.OrderStatus.paid, models.OrderStatus.completed]),
         )
         .order_by(models.Order.created_at.desc())
@@ -6766,6 +6806,7 @@ def list_orders(
     orders = session.exec(
         select(models.Order)
         .where(models.Order.tenant_id == current_user.tenant_id)
+        .where(models.Order.deleted_at.is_(None))
         .order_by(models.Order.created_at.desc())
     ).all()
 
@@ -6889,10 +6930,12 @@ def update_order_status(
 
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    
+    if order.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Order not found")
+
     # Update order status
     order.status = status_update.status
-    
+
     # For backward compatibility: if updating order-level status, update all active items
     # Map order status to item status
     items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order_id)).all()
@@ -6952,7 +6995,8 @@ def mark_order_paid(
     
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    
+    if order.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Order not found")
     if order.status == models.OrderStatus.paid or order.paid_at:
         raise HTTPException(status_code=400, detail="Order is already paid.")
     if order.status == models.OrderStatus.cancelled:
@@ -6985,6 +7029,86 @@ def mark_order_paid(
     }
 
 
+@app.put("/orders/{order_id}/unmark-paid")
+def unmark_order_paid(
+    order_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.ORDER_MARK_PAID))],
+    session: Session = Depends(get_session)
+) -> dict:
+    """Unmark order as paid (clear paid mark only; order status is restored from item statuses)."""
+    order = session.exec(
+        select(models.Order).where(
+            models.Order.id == order_id,
+            models.Order.tenant_id == current_user.tenant_id
+        )
+    ).first()
+
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.status == models.OrderStatus.cancelled:
+        raise HTTPException(status_code=400, detail="Cannot unmark a cancelled order.")
+    if order.status != models.OrderStatus.paid and order.paid_at is None:
+        raise HTTPException(status_code=400, detail="Order is not paid.")
+
+    # Clear the paid mark only
+    order.paid_at = None
+    order.paid_by_user_id = None
+    order.payment_method = None
+    # Restore workflow status from items (do not leave status as 'paid')
+    items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order_id)).all()
+    order.status = compute_order_status_from_items(list(items))
+
+    session.add(order)
+    session.commit()
+
+    table = session.exec(select(models.Table).where(models.Table.id == order.table_id)).first()
+    publish_order_update(current_user.tenant_id, {
+        "type": "status_update",
+        "order_id": order.id,
+        "table_name": table.name if table else "Unknown",
+        "status": order.status.value
+    }, table_id=order.table_id)
+
+    return {"status": "unmarked", "order_id": order.id, "new_status": order.status.value}
+
+
+@app.delete("/orders/{order_id}")
+def delete_order(
+    order_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.ORDER_DELETE))],
+    session: Session = Depends(get_session)
+) -> dict:
+    """Soft-delete an order: remove from orders list and from book-keeping (reports). For test/cleanup."""
+    order = session.exec(
+        select(models.Order).where(
+            models.Order.id == order_id,
+            models.Order.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.deleted_at is not None:
+        raise HTTPException(status_code=400, detail="Order is already deleted")
+
+    order.deleted_at = datetime.now(timezone.utc)
+    order.deleted_by_user_id = current_user.id
+    # Unlink from table so it no longer appears as active order
+    tables = session.exec(
+        select(models.Table).where(
+            models.Table.tenant_id == current_user.tenant_id,
+            models.Table.active_order_id == order_id,
+        )
+    ).all()
+    for table in tables:
+        table.active_order_id = None
+        session.add(table)
+    session.add(order)
+    session.commit()
+    return {"status": "deleted", "order_id": order.id}
+
+
 @app.put("/orders/{order_id}/billing-customer")
 def set_order_billing_customer(
     order_id: int,
@@ -7000,6 +7124,8 @@ def set_order_billing_customer(
         )
     ).first()
     if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.deleted_at is not None:
         raise HTTPException(status_code=404, detail="Order not found")
     customer_id = body.billing_customer_id
     if customer_id is not None:
@@ -7490,7 +7616,7 @@ def remove_order_item_staff(
     reason: str | None = Query(None, description="Required reason when removing ready items"),
     session: Session = Depends(get_session)
 ) -> dict:
-    """Remove order item (restaurant staff) - requires reason if item is ready."""
+    """Remove order item (restaurant staff). Reason required for ready/delivered items (audit/tax)."""
     order = session.exec(
         select(models.Order).where(
             models.Order.id == order_id,
@@ -7511,16 +7637,12 @@ def remove_order_item_staff(
     if not item:
         raise HTTPException(status_code=404, detail="Order item not found")
     
-    # Validation: Cannot remove delivered items
-    if item.status == models.OrderItemStatus.delivered:
-        raise HTTPException(status_code=400, detail="Cannot remove delivered items")
-    
-    # Validation: If item is ready, reason is required
-    if item.status == models.OrderItemStatus.ready:
-        if not reason:
+    # Validation: Reason required when removing ready or delivered items (audit/tax)
+    if item.status in (models.OrderItemStatus.ready, models.OrderItemStatus.delivered):
+        if not reason or not reason.strip():
             raise HTTPException(
                 status_code=400,
-                detail="Reason is required when removing ready items (required for tax reporting)"
+                detail="Reason is required when removing ready or delivered items (for audit and tax reporting)"
             )
     
     # Soft delete

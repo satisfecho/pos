@@ -53,6 +53,7 @@ class Permission(str, Enum):
     ORDER_MARK_PAID = "order:mark_paid"
     ORDER_CANCEL = "order:cancel"
     ORDER_REMOVE_ITEM = "order:remove_item"
+    ORDER_DELETE = "order:delete"  # Soft-delete: remove from list and book-keeping
     
     # Inventory
     INVENTORY_READ = "inventory:read"
@@ -109,6 +110,7 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         Permission.ORDER_MARK_PAID,
         Permission.ORDER_CANCEL,
         Permission.ORDER_REMOVE_ITEM,
+        Permission.ORDER_DELETE,
         Permission.BILLING_CUSTOMER_READ,
         Permission.BILLING_CUSTOMER_WRITE,
         # Inventory

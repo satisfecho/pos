@@ -1883,6 +1883,20 @@ export class OrdersComponent implements OnInit, OnDestroy {
           return `<button type="button" class="btn-factura-row" data-order-id="${id}" title="${safeTitle}" style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;cursor:pointer;background:#fff;color:#333;border:1px solid #ddd;border-radius:8px;">${icon}</button>`;
         },
       },
+      ...(this.canDeleteOrder() ? [{
+        headerName: '',
+        width: 56,
+        sortable: false,
+        filter: false,
+        cellRenderer: (params: ICellRendererParams) => {
+          const id = params.data?.id;
+          if (id == null) return '';
+          const deleteTitle = this.translate.instant('ORDERS.DELETE_ORDER');
+          const safeDeleteTitle = (deleteTitle || 'Delete').replace(/"/g, '&quot;');
+          const deleteIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
+          return `<button type="button" class="btn-delete-order-row" data-order-id="${id}" title="${safeDeleteTitle}" style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;cursor:pointer;background:#fff;color:#666;border:1px solid #ddd;border-radius:8px;">${deleteIcon}</button>`;
+        },
+      }] : []),
     ];
   }
 
@@ -2211,6 +2225,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLElement;
     const facturaBtn = target.closest('.btn-factura-row');
     const editBtn = target.closest('.btn-edit-order-row');
+    const deleteBtn = target.closest('.btn-delete-order-row');
     if (editBtn) {
       const id = +(editBtn.getAttribute('data-order-id') || 0);
       const order = this.orders().find(o => o.id === id);
@@ -2221,6 +2236,12 @@ export class OrdersComponent implements OnInit, OnDestroy {
       const id = +(facturaBtn.getAttribute('data-order-id') || 0);
       const order = this.orders().find(o => o.id === id);
       if (order) this.openFacturaModal(order);
+      return;
+    }
+    if (deleteBtn) {
+      const id = +(deleteBtn.getAttribute('data-order-id') || 0);
+      const order = this.orders().find(o => o.id === id);
+      if (order) this.deleteOrder(order);
     }
   }
 
