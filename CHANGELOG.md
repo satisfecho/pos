@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Orders – pre-pay (mark as paid before delivery)**: Staff can mark an order as paid on `/staff/orders` even when not all items are delivered (e.g. customer pays while kitchen is still preparing). Backend: `PUT /orders/{id}/mark-paid` no longer requires order status “completed”; it only rejects already-paid or cancelled orders. Frontend: “Mark as paid” appears in the order status dropdown for any non-paid, non-cancelled order (pending, preparing, ready, partially_delivered, completed).
+- **Docs – printing when backend is outside restaurant WiFi**: `docs/PRINTING.md` describes the print-agent-on-LAN approach, options (WebSocket bridge, browser extension + native host, Node/Python agent), and references (WebApp Hardware Bridge, Ninja Printer, node-thermal-printer, etc.).
+
 - **Tax system (IVA)**: Tax-inclusive pricing with per-line and per-rate totals on invoices. Backend: `Tax` model (name, rate_percent, valid_from, valid_to), tenant default tax, product-level tax override; order items store applied tax snapshot (tax_id, tax_rate_percent, tax_amount_cents). Spanish IVA: 10% (food/drinks immediate consumption), 21% (services), 0% (exempt). Settings: default tax dropdown, Taxes tab with CRUD; Products: tax override dropdown. Seed: `back/app/seeds/seed_spanish_taxes.py`. Migrations: `20260318100000_add_tax_system.sql`, product availability dates, provider tenant_id, `20260318130000_ensure_provider_tenant_id.sql` (idempotent repair).
 - **Smoke test – sidebar navigation**: `test-settings-logo-upload.mjs` now visits every sidebar link after the logo flow and asserts no 5xx responses (catalog, tenant-products, tables, etc.).
 

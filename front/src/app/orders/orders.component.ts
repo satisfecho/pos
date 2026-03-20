@@ -144,7 +144,7 @@ ModuleRegistry.registerModules([
                                   }
                                 </div>
                               }
-                              @if (order.status === 'completed' && canMarkPaid()) {
+                              @if (order.status !== 'paid' && order.status !== 'cancelled' && canMarkPaid()) {
                                 <div class="dropdown-section">
                                   <button 
                                     class="dropdown-item forward"
@@ -268,6 +268,14 @@ ModuleRegistry.registerModules([
                         }
                       </div>
                       <div class="order-actions">
+                        @if (order.table_id != null && order.table_token) {
+                          <button type="button" class="btn btn-menu-link" (click)="openMenuForOrder(order)" [title]="'ORDERS.OPEN_MENU_LINK' | translate">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M18 13v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6"/><polyline points="15 3 21 3 21 9"/><polyline points="9 15 3 15 3 21"/>
+                            </svg>
+                            {{ 'ORDERS.OPEN_MENU' | translate }}
+                          </button>
+                        }
                         <button type="button" class="btn btn-print" (click)="openFacturaModal(order)" [title]="'CUSTOMERS.PRINT_FACTURA' | translate">
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
@@ -403,6 +411,14 @@ ModuleRegistry.registerModules([
                           }
                         </div>
                         <div class="order-actions">
+                          @if (order.table_id != null && order.table_token) {
+                            <button type="button" class="btn btn-menu-link" (click)="openMenuForOrder(order)" [title]="'ORDERS.OPEN_MENU_LINK' | translate">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6"/><polyline points="15 3 21 3 21 9"/><polyline points="9 15 3 15 3 21"/>
+                              </svg>
+                              {{ 'ORDERS.OPEN_MENU' | translate }}
+                            </button>
+                          }
                           <button type="button" class="btn btn-print" (click)="openFacturaModal(order)" [title]="'CUSTOMERS.PRINT_FACTURA' | translate">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                               <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
@@ -898,12 +914,14 @@ ModuleRegistry.registerModules([
     .btn-secondary:hover {
       background: #57534e;
     }
-    .btn-print {
+    .btn-print,
+    .btn-menu-link {
       background: var(--color-surface);
       color: var(--color-text);
       border: 1px solid var(--color-border);
     }
-    .btn-print:hover {
+    .btn-print:hover,
+    .btn-menu-link:hover {
       background: var(--color-bg);
     }
     .btn-danger {
@@ -1748,6 +1766,17 @@ export class OrdersComponent implements OnInit, OnDestroy {
         console.error('Failed to load tenant settings:', err);
         // Default to $ if settings can't be loaded
       }
+    });
+  }
+
+  openMenuForOrder(order: Order) {
+    if (order.table_id == null || order.table_token == null) return;
+    this.api.getStaffMenuToken(order.table_id).subscribe({
+      next: (res) => {
+        const url = `${window.location.origin}/menu/${res.table_token}?staff_access=${encodeURIComponent(res.token)}`;
+        window.open(url, '_blank');
+      },
+      error: () => this.showToast(this.translate.instant('ORDERS.OPEN_MENU_ERROR') || 'Could not open menu link', 'error')
     });
   }
 

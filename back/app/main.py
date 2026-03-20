@@ -1,7 +1,11 @@
 import asyncio
+import base64
+import hashlib
+import hmac
 import json
 import logging
 import os
+import time as _time
 from datetime import date, timedelta, datetime, time, timezone
 
 import requests
@@ -592,6 +596,49 @@ def _is_take_away_table(table) -> bool:
     if not table or not getattr(table, "name", None):
         return False
     return (table.name or "").strip().lower() in TAKE_AWAY_TABLE_NAMES
+
+
+# Staff menu link: time-limited signed token so staff can open public menu without PIN
+STAFF_MENU_TOKEN_EXPIRY = 3600  # 1 hour
+
+
+def _sign_staff_menu_token(table_token: str) -> str:
+    """Produce a signed token for staff to open menu for this table without PIN."""
+    expiry = int(_time.time()) + STAFF_MENU_TOKEN_EXPIRY
+    payload = f"{table_token}:{expiry}"
+    sig = hmac.new(
+        settings.secret_key.encode("utf-8"),
+        payload.encode("utf-8"),
+        hashlib.sha256,
+    ).digest()
+    return base64.urlsafe_b64encode(f"{payload}".encode("utf-8") + b"." + sig).decode("ascii").rstrip("=")
+
+
+def _verify_staff_menu_token(table_token: str, token: str) -> bool:
+    """Verify staff_access token for this table_token; returns True if valid and not expired."""
+    if not token or not table_token:
+        return False
+    try:
+        # Restore padding if stripped
+        padded = token + "=" * (4 - len(token) % 4) if len(token) % 4 else token
+        raw = base64.urlsafe_b64decode(padded)
+        payload_b, _, sig_b = raw.rpartition(b".")
+        if not payload_b or not sig_b:
+            return False
+        payload = payload_b.decode("utf-8")
+        tt, exp_str = payload.split(":", 1)
+        if tt != table_token:
+            return False
+        if int(exp_str) < _time.time():
+            return False
+        expected = hmac.new(
+            settings.secret_key.encode("utf-8"),
+            payload.encode("utf-8"),
+            hashlib.sha256,
+        ).digest()
+        return hmac.compare_digest(sig_b, expected)
+    except Exception:
+        return False
 
 
 def _take_away_table_token(session: Session, tenant_id: int) -> str | None:
@@ -5412,6 +5459,29 @@ def assign_waiter_to_table(
     })
 
 
+@app.get("/tables/{table_id}/staff-menu-token")
+def get_staff_menu_token(
+    table_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.ORDER_READ))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Return a short-lived token for opening the public menu for this table without PIN (staff link)."""
+    table = session.exec(
+        select(models.Table).where(
+            models.Table.id == table_id,
+            models.Table.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not table:
+        raise HTTPException(status_code=404, detail="Table not found")
+    token = _sign_staff_menu_token(table.token)
+    return {
+        "token": token,
+        "table_token": table.token,
+        "expires_in": STAFF_MENU_TOKEN_EXPIRY,
+    }
+
+
 # ============ INTERNAL VALIDATION (for ws-bridge) ============
 
 @app.get("/internal/validate-table/{table_token}")
@@ -5442,6 +5512,7 @@ def validate_table_token(
 def get_menu(
     request: Request,
     table_token: str,
+    staff_access: str | None = Query(None, description="Staff link token: when valid, PIN is not required"),
     lang: str = Depends(_get_requested_language),
     session: Session = Depends(get_session),
 ) -> dict:
@@ -5903,10 +5974,11 @@ def get_menu(
         if tenant
         else False,
         "tenant_public_background_color": tenant.public_background_color if tenant else None,
-        # Table session status (take-away/home ordering tables do not require PIN)
+        # Table session status (take-away/home ordering tables do not require PIN; staff_access also skips PIN)
         "table_is_active": table.is_active,
         "table_requires_pin": False
         if _is_take_away_table(table)
+        or (staff_access and _verify_staff_menu_token(table.token, staff_access))
         else (table.is_active and table.order_pin is not None),
         "active_order_id": table.active_order_id,
         "products": products_list,
@@ -6196,8 +6268,9 @@ def create_order(
             detail="Table is not accepting orders. Please ask staff to activate the table."
         )
 
-    # Validate PIN (with rate limiting). Skip for take-away/home ordering tables.
-    if not _is_take_away_table(table):
+    # Validate PIN (with rate limiting). Skip for take-away/home ordering tables or valid staff_access.
+    staff_skip_pin = order_data.staff_access and _verify_staff_menu_token(table_token, order_data.staff_access)
+    if not _is_take_away_table(table) and not staff_skip_pin:
         redis_conn = get_redis()
         attempts_key = None
         lock_key = None
@@ -6763,6 +6836,8 @@ def list_orders(
         result.append({
             "id": order.id,
             "table_name": table.name if table else "Unknown",
+            "table_id": table.id if table else None,
+            "table_token": table.token if table else None,
             "status": computed_status.value,
             "notes": order.notes,
             "session_id": order.session_id,
@@ -6878,20 +6953,12 @@ def mark_order_paid(
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     
-    # Use computed status from items so we don't get stuck when stored order.status is out of sync
-    # (e.g. order shows "completed" in UI because list_orders returns computed status, but DB was never updated)
-    all_items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order_id)).all()
-    computed_status = compute_order_status_from_items(all_items)
-    if computed_status != models.OrderStatus.completed:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Order must be completed (all items delivered) before marking as paid. Current status: {computed_status.value}"
-        )
-    # Sync stored order status if it was out of sync
-    if order.status != models.OrderStatus.completed:
-        order.status = models.OrderStatus.completed
-        session.add(order)
+    if order.status == models.OrderStatus.paid or order.paid_at:
+        raise HTTPException(status_code=400, detail="Order is already paid.")
+    if order.status == models.OrderStatus.cancelled:
+        raise HTTPException(status_code=400, detail="Cannot mark a cancelled order as paid.")
     
+    # Allow pre-pay: staff can mark as paid even when not all items are delivered (e.g. customer pays before food is ready).
     # Mark as paid
     order.status = models.OrderStatus.paid
     order.paid_at = datetime.now(timezone.utc)
