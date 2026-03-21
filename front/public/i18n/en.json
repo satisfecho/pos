@@ -890,7 +890,13 @@
     "SMTP_PASSWORD_PLACEHOLDER": "Leave blank to keep current",
     "EMAIL_FROM": "From email address",
     "EMAIL_FROM_NAME": "From name",
-    "EMAIL_FROM_PLACEHOLDER": "e.g. Your Restaurant Name"
+    "EMAIL_FROM_PLACEHOLDER": "e.g. Your Restaurant Name",
+    "RESERVATION_CONFIRMATION_EMAIL_TITLE": "Reservation confirmation email",
+    "RESERVATION_CONFIRMATION_EMAIL_DESC": "Write the email in plain text. Insert values by wrapping an allowed name in double curly braces (for example customer_name). Only those names are filled in—no code or scripts. Leave blank to use the built-in default.",
+    "RESERVATION_CONFIRMATION_SUBJECT": "Email subject",
+    "RESERVATION_CONFIRMATION_SUBJECT_PLACEHOLDER": "e.g. We have reserved a table for you",
+    "RESERVATION_CONFIRMATION_BODY": "Email body",
+    "RESERVATION_CONFIRMATION_BODY_HINT": "Allowed names (wrap each in double curly braces): restaurant_name, customer_name, date, time, party_size, reservation_url, reservation_link_block_html (clickable link in HTML emails; empty if there is no self-service link), cancellation_policy, prepayment_text, prepayment_notice, dress_code, arrival_note, restaurant_phone, restaurant_email. Use cancellation_policy and similar to pull text from the Reservations settings section."
   },
   "PAYMENTS": {
     "PAYMENT": "Payment",

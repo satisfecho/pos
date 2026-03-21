@@ -59,6 +59,10 @@ After the code change that added logging, you will see one of:
 - **Public** bookings also get a **token**; the confirmation email may include a **view/cancel** link when `public_app_base_url` is set. Staff-created reservations have no token, so the email has details only (no self-service link).
 - **SMTP** must be configured for the tenant (Settings → Email) or globally in `config.env`, or sending is skipped with a log line.
 
+### Custom subject and body (Settings → Email)
+
+Tenants can set **plain-text** subject and body with `{{placeholders}}` (e.g. `{{customer_name}}`, `{{cancellation_policy}}`, `{{reservation_link_block_html}}`). Only allowed names are replaced; this is not a full template engine (no code execution). See `back/app/reservation_email_template.py` for the allowlist. Leave both fields empty to use the built-in default wording.
+
 ## 4. Quick check: tenant SMTP (or use full diagnostic above)
 
 The reservation confirmation flow uses **tenant SMTP** if the tenant has it; otherwise it falls back to **global** `config.env` SMTP. If neither is set, the backend skips sending and logs "Reservation confirmation skipped".

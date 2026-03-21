@@ -545,6 +545,9 @@ export interface TenantSettings {
   smtp_password?: string | null;
   email_from?: string | null;
   email_from_name?: string | null;
+  /** Plain-text subject/body with {{placeholders}} for reservation confirmations */
+  reservation_confirmation_email_subject?: string | null;
+  reservation_confirmation_email_body?: string | null;
   /** Background color for public-facing pages (hex, e.g. #1E22AA for RAL5002 Azul). */
   public_background_color?: string | null;
   /** Reservation options (pre-payment, policies, reminders) */

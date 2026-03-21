@@ -899,6 +899,19 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                     <label for="email_from_name">{{ 'SETTINGS.EMAIL_FROM_NAME' | translate }}</label>
                     <input type="text" id="email_from_name" [(ngModel)]="formData.email_from_name" name="email_from_name" [placeholder]="'SETTINGS.EMAIL_FROM_PLACEHOLDER' | translate" />
                   </div>
+                  <div class="section-header" style="margin-top: 1.5rem;">
+                    <h3>{{ 'SETTINGS.RESERVATION_CONFIRMATION_EMAIL_TITLE' | translate }}</h3>
+                    <p>{{ 'SETTINGS.RESERVATION_CONFIRMATION_EMAIL_DESC' | translate }}</p>
+                  </div>
+                  <div class="form-group">
+                    <label for="reservation_confirmation_email_subject">{{ 'SETTINGS.RESERVATION_CONFIRMATION_SUBJECT' | translate }}</label>
+                    <input type="text" id="reservation_confirmation_email_subject" [(ngModel)]="formData.reservation_confirmation_email_subject" name="reservation_confirmation_email_subject" [placeholder]="'SETTINGS.RESERVATION_CONFIRMATION_SUBJECT_PLACEHOLDER' | translate" />
+                  </div>
+                  <div class="form-group">
+                    <label for="reservation_confirmation_email_body">{{ 'SETTINGS.RESERVATION_CONFIRMATION_BODY' | translate }}</label>
+                    <textarea id="reservation_confirmation_email_body" [(ngModel)]="formData.reservation_confirmation_email_body" name="reservation_confirmation_email_body" rows="14"></textarea>
+                    <p class="hint">{{ 'SETTINGS.RESERVATION_CONFIRMATION_BODY_HINT' | translate }}</p>
+                  </div>
                 </div>
               }
 
@@ -2084,6 +2097,8 @@ export class SettingsComponent implements OnInit {
     smtp_password: null,
     email_from: null,
     email_from_name: null,
+    reservation_confirmation_email_subject: null,
+    reservation_confirmation_email_body: null,
     public_background_color: null,
     reservation_prepayment_cents: null,
     reservation_prepayment_text: null,
@@ -2150,6 +2165,8 @@ export class SettingsComponent implements OnInit {
           smtp_password: null,
           email_from: settings.email_from ?? null,
           email_from_name: settings.email_from_name ?? null,
+          reservation_confirmation_email_subject: settings.reservation_confirmation_email_subject ?? null,
+          reservation_confirmation_email_body: settings.reservation_confirmation_email_body ?? null,
           public_background_color: settings.public_background_color ?? null,
           reservation_prepayment_cents: settings.reservation_prepayment_cents ?? null,
           reservation_prepayment_text: settings.reservation_prepayment_text ?? null,
