@@ -50,4 +50,5 @@ dist/
 
 # IDEs
 .idea/
+.cursor/
 

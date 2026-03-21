@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService, Provider, ProviderCreate, ProviderProduct, ProviderProductCreate, Tax, TenantSettings } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
@@ -1963,6 +1963,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 export class SettingsComponent implements OnInit {
   private api = inject(ApiService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private translate = inject(TranslateService);
   private sanitizer = inject(DomSanitizer);
 
@@ -2105,6 +2106,16 @@ export class SettingsComponent implements OnInit {
       this.allTimezones = [];
     }
     this.filteredTimezones = this.allTimezones;
+    const section = this.route.snapshot.queryParams['section'];
+    if (section === 'reservations') {
+      this.activeSection.set('reservations');
+    }
+    this.route.queryParams.subscribe((params) => {
+      const s = params['section'];
+      if (s === 'reservations') {
+        this.activeSection.set('reservations');
+      }
+    });
     this.loadSettings();
   }
 

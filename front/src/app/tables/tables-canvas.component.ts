@@ -25,10 +25,10 @@ interface TableShape {
     <app-sidebar>
       <div class="canvas-container">
         <!-- Header: same options as /tables -->
-        <div class="page-header">
+        <div class="page-header" data-testid="tables-canvas-header">
           <div class="header-left">
             <h1>{{ 'TABLES.TITLE' | translate }}</h1>
-            <span class="btn btn-ghost btn-sm active" aria-current="page">
+            <span class="btn btn-ghost btn-sm active" aria-current="page" data-testid="view-option-floor-plan">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
                 <line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>
@@ -36,23 +36,16 @@ interface TableShape {
               </svg>
               {{ 'TABLES.FLOOR_PLAN' | translate }}
             </span>
-            <a routerLink="/tables" class="btn btn-ghost btn-sm">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-                <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
-              </svg>
-              {{ 'TABLES.LIST_VIEW' | translate }}
-            </a>
-            @if (floors().length > 0 && tables().length > 0) {
-              <div class="view-toggle">
-                <a routerLink="/tables" class="btn btn-ghost btn-sm" [title]="'TABLES.VIEW_TILES' | translate">
+            @if (floors().length > 0) {
+              <div class="view-toggle" data-testid="view-toggle">
+                <a routerLink="/tables" class="btn btn-ghost btn-sm" [title]="'TABLES.VIEW_TILES' | translate" data-testid="view-option-tiles">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
                     <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
                   </svg>
                   {{ 'TABLES.VIEW_TILES' | translate }}
                 </a>
-                <a routerLink="/tables" class="btn btn-ghost btn-sm" [title]="'TABLES.VIEW_TABLE' | translate">
+                <a routerLink="/tables" class="btn btn-ghost btn-sm" [title]="'TABLES.VIEW_TABLE' | translate" data-testid="view-option-table">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <rect x="3" y="3" width="18" height="18" rx="1"/>
                     <line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/>
@@ -68,7 +61,7 @@ interface TableShape {
               <span class="unsaved-indicator">{{ 'TABLES.UNSAVED_CHANGES' | translate }}</span>
             }
             @if (floors().length > 0) {
-              <button type="button" class="btn btn-primary" (click)="focusAddTablePalette()" [title]="'TABLES.ADD_TABLE' | translate">
+              <button type="button" class="btn btn-primary" (click)="focusAddTablePalette()" [title]="'TABLES.ADD_TABLE' | translate" data-testid="tables-canvas-add-table-btn">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
@@ -567,12 +560,17 @@ interface TableShape {
       gap: var(--space-3);
     }
 
-    /* Page Header - matches app style */
+    /* Page Header - matches app style; sticky so view options stay visible when scrolling to shape palette */
     .page-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: var(--space-4);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: var(--color-bg);
+      padding: var(--space-2) 0;
     }
 
     .header-left {

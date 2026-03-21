@@ -14,6 +14,7 @@
     "test:register": "node scripts/test-register.mjs",
     "test:demo-data": "node scripts/test-demo-data.mjs",
     "test:tables-page": "node scripts/test-tables-page.mjs",
+    "test:tables-canvas-view-options": "node scripts/test-tables-canvas-view-options.mjs",
     "test:landing-version": "node scripts/test-landing-version.mjs",
     "test:landing-provider-links": "node scripts/test-landing-provider-links.mjs",
     "test:provider-register": "node scripts/test-provider-register.mjs",
@@ -34,6 +35,7 @@
     "test:rate-limit": "node scripts/test-rate-limit.mjs",
     "test:rate-limit-puppeteer": "node scripts/test-rate-limit-puppeteer.mjs",
     "test:book-whatsapp": "node scripts/test-book-whatsapp-puppeteer.mjs",
+    "test:reservation-create": "node scripts/test-reservation-create.mjs",
     "capture-screenshots": "node scripts/capture-screenshots.mjs"
   },
   "prettier": {

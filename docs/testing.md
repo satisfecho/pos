@@ -56,7 +56,18 @@ node front/scripts/debug-reservations.mjs
 |--------|---------|
 | `front/scripts/debug-reservations-public.mjs` | Public booking flow; no credentials. |
 | `front/scripts/debug-reservations.mjs` | Staff reservations flow; needs `LOGIN_EMAIL` / `LOGIN_PASSWORD`. |
+| `front/scripts/test-reservation-create.mjs` | Create one public reservation **with email** (for deploy/amvara9). Use after deploy to trigger confirmation email; check backend logs for "Reservation confirmation email sent" or "skipped". |
 | `scripts/run-reservation-tests.sh` | Runs public (and optionally staff) reservation tests on each URL in `BASE_URLS`. |
+
+**Create test reservation (e.g. after deploy to amvara9):**
+
+```bash
+node front/scripts/test-reservation-create.mjs
+# amvara9 headless (sends confirmation to ralf.roeber@amvara.de by default):
+#   BASE_URL=https://www.satisfecho.de HEADLESS=1 node front/scripts/test-reservation-create.mjs
+# Override email: TEST_EMAIL=you@your-domain.com node front/scripts/test-reservation-create.mjs
+# Or: npm run test:reservation-create --prefix front
+```
 
 ---
 
@@ -129,6 +140,16 @@ npm run test:tables-page --prefix front
 
 - **Env:** `BASE_URL`, `LOGIN_EMAIL`, `LOGIN_PASSWORD`, `HEADLESS`.
 - Asserts: on `/tables` after login; when view toggle exists, Table view shows `.tables-data-table` with header columns.
+
+**Tables canvas – view options and switching Floor plan / Tiles / Table:**
+
+```bash
+npm run test:tables-canvas-view-options --prefix front
+# Or: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 node front/scripts/test-tables-canvas-view-options.mjs
+```
+
+- **Env:** `BASE_URL`, `LOGIN_EMAIL`/`LOGIN_PASSWORD` or `DEMO_LOGIN_EMAIL`/`DEMO_LOGIN_PASSWORD` (from `.env`). `TENANT_ID` (default `1`). Demo tables must be seeded for tenant 1. `HEADLESS`.
+- **Asserts:** Login (tenant=1), open `/tables/canvas`; three view options visible; click “Add table”, options stay visible; switch to **Tiles** (click Tiles link → `/tables`, tiles view `.table-grid`); switch to **Table** (click Table button → `.tables-data-table`); switch back to **Floor plan** (click Floor plan link → `/tables/canvas`); switch to Table list again (click Table link from canvas → `/tables` with table view).
 
 ---
 
@@ -326,6 +347,7 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `test:register` | `scripts/test-register.mjs` |
 | `test:demo-data` | `scripts/test-demo-data.mjs` |
 | `test:tables-page` | `scripts/test-tables-page.mjs` |
+| `test:tables-canvas-view-options` | `scripts/test-tables-canvas-view-options.mjs` (Tables: switch Floor plan → Tiles → Table → Floor plan → Table; .env demo user, tenant=1) |
 | `test:landing-version` | `scripts/test-landing-version.mjs` |
 | `test:landing-provider-links` | `scripts/test-landing-provider-links.mjs` |
 | `test:provider-register` | `scripts/test-provider-register.mjs` |

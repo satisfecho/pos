@@ -139,6 +139,9 @@ class Tenant(SQLModel, table=True):
     smtp_password: str | None = Field(default=None)
     email_from: str | None = Field(default=None)
     email_from_name: str | None = Field(default=None)
+    # Reservation confirmation email (plain text with {{placeholders}}; see reservation_email_template.py)
+    reservation_confirmation_email_subject: str | None = Field(default=None)
+    reservation_confirmation_email_body: str | None = Field(default=None)
 
     # Working plan: notify owner when staff update the schedule
     working_plan_updated_at: datetime | None = Field(default=None)
@@ -816,6 +819,8 @@ class TenantUpdate(SQLModel):
     smtp_password: str | None = None
     email_from: str | None = None
     email_from_name: str | None = None
+    reservation_confirmation_email_subject: str | None = None
+    reservation_confirmation_email_body: str | None = None
 
     # Public-facing pages background color (hex, e.g. #1E22AA for RAL5002 Azul)
     public_background_color: str | None = None

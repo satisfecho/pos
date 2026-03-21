@@ -14,13 +14,14 @@ COMPOSE_OPTS="--env-file config.env -f docker-compose.yml -f docker-compose.prod
 docker compose $COMPOSE_OPTS exec back python scripts/diagnose_reservation_email.py
 ```
 
-This prints: global SMTP status, **per-tenant SMTP** (the confirmation flow uses **tenant** SMTP only; no global fallback), recent reservations with email, and what to check next. Share this output to investigate further.
+This prints: global SMTP status, **per-tenant SMTP** (confirmations use tenant SMTP if set, else global `config.env`), recent reservations with email, and what to check next. Share this output to investigate further.
 
-**Create a test reservation (Puppeteer)** after deploy to trigger the confirmation flow and then inspect backend logs:
+**Create a test reservation (Puppeteer)** after deploy to trigger the confirmation flow; the reservation email defaults to **ralf.roeber@amvara.de** so you can verify the mail in the inbox. Then inspect backend logs:
 
 ```bash
 # From repo root (or front/)
 BASE_URL=https://www.satisfecho.de HEADLESS=1 node front/scripts/test-reservation-create.mjs
+# Override email: TEST_EMAIL=you@your-domain.com node front/scripts/test-reservation-create.mjs
 # Or: npm run test:reservation-create --prefix front
 ```
 
@@ -47,16 +48,16 @@ After the code change that added logging, you will see one of:
 | Log message | Meaning |
 |-------------|--------|
 | `Reservation confirmation skipped: tenant_id=... has no SMTP configured` | **Most common:** The tenant (e.g. Cobalto) has no Email settings. Configure **Settings → Email** in the app (SMTP host, port, user, password) for the tenant, or set global `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` in `config.env` on the server. |
-| `Reservation confirmation skipped: reservation_id=... has no customer_email` | The booking was created without an email address (or it was a staff-created reservation; confirmations are only sent for **public** bookings with email). |
+| `Reservation confirmation skipped: reservation_id=... has no customer_email` | The booking was created without an email address. |
 | `SMTP credentials not configured (tenant or global)` | From email_service: neither tenant nor global SMTP is set. |
 | `Failed to send email to ...` | SMTP connection or auth failed (wrong host/port/credentials, firewall, TLS issue). Check the exception text in the same log line. |
 | `Reservation confirmation email sent for reservation_id=...` | Email was sent successfully. |
 
 ## 3. When is the confirmation email sent?
 
-- Only for **public** bookings (no staff logged in when creating the reservation).
-- The reservation must have a **customer email** and a **token** (public bookings get a token automatically).
-- The **tenant** must have **SMTP configured** (Settings → Email: SMTP host, port, user, password), or the server must have global SMTP in `config.env`.
+- Whenever a reservation is **created** with a non-empty **customer email** (staff UI or public booking).
+- **Public** bookings also get a **token**; the confirmation email may include a **view/cancel** link when `public_app_base_url` is set. Staff-created reservations have no token, so the email has details only (no self-service link).
+- **SMTP** must be configured for the tenant (Settings → Email) or globally in `config.env`, or sending is skipped with a log line.
 
 ## 4. Quick check: tenant SMTP (or use full diagnostic above)
 

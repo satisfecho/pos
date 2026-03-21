@@ -26,7 +26,7 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
         <div class="page-header">
           <div class="header-left">
             <h1>{{ 'TABLES.TITLE' | translate }}</h1>
-            <a routerLink="/tables/canvas" class="btn btn-ghost btn-sm">
+            <a routerLink="/tables/canvas" class="btn btn-ghost btn-sm" data-testid="tables-floor-plan-link">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
                 <line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>
@@ -35,15 +35,15 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
               {{ 'TABLES.FLOOR_PLAN' | translate }}
             </a>
             @if (!showForm() && tables().length > 0) {
-              <div class="view-toggle">
-                <button type="button" class="btn btn-ghost btn-sm" [class.active]="viewMode() === 'tiles'" (click)="setViewMode('tiles')" [title]="'TABLES.VIEW_TILES' | translate">
+              <div class="view-toggle" data-testid="tables-view-toggle">
+                <button type="button" class="btn btn-ghost btn-sm" [class.active]="viewMode() === 'tiles'" (click)="setViewMode('tiles')" [title]="'TABLES.VIEW_TILES' | translate" data-testid="view-mode-tiles">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
                     <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
                   </svg>
                   {{ 'TABLES.VIEW_TILES' | translate }}
                 </button>
-                <button type="button" class="btn btn-ghost btn-sm" [class.active]="viewMode() === 'table'" (click)="setViewMode('table')" [title]="'TABLES.VIEW_TABLE' | translate">
+                <button type="button" class="btn btn-ghost btn-sm" [class.active]="viewMode() === 'table'" (click)="setViewMode('table')" [title]="'TABLES.VIEW_TABLE' | translate" data-testid="view-mode-table">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <rect x="3" y="3" width="18" height="18" rx="1"/>
                     <line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/>

@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, Optional
 
 import aiosmtplib
 
+from .reservation_email_template import render_confirmation_email, wrap_html_email
 from .settings import settings
 
 if TYPE_CHECKING:
@@ -182,62 +183,30 @@ async def send_reservation_confirmation(
     view_url: Optional[str] = None,
     tenant: Optional["Tenant"] = None,
 ) -> bool:
-    """Send a confirmation email after a reservation is created. Helps set expectations and reduces no-shows."""
-    subject = f"Reservation confirmed at {tenant_name}"
+    """Send a confirmation email after a reservation is created (per-tenant template or built-in default)."""
+    if tenant is None:
+        # Backward-safe fallback (should not happen for normal reservation flow)
+        tenant_display = tenant_name
+        subject = f"Reservation confirmed at {tenant_display}"
+        text_content = (
+            f"Hi {customer_name},\n\n"
+            f"Your reservation at {tenant_display} is confirmed.\n\n"
+            f"Date: {reservation_date}\nTime: {reservation_time}\nParty size: {party_size}\n"
+        )
+        if view_url:
+            text_content += f"\nView or cancel online: {view_url}\n"
+        html_content = wrap_html_email(f"<p>{html.escape(text_content).replace(chr(10), '<br>')}</p>")
+        return await send_email(to_email, subject, html_content, text_content, tenant=tenant)
 
-    view_block = ""
-    if view_url:
-        view_block = f"""
-            <p>You can <a href="{view_url}">view or cancel your reservation</a> online.</p>
-        """
-
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <style>
-            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-            .details {{ background: #f5f5f5; padding: 12px 16px; border-radius: 6px; margin: 16px 0; }}
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Reservation confirmed</h1>
-            <p>Hi {customer_name},</p>
-            <p>Your reservation at <strong>{tenant_name}</strong> has been confirmed.</p>
-            <div class="details">
-                <p><strong>Date:</strong> {reservation_date}<br>
-                <strong>Time:</strong> {reservation_time}<br>
-                <strong>Party size:</strong> {party_size}</p>
-            </div>
-            <p>We look forward to seeing you. Please contact us if you need to change or cancel.</p>
-            {view_block}
-            <hr>
-            <p style="color: #666; font-size: 12px;">This is a confirmation from {tenant_name}.</p>
-        </div>
-    </body>
-    </html>
-    """
-
-    text_content = f"""
-    Reservation confirmed
-
-    Hi {customer_name},
-
-    Your reservation at {tenant_name} has been confirmed.
-
-    Date: {reservation_date}
-    Time: {reservation_time}
-    Party size: {party_size}
-
-    We look forward to seeing you. Please contact us if you need to change or cancel.
-    """
-    if view_url:
-        text_content += f"\nView or cancel online: {view_url}\n"
-    text_content += f"\n---\nConfirmation from {tenant_name}."
-
+    subject, text_content, html_inner = render_confirmation_email(
+        tenant,
+        customer_name,
+        reservation_date,
+        reservation_time,
+        party_size,
+        view_url,
+    )
+    html_content = wrap_html_email(html_inner.replace("\n", "<br>\n"))
     return await send_email(to_email, subject, html_content, text_content, tenant=tenant)
 
 

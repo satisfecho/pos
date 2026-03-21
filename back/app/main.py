@@ -4732,7 +4732,7 @@ def _client_ip_from_request(request: Request) -> str | None:
 
 
 def _send_reservation_confirmation_background(tenant_id: int, reservation_id: int) -> None:
-    """Background task: load tenant and reservation, send confirmation email (public bookings only)."""
+    """Background task: load tenant and reservation, send confirmation email if customer_email is set."""
     with Session(engine) as session:
         tenant = session.get(models.Tenant, tenant_id)
         reservation = session.get(models.Reservation, reservation_id)
@@ -4850,8 +4850,8 @@ def create_reservation(
     session.add(reservation)
     session.commit()
     session.refresh(reservation)
-    # Send confirmation email for public bookings when customer email and tenant SMTP are set
-    if not current_user and reservation.customer_email and reservation.customer_email.strip() and reservation.token:
+    # Send confirmation whenever customer email is present (staff or public; token only adds view/cancel link)
+    if reservation.customer_email and reservation.customer_email.strip():
         background_tasks.add_task(_send_reservation_confirmation_background, tenant_id, reservation.id)
     out = _reservation_to_dict(reservation, session, include_client_tech=current_user is not None)
     publish_reservation_update(tenant_id, {"type": "new_reservation", "reservation": out})

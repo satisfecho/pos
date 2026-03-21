@@ -26,6 +26,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | [0004-deployment.md](0004-deployment.md) | Deployment guide: configuration (API_URL, WS_URL, CORS), deploy steps (git pull, compose, migrations, seeds). |
 | [0024-deploy-css-fix-amvara9.md](0024-deploy-css-fix-amvara9.md) | Fix for stale front build on deploy (force front image rebuild, Cache-Control for index.html). |
 | [0026-haproxy-ssl-amvara9.md](0026-haproxy-ssl-amvara9.md) | HAProxy SSL on amvara9: durable cert path (certbot/haproxy-certs), reload without overwriting certs. |
+| [0029-deployment-images-plan-next-month.md](0029-deployment-images-plan-next-month.md) | **Todo (next month):** Deploy via images (CI build → registry → pull on server), two-slot so production stays up, CI production build to catch errors. |
 
 ---
 
