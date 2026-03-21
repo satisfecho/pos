@@ -37,6 +37,7 @@ from .translation_service import TranslationService
 from .messages import get_message
 from .permissions import Permission, require_permission, require_role, has_permission
 from . import email_service as email_svc
+from .reservation_email_template import MAX_BODY_LEN, MAX_SUBJECT_LEN
 from . import whatsapp_service as whatsapp_svc
 from .phone_utils import normalize_phone_to_e164
 
@@ -1702,6 +1703,21 @@ def update_tenant_settings(
             and tenant_update.email_from_name.strip()
             else None
         )
+
+    if tenant_update.reservation_confirmation_email_subject is not None:
+        raw = tenant_update.reservation_confirmation_email_subject
+        if isinstance(raw, str):
+            s = raw.replace("\x00", "").strip()
+            tenant.reservation_confirmation_email_subject = s[:MAX_SUBJECT_LEN] if s else None
+        else:
+            tenant.reservation_confirmation_email_subject = None
+    if tenant_update.reservation_confirmation_email_body is not None:
+        raw = tenant_update.reservation_confirmation_email_body
+        if isinstance(raw, str):
+            s = raw.replace("\x00", "").strip()
+            tenant.reservation_confirmation_email_body = s[:MAX_BODY_LEN] if s else None
+        else:
+            tenant.reservation_confirmation_email_body = None
 
     if tenant_update.public_background_color is not None:
         val = (
@@ -4767,9 +4783,9 @@ def _send_reservation_confirmation_background(tenant_id: int, reservation_id: in
                     reservation_date=date_str,
                     reservation_time=time_str,
                     party_size=reservation.party_size,
-                    tenant_name=tenant.name,
+                    tenant=tenant,
                     view_url=view_url,
-                    tenant=smtp_tenant,
+                    smtp_tenant=smtp_tenant,
                 )
             )
             logger.info("Reservation confirmation email sent for reservation_id=%s to %s", reservation_id, reservation.customer_email.strip())

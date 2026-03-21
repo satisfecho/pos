@@ -179,25 +179,17 @@ async def send_reservation_confirmation(
     reservation_date: str,
     reservation_time: str,
     party_size: int,
-    tenant_name: str,
+    tenant: "Tenant",
     view_url: Optional[str] = None,
-    tenant: Optional["Tenant"] = None,
+    smtp_tenant: Optional["Tenant"] = None,
 ) -> bool:
-    """Send a confirmation email after a reservation is created (per-tenant template or built-in default)."""
-    if tenant is None:
-        # Backward-safe fallback (should not happen for normal reservation flow)
-        tenant_display = tenant_name
-        subject = f"Reservation confirmed at {tenant_display}"
-        text_content = (
-            f"Hi {customer_name},\n\n"
-            f"Your reservation at {tenant_display} is confirmed.\n\n"
-            f"Date: {reservation_date}\nTime: {reservation_time}\nParty size: {party_size}\n"
-        )
-        if view_url:
-            text_content += f"\nView or cancel online: {view_url}\n"
-        html_content = wrap_html_email(f"<p>{html.escape(text_content).replace(chr(10), '<br>')}</p>")
-        return await send_email(to_email, subject, html_content, text_content, tenant=tenant)
+    """
+    Send reservation confirmation using per-tenant templates (or built-in defaults).
 
+    `tenant` is used for placeholder values and templates. `smtp_tenant` selects SMTP
+    credentials (when tenant uses global SMTP, pass None to use global config).
+    """
+    mail_tenant = smtp_tenant if smtp_tenant is not None else tenant
     subject, text_content, html_inner = render_confirmation_email(
         tenant,
         customer_name,
@@ -207,7 +199,7 @@ async def send_reservation_confirmation(
         view_url,
     )
     html_content = wrap_html_email(html_inner.replace("\n", "<br>\n"))
-    return await send_email(to_email, subject, html_content, text_content, tenant=tenant)
+    return await send_email(to_email, subject, html_content, text_content, tenant=mail_tenant)
 
 
 async def send_reservation_reminder(
