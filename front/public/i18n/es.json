@@ -145,7 +145,7 @@
     "ALREADY_HAVE_ACCOUNT": "¿Ya tienes cuenta?",
     "SIGN_IN_LINK": "Iniciar sesión",
     "SIGN_IN_INSTEAD": "Iniciar sesión en su lugar",
-    "EMAIL_PLACEHOLDER": "tu@ejemplo.com",
+    "EMAIL_PLACEHOLDER": "tu@tucorreo.com",
     "PASSWORD_PLACEHOLDER": "Introduce tu contraseña",
     "CONFIRM_PASSWORD": "Confirmar contraseña",
     "PASSWORDS_DO_NOT_MATCH": "Las contraseñas no coinciden",

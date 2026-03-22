@@ -349,8 +349,11 @@ def download_and_store_image(
         provider_token = provider.token
     
     try:
-        # Download image
-        response = requests.get(image_url, timeout=30, stream=True)
+        # Download image (identify client; some hosts expect a real User-Agent)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (compatible; POS-System/1.0; +https://github.com/satisfecho/pos)"
+        }
+        response = requests.get(image_url, headers=headers, timeout=30, stream=True)
         response.raise_for_status()
         
         # Check content type

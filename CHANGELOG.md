@@ -4,6 +4,13 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.38] - 2026-03-22
+
+### Changed
+
+- **i18n**: Register and settings email/website placeholders no longer use **`example.com`** / “example”-style domains ( **`en`**, **`es`**, **`ca`**, **`fr`**, **`de`**, **`zh-CN`**, **`hi`** ).
+- **Seeds**: **`wine_import`** and **`pizza_import`** image downloads send the same **`User-Agent`** as **`beer_import`** (GitHub repo contact URL).
+
 ## [2.0.37] - 2026-03-22
 
 ### Changed

@@ -145,7 +145,7 @@
     "ALREADY_HAVE_ACCOUNT": "Déjà un compte ?",
     "SIGN_IN_LINK": "Se connecter",
     "SIGN_IN_INSTEAD": "Se connecter",
-    "EMAIL_PLACEHOLDER": "vous@exemple.com",
+    "EMAIL_PLACEHOLDER": "vous@votremail.com",
     "PASSWORD_PLACEHOLDER": "Entrez votre mot de passe",
     "CONFIRM_PASSWORD": "Confirmer le mot de passe",
     "PASSWORDS_DO_NOT_MATCH": "Les mots de passe ne correspondent pas",
