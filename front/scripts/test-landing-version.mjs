@@ -50,7 +50,12 @@ async function main() {
   });
 
   const page = await browser.newPage();
-  page.on('console', (msg) => console.log('[browser]', msg.text()));
+  page.on('console', (msg) => {
+    const t = msg.text();
+    // Landing may probe an authenticated API; 401 is expected and clutters CI logs.
+    if (/status of 401 \(Unauthorized\)/.test(t) && /Failed to load resource/.test(t)) return;
+    console.log('[browser]', t);
+  });
 
   try {
     // Clear cookies so we hit landing (not redirect to dashboard when logged in)

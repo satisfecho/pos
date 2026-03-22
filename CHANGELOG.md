@@ -4,6 +4,13 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.18] - 2026-03-22
+
+### Fixed
+
+- **Docker dev — version footer**: `docker-entrypoint.sh` runs `get-commit-hash.js` before `ng serve` so `commit-hash.ts` tracks **`package.json` version** on each container start. The script **keeps the previous short hash** when git is unavailable (e.g. only `./front` is bind-mounted), instead of overwriting with `git hash`.
+- **Smoke test**: `test-landing-version` skips logging the expected browser **401 (Unauthorized)** resource line on the public landing page.
+
 ## [2.0.17] - 2026-03-22
 
 ### Fixed

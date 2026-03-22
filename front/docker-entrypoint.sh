@@ -25,5 +25,10 @@ if [ -n "$STRIPE_PUBLISHABLE_KEY" ] && [ "$STRIPE_PUBLISHABLE_KEY" != "" ]; then
     sed -i "s#window.__STRIPE_PUBLISHABLE_KEY__ || '[^']*'#window.__STRIPE_PUBLISHABLE_KEY__ || '${STRIPE_KEY_ESCAPED}'#g" /app/src/index.html
 fi
 
+# Sync version in commit-hash.ts from package.json (preserve existing git hash if .git is missing, e.g. Docker bind-mount of ./front only)
+if [ -f /app/scripts/get-commit-hash.js ]; then
+    node /app/scripts/get-commit-hash.js || true
+fi
+
 # Execute the original command
 exec "$@"
