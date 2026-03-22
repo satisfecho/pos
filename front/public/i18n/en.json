@@ -417,7 +417,7 @@
     "NONE_DESC": "Add customers that need a tax invoice (Factura) with their company details.",
     "DELETE_TITLE": "Delete customer",
     "DELETE_CONFIRM": "Delete {{name}}? Orders already linked will keep the saved data.",
-    "PRINT_FACTURA": "Print Factura",
+    "PRINT_FACTURA": "Print invoice",
     "SELECT_FOR_FACTURA": "Select customer for invoice",
     "BILL_TO": "Bill to"
   },

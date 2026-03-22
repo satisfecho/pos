@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.14] - 2026-03-22
+
+### Fixed
+
+- **Customers / orders (#30)**: English string **Print invoice** instead of “Print Factura” for `CUSTOMERS.PRINT_FACTURA`.
+- **Catalog (#43, #42, #44)**: “Set your price” field uses a **currency prefix + input** row so the symbol no longer overlaps the amount; catalog card **image area** has padding and a neutral background; **Remove from menu** is an **outline** button so it reads clearly vs solid **Add to menu**.
+- **Reports (#45)**: Data table cells use **vertical-align: middle**; **Share (%)** column cells get a **minimum height** so the last row aligns better with the bar + percentage.
+
 ## [2.0.13] - 2026-03-22
 
 ### Added

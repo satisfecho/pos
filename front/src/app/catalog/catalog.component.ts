@@ -163,14 +163,14 @@ import { TranslateModule } from '@ngx-translate/core';
                  <!-- Add to Menu Button -->
                  <div class="catalog-actions">
                    @if (isInMenu(item.id)) {
-                     <button class="btn btn-danger" (click)="removeFromMenu(item.id)" [disabled]="removing()">
+                     <button type="button" class="btn btn-remove-menu" (click)="removeFromMenu(item.id)" [disabled]="removing()">
                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                          <path d="M18 6L6 18M6 6l12 12"/>
                        </svg>
                        {{ removing() ? ('CATALOG.REMOVING' | translate) : ('CATALOG.REMOVE_FROM_MENU' | translate) }}
                      </button>
                    } @else {
-                     <button class="btn btn-primary" (click)="openAddDialog(item)" [disabled]="adding()">
+                     <button type="button" class="btn btn-primary" (click)="openAddDialog(item)" [disabled]="adding()">
                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                        </svg>
@@ -317,6 +317,43 @@ import { TranslateModule } from '@ngx-translate/core';
       background: var(--color-bg);
     }
 
+    .price-input {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--color-surface);
+    }
+
+    .price-input .currency {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 var(--space-3);
+      background: var(--color-bg);
+      color: var(--color-text-muted);
+      font-weight: 600;
+      font-size: 0.9375rem;
+      border-right: 1px solid var(--color-border);
+    }
+
+    .price-input input {
+      flex: 1;
+      min-width: 0;
+      width: auto !important;
+      border: none !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      padding: var(--space-3) var(--space-3);
+    }
+
+    .price-input input:focus {
+      outline: none;
+      box-shadow: inset 0 0 0 2px var(--color-primary) !important;
+    }
+
     .catalog-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -339,12 +376,14 @@ import { TranslateModule } from '@ngx-translate/core';
       height: 200px;
       overflow: hidden;
       border-radius: var(--radius-md);
-      background: var(--color-surface);
+      background: var(--color-bg);
       display: flex;
       align-items: center;
       justify-content: center;
       margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-5)) var(--space-3) calc(-1 * var(--space-5));
       flex-shrink: 0;
+      padding: var(--space-3);
+      box-sizing: border-box;
     }
 
     .catalog-image img {
@@ -602,6 +641,16 @@ import { TranslateModule } from '@ngx-translate/core';
 
     .btn-danger { background: var(--color-error); color: white; }
     .btn-danger:hover:not(:disabled) { background: #b91c1c; }
+
+    /* Outline remove: visually distinct from solid primary “Add to menu” (#44) */
+    .btn-remove-menu {
+      background: var(--color-surface);
+      color: var(--color-error);
+      border: 2px solid var(--color-error);
+    }
+    .btn-remove-menu:hover:not(:disabled) {
+      background: rgba(220, 38, 38, 0.08);
+    }
 
     .icon-btn {
       background: none;
