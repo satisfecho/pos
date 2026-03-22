@@ -10,12 +10,15 @@ Usage:
 
 import sys
 import time
+
+import requests
 from sqlmodel import Session, select
+
 from app.db import engine
 from app.models import Provider, ProviderProduct
 
 try:
-    from app.seeds.wine_import import fetch_wine_detail_page
+    from app.seeds.wine_import import API_ENDPOINT, COOKIES, HEADERS, fetch_wine_detail_page
 except ImportError:
     print("Error: Could not import fetch_wine_detail_page")
     sys.exit(1)
@@ -60,9 +63,6 @@ def update_wine_details() -> dict[str, int]:
             # For now, try constructing it or fetching from API
             try:
                 # Fetch from API to get idProductMenu mapping
-                import requests
-                from app.seeds.wine_import import API_ENDPOINT, HEADERS, COOKIES
-                
                 form_data = {
                     "txt": "", "page": "1", "categories": "", "simbolo": "", "tipes": "",
                     "country": "", "zonado": "", "region": "", "variedad": "", "prices": "",
