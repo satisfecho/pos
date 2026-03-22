@@ -1,35 +1,16 @@
 """Guest feedback public POST and tenant list."""
-import os
-import sys
 import unittest
 from datetime import date, time
 
-from fastapi.testclient import TestClient
-from sqlmodel import Session, SQLModel, create_engine, select
-from sqlalchemy.pool import StaticPool
+from pg_client_mixin import PgClientTestCase
+from sqlmodel import select
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
-
-from back.app.main import app, get_session
-from back.app import models
+from app import models
 
 
-class TestGuestFeedback(unittest.TestCase):
+class TestGuestFeedback(PgClientTestCase):
     def setUp(self):
-        self.engine = create_engine(
-            "sqlite://",
-            connect_args={"check_same_thread": False},
-            poolclass=StaticPool,
-        )
-        SQLModel.metadata.create_all(self.engine)
-
-        def get_session_override():
-            with Session(self.engine) as session:
-                yield session
-
-        app.dependency_overrides[get_session] = get_session_override
-        self.client = TestClient(app)
-        self.session = Session(self.engine)
+        super().setUp()
         tenant = models.Tenant(name="T1", public_google_review_url="https://g.page/r/test-place/review")
         self.session.add(tenant)
         self.session.commit()
@@ -50,10 +31,6 @@ class TestGuestFeedback(unittest.TestCase):
         self.session.refresh(res)
         self.res_id = res.id
 
-    def tearDown(self):
-        app.dependency_overrides.clear()
-        self.session.close()
-
     def test_public_tenant_includes_google_review_url(self):
         r = self.client.get(f"/public/tenants/{self.tenant_id}")
         self.assertEqual(r.status_code, 200, r.text)
@@ -66,7 +43,11 @@ class TestGuestFeedback(unittest.TestCase):
         )
         self.assertEqual(r.status_code, 200, r.text)
         self.assertTrue(r.json().get("ok"))
-        row = self.session.exec(select(models.GuestFeedback)).first()
+        row = self.session.exec(
+            select(models.GuestFeedback)
+            .where(models.GuestFeedback.tenant_id == self.tenant_id)
+            .order_by(models.GuestFeedback.id.desc())
+        ).first()
         self.assertIsNotNone(row)
         assert row is not None
         self.assertEqual(row.rating, 5)
@@ -78,7 +59,11 @@ class TestGuestFeedback(unittest.TestCase):
             json={"rating": 4, "reservation_token": "tok-test-1"},
         )
         self.assertEqual(r.status_code, 200, r.text)
-        row = self.session.exec(select(models.GuestFeedback)).first()
+        row = self.session.exec(
+            select(models.GuestFeedback)
+            .where(models.GuestFeedback.tenant_id == self.tenant_id)
+            .order_by(models.GuestFeedback.id.desc())
+        ).first()
         self.assertIsNotNone(row)
         assert row is not None
         self.assertEqual(row.reservation_id, self.res_id)

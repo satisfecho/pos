@@ -46,6 +46,8 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T back pyth
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T back python3 -m pytest /app/tests -q --tb=short
 ```
 
+Pytest sets **`RATE_LIMIT_ENABLED=false`** via `back/tests/conftest.py` (and `pg_client_mixin.py` for direct test runs) so rate limiting does not interfere with `TestClient`.
+
 **Note:** `GET /users/me` returns **200** with JSON **`null`** when there is no session (not **401**), so the SPA auth probe does not show as a failed request for guests.
 
 ---

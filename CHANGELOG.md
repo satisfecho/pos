@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.22] - 2026-03-22
+
+### Fixed
+
+- **Public menu — customer cancel**: Clearing the table’s `active_order_id` when the shared order is cancelled so the next `POST /menu/{token}/order` creates a **new** order (matches “new order after cancel” behaviour and avoids reusing a cancelled row).
+- **`GET /menu/{token}/order`**: Ignores **cancelled** shared orders the same way as **paid** ones so customers do not see a cancelled cart as current.
+
+### Changed
+
+- **Backend tests**: `RATE_LIMIT_ENABLED=false` for pytest / `PgClientTestCase` (`tests/conftest.py`, `tests/pg_client_mixin.py`) so SlowAPI does not break or flake on `TestClient` runs. Session-isolation test binds `Order.session_id` in the DB to assert PUT/DELETE session checks. Guest feedback, payment security, and public-tenant WhatsApp tests use the same Postgres rollback mixin instead of SQLite `create_all`.
+
 ## [2.0.21] - 2026-03-22
 
 ### Added

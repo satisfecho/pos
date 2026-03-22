@@ -6658,7 +6658,8 @@ def get_current_order(
         shared_order = session.get(models.Order, table.active_order_id)
         if (
             shared_order
-            and shared_order.status != models.OrderStatus.paid
+            and shared_order.status
+            not in (models.OrderStatus.paid, models.OrderStatus.cancelled)
             and "[PAID:" not in (shared_order.notes or "")
         ):
             active_order = shared_order
@@ -6683,7 +6684,7 @@ def get_current_order(
             ).all()
 
         for order in potential_orders:
-            if order.status == models.OrderStatus.paid:
+            if order.status in (models.OrderStatus.paid, models.OrderStatus.cancelled):
                 continue
             if "[PAID:" not in (order.notes or ""):
                 active_order = order
@@ -6692,7 +6693,10 @@ def get_current_order(
     # Table shared order: when no order matched session_id, use table's active order so customer sees current order
     if not active_order and table.active_order_id:
         active_order = session.get(models.Order, table.active_order_id)
-        if active_order and active_order.status == models.OrderStatus.paid:
+        if active_order and active_order.status in (
+            models.OrderStatus.paid,
+            models.OrderStatus.cancelled,
+        ):
             active_order = None
         if active_order and "[PAID:" in (active_order.notes or ""):
             active_order = None
@@ -6938,7 +6942,10 @@ def create_order(
     order = None
     if table.active_order_id:
         order = session.get(models.Order, table.active_order_id)
-        if order and order.status == models.OrderStatus.paid:
+        if order and order.status in (
+            models.OrderStatus.paid,
+            models.OrderStatus.cancelled,
+        ):
             order = None  # Will create a new order below if we have items
 
     if order is None:
@@ -8510,10 +8517,14 @@ def cancel_order(
             item.removed_by_customer = True
             item.removed_at = datetime.now(timezone.utc)
             item.status = models.OrderItemStatus.cancelled
-    
+
     session.add(order)
+    if table.active_order_id == order.id:
+        table.active_order_id = None
+        session.add(table)
+
     session.commit()
-    
+
     # Publish update
     publish_order_update(order.tenant_id, {
         "type": "order_cancelled",
