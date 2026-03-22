@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
-- **Dev landing footer**: Regenerated **`front/src/environments/commit-hash.ts`** with `node scripts/get-commit-hash.js` so the displayed **version** matches **`package.json`** (it had stayed at **2.0.21** when only the bind-mounted front tree was present).
+- **Dev landing footer**: Regenerated **`front/src/environments/commit-hash.ts`** with `node scripts/get-commit-hash.js` so the displayed **version** matches **`package.json`** (it had stayed at **2.0.21** when only the bind-mounted front tree was present). The committed **git short hash** is refreshed the same way (and **`docker-entrypoint.sh`** runs this script on container start when `/app/scripts/get-commit-hash.js` exists).
 
 ## [2.0.28] - 2026-03-22
 
