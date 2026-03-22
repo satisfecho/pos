@@ -238,7 +238,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Menu (public order)**: Geolocation errors are ignored silently when building the order payload (no **`console.log`**).
 - **Purchase orders**: Remove debug **`console.log`** after loading inventory items for the create modal.
+- **Seeds**: **`update_wine_details`** ImportError message refers to **`wine_import`** Tusumiller helpers (not only **`fetch_wine_detail_page`**).
 - **Seeds**: **`update_wine_prices`** and **`update_wine_details`** reuse **`FORM_DATA_BASE`** from **`wine_import`** for Tusumiller search **`POST`** bodies (with **`update_wine_prices`** still reusing **`API_ENDPOINT` / `HEADERS` / `COOKIES`**).
 - **Seeds**: **`products`** CLI hoists **`argparse`** to module level.
 - **Seeds**: **`beer_import`**, **`pizza_import`**, and **`wine_import`** hoist **`traceback`** to module level (CLI error handler).

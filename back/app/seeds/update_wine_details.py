@@ -26,7 +26,7 @@ try:
         fetch_wine_detail_page,
     )
 except ImportError:
-    print("Error: Could not import fetch_wine_detail_page")
+    print("Error: Could not import Tusumiller helpers from app.seeds.wine_import")
     sys.exit(1)
 
 

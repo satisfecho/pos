@@ -918,9 +918,8 @@ export class MenuComponent implements OnInit, OnDestroy {
         latitude = position.coords.latitude;
         longitude = position.coords.longitude;
       }
-    } catch (e) {
+    } catch {
       // Location denied or unavailable - continue without it
-      console.log('Location not available');
     }
 
     this.submitting.set(true);
