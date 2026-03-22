@@ -17,6 +17,7 @@ from sqlmodel import Session, select
 from . import models
 from .db import get_session
 from .permissions import Permission, require_permission
+from .report_export_i18n import report_export_labels
 from .security import get_current_user
 
 router = APIRouter()
@@ -295,13 +296,13 @@ def get_sales_reports(
     return _build_report_payload(current_user.tenant_id, session, from_date, to_date)
 
 
-def _csv_stream(rows: list[dict], headers: list[str]) -> bytes:
+def _csv_stream(rows: list[dict], keys: list[str], header_row: list[str]) -> bytes:
     import csv
     buf = BytesIO()
     writer = csv.writer(buf)
-    writer.writerow(headers)
+    writer.writerow(header_row)
     for r in rows:
-        writer.writerow([r.get(h, "") for h in headers])
+        writer.writerow([r.get(k, "") for k in keys])
     return buf.getvalue()
 
 
@@ -313,11 +314,13 @@ def export_report(
     to_date: date = Query(..., description="End date (YYYY-MM-DD)"),
     format: str = Query("csv", description="csv or xlsx"),
     report: str = Query("summary", description="summary, products, category, table, waiter"),
+    lang: str | None = Query(None, description="UI language for headers (e.g. en, es, de)"),
 ) -> StreamingResponse:
     """Export report as CSV or Excel. Same date range as reports."""
     if from_date > to_date:
         from_date, to_date = to_date, from_date
     data = _build_report_payload(current_user.tenant_id, session, from_date, to_date)
+    L = report_export_labels(lang)
 
     if format.lower() == "xlsx":
         try:
@@ -329,8 +332,16 @@ def export_report(
         wb = Workbook()
         # Summary sheet
         ws = wb.active
-        ws.title = "Summary"
-        ws.append(["Date", "Revenue (cents)", "Cost (cents)", "Profit (cents)", "Orders"])
+        ws.title = L["sheet_summary"][:31]
+        ws.append(
+            [
+                L["date"],
+                L["revenue_cents"],
+                L["cost_cents"],
+                L["profit_cents"],
+                L["orders"],
+            ]
+        )
         for row in data["summary"]["daily"]:
             ws.append([
                 row["date"],
@@ -341,28 +352,39 @@ def export_report(
             ])
         ws.append([])
         s = data["summary"]
-        ws.append([
-            "Total",
-            s["total_revenue_cents"],
-            s.get("total_cost_cents", 0),
-            s.get("total_profit_cents", 0),
-            s["total_orders"],
-        ])
+        ws.append(
+            [
+                L["total"],
+                s["total_revenue_cents"],
+                s.get("total_cost_cents", 0),
+                s.get("total_profit_cents", 0),
+                s["total_orders"],
+            ]
+        )
         # Reservations
         res = data.get("reservations", {})
-        ws_res = wb.create_sheet("Reservations")
-        ws_res.append(["Source", "Count"])
+        ws_res = wb.create_sheet(L["sheet_reservations"][:31])
+        ws_res.append([L["source"], L["count"]])
         for row in res.get("by_source", []):
             ws_res.append([row["source"], row["count"]])
         ws_res.append([])
-        ws_res.append(["Status", "Count"])
+        ws_res.append([L["status"], L["count"]])
         for row in res.get("by_status", []):
             ws_res.append([row["status"], row["count"]])
         ws_res.append([])
-        ws_res.append(["Total", res.get("total", 0)])
+        ws_res.append([L["total"], res.get("total", 0)])
         # Products
-        ws2 = wb.create_sheet("By Product")
-        ws2.append(["Product", "Category", "Quantity", "Revenue (cents)", "Cost (cents)", "Profit (cents)"])
+        ws2 = wb.create_sheet(L["sheet_by_product"][:31])
+        ws2.append(
+            [
+                L["product"],
+                L["category"],
+                L["quantity"],
+                L["revenue_cents"],
+                L["cost_cents"],
+                L["profit_cents"],
+            ]
+        )
         for p in data["by_product"]:
             ws2.append([
                 p["product_name"],
@@ -373,8 +395,16 @@ def export_report(
                 p.get("profit_cents", 0),
             ])
         # Category
-        ws3 = wb.create_sheet("By Category")
-        ws3.append(["Category", "Quantity", "Revenue (cents)", "Cost (cents)", "Profit (cents)"])
+        ws3 = wb.create_sheet(L["sheet_by_category"][:31])
+        ws3.append(
+            [
+                L["category"],
+                L["quantity"],
+                L["revenue_cents"],
+                L["cost_cents"],
+                L["profit_cents"],
+            ]
+        )
         for c in data["by_category"]:
             ws3.append([
                 c["category"],
@@ -384,8 +414,16 @@ def export_report(
                 c.get("profit_cents", 0),
             ])
         # Table
-        ws4 = wb.create_sheet("By Table")
-        ws4.append(["Table", "Revenue (cents)", "Cost (cents)", "Profit (cents)", "Orders"])
+        ws4 = wb.create_sheet(L["sheet_by_table"][:31])
+        ws4.append(
+            [
+                L["table"],
+                L["revenue_cents"],
+                L["cost_cents"],
+                L["profit_cents"],
+                L["orders"],
+            ]
+        )
         for t in data["by_table"]:
             ws4.append([
                 t["table_name"],
@@ -395,8 +433,16 @@ def export_report(
                 t["order_count"],
             ])
         # Waiter
-        ws5 = wb.create_sheet("By Waiter")
-        ws5.append(["Waiter", "Revenue (cents)", "Cost (cents)", "Profit (cents)", "Orders"])
+        ws5 = wb.create_sheet(L["sheet_by_waiter"][:31])
+        ws5.append(
+            [
+                L["waiter"],
+                L["revenue_cents"],
+                L["cost_cents"],
+                L["profit_cents"],
+                L["orders"],
+            ]
+        )
         for w in data["by_waiter"]:
             ws5.append([
                 w["waiter_name"],
@@ -426,23 +472,59 @@ def export_report(
             }
             for r in data["summary"]["daily"]
         ]
-        headers = ["date", "revenue_cents", "cost_cents", "profit_cents", "order_count"]
+        keys = ["date", "revenue_cents", "cost_cents", "profit_cents", "order_count"]
+        header_row = [
+            L["date"],
+            L["revenue_cents"],
+            L["cost_cents"],
+            L["profit_cents"],
+            L["orders"],
+        ]
     elif report == "products":
         rows = data["by_product"]
-        headers = ["product_name", "quantity", "revenue_cents", "cost_cents", "profit_cents"]
+        keys = ["product_name", "quantity", "revenue_cents", "cost_cents", "profit_cents"]
+        header_row = [
+            L["product"],
+            L["quantity"],
+            L["revenue_cents"],
+            L["cost_cents"],
+            L["profit_cents"],
+        ]
     elif report == "category":
         rows = data["by_category"]
-        headers = ["category", "quantity", "revenue_cents", "cost_cents", "profit_cents"]
+        keys = ["category", "quantity", "revenue_cents", "cost_cents", "profit_cents"]
+        header_row = [
+            L["category"],
+            L["quantity"],
+            L["revenue_cents"],
+            L["cost_cents"],
+            L["profit_cents"],
+        ]
     elif report == "table":
         rows = data["by_table"]
-        headers = ["table_name", "revenue_cents", "cost_cents", "profit_cents", "order_count"]
+        keys = ["table_name", "revenue_cents", "cost_cents", "profit_cents", "order_count"]
+        header_row = [
+            L["table"],
+            L["revenue_cents"],
+            L["cost_cents"],
+            L["profit_cents"],
+            L["orders"],
+        ]
     elif report == "waiter":
         rows = data["by_waiter"]
-        headers = ["waiter_name", "revenue_cents", "cost_cents", "profit_cents", "order_count"]
+        keys = ["waiter_name", "revenue_cents", "cost_cents", "profit_cents", "order_count"]
+        header_row = [
+            L["waiter"],
+            L["revenue_cents"],
+            L["cost_cents"],
+            L["profit_cents"],
+            L["orders"],
+        ]
     else:
         rows = data["summary"]["daily"]
-        headers = ["date", "revenue_cents", "order_count"]
-    content = _csv_stream(rows, headers)
+        keys = ["date", "revenue_cents", "order_count"]
+        header_row = [L["date"], L["revenue_cents"], L["orders"]]
+    content = _csv_stream(rows, keys, header_row)
     return StreamingResponse(
         iter([content]),
         media_type="text/csv",

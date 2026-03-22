@@ -7,6 +7,7 @@ SUPPORTED_LANGUAGES = [
     "es",  # Spanish
     "ca",  # Catalan
     "de",  # German
+    "fr",  # French
     "zh-CN",  # Chinese Simplified
     "hi",  # Hindi
 ]

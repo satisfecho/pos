@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.15] - 2026-03-22
+
+### Added
+
+- **Reports export (#35)**: CSV/Excel column and sheet titles follow the UI language. `GET /reports/export` accepts optional `lang` (e.g. en, es, de, ca, fr, zh-CN, hi). The app sends the current ngx-translate language when downloading exports.
+
+### Changed
+
+- **Reports & Products — locale for numbers (#41)**: Shared `intlLocaleFromTranslate` maps the UI language to a BCP 47 locale for `Intl` — currency and short dates on Reports match the selected language, and changing language refreshes formatted values. **Products**: tenant currency settings load before the product list (avoids a flash of the wrong symbol); price formatting uses the same locale mapping; when settings omit currency, the default prefix is **€** instead of **$**.
+
 ## [2.0.14] - 2026-03-22
 
 ### Fixed

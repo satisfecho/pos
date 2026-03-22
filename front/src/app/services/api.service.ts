@@ -1249,8 +1249,17 @@ export class ApiService {
     return this.http.get<SalesReport>(`${this.apiUrl}/reports/sales`, { params });
   }
 
-  getReportsExport(fromDate: string, toDate: string, format: 'csv' | 'xlsx', report: string): Observable<Blob> {
-    const params = { from_date: fromDate, to_date: toDate, format, report };
+  getReportsExport(
+    fromDate: string,
+    toDate: string,
+    format: 'csv' | 'xlsx',
+    report: string,
+    lang?: string | null,
+  ): Observable<Blob> {
+    const params: Record<string, string> = { from_date: fromDate, to_date: toDate, format, report };
+    if (lang && lang.trim()) {
+      params['lang'] = lang.trim();
+    }
     return this.http.get(`${this.apiUrl}/reports/export`, {
       params,
       responseType: 'blob',

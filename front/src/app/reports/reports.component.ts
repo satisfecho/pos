@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { ApiService, SalesReport } from '../services/api.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { intlLocaleFromTranslate } from '../shared/intl-locale';
 
 @Component({
   selector: 'app-reports',
@@ -55,6 +56,9 @@ export class ReportsComponent implements OnInit {
     return r.by_category.reduce((sum, c) => sum + c.quantity, 0);
   });
 
+  /** Bumps when UI language changes so currency/date formatting refreshes. */
+  private reportIntlRevision = signal(0);
+
   ngOnInit() {
     const to = new Date();
     const from = new Date(to);
@@ -63,6 +67,7 @@ export class ReportsComponent implements OnInit {
     this.toDate.set(this.fmtDate(to));
     this.loadTenantCurrency();
     this.loadReport();
+    this.translate.onLangChange.subscribe(() => this.reportIntlRevision.update((n) => n + 1));
   }
 
   private fmtDate(d: Date): string {
@@ -97,8 +102,9 @@ export class ReportsComponent implements OnInit {
   }
 
   formatCurrency(cents: number): string {
+    void this.reportIntlRevision();
     const code = this.currencyCode();
-    const locale = navigator.language || 'en-US';
+    const locale = intlLocaleFromTranslate(this.translate);
     if (code) {
       return new Intl.NumberFormat(locale, {
         style: 'currency',
@@ -110,8 +116,12 @@ export class ReportsComponent implements OnInit {
   }
 
   formatShortDate(iso: string): string {
+    void this.reportIntlRevision();
     const d = new Date(iso);
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    return d.toLocaleDateString(intlLocaleFromTranslate(this.translate), {
+      month: 'short',
+      day: 'numeric',
+    });
   }
 
   getReservationSourceLabel(source: string): string {
@@ -213,7 +223,7 @@ export class ReportsComponent implements OnInit {
     this.exporting.set(true);
     const from = this.fromDate();
     const to = this.toDate();
-    this.api.getReportsExport(from, to, 'xlsx', 'summary').subscribe({
+    this.api.getReportsExport(from, to, 'xlsx', 'summary', this.translate.currentLang).subscribe({
       next: (blob) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -235,7 +245,7 @@ export class ReportsComponent implements OnInit {
     this.exporting.set(true);
     const from = this.fromDate();
     const to = this.toDate();
-    this.api.getReportsExport(from, to, 'csv', report).subscribe({
+    this.api.getReportsExport(from, to, 'csv', report, this.translate.currentLang).subscribe({
       next: (blob) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');

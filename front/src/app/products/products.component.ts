@@ -6,6 +6,7 @@ import { PermissionService } from '../services/permission.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { intlLocaleFromTranslate } from '../shared/intl-locale';
 import { CategoriesComponent } from './categories.component';
 
 @Component({
@@ -424,8 +425,10 @@ export class ProductsComponent implements OnInit {
   uploading = signal(false);
   pendingImageFile = signal<File | null>(null);
   pendingImagePreview = signal<string | null>(null);
-  currency = signal<string>('$');
+  currency = signal<string>('€');
   currencyCode = signal<string | null>(null);
+  /** Bumps when UI language changes so price formatting refreshes in the template. */
+  private intlRevision = signal(0);
   categories = signal<Record<string, string[]>>({});
   availableSubcategories = signal<string[]>([]);
   editingCategoryProductId = signal<number | null>(null);
@@ -439,10 +442,10 @@ export class ProductsComponent implements OnInit {
   availableSubcategoriesForFilter = signal<string[]>([]);
 
   ngOnInit() {
-    this.loadTenantSettings();
-    this.loadProducts();
+    this.loadTenantSettingsThenProducts();
     this.loadCategories();
     this.api.getTaxes(true).subscribe({ next: (list) => this.productTaxes.set(list), error: () => this.productTaxes.set([]) });
+    this.translate.onLangChange.subscribe(() => this.intlRevision.update((n) => n + 1));
   }
 
   loadCategories() {
@@ -563,38 +566,41 @@ export class ProductsComponent implements OnInit {
     });
   }
 
-  loadTenantSettings() {
+  loadTenantSettingsThenProducts() {
     this.api.getTenantSettings().subscribe({
       next: (settings) => {
         const code = settings.currency_code || null;
         this.currencyCode.set(code);
-        this.currency.set(settings.currency || (code ? this.getCurrencySymbol(code) : '$'));
+        this.currency.set(settings.currency || (code ? this.getCurrencySymbol(code) : '€'));
+        this.loadProducts();
       },
       error: (err) => {
         console.error('Failed to load tenant settings:', err);
-        // Default to $ if settings can't be loaded
-      }
+        this.currency.set('€');
+        this.loadProducts();
+      },
     });
   }
 
   private getCurrencySymbol(code: string): string {
-    const locale = navigator.language || 'en-US';
+    const locale = intlLocaleFromTranslate(this.translate);
     const parts = new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: code,
-      currencyDisplay: 'symbol'
+      currencyDisplay: 'symbol',
     }).formatToParts(0);
-    return parts.find(part => part.type === 'currency')?.value || code;
+    return parts.find((part) => part.type === 'currency')?.value || code;
   }
 
   formatPrice(priceCents: number): string {
+    void this.intlRevision();
     const currencyCode = this.currencyCode();
-    const locale = navigator.language || 'en-US';
+    const locale = intlLocaleFromTranslate(this.translate);
     if (currencyCode) {
       return new Intl.NumberFormat(locale, {
         style: 'currency',
         currency: currencyCode,
-        currencyDisplay: 'symbol'
+        currencyDisplay: 'symbol',
       }).format(priceCents / 100);
     }
     const currencySymbol = this.currency();
