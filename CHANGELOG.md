@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.25] - 2026-03-22
+
+### Added
+
+- **Backend test** `tests/test_public_menu_order_response.py`: Asserts the first **`POST /menu/{token}/order`** on a table returns **`status: "created"`** and a follow-up post returns **`"updated"`** with the same `order_id` (regression guard for shared-order `is_new_order`).
+
 ## [2.0.24] - 2026-03-22
 
 ### Fixed
