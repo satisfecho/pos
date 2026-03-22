@@ -1553,18 +1553,24 @@ export class ApiService {
 
       this.ws.onclose = (event) => {
         this.ws = null;
-        console.log(`WebSocket closed: code=${event.code}, reason="${event.reason || 'none'}", wasClean=${event.wasClean}`);
+        if (!environment.production) {
+          console.log(`WebSocket closed: code=${event.code}, reason="${event.reason || 'none'}", wasClean=${event.wasClean}`);
+        }
 
         // Only reconnect if it wasn't a normal closure (code 1000)
         // Don't reconnect on authentication errors (code 1008)
         if (event.code !== 1000 && event.code !== 1008) {
-          console.log('WebSocket will reconnect in 3 seconds...');
+          if (!environment.production) {
+            console.log('WebSocket will reconnect in 3 seconds...');
+          }
           // Reconnect after 3 seconds
           setTimeout(() => this.connectWebSocket(), 3000);
         } else if (event.code === 1008) {
           console.warn('WebSocket connection closed due to authentication error:', event.reason);
         } else if (event.code === 1000) {
-          console.log('WebSocket closed normally');
+          if (!environment.production) {
+            console.log('WebSocket closed normally');
+          }
         }
       };
 
@@ -1582,8 +1588,10 @@ export class ApiService {
       };
 
       this.ws.onopen = () => {
-        console.log('WebSocket connection opened successfully');
-        console.log('WebSocket URL:', wsEndpoint);
+        if (!environment.production) {
+          console.log('WebSocket connection opened successfully');
+          console.log('WebSocket URL:', wsEndpoint);
+        }
       };
     } catch (error) {
       console.error('Failed to create WebSocket connection:', error);

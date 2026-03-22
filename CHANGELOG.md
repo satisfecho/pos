@@ -238,6 +238,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **API service**: WebSocket **`console.log`** diagnostics (open/close/reconnect) run only when **`!environment.production`**; **`console.warn`** / **`console.error`** unchanged.
 - **Menu (public order)**: Geolocation errors are ignored silently when building the order payload (no **`console.log`**).
 - **Purchase orders**: Remove debug **`console.log`** after loading inventory items for the create modal.
 - **Seeds**: **`update_wine_details`** ImportError message refers to **`wine_import`** Tusumiller helpers (not only **`fetch_wine_detail_page`**).
