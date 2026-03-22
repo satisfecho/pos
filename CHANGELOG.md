@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.16] - 2026-03-22
+
+### Fixed
+
+- **Reports (NG0955)**: `@for` over “by product” now tracks **product id + name** (matches backend aggregation key), so duplicate `product_id` values no longer break change detection. Revenue chart Y-axis ticks track by **Y position** so max revenue **1¢** does not duplicate the `tick.value` key.
+
 ## [2.0.15] - 2026-03-22
 
 ### Added

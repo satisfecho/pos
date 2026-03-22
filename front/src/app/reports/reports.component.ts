@@ -136,6 +136,11 @@ export class ReportsComponent implements OnInit {
     return t !== key ? t : status;
   }
 
+  /** Backend keys rows by (product_id, product_name); tracking by id alone duplicates NG0955. */
+  trackByProductRow(p: SalesReport['by_product'][number]): string {
+    return `${p.product_id}\u0000${p.product_name}`;
+  }
+
   barWidth(cents: number): string {
     const max = this.maxBarValue();
     if (max <= 0) return '0%';

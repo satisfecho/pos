@@ -116,7 +116,7 @@
                   </linearGradient>
                 </defs>
                 <!-- Y-axis labels -->
-                @for (tick of revenueChartYLabels(); track tick.value) {
+                @for (tick of revenueChartYLabels(); track tick.y) {
                   <text class="revenue-graph-y-label" [attr.x]="chartPad.left - 6" [attr.y]="tick.y + 4" text-anchor="end">{{ formatCurrency(tick.value) }}</text>
                 }
                 <!-- X-axis date labels -->
@@ -175,7 +175,7 @@
               </tr>
             </thead>
             <tbody>
-              @for (p of r.by_product; track p.product_id) {
+              @for (p of r.by_product; track trackByProductRow(p)) {
                 <tr>
                   <td>{{ p.product_name }}</td>
                   <td>{{ p.quantity }} ({{ formatPct(p.quantity, totalProductQuantity()) }})</td>
