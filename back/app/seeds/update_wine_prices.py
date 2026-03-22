@@ -19,21 +19,11 @@ except ImportError:
     print("Error: 'requests' library is required. Install it with: pip install requests")
     sys.exit(1)
 
-# API configuration
-API_ENDPOINT = "https://tusumiller.isumi.es/jsonsearch"
-HEADERS = {
-    "accept": "application/json, text/javascript, */*; q=0.01",
-    "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-    "referer": "https://tusumiller.isumi.es/rest-gustazo/list",
-    "user-agent": "Mozilla/5.0",
-    "x-requested-with": "XMLHttpRequest",
-}
-COOKIES = {
-    "ci_session": "5fj99r3a5rjj5uh1notlruu5qmqgksfp",
-    "ws_user_id": "6963bd390f543",
-    "ws_lang_1122": "es",
-    "visitorisumiId": "visumi-kiyxfwwampob2k1g2ljkee",
-}
+try:
+    from app.seeds.wine_import import API_ENDPOINT, COOKIES, HEADERS
+except ImportError:
+    print("Error: Could not import Tusumiller API settings from app.seeds.wine_import")
+    sys.exit(1)
 
 
 def fetch_all_wines_from_api() -> dict[str, dict]:
