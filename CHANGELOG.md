@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.31] - 2026-03-22
+
+### Fixed
+
+- **Dev `environment.ts`**: **`DEV_VERSION_FALLBACK`** matched **`package.json`** again (was **2.0.21**; used only when **`commit-hash.ts`** still has version **`0.0.0`**, e.g. **`ng serve`** without running **`get-commit-hash.js`** first).
+
 ## [2.0.30] - 2026-03-22
 
 ### Added
