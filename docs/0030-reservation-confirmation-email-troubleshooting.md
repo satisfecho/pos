@@ -2,7 +2,7 @@
 
 When public bookings include a customer email but no confirmation email is received, check the following.
 
-**Note:** The assistant cannot connect to amvara9 (no SSH/remote access). Run the diagnostic and log commands below on the server and paste the output if you need help interpreting it.
+**Note:** From a machine where `ssh amvara9` is configured (key-based auth), an agent can run the commands below remotely. If SSH is unavailable, run them on the server and paste the output.
 
 ## Run diagnostic on amvara9 (one command)
 

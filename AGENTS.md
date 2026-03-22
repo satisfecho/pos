@@ -84,6 +84,8 @@ See **Reservation tests (Puppeteer)** and **Demo tables** below for more test sc
 
 **Deploy (amvara9) – migrations:** `scripts/deploy-amvara9.sh` starts only db+redis, runs `python -m app.migrate` then `python -m app.migrate --sync-idempotent` (repair when schema_version was wrong), then starts all services. So the app never serves traffic before migrations. On the server, path is `/development/pos`.
 
+**SSH (amvara9):** On the usual dev machine, `ssh amvara9` works with key-based auth (host alias in SSH config). Use it for production diagnostics from this environment—e.g. `ssh amvara9 'cd /development/pos && …'` with `docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml logs|exec|ps`. CI, sandboxes, or other laptops may not have that alias; treat it as optional, not guaranteed everywhere.
+
 When debugging the running app (e.g. frontend not loading a route, API issues):
 
 1. **Check if containers are up and which port the app is on**

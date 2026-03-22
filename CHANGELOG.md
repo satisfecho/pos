@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Docs**: `AGENTS.md` documents optional `ssh amvara9` access from the configured dev machine for production diagnostics; reservation-email troubleshooting doc updated accordingly.
+
 ### Added
 
 - **Orders – unmark paid**: Staff can revert a paid order to unpaid. "Unmark paid" in the status popover clears the paid mark only; order status is restored from item statuses. Backend: `PUT /orders/{id}/unmark-paid`; permission `order:mark_paid`. i18n: `ORDERS.UNMARK_PAID` (en, es, ca, de, fr, zh-CN, hi).
