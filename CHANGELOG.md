@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.13] - 2026-03-22
+
+### Added
+
+- **Guest feedback (issue #54 – MVP)**: Public page `/feedback/:tenantId` (optional `?token=` reservation magic link) for star rating, optional comment, and optional contact fields; thank-you step with button to the tenant’s **Google review URL** when configured. Staff list at `/guest-feedback` (same access as reservations). Settings: **Google review link** (`public_google_review_url`, http/https only). API: `POST /public/tenants/{id}/guest-feedback` (rate-limited per IP/hour, `RATE_LIMIT_GUEST_FEEDBACK_PER_HOUR`), `GET /tenant/guest-feedback`; public tenant payloads include `public_google_review_url`. Migration `20260322190000_guest_feedback_and_google_review_url.sql`. i18n: `FEEDBACK.*`, `NAV.GUEST_FEEDBACK`, `SETTINGS.PUBLIC_GOOGLE_REVIEW_*`, `RESERVATIONS.VIEW_FEEDBACK_PAGE` (en, de, es + en strings for fr, ca, hi, zh-CN). Reservation view links to the feedback form with token when present.
+
 ## [2.0.12] - 2026-03-22
 
 ### Fixed

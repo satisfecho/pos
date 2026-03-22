@@ -160,6 +160,9 @@ class Tenant(SQLModel, table=True):
     reservation_reminder_24h_enabled: bool = Field(default=False)
     reservation_reminder_2h_enabled: bool = Field(default=False)
 
+    # Public feedback page: optional "Write a review" link (Google Business Profile / Maps)
+    public_google_review_url: str | None = Field(default=None, max_length=2048)
+
     # Kitchen/Bar display: wait-time thresholds (minutes) for card color (green -> yellow -> orange -> red)
     kitchen_display_timer_yellow_minutes: int | None = Field(default=5)
     kitchen_display_timer_orange_minutes: int | None = Field(default=10)
@@ -460,6 +463,22 @@ class Reservation(TenantMixin, table=True):
     reminder_2h_sent_at: datetime | None = Field(default=None)
 
 
+class GuestFeedback(TenantMixin, table=True):
+    """Anonymous guest feedback submitted from the public /feedback/:tenantId page."""
+
+    __tablename__ = "guest_feedback"
+    id: int | None = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    rating: int = Field(ge=1, le=5)
+    comment: str | None = None
+    contact_name: str | None = Field(default=None, max_length=200)
+    contact_email: str | None = Field(default=None, max_length=320)
+    contact_phone: str | None = Field(default=None, max_length=40)
+    reservation_id: int | None = Field(default=None, foreign_key="reservation.id")
+    client_ip: str | None = Field(default=None, max_length=45)
+    client_user_agent: str | None = Field(default=None, max_length=512)
+
+
 class BillingCustomer(TenantMixin, table=True):
     """Customer registered for tax invoicing (Factura). Company details for printing invoices."""
     __tablename__ = "billing_customer"
@@ -658,6 +677,17 @@ class ReservationSeat(SQLModel):
     table_id: int
 
 
+class GuestFeedbackCreate(SQLModel):
+    """Public POST body for /public/tenants/{id}/guest-feedback."""
+
+    rating: int = Field(ge=1, le=5)
+    comment: str | None = None
+    contact_name: str | None = Field(default=None, max_length=200)
+    contact_email: str | None = Field(default=None, max_length=320)
+    contact_phone: str | None = Field(default=None, max_length=40)
+    reservation_token: str | None = Field(default=None, max_length=128)
+
+
 class PublicReservationCreate(SQLModel):
     """Public booking: tenant_id required. Staff use ReservationCreate (no tenant_id)."""
     tenant_id: int
@@ -840,6 +870,9 @@ class TenantUpdate(SQLModel):
     reservation_dress_code: str | None = None
     reservation_reminder_24h_enabled: bool | None = None
     reservation_reminder_2h_enabled: bool | None = None
+
+    # Public Google / Maps review link (shown on feedback thank-you page)
+    public_google_review_url: str | None = None
 
     # Kitchen/Bar display timer thresholds (minutes)
     kitchen_display_timer_yellow_minutes: int | None = None

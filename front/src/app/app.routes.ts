@@ -17,10 +17,12 @@ export const routes: Routes = [
   { path: 'menu/:token', loadComponent: () => import('./menu/menu.component').then(m => m.MenuComponent) },
   { path: 'menu/:token/payment-success', loadComponent: () => import('./menu/payment-success.component').then(m => m.PaymentSuccessComponent) },
   { path: 'book/:tenantId', loadComponent: () => import('./book/book.component').then(m => m.BookComponent) },
+  { path: 'feedback/:tenantId', loadComponent: () => import('./feedback-public/feedback-public.component').then(m => m.FeedbackPublicComponent) },
   // Public take-away / home ordering: list tenants with ordering link
   { path: 'orders', loadComponent: () => import('./orders-public/orders-public.component').then(m => m.OrdersPublicComponent) },
   // Staff reservations (must be before 'reservation' so /reservations matches here, not the public route)
   { path: 'reservations', canActivate: [authGuard, reservationAccessGuard], loadComponent: () => import('./reservations/reservations.component').then(m => m.ReservationsComponent) },
+  { path: 'guest-feedback', canActivate: [authGuard, reservationAccessGuard], loadComponent: () => import('./guest-feedback/guest-feedback.component').then(m => m.GuestFeedbackComponent) },
   { path: 'reservation', loadComponent: () => import('./reservation-view/reservation-view.component').then(m => m.ReservationViewComponent) },
 
   // Protected routes - accessible by all authenticated users

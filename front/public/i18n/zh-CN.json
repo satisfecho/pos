@@ -57,6 +57,7 @@
     "KITCHEN_DISPLAY": "厨房显示屏",
     "BEVERAGES_DISPLAY": "饮品显示屏",
     "WORKING_PLAN": "排班计划",
+    "GUEST_FEEDBACK": "Guest feedback",
     "LOGOUT": "退出登录"
   },
   "LANDING": {
@@ -403,7 +404,7 @@
   "ITEM_STATUS": {
     "pending": "待处理",
     "preparing": "准备中",
-    "ready": "已就绪",
+    "ready": "就绪",
     "delivered": "已送达",
     "cancelled": "已取消"
   },
@@ -559,7 +560,9 @@
     "ERROR_FAILED_SEAT": "入座失败",
     "ERROR_FAILED": "失败",
     "ERROR_MISSING_TOKEN": "缺少预订令牌。请使用确认中的链接。",
-    "ERROR_NOT_FOUND": "未找到预订或链接已过期。"
+    "ERROR_NOT_FOUND": "未找到预订或链接已过期。",
+    "VIEW_PUBLIC_PAGE": "View public booking page",
+    "VIEW_FEEDBACK_PAGE": "Public feedback page"
   },
   "REPORTS": {
     "TITLE": "销售与收入",
@@ -730,7 +733,10 @@
     "CONTACT_INFO_SUBTITLE": "管理餐厅联系信息",
     "OPENING_HOURS_SUBTITLE": "配置餐厅营业时间",
     "RESERVATION_PREPAYMENT_HINT": "确认预订时收取的金额（分）。设为 0 可禁用。",
-    "PAYMENT_SETTINGS_SUBTITLE": "配置支付方式"
+    "PAYMENT_SETTINGS_SUBTITLE": "配置支付方式",
+    "PUBLIC_GOOGLE_REVIEW_URL": "Google review link",
+    "PUBLIC_GOOGLE_REVIEW_PLACEHOLDER": "https://g.page/.../review or Google Maps review URL",
+    "PUBLIC_GOOGLE_REVIEW_HINT": "Shown on the thank-you page after guests submit private feedback so they can leave a public Google review."
   },
   "PAYMENTS": {
     "PAYMENT": "支付",
@@ -961,13 +967,6 @@
       "VIEW": "查看"
     }
   },
-  "ITEM_STATUS": {
-    "pending": "待处理",
-    "preparing": "准备中",
-    "ready": "就绪",
-    "delivered": "已送达",
-    "cancelled": "已取消"
-  },
   "USERS": {
     "TITLE": "用户管理",
     "ADD_USER": "添加用户",
@@ -1025,5 +1024,36 @@
     "PAYMENT_REQUEST_YOURS": "请求付款！",
     "CALL_WAITER_OTHER": "顾客呼叫服务员",
     "PAYMENT_REQUEST_OTHER": "顾客请求付款"
+  },
+  "FEEDBACK": {
+    "TITLE": "How was your visit?",
+    "INTRO": "We would love to hear from you. Your rating and comments help us improve.",
+    "RATING_LABEL": "Overall experience",
+    "COMMENT_LABEL": "Comments (optional)",
+    "COMMENT_PLACEHOLDER": "Tell us what went well or what we could do better",
+    "CONTACT_OPTIONAL": "Contact details (optional)",
+    "CONTACT_HINT": "Leave your name, email or phone if you would like us to follow up.",
+    "CONTACT_NAME": "Name",
+    "CONTACT_EMAIL": "Email",
+    "CONTACT_PHONE": "Phone",
+    "SUBMIT": "Send feedback",
+    "SENDING": "Sending...",
+    "SUBMIT_ERROR": "Could not send feedback. Please try again later.",
+    "THANK_YOU": "Thank you!",
+    "THANK_YOU_DETAIL": "We appreciate you taking the time to share your feedback.",
+    "OPEN_GOOGLE_REVIEW": "Leave a public review on Google",
+    "INVALID_TENANT": "Invalid restaurant link.",
+    "TENANT_NOT_FOUND": "Restaurant not found.",
+    "STAFF_TITLE": "Guest feedback",
+    "VIEW_PUBLIC_FORM": "Open public feedback form",
+    "LOADING": "Loading...",
+    "LOAD_FAILED": "Could not load feedback.",
+    "NONE": "No feedback yet.",
+    "COL_DATE": "Date",
+    "COL_RATING": "Rating",
+    "COL_COMMENT": "Comment",
+    "COL_CONTACT": "Contact",
+    "COL_RESERVATION": "Reservation",
+    "LINK_FROM_RESERVATION": "Tell us how we did"
   }
 }

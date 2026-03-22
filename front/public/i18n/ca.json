@@ -57,6 +57,7 @@
     "KITCHEN_DISPLAY": "Pantalla cuina",
     "BEVERAGES_DISPLAY": "Pantalla de begudes",
     "WORKING_PLAN": "Pla de treball",
+    "GUEST_FEEDBACK": "Guest feedback",
     "LOGOUT": "Tancar sessió"
   },
   "LANDING": {
@@ -561,7 +562,9 @@
     "NOTIFY_DELAY_PLACEHOLDER": "ej. Arribarem 1 hora tard",
     "SEND_DELAY": "Enviar avis de retard",
     "SENDING": "Enviant...",
-    "DELAY_SENT": "Avis enviat. Ens han informat."
+    "DELAY_SENT": "Avis enviat. Ens han informat.",
+    "VIEW_PUBLIC_PAGE": "View public booking page",
+    "VIEW_FEEDBACK_PAGE": "Public feedback page"
   },
   "REPORTS": {
     "TITLE": "Vendes i ingressos",
@@ -765,7 +768,10 @@
     "TRANSLATIONS_SUBTITLE": "Selecciona el teu idioma preferit",
     "CONTACT_INFO_SUBTITLE": "Gestiona la informació de contacte del restaurant",
     "OPENING_HOURS_SUBTITLE": "Configura les hores d'obertura del restaurant",
-    "PAYMENT_SETTINGS_SUBTITLE": "Configura els mètodes de pagament"
+    "PAYMENT_SETTINGS_SUBTITLE": "Configura els mètodes de pagament",
+    "PUBLIC_GOOGLE_REVIEW_URL": "Google review link",
+    "PUBLIC_GOOGLE_REVIEW_PLACEHOLDER": "https://g.page/.../review or Google Maps review URL",
+    "PUBLIC_GOOGLE_REVIEW_HINT": "Shown on the thank-you page after guests submit private feedback so they can leave a public Google review."
   },
   "PAYMENTS": {
     "PAYMENT": "Pagament",
@@ -1086,5 +1092,36 @@
     "PAYMENT_REQUEST_YOURS": "sol·licita el pagament!",
     "CALL_WAITER_OTHER": "Un client crida un cambrer",
     "PAYMENT_REQUEST_OTHER": "Un client sol·licita el pagament"
+  },
+  "FEEDBACK": {
+    "TITLE": "How was your visit?",
+    "INTRO": "We would love to hear from you. Your rating and comments help us improve.",
+    "RATING_LABEL": "Overall experience",
+    "COMMENT_LABEL": "Comments (optional)",
+    "COMMENT_PLACEHOLDER": "Tell us what went well or what we could do better",
+    "CONTACT_OPTIONAL": "Contact details (optional)",
+    "CONTACT_HINT": "Leave your name, email or phone if you would like us to follow up.",
+    "CONTACT_NAME": "Name",
+    "CONTACT_EMAIL": "Email",
+    "CONTACT_PHONE": "Phone",
+    "SUBMIT": "Send feedback",
+    "SENDING": "Sending...",
+    "SUBMIT_ERROR": "Could not send feedback. Please try again later.",
+    "THANK_YOU": "Thank you!",
+    "THANK_YOU_DETAIL": "We appreciate you taking the time to share your feedback.",
+    "OPEN_GOOGLE_REVIEW": "Leave a public review on Google",
+    "INVALID_TENANT": "Invalid restaurant link.",
+    "TENANT_NOT_FOUND": "Restaurant not found.",
+    "STAFF_TITLE": "Guest feedback",
+    "VIEW_PUBLIC_FORM": "Open public feedback form",
+    "LOADING": "Loading...",
+    "LOAD_FAILED": "Could not load feedback.",
+    "NONE": "No feedback yet.",
+    "COL_DATE": "Date",
+    "COL_RATING": "Rating",
+    "COL_COMMENT": "Comment",
+    "COL_CONTACT": "Contact",
+    "COL_RESERVATION": "Reservation",
+    "LINK_FROM_RESERVATION": "Tell us how we did"
   }
 }

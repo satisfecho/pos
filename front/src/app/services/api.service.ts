@@ -223,6 +223,25 @@ export interface TenantSummary {
   reservation_cancellation_policy?: string | null;
   reservation_arrival_tolerance_minutes?: number | null;
   reservation_dress_code?: string | null;
+  /** Google Maps / Business Profile "Write a review" URL (thank-you page on public feedback form). */
+  public_google_review_url?: string | null;
+}
+
+/** Staff list + public submit response context */
+export interface GuestFeedback {
+  id: number;
+  created_at: string | null;
+  rating: number;
+  comment: string | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  reservation_id: number | null;
+  reservation_date?: string | null;
+  reservation_time?: string | null;
+  reservation_customer_name?: string | null;
+  client_ip?: string | null;
+  client_user_agent?: string | null;
 }
 
 export interface Product {
@@ -563,6 +582,7 @@ export interface TenantSettings {
   reservation_dress_code?: string | null;
   reservation_reminder_24h_enabled?: boolean | null;
   reservation_reminder_2h_enabled?: boolean | null;
+  public_google_review_url?: string | null;
 }
 
 export interface OrderItemCreate {
@@ -1407,6 +1427,29 @@ export class ApiService {
   /** Get one tenant's public info (for book/menu branding). Public, no auth. */
   getPublicTenant(tenantId: number): Observable<TenantSummary> {
     return this.http.get<TenantSummary>(`${this.apiUrl}/public/tenants/${tenantId}`);
+  }
+
+  submitPublicGuestFeedback(
+    tenantId: number,
+    body: {
+      rating: number;
+      comment?: string | null;
+      contact_name?: string | null;
+      contact_email?: string | null;
+      contact_phone?: string | null;
+      reservation_token?: string | null;
+    },
+  ): Observable<{ ok: boolean; id: number }> {
+    return this.http.post<{ ok: boolean; id: number }>(
+      `${this.apiUrl}/public/tenants/${tenantId}/guest-feedback`,
+      body,
+    );
+  }
+
+  listGuestFeedback(limit = 200): Observable<GuestFeedback[]> {
+    return this.http.get<GuestFeedback[]>(`${this.apiUrl}/tenant/guest-feedback`, {
+      params: { limit: String(limit) },
+    });
   }
 
   /** Get token for WebSocket auth (cookie may not be sent on WS upgrade from some origins). */

@@ -658,6 +658,7 @@ class TenantSummary(_BaseModel):
     reservation_cancellation_policy: str | None = None
     reservation_arrival_tolerance_minutes: int | None = None
     reservation_dress_code: str | None = None
+    public_google_review_url: str | None = None
 
 
 TAKE_AWAY_TABLE_NAMES = ("take away", "home ordering", "takeaway", "take-away")
@@ -743,7 +744,25 @@ def _tenant_to_summary(t: models.Tenant, session: Session) -> TenantSummary:
         reservation_cancellation_policy=t.reservation_cancellation_policy,
         reservation_arrival_tolerance_minutes=t.reservation_arrival_tolerance_minutes,
         reservation_dress_code=t.reservation_dress_code,
+        public_google_review_url=t.public_google_review_url,
     )
+
+
+def _normalize_public_google_review_url(raw: str | None) -> str | None:
+    """Allow only http(s) URLs for the public review link; bounded length."""
+    if raw is None:
+        return None
+    if not isinstance(raw, str):
+        return None
+    s = raw.replace("\x00", "").strip()
+    if not s:
+        return None
+    if len(s) > 2048:
+        s = s[:2048]
+    low = s.lower()
+    if not (low.startswith("https://") or low.startswith("http://")):
+        return None
+    return s
 
 
 @app.get("/public/tenants", response_model=list[TenantSummary])
@@ -781,8 +800,126 @@ def get_public_tenant(
         "reservation_cancellation_policy": summary.reservation_cancellation_policy,
         "reservation_arrival_tolerance_minutes": summary.reservation_arrival_tolerance_minutes,
         "reservation_dress_code": summary.reservation_dress_code,
+        "public_google_review_url": summary.public_google_review_url,
     }
     return JSONResponse(content=body)
+
+
+@app.post("/public/tenants/{tenant_id}/guest-feedback")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_guest_feedback_per_hour', 15)}/hour",
+    key_func=_rate_limit_key,
+)
+def submit_public_guest_feedback(
+    request: Request,
+    response: Response,
+    tenant_id: int,
+    body: models.GuestFeedbackCreate,
+    session: Session = Depends(get_session),
+    lang: str = Depends(_get_requested_language),
+) -> dict:
+    """Anonymous guest feedback (rating + optional comment and contact). Optional reservation_token must match this tenant."""
+    tenant = session.get(models.Tenant, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    comment = None
+    if body.comment is not None and str(body.comment).strip():
+        comment = str(body.comment).replace("\x00", "").strip()[:4000]
+
+    cname = None
+    if body.contact_name is not None and str(body.contact_name).strip():
+        cname = str(body.contact_name).replace("\x00", "").strip()[:200]
+
+    cemail = None
+    if body.contact_email is not None and str(body.contact_email).strip():
+        try:
+            cemail = normalize_email_address(body.contact_email)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=get_message("invalid_email", lang))
+
+    cphone = None
+    if body.contact_phone is not None and str(body.contact_phone).strip():
+        try:
+            cphone = normalize_phone_e164(body.contact_phone, settings.default_phone_country)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=get_message("invalid_phone", lang))
+
+    reservation_id = None
+    if body.reservation_token is not None and str(body.reservation_token).strip():
+        tok = str(body.reservation_token).strip()[:128]
+        res = session.exec(
+            select(models.Reservation).where(
+                models.Reservation.tenant_id == tenant_id,
+                models.Reservation.token == tok,
+            )
+        ).first()
+        if not res:
+            raise HTTPException(status_code=400, detail=get_message("invalid_reservation_token", lang))
+        reservation_id = res.id
+
+    client_ip = _client_ip_from_request(request)
+    user_agent = (request.headers.get("user-agent") or "")[:512]
+
+    row = models.GuestFeedback(
+        tenant_id=tenant_id,
+        rating=body.rating,
+        comment=comment,
+        contact_name=cname,
+        contact_email=cemail,
+        contact_phone=cphone,
+        reservation_id=reservation_id,
+        client_ip=client_ip,
+        client_user_agent=user_agent or None,
+    )
+    session.add(row)
+    session.commit()
+    session.refresh(row)
+    return {"ok": True, "id": row.id}
+
+
+def _guest_feedback_to_dict(session: Session, gf: models.GuestFeedback) -> dict:
+    out: dict = {
+        "id": gf.id,
+        "created_at": gf.created_at.isoformat() if gf.created_at else None,
+        "rating": gf.rating,
+        "comment": gf.comment,
+        "contact_name": gf.contact_name,
+        "contact_email": gf.contact_email,
+        "contact_phone": gf.contact_phone,
+        "reservation_id": gf.reservation_id,
+        "client_ip": gf.client_ip,
+        "client_user_agent": gf.client_user_agent,
+    }
+    if gf.reservation_id:
+        r = session.get(models.Reservation, gf.reservation_id)
+        if r and r.tenant_id == gf.tenant_id:
+            out["reservation_date"] = str(r.reservation_date)
+            out["reservation_time"] = str(r.reservation_time)
+            out["reservation_customer_name"] = r.customer_name
+    return out
+
+
+@app.get("/tenant/guest-feedback")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def list_tenant_guest_feedback(
+    request: Request,
+    response: Response,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.RESERVATION_READ))],
+    session: Session = Depends(get_session),
+    limit: int = Query(200, ge=1, le=500),
+) -> list[dict]:
+    """List guest feedback for the current tenant (newest first)."""
+    rows = session.exec(
+        select(models.GuestFeedback)
+        .where(models.GuestFeedback.tenant_id == current_user.tenant_id)
+        .order_by(models.GuestFeedback.created_at.desc())
+        .limit(limit)
+    ).all()
+    return [_guest_feedback_to_dict(session, gf) for gf in rows]
 
 
 # ============ AUTH ============
@@ -1805,6 +1942,11 @@ def update_tenant_settings(
                 tenant.public_background_color = None
         else:
             tenant.public_background_color = None
+
+    if tenant_update.public_google_review_url is not None:
+        tenant.public_google_review_url = _normalize_public_google_review_url(
+            tenant_update.public_google_review_url
+        )
 
     # Reservation options (pre-payment, policies, reminders)
     if tenant_update.reservation_prepayment_cents is not None:

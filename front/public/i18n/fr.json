@@ -57,6 +57,7 @@
     "KITCHEN_DISPLAY": "Écran cuisine",
     "BEVERAGES_DISPLAY": "Écran boissons",
     "WORKING_PLAN": "Plan de travail",
+    "GUEST_FEEDBACK": "Guest feedback",
     "LOGOUT": "Déconnexion"
   },
   "LANDING": {
@@ -361,20 +362,20 @@
     "REASON_REQUIRED": "Un motif est obligatoire pour annuler des articles prêts",
     "REMOVAL_REASON": "Motif du retrait (obligatoire pour la comptabilité) :",
     "REMOVAL_REASON_REQUIRED": "Un motif est obligatoire pour retirer des articles prêts",
-    "QUANTITY_MIN_ERROR": "La quantit\u00e9 doit \u00eatre au moins 1",
-    "ITEM_REMOVED": "Article retir\u00e9",
-    "ITEM_UPDATED": "Article mis \u00e0 jour",
-    "STATUS_UPDATED": "Statut mis \u00e0 jour",
-    "FAILED_TO_UPDATE_STATUS": "\u00c9chec de la mise \u00e0 jour du statut",
-    "FAILED_TO_UPDATE_ITEM": "\u00c9chec de la mise \u00e0 jour de l'article",
-    "FAILED_TO_REMOVE_ITEM": "\u00c9chec du retrait de l'article",
-    "FAILED_TO_RESET_STATUS": "\u00c9chec de la r\u00e9initialisation du statut",
-    "FAILED_TO_CANCEL_ITEM": "\u00c9chec de l'annulation de l'article",
-    "FAILED_TO_MARK_PAID": "\u00c9chec du marquage comme pay\u00e9",
+    "QUANTITY_MIN_ERROR": "La quantité doit être au moins 1",
+    "ITEM_REMOVED": "Article retiré",
+    "ITEM_UPDATED": "Article mis à jour",
+    "STATUS_UPDATED": "Statut mis à jour",
+    "FAILED_TO_UPDATE_STATUS": "Échec de la mise à jour du statut",
+    "FAILED_TO_UPDATE_ITEM": "Échec de la mise à jour de l'article",
+    "FAILED_TO_REMOVE_ITEM": "Échec du retrait de l'article",
+    "FAILED_TO_RESET_STATUS": "Échec de la réinitialisation du statut",
+    "FAILED_TO_CANCEL_ITEM": "Échec de l'annulation de l'article",
+    "FAILED_TO_MARK_PAID": "Échec du marquage comme payé",
     "PRINT_INVOICE": "Imprimer la facture",
     "INVOICE": "Facture",
     "INVOICE_FOOTER": "Merci pour votre commande.",
-    "INVOICE_OSS_PREFIX": "Open source \u00b7 Fait avec \u2665 \u00e0 Barcelone et au Mexique"
+    "INVOICE_OSS_PREFIX": "Open source · Fait avec ♥ à Barcelone et au Mexique"
   },
   "CUSTOMERS": {
     "TITLE": "Clients (Facture)",
@@ -632,7 +633,9 @@
     "NOTIFY_DELAY_PLACEHOLDER": "ex. Nous arriverons 1 h en retard",
     "SEND_DELAY": "Envoyer l'avis de retard",
     "SENDING": "Envoi...",
-    "DELAY_SENT": "Avis envoyé. Nous avons été informés."
+    "DELAY_SENT": "Avis envoyé. Nous avons été informés.",
+    "VIEW_PUBLIC_PAGE": "View public booking page",
+    "VIEW_FEEDBACK_PAGE": "Public feedback page"
   },
   "WORKING_PLAN": {
     "TITLE": "Plan de travail",
@@ -793,7 +796,10 @@
     "RESERVATION_REMINDER_24H": "Rappel 24 h avant",
     "RESERVATION_REMINDER_24H_HINT": "Si activé, un rappel peut être envoyé (manuel ou automatisé) un jour avant.",
     "RESERVATION_REMINDER_2H": "Rappel 2 h avant",
-    "RESERVATION_REMINDER_2H_HINT": "Si activé, un rappel peut être envoyé (manuel ou automatisé) deux heures avant."
+    "RESERVATION_REMINDER_2H_HINT": "Si activé, un rappel peut être envoyé (manuel ou automatisé) deux heures avant.",
+    "PUBLIC_GOOGLE_REVIEW_URL": "Google review link",
+    "PUBLIC_GOOGLE_REVIEW_PLACEHOLDER": "https://g.page/.../review or Google Maps review URL",
+    "PUBLIC_GOOGLE_REVIEW_HINT": "Shown on the thank-you page after guests submit private feedback so they can leave a public Google review."
   },
   "PAYMENTS": {
     "PAYMENT": "Paiement",
@@ -1085,5 +1091,36 @@
     "PAYMENT_REQUEST_YOURS": "demande le paiement !",
     "CALL_WAITER_OTHER": "Un client appelle le serveur",
     "PAYMENT_REQUEST_OTHER": "Un client demande le paiement"
+  },
+  "FEEDBACK": {
+    "TITLE": "How was your visit?",
+    "INTRO": "We would love to hear from you. Your rating and comments help us improve.",
+    "RATING_LABEL": "Overall experience",
+    "COMMENT_LABEL": "Comments (optional)",
+    "COMMENT_PLACEHOLDER": "Tell us what went well or what we could do better",
+    "CONTACT_OPTIONAL": "Contact details (optional)",
+    "CONTACT_HINT": "Leave your name, email or phone if you would like us to follow up.",
+    "CONTACT_NAME": "Name",
+    "CONTACT_EMAIL": "Email",
+    "CONTACT_PHONE": "Phone",
+    "SUBMIT": "Send feedback",
+    "SENDING": "Sending...",
+    "SUBMIT_ERROR": "Could not send feedback. Please try again later.",
+    "THANK_YOU": "Thank you!",
+    "THANK_YOU_DETAIL": "We appreciate you taking the time to share your feedback.",
+    "OPEN_GOOGLE_REVIEW": "Leave a public review on Google",
+    "INVALID_TENANT": "Invalid restaurant link.",
+    "TENANT_NOT_FOUND": "Restaurant not found.",
+    "STAFF_TITLE": "Guest feedback",
+    "VIEW_PUBLIC_FORM": "Open public feedback form",
+    "LOADING": "Loading...",
+    "LOAD_FAILED": "Could not load feedback.",
+    "NONE": "No feedback yet.",
+    "COL_DATE": "Date",
+    "COL_RATING": "Rating",
+    "COL_COMMENT": "Comment",
+    "COL_CONTACT": "Contact",
+    "COL_RESERVATION": "Reservation",
+    "LINK_FROM_RESERVATION": "Tell us how we did"
   }
 }

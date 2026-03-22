@@ -27,6 +27,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           </a>
           @if (tenantId != null) {
             <a [routerLink]="['/book', tenantId]" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">{{ 'RESERVATIONS.VIEW_PUBLIC_PAGE' | translate }}</a>
+            <a [routerLink]="['/feedback', tenantId]" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">{{ 'RESERVATIONS.VIEW_FEEDBACK_PAGE' | translate }}</a>
           }
           @if (canWrite()) {
           <button class="btn btn-primary" (click)="openCreate()">

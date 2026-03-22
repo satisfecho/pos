@@ -1,0 +1,71 @@
+<app-sidebar>
+  <div class="page-header">
+    <h1>{{ 'FEEDBACK.STAFF_TITLE' | translate }}</h1>
+    <div class="page-header-actions">
+      @if (tenantId != null) {
+        <a [routerLink]="['/feedback', tenantId]" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">
+          {{ 'FEEDBACK.VIEW_PUBLIC_FORM' | translate }}
+        </a>
+      }
+      <button type="button" class="btn btn-ghost btn-sm" (click)="load()">{{ 'ORDERS.REFRESH' | translate }}</button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="empty-state"><p>{{ 'FEEDBACK.LOADING' | translate }}</p></div>
+  } @else if (error()) {
+    <div class="empty-state"><p class="form-error">{{ error() }}</p></div>
+  } @else if (items().length === 0) {
+    <div class="empty-state"><p>{{ 'FEEDBACK.NONE' | translate }}</p></div>
+  } @else {
+    <div class="feedback-table-wrap">
+      <table class="feedback-table">
+        <thead>
+          <tr>
+            <th>{{ 'FEEDBACK.COL_DATE' | translate }}</th>
+            <th>{{ 'FEEDBACK.COL_RATING' | translate }}</th>
+            <th>{{ 'FEEDBACK.COL_COMMENT' | translate }}</th>
+            <th>{{ 'FEEDBACK.COL_CONTACT' | translate }}</th>
+            <th>{{ 'FEEDBACK.COL_RESERVATION' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (f of items(); track f.id) {
+            <tr>
+              <td class="cell-nowrap">{{ (f.created_at || '').slice(0, 16) || '—' }}</td>
+              <td>{{ f.rating }}★</td>
+              <td class="cell-comment">{{ f.comment || '—' }}</td>
+              <td class="cell-contact">
+                @if (f.contact_name) {
+                  <div>{{ f.contact_name }}</div>
+                }
+                @if (f.contact_email) {
+                  <div><a [href]="'mailto:' + f.contact_email">{{ f.contact_email }}</a></div>
+                }
+                @if (f.contact_phone) {
+                  <div><a [href]="'tel:' + f.contact_phone">{{ f.contact_phone }}</a></div>
+                }
+                @if (!f.contact_name && !f.contact_email && !f.contact_phone) {
+                  —
+                }
+              </td>
+              <td class="cell-res">
+                @if (f.reservation_id) {
+                  <span>#{{ f.reservation_id }}</span>
+                  @if (f.reservation_date) {
+                    <div class="res-meta">{{ f.reservation_date }} {{ f.reservation_time || '' }}</div>
+                  }
+                  @if (f.reservation_customer_name) {
+                    <div class="res-meta">{{ f.reservation_customer_name }}</div>
+                  }
+                } @else {
+                  —
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</app-sidebar>

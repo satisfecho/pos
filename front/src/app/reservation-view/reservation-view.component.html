@@ -122,6 +122,17 @@
           }
         }
       </div>
+      @if (reservation() && tenant() && reservation()!.token) {
+        <div class="view-card view-feedback-prompt">
+          <a
+            [routerLink]="['/feedback', tenant()!.id]"
+            [queryParams]="{ token: reservation()!.token }"
+            class="btn btn-secondary"
+          >
+            {{ 'FEEDBACK.LINK_FROM_RESERVATION' | translate }}
+          </a>
+        </div>
+      }
     </main>
     @if (showCancelConfirm() && reservation()) {
       <app-confirmation-modal

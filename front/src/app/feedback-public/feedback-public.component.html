@@ -1,0 +1,144 @@
+<div
+  class="book-page"
+  [style.--color-bg]="tenant()?.public_background_color ?? null"
+  [style.--hero-header-bg]="tenant()?.public_background_color ?? null"
+>
+  @if (loading()) {
+    <div class="loading-screen">
+      <div class="loading-content">
+        <div class="skeleton-header">
+          <div class="skeleton-logo"></div>
+          <div class="skeleton-text skeleton-title"></div>
+        </div>
+      </div>
+    </div>
+  } @else if (error()) {
+    <div class="book-form-card" style="margin: 2rem auto; max-width: 480px">
+      <h1>{{ 'FEEDBACK.TITLE' | translate }}</h1>
+      <p class="form-error">{{ error() }}</p>
+    </div>
+  } @else if (submitted()) {
+    <header
+      class="hero-header"
+      [class.has-bg-image]="tenant()?.header_background_filename"
+      [style.background-image]="headerBackgroundStyle()"
+    >
+      <div class="hero-overlay"></div>
+      <app-language-picker class="book-language-picker"></app-language-picker>
+      <div class="hero-content">
+        <div class="hero-top-row">
+          @if (logoUrl()) {
+            <div class="logo-container">
+              <img [src]="getLogoSafeUrl(logoUrl())" [alt]="tenant()?.name || ''" class="tenant-logo" />
+            </div>
+          }
+        </div>
+        <div class="hero-info">
+          <h1 class="restaurant-name">{{ tenant()?.name }}</h1>
+        </div>
+      </div>
+    </header>
+    <main class="book-main">
+      <div class="book-form-card">
+        <h2>{{ 'FEEDBACK.THANK_YOU' | translate }}</h2>
+        <p>{{ 'FEEDBACK.THANK_YOU_DETAIL' | translate }}</p>
+        @if (googleReviewUrl()) {
+          <a [href]="googleReviewUrl()!" target="_blank" rel="noopener noreferrer" class="btn btn-primary feedback-google-btn">
+            {{ 'FEEDBACK.OPEN_GOOGLE_REVIEW' | translate }}
+          </a>
+        }
+      </div>
+    </main>
+  } @else {
+    <header
+      class="hero-header"
+      [class.has-bg-image]="tenant()?.header_background_filename"
+      [style.background-image]="headerBackgroundStyle()"
+    >
+      <div class="hero-overlay"></div>
+      <app-language-picker class="book-language-picker"></app-language-picker>
+      <div class="hero-content">
+        <div class="hero-top-row">
+          @if (logoUrl()) {
+            <div class="logo-container">
+              <img [src]="getLogoSafeUrl(logoUrl())" [alt]="tenant()?.name || ''" class="tenant-logo" />
+            </div>
+          }
+        </div>
+        <div class="hero-info">
+          <h1 class="restaurant-name">{{ tenant()?.name }}</h1>
+          @if (tenant()?.description) {
+            <p class="restaurant-tagline">{{ tenant()!.description }}</p>
+          }
+          <div class="table-pill book-pill">
+            <span>{{ 'FEEDBACK.TITLE' | translate }}</span>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="book-main">
+      <div class="book-form-card">
+        <p class="feedback-intro">{{ 'FEEDBACK.INTRO' | translate }}</p>
+
+        <div class="form-group feedback-rating-group">
+          <span class="feedback-rating-label">{{ 'FEEDBACK.RATING_LABEL' | translate }} *</span>
+          <div class="star-row" role="group" [attr.aria-label]="'FEEDBACK.RATING_LABEL' | translate">
+            @for (s of stars; track s) {
+              <button
+                type="button"
+                class="star-btn"
+                [class.active]="rating() >= s"
+                (click)="setRating(s)"
+                [attr.aria-pressed]="rating() >= s"
+              >
+                ★
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="fb-comment">{{ 'FEEDBACK.COMMENT_LABEL' | translate }}</label>
+          <textarea
+            id="fb-comment"
+            name="comment"
+            rows="4"
+            maxlength="4000"
+            [(ngModel)]="comment"
+            [placeholder]="'FEEDBACK.COMMENT_PLACEHOLDER' | translate"
+          ></textarea>
+        </div>
+
+        <fieldset class="feedback-contact-fieldset">
+          <legend>{{ 'FEEDBACK.CONTACT_OPTIONAL' | translate }}</legend>
+          <p class="field-hint">{{ 'FEEDBACK.CONTACT_HINT' | translate }}</p>
+          <div class="form-group">
+            <label for="fb-name">{{ 'FEEDBACK.CONTACT_NAME' | translate }}</label>
+            <input id="fb-name" type="text" name="contactName" maxlength="200" [(ngModel)]="contactName" />
+          </div>
+          <div class="form-group">
+            <label for="fb-email">{{ 'FEEDBACK.CONTACT_EMAIL' | translate }}</label>
+            <input id="fb-email" type="email" name="contactEmail" [(ngModel)]="contactEmail" />
+          </div>
+          <div class="form-group">
+            <label for="fb-phone">{{ 'FEEDBACK.CONTACT_PHONE' | translate }}</label>
+            <input id="fb-phone" type="tel" name="contactPhone" [(ngModel)]="contactPhone" />
+          </div>
+        </fieldset>
+
+        @if (submitError()) {
+          <p class="form-error">{{ submitError() }}</p>
+        }
+
+        <button
+          type="button"
+          class="btn btn-primary btn-submit-feedback"
+          [disabled]="!canSubmit() || !optionalContactOk() || submitting()"
+          (click)="submit()"
+        >
+          {{ submitting() ? ('FEEDBACK.SENDING' | translate) : ('FEEDBACK.SUBMIT' | translate) }}
+        </button>
+      </div>
+    </main>
+  }
+</div>

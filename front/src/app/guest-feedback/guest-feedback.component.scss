@@ -1,0 +1,51 @@
+.page-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.feedback-table-wrap {
+  overflow-x: auto;
+}
+
+.feedback-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.feedback-table th,
+.feedback-table td {
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.65rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.feedback-table th {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cell-nowrap {
+  white-space: nowrap;
+}
+
+.cell-comment {
+  max-width: 280px;
+  word-break: break-word;
+}
+
+.cell-contact {
+  min-width: 140px;
+}
+
+.res-meta {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.form-error {
+  color: var(--color-danger, #c62828);
+}

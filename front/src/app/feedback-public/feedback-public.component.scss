@@ -1,0 +1,53 @@
+.star-row {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.star-btn {
+  font-size: 2rem;
+  line-height: 1;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-border, #ccc);
+  padding: 0.15rem;
+}
+
+.star-btn.active {
+  color: #f5a623;
+}
+
+.feedback-intro {
+  margin-bottom: 1rem;
+}
+
+.feedback-rating-group {
+  margin-bottom: 1rem;
+}
+
+.feedback-rating-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.feedback-contact-fieldset {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.feedback-contact-fieldset legend {
+  padding: 0 0.35rem;
+  font-weight: 600;
+}
+
+.feedback-google-btn {
+  margin-top: 1rem;
+}
+
+.btn-submit-feedback {
+  margin-top: 1rem;
+}
