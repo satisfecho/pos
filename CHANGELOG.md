@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.23] - 2026-03-22
+
+### Changed
+
+- **Backend**: Replaced deprecated FastAPI `@app.on_event("startup" | "shutdown")` with a single **`lifespan`** context manager (same DB init, migrations, and reservation reminder heartbeat). Removes `DeprecationWarning` noise during `pytest` and matches current FastAPI guidance.
+
 ## [2.0.22] - 2026-03-22
 
 ### Fixed

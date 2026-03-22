@@ -1,5 +1,6 @@
 import asyncio
 import base64
+from contextlib import asynccontextmanager
 import hashlib
 import hmac
 import json
@@ -247,6 +248,47 @@ def _get_requested_language(
 _swagger_ui_params = {"faviconUrl": "/favicon.ico"}
 if settings.root_path:
     _swagger_ui_params["url"] = f"{settings.root_path.rstrip('/')}/openapi.json"
+
+
+@asynccontextmanager
+async def _app_lifespan(app: FastAPI):
+    logger.info("Starting application...")
+    create_db_and_tables()
+    try:
+        from .migrate import MigrationRunner
+        from pathlib import Path
+
+        migrations_dir = Path(__file__).parent.parent / "migrations"
+        runner = MigrationRunner(migrations_dir)
+        db_version = runner.run_migrations()
+        logger.info(f"Database schema version: {db_version}")
+    except Exception as e:
+        logger.warning(f"Migration check failed: {e}", exc_info=True)
+    from .reservation_reminder_heartbeat import reservation_reminder_heartbeat_loop
+
+    stop_heartbeat = asyncio.Event()
+    heartbeat_task = asyncio.create_task(
+        reservation_reminder_heartbeat_loop(stop=stop_heartbeat)
+    )
+    app.state.reservation_reminder_stop = stop_heartbeat
+    app.state.reservation_reminder_task = heartbeat_task
+    logger.info("Reservation reminder heartbeat started (runs every 5 minutes)")
+
+    yield
+
+    stop = getattr(app.state, "reservation_reminder_stop", None)
+    task = getattr(app.state, "reservation_reminder_task", None)
+    if stop:
+        stop.set()
+    if task and not task.done():
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
+    logger.info("Reservation reminder heartbeat stopped")
+
+
 app = FastAPI(
     title="POS API",
     docs_url="/docs",
@@ -254,6 +296,7 @@ app = FastAPI(
     openapi_url="/openapi.json",
     root_path=settings.root_path,
     swagger_ui_parameters=_swagger_ui_params,
+    lifespan=_app_lifespan,
 )
 
 # Parse CORS origins from environment (comma-separated)
@@ -544,48 +587,6 @@ def publish_reservation_update(tenant_id: int, reservation_data: dict) -> None:
             r.publish(f"reservations:tenant:{tenant_id}", json.dumps(reservation_data))
         except Exception:
             pass  # Fail silently if Redis unavailable
-
-
-@app.on_event("startup")
-async def on_startup() -> None:
-    logger.info("Starting application...")
-    create_db_and_tables()
-    # Run database migrations
-    try:
-        from .migrate import MigrationRunner
-        from pathlib import Path
-
-        migrations_dir = Path(__file__).parent.parent / "migrations"
-        runner = MigrationRunner(migrations_dir)
-        db_version = runner.run_migrations()
-        logger.info(f"Database schema version: {db_version}")
-    except Exception as e:
-        # Log but don't fail startup - migrations can be run manually
-        logger.warning(f"Migration check failed: {e}", exc_info=True)
-    # Autonomous reservation reminder heartbeat (no cron needed)
-    from .reservation_reminder_heartbeat import reservation_reminder_heartbeat_loop
-
-    stop_heartbeat = asyncio.Event()
-    heartbeat_task = asyncio.create_task(reservation_reminder_heartbeat_loop(stop=stop_heartbeat))
-    app.state.reservation_reminder_stop = stop_heartbeat
-    app.state.reservation_reminder_task = heartbeat_task
-    logger.info("Reservation reminder heartbeat started (runs every 5 minutes)")
-
-
-@app.on_event("shutdown")
-async def on_shutdown() -> None:
-    """Cancel the reservation reminder heartbeat so it exits cleanly."""
-    stop = getattr(app.state, "reservation_reminder_stop", None)
-    task = getattr(app.state, "reservation_reminder_task", None)
-    if stop:
-        stop.set()
-    if task and not task.done():
-        task.cancel()
-        try:
-            await task
-        except asyncio.CancelledError:
-            pass
-    logger.info("Reservation reminder heartbeat stopped")
 
 
 @app.get("/health")
