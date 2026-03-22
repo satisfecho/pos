@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.27] - 2026-03-22
+
+### Changed
+
+- **`GET /menu/{token}/order`**: Fallback order lookup now excludes **paid** and **cancelled** rows in the SQL filter (same behaviour as before, less redundant filtering in Python).
+
 ## [2.0.26] - 2026-03-22
 
 ### Changed

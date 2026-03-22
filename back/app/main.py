@@ -6667,25 +6667,26 @@ def get_current_order(
     # Fallback: search by session_id or any unpaid order (backward compatibility
     # for tables activated before the shared-order model was introduced).
     if not active_order:
+        _not_closed = ~models.Order.status.in_(
+            [models.OrderStatus.paid, models.OrderStatus.cancelled]
+        )
         if session_id:
             potential_orders = session.exec(
                 select(models.Order).where(
                     models.Order.table_id == table.id,
                     models.Order.session_id == session_id,
-                    models.Order.status != models.OrderStatus.paid
+                    _not_closed,
                 ).order_by(models.Order.created_at.desc())
             ).all()
         else:
             potential_orders = session.exec(
                 select(models.Order).where(
                     models.Order.table_id == table.id,
-                    models.Order.status != models.OrderStatus.paid
+                    _not_closed,
                 ).order_by(models.Order.created_at.desc())
             ).all()
 
         for order in potential_orders:
-            if order.status in (models.OrderStatus.paid, models.OrderStatus.cancelled):
-                continue
             if "[PAID:" not in (order.notes or ""):
                 active_order = order
                 break
