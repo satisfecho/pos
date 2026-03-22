@@ -12,6 +12,7 @@ Usage:
 import argparse
 import re
 import sys
+import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
@@ -683,6 +684,5 @@ if __name__ == "__main__":
         sys.exit(1)
     except Exception as e:
         print(f"\nError during import: {e}")
-        import traceback
         traceback.print_exc()
         sys.exit(1)

@@ -10,6 +10,7 @@ import argparse
 import json
 import re
 import sys
+import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -967,6 +968,5 @@ if __name__ == "__main__":
         sys.exit(1)
     except Exception as e:
         print(f"\nError during import: {e}")
-        import traceback
         traceback.print_exc()
         sys.exit(1)
