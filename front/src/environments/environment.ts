@@ -1,8 +1,7 @@
 import { commitHash, version } from './commit-hash';
-import packageJson from '../../package.json';
+import { version as packageVersion } from '../../package.json';
 
 // DEV only: when commit-hash.ts still has placeholder 0.0.0 (e.g. ng serve without get-commit-hash.js)
-const packageVersion: string = packageJson.version;
 
 // Helper to get window config, treating empty string as valid (for relative URLs via HAProxy)
 const getWindowConfig = (key: string, fallback: string): string => {

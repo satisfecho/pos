@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.33] - 2026-03-22
+
+### Changed
+
+- **Dev `environment.ts`**: Import **`version`** from **`package.json`** as a named binding (instead of the whole JSON object) for a slightly leaner dev bundle.
+
 ## [2.0.32] - 2026-03-22
 
 ### Changed
