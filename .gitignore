@@ -48,8 +48,9 @@ node_modules/
 dist/
 .angular/cache/
 
-# Long-running go-ahead-loop.sh log (see scripts/go-ahead-loop.sh)
+# Long-running go-ahead-loop.sh log + pid (see scripts/go-ahead-loop.sh)
 .go-ahead-loop.log
+.go-ahead-loop.pid
 
 # IDEs
 .idea/

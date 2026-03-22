@@ -425,9 +425,17 @@ This **does not** replace an AI “go ahead” for product code; it only automat
 **Safety:** the script exits unless **`GO_AHEAD_LOOP=1`**.
 
 ```bash
-chmod +x scripts/go-ahead-loop.sh
+chmod +x scripts/go-ahead-loop.sh scripts/start-go-ahead-loop-background.sh
 # Default: ~8 hours, 10 minutes between cycles (requires Docker + app on BASE_URL)
 GO_AHEAD_LOOP=1 ./scripts/go-ahead-loop.sh
+```
+
+**Background (~8h, survives terminal close):** `start-go-ahead-loop-background.sh` sets `GO_AHEAD_LOOP=1`, runs the loop under **`nohup`**, and writes **`pid`** to **`.go-ahead-loop.pid`** (gitignored).
+
+```bash
+./scripts/start-go-ahead-loop-background.sh
+# tail -f .go-ahead-loop.log
+# kill "$(cat .go-ahead-loop.pid)" && rm -f .go-ahead-loop.pid
 ```
 
 | Variable | Default | Meaning |
