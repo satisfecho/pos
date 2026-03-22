@@ -238,6 +238,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Seeds**: **`products`** CLI hoists **`argparse`** to module level.
 - **Seeds**: **`beer_import`**, **`pizza_import`**, and **`wine_import`** hoist **`traceback`** to module level (CLI error handler).
 - **Seeds**: **`migrate_provider_tokens`** hoists **`shutil`** and **`uuid4`** imports to module level.
 - **Seeds**: **`update_wine_details`** imports **`requests`** and **`API_ENDPOINT` / `HEADERS` / `COOKIES`** at module level instead of inside the per-product loop.

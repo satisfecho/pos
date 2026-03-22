@@ -10,6 +10,8 @@ Usage:
     Or import and call seed_products() from your code.
 """
 
+import argparse
+
 from sqlmodel import Session, select
 from app.db import engine
 from app.models import Product, Tenant
@@ -93,8 +95,6 @@ def seed_products(clear_existing: bool = False) -> int:
 
 
 if __name__ == "__main__":
-    import argparse
-    
     parser = argparse.ArgumentParser(description="Seed products into the database")
     parser.add_argument("--clear", action="store_true", help="Clear existing products before seeding")
     args = parser.parse_args()
