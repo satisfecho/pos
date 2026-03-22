@@ -37,7 +37,7 @@ Indexes: `tenant_id`, `(tenant_id, reservation_date)`, `(tenant_id, status)`, `t
 
 **Table status** (backend `GET /tables/with-status`):
 
-- **Occupied:** table has an active order (status in `pending`, `preparing`, `ready`) **or** a reservation with `table_id = table.id` and `status = 'seated'`.
+- **Occupied:** table has `is_active` (staff activated ordering / guests in session), **or** an active order (status in `pending`, `preparing`, `ready`, `partially_delivered`), **or** a reservation with `table_id = table.id` and `status = 'seated'`.
 - **Reserved:** else if there is **any** reservation with `table_id = table.id`, `status = 'booked'`, and `reservation_date >= today`. So “reserved” = table is linked to an upcoming/current booked reservation (in practice this only happens if we ever set `table_id` before seating, e.g. pre-assign at booking; today table is only set at seat time).
 - **Available:** otherwise.
 
@@ -89,9 +89,9 @@ What we will implement is defined below. Anything not listed here is out of scop
 **Backend**
 
 1. **Capacity and demand**
-   - **Total seats:** sum of `table.seat_count` for the tenant.
-   - **Total tables:** count of tables for the tenant.
+   - **Total seats / tables:** sum of `table.seat_count` and count of tables for the tenant. For **today** (tenant timezone), capacity is reduced to tables that are **not** in active service: `is_active`, an in-progress order (`pending` … `partially_delivered`), or a **seated** reservation on that table. Future dates use full physical capacity.
    - **Demand per slot:** for (tenant, date, time), sum `party_size` and count reservations with status in (`booked`, `seated`). Slot = exact (date, time) match.
+   - **Opening hours:** create/update reject closed days, times before open, times outside split lunch/dinner windows (`hasBreak`), and times within 1 hour of closing (when opening hours are configured).
 
 2. **Overbooking report**
    - New endpoint `GET /reservations/overbooking-report` (or equivalent): query params `date` (required), `time_from`, `time_to` (optional). Response: for each slot on that date, `reservation_time`, `total_seats`, `total_tables`, `reserved_guests`, `reserved_parties`, `over_seats` (boolean), `over_tables` (boolean).

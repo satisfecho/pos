@@ -118,7 +118,7 @@
             <div class="form-group">
               <label>{{ 'RESERVATIONS.TIME' | translate }}</label>
               <select [(ngModel)]="formTime" name="time" required>
-                @for (t of timeOptions; track t) {
+                @for (t of bookableTimeOptions(); track t) {
                   <option [value]="t">{{ t }}</option>
                 }
               </select>

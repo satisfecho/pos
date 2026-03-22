@@ -49,6 +49,92 @@ export class BookComponent implements OnInit {
     return opts;
   })();
 
+  /**
+   * 15-minute slots for the selected date: within opening hours and at least 1h before closing (matches backend).
+   * If hours are not configured, all quarter hours are shown.
+   */
+  bookableTimeOptions(): string[] {
+    const json = this.tenant()?.opening_hours;
+    const dateStr = this.formDate;
+    if (!json?.trim() || !dateStr) {
+      return this.timeOptions;
+    }
+    try {
+      const oh = JSON.parse(json) as Record<string, Record<string, unknown>>;
+      const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const d = new Date(`${dateStr}T12:00:00`);
+      const dayKey = dayKeys[d.getDay()];
+      const day = oh[dayKey];
+      if (!day || typeof day !== 'object') {
+        return [];
+      }
+      if (day.closed) {
+        return [];
+      }
+      const parseMin = (s: unknown): number | null => {
+        if (s == null || typeof s !== 'string') return null;
+        const p = s.trim().split(':').map((x) => parseInt(x, 10));
+        if (p.length < 1 || Number.isNaN(p[0])) return null;
+        const h = p[0];
+        const m = p[1] ?? 0;
+        return h * 60 + m;
+      };
+      const allowedBeforeClose = (closeMin: number, resMin: number): boolean => {
+        const lastMins = (closeMin - 60 + 24 * 60) % (24 * 60);
+        return resMin <= lastMins;
+      };
+      type Win = { open: string; close: string };
+      const windows: Win[] = [];
+      if (day.hasBreak === true) {
+        const mo = (day.morningOpen as string) || (day.open as string);
+        const mc = day.morningClose as string;
+        const eo = day.eveningOpen as string;
+        const ec = (day.eveningClose as string) || (day.close as string);
+        if (mo && mc && eo && ec) {
+          windows.push({ open: mo, close: mc }, { open: eo, close: ec });
+        }
+      } else {
+        const o = day.open as string;
+        const c = (day.eveningClose as string) || (day.close as string);
+        if (o && c) {
+          windows.push({ open: o, close: c });
+        }
+      }
+      const seen = new Set<string>();
+      const out: string[] = [];
+      for (const w of windows) {
+        const om = parseMin(w.open);
+        const cm = parseMin(w.close);
+        if (om === null || cm === null) continue;
+        let t = Math.floor((om + 14) / 15) * 15;
+        while (t < cm) {
+          if (allowedBeforeClose(cm, t)) {
+            const hh = Math.floor(t / 60) % 24;
+            const mm = t % 60;
+            const key = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+            if (!seen.has(key)) {
+              seen.add(key);
+              out.push(key);
+            }
+          }
+          t += 15;
+        }
+      }
+      out.sort();
+      return out.length ? out : this.timeOptions;
+    } catch {
+      return this.timeOptions;
+    }
+  }
+
+  /** If current formTime is not in allowed slots, pick the first allowed (or keep next-available suggestion). */
+  private syncFormTimeToAllowed(): void {
+    const opts = this.bookableTimeOptions();
+    if (opts.length && !opts.includes(this.formTime)) {
+      this.formTime = opts[0];
+    }
+  }
+
   today = computed(() => new Date().toISOString().slice(0, 10));
 
   constructor() {
@@ -72,6 +158,7 @@ export class BookComponent implements OnInit {
         const url = this.api.getTenantLogoUrl(t.logo_filename ?? undefined, t.id);
         this.logoUrl.set(url);
         this.loading.set(false);
+        this.syncFormTimeToAllowed();
       },
       error: () => {
         this.loading.set(false);
@@ -110,6 +197,7 @@ export class BookComponent implements OnInit {
         if (res.date) {
           this.formDate = res.date;
         }
+        this.syncFormTimeToAllowed();
       },
       error: () => this.suggestedTime.set(null),
     });

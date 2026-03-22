@@ -12,7 +12,7 @@ import requests
 from zoneinfo import ZoneInfo
 from io import BytesIO
 from pathlib import Path
-from typing import Annotated, Dict
+from typing import Annotated, Dict, List, Tuple
 from uuid import uuid4
 
 from PIL import Image
@@ -4247,7 +4247,14 @@ def list_tables_with_status(
         active_order = session.exec(
             select(models.Order).where(
                 models.Order.table_id == table.id,
-                models.Order.status.in_(["pending", "preparing", "ready"]),
+                models.Order.status.in_(
+                    [
+                        models.OrderStatus.pending,
+                        models.OrderStatus.preparing,
+                        models.OrderStatus.ready,
+                        models.OrderStatus.partially_delivered,
+                    ]
+                ),
             )
         ).first()
         seated_here = session.exec(
@@ -4256,7 +4263,7 @@ def list_tables_with_status(
                 models.Reservation.status == models.ReservationStatus.seated,
             )
         ).first()
-        if active_order or seated_here:
+        if table.is_active or active_order or seated_here:
             status = "occupied"
             upcoming_reservation = None
         else:
@@ -4497,28 +4504,101 @@ def _parse_reservation_time(s: str) -> time:
         raise ValueError(f"Invalid time format: {s[:8]!r}. Use HH:MM or HH:MM:SS.") from e
 
 
-def _closing_time_for_date(tenant: models.Tenant, res_date: date) -> time | None:
-    """Return closing time for the given date from tenant opening_hours, or None if closed/no hours."""
-    opening_hours: dict = {}
-    if tenant.opening_hours:
-        try:
-            opening_hours = json.loads(tenant.opening_hours)
-        except (json.JSONDecodeError, TypeError):
-            return None
-    day_names = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
-    day_key = day_names[res_date.weekday()]
-    day_hours = opening_hours.get(day_key, {})
-    if day_hours.get("closed", False) or not day_hours.get("open") or not day_hours.get("close"):
+def _parse_hh_mm_to_time(value) -> time | None:
+    if value is None:
         return None
-    close_str = day_hours.get("eveningClose") or day_hours.get("close")
-    if not close_str:
+    s = str(value).strip()
+    if not s:
+        return None
+    parts = s.split(":")
+    try:
+        h = int(parts[0])
+        m = int(parts[1]) if len(parts) > 1 else 0
+        return time(h, m)
+    except (ValueError, IndexError):
+        return None
+
+
+def _service_windows_from_day_hours(day_hours: dict) -> List[Tuple[time, time]]:
+    """Service intervals (open, close) for one weekday. Empty list = closed or unparseable."""
+    if not day_hours or day_hours.get("closed"):
+        return []
+    if day_hours.get("hasBreak"):
+        mo = _parse_hh_mm_to_time(day_hours.get("morningOpen") or day_hours.get("open"))
+        mc = _parse_hh_mm_to_time(day_hours.get("morningClose"))
+        eo = _parse_hh_mm_to_time(day_hours.get("eveningOpen"))
+        ec = _parse_hh_mm_to_time(day_hours.get("eveningClose") or day_hours.get("close"))
+        if not all((mo, mc, eo, ec)):
+            return []
+        return [(mo, mc), (eo, ec)]
+    o = _parse_hh_mm_to_time(day_hours.get("open"))
+    c = _parse_hh_mm_to_time(day_hours.get("eveningClose") or day_hours.get("close"))
+    if not o or not c:
+        return []
+    return [(o, c)]
+
+
+def _opening_service_windows_for_date(tenant: models.Tenant, res_date: date) -> List[Tuple[time, time]] | None:
+    """None = opening hours not configured (do not enforce). [] = closed. Else list of (open, close) segments."""
+    if not tenant.opening_hours or not str(tenant.opening_hours).strip():
         return None
     try:
-        parts = close_str.split(":")
-        close_h, close_m = int(parts[0]), int(parts[1]) if len(parts) > 1 else 0
-        return time(close_h, close_m)
-    except (ValueError, AttributeError):
+        oh = json.loads(tenant.opening_hours)
+    except (json.JSONDecodeError, TypeError):
         return None
+    day_names = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+    day_key = day_names[res_date.weekday()]
+    day_hours = oh.get(day_key)
+    if not isinstance(day_hours, dict):
+        return []
+    return _service_windows_from_day_hours(day_hours)
+
+
+def _raise_if_reservation_time_invalid_for_opening_hours(
+    tenant: models.Tenant, res_date: date, res_time: time
+) -> None:
+    windows = _opening_service_windows_for_date(tenant, res_date)
+    if windows is None:
+        return
+    if len(windows) == 0:
+        raise HTTPException(status_code=400, detail="Restaurant is closed on that day")
+    for open_t, close_t in windows:
+        if res_time < open_t:
+            continue
+        if _reservation_time_allowed_before_closing(res_time, close_t):
+            return
+    raise HTTPException(
+        status_code=400,
+        detail="Reservation time is outside opening hours or too close to closing.",
+    )
+
+
+def _quarter_slot_times_for_windows(windows: List[Tuple[time, time]]) -> List[time]:
+    """15-minute start times within each window, strictly before close, respecting 1h-before-close rule."""
+    seen: set[int] = set()
+    out: List[time] = []
+    for open_t, close_t in windows:
+        om = open_t.hour * 60 + open_t.minute
+        cm = close_t.hour * 60 + close_t.minute
+        t = ((om + 14) // 15) * 15
+        while t < cm:
+            slot = time(t // 60, t % 60)
+            if _reservation_time_allowed_before_closing(slot, close_t):
+                key = slot.hour * 60 + slot.minute
+                if key not in seen:
+                    seen.add(key)
+                    out.append(slot)
+            t += 15
+    out.sort(key=lambda x: x.hour * 60 + x.minute)
+    return out
+
+
+def _closing_time_for_date(tenant: models.Tenant, res_date: date) -> time | None:
+    """Last segment closing time for the day, or None if not configured / closed / unparseable."""
+    windows = _opening_service_windows_for_date(tenant, res_date)
+    if not windows:
+        return None
+    return windows[-1][1]
 
 
 def _reservation_time_allowed_before_closing(reservation_time: time, closing_time: time) -> bool:
@@ -4576,6 +4656,55 @@ def _capacity_for_tenant(session: Session, tenant_id: int) -> tuple[int, int]:
     return (total_seats, len(tables))
 
 
+def _reservable_capacity_for_tenant(
+    session: Session, tenant_id: int, res_date: date, tenant: models.Tenant
+) -> tuple[int, int]:
+    """Seats and table count available for new reservations.
+
+    For **today** (tenant timezone), excludes tables in active service: staff-activated (`is_active`),
+    an in-progress order, or a seated reservation. Future dates use full physical capacity.
+    """
+    tables = session.exec(
+        select(models.Table).where(models.Table.tenant_id == tenant_id)
+    ).all()
+    if not tables:
+        return (0, 0)
+    tz = ZoneInfo(tenant.timezone) if tenant.timezone else timezone.utc
+    today_local = datetime.now(tz).date()
+    if res_date != today_local:
+        return (sum(t.seat_count for t in tables), len(tables))
+    table_ids = [t.id for t in tables if t.id is not None]
+    if not table_ids:
+        return (0, 0)
+    busy_orders = session.exec(
+        select(models.Order).where(
+            models.Order.table_id.in_(table_ids),
+            models.Order.status.in_(
+                [
+                    models.OrderStatus.pending,
+                    models.OrderStatus.preparing,
+                    models.OrderStatus.ready,
+                    models.OrderStatus.partially_delivered,
+                ]
+            ),
+        )
+    ).all()
+    busy_order_set = {o.table_id for o in busy_orders if o.table_id is not None}
+    busy_seated = session.exec(
+        select(models.Reservation).where(
+            models.Reservation.table_id.in_(table_ids),
+            models.Reservation.status == models.ReservationStatus.seated,
+        )
+    ).all()
+    busy_seated_set = {r.table_id for r in busy_seated if r.table_id is not None}
+    eligible = [
+        t
+        for t in tables
+        if not t.is_active and t.id not in busy_order_set and t.id not in busy_seated_set
+    ]
+    return (sum(t.seat_count for t in eligible), len(eligible))
+
+
 def _demand_for_slot(
     session: Session,
     tenant_id: int,
@@ -4612,7 +4741,10 @@ def get_slot_capacity(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     tenant_id = current_user.tenant_id
-    total_seats, total_tables = _capacity_for_tenant(session, tenant_id)
+    tenant = session.get(models.Tenant, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    total_seats, total_tables = _reservable_capacity_for_tenant(session, tenant_id, d, tenant)
     reserved_guests, reserved_parties = _demand_for_slot(
         session, tenant_id, d, slot_time, exclude_reservation_id=exclude_reservation_id
     )
@@ -4681,7 +4813,10 @@ def get_reservations_overbooking_report(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     tenant_id = current_user.tenant_id
-    total_seats, total_tables = _capacity_for_tenant(session, tenant_id)
+    tenant = session.get(models.Tenant, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    total_seats, total_tables = _reservable_capacity_for_tenant(session, tenant_id, d, tenant)
 
     # Collect slot times: distinct reservation times on that date, or default 08:00–23:00 in 15-min steps
     reservations_on_date = session.exec(
@@ -4827,14 +4962,8 @@ def create_reservation(
     if res_date == now_local.date():
         if res_time <= now_local.time():
             raise HTTPException(status_code=400, detail="Reservation time must be in the future")
-    # Only accept reservations until 1 hour before closing
-    closing_time = _closing_time_for_date(tenant, res_date)
-    if closing_time is not None and not _reservation_time_allowed_before_closing(res_time, closing_time):
-        raise HTTPException(
-            status_code=400,
-            detail=f"Reservations are only accepted until 1 hour before closing (closing at {closing_time.strftime('%H:%M')}).",
-        )
-    total_seats, total_tables = _capacity_for_tenant(session, tenant_id)
+    _raise_if_reservation_time_invalid_for_opening_hours(tenant, res_date, res_time)
+    total_seats, total_tables = _reservable_capacity_for_tenant(session, tenant_id, res_date, tenant)
     reserved_guests, reserved_parties = _demand_for_slot(session, tenant_id, res_date, res_time, exclude_reservation_id=None)
     if reserved_guests + data.party_size > total_seats or reserved_parties + 1 > total_tables:
         raise HTTPException(
@@ -4938,16 +5067,6 @@ def get_next_available_reservation_time(
 
     tz = ZoneInfo(tenant.timezone) if tenant.timezone else timezone.utc
     now_local = datetime.now(tz)
-    total_seats, total_tables = _capacity_for_tenant(session, tenant_id)
-
-    opening_hours = {}
-    if tenant.opening_hours:
-        try:
-            opening_hours = json.loads(tenant.opening_hours)
-        except (json.JSONDecodeError, TypeError):
-            pass
-
-    day_names = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
     try:
         check_date = _parse_reservation_date(date_str)
@@ -4956,39 +5075,28 @@ def get_next_available_reservation_time(
 
     for day_offset in range(8):
         d = check_date + timedelta(days=day_offset)
-        day_key = day_names[d.weekday()]
-        day_hours = opening_hours.get(day_key, {})
-
-        if day_hours.get("closed", False) or not day_hours.get("open") or not day_hours.get("close"):
+        windows = _opening_service_windows_for_date(tenant, d)
+        if windows is None:
+            windows = [(time(8, 0), time(23, 0))]
+        if len(windows) == 0:
             continue
 
-        try:
-            open_h, open_m = map(int, day_hours["open"].split(":"))
-            close_str = day_hours.get("eveningClose") or day_hours["close"]
-            close_h, close_m = map(int, close_str.split(":"))
-        except (ValueError, AttributeError, KeyError):
+        total_seats, total_tables = _reservable_capacity_for_tenant(session, tenant_id, d, tenant)
+        if total_tables < 1 or total_seats < party_size:
             continue
 
-        closing_time = time(close_h, close_m)
+        for slot_time in _quarter_slot_times_for_windows(windows):
+            if d == now_local.date() and slot_time <= now_local.time():
+                continue
 
-        for slot_hour in range(open_h, close_h + 1):
-            for slot_min in (0, 15, 30, 45):
-                if slot_hour == close_h and slot_min >= close_m:
-                    break
-                slot_time = time(slot_hour, slot_min)
-
-                if not _reservation_time_allowed_before_closing(slot_time, closing_time):
-                    continue
-
-                if d == now_local.date() and slot_time <= now_local.time():
-                    continue
-
-                reserved_guests, reserved_parties = _demand_for_slot(session, tenant_id, d, slot_time, exclude_reservation_id=None)
-                if reserved_guests + party_size <= total_seats and reserved_parties + 1 <= total_tables:
-                    return {
-                        "date": d.isoformat(),
-                        "time": slot_time.strftime("%H:%M"),
-                    }
+            reserved_guests, reserved_parties = _demand_for_slot(
+                session, tenant_id, d, slot_time, exclude_reservation_id=None
+            )
+            if reserved_guests + party_size <= total_seats and reserved_parties + 1 <= total_tables:
+                return {
+                    "date": d.isoformat(),
+                    "time": slot_time.strftime("%H:%M"),
+                }
 
     raise HTTPException(status_code=404, detail="No available time slots found")
 
@@ -5063,18 +5171,15 @@ def update_reservation(
         reservation.reservation_time = _parse_reservation_time(body.reservation_time)
     if body.party_size is not None:
         reservation.party_size = body.party_size
-    # Only accept reservations until 1 hour before closing
     tenant = session.get(models.Tenant, reservation.tenant_id)
-    if tenant:
-        closing_time = _closing_time_for_date(tenant, reservation.reservation_date)
-        if closing_time is not None and not _reservation_time_allowed_before_closing(
-            reservation.reservation_time, closing_time
-        ):
-            raise HTTPException(
-                status_code=400,
-                detail=f"Reservations are only accepted until 1 hour before closing (closing at {closing_time.strftime('%H:%M')}).",
-            )
-    total_seats, total_tables = _capacity_for_tenant(session, current_user.tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    _raise_if_reservation_time_invalid_for_opening_hours(
+        tenant, reservation.reservation_date, reservation.reservation_time
+    )
+    total_seats, total_tables = _reservable_capacity_for_tenant(
+        session, current_user.tenant_id, reservation.reservation_date, tenant
+    )
     reserved_guests, reserved_parties = _demand_for_slot(
         session,
         current_user.tenant_id,
@@ -5160,11 +5265,23 @@ def seat_reservation(
         raise HTTPException(status_code=404, detail="Table not found")
     if table.seat_count < reservation.party_size:
         raise HTTPException(status_code=400, detail="Table capacity is less than party size")
+    if table.is_active:
+        raise HTTPException(
+            status_code=400,
+            detail="Table has an active ordering session; close the table or finish orders before seating a reservation here.",
+        )
     # Check table not already occupied or reserved by another
     active_order = session.exec(
         select(models.Order).where(
             models.Order.table_id == table.id,
-            models.Order.status.in_(["pending", "preparing", "ready"]),
+            models.Order.status.in_(
+                [
+                    models.OrderStatus.pending,
+                    models.OrderStatus.preparing,
+                    models.OrderStatus.ready,
+                    models.OrderStatus.partially_delivered,
+                ]
+            ),
         )
     ).first()
     if active_order:

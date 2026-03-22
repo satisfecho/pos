@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Reservations – opening hours and table capacity**: `POST/PUT /reservations` reject times outside configured opening hours (including closed days and split-shift `hasBreak` days) using the same rules as next-available (15‑minute slots, at least 1 hour before closing). For **today** in the tenant timezone, slot capacity (`/reservations/slot-capacity`, overbooking report, next-available, create/update) uses only tables **not** in active service (`is_active`, in-progress order, or seated reservation). Public book page time dropdown is filtered to allowed slots. `GET /tables/with-status` and seating a reservation treat `is_active` and `partially_delivered` orders like occupied tables; seating is blocked if the table is still activated for ordering.
+
 - **Docs**: `AGENTS.md` documents optional `ssh amvara9` access from the configured dev machine for production diagnostics; reservation-email troubleshooting doc updated accordingly.
 
 ### Added
