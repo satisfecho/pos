@@ -68,7 +68,8 @@ export class BookComponent implements OnInit {
       if (!day || typeof day !== 'object') {
         return [];
       }
-      if (day.closed) {
+      const dh = day as Record<string, unknown>;
+      if (dh['closed']) {
         return [];
       }
       const parseMin = (s: unknown): number | null => {
@@ -85,17 +86,17 @@ export class BookComponent implements OnInit {
       };
       type Win = { open: string; close: string };
       const windows: Win[] = [];
-      if (day.hasBreak === true) {
-        const mo = (day.morningOpen as string) || (day.open as string);
-        const mc = day.morningClose as string;
-        const eo = day.eveningOpen as string;
-        const ec = (day.eveningClose as string) || (day.close as string);
+      if (dh['hasBreak'] === true) {
+        const mo = (dh['morningOpen'] as string) || (dh['open'] as string);
+        const mc = dh['morningClose'] as string;
+        const eo = dh['eveningOpen'] as string;
+        const ec = (dh['eveningClose'] as string) || (dh['close'] as string);
         if (mo && mc && eo && ec) {
           windows.push({ open: mo, close: mc }, { open: eo, close: ec });
         }
       } else {
-        const o = day.open as string;
-        const c = (day.eveningClose as string) || (day.close as string);
+        const o = dh['open'] as string;
+        const c = (dh['eveningClose'] as string) || (dh['close'] as string);
         if (o && c) {
           windows.push({ open: o, close: c });
         }

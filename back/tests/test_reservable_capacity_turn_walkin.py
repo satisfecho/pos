@@ -30,7 +30,17 @@ class TestReservableCapacityTurnWalkin(unittest.TestCase):
             connect_args={"check_same_thread": False},
             poolclass=StaticPool,
         )
-        SQLModel.metadata.create_all(self.engine)
+        # Only tables this test needs (full metadata uses PostgreSQL JSONB, unsupported on SQLite).
+        SQLModel.metadata.create_all(
+            self.engine,
+            tables=[
+                models.Tenant.__table__,
+                models.Floor.__table__,
+                models.Table.__table__,
+                models.Reservation.__table__,
+                models.Order.__table__,
+            ],
+        )
         self.session = Session(self.engine)
 
         self.tenant = models.Tenant(

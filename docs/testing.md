@@ -26,9 +26,10 @@ All commands below are from **repo root** unless noted.
 Turn time and walk-in buffer logic is covered by unit tests (in-memory SQLite):
 
 ```bash
-# From back/ with Python deps installed (e.g. backend container or venv):
-cd back && PYTHONPATH=. python3 -m pytest tests/test_reservable_capacity_turn_walkin.py -v
-# Or: python3 tests/test_reservable_capacity_turn_walkin.py
+# From back/ inside the back container (or venv with deps):
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back sh -c 'cd /app && PYTHONPATH=. python3 tests/test_reservable_capacity_turn_walkin.py'
+# Same on host if PYTHONPATH=back: python3 back/tests/test_reservable_capacity_turn_walkin.py
+# (Uses in-memory SQLite with a minimal table set; pytest is optional.)
 ```
 
 ---
