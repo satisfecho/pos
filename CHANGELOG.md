@@ -238,6 +238,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Env examples**: **`.env.example`** login placeholders use **`@your-restaurant.com`**; **`config.env.example`** CORS / **`PUBLIC_APP_BASE_URL`** comments avoid **`example.com`**.
 - **Docs**: `0005-email-sending-options.md` SendGrid/Resend example snippets use **`guest@yourrestaurant.com`** instead of **`customer@example.com`**.
 - **Docs**: `AGENTS.md` documents optional `ssh amvara9` access from the configured dev machine for production diagnostics; reservation-email troubleshooting doc updated accordingly.
 
