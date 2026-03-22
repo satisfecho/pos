@@ -385,7 +385,6 @@ def fetch_wine_detail_page(product_id: str, item_id: str | None = None) -> dict[
         # Extract detailed description
         detailed_description = None
         # Look for description in <div class="descripcion"> or similar
-        import re
         desc_patterns = [
             r'<div[^>]*class="[^"]*descripcion[^"]*"[^>]*>.*?<p[^>]*>(.*?)</p>',
             r'Descripción</div>.*?<div[^>]*class="[^"]*descripcion[^"]*"[^>]*>.*?<p[^>]*>(.*?)</p>',
