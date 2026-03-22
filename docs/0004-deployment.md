@@ -74,9 +74,9 @@ CORS_ORIGINS=https://app.yourdomain.com,*
 **Domain with HTTPS:**
 ```bash
 # config.env
-API_URL=https://api.example.com
-WS_URL=wss://api.example.com
-CORS_ORIGINS=https://app.example.com,*
+API_URL=https://api.yourdomain.com
+WS_URL=wss://api.yourdomain.com
+CORS_ORIGINS=https://app.yourdomain.com,*
 ```
 
 **IP Address on local network:**
