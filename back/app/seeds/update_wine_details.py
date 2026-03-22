@@ -107,7 +107,7 @@ def update_wine_details() -> dict[str, int]:
                     if has_update:
                         session.add(pp)
                         updated += 1
-                        print(f"✓ Updated")
+                        print("✓ Updated")
                     else:
                         skipped += 1
                         print("⊘ No new data")

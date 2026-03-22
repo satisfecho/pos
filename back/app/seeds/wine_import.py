@@ -943,7 +943,7 @@ def import_wines(clear_existing: bool = False) -> dict[str, int]:
             "total_wines": len(all_wines)
         }
         
-        print(f"\nImport complete!")
+        print("\nImport complete!")
         print(f"  Catalog items created: {stats['catalog_created']}")
         print(f"  Provider products created: {stats['provider_products_created']}")
         print(f"  Provider products updated: {stats['provider_products_updated']}")
