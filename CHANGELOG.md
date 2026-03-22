@@ -238,6 +238,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Scripts**: **`go-ahead-loop.sh`** only **pull + pytest + landing smoke** (no auto-**`commit-hash.ts`** commits; syncing that file each cycle would always lag **`HEAD`** and create endless chore commits).
 - **API service**: WebSocket **`console.log`** diagnostics (open/close/reconnect) run only when **`!environment.production`**; **`console.warn`** / **`console.error`** unchanged.
 - **Menu (public order)**: Geolocation errors are ignored silently when building the order payload (no **`console.log`**).
 - **Purchase orders**: Remove debug **`console.log`** after loading inventory items for the create modal.
@@ -255,7 +256,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- **Scripts**: **`scripts/go-ahead-loop.sh`** — opt-in long run (default **~8h**): **`git pull --rebase --autostash`**, optional **`commit-hash.ts`** sync when the tree is clean and the hash lags **`HEAD`**, Docker **pytest** + **`npm run test:landing-version`**. Requires **`GO_AHEAD_LOOP=1`**; log defaults to **`.go-ahead-loop.log`** (gitignored). Documented in **`docs/testing.md`**; **`AGENTS.md`** points to it for long-running smokes.
+- **Scripts**: **`scripts/go-ahead-loop.sh`** — opt-in long run (default **~8h**): **`git pull --rebase --autostash`**, Docker **pytest** + **`npm run test:landing-version`** on an interval (no auto-commits; **`commit-hash.ts`** stays manual/agent). Requires **`GO_AHEAD_LOOP=1`**; log defaults to **`.go-ahead-loop.log`** (gitignored). Documented in **`docs/testing.md`**; **`AGENTS.md`** points to it for long-running smokes.
 - **Orders – unmark paid**: Staff can revert a paid order to unpaid. "Unmark paid" in the status popover clears the paid mark only; order status is restored from item statuses. Backend: `PUT /orders/{id}/unmark-paid`; permission `order:mark_paid`. i18n: `ORDERS.UNMARK_PAID` (en, es, ca, de, fr, zh-CN, hi).
 - **Orders – soft-delete**: Orders can be marked as deleted (excluded from list and book-keeping) for test/cleanup. Backend: `Order.deleted_at`, `deleted_by_user_id`; migration `20260320100000_add_order_deleted_at.sql`; `DELETE /orders/{id}` (soft-delete, clears table active_order_id); permission `order:delete` (owner, admin); list, reports, and public order history exclude deleted orders. Frontend: "Delete order" button on order cards and in history grid (with confirmation); i18n: `ORDERS.DELETE_ORDER`, `DELETE_ORDER_CONFIRM`, etc.
 
