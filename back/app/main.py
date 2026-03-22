@@ -763,7 +763,7 @@ def register(
     full_name: str | None = None,
     lang: str = Depends(_get_requested_language),
     session: Session = Depends(get_session),
-) -> dict:
+) -> JSONResponse:
     existing_user = session.exec(
         select(models.User).where(models.User.email == email)
     ).first()
@@ -794,7 +794,11 @@ def register(
     session.add(user)
     session.commit()
 
-    return {"status": "created", "tenant_id": tenant.id, "email": email}
+    # JSONResponse so slowapi can inject rate-limit headers (sync + headers_enabled)
+    return JSONResponse(
+        content={"status": "created", "tenant_id": tenant.id, "email": email},
+        status_code=status.HTTP_201_CREATED,
+    )
 
 
 @app.post("/register/provider")
@@ -804,7 +808,7 @@ def register_provider(
     body: models.ProviderRegister,
     lang: str = Depends(_get_requested_language),
     session: Session = Depends(get_session),
-) -> dict:
+) -> JSONResponse:
     """Provider self-registration: creates Provider and first provider user."""
     existing = session.exec(
         select(models.User).where(models.User.email == body.email)
@@ -849,7 +853,10 @@ def register_provider(
     )
     session.add(user)
     session.commit()
-    return {"status": "created", "provider_id": provider.id, "email": body.email}
+    return JSONResponse(
+        content={"status": "created", "provider_id": provider.id, "email": body.email},
+        status_code=status.HTTP_201_CREATED,
+    )
 
 
 def _token_data_for_user(user: models.User) -> dict:

@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.10] - 2026-03-22
+
+### Fixed
+
+- **POST /register and POST /register/provider 500 (SlowAPI)**: With `headers_enabled`, SlowAPI’s sync wrapper injects rate-limit headers into a `Response` instance. Endpoints that returned a plain `dict` passed `None` there and raised, producing `500 Internal Server Error` on account creation. Both routes now return `JSONResponse` with `201 Created` (same approach as public menu and table mutations).
+
 ## [2.0.9] - 2026-03-22
 
 ### Added
