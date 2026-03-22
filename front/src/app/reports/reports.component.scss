@@ -382,7 +382,9 @@
     align-items: center;
     gap: var(--space-3);
     min-width: 160px;
-    min-height: 2.75rem;
+    min-height: 3.25rem;
+    box-sizing: border-box;
+    vertical-align: middle;
 
     .bar-track.inline {
       flex: 1;

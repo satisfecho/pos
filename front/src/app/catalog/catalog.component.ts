@@ -331,12 +331,15 @@ import { TranslateModule } from '@ngx-translate/core';
       flex-shrink: 0;
       display: flex;
       align-items: center;
-      padding: 0 var(--space-3);
+      justify-content: center;
+      min-width: 2.75rem;
+      padding: 0 var(--space-4);
       background: var(--color-bg);
       color: var(--color-text-muted);
       font-weight: 600;
       font-size: 0.9375rem;
       border-right: 1px solid var(--color-border);
+      box-sizing: border-box;
     }
 
     .price-input input {
@@ -346,7 +349,8 @@ import { TranslateModule } from '@ngx-translate/core';
       border: none !important;
       border-radius: 0 !important;
       box-shadow: none !important;
-      padding: var(--space-3) var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      box-sizing: border-box;
     }
 
     .price-input input:focus {
@@ -380,9 +384,9 @@ import { TranslateModule } from '@ngx-translate/core';
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-5)) var(--space-3) calc(-1 * var(--space-5));
+      margin: 0 0 var(--space-3) 0;
       flex-shrink: 0;
-      padding: var(--space-3);
+      padding: var(--space-4);
       box-sizing: border-box;
     }
 
@@ -642,14 +646,15 @@ import { TranslateModule } from '@ngx-translate/core';
     .btn-danger { background: var(--color-error); color: white; }
     .btn-danger:hover:not(:disabled) { background: #b91c1c; }
 
-    /* Outline remove: visually distinct from solid primary “Add to menu” (#44) */
+    /* Outline remove: visually distinct from solid primary “Add to menu” (GitHub #44) */
     .btn-remove-menu {
-      background: var(--color-surface);
-      color: var(--color-error);
-      border: 2px solid var(--color-error);
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 2px dashed #dc2626;
     }
     .btn-remove-menu:hover:not(:disabled) {
-      background: rgba(220, 38, 38, 0.08);
+      background: #fee2e2;
+      color: #991b1b;
     }
 
     .icon-btn {

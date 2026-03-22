@@ -2259,6 +2259,46 @@ def _infer_content_type_from_filename(filename: str | None) -> str | None:
     return mapping.get(ext)
 
 
+def _resolve_raster_image_content_type(file: UploadFile, contents: bytes) -> str | None:
+    """Resolve Content-Type when the client omits it or sends application/octet-stream (GitHub #40)."""
+    ct = file.content_type
+    if ct in ALLOWED_IMAGE_TYPES:
+        return ct
+    inferred = _infer_content_type_from_filename(file.filename)
+    if inferred in ALLOWED_IMAGE_TYPES:
+        return inferred
+    try:
+        image = Image.open(BytesIO(contents))
+        fmt = (image.format or "").upper()
+        pil_to_mime = {
+            "JPEG": "image/jpeg",
+            "PNG": "image/png",
+            "WEBP": "image/webp",
+            "AVIF": "image/avif",
+        }
+        return pil_to_mime.get(fmt)
+    except Exception:
+        return None
+
+
+def _delete_product_image_on_disk(image_filename: str | None, tenant_id: int) -> None:
+    """Remove prior image file; handles tenant-owned files and catalog paths under providers/ (GitHub #40)."""
+    if not image_filename:
+        return
+    fn = image_filename.replace("\\", "/").strip("/")
+    uploads_root = UPLOADS_DIR.resolve()
+    try:
+        if fn.startswith("providers/"):
+            path = (UPLOADS_DIR / fn).resolve()
+        else:
+            safe_name = Path(fn).name
+            path = (UPLOADS_DIR / str(tenant_id) / "products" / safe_name).resolve()
+        if path.is_relative_to(uploads_root) and path.is_file():
+            path.unlink()
+    except (OSError, ValueError):
+        pass
+
+
 @app.post("/tenant/logo")
 @limiter.limit(
     f"{getattr(settings, 'rate_limit_upload_per_hour', 10)}/hour",
@@ -2710,14 +2750,7 @@ async def upload_product_image(
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    # Validate content type
-    if file.content_type not in ALLOWED_IMAGE_TYPES:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_TYPES)}",
-        )
-
-    # Read file and check size
+    # Read file and check size (before content-type sniff; GitHub #40)
     contents = await file.read()
     if len(contents) > MAX_IMAGE_SIZE:
         raise HTTPException(
@@ -2725,18 +2758,22 @@ async def upload_product_image(
             detail=f"File too large. Max size: {MAX_IMAGE_SIZE // (1024 * 1024)}MB",
         )
 
+    content_type = _resolve_raster_image_content_type(file, contents)
+    if content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file type. Allowed: {', '.join(sorted(ALLOWED_IMAGE_TYPES))}",
+        )
+
     # Optimize image locally
-    contents = optimize_image(contents, file.content_type)
+    contents = optimize_image(contents, content_type)
 
     # Create tenant upload directory
     tenant_dir = UPLOADS_DIR / str(current_user.tenant_id) / "products"
     tenant_dir.mkdir(parents=True, exist_ok=True)
 
-    # Delete old image if exists
-    if product.image_filename:
-        old_path = tenant_dir / product.image_filename
-        if old_path.exists():
-            old_path.unlink()
+    # Delete old image if exists (tenant path or catalog providers/... path)
+    _delete_product_image_on_disk(product.image_filename, current_user.tenant_id)
 
     # Generate unique filename
     ext = Path(file.filename or "image.jpg").suffix.lower()
@@ -3609,18 +3646,19 @@ async def provider_upload_product_image(
     ).first()
     if not pp:
         raise HTTPException(status_code=404, detail="Product not found")
-    if file.content_type not in ALLOWED_IMAGE_TYPES:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_TYPES)}",
-        )
     contents = await file.read()
     if len(contents) > MAX_IMAGE_SIZE:
         raise HTTPException(
             status_code=400,
             detail=f"File too large. Max size: {MAX_IMAGE_SIZE // (1024 * 1024)}MB",
         )
-    contents = optimize_image(contents, file.content_type)
+    content_type = _resolve_raster_image_content_type(file, contents)
+    if content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file type. Allowed: {', '.join(sorted(ALLOWED_IMAGE_TYPES))}",
+        )
+    contents = optimize_image(contents, content_type)
     provider_dir = UPLOADS_DIR / "providers" / provider.token / "products"
     provider_dir.mkdir(parents=True, exist_ok=True)
     if pp.image_filename:

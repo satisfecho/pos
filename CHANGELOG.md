@@ -238,6 +238,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Catalog (GitHub #42–#44)**: Card image area uses normal card inset (**no full-bleed negative margin**), extra inner padding, centered **`object-fit`**. **“Set price”** row: wider currency cell and input padding so values don’t overlap the **€** symbol (**#43**). **Remove from menu** uses light red fill + **dashed** border vs solid primary **Add** (**#44**).
+- **Reports (GitHub #45)**: **Share** column cells (**`td.share-with-bar`**) use a taller **`min-height`** and **`box-sizing`** so the **%** row aligns with bar height.
+- **Product image upload (GitHub #40)**: **`POST /products/{id}/image`** (and provider product image upload) infer **`Content-Type`** from filename or **Pillow** when the client omits it; deleting the previous file supports both **`tenant_id/products/…`** and **`providers/…`** catalog paths.
 - **Scripts**: **`go-ahead-loop.sh`** only **pull + pytest + landing smoke** (no auto-**`commit-hash.ts`** commits; syncing that file each cycle would always lag **`HEAD`** and create endless chore commits).
 - **API service**: WebSocket **`console.log`** diagnostics (open/close/reconnect) run only when **`!environment.production`**; **`console.warn`** / **`console.error`** unchanged.
 - **Menu (public order)**: Geolocation errors are ignored silently when building the order payload (no **`console.log`**).
