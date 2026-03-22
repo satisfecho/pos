@@ -238,6 +238,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Seeds**: **`migrate_provider_tokens`** hoists **`shutil`** and **`uuid4`** imports to module level.
 - **Seeds**: **`update_wine_details`** imports **`requests`** and **`API_ENDPOINT` / `HEADERS` / `COOKIES`** at module level instead of inside the per-product loop.
 - **Seeds**: **`wine_import`** drops a redundant inner **`import re`** (module already imports **`re`** at top level).
 - **Docs**: **`0004-deployment.md`** HTTPS **`config.env`** snippet uses **`yourdomain.com`** instead of **`example.com`** for API / WS / CORS origins.

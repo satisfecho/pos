@@ -10,8 +10,11 @@ Usage:
     python -m app.seeds.migrate_provider_tokens
 """
 
+import shutil
 import sys
 from pathlib import Path
+from uuid import uuid4
+
 from sqlmodel import Session, select
 from app.db import engine
 from app.models import Provider
@@ -36,7 +39,6 @@ def migrate_provider_tokens() -> dict[str, int]:
         for provider in providers:
             # Generate token if not present
             if not provider.token:
-                from uuid import uuid4
                 provider.token = str(uuid4())
                 session.add(provider)
                 providers_updated += 1
@@ -57,7 +59,6 @@ def migrate_provider_tokens() -> dict[str, int]:
                 # Both exist - copy files and remove old
                 print(f"  Warning: Both directories exist for provider {provider.id}, copying files...")
                 try:
-                    import shutil
                     for item in old_dir.iterdir():
                         dest = new_dir / item.name
                         if item.is_dir():
