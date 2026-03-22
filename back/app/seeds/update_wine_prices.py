@@ -20,7 +20,7 @@ except ImportError:
     sys.exit(1)
 
 try:
-    from app.seeds.wine_import import API_ENDPOINT, COOKIES, HEADERS
+    from app.seeds.wine_import import API_ENDPOINT, COOKIES, FORM_DATA_BASE, HEADERS
 except ImportError:
     print("Error: Could not import Tusumiller API settings from app.seeds.wine_import")
     sys.exit(1)
@@ -38,27 +38,10 @@ def fetch_all_wines_from_api() -> dict[str, dict]:
     for category in categories:
         page = 1
         while True:
-            form_data = {
-                "txt": "",
-                "page": str(page),
-                "categories": category,
-                "simbolo": "",
-                "tipes": "",
-                "country": "",
-                "zonado": "",
-                "region": "",
-                "variedad": "",
-                "prices": "",
-                "lista": "",
-                "copa": "",
-                "lang_code": "es",
-                "lang_id": "1",
-                "menu": "1521",
-                "showsimbolo": "1",
-                "restautant_id": "1122",
-                "sortresult": "",
-            }
-            
+            form_data = FORM_DATA_BASE.copy()
+            form_data["page"] = str(page)
+            form_data["categories"] = category
+
             try:
                 response = requests.post(API_ENDPOINT, headers=HEADERS, cookies=COOKIES, data=form_data, timeout=30)
                 response.raise_for_status()

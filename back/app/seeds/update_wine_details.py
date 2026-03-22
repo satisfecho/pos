@@ -18,7 +18,13 @@ from app.db import engine
 from app.models import Provider, ProviderProduct
 
 try:
-    from app.seeds.wine_import import API_ENDPOINT, COOKIES, HEADERS, fetch_wine_detail_page
+    from app.seeds.wine_import import (
+        API_ENDPOINT,
+        COOKIES,
+        FORM_DATA_BASE,
+        HEADERS,
+        fetch_wine_detail_page,
+    )
 except ImportError:
     print("Error: Could not import fetch_wine_detail_page")
     sys.exit(1)
@@ -63,13 +69,7 @@ def update_wine_details() -> dict[str, int]:
             # For now, try constructing it or fetching from API
             try:
                 # Fetch from API to get idProductMenu mapping
-                form_data = {
-                    "txt": "", "page": "1", "categories": "", "simbolo": "", "tipes": "",
-                    "country": "", "zonado": "", "region": "", "variedad": "", "prices": "",
-                    "lista": "", "copa": "", "lang_code": "es", "lang_id": "1",
-                    "menu": "1521", "showsimbolo": "1", "restautant_id": "1122", "sortresult": "",
-                }
-                
+                form_data = FORM_DATA_BASE.copy()
                 # Search for this wine by name to get current API data
                 form_data["txt"] = pp.name.split()[0] if pp.name else ""  # Use first word of name
                 response = requests.post(API_ENDPOINT, headers=HEADERS, cookies=COOKIES, data=form_data, timeout=15)

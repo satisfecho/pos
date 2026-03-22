@@ -238,7 +238,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- **Seeds**: **`update_wine_prices`** reuses **`API_ENDPOINT`**, **`HEADERS`**, and **`COOKIES`** from **`wine_import`** instead of duplicating Tusumiller client config.
+- **Seeds**: **`update_wine_prices`** and **`update_wine_details`** reuse **`FORM_DATA_BASE`** from **`wine_import`** for Tusumiller search **`POST`** bodies (with **`update_wine_prices`** still reusing **`API_ENDPOINT` / `HEADERS` / `COOKIES`**).
 - **Seeds**: **`products`** CLI hoists **`argparse`** to module level.
 - **Seeds**: **`beer_import`**, **`pizza_import`**, and **`wine_import`** hoist **`traceback`** to module level (CLI error handler).
 - **Seeds**: **`migrate_provider_tokens`** hoists **`shutil`** and **`uuid4`** imports to module level.
