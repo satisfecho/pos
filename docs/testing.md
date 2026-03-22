@@ -416,6 +416,38 @@ See `AGENTS.md` for full seed and deploy notes.
 
 ---
 
+## Long-running smoke loop (`go-ahead-loop.sh`)
+
+For **hours-long** checks while the stack stays up, **`scripts/go-ahead-loop.sh`** runs **`git pull --rebase --autostash`**, optionally commits **`front/src/environments/commit-hash.ts`** when it lags **`HEAD`** (only if the working tree is clean), then runs **backend pytest** via Docker and **`npm run test:landing-version`** from **`front/`**.
+
+This **does not** replace an AI “go ahead” for product code; it only automates **pull / hash / smoke**.
+
+**Safety:** the script exits unless **`GO_AHEAD_LOOP=1`**.
+
+```bash
+chmod +x scripts/go-ahead-loop.sh
+# Default: ~8 hours, 10 minutes between cycles (requires Docker + app on BASE_URL)
+GO_AHEAD_LOOP=1 ./scripts/go-ahead-loop.sh
+```
+
+| Variable | Default | Meaning |
+|----------|---------|---------|
+| `DURATION_SECONDS` | `28800` | Stop after this many seconds (~8h). |
+| `INTERVAL_SECONDS` | `600` | Sleep between cycles (minimum `1`). |
+| `BASE_URL` | `http://127.0.0.1:4202` | Landing smoke (`test:landing-version`). |
+| `GO_AHEAD_LOG` | `.go-ahead-loop.log` (repo root) | Append log (gitignored). |
+| `SKIP_SYNC_HASH` | unset | Set to `1` to skip auto **`commit-hash`** commits/push. |
+| `SKIP_TESTS` | unset | Set to `1` to skip pytest and landing test. |
+| `COMPOSE_FILES` | `-f docker-compose.yml -f docker-compose.dev.yml` | Passed to **`docker compose`**. |
+
+**One short dry cycle** (pull + log only):
+
+```bash
+GO_AHEAD_LOOP=1 DURATION_SECONDS=120 INTERVAL_SECONDS=60 SKIP_SYNC_HASH=1 SKIP_TESTS=1 ./scripts/go-ahead-loop.sh
+```
+
+---
+
 ## Coverage summary
 
 | Area | Covered by | Notes |

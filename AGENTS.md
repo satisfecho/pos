@@ -76,6 +76,8 @@ Full-stack Point of Sale (POS) system.
 2. **For changes that add or touch a specific flow:** Run the relevant Puppeteer test (e.g. after Reports work: `npm run test:reports` from `front/` with `LOGIN_EMAIL`/`LOGIN_PASSWORD` for an admin/owner user).
 3. If the app is not up, run `docker compose ps` and `docker compose logs --tail=50 front` (and back/haproxy as needed) to diagnose before concluding.
 
+**Long-running repeat (optional):** `scripts/go-ahead-loop.sh` pulls git, optionally syncs `commit-hash.ts` when clean, and reruns Docker pytest plus `npm run test:landing-version` on an interval for hours (default ~8h). Requires `GO_AHEAD_LOOP=1`; see `docs/testing.md`.
+
 See **Reservation tests (Puppeteer)** and **Demo tables** below for more test scripts; `docs/testing.md` lists all Puppeteer tests.
 
 ## Docker: status, port, and logs
