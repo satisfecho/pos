@@ -316,7 +316,6 @@ export class PurchaseOrdersComponent implements OnInit {
   loadInventoryItems() {
     this.inventoryService.getItems({ activeOnly: false }).subscribe({
       next: items => {
-        console.log('Loaded inventory items:', items);
         this.inventoryItems.set(items);
       },
       error: (err) => console.error('Failed to load inventory items:', err)
