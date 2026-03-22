@@ -6,6 +6,9 @@ MESSAGES = {
     "en": {
         "database_error": "Database error",
         "email_already_registered": "Email already registered",
+        "invalid_email": "Invalid email address",
+        "invalid_phone": "Invalid phone number",
+        "reservation_date_too_far": "Reservation date cannot be more than 12 months in advance",
         "incorrect_username_or_password": "Incorrect username or password",
         "invalid_entity_type": "Invalid entity type. Allowed: {allowed}",
         "access_denied": "Access denied",

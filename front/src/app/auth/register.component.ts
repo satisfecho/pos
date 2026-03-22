@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { contactEmailValidator } from '../shared/contact-validators';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../services/api.service';
@@ -98,6 +99,9 @@ import { LanguagePickerComponent } from '../shared/language-picker.component';
               </button>
             </div>
           </div>
+          @if (form.get('email')?.touched && form.get('email')?.errors?.['contactEmail']) {
+            <div class="error-banner">{{ 'AUTH.INVALID_EMAIL' | translate }}</div>
+          }
           @if (form.get('password_confirm')?.touched && form.errors?.['passwordMismatch']) {
             <div class="error-banner">{{ 'AUTH.PASSWORDS_DO_NOT_MATCH' | translate }}</div>
           }
@@ -308,7 +312,7 @@ export class RegisterComponent {
   form = this.fb.group({
     tenant_name: ['', Validators.required],
     full_name: ['', Validators.required],
-    email: ['', [Validators.required, Validators.email]],
+    email: ['', [Validators.required, contactEmailValidator]],
     password: ['', [Validators.required, Validators.minLength(6)]],
     password_confirm: ['', Validators.required]
   }, { validators: (g) => g.get('password')?.value === g.get('password_confirm')?.value ? null : { passwordMismatch: true } });

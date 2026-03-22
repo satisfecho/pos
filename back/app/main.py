@@ -40,6 +40,7 @@ from . import email_service as email_svc
 from .reservation_email_template import MAX_BODY_LEN, MAX_SUBJECT_LEN
 from . import whatsapp_service as whatsapp_svc
 from .phone_utils import normalize_phone_to_e164
+from .contact_validation import normalize_email_address, normalize_phone_e164
 
 # Rate limiting (slowapi)
 try:
@@ -109,6 +110,40 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+
+
+def _public_redis_url() -> str:
+    u = (settings.rate_limit_redis_url or os.getenv("REDIS_URL", "redis://localhost:6379")).strip()
+    return u or "redis://localhost:6379"
+
+
+def _enforce_reservation_delay_notice_rate_limit(request: Request, reservation_id: int) -> None:
+    """Limit delay-notice submissions per IP per reservation (rolling 1h window)."""
+    if not settings.rate_limit_enabled:
+        return
+    limit = settings.rate_limit_reservation_delay_per_hour
+    if limit <= 0:
+        return
+    key = f"rl:delay_notice:{reservation_id}:{_rate_limit_key(request)}"
+    try:
+        r = redis.Redis.from_url(
+            _public_redis_url(),
+            decode_responses=True,
+            socket_connect_timeout=1.0,
+            socket_timeout=1.0,
+        )
+        n = r.incr(key)
+        if n == 1:
+            r.expire(key, 3600)
+        if n > limit:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many delay notices. Please try again later.",
+            )
+    except HTTPException:
+        raise
+    except redis.RedisError as e:
+        logger.warning("Reservation delay-notice rate limit Redis error (allowing request): %s", e)
 
 # Configure Stripe (global fallback - will be overridden by tenant-specific keys)
 # Note: stripe.api_key is set globally but individual API calls use api_key parameter
@@ -764,6 +799,10 @@ def register(
     lang: str = Depends(_get_requested_language),
     session: Session = Depends(get_session),
 ) -> JSONResponse:
+    try:
+        email = normalize_email_address(email)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=get_message("invalid_email", lang))
     existing_user = session.exec(
         select(models.User).where(models.User.email == email)
     ).first()
@@ -810,8 +849,18 @@ def register_provider(
     session: Session = Depends(get_session),
 ) -> JSONResponse:
     """Provider self-registration: creates Provider and first provider user."""
+    try:
+        norm_email = normalize_email_address(body.email)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=get_message("invalid_email", lang))
+    norm_phone = body.phone
+    if norm_phone and str(norm_phone).strip():
+        try:
+            norm_phone = normalize_phone_e164(norm_phone, settings.default_phone_country)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=get_message("invalid_phone", lang))
     existing = session.exec(
-        select(models.User).where(models.User.email == body.email)
+        select(models.User).where(models.User.email == norm_email)
     ).first()
     if existing:
         raise HTTPException(
@@ -832,8 +881,8 @@ def register_provider(
         full_company_name=body.full_company_name,
         address=body.address,
         tax_number=body.tax_number,
-        phone=body.phone,
-        email=body.email,
+        phone=norm_phone,
+        email=norm_email,
         bank_iban=body.bank_iban,
         bank_bic=body.bank_bic,
         bank_name=body.bank_name,
@@ -844,7 +893,7 @@ def register_provider(
     session.refresh(provider)
     hashed_password = security.get_password_hash(body.password)
     user = models.User(
-        email=body.email,
+        email=norm_email,
         hashed_password=hashed_password,
         full_name=body.full_name,
         tenant_id=None,
@@ -854,7 +903,7 @@ def register_provider(
     session.add(user)
     session.commit()
     return JSONResponse(
-        content={"status": "created", "provider_id": provider.id, "email": body.email},
+        content={"status": "created", "provider_id": provider.id, "email": norm_email},
         status_code=status.HTTP_201_CREATED,
     )
 
@@ -1207,9 +1256,17 @@ def create_user(
             detail=f"Cannot create user with role '{user_data.role.value}'"
         )
     
+    try:
+        norm_email = normalize_email_address(user_data.email)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid email address",
+        )
+
     # Check if email already exists
     existing = session.exec(
-        select(models.User).where(models.User.email == user_data.email)
+        select(models.User).where(models.User.email == norm_email)
     ).first()
     if existing:
         raise HTTPException(
@@ -1219,7 +1276,7 @@ def create_user(
     
     # Create the user
     new_user = models.User(
-        email=user_data.email,
+        email=norm_email,
         hashed_password=security.get_password_hash(user_data.password),
         full_name=user_data.full_name,
         role=user_data.role,
@@ -1287,10 +1344,17 @@ def update_user(
     
     # Update other fields
     if user_data.email is not None:
+        try:
+            norm_email = normalize_email_address(user_data.email)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid email address",
+            )
         # Check if email is already taken
         existing = session.exec(
             select(models.User).where(
-                models.User.email == user_data.email,
+                models.User.email == norm_email,
                 models.User.id != user_id
             )
         ).first()
@@ -1299,7 +1363,7 @@ def update_user(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email already in use"
             )
-        target_user.email = user_data.email
+        target_user.email = norm_email
     
     if user_data.full_name is not None:
         target_user.full_name = user_data.full_name
@@ -5056,6 +5120,7 @@ def create_reservation(
     current_user: Annotated[models.User | None, Depends(security.get_current_user_optional)],
     background_tasks: BackgroundTasks,
     session: Session = Depends(get_session),
+    lang: str = Depends(_get_requested_language),
 ) -> dict:
     """Create a reservation. Authenticated: tenant from user. Public: tenant_id required in body."""
     if current_user:
@@ -5080,6 +5145,9 @@ def create_reservation(
     now_local = datetime.now(tz)
     if res_date < now_local.date():
         raise HTTPException(status_code=400, detail="Reservation date must be today or in the future")
+    max_ahead_date = now_local.date() + timedelta(days=366)
+    if res_date > max_ahead_date:
+        raise HTTPException(status_code=400, detail=get_message("reservation_date_too_far", lang))
     if res_date == now_local.date():
         if res_time <= now_local.time():
             raise HTTPException(status_code=400, detail="Reservation time must be in the future")
@@ -5093,14 +5161,24 @@ def create_reservation(
             status_code=400,
             detail=f"Slot is over capacity: {reserved_guests + data.party_size} guests / {reserved_parties + 1} parties for this time (max {total_seats} seats, {total_tables} tables).",
         )
-    token_str = str(uuid4()) if not current_user else None
+    try:
+        phone_e164 = normalize_phone_e164(data.customer_phone, settings.default_phone_country)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=get_message("invalid_phone", lang))
+    cust_email = None
+    if data.customer_email is not None and str(data.customer_email).strip():
+        try:
+            cust_email = normalize_email_address(data.customer_email)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=get_message("invalid_email", lang))
+    token_str = str(uuid4())
     client_ip = _client_ip_from_request(request)
     user_agent = (request.headers.get("user-agent") or "")[:512]
     reservation = models.Reservation(
         tenant_id=tenant_id,
         customer_name=data.customer_name,
-        customer_phone=data.customer_phone,
-        customer_email=data.customer_email,
+        customer_phone=phone_e164,
+        customer_email=cust_email,
         reservation_date=res_date,
         reservation_time=res_time,
         party_size=data.party_size,
@@ -5264,6 +5342,7 @@ def update_reservation(
     body: models.ReservationUpdate,
     current_user: Annotated[models.User, Depends(require_permission(Permission.RESERVATION_WRITE))],
     session: Session = Depends(get_session),
+    lang: str = Depends(_get_requested_language),
 ) -> dict:
     """Update reservation. Only when status is booked. Staff only."""
     reservation = session.exec(
@@ -5279,9 +5358,20 @@ def update_reservation(
     if body.customer_name is not None:
         reservation.customer_name = body.customer_name
     if body.customer_phone is not None:
-        reservation.customer_phone = body.customer_phone
+        try:
+            reservation.customer_phone = normalize_phone_e164(
+                body.customer_phone, settings.default_phone_country
+            )
+        except ValueError:
+            raise HTTPException(status_code=400, detail=get_message("invalid_phone", lang))
     if body.customer_email is not None:
-        reservation.customer_email = body.customer_email
+        if not str(body.customer_email).strip():
+            reservation.customer_email = None
+        else:
+            try:
+                reservation.customer_email = normalize_email_address(body.customer_email)
+            except ValueError:
+                raise HTTPException(status_code=400, detail=get_message("invalid_email", lang))
     if body.client_notes is not None:
         reservation.client_notes = body.client_notes
     if body.customer_notes is not None:
@@ -5299,6 +5389,11 @@ def update_reservation(
     tenant = session.get(models.Tenant, reservation.tenant_id)
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
+    tz = ZoneInfo(tenant.timezone) if tenant.timezone else timezone.utc
+    now_local = datetime.now(tz)
+    max_ahead_date = now_local.date() + timedelta(days=366)
+    if reservation.reservation_date and reservation.reservation_date > max_ahead_date:
+        raise HTTPException(status_code=400, detail=get_message("reservation_date_too_far", lang))
     _raise_if_reservation_time_invalid_for_opening_hours(
         tenant, reservation.reservation_date, reservation.reservation_time
     )
@@ -5493,6 +5588,7 @@ def cancel_reservation_public(
 
 @app.put("/reservations/{reservation_id}/public")
 def update_reservation_public(
+    request: Request,
     reservation_id: int,
     token: str = Query(..., description="Reservation token from booking confirmation"),
     body: models.PublicReservationUpdate | None = Body(None),
@@ -5511,7 +5607,10 @@ def update_reservation_public(
         raise HTTPException(status_code=400, detail="Can only update a booked reservation")
     if body:
         if body.delay_notice is not None:
-            reservation.delay_notice = body.delay_notice.strip() if isinstance(body.delay_notice, str) and body.delay_notice.strip() else None
+            _dn = body.delay_notice.strip() if isinstance(body.delay_notice, str) else ""
+            if _dn:
+                _enforce_reservation_delay_notice_rate_limit(request, reservation_id)
+            reservation.delay_notice = _dn if _dn else None
         if body.client_notes is not None:
             reservation.client_notes = body.client_notes.strip() if isinstance(body.client_notes, str) and body.client_notes.strip() else None
         if body.customer_notes is not None:

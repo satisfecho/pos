@@ -1,21 +1,36 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl, SafeStyle } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService, Reservation, ReservationCreate, TenantSummary } from '../services/api.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguagePickerComponent } from '../shared/language-picker.component';
+import { contactEmailValid, contactPhoneValid } from '../shared/contact-validators';
 
 @Component({
   selector: 'app-book',
   standalone: true,
-  imports: [FormsModule, TranslateModule, RouterLink, LanguagePickerComponent],
+  imports: [FormsModule, TranslateModule, LanguagePickerComponent],
   templateUrl: './book.component.html',
   styleUrl: './book.component.scss',
 })
 export class BookComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+
+  /** Latest bookable date (~12 months ahead, aligned with backend). */
+  maxBookDate(): string {
+    const d = new Date();
+    d.setTime(d.getTime() + 366 * 24 * 60 * 60 * 1000);
+    return d.toISOString().slice(0, 10);
+  }
+
+  goManageReservation(): void {
+    const token = this.successReservation()?.token;
+    if (token) {
+      void this.router.navigate(['/reservation'], { queryParams: { token } });
+    }
+  }
   private api = inject(ApiService);
   private translate = inject(TranslateService);
   private sanitizer = inject(DomSanitizer);
@@ -279,6 +294,15 @@ export class BookComponent implements OnInit {
     const tid = this.tenantId();
     if (!tid) {
       this.error.set(this.translate.instant('BOOK.ERROR_INVALID_LINK'));
+      return;
+    }
+    if (!contactPhoneValid(this.formPhone)) {
+      this.error.set(this.translate.instant('BOOK.INVALID_PHONE'));
+      return;
+    }
+    const em = this.formEmail.trim();
+    if (em && !contactEmailValid(em)) {
+      this.error.set(this.translate.instant('BOOK.INVALID_EMAIL'));
       return;
     }
     this.submitting.set(true);

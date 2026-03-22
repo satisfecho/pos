@@ -236,8 +236,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
         <app-confirmation-modal
           title="RESERVATIONS.CANCEL_CONFIRM_TITLE"
           message="RESERVATIONS.CANCEL_CONFIRM_MESSAGE"
-          [confirmText]="'RESERVATIONS.CANCEL'"
-          cancelText="COMMON.CANCEL"
+          [confirmText]="'RESERVATIONS.YES_CANCEL_RESERVATION'"
+          cancelText="COMMON.CLOSE"
           confirmBtnClass="btn-danger"
           (confirm)="doCancel()"
           (cancel)="reservationToCancel.set(null)"

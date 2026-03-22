@@ -30,6 +30,7 @@ export class ReservationViewComponent implements OnInit {
   delayNotice = '';
   updatingDelay = signal(false);
   delaySuccess = signal(false);
+  delayRateLimited = signal(false);
 
   getStatusKey(): string {
     const s = this.reservation()?.status;
@@ -98,6 +99,7 @@ export class ReservationViewComponent implements OnInit {
     if (!r || !token) return;
     this.updatingDelay.set(true);
     this.delaySuccess.set(false);
+    this.delayRateLimited.set(false);
     this.api.updateReservationPublic(r.id, token, { delay_notice: this.delayNotice.trim() || null }).subscribe({
       next: (updated) => {
         this.reservation.set(updated);
@@ -105,7 +107,12 @@ export class ReservationViewComponent implements OnInit {
         this.updatingDelay.set(false);
         this.delaySuccess.set(true);
       },
-      error: () => this.updatingDelay.set(false),
+      error: (e) => {
+        this.updatingDelay.set(false);
+        if (e?.status === 429) {
+          this.delayRateLimited.set(true);
+        }
+      },
     });
   }
 }

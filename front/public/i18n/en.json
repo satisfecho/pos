@@ -148,6 +148,7 @@
     "PASSWORD_PLACEHOLDER": "Enter your password",
     "CONFIRM_PASSWORD": "Confirm password",
     "PASSWORDS_DO_NOT_MATCH": "Passwords do not match",
+    "INVALID_EMAIL": "Enter a valid email address.",
     "SHOW_PASSWORD": "Show password",
     "HIDE_PASSWORD": "Hide password",
     "ORGANIZATION_PLACEHOLDER": "Your restaurant name",
@@ -587,7 +588,11 @@
     "CANCELLATION_POLICY": "Cancellation policy",
     "ARRIVAL_TOLERANCE": "Arrival tolerance",
     "ARRIVAL_TOLERANCE_MINUTES": "Please arrive within {{minutes}} minutes of your booking time.",
-    "DRESS_CODE": "Dress code"
+    "DRESS_CODE": "Dress code",
+    "INVALID_EMAIL": "Enter a valid email address.",
+    "INVALID_PHONE": "Enter a valid phone number (including country code if needed).",
+    "CONTACT_RESTAURANT": "Contact the restaurant",
+    "VIEW_LINK_UNAVAILABLE": "Open the link from your confirmation email to view or cancel this reservation."
   },
   "RESERVATIONS": {
     "TITLE": "Reservations",
@@ -632,6 +637,7 @@
     "NO_AVAILABLE_TABLES": "No available tables for this party size.",
     "CANCEL_CONFIRM_TITLE": "Cancel reservation",
     "CANCEL_CONFIRM_MESSAGE": "Are you sure you want to cancel this reservation?",
+    "YES_CANCEL_RESERVATION": "Yes, cancel reservation",
     "NO_SHOW": "Mark as no-show",
     "NO_SHOW_CONFIRM_TITLE": "Mark as no-show",
     "NO_SHOW_CONFIRM_MESSAGE": "The guest did not show up. This will free the table and record the no-show.",
@@ -669,7 +675,8 @@
     "NOTIFY_DELAY_PLACEHOLDER": "e.g. We will arrive 1 hour late",
     "SEND_DELAY": "Send delay notice",
     "SENDING": "Sending...",
-    "DELAY_SENT": "Delay notice sent. We will be informed."
+    "DELAY_SENT": "Delay notice sent. We will be informed.",
+    "DELAY_RATE_LIMITED": "Too many delay notices were sent. Please try again later."
   },
   "WORKING_PLAN": {
     "TITLE": "Working plan",

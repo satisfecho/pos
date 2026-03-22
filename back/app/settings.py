@@ -133,6 +133,11 @@ class Settings(BaseSettings):
     rate_limit_payment_per_order_per_hour: int = Field(
         default=3, validation_alias="RATE_LIMIT_PAYMENT_PER_ORDER_PER_HOUR"
     )
+    rate_limit_reservation_delay_per_hour: int = Field(
+        default=8,
+        validation_alias="RATE_LIMIT_RESERVATION_DELAY_PER_HOUR",
+        description="Max delay-notice submissions per IP per reservation per hour (public token flow)",
+    )
 
     @model_validator(mode="after")
     def _relax_rate_limits_in_dev(self) -> "Settings":
@@ -146,6 +151,7 @@ class Settings(BaseSettings):
             self.rate_limit_upload_per_hour = 500
             self.rate_limit_admin_per_minute = 500
             self.rate_limit_payment_per_order_per_hour = 100
+            self.rate_limit_reservation_delay_per_hour = 200
         return self
 
     @property

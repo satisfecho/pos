@@ -4,6 +4,21 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.11] - 2026-03-22
+
+### Fixed
+
+- **Public booking – “View or cancel” link**: Reservations created via `/book/...` while a staff session cookie was present had no `token`, so the success-page link and token-based flow failed. Every new reservation now receives a magic-link token (staff-created bookings included).
+- **Cancel reservation dialog**: Confirm and dismiss actions no longer both read as “Cancel” in English; primary action is **Yes, cancel reservation**, secondary is **Close** (staff list and public reservation view).
+
+### Added
+
+- **Contact on confirmation**: After a successful public booking, the success card shows the restaurant’s phone, WhatsApp, and email when configured.
+- **Email validation**: `email-validator` on `POST /register`, `POST /register/provider`, admin `POST/PUT /users`, and reservation create/update when an email is provided; registration and booking forms use stricter client checks.
+- **Phone validation**: `phonenumbers` (libphonenumber) on reservation create/update and optional provider registration phone; numbers stored in E.164 when valid.
+- **12-month booking horizon**: Reservation date cannot be more than ~12 months ahead (366 days, tenant-local “today”) on create and staff update.
+- **Delay notice**: `PUT /reservations/{id}/public` rate-limits non-empty delay updates per client IP per reservation (rolling 1h, Redis; configurable via `RATE_LIMIT_RESERVATION_DELAY_PER_HOUR`). UI `maxlength="500"` and API `max_length=500` on delay text.
+
 ## [2.0.10] - 2026-03-22
 
 ### Fixed

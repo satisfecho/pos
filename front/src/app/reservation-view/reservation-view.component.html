@@ -106,13 +106,16 @@
             <div class="delay-form">
               <label for="delay-notice">{{ 'RESERVATIONS.NOTIFY_DELAY' | translate }}</label>
               <div class="delay-form-row">
-                <input id="delay-notice" type="text" [(ngModel)]="delayNotice" name="delayNotice" [placeholder]="'RESERVATIONS.NOTIFY_DELAY_PLACEHOLDER' | translate" />
+                <input id="delay-notice" type="text" [(ngModel)]="delayNotice" name="delayNotice" maxlength="500" [placeholder]="'RESERVATIONS.NOTIFY_DELAY_PLACEHOLDER' | translate" />
                 <button type="button" class="btn btn-secondary" [disabled]="updatingDelay()" (click)="submitDelayNotice()">
                   {{ updatingDelay() ? ('RESERVATIONS.SENDING' | translate) : ('RESERVATIONS.SEND_DELAY' | translate) }}
                 </button>
               </div>
               @if (delaySuccess()) {
                 <p class="delay-success">{{ 'RESERVATIONS.DELAY_SENT' | translate }}</p>
+              }
+              @if (delayRateLimited()) {
+                <p class="form-error delay-rate-msg">{{ 'RESERVATIONS.DELAY_RATE_LIMITED' | translate }}</p>
               }
             </div>
             <button type="button" class="btn btn-danger" (click)="showCancelConfirm.set(true)">{{ 'RESERVATIONS.CANCEL' | translate }}</button>
@@ -124,8 +127,8 @@
       <app-confirmation-modal
         title="RESERVATIONS.CANCEL_CONFIRM_TITLE"
         message="RESERVATIONS.CANCEL_CONFIRM_MESSAGE"
-        [confirmText]="'RESERVATIONS.CANCEL'"
-        cancelText="COMMON.CANCEL"
+        [confirmText]="'RESERVATIONS.YES_CANCEL_RESERVATION'"
+        cancelText="COMMON.CLOSE"
         confirmBtnClass="btn-danger"
         (confirm)="doCancel()"
         (cancel)="showCancelConfirm.set(false)"

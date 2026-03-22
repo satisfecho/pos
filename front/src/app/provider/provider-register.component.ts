@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { contactEmailValidator, optionalContactPhoneValidator } from '../shared/contact-validators';
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../services/api.service';
 
@@ -124,6 +125,12 @@ import { ApiService } from '../services/api.service';
               </div>
             </div>
           </section>
+          @if (form.get('email')?.touched && form.get('email')?.errors?.['contactEmail']) {
+            <div class="error-banner">Enter a valid email address.</div>
+          }
+          @if (form.get('phone')?.touched && form.get('phone')?.errors?.['contactPhone']) {
+            <div class="error-banner">Enter a valid phone number (include country code if needed).</div>
+          }
           @if (form.get('password_confirm')?.touched && form.errors?.['passwordMismatch']) {
             <div class="error-banner">Passwords do not match</div>
           }
@@ -285,8 +292,8 @@ export class ProviderRegisterComponent {
     address: [''],
     tax_number: [''],
     full_name: [''],
-    email: ['', [Validators.required, Validators.email]],
-    phone: [''],
+    email: ['', [Validators.required, contactEmailValidator]],
+    phone: ['', optionalContactPhoneValidator],
     password: ['', [Validators.required, Validators.minLength(6)]],
     password_confirm: ['', Validators.required],
     bank_account_holder: [''],

@@ -647,7 +647,7 @@ class ReservationUpdate(SQLModel):
     client_notes: str | None = None
     customer_notes: str | None = None
     owner_notes: str | None = None
-    delay_notice: str | None = None
+    delay_notice: str | None = Field(default=None, max_length=500)
 
 
 class ReservationStatusUpdate(SQLModel):
@@ -676,7 +676,7 @@ class PublicReservationCreate(SQLModel):
 
 class PublicReservationUpdate(SQLModel):
     """Public update by token: delay notice, reservation notes, customer notes (only when status is booked)."""
-    delay_notice: str | None = None
+    delay_notice: str | None = Field(default=None, max_length=500)
     client_notes: str | None = None
     customer_notes: str | None = None
 

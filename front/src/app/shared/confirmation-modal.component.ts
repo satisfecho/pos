@@ -21,10 +21,10 @@ import { TranslateModule } from '@ngx-translate/core';
           <p>{{ message | translate:messageParams }}</p>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="onCancel()">
+          <button type="button" class="btn btn-secondary" (click)="onCancel()">
             {{ cancelText | translate }}
           </button>
-          <button class="btn" [ngClass]="confirmBtnClass" (click)="onConfirm()">
+          <button type="button" class="btn" [ngClass]="confirmBtnClass" (click)="onConfirm()">
             {{ confirmText | translate }}
           </button>
         </div>
