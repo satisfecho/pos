@@ -130,7 +130,7 @@ def update_wine_prices() -> dict[str, int]:
 if __name__ == "__main__":
     print("Updating wine prices from API...")
     result = update_wine_prices()
-    print(f"\nComplete!")
+    print("\nComplete!")
     print(f"  Updated: {result['updated']}")
     print(f"  Unchanged: {result['unchanged']}")
     print(f"  Not found in API: {result['not_found']}")

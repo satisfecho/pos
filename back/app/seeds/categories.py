@@ -121,6 +121,6 @@ def seed_categories() -> dict[str, int]:
 if __name__ == "__main__":
     print("Seeding standard restaurant categories...")
     result = seed_categories()
-    print(f"\nComplete!")
+    print("\nComplete!")
     print(f"  Categories created: {result['categories_created']}")
     print(f"  Subcategories created: {result['subcategories_created']}")

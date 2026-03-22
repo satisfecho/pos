@@ -86,6 +86,6 @@ def migrate_provider_tokens() -> dict[str, int]:
 if __name__ == "__main__":
     print("Migrating provider tokens and directories...")
     result = migrate_provider_tokens()
-    print(f"\nComplete!")
+    print("\nComplete!")
     print(f"  Providers updated: {result['providers_updated']}")
     print(f"  Directories migrated: {result['directories_migrated']}")

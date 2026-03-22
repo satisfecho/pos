@@ -136,7 +136,7 @@ if __name__ == "__main__":
     print("Updating wine details from detail pages...")
     print("This may take a while as we fetch each wine's detail page...")
     result = update_wine_details()
-    print(f"\nComplete!")
+    print("\nComplete!")
     print(f"  Updated: {result['updated']}")
     print(f"  Skipped: {result['skipped']}")
     print(f"  Errors: {result['errors']}")
