@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.12] - 2026-03-22
+
+### Fixed
+
+- **Cancel reservation modal**: The footer no longer shows the left dismiss button—only **Yes, cancel reservation** remains (header × and clicking the backdrop still close without cancelling). Applies to staff reservations list and public reservation view. Other confirmation modals keep both footer buttons via `showSecondaryButton` (default `true`).
+
 ## [2.0.11] - 2026-03-22
 
 ### Fixed

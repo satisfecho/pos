@@ -20,10 +20,12 @@ import { TranslateModule } from '@ngx-translate/core';
         <div class="modal-body">
           <p>{{ message | translate:messageParams }}</p>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="onCancel()">
-            {{ cancelText | translate }}
-          </button>
+        <div class="modal-footer" [class.modal-footer--single-action]="!showSecondaryButton">
+          @if (showSecondaryButton) {
+            <button type="button" class="btn btn-secondary" (click)="onCancel()">
+              {{ cancelText | translate }}
+            </button>
+          }
           <button type="button" class="btn" [ngClass]="confirmBtnClass" (click)="onConfirm()">
             {{ confirmText | translate }}
           </button>
@@ -106,6 +108,14 @@ import { TranslateModule } from '@ngx-translate/core';
       border-top: 1px solid var(--color-border);
     }
 
+    .modal-footer--single-action {
+      justify-content: stretch;
+    }
+
+    .modal-footer--single-action > .btn {
+      width: 100%;
+    }
+
     .btn {
       padding: var(--space-2) var(--space-4);
       border-radius: var(--radius-md);
@@ -162,6 +172,8 @@ export class ConfirmationModalComponent {
   @Input() confirmText = 'COMMON.YES';
   @Input() cancelText = 'COMMON.NO';
   @Input() confirmBtnClass = 'btn-primary';
+  /** Left/footer dismiss button (e.g. “Close”). Header X and overlay click still dismiss when false. */
+  @Input() showSecondaryButton = true;
 
   @Output() confirm = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();

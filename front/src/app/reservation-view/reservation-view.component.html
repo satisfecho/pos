@@ -130,6 +130,7 @@
         [confirmText]="'RESERVATIONS.YES_CANCEL_RESERVATION'"
         cancelText="COMMON.CLOSE"
         confirmBtnClass="btn-danger"
+        [showSecondaryButton]="false"
         (confirm)="doCancel()"
         (cancel)="showCancelConfirm.set(false)"
       />

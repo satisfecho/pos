@@ -239,6 +239,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           [confirmText]="'RESERVATIONS.YES_CANCEL_RESERVATION'"
           cancelText="COMMON.CLOSE"
           confirmBtnClass="btn-danger"
+          [showSecondaryButton]="false"
           (confirm)="doCancel()"
           (cancel)="reservationToCancel.set(null)"
         />
