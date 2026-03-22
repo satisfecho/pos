@@ -54,6 +54,8 @@ services:
       - API_URL=${API_URL:-}
       - WS_URL=${WS_URL:-}
       - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+      # Optional: host git short hash — bind mount is ./front only (no .git); entrypoint runs get-commit-hash.js
+      - COMMIT_HASH=${COMMIT_HASH:-}
     volumes:
       - ./front:/app
       - /app/node_modules

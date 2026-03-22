@@ -4,6 +4,13 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.30] - 2026-03-22
+
+### Added
+
+- **Docker dev — landing footer hash:** **`docker-compose.yml`** passes optional **`COMMIT_HASH`** into the **`front`** service (bind mount has no **`.git`**). **`./run.sh`** exports **`COMMIT_HASH`** from **`git rev-parse --short HEAD`** when unset so **`docker-entrypoint.sh`** / **`get-commit-hash.js`** can show the correct short hash without committing **`commit-hash.ts`** after every commit.
+- **Docs**: **`README.md`**, **`AGENTS.md`**, and **`config.env.example`** describe **`COMMIT_HASH`** for manual **`docker compose`** usage.
+
 ## [2.0.29] - 2026-03-22
 
 ### Fixed

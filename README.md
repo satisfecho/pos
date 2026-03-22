@@ -218,6 +218,10 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T back pyth
 
 Puppeteer UI scripts and reservation capacity tests are described in **[docs/testing.md](docs/testing.md)**.
 
+### Landing footer version (Docker dev)
+
+The `front` service bind-mounts **`./front` only**, so the container has **no `.git`**. **`front/docker-entrypoint.sh`** runs **`get-commit-hash.js`** on start to refresh **`commit-hash.ts`**. **`./run.sh`** exports **`COMMIT_HASH`** from the host repo (when unset) so the footer shows the current **short hash**. If you use **`docker compose`** directly, optionally run from the repo root: **`export COMMIT_HASH=$(git rev-parse --short HEAD)`** before **`up`** (see **`config.env.example`**).
+
 ### Database migrations
 
 Migrations live in `back/migrations/` and run automatically on backend startup.

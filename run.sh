@@ -271,6 +271,14 @@ else
 fi
 echo ""
 
+# Front container bind-mounts ./front only (no .git). docker-entrypoint runs get-commit-hash.js;
+# COMMIT_HASH lets it show the real short hash in the landing footer (see README / AGENTS).
+if [ -z "${COMMIT_HASH:-}" ] && command -v git >/dev/null 2>&1; then
+    if _h=$(git rev-parse --short HEAD 2>/dev/null); then
+        export COMMIT_HASH="$_h"
+    fi
+fi
+
 # Start services in detached mode first, run migrations, then attach to logs
 docker compose $ENV_FILE $COMPOSE_FILE up --build -d
 
