@@ -369,6 +369,7 @@ export interface Reservation {
   status: ReservationStatus;
   table_id?: number | null;
   table_name?: string | null;
+  seated_at?: string | null;
   token?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
@@ -555,6 +556,10 @@ export interface TenantSettings {
   reservation_prepayment_text?: string | null;
   reservation_cancellation_policy?: string | null;
   reservation_arrival_tolerance_minutes?: number | null;
+  /** Average seated session length (minutes); null = same-day block without turn window */
+  reservation_average_table_turn_minutes?: number | null;
+  /** Tables kept out of the reservation pool for walk-ins (smallest tables first) */
+  reservation_walk_in_tables_reserved?: number | null;
   reservation_dress_code?: string | null;
   reservation_reminder_24h_enabled?: boolean | null;
   reservation_reminder_2h_enabled?: boolean | null;

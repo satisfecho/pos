@@ -829,6 +829,16 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                     <small class="field-hint">{{ 'SETTINGS.RESERVATION_ARRIVAL_TOLERANCE_HINT' | translate }}</small>
                   </div>
                   <div class="form-group">
+                    <label for="reservation_average_table_turn_minutes">{{ 'SETTINGS.RESERVATION_AVG_TABLE_TURN' | translate }}</label>
+                    <input type="number" id="reservation_average_table_turn_minutes" min="0" max="1440" [(ngModel)]="formData.reservation_average_table_turn_minutes" name="reservation_average_table_turn_minutes" placeholder="60" />
+                    <small class="field-hint">{{ 'SETTINGS.RESERVATION_AVG_TABLE_TURN_HINT' | translate }}</small>
+                  </div>
+                  <div class="form-group">
+                    <label for="reservation_walk_in_tables_reserved">{{ 'SETTINGS.RESERVATION_WALK_IN_TABLES' | translate }}</label>
+                    <input type="number" id="reservation_walk_in_tables_reserved" min="0" max="99" [(ngModel)]="formData.reservation_walk_in_tables_reserved" name="reservation_walk_in_tables_reserved" placeholder="0" />
+                    <small class="field-hint">{{ 'SETTINGS.RESERVATION_WALK_IN_TABLES_HINT' | translate }}</small>
+                  </div>
+                  <div class="form-group">
                     <label for="reservation_dress_code">{{ 'SETTINGS.RESERVATION_DRESS_CODE' | translate }}</label>
                     <input type="text" id="reservation_dress_code" [(ngModel)]="formData.reservation_dress_code" name="reservation_dress_code" [placeholder]="'SETTINGS.RESERVATION_DRESS_CODE_PLACEHOLDER' | translate" />
                   </div>
@@ -2104,6 +2114,8 @@ export class SettingsComponent implements OnInit {
     reservation_prepayment_text: null,
     reservation_cancellation_policy: null,
     reservation_arrival_tolerance_minutes: null,
+    reservation_average_table_turn_minutes: null,
+    reservation_walk_in_tables_reserved: 0,
     reservation_dress_code: null,
     reservation_reminder_24h_enabled: false,
     reservation_reminder_2h_enabled: false,
@@ -2172,6 +2184,8 @@ export class SettingsComponent implements OnInit {
           reservation_prepayment_text: settings.reservation_prepayment_text ?? null,
           reservation_cancellation_policy: settings.reservation_cancellation_policy ?? null,
           reservation_arrival_tolerance_minutes: settings.reservation_arrival_tolerance_minutes ?? null,
+          reservation_average_table_turn_minutes: settings.reservation_average_table_turn_minutes ?? null,
+          reservation_walk_in_tables_reserved: settings.reservation_walk_in_tables_reserved ?? 0,
           reservation_dress_code: settings.reservation_dress_code ?? null,
           reservation_reminder_24h_enabled: settings.reservation_reminder_24h_enabled ?? false,
           reservation_reminder_2h_enabled: settings.reservation_reminder_2h_enabled ?? false,

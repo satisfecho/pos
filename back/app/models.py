@@ -152,6 +152,10 @@ class Tenant(SQLModel, table=True):
     reservation_prepayment_text: str | None = Field(default=None)  # Configurable text for end user
     reservation_cancellation_policy: str | None = Field(default=None)
     reservation_arrival_tolerance_minutes: int | None = Field(default=None)  # e.g. 15
+    # Planning: average seated session length; used to free tables for later reservation slots (null = legacy same-day block)
+    reservation_average_table_turn_minutes: int | None = Field(default=None)
+    # Tables kept out of reservation pool so walk-ins can be seated (smallest tables dropped first from pool)
+    reservation_walk_in_tables_reserved: int = Field(default=0)
     reservation_dress_code: str | None = Field(default=None)
     reservation_reminder_24h_enabled: bool = Field(default=False)
     reservation_reminder_2h_enabled: bool = Field(default=False)
@@ -436,6 +440,7 @@ class Reservation(TenantMixin, table=True):
     party_size: int
     status: ReservationStatus = Field(default=ReservationStatus.booked, index=True)
     table_id: int | None = Field(default=None, foreign_key="table.id")
+    seated_at: datetime | None = Field(default=None)  # UTC when staff seated party (turn-time capacity)
     token: str | None = Field(default=None, unique=True, index=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -830,6 +835,8 @@ class TenantUpdate(SQLModel):
     reservation_prepayment_text: str | None = None
     reservation_cancellation_policy: str | None = None
     reservation_arrival_tolerance_minutes: int | None = None
+    reservation_average_table_turn_minutes: int | None = None
+    reservation_walk_in_tables_reserved: int | None = None
     reservation_dress_code: str | None = None
     reservation_reminder_24h_enabled: bool | None = None
     reservation_reminder_2h_enabled: bool | None = None

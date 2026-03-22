@@ -4,11 +4,19 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [2.0.9] - 2026-03-22
+
+### Added
+
+- **Reservations – turn time and walk-in buffer**: Tenant settings `reservation_average_table_turn_minutes` (optional) and `reservation_walk_in_tables_reserved` (default 0). When turn is set, capacity treats each table as busy only for `[start, start + turn)` from the earliest of `reservation.seated_at` (set when staff seats), `order.created_at`, or `table.activated_at` / now for active sessions. When turn is unset, busy tables remain excluded for the full calendar day (tenant TZ) as before. Walk-in buffer removes the smallest tables (by `seat_count`, then `id`) from the reservation pool. Migration `20260322120000_reservation_turn_walk_in_seated_at.sql` (`reservation.seated_at`, tenant columns, backfill seated rows). Settings UI (en, es, de, ca, fr) and `docs/0025-reservation-overbooking-detection.md`. Unit tests: `back/tests/test_reservable_capacity_turn_walkin.py`.
 
 ### Changed
 
-- **Reservations – opening hours and table capacity**: `POST/PUT /reservations` reject times outside configured opening hours (including closed days and split-shift `hasBreak` days) using the same rules as next-available (15‑minute slots, at least 1 hour before closing). For **today** in the tenant timezone, slot capacity (`/reservations/slot-capacity`, overbooking report, next-available, create/update) uses only tables **not** in active service (`is_active`, in-progress order, or seated reservation). Public book page time dropdown is filtered to allowed slots. `GET /tables/with-status` and seating a reservation treat `is_active` and `partially_delivered` orders like occupied tables; seating is blocked if the table is still activated for ordering.
+- **Reservations – opening hours and per-slot capacity**: `POST/PUT /reservations` reject times outside opening hours; slot capacity endpoints evaluate **per requested time** (not only once per day). Overbooking report top-level `total_seats` / `total_tables` are physical counts; each slot row uses reservable capacity for that time. Public book time dropdown respects opening hours. `GET /tables/with-status` and seating a reservation treat `is_active` and `partially_delivered` orders as occupied; seating is blocked if the table is still activated for ordering.
+
+## [Unreleased]
+
+### Changed
 
 - **Docs**: `AGENTS.md` documents optional `ssh amvara9` access from the configured dev machine for production diagnostics; reservation-email troubleshooting doc updated accordingly.
 

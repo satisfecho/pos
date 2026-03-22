@@ -21,6 +21,16 @@ Tests auto-detect the first responding port among **4203, 4202, 4200** when `BAS
 
 All commands below are from **repo root** unless noted.
 
+## Backend (reservation capacity)
+
+Turn time and walk-in buffer logic is covered by unit tests (in-memory SQLite):
+
+```bash
+# From back/ with Python deps installed (e.g. backend container or venv):
+cd back && PYTHONPATH=. python3 -m pytest tests/test_reservable_capacity_turn_walkin.py -v
+# Or: python3 tests/test_reservable_capacity_turn_walkin.py
+```
+
 ---
 
 ## Test scripts

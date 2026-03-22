@@ -1756,6 +1756,20 @@ def update_tenant_settings(
     if tenant_update.reservation_arrival_tolerance_minutes is not None:
         v = tenant_update.reservation_arrival_tolerance_minutes
         tenant.reservation_arrival_tolerance_minutes = v if v >= 0 else None
+    if tenant_update.reservation_average_table_turn_minutes is not None:
+        v = tenant_update.reservation_average_table_turn_minutes
+        if v <= 0:
+            tenant.reservation_average_table_turn_minutes = None
+        elif v > 24 * 60:
+            raise HTTPException(
+                status_code=400,
+                detail="reservation_average_table_turn_minutes must be between 1 and 1440",
+            )
+        else:
+            tenant.reservation_average_table_turn_minutes = v
+    if tenant_update.reservation_walk_in_tables_reserved is not None:
+        w = tenant_update.reservation_walk_in_tables_reserved
+        tenant.reservation_walk_in_tables_reserved = max(0, int(w))
     if tenant_update.reservation_dress_code is not None:
         tenant.reservation_dress_code = (
             tenant_update.reservation_dress_code.strip()
@@ -4625,6 +4639,7 @@ def _reservation_to_dict(
         "party_size": r.party_size,
         "status": r.status.value,
         "table_id": r.table_id,
+        "seated_at": r.seated_at.isoformat() if r.seated_at else None,
         "token": r.token,
         "created_at": r.created_at.isoformat() if r.created_at else None,
         "updated_at": r.updated_at.isoformat() if r.updated_at else None,
@@ -4656,27 +4671,107 @@ def _capacity_for_tenant(session: Session, tenant_id: int) -> tuple[int, int]:
     return (total_seats, len(tables))
 
 
-def _reservable_capacity_for_tenant(
-    session: Session, tenant_id: int, res_date: date, tenant: models.Tenant
-) -> tuple[int, int]:
-    """Seats and table count available for new reservations.
+def _ensure_aware_utc(dt: datetime) -> datetime:
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
 
-    For **today** (tenant timezone), excludes tables in active service: staff-activated (`is_active`),
-    an in-progress order, or a seated reservation. Future dates use full physical capacity.
+
+def _slot_datetime_utc(res_date: date, slot_time: time, tenant: models.Tenant) -> datetime:
+    tz = ZoneInfo(tenant.timezone) if tenant.timezone else timezone.utc
+    local = datetime.combine(res_date, slot_time, tzinfo=tz)
+    return local.astimezone(timezone.utc)
+
+
+def _table_busy_interval_turn(
+    table: models.Table,
+    seated: models.Reservation | None,
+    order: models.Order | None,
+    turn_minutes: int,
+    now_utc: datetime,
+) -> tuple[datetime, datetime] | None:
+    """Single busy window [start, end) from earliest relevant signal."""
+    starts: list[datetime] = []
+    if seated is not None:
+        s = seated.seated_at or seated.updated_at or seated.created_at
+        starts.append(_ensure_aware_utc(s))
+    if order is not None:
+        starts.append(_ensure_aware_utc(order.created_at))
+    if table.is_active and table.activated_at is not None:
+        starts.append(_ensure_aware_utc(table.activated_at))
+    if table.is_active and not starts:
+        starts.append(now_utc)
+    if not starts:
+        return None
+    st = min(starts)
+    return (st, st + timedelta(minutes=turn_minutes))
+
+
+def _table_blocks_reservation_slot(
+    table: models.Table,
+    seated: models.Reservation | None,
+    order: models.Order | None,
+    res_date: date,
+    slot_time: time,
+    tenant: models.Tenant,
+    now_utc: datetime,
+) -> bool:
+    """True if this table cannot be counted for reservations at (res_date, slot_time)."""
+    turn = tenant.reservation_average_table_turn_minutes
+    tz = ZoneInfo(tenant.timezone) if tenant.timezone else timezone.utc
+    today_local = now_utc.astimezone(tz).date()
+    slot_utc = _slot_datetime_utc(res_date, slot_time, tenant)
+
+    if turn is None or turn <= 0:
+        if res_date != today_local:
+            return False
+        if seated is not None or order is not None or table.is_active:
+            return True
+        return False
+
+    interval = _table_busy_interval_turn(table, seated, order, turn, now_utc)
+    if interval is None:
+        return False
+    start, end = interval
+    return start <= slot_utc < end
+
+
+def _reservable_capacity_for_tenant(
+    session: Session,
+    tenant_id: int,
+    res_date: date,
+    tenant: models.Tenant,
+    slot_time: time,
+    *,
+    _now_utc: datetime | None = None,
+) -> tuple[int, int]:
+    """Seats and table count in the reservation pool for one slot.
+
+    Excludes tables busy at that slot (turn-time windows when configured; else same-day block).
+    Then drops the smallest ``reservation_walk_in_tables_reserved`` tables from the pool for walk-ins.
     """
+    now_utc = _now_utc or datetime.now(timezone.utc)
     tables = session.exec(
         select(models.Table).where(models.Table.tenant_id == tenant_id)
     ).all()
     if not tables:
         return (0, 0)
-    tz = ZoneInfo(tenant.timezone) if tenant.timezone else timezone.utc
-    today_local = datetime.now(tz).date()
-    if res_date != today_local:
-        return (sum(t.seat_count for t in tables), len(tables))
     table_ids = [t.id for t in tables if t.id is not None]
     if not table_ids:
         return (0, 0)
-    busy_orders = session.exec(
+
+    seated_rows = session.exec(
+        select(models.Reservation).where(
+            models.Reservation.tenant_id == tenant_id,
+            models.Reservation.table_id.in_(table_ids),
+            models.Reservation.status == models.ReservationStatus.seated,
+        )
+    ).all()
+    seated_by_table: dict[int, models.Reservation] = {
+        r.table_id: r for r in seated_rows if r.table_id is not None
+    }
+
+    orders_all = session.exec(
         select(models.Order).where(
             models.Order.table_id.in_(table_ids),
             models.Order.status.in_(
@@ -4689,20 +4784,34 @@ def _reservable_capacity_for_tenant(
             ),
         )
     ).all()
-    busy_order_set = {o.table_id for o in busy_orders if o.table_id is not None}
-    busy_seated = session.exec(
-        select(models.Reservation).where(
-            models.Reservation.table_id.in_(table_ids),
-            models.Reservation.status == models.ReservationStatus.seated,
-        )
-    ).all()
-    busy_seated_set = {r.table_id for r in busy_seated if r.table_id is not None}
-    eligible = [
-        t
-        for t in tables
-        if not t.is_active and t.id not in busy_order_set and t.id not in busy_seated_set
-    ]
-    return (sum(t.seat_count for t in eligible), len(eligible))
+    orders_by_table: dict[int, models.Order] = {}
+    for o in orders_all:
+        tid = o.table_id
+        if tid not in orders_by_table or o.created_at < orders_by_table[tid].created_at:
+            orders_by_table[tid] = o
+
+    eligible: list[models.Table] = []
+    for t in tables:
+        if t.id is None:
+            continue
+        if _table_blocks_reservation_slot(
+            t,
+            seated_by_table.get(t.id),
+            orders_by_table.get(t.id),
+            res_date,
+            slot_time,
+            tenant,
+            now_utc,
+        ):
+            continue
+        eligible.append(t)
+
+    eligible.sort(key=lambda x: (x.seat_count, x.id or 0))
+    walk = max(0, tenant.reservation_walk_in_tables_reserved or 0)
+    if walk >= len(eligible):
+        return (0, 0)
+    pool = eligible[walk:]
+    return (sum(x.seat_count for x in pool), len(pool))
 
 
 def _demand_for_slot(
@@ -4744,7 +4853,9 @@ def get_slot_capacity(
     tenant = session.get(models.Tenant, tenant_id)
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
-    total_seats, total_tables = _reservable_capacity_for_tenant(session, tenant_id, d, tenant)
+    total_seats, total_tables = _reservable_capacity_for_tenant(
+        session, tenant_id, d, tenant, slot_time
+    )
     reserved_guests, reserved_parties = _demand_for_slot(
         session, tenant_id, d, slot_time, exclude_reservation_id=exclude_reservation_id
     )
@@ -4816,7 +4927,6 @@ def get_reservations_overbooking_report(
     tenant = session.get(models.Tenant, tenant_id)
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
-    total_seats, total_tables = _reservable_capacity_for_tenant(session, tenant_id, d, tenant)
 
     # Collect slot times: distinct reservation times on that date, or default 08:00–23:00 in 15-min steps
     reservations_on_date = session.exec(
@@ -4851,12 +4961,15 @@ def get_reservations_overbooking_report(
         slot_times = [t for t in slot_times if t <= time_to_parsed]
 
     slots = []
-    for slot_time in slot_times:
-        reserved_guests, reserved_parties = _demand_for_slot(session, tenant_id, d, slot_time)
+    for st in slot_times:
+        total_seats, total_tables = _reservable_capacity_for_tenant(
+            session, tenant_id, d, tenant, st
+        )
+        reserved_guests, reserved_parties = _demand_for_slot(session, tenant_id, d, st)
         over_seats = reserved_guests > total_seats
         over_tables = reserved_parties > total_tables
         slots.append({
-            "reservation_time": slot_time.strftime("%H:%M"),
+            "reservation_time": st.strftime("%H:%M"),
             "total_seats": total_seats,
             "total_tables": total_tables,
             "reserved_guests": reserved_guests,
@@ -4864,10 +4977,11 @@ def get_reservations_overbooking_report(
             "over_seats": over_seats,
             "over_tables": over_tables,
         })
+    phys_seats, phys_tables = _capacity_for_tenant(session, tenant_id)
     return {
         "date": d.isoformat(),
-        "total_seats": total_seats,
-        "total_tables": total_tables,
+        "total_seats": phys_seats,
+        "total_tables": phys_tables,
         "slots": slots,
     }
 
@@ -4963,7 +5077,9 @@ def create_reservation(
         if res_time <= now_local.time():
             raise HTTPException(status_code=400, detail="Reservation time must be in the future")
     _raise_if_reservation_time_invalid_for_opening_hours(tenant, res_date, res_time)
-    total_seats, total_tables = _reservable_capacity_for_tenant(session, tenant_id, res_date, tenant)
+    total_seats, total_tables = _reservable_capacity_for_tenant(
+        session, tenant_id, res_date, tenant, res_time
+    )
     reserved_guests, reserved_parties = _demand_for_slot(session, tenant_id, res_date, res_time, exclude_reservation_id=None)
     if reserved_guests + data.party_size > total_seats or reserved_parties + 1 > total_tables:
         raise HTTPException(
@@ -5081,12 +5197,14 @@ def get_next_available_reservation_time(
         if len(windows) == 0:
             continue
 
-        total_seats, total_tables = _reservable_capacity_for_tenant(session, tenant_id, d, tenant)
-        if total_tables < 1 or total_seats < party_size:
-            continue
-
         for slot_time in _quarter_slot_times_for_windows(windows):
             if d == now_local.date() and slot_time <= now_local.time():
+                continue
+
+            total_seats, total_tables = _reservable_capacity_for_tenant(
+                session, tenant_id, d, tenant, slot_time
+            )
+            if total_tables < 1 or total_seats < party_size:
                 continue
 
             reserved_guests, reserved_parties = _demand_for_slot(
@@ -5178,7 +5296,7 @@ def update_reservation(
         tenant, reservation.reservation_date, reservation.reservation_time
     )
     total_seats, total_tables = _reservable_capacity_for_tenant(
-        session, current_user.tenant_id, reservation.reservation_date, tenant
+        session, current_user.tenant_id, reservation.reservation_date, tenant, reservation.reservation_time
     )
     reserved_guests, reserved_parties = _demand_for_slot(
         session,
@@ -5220,12 +5338,15 @@ def update_reservation_status(
     if body.status == models.ReservationStatus.cancelled:
         reservation.status = models.ReservationStatus.cancelled
         reservation.table_id = None
+        reservation.seated_at = None
     elif body.status == models.ReservationStatus.no_show:
         reservation.status = models.ReservationStatus.no_show
         reservation.table_id = None
+        reservation.seated_at = None
     elif body.status == models.ReservationStatus.finished:
         reservation.status = models.ReservationStatus.finished
         reservation.table_id = None
+        reservation.seated_at = None
     else:
         reservation.status = body.status
     reservation.updated_at = datetime.now(timezone.utc)
@@ -5297,7 +5418,8 @@ def seat_reservation(
         raise HTTPException(status_code=400, detail="Table is already reserved")
     reservation.table_id = body.table_id
     reservation.status = models.ReservationStatus.seated
-    reservation.updated_at = datetime.now(timezone.utc)
+    reservation.seated_at = datetime.now(timezone.utc)
+    reservation.updated_at = reservation.seated_at
     session.add(reservation)
     session.commit()
     session.refresh(reservation)
@@ -5323,6 +5445,7 @@ def finish_reservation(
         raise HTTPException(status_code=404, detail="Reservation not found")
     reservation.status = models.ReservationStatus.finished
     reservation.table_id = None
+    reservation.seated_at = None
     reservation.updated_at = datetime.now(timezone.utc)
     session.add(reservation)
     session.commit()
@@ -5351,6 +5474,7 @@ def cancel_reservation_public(
         return _reservation_to_dict(reservation, session)
     reservation.status = models.ReservationStatus.cancelled
     reservation.table_id = None
+    reservation.seated_at = None
     reservation.updated_at = datetime.now(timezone.utc)
     session.add(reservation)
     session.commit()
