@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.32] - 2026-03-22
+
+### Changed
+
+- **Dev `environment.ts`**: Version fallback when **`commit-hash.ts`** is **`0.0.0`** now comes from **`package.json`** (via **`resolveJsonModule`**) instead of a manually maintained **`DEV_VERSION_FALLBACK`** constant.
+
 ## [2.0.31] - 2026-03-22
 
 ### Fixed
