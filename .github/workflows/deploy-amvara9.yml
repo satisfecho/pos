@@ -13,6 +13,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-amvara9-${{ github.ref }}
+      cancel-in-progress: false
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
@@ -46,8 +49,9 @@ jobs:
         timeout-minutes: 20
         run: |
           # Run script from server repo (after reset) so long-running build does not rely on piped stdin
+          BRANCH="${{ github.ref_name }}"
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=60 -o ServerAliveCountMax=10 \
-            "${DEPLOY_USER}@${DEPLOY_HOST}" "cd ${DEPLOY_PATH} && git fetch origin && git checkout master && git reset --hard origin/master && bash scripts/deploy-amvara9.sh"
+            "${DEPLOY_USER}@${DEPLOY_HOST}" "cd ${DEPLOY_PATH} && git fetch origin && git checkout ${BRANCH} && git reset --hard origin/${BRANCH} && bash scripts/deploy-amvara9.sh"
 
       - name: Smoke test (landing, version, API health)
         env:
@@ -55,9 +59,23 @@ jobs:
         run: |
           BASE="${SMOKE_TEST_BASE_URL}"
           echo "Smoke test: $BASE (landing), version in footer, $BASE/api/health"
-          sleep 5
-          curl -sf -o /dev/null -w "%{http_code}" "$BASE/" | grep -q 200 || (echo "Landing page failed"; exit 1)
-          HTML=$(curl -sfL "$BASE/?t=$(date +%s)") || (echo "Failed to fetch landing page"; exit 1)
+          LANDING_OK=""
+          for attempt in 1 2 3 4 5 6; do
+            echo "Landing HTTP check attempt ${attempt}/6..."
+            if curl -sf -o /dev/null -w "%{http_code}" "$BASE/" | grep -q 200; then
+              LANDING_OK=1
+              break
+            fi
+            [ "$attempt" -lt 6 ] && sleep 15
+          done
+          [ -n "$LANDING_OK" ] || (echo "Landing page failed after retries"; exit 1)
+          HTML=""
+          for attempt in 1 2 3 4 5 6; do
+            echo "Landing HTML + version meta attempt ${attempt}/6..."
+            HTML=$(curl -sfL "$BASE/?t=$(date +%s)") && break
+            [ "$attempt" -lt 6 ] && sleep 15
+          done
+          [ -n "$HTML" ] || (echo "Failed to fetch landing page after retries"; exit 1)
           if echo "$HTML" | grep -qE 'name="app-version"[^>]*content="[0-9]+\.[0-9]+\.[0-9]+"'; then
             echo "Version meta tag found in landing page."
           elif echo "$HTML" | grep -q 'name="app-version"' && echo "$HTML" | grep -qE 'content="[0-9]+\.[0-9]+\.[0-9]+"'; then
@@ -68,5 +86,14 @@ jobs:
             exit 1
           fi
           echo "Version correctly shown in landing page (no login required)."
-          curl -sf -o /dev/null -w "%{http_code}" "$BASE/api/health" | grep -q 200 || (echo "API health failed"; exit 1)
+          HEALTH_OK=""
+          for attempt in 1 2 3 4 5 6; do
+            echo "API health attempt ${attempt}/6..."
+            if curl -sf -o /dev/null -w "%{http_code}" "$BASE/api/health" | grep -q 200; then
+              HEALTH_OK=1
+              break
+            fi
+            [ "$attempt" -lt 6 ] && sleep 15
+          done
+          [ -n "$HEALTH_OK" ] || (echo "API health failed after retries"; exit 1)
           echo "Smoke test passed."

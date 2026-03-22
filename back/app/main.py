@@ -1726,6 +1726,15 @@ def get_tenant_settings(
     if tenant_dict.get("smtp_password"):
         tenant_dict["smtp_password"] = "********"
 
+    # GitHub #41: products list uses currency_code for Intl; unset tenants otherwise
+    # showed ambiguous formatting — default display currency to EUR for API consumers.
+    code = (tenant_dict.get("currency_code") or "").strip()
+    if not code:
+        tenant_dict["currency_code"] = "EUR"
+    sym = (tenant_dict.get("currency") or "").strip()
+    if not sym:
+        tenant_dict["currency"] = "€"
+
     return tenant_dict
 
 

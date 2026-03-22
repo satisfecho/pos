@@ -4,6 +4,18 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.39] - 2026-03-22
+
+### Fixed
+
+- **Tables (#48)**: Floor plan links to **tile grid** and **list** now open `/tables?view=tiles` / `?view=table` so the correct view shows; **localStorage** restore no longer overrides that choice on first paint.
+- **Products / tenant settings (#41)**: **`GET /tenant/settings`** fills missing **`currency_code`** / **`currency`** with **`EUR`** / **`€`** so staff product prices format in euros when the tenant never set currency.
+
+### Changed
+
+- **i18n (`en`, `es`)**: Tables view labels clarify **tile grid (mosaic)** vs **list view**.
+- **Deploy (GitHub Actions #49)**: **`deploy-amvara9`** uses **`concurrency`** per branch, checks out the pushed branch (**`github.ref_name`**) instead of hard-coding **`master`**, and **retries** landing + health smoke checks with backoff.
+
 ## [2.0.38] - 2026-03-22
 
 ### Changed

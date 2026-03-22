@@ -1,6 +1,6 @@
 import { afterNextRender, Component, effect, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { ApiService, Table, TenantSettings, Floor, TableActivateResponse, User } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
@@ -767,6 +767,10 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
 export class TablesComponent implements OnInit {
   private api = inject(ApiService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  /** When true, skip restoring view mode from localStorage (URL ?view= had priority). */
+  private viewResolvedFromQuery = false;
 
   tables = signal<Table[]>([]);
   floors = signal<Floor[]>([]);
@@ -832,6 +836,9 @@ export class TablesComponent implements OnInit {
     });
     // Restore view mode from localStorage after first browser paint (ensures we run in client context)
     afterNextRender(() => {
+      if (this.viewResolvedFromQuery) {
+        return;
+      }
       try {
         if (typeof window !== 'undefined' && window.localStorage) {
           const saved = window.localStorage.getItem(TABLES_VIEW_STORAGE_KEY);
@@ -857,6 +864,16 @@ export class TablesComponent implements OnInit {
   }
 
   ngOnInit() {
+    const v = this.route.snapshot.queryParamMap.get('view');
+    if (v === 'tiles' || v === 'table') {
+      this.viewResolvedFromQuery = true;
+      this.setViewMode(v);
+      void this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { view: null },
+        replaceUrl: true,
+      });
+    }
     this.loadData();
     this.loadTenantSettings();
     this.api.getWaiters().subscribe({

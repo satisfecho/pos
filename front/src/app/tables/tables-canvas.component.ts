@@ -38,14 +38,14 @@ interface TableShape {
             </span>
             @if (floors().length > 0) {
               <div class="view-toggle" data-testid="view-toggle">
-                <a routerLink="/tables" class="btn btn-ghost btn-sm" [title]="'TABLES.VIEW_TILES' | translate" data-testid="view-option-tiles">
+                <a routerLink="/tables" [queryParams]="{ view: 'tiles' }" class="btn btn-ghost btn-sm" [title]="'TABLES.VIEW_TILES' | translate" data-testid="view-option-tiles">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
                     <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
                   </svg>
                   {{ 'TABLES.VIEW_TILES' | translate }}
                 </a>
-                <a routerLink="/tables" class="btn btn-ghost btn-sm" [title]="'TABLES.VIEW_TABLE' | translate" data-testid="view-option-table">
+                <a routerLink="/tables" [queryParams]="{ view: 'table' }" class="btn btn-ghost btn-sm" [title]="'TABLES.VIEW_TABLE' | translate" data-testid="view-option-table">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <rect x="3" y="3" width="18" height="18" rx="1"/>
                     <line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/>

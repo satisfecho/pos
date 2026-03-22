@@ -560,8 +560,8 @@
     "ASSIGN_WAITER": "Assign Waiter",
     "DEFAULT_WAITER": "Default Waiter",
     "SECTION_DEFAULT": "Section default",
-    "VIEW_TILES": "Tiles",
-    "VIEW_TABLE": "Table",
+    "VIEW_TILES": "Tile grid (mosaic)",
+    "VIEW_TABLE": "List view",
     "COL_STATUS": "Status",
     "PIN": "PIN",
     "OPEN_MENU": "Open menu"

@@ -559,8 +559,8 @@
     "ASSIGN_WAITER": "Asignar camarero",
     "DEFAULT_WAITER": "Camarero por defecto",
     "SECTION_DEFAULT": "Por defecto de sección",
-    "VIEW_TILES": "Mosaicos",
-    "VIEW_TABLE": "Tabla",
+    "VIEW_TILES": "Cuadrícula (mosaico)",
+    "VIEW_TABLE": "Vista lista",
     "COL_STATUS": "Estado",
     "PIN": "PIN",
     "OPEN_MENU": "Abrir menú"
