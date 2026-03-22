@@ -6664,8 +6664,8 @@ def get_current_order(
         ):
             active_order = shared_order
 
-    # Fallback: search by session_id or any unpaid order (backward compatibility
-    # for tables activated before the shared-order model was introduced).
+    # Fallback: search by session_id or any open order (not paid/cancelled; backward
+    # compatibility for tables activated before the shared-order model was introduced).
     if not active_order:
         _not_closed = ~models.Order.status.in_(
             [models.OrderStatus.paid, models.OrderStatus.cancelled]

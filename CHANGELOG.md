@@ -4,6 +4,13 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.28] - 2026-03-22
+
+### Changed
+
+- **README**: Under **Development**, added **Backend tests** with the `pytest /app/tests` Docker one-liner and a pointer to **`docs/testing.md`**.
+- **Docs / comments**: `get_current_order` fallback comment now says **open** orders (not paid/cancelled) instead of “unpaid” only.
+
 ## [2.0.27] - 2026-03-22
 
 ### Changed

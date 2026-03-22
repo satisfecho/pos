@@ -208,6 +208,16 @@ Browser → Frontend (Angular) → Backend (FastAPI) → PostgreSQL
 
 See [AGENTS.md](AGENTS.md) for more detail.
 
+### Backend tests
+
+After `docker compose … up`, run the FastAPI **`TestClient`** suite in the **back** container (uses Postgres; rate limits disabled for tests):
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T back python3 -m pytest /app/tests -q
+```
+
+Puppeteer UI scripts and reservation capacity tests are described in **[docs/testing.md](docs/testing.md)**.
+
 ### Database migrations
 
 Migrations live in `back/migrations/` and run automatically on backend startup.
