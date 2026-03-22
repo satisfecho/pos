@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 - **Angular NG0505 (hydration)**: Removed `provideClientHydration` from the **browser** `app.config.ts`. Shipped dev and prod builds use CSR only (`development-no-ssr`, `production-static`), so there was no serialized SSR payload and the client logged NG0505 on every load. SSR builds still get hydration via `app.config.server.ts`.
+- **Dev landing version string**: Regenerated `commit-hash.ts` so `version` matches `package.json` (was `0.0.0`, which forced the stale `DEV_VERSION_FALLBACK`). Aligned `DEV_VERSION_FALLBACK` with the current package version for when the script has not run.
 
 ## [2.0.16] - 2026-03-22
 
