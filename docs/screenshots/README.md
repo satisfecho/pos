@@ -8,7 +8,7 @@ With the app running at `http://127.0.0.1:4202` (or set `BASE_URL`), run:
 
 ```bash
 # From repo root; uses LOGIN_EMAIL and LOGIN_PASSWORD from .env or environment
-LOGIN_EMAIL=owner@example.com LOGIN_PASSWORD=secret node front/scripts/capture-screenshots.mjs
+LOGIN_EMAIL=owner@amvara.de LOGIN_PASSWORD=secret node front/scripts/capture-screenshots.mjs
 # Or: npm run capture-screenshots --prefix front
 ```
 

@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.34] - 2026-03-22
+
+### Changed
+
+- **Mail-related tests & docs**: Replaced **`@example.com`** placeholders in Puppeteer scripts (defaults and comments), **`AGENTS.md`**, **`docs/testing.md`**, **`docs/screenshots/README.md`**, and **`docs/0001-ci-cd-amvara9.md`** with **`@amvara.de`** (or project-consistent demo addresses) per **no-example.com** rules for paths that register, log in, or rate-limit with real addresses.
+- **`back/tests/test_contact_validation.py`**: Normalization case uses **`amvara.de`** instead of **`example.com`**.
+- **Backend default `EMAIL_FROM`**: Fallback is **`noreply@satisfecho.de`** instead of **`noreply@example.com`** when SMTP sends without a tenant-specific from address.
+
 ## [2.0.33] - 2026-03-22
 
 ### Changed

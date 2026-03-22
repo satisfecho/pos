@@ -48,7 +48,7 @@ async function main() {
       const res = await fetch(loginUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ username: 'rate-limit-test@example.com', password: 'wrong' }),
+        body: new URLSearchParams({ username: 'rate-limit-test@amvara.de', password: 'wrong' }),
       });
       loginStatuses.push(res.status);
       console.log('   Attempt', i + 1, '->', res.status, i < LOGIN_LIMIT ? '' : '(expect 429)');
@@ -73,7 +73,7 @@ async function main() {
     for (let i = 0; i < REGISTER_LIMIT + 1; i++) {
       const params = new URLSearchParams({
         tenant_name: 'Rate Limit Test Tenant',
-        email: `rate-limit-reg-${Date.now()}-${i}@example.com`,
+        email: `rate-limit-reg-${Date.now()}-${i}@amvara.de`,
         password: 'testpass123',
         full_name: 'Test',
       });

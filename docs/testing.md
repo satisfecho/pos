@@ -125,7 +125,7 @@ Smoke test for the Working plan (shift schedule) page. Logs in as a user with sc
 
 ```bash
 npm run test:working-plan --prefix front
-# Or: LOGIN_EMAIL=owner@example.com LOGIN_PASSWORD=secret node front/scripts/test-working-plan.mjs
+# Or: LOGIN_EMAIL=owner@amvara.de LOGIN_PASSWORD=secret node front/scripts/test-working-plan.mjs
 # Headless: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/test-working-plan.mjs
 ```
 
@@ -140,7 +140,7 @@ Smoke test for the dashboard "What's new" tile and changelog modal. Logs in, ope
 
 ```bash
 npm run test:changelog --prefix front
-# Or: LOGIN_EMAIL=owner@example.com LOGIN_PASSWORD=secret node front/scripts/test-changelog.mjs
+# Or: LOGIN_EMAIL=owner@amvara.de LOGIN_PASSWORD=secret node front/scripts/test-changelog.mjs
 # Headless: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:changelog --prefix front
 ```
 
@@ -223,13 +223,13 @@ npm run test:provider-register --prefix front
 # Or: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 node front/scripts/test-provider-register.mjs
 ```
 
-- **Env:** `BASE_URL`, `PROVIDER_NAME`, `PROVIDER_EMAIL` (default: `provider-<timestamp>@example.com`), `PROVIDER_PASSWORD`, `PROVIDER_FULL_NAME`, `HEADLESS`.
+- **Env:** `BASE_URL`, `PROVIDER_NAME`, `PROVIDER_EMAIL` (default: `provider-<timestamp>@amvara.de`), `PROVIDER_PASSWORD`, `PROVIDER_FULL_NAME`, `HEADLESS`.
 - Opens `/provider/register`, fills form, submits; asserts success or reports error.
 
 **Provider login + add product** (requires an existing provider account):
 
 ```bash
-PROVIDER_TEST_EMAIL=provider@example.com PROVIDER_TEST_PASSWORD=secret npm run test:provider-add-product --prefix front
+PROVIDER_TEST_EMAIL=pos-provider@amvara.de PROVIDER_TEST_PASSWORD=secret npm run test:provider-add-product --prefix front
 # Or: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 node front/scripts/test-provider-add-product.mjs
 ```
 
@@ -262,7 +262,7 @@ npm run test:register --prefix front
 # Or: BASE_URL=http://satisfecho.de node front/scripts/test-register.mjs
 ```
 
-- **Env:** `BASE_URL`, `REGISTER_EMAIL`, `REGISTER_PASSWORD`, `REGISTER_FULL_NAME`, `REGISTER_TENANT_NAME`, `HEADLESS`. Uses unique email by default (`test-<timestamp>@example.com`).
+- **Env:** `BASE_URL`, `REGISTER_EMAIL`, `REGISTER_PASSWORD`, `REGISTER_FULL_NAME`, `REGISTER_TENANT_NAME`, `HEADLESS`. Uses unique email by default (`test-<timestamp>@amvara.de`).
 
 ---
 

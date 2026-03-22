@@ -5,7 +5,7 @@
  *
  * Usage (from repo root):
  *   npm run test:settings-logo --prefix front
- *   LOGIN_EMAIL=owner@example.com LOGIN_PASSWORD=secret node front/scripts/test-settings-logo-upload.mjs
+ *   LOGIN_EMAIL=owner@amvara.de LOGIN_PASSWORD=secret node front/scripts/test-settings-logo-upload.mjs
  *   BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:settings-logo --prefix front
  *
  * Env:

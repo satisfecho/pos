@@ -4,7 +4,7 @@ from app.contact_validation import normalize_email_address, normalize_phone_e164
 
 
 def test_normalize_email_accepts_common():
-    assert normalize_email_address("  Test@Example.COM ") == "Test@example.com"
+    assert normalize_email_address("  Test@Amvara.DE ") == "Test@amvara.de"
 
 
 def test_normalize_email_rejects_garbage():

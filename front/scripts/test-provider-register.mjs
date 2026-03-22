@@ -10,7 +10,7 @@
  * Env:
  *   BASE_URL             App URL (default: auto-detect 4203, 4202, 4200 or http://satisfecho.de)
  *   PROVIDER_NAME       Provider/company name (default: Test Provider <timestamp>)
- *   PROVIDER_EMAIL      Email (default: provider-<timestamp>@example.com)
+ *   PROVIDER_EMAIL      Email (default: provider-<timestamp>@amvara.de)
  *   PROVIDER_PASSWORD   Password (default: testpass123)
  *   PROVIDER_FULL_NAME  Full name (default: Test Provider User)
  *   HEADLESS            Set to 1 to run headless (default: 0)
@@ -44,7 +44,7 @@ async function main() {
 
   const ts = Date.now();
   const providerName = process.env.PROVIDER_NAME || `Test Provider ${ts}`;
-  const email = process.env.PROVIDER_EMAIL || `provider-${ts}@example.com`;
+  const email = process.env.PROVIDER_EMAIL || `provider-${ts}@amvara.de`;
   const password = process.env.PROVIDER_PASSWORD || 'testpass123';
   const fullName = process.env.PROVIDER_FULL_NAME || 'Test Provider User';
 

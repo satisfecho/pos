@@ -4,7 +4,7 @@
  * Requires an owner or admin user (Reports is admin-only).
  *
  * Usage (from repo root):
- *   LOGIN_EMAIL=owner@example.com LOGIN_PASSWORD=secret node front/scripts/test-reports.mjs
+ *   LOGIN_EMAIL=owner@amvara.de LOGIN_PASSWORD=secret node front/scripts/test-reports.mjs
  *   BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:reports --prefix front
  *
  * Env:

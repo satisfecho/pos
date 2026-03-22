@@ -126,7 +126,7 @@ cd front && node scripts/debug-reservations.mjs
 ```
 
 Or with credentials inline (no .env):  
-`LOGIN_EMAIL="user@example.com" LOGIN_PASSWORD="secret" node front/scripts/debug-reservations.mjs`
+`LOGIN_EMAIL="pos-staff-demo@amvara.de" LOGIN_PASSWORD="secret" node front/scripts/debug-reservations.mjs`
 
 **Public flow (no login: book page → submit → view/cancel by token):**
 

@@ -60,7 +60,7 @@ async function main() {
     await page.goto(new URL('/login', baseUrl).href, { waitUntil: 'networkidle2', timeout: 15000 });
     await page.waitForSelector('input[type="email"]', { timeout: 5000 });
 
-    await page.type('input[type="email"]', 'rate-limit-puppeteer@example.com');
+    await page.type('input[type="email"]', 'rate-limit-puppeteer@amvara.de');
     await page.type('input[type="password"]', 'wrongpassword');
 
     for (let i = 0; i < LOGIN_ATTEMPTS; i++) {

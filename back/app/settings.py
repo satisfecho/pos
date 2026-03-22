@@ -73,7 +73,11 @@ class Settings(BaseSettings):
     smtp_user: str = Field(default="", validation_alias="SMTP_USER")
     smtp_password: str = Field(default="", validation_alias="SMTP_PASSWORD")
     smtp_use_tls: bool = Field(default=True, validation_alias="SMTP_USE_TLS")
-    email_from: str = Field(default="noreply@example.com", validation_alias="EMAIL_FROM")
+    email_from: str = Field(
+        default="noreply@satisfecho.de",
+        validation_alias="EMAIL_FROM",
+        description="From address when tenant has none; use a domain you control (not example.com).",
+    )
     email_from_name: str = Field(default="POS2 System", validation_alias="EMAIL_FROM_NAME")
 
     # WhatsApp (Twilio) – optional; when set, reminders can be sent via WhatsApp when customer_phone is present

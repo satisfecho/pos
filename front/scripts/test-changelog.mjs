@@ -5,7 +5,7 @@
  *
  * Usage (from repo root):
  *   npm run test:changelog --prefix front
- *   LOGIN_EMAIL=owner@example.com LOGIN_PASSWORD=secret node front/scripts/test-changelog.mjs
+ *   LOGIN_EMAIL=owner@amvara.de LOGIN_PASSWORD=secret node front/scripts/test-changelog.mjs
  *   BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:changelog --prefix front
  *
  * Loads .env from repo root if LOGIN_EMAIL/LOGIN_PASSWORD are not set.

@@ -4,7 +4,7 @@
  * Logs in, goes to /orders, finds the order, clicks the status badge, asserts the forward option appears.
  *
  * Usage (from repo root):
- *   LOGIN_EMAIL=user@example.com LOGIN_PASSWORD=secret node front/scripts/test-order-8-status.mjs
+ *   LOGIN_EMAIL=pos-staff-demo@amvara.de LOGIN_PASSWORD=secret node front/scripts/test-order-8-status.mjs
  *   ORDER_ID=8 BASE_URL=http://127.0.0.1:4203 LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/test-order-8-status.mjs
  *
  * Env:

@@ -10,7 +10,7 @@
  *
  * Env:
  *   BASE_URL          App URL (default: auto-detect 4203, 4202, 4200, or http://satisfecho.de)
- *   REGISTER_EMAIL    Email (default: test-<timestamp>@example.com)
+ *   REGISTER_EMAIL    Email (default: test-<timestamp>@amvara.de)
  *   REGISTER_PASSWORD Password (default: testpass123)
  *   REGISTER_FULL_NAME Full name (default: Test User)
  *   REGISTER_TENANT_NAME Organization name (default: Test Restaurant)
@@ -44,7 +44,7 @@ async function main() {
   }
   const registerUrl = new URL('/register', baseUrl).href;
 
-  const email = process.env.REGISTER_EMAIL || `test-${Date.now()}@example.com`;
+  const email = process.env.REGISTER_EMAIL || `test-${Date.now()}@amvara.de`;
   const password = process.env.REGISTER_PASSWORD || 'testpass123';
   const fullName = process.env.REGISTER_FULL_NAME || 'Test User';
   const tenantName = process.env.REGISTER_TENANT_NAME || 'Test Restaurant';

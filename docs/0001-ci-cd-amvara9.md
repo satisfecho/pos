@@ -102,7 +102,7 @@ BASE_URL=http://167.235.138.59 HEADLESS=1 npm run test:landing-version
 **2. Reports (owner/admin credentials required; create first user at /register after fresh install):**
 ```bash
 cd pos/front
-BASE_URL=http://167.235.138.59 HEADLESS=1 LOGIN_EMAIL=your-owner@example.com LOGIN_PASSWORD=yourpassword npm run test:reports
+BASE_URL=http://167.235.138.59 HEADLESS=1 LOGIN_EMAIL=your-owner@amvara.de LOGIN_PASSWORD=yourpassword npm run test:reports
 # Or BASE_URL=https://satisfecho.de when DNS is set
 ```
 
