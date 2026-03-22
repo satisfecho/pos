@@ -216,7 +216,7 @@ from sendgrid.helpers.mail import Mail
 
 message = Mail(
     from_email='noreply@yourdomain.com',
-    to_emails='customer@example.com',
+    to_emails='guest@yourrestaurant.com',
     subject='Verify your email',
     html_content='<p>Your verification code: 123456</p>'
 )
@@ -234,7 +234,7 @@ resend = Resend(api_key=settings.resend_api_key)
 
 resend.emails.send({
     "from": "noreply@yourdomain.com",
-    "to": "customer@example.com",
+    "to": "guest@yourrestaurant.com",
     "subject": "Verify your email",
     "html": "<p>Your verification code: 123456</p>"
 })
