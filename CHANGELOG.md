@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.21] - 2026-03-22
+
+### Added
+
+- **Backend dev/test deps**: `httpx` and `pytest` in `back/requirements.txt` so `TestClient` tests run inside the **back** Docker image after rebuild (`docker compose build back`).
+
+### Changed
+
+- **Docs**: `docs/testing.md` — run backend `pytest` in the **back** container (after `docker compose build back`).
+- **`tests/test_users_me_anonymous.py`**: Uses `TestClient` only (no in-memory SQLite `create_all`; full schema uses Postgres-only types such as JSONB). Imports `app` from the package root so it runs both on the host (`back/`) and in Docker (`/app`).
+
 ## [2.0.20] - 2026-03-22
 
 ### Changed
@@ -12,7 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- **Backend test**: `tests/test_users_me_anonymous.py` asserts anonymous `GET /users/me` → 200 + null (uses FastAPI `TestClient`, same as other tests; requires `httpx` in the test environment).
+- **Backend test**: `tests/test_users_me_anonymous.py` asserts anonymous `GET /users/me` → 200 + null (uses FastAPI `TestClient`; `httpx` is now in `requirements.txt`).
 
 ## [2.0.19] - 2026-03-22
 
@@ -25,7 +36,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 - **Docker dev — version footer**: `docker-entrypoint.sh` runs `get-commit-hash.js` before `ng serve` so `commit-hash.ts` tracks **`package.json` version** on each container start. The script **keeps the previous short hash** when git is unavailable (e.g. only `./front` is bind-mounted), instead of overwriting with `git hash`.
-- **Smoke test**: `test-landing-version` skips logging the expected browser **401 (Unauthorized)** resource line on the public landing page.
 
 ## [2.0.17] - 2026-03-22
 

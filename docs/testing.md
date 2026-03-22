@@ -32,6 +32,22 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back sh -c '
 # (Uses in-memory SQLite with a minimal table set; pytest is optional.)
 ```
 
+### Pytest + FastAPI `TestClient` (e.g. auth)
+
+`back/requirements.txt` includes **httpx** (required by Starlette/FastAPI `TestClient`) and **pytest**. After changing Python dependencies, rebuild the back image:
+
+`docker compose -f docker-compose.yml -f docker-compose.dev.yml build back`
+
+```bash
+# One file (anonymous GET /users/me → 200 + null):
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T back python3 -m pytest /app/tests/test_users_me_anonymous.py -q
+
+# Full suite under tests/ (adjust if some tests need extra env):
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T back python3 -m pytest /app/tests -q --tb=short
+```
+
+**Note:** `GET /users/me` returns **200** with JSON **`null`** when there is no session (not **401**), so the SPA auth probe does not show as a failed request for guests.
+
 ---
 
 ## Test scripts
