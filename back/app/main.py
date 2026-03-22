@@ -304,7 +304,6 @@ cors_origins_list = [
     origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()
 ]
 # Add wildcard for public menu access if not already present
-# Add wildcard for public menu access if not already present
 # if "*" not in cors_origins_list:
 #     cors_origins_list.append("*")
 
@@ -6146,13 +6145,13 @@ def get_menu(
             {"token": table_token},
         )
         table_row = result.fetchone()
-        print(f"[DEBUG] Query result: {table_row}")
+        logger.debug("get_menu table query token=%s row=%s", table_token[:8] + "...", table_row)
     except Exception as e:
-        print(f"[DEBUG] Query error: {e}")
+        logger.exception("get_menu table query failed: %s", e)
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
     if not table_row:
-        print(f"[DEBUG] Table not found for token: {table_token}")
+        logger.debug("get_menu: no table for token prefix=%s", table_token[:8] + "...")
         raise HTTPException(status_code=404, detail="Table not found")
 
     # Create a simple object with the needed attributes
@@ -6972,10 +6971,14 @@ def create_order(
     else:
         is_new_order = False
 
-    print(f"\n{'=' * 60}")
-    print(f"[DEBUG] POST /menu/{table_token}/order")
-    print(f"[DEBUG] Table: id={table.id}, name={table.name}, is_active={table.is_active}")
-    print(f"[DEBUG] Using shared order #{order.id}")
+    logger.debug(
+        "POST /menu/.../order table_id=%s name=%s active=%s order_id=%s new=%s",
+        table.id,
+        table.name,
+        table.is_active,
+        order.id,
+        is_new_order,
+    )
 
     # ============ LOCATION VERIFICATION ============
     location_flagged = False
@@ -6985,16 +6988,21 @@ def create_order(
                 tenant.latitude, tenant.longitude,
                 order_data.latitude, order_data.longitude
             )
-            print(f"[DEBUG] Location check: customer at {order_data.latitude}, {order_data.longitude}")
-            print(f"[DEBUG] Distance from restaurant: {distance:.0f}m (radius: {tenant.location_radius_meters}m)")
-            
+            logger.debug(
+                "Location check: lat=%s lon=%s distance_m=%.0f radius_m=%s",
+                order_data.latitude,
+                order_data.longitude,
+                distance,
+                tenant.location_radius_meters,
+            )
+
             if distance > tenant.location_radius_meters:
                 location_flagged = True
                 order.flagged_for_review = True
                 order.flag_reason = f"Order placed from {distance:.0f}m away (limit: {tenant.location_radius_meters}m)"
-                print(f"[DEBUG] ORDER FLAGGED: {order.flag_reason}")
+                logger.debug("Order flagged for review: %s", order.flag_reason)
         else:
-            print(f"[DEBUG] Location not provided by customer")
+            logger.debug("Location check enabled but customer did not send coordinates")
     
     # Update customer name if provided (for display purposes)
     if order_data.customer_name and not order.customer_name:
@@ -7003,11 +7011,6 @@ def create_order(
     # Append notes if provided
     if order_data.notes:
         order.notes = f"{order.notes or ''}\n{order_data.notes}".strip()
-
-    print(f"[DEBUG] Final order #{order.id}, status={order.status!r}")
-    print(f"{'=' * 60}\n")
-    
-    is_new_order = False  # We're always adding to existing shared order
 
     # Add order items
     order_date = order.created_at.date() if order.created_at else date.today()
@@ -7171,7 +7174,7 @@ def create_order(
         all_items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order.id)).all()
         computed_status = compute_order_status_from_items(all_items)
         order.status = computed_status
-        print(f"[DEBUG] Recomputed order status from items: {computed_status.value}")
+        logger.debug("Recomputed order status from items: %s", computed_status.value)
     
     session.commit()
     session.refresh(order)

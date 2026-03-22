@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.24] - 2026-03-22
+
+### Fixed
+
+- **Public menu `POST /menu/{token}/order`**: Removed a line that always forced `is_new_order = False`, so the first order on a table again returns **`status: "created"`** and publishes **`new_order`** to Redis (was incorrectly always **`updated`** / **`items_added`**).
+
+### Changed
+
+- **Backend**: Replaced `print` debug noise in `get_menu` and `create_order` with **`logger.debug`** (and **`logger.exception`** on menu query failure). Dropped a duplicated CORS comment line.
+
 ## [2.0.23] - 2026-03-22
 
 ### Changed
