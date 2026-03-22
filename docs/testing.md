@@ -50,6 +50,8 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T back pyth
 
 Pytest sets **`RATE_LIMIT_ENABLED=false`** via `back/tests/conftest.py` (and `pg_client_mixin.py` for direct test runs) so rate limiting does not interfere with `TestClient`.
 
+**Docker dev — landing footer:** optional host **`COMMIT_HASH`** ( **`./run.sh`** exports it from **`git rev-parse --short HEAD`** when unset before **`docker compose up`**) keeps the footer git short hash aligned with the repo; see **README** / **AGENTS.md**.
+
 `tests/test_public_menu_order_response.py` checks that the first public menu order response is **`created`** and the next is **`updated`** (same `order_id`).
 
 **Note:** `GET /users/me` returns **200** with JSON **`null`** when there is no session (not **401**), so the SPA auth probe does not show as a failed request for guests.
