@@ -4,6 +4,13 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.37] - 2026-03-22
+
+### Changed
+
+- **Settings (SMTP user)**: Input placeholder uses **`you@your-mail.com`** instead of **`user@example.com`**.
+- **Beer import seed**: Wikimedia **`User-Agent`** contact URL points at the **GitHub** repo instead of **`example.com`**.
+
 ## [2.0.36] - 2026-03-22
 
 ### Changed

@@ -907,7 +907,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                   </div>
                   <div class="form-group">
                     <label for="smtp_user">{{ 'SETTINGS.SMTP_USER' | translate }}</label>
-                    <input type="text" id="smtp_user" [(ngModel)]="formData.smtp_user" name="smtp_user" placeholder="user@example.com" />
+                    <input type="text" id="smtp_user" [(ngModel)]="formData.smtp_user" name="smtp_user" placeholder="you@your-mail.com" />
                   </div>
                   <div class="form-group">
                     <label for="smtp_password">{{ 'SETTINGS.SMTP_PASSWORD' | translate }}</label>

@@ -512,7 +512,7 @@ def download_and_store_image(
     try:
         # Download image with User-Agent header (required for Wikimedia Commons)
         headers = {
-            'User-Agent': 'Mozilla/5.0 (compatible; POS-System/1.0; +https://example.com/bot)'
+            'User-Agent': 'Mozilla/5.0 (compatible; POS-System/1.0; +https://github.com/satisfecho/pos)'
         }
         response = requests.get(image_url, headers=headers, timeout=30, stream=True)
         response.raise_for_status()
