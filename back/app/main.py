@@ -6949,7 +6949,7 @@ def create_order(
             order = None  # Will create a new order below if we have items
 
     if order is None:
-        # No order yet, or previous order was paid: create new order only if customer is adding items
+        # No order yet, or previous shared order was paid/cancelled: create new order only if customer is adding items
         if not order_data.items or len(order_data.items) == 0:
             raise HTTPException(
                 status_code=400,

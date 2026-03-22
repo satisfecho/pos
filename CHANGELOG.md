@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.26] - 2026-03-22
+
+### Changed
+
+- **Docs**: `docs/testing.md` — reservation capacity tests: note they run under **`pytest /app/tests`**, add a **`-T`** `docker compose exec` example, and clarify why SQLite uses a minimal table set.
+
+### Fixed
+
+- **Comments**: `create_order` shared-order branch comment now mentions **cancelled** as well as paid when describing when a new order row is created.
+
 ## [2.0.25] - 2026-03-22
 
 ### Added

@@ -23,13 +23,15 @@ All commands below are from **repo root** unless noted.
 
 ## Backend (reservation capacity)
 
-Turn time and walk-in buffer logic is covered by unit tests (in-memory SQLite):
+Turn time and walk-in buffer logic is in `tests/test_reservable_capacity_turn_walkin.py`. It uses **in-memory SQLite** with a **minimal** table subset (a full schema uses Postgres-only types such as JSONB). These tests are **included** when you run `pytest /app/tests` in the back container.
 
 ```bash
-# From back/ inside the back container (or venv with deps):
-docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back sh -c 'cd /app && PYTHONPATH=. python3 tests/test_reservable_capacity_turn_walkin.py'
-# Same on host if PYTHONPATH=back: python3 back/tests/test_reservable_capacity_turn_walkin.py
-# (Uses in-memory SQLite with a minimal table set; pytest is optional.)
+# Pytest (recommended; same pattern as the rest of backend tests):
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T back python3 -m pytest /app/tests/test_reservable_capacity_turn_walkin.py -q
+
+# Or run the file directly (no pytest):
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T back sh -c 'cd /app && PYTHONPATH=. python3 tests/test_reservable_capacity_turn_walkin.py'
+# On host: PYTHONPATH=back python3 back/tests/test_reservable_capacity_turn_walkin.py
 ```
 
 ### Pytest + FastAPI `TestClient` (e.g. auth)
