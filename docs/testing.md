@@ -54,6 +54,8 @@ Pytest sets **`RATE_LIMIT_ENABLED=false`** via `back/tests/conftest.py` (and `pg
 
 `tests/test_public_menu_order_response.py` checks that the first public menu order response is **`created`** and the next is **`updated`** (same `order_id`).
 
+`tests/test_settings_defaults.py` asserts the **`EMAIL_FROM`** settings default is **`noreply@satisfecho.de`** (not **`example.com`**).
+
 **Note:** `GET /users/me` returns **200** with JSON **`null`** when there is no session (not **401**), so the SPA auth probe does not show as a failed request for guests.
 
 ---

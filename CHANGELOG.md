@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.35] - 2026-03-22
+
+### Added
+
+- **Backend test** `tests/test_settings_defaults.py`: Asserts **`EMAIL_FROM`** model default is **`noreply@satisfecho.de`** (guards against regressing to **`example.com`**). Mentioned in **`docs/testing.md`**.
+
 ## [2.0.34] - 2026-03-22
 
 ### Changed
