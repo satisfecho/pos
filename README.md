@@ -216,7 +216,7 @@ After `docker compose … up`, run the FastAPI **`TestClient`** suite in the **b
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T back python3 -m pytest /app/tests -q
 ```
 
-Puppeteer UI scripts and reservation capacity tests are described in **[docs/testing.md](docs/testing.md)**.
+The suite includes small guards such as **`tests/test_settings_defaults.py`** (e.g. **`EMAIL_FROM`** default). Puppeteer UI scripts and reservation capacity tests are in **[docs/testing.md](docs/testing.md)**.
 
 ### Landing footer version (Docker dev)
 

@@ -98,7 +98,7 @@ class Settings(BaseSettings):
     public_app_base_url: str = Field(
         default="",
         validation_alias="PUBLIC_APP_BASE_URL",
-        description="e.g. https://example.com or http://localhost:4200",
+        description="e.g. https://satisfecho.de or http://localhost:4202",
     )
 
     # Production mode (enables secure cookies, stricter CORS, etc.)

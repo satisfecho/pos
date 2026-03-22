@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.36] - 2026-03-22
+
+### Changed
+
+- **`back/app/settings.py`**: **`PUBLIC_APP_BASE_URL`** field description examples use **`satisfecho.de`** / **`localhost:4202`** instead of **`example.com`**.
+- **README**: Backend tests blurb mentions **`tests/test_settings_defaults.py`**.
+- **`commit-hash.ts`**: Synced to match post-**2.0.35** git short hash.
+
 ## [2.0.35] - 2026-03-22
 
 ### Added
