@@ -783,8 +783,8 @@ export class ApiService {
 
   // Check authentication status with backend (cookies)
   checkAuth(): Observable<User | null> {
-    return this.http.get<User>(`${this.apiUrl}/users/me`).pipe(
-      tap(user => {
+    return this.http.get<User | null>(`${this.apiUrl}/users/me`).pipe(
+      tap((user) => {
         // Normalize role to lowercase so guards work regardless of API serialization
         const normalized = user?.role
           ? { ...user, role: String(user.role).toLowerCase() as UserRole }

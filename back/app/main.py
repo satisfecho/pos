@@ -1267,10 +1267,11 @@ def get_ws_token(
     return {"access_token": token}
 
 
-@app.get("/users/me")
+@app.get("/users/me", response_model=models.User | None)
 def read_users_me(
-    current_user: Annotated[models.User, Depends(security.get_current_user)],
-) -> models.User:
+    current_user: Annotated[models.User | None, Depends(security.get_current_user_optional)],
+) -> models.User | None:
+    """Current user when a valid session cookie is present; **200 with JSON `null`** when anonymous (no 401 noise for SPA bootstrap)."""
     return current_user
 
 

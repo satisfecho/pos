@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.20] - 2026-03-22
+
+### Changed
+
+- **API — `GET /users/me`**: Returns **200** with JSON **`null`** when there is no valid session (instead of **401**). Same as before when logged in (user JSON). Lets the SPA check auth without a failed-network / console noise for guests. **Breaking** for any client that relied on 401 to detect “not logged in”; use status **200** + null body instead.
+
+### Added
+
+- **Backend test**: `tests/test_users_me_anonymous.py` asserts anonymous `GET /users/me` → 200 + null (uses FastAPI `TestClient`, same as other tests; requires `httpx` in the test environment).
+
 ## [2.0.19] - 2026-03-22
 
 ### Fixed
