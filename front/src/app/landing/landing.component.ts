@@ -315,15 +315,14 @@ export class LandingComponent implements OnInit {
   tableCode = '';
 
   ngOnInit(): void {
-    this.api.checkAuth().subscribe({
-      next: (user) => {
-        if (user) {
-          this.router.navigate(['/dashboard']);
-          return;
-        }
-        this.loadTenants();
-      },
-      error: () => this.loadTenants(),
+    // `ApiService` constructor already calls `checkAuth()` once; avoid a second `/users/me` (extra 401 noise).
+    this.api.waitForInitialAuthCheck().subscribe(() => {
+      const user = this.api.getCurrentUser();
+      if (user) {
+        void this.router.navigate(['/dashboard']);
+        return;
+      }
+      this.loadTenants();
     });
   }
 

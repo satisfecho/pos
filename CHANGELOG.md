@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.19] - 2026-03-22
+
+### Fixed
+
+- **Landing page**: Stopped calling `checkAuth()` a second time on load. `ApiService` already requests `/users/me` once at bootstrap; the landing component now waits for that to finish via `waitForInitialAuthCheck()`, then redirects or loads public tenants. Cuts duplicate requests and avoids an extra **401** in the network log for guests.
+
 ## [2.0.18] - 2026-03-22
 
 ### Fixed

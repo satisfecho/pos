@@ -1,6 +1,17 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap, Subject, catchError, of, map } from 'rxjs';
+import {
+  Observable,
+  BehaviorSubject,
+  tap,
+  Subject,
+  catchError,
+  of,
+  map,
+  finalize,
+  filter,
+  take,
+} from 'rxjs';
 import { environment } from '../../environments/environment';
 
 // Interfaces
@@ -742,6 +753,8 @@ export class ApiService {
 
 
   private userSubject = new BehaviorSubject<User | null>(null);
+  /** Set true after the constructor's first `checkAuth()` completes (used to avoid duplicate `/users/me` on landing). */
+  private authInitialCheckDone$ = new BehaviorSubject<boolean>(false);
 
   /** True when current user is owner and working plan was updated by someone else (show '*' in nav). */
   workingPlanHasUpdates = signal(false);
@@ -754,7 +767,18 @@ export class ApiService {
   reservationUpdates$ = this.reservationUpdates.asObservable();
 
   constructor() {
-    this.checkAuth().subscribe();
+    this.checkAuth()
+      .pipe(finalize(() => this.authInitialCheckDone$.next(true)))
+      .subscribe();
+  }
+
+  /** One emission after the app bootstrap `checkAuth()` finishes (logged in or not). */
+  waitForInitialAuthCheck(): Observable<void> {
+    return this.authInitialCheckDone$.pipe(
+      filter((done) => done),
+      take(1),
+      map(() => void 0),
+    );
   }
 
   // Check authentication status with backend (cookies)
