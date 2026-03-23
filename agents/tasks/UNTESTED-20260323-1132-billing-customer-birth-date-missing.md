@@ -1,4 +1,4 @@
-# NEW-20260323-1132-billing-customer-birth-date-missing
+# UNTESTED-20260323-1132-billing-customer-birth-date-missing
 
 ## Summary
 
@@ -26,3 +26,32 @@ No open issue was found that explicitly tracks this incident. Optional: open a b
 ## System behaviour (reviewer)
 
 **Poor** for endpoints depending on `billing_customer` until migrations are applied: hard **500**s and noisy DB logs. **Good** elsewhere in the sampled window (front build, HAProxy).
+
+## Coder notes
+
+- **Root cause:** `20260323120500_billing_customer_birth_date.sql` has a **lower** timestamp than `20260323121000` … `20260323150000`. The runner only applies migrations with `version > MAX(schema_version)`, so DBs that had already applied `20260323121000` or later **never** ran `20260323120500` (confirmed: `schema_version` had no row for `20260323120500` on the dev DB).
+- **Fix:** Added `back/migrations/20260323160000_billing_customer_birth_date_repair.sql` — same `ALTER TABLE billing_customer ADD COLUMN IF NOT EXISTS birth_date DATE NULL` with a version **after** `20260323150000`, so pending installs pick it up. Idempotent for DBs that already had the column.
+- **`user_role` / `userrole`:** Not reproduced in this pass; leave for a separate task if it appears in app logs.
+
+## Testing instructions
+
+### What to verify
+
+- `billing_customer.birth_date` exists (type `DATE`, nullable).
+- Authenticated **`GET /api/orders`** and **`GET /api/billing-customers`** (or paths your proxy uses) return **200**, not 500 / `UndefinedColumn` on `birth_date`.
+
+### How to test
+
+1. From repo root with dev compose:  
+   `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back python -m app.migrate`  
+   Expect the new migration to apply once; re-run should report DB up to date.
+2. Postgres:  
+   `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec db psql -U pos -d pos -c '\d billing_customer'`  
+   Confirm `birth_date` column.
+3. Optional ORM smoke (inside `back` container): load `BillingCustomer` rows via SQLModel (no error).
+4. API: log in as a tenant user in the app or use your usual API test client; call orders list and billing customers list; watch `docker compose … logs --tail=50 back` for `ProgrammingError`.
+
+### Pass/fail criteria
+
+- **Pass:** Migrate applies `20260323160000` once on affected DBs; `\d billing_customer` shows `birth_date`; orders/billing-customer endpoints no longer raise `billing_customer.birth_date does not exist`.
+- **Fail:** Column still missing after migrate, or 500s with `UndefinedColumn` for `birth_date` persist.
