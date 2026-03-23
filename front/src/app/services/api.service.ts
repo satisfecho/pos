@@ -269,6 +269,27 @@ export interface ReservationBookCalendarResponse {
   days: ReservationBookCalendarDay[];
 }
 
+/** GET /reservations/book-week-slots — Mon–Sun grid of slot states for public booking. */
+export type ReservationBookWeekSlotState =
+  | 'available'
+  | 'full'
+  | 'past'
+  | 'closed_day'
+  | 'out_of_hours'
+  | 'out_of_range';
+
+export interface ReservationBookWeekDay {
+  date: string;
+  cells: Record<string, ReservationBookWeekSlotState>;
+}
+
+export interface ReservationBookWeekSlotsResponse {
+  week_start: string;
+  earliest_week_monday: string;
+  times: string[];
+  days: ReservationBookWeekDay[];
+}
+
 /** One restaurant when several share the same printed table name. */
 export interface PublicTableLookupChoice {
   table_token: string;
@@ -334,6 +355,28 @@ export interface Product {
   _source?: string; // "tenant_product" or "product" to distinguish between TenantProduct and legacy Product
   /** Optional customization questions (e.g. doneness, spice level) */
   questions?: ProductQuestion[];
+  /** Prep station for KDS (/kitchen vs /bar); null = use tenant default by category */
+  kitchen_station_id?: number | null;
+}
+
+/** Kitchen / bar prep station (owner-defined; filters KDS by station). */
+export interface KitchenStation {
+  id: number;
+  tenant_id: number;
+  name: string;
+  sort_order: number;
+  display_route: 'kitchen' | 'bar';
+}
+
+export interface KitchenStationCreate {
+  name: string;
+  sort_order?: number;
+  display_route?: 'kitchen' | 'bar';
+}
+
+export interface KitchenStationDefaults {
+  default_kitchen_station_id: number | null;
+  default_bar_station_id: number | null;
 }
 
 /** Product customization question (e.g. meat doneness, spice 1–10, multi toppings) */
@@ -522,6 +565,13 @@ export interface PublicReservationUpdate {
   customer_notes?: string | null;
 }
 
+/** Structured pizza-style modifiers (remove / add / substitute); optional with product questions */
+export interface OrderLineModifiers {
+  remove?: string[];
+  add?: string[];
+  substitute?: { from: string; to: string }[];
+}
+
 export interface OrderItem {
   id?: number;
   product_name: string;
@@ -533,6 +583,9 @@ export interface OrderItem {
   customization_answers?: Record<string, string | number | string[]> | null;
   /** Snapshot "Label: value · …" at order time */
   customization_summary?: string | null;
+  line_modifiers?: OrderLineModifiers | null;
+  /** Human-readable remove/add/sub snapshot for kitchen and invoices */
+  line_modifiers_summary?: string | null;
   status?: string;  // pending, preparing, ready, delivered, cancelled
   removed_by_customer?: boolean;
   removed_at?: string;
@@ -542,6 +595,11 @@ export interface OrderItem {
   tax_amount_cents?: number | null;
   /** Product category for kitchen/bar display filtering: "Beverages", "Main Course", etc. */
   category?: string | null;
+  /** Resolved prep station for KDS (after product mapping and tenant defaults) */
+  kitchen_station_id?: number | null;
+  kitchen_station_name?: string | null;
+  /** Which display route this line belongs to: kitchen (/kitchen) or bar (/bar) */
+  kitchen_station_route?: string | null;
 }
 
 /** Billing customer for Factura (tax invoice) */
@@ -690,6 +748,7 @@ export interface OrderItemCreate {
   source?: string; // "tenant_product" or "product" to distinguish between TenantProduct and legacy Product
   /** Answers: string | number | string[] (multi choice) per question id */
   customization_answers?: Record<string, string | number | string[]>;
+  line_modifiers?: OrderLineModifiers;
 }
 
 export interface OrderCreate {
@@ -760,6 +819,18 @@ export interface ProviderCreate {
   tax_number?: string | null;
   phone?: string | null;
   email?: string | null;
+}
+
+/** PATCH body for a personal (tenant-owned) provider in Settings. */
+export interface PersonalProviderPatch {
+  name?: string;
+  url?: string | null;
+  full_company_name?: string | null;
+  address?: string | null;
+  tax_number?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  is_active?: boolean;
 }
 
 export interface CatalogItem {
@@ -1231,6 +1302,21 @@ export class ApiService {
     });
   }
 
+  getReservationBookWeekSlots(
+    tenantId: number,
+    partySize: number,
+    weekAnchor?: string | null
+  ): Observable<ReservationBookWeekSlotsResponse> {
+    const params: Record<string, string> = {
+      tenant_id: String(tenantId),
+      party_size: String(partySize),
+    };
+    if (weekAnchor?.trim()) params['week_anchor'] = weekAnchor.trim();
+    return this.http.get<ReservationBookWeekSlotsResponse>(`${this.apiUrl}/reservations/book-week-slots`, {
+      params,
+    });
+  }
+
   cancelReservationPublic(id: number, token: string): Observable<Reservation> {
     return this.http.put<Reservation>(`${this.apiUrl}/reservations/${id}/cancel`, {}, { params: { token } });
   }
@@ -1425,6 +1511,19 @@ export class ApiService {
     return this.http.put(`${this.apiUrl}/orders/${orderId}/items/${itemId}`, { quantity });
   }
 
+  /** Staff: quantity, notes, and/or line_modifiers (omit fields you do not change). */
+  updateOrderItemStaff(
+    orderId: number,
+    itemId: number,
+    body: {
+      quantity?: number;
+      notes?: string | null;
+      line_modifiers?: OrderLineModifiers | Record<string, unknown> | null;
+    },
+  ): Observable<any> {
+    return this.http.put(`${this.apiUrl}/orders/${orderId}/items/${itemId}`, body);
+  }
+
   removeOrderItemStaff(orderId: number, itemId: number, reason?: string): Observable<any> {
     let url = `${this.apiUrl}/orders/${orderId}/items/${itemId}`;
     const params: string[] = [];
@@ -1561,6 +1660,33 @@ export class ApiService {
   }
 
   /** Kitchen/Bar display: wait-time thresholds (minutes) for card color. */
+  getKitchenStations(): Observable<KitchenStation[]> {
+    return this.http.get<KitchenStation[]>(`${this.apiUrl}/tenant/kitchen-stations`);
+  }
+
+  createKitchenStation(body: KitchenStationCreate): Observable<KitchenStation> {
+    return this.http.post<KitchenStation>(`${this.apiUrl}/tenant/kitchen-stations`, body);
+  }
+
+  updateKitchenStation(
+    id: number,
+    body: Partial<{ name: string; sort_order: number; display_route: 'kitchen' | 'bar' }>
+  ): Observable<KitchenStation> {
+    return this.http.put<KitchenStation>(`${this.apiUrl}/tenant/kitchen-stations/${id}`, body);
+  }
+
+  deleteKitchenStation(id: number): Observable<{ status: string; id: number }> {
+    return this.http.delete<{ status: string; id: number }>(`${this.apiUrl}/tenant/kitchen-stations/${id}`);
+  }
+
+  getKitchenStationDefaults(): Observable<KitchenStationDefaults> {
+    return this.http.get<KitchenStationDefaults>(`${this.apiUrl}/tenant/kitchen-station-defaults`);
+  }
+
+  updateKitchenStationDefaults(body: Partial<KitchenStationDefaults>): Observable<KitchenStationDefaults> {
+    return this.http.put<KitchenStationDefaults>(`${this.apiUrl}/tenant/kitchen-station-defaults`, body);
+  }
+
   getKitchenDisplaySettings(): Observable<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }> {
     return this.http.get<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }>(
       `${this.apiUrl}/tenant/kitchen-display-settings`
@@ -1795,6 +1921,10 @@ export class ApiService {
 
   createProvider(body: ProviderCreate): Observable<Provider> {
     return this.http.post<Provider>(`${this.apiUrl}/providers`, body);
+  }
+
+  patchPersonalProvider(providerId: number, body: PersonalProviderPatch): Observable<Provider> {
+    return this.http.patch<Provider>(`${this.apiUrl}/providers/${providerId}`, body);
   }
 
   /** Create a product on a tenant-owned (personal) provider (admin/settings). */

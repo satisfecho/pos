@@ -96,39 +96,65 @@ import { currencySymbolFromIsoCode } from '../shared/currency-symbol';
                     @if (item.region) { - {{ item.region }} }
                   </div>
                 }
-                
-                @if (item.detailed_description || item.description) {
-                  <p class="catalog-description">{{ item.detailed_description || item.description }}</p>
-                }
-                
-                @if (item.wine_style || item.vintage || item.winery || item.grape_variety) {
-                  <div class="catalog-details">
-                    @if (item.wine_style) {
-                      <span class="detail-badge">{{ item.wine_style }}</span>
+
+                <div class="catalog-card-top">
+                  <div
+                    class="catalog-clamp-root"
+                    [class.catalog-clamped]="isDescriptionClamped(item)"
+                    [attr.id]="'catalog-card-body-' + item.id"
+                  >
+                    @if (item.detailed_description || item.description) {
+                      <p class="catalog-description">{{ item.detailed_description || item.description }}</p>
                     }
-                    @if (item.vintage) {
-                      <span class="detail-badge">Vintage {{ item.vintage }}</span>
+
+                    @if (item.wine_style || item.vintage || item.winery || item.grape_variety) {
+                      <div class="catalog-details">
+                        @if (item.wine_style) {
+                          <span class="detail-badge">{{ item.wine_style }}</span>
+                        }
+                        @if (item.vintage) {
+                          <span class="detail-badge">Vintage {{ item.vintage }}</span>
+                        }
+                        @if (item.winery) {
+                          <span class="detail-badge">{{ item.winery }}</span>
+                        }
+                        @if (item.grape_variety) {
+                          <span class="detail-badge">{{ item.grape_variety }}</span>
+                        }
+                      </div>
                     }
-                    @if (item.winery) {
-                      <span class="detail-badge">{{ item.winery }}</span>
+
+                    @if (item.aromas) {
+                      <div class="catalog-aromas">
+                        <strong>{{ 'CATALOG.AROMAS_LABEL' | translate }}</strong> {{ item.aromas }}
+                      </div>
                     }
-                    @if (item.grape_variety) {
-                      <span class="detail-badge">{{ item.grape_variety }}</span>
+
+                    @if (item.elaboration) {
+                      <div class="catalog-elaboration">
+                        <strong>{{ 'CATALOG.ELABORATION_LABEL' | translate }}</strong> {{ item.elaboration }}
+                      </div>
                     }
                   </div>
-                }
-                
-                 @if (item.aromas) {
-                   <div class="catalog-aromas">
-                     <strong>{{ 'CATALOG.AROMAS_LABEL' | translate }}</strong> {{ item.aromas }}
-                   </div>
-                 }
 
-                 @if (item.elaboration) {
-                   <div class="catalog-elaboration">
-                     <strong>{{ 'CATALOG.ELABORATION_LABEL' | translate }}</strong> {{ item.elaboration }}
-                   </div>
-                 }
+                  @if (needsDescriptionExpand(item)) {
+                    <button
+                      type="button"
+                      class="catalog-expand-btn"
+                      (click)="toggleDescriptionExpand(item.id)"
+                      [attr.aria-expanded]="isDescriptionExpanded(item.id)"
+                      [attr.aria-controls]="'catalog-card-body-' + item.id"
+                    >
+                      {{
+                        isDescriptionExpanded(item.id)
+                          ? ('CATALOG.SHOW_LESS' | translate)
+                          : ('CATALOG.SHOW_MORE' | translate)
+                      }}
+                    </button>
+                  }
+                </div>
+
+                <div class="catalog-card-spacer" aria-hidden="true"></div>
 
                  <!-- Price Comparison -->
                  @if (item.providers.length > 0) {
@@ -374,6 +400,8 @@ import { currencySymbolFromIsoCode } from '../shared/currency-symbol';
       flex-direction: column;
       gap: var(--space-3);
       overflow: hidden;
+      min-height: 0;
+      align-items: stretch;
     }
 
     .catalog-image {
@@ -434,6 +462,65 @@ import { currencySymbolFromIsoCode } from '../shared/currency-symbol';
       font-size: 0.8125rem;
       margin: var(--space-1) 0;
       font-style: italic;
+    }
+
+    .catalog-card-top {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      min-width: 0;
+    }
+
+    .catalog-clamp-root {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      min-width: 0;
+    }
+
+    .catalog-clamped .catalog-description {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      overflow: hidden;
+    }
+
+    .catalog-clamped .catalog-aromas,
+    .catalog-clamped .catalog-elaboration {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+    }
+
+    .catalog-expand-btn {
+      align-self: flex-start;
+      margin: 0;
+      padding: var(--space-2) var(--space-2);
+      min-height: 2.75rem;
+      border: none;
+      border-radius: var(--radius-md);
+      background: transparent;
+      color: var(--color-primary);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .catalog-expand-btn:hover {
+      color: var(--color-primary-hover);
+    }
+
+    .catalog-expand-btn:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+
+    .catalog-card-spacer {
+      flex: 1 1 0;
+      min-height: 0;
     }
 
     .catalog-description {
@@ -537,7 +624,6 @@ import { currencySymbolFromIsoCode } from '../shared/currency-symbol';
     }
 
     .catalog-actions {
-      margin-top: auto;
       padding-top: var(--space-4);
       border-top: 1px solid var(--color-border);
     }
@@ -697,6 +783,11 @@ export class CatalogComponent implements OnInit {
 
   currency = signal<string>('€');
   currencyCode = signal<string | null>(null);
+
+  /** Cards with long description / aromas / elaboration: collapsed by default with line-clamp. */
+  expandedCatalogCardIds = signal<Set<number>>(new Set());
+  private readonly catalogDescExpandThreshold = 140;
+  private readonly catalogSecondaryTextThreshold = 90;
 
   ngOnInit() {
     this.loadTenantSettings();
@@ -895,5 +986,34 @@ export class CatalogComponent implements OnInit {
     }
     // Otherwise return as-is (absolute URL)
     return url;
+  }
+
+  needsDescriptionExpand(item: CatalogItem): boolean {
+    const desc = (item.detailed_description || item.description || '').trim();
+    const aromas = (item.aromas || '').trim();
+    const elab = (item.elaboration || '').trim();
+    return (
+      desc.length > this.catalogDescExpandThreshold ||
+      aromas.length > this.catalogSecondaryTextThreshold ||
+      elab.length > this.catalogSecondaryTextThreshold
+    );
+  }
+
+  isDescriptionExpanded(id: number): boolean {
+    return this.expandedCatalogCardIds().has(id);
+  }
+
+  isDescriptionClamped(item: CatalogItem): boolean {
+    return this.needsDescriptionExpand(item) && !this.isDescriptionExpanded(item.id);
+  }
+
+  toggleDescriptionExpand(id: number): void {
+    const next = new Set(this.expandedCatalogCardIds());
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    this.expandedCatalogCardIds.set(next);
   }
 }

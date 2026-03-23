@@ -81,7 +81,6 @@ async function main() {
       process.exit(1);
     }
 
-    await page.waitForSelector('.book-form input[type="date"]', { timeout: 5000 }).catch(() => null);
     const hasForm = await page.evaluate(() => !!document.querySelector('.book-form'));
     console.log('   Book form visible:', hasForm);
     if (!hasForm) {
@@ -90,17 +89,45 @@ async function main() {
       process.exit(1);
     }
 
-    // 2. Fill form (DOM set to avoid format issues)
+    // 2. Party size first (reloads week grid), then pick first free slot + contact fields
     const testName = 'Public User ' + Date.now();
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const dateStr = tomorrow.toISOString().slice(0, 10);
-    const timeVal = '20:00';
     const partySize = 3;
 
-    console.log('2. Filling form:', testName, 'date:', dateStr, 'time:', timeVal, 'party:', partySize);
     await page.evaluate(
-      ({ name, phone, dateVal, timeVal, partySize }) => {
+      ({ partySize }) => {
+        const form = document.querySelector('.book-form');
+        if (!form) return;
+        const partyIn = form.querySelector('input[name="partySize"]');
+        if (!partyIn) return;
+        partyIn.value = String(partySize);
+        partyIn.dispatchEvent(new Event('input', { bubbles: true }));
+        partyIn.dispatchEvent(new Event('change', { bubbles: true }));
+      },
+      { partySize }
+    );
+    await sleep(800);
+    await page.waitForSelector('.book-week-grid .week-slot.ws-available:not([disabled])', {
+      timeout: 15000,
+    });
+
+    const firstSlot = await page.$('.book-week-grid .week-slot.ws-available:not([disabled])');
+    if (!firstSlot) {
+      console.log('\n>>> RESULT: No available week slot found (grid empty or all full).');
+      await browser.close();
+      process.exit(1);
+    }
+    await firstSlot.click();
+    await sleep(300);
+
+    const picked = await page.evaluate(() => {
+      const d = document.querySelector('.book-form input[name="date"]');
+      const t = document.querySelector('.book-form input[name="time"]');
+      return { date: d?.value || '', time: t?.value || '' };
+    });
+    console.log('2. Picked slot:', picked.date, picked.time, 'party:', partySize, testName);
+
+    await page.evaluate(
+      ({ name, phone }) => {
         const form = document.querySelector('.book-form');
         if (!form) return;
         const setAndDispatch = (el, value) => {
@@ -109,26 +136,14 @@ async function main() {
           el.dispatchEvent(new Event('input', { bubbles: true }));
           el.dispatchEvent(new Event('change', { bubbles: true }));
         };
-        const dateIn = form.querySelector('input[name="date"]');
-        const timeSelect = form.querySelector('select[name="time"]');
-        const partyIn = form.querySelector('input[name="partySize"]');
         const nameIn = form.querySelector('input[name="name"]');
         const phoneIn = form.querySelector('input[name="phone"]');
-        setAndDispatch(dateIn, dateVal);
-        if (timeSelect) {
-          timeSelect.value = timeVal;
-          timeSelect.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-        setAndDispatch(partyIn, String(partySize));
         setAndDispatch(nameIn, name);
         setAndDispatch(phoneIn, phone);
       },
       {
         name: testName,
         phone: '+34987654321',
-        dateVal: dateStr,
-        timeVal,
-        partySize,
       }
     );
     await sleep(400);

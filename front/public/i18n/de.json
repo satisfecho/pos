@@ -121,6 +121,10 @@
     "HELP_DISCUSSIONS": "Diskussion starten (GitHub)",
     "WHATS_NEW_TITLE": "Was ist neu",
     "WHATS_NEW_DESC": "Neueste Änderungen und neue Funktionen",
+    "MY_SHIFT_TITLE": "Meine Schicht",
+    "MY_SHIFT_LOADING": "Status wird geladen…",
+    "MY_SHIFT_DESC_OFF": "Zur Arbeitszeiterfassung einchecken",
+    "MY_SHIFT_DESC_ON": "Sie sind eingecheckt — öffnen zum Auschecken oder für die Historie",
     "CHANGELOG_TITLE": "Changelog",
     "CHANGELOG_LOADING": "Wird geladen…"
   },
@@ -225,6 +229,9 @@
     "SUBCATEGORY_LABEL": "Unterkategorie",
     "SELECT_CATEGORY": "Kategorie auswählen",
     "SELECT_SUBCATEGORY": "Unterkategorie auswählen",
+    "KITCHEN_STATION_LABEL": "Küchenstation (KDS)",
+    "KITCHEN_STATION_NONE": "Standard des Restaurants nach Kategorie",
+    "KITCHEN_STATION_HINT": "Erscheint in Küchen- oder Bar-Anzeige nach Station, wenn Stationen unter Einstellungen angelegt sind.",
     "CHANGE_IMAGE": "Bild ändern",
     "CANCEL": "Abbrechen",
     "UPDATE": "Aktualisieren",
@@ -346,7 +353,9 @@
     "REMOVING": "Wird entfernt...",
     "ADD_TO_MENU_TITLE": "Zur Speisekarte hinzufügen",
     "PRODUCT_NAME_LABEL": "Produktname",
-    "PRODUCT_NAME_PLACEHOLDER": "Produktname"
+    "PRODUCT_NAME_PLACEHOLDER": "Produktname",
+    "SHOW_MORE": "Mehr anzeigen",
+    "SHOW_LESS": "Weniger anzeigen"
   },
   "ORDERS": {
     "TITLE": "Bestellungen",
@@ -373,6 +382,14 @@
     "CLICK_TO_CHANGE_STATUS": "Klicken um Status zu ändern",
     "EDIT_ORDER": "Bestellung bearbeiten",
     "ADD_ITEM": "Artikel hinzufügen",
+    "MODIFIERS": "Modifikatoren",
+    "LINE_MODIFIERS_REMOVE": "Ohne",
+    "LINE_MODIFIERS_ADD": "Extra",
+    "LINE_MODIFIERS_SUBSTITUTE": "Tauschen",
+    "LINE_MODIFIERS_REMOVE_PLACEHOLDER": "z. B. Salami, Oliven",
+    "LINE_MODIFIERS_ADD_PLACEHOLDER": "z. B. extra Käse",
+    "LINE_MODIFIERS_SUBSTITUTE_PLACEHOLDER": "Eine Zeile: Schinken → Huhn",
+    "SAVE_MODIFIERS": "Modifikatoren speichern",
     "MOVE_FORWARD": "Vorwärts",
     "GO_BACK": "Zurück",
     "SHOW_REMOVED_ITEMS": "Entfernte Artikel anzeigen",
@@ -393,6 +410,9 @@
     "FINISH_ORDER_MENU": "Abschließen (alles serviert & bezahlt)",
     "FINISH_ORDER_TITLE": "Bestellung abschließen",
     "FINISH_ORDER_HELP": "Alle Positionen werden als serviert markiert und die Bestellung in einem Schritt als bezahlt abgeschlossen.",
+    "PAY_NOW": "Jetzt bezahlen",
+    "PAY_NOW_HINT": "Zahlung erfassen, während die Bestellung noch läuft (Küchenstatus bleibt unverändert).",
+    "PAY_NOW_HELP": "Die Zahlung wird jetzt verbucht. Positionen behalten den Küchenstatus, bis Sie sie serviert markieren oder Abschließen nutzen.",
     "MARK_URGENT": "Dringend für Küche",
     "CLEAR_URGENT": "Dringend aufheben",
     "URGENT_BADGE": "Dringend",
@@ -919,7 +939,18 @@
     "TRANSLATIONS_SUBTITLE": "Wählen Sie Ihre bevorzugte Sprache",
     "CONTACT_INFO_SUBTITLE": "Verwalten Sie die Kontaktinformationen des Restaurants",
     "OPENING_HOURS_SUBTITLE": "Konfigurieren Sie die Öffnungszeiten des Restaurants",
-    "PAYMENT_SETTINGS_SUBTITLE": "Zahlungsmethoden konfigurieren"
+    "PAYMENT_SETTINGS_SUBTITLE": "Zahlungsmethoden konfigurieren",
+    "KITCHEN_STATIONS_TAB": "Küchenstationen",
+    "KITCHEN_STATIONS_TITLE": "Küchen- & Bar-Stationen",
+    "KITCHEN_STATIONS_SUBTITLE": "Stationen definieren (z. B. Grill, Kalte Küche, Desserts, Bar) und Produkte zuordnen. Küchen- und Bar-Anzeige können nach Station filtern. Nicht zugeordnete Produkte nutzen die Standard-Stationen unten (Essen vs. Getränke).",
+    "KITCHEN_STATIONS_DEFAULT_KITCHEN": "Standardstation (Essen / ohne Getränke)",
+    "KITCHEN_STATIONS_DEFAULT_BAR": "Standardstation (Getränke)",
+    "KITCHEN_STATIONS_ROUTE": "Anzeige",
+    "KITCHEN_STATIONS_ROUTE_KITCHEN": "Küchenanzeige",
+    "KITCHEN_STATIONS_ROUTE_BAR": "Bar-Anzeige",
+    "KITCHEN_STATIONS_SORT": "Reihenfolge",
+    "KITCHEN_STATIONS_ADD": "Station hinzufügen",
+    "KITCHEN_STATIONS_NAME_PLACEHOLDER": "z. B. Grill, Kalte Küche"
   },
   "PAYMENTS": {
     "PAYMENT": "Zahlung",
@@ -1180,7 +1211,9 @@
     "TIMER_ORANGE_MINUTES": "Orange nach (Min)",
     "TIMER_RED_MINUTES": "Rot nach (Min)",
     "URGENT": "Dringend",
-    "TIMER_BAR_HINT": "Wartezeit-Fortschritt bis zur roten Schwelle"
+    "TIMER_BAR_HINT": "Wartezeit-Fortschritt bis zur roten Schwelle",
+    "STATION": "Station",
+    "ALL_STATIONS": "Alle Stationen"
   },
   "BAR_DISPLAY": {
     "TITLE": "Bar-Anzeige"

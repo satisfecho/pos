@@ -13,8 +13,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # One deploy at a time to the same host/path regardless of branch (avoids overlapping git/build/up).
     concurrency:
-      group: deploy-amvara9-${{ github.ref }}
+      group: deploy-amvara9
       cancel-in-progress: false
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true

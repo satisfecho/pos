@@ -7,9 +7,9 @@ import {
   OnDestroy,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ApiService, Order, OrderItem } from '../services/api.service';
+import { ApiService, KitchenStation, Order, OrderItem, OrderLineModifiers } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
 import { PermissionService } from '../services/permission.service';
 import { Subscription } from 'rxjs';
@@ -40,6 +40,21 @@ const VIEW_CATEGORY: Record<string, string> = {
         </a>
         <h1 class="kitchen-title">{{ pageTitle() }}</h1>
         <div class="header-actions">
+          @if (stationsForCurrentView().length > 0) {
+            <label class="station-filter">
+              <span class="station-filter-label">{{ 'KITCHEN_DISPLAY.STATION' | translate }}</span>
+              <select
+                class="station-filter-select"
+                [ngModel]="stationSelection()"
+                (ngModelChange)="onStationSelectChange($event)"
+              >
+                <option [ngValue]="'all'">{{ 'KITCHEN_DISPLAY.ALL_STATIONS' | translate }}</option>
+                @for (s of stationsForCurrentView(); track s.id) {
+                  <option [ngValue]="s.id">{{ s.name }}</option>
+                }
+              </select>
+            </label>
+          }
           <button type="button" class="timer-settings-btn" (click)="openTimerSettingsModal()" [title]="'KITCHEN_DISPLAY.TIMER_SETTINGS' | translate">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
             {{ 'KITCHEN_DISPLAY.TIMER_SETTINGS' | translate }}
@@ -253,6 +268,24 @@ const VIEW_CATEGORY: Record<string, string> = {
     .last-refresh {
       font-size: 0.875rem;
       color: var(--color-text-muted);
+    }
+    .station-filter {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: var(--color-text);
+    }
+    .station-filter-label { white-space: nowrap; }
+    .station-filter-select {
+      min-width: 160px;
+      padding: var(--space-2) var(--space-3);
+      font-size: 1rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-surface);
+      color: var(--color-text);
     }
     .kitchen-main {
       flex: 1;
@@ -563,10 +596,12 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
   private translate = inject(TranslateService);
   private permissions = inject(PermissionService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   private refreshIntervalId: ReturnType<typeof setInterval> | null = null;
   private wsSub: Subscription | null = null;
   private routeDataSub: Subscription | null = null;
+  private queryParamSub: Subscription | null = null;
 
   orders = signal<Order[]>([]);
   loading = signal(true);
@@ -575,6 +610,10 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
   itemStatusDropdownOpen = signal<string | null>(null);
   /** 'kitchen' = cocina (Main Course), 'bar' = beverages only */
   viewMode = signal<'kitchen' | 'bar'>('kitchen');
+  /** Loaded prep stations; filtered per view by display_route */
+  kitchenStations = signal<KitchenStation[]>([]);
+  /** KDS station filter when tenant has stations for this view */
+  stationSelection = signal<number | 'all'>('all');
   /** Current time for live timer (updates every second). */
   now = signal(Date.now());
   /** Timer thresholds (minutes) for card color. Defaults 5, 10, 15. */
@@ -601,24 +640,44 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
       : this.translate.instant('KITCHEN_DISPLAY.TITLE')
   );
 
-  /** Orders that are active (including paid but not yet delivered) and have at least one item not delivered in this view's category; items filtered by category. */
+  stationsForCurrentView = computed(() => {
+    const route = this.viewMode() === 'bar' ? 'bar' : 'kitchen';
+    return [...this.kitchenStations()]
+      .filter((s) => s.display_route === route)
+      .sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
+  });
+
+  /** Orders that are active (including paid but not yet delivered); category or station filter. */
   activeOrders = computed(() => {
     const view = this.viewMode();
     const category = VIEW_CATEGORY[view] ?? '';
+    const routeKey = view === 'bar' ? 'bar' : 'kitchen';
+    const useStations = this.stationsForCurrentView().length > 0;
+    const sel = this.stationSelection();
+
+    const itemVisible = (i: OrderItem): boolean => {
+      if (i.removed_by_customer) return false;
+      if (!(i.status === 'pending' || i.status === 'preparing' || i.status === 'ready')) return false;
+      if (!useStations) {
+        return i.category === category;
+      }
+      const kr =
+        i.kitchen_station_route ||
+        (i.category === 'Beverages' ? 'bar' : 'kitchen');
+      if (kr !== routeKey) return false;
+      if (sel === 'all') return true;
+      return i.kitchen_station_id === sel;
+    };
+
     const list = this.orders().filter((o) => {
       if (!['pending', 'preparing', 'ready', 'partially_delivered', 'paid'].includes(o.status)) return false;
-      const items = (o.items ?? []).filter(
-        (i) =>
-          !i.removed_by_customer &&
-          (i.status === 'pending' || i.status === 'preparing' || i.status === 'ready') &&
-          i.category === category
-      );
+      const items = (o.items ?? []).filter(itemVisible);
       return items.length > 0;
     });
     const mapped = list.map((o) => ({
       ...o,
       staff_urgent: !!o.staff_urgent,
-      items: (o.items ?? []).filter((i) => i.category === category),
+      items: (o.items ?? []).filter(itemVisible),
     }));
     return mapped.sort((a, b) => {
       if (!!a.staff_urgent !== !!b.staff_urgent) {
@@ -657,6 +716,23 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
       this.viewMode.set(v);
     });
 
+    this.queryParamSub = this.route.queryParamMap.subscribe((qm) => {
+      const s = qm.get('station');
+      if (s == null || s === '' || s === 'all') {
+        this.stationSelection.set('all');
+      } else {
+        const n = Number.parseInt(s, 10);
+        if (Number.isFinite(n)) {
+          this.stationSelection.set(n);
+        }
+      }
+    });
+
+    this.api.getKitchenStations().subscribe({
+      next: (list) => this.kitchenStations.set(list),
+      error: () => this.kitchenStations.set([]),
+    });
+
     this.loadTimerSettings();
     this.loadOrders();
     this.refreshIntervalId = setInterval(() => this.loadOrders(), REFRESH_INTERVAL_MS);
@@ -691,7 +767,18 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
     }
     this.wsSub?.unsubscribe();
     this.routeDataSub?.unsubscribe();
+    this.queryParamSub?.unsubscribe();
     document.removeEventListener('click', this.closeItemStatusDropdown);
+  }
+
+  onStationSelectChange(value: number | 'all'): void {
+    this.stationSelection.set(value);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { station: value === 'all' ? undefined : value },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   loadTimerSettings(): void {
@@ -821,20 +908,48 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
   hasCustomization(item: OrderItem): boolean {
     if (item?.customization_summary?.trim()) return true;
     const a = item?.customization_answers;
-    return !!a && typeof a === 'object' && Object.keys(a).length > 0;
+    if (!!a && typeof a === 'object' && Object.keys(a).length > 0) return true;
+    if (item?.line_modifiers_summary?.trim()) return true;
+    const m = item?.line_modifiers;
+    if (!m || typeof m !== 'object') return false;
+    return (
+      (!!m.remove && m.remove.length > 0) ||
+      (!!m.add && m.add.length > 0) ||
+      (!!m.substitute && m.substitute.length > 0)
+    );
+  }
+
+  private formatLineModifiersFromJson(m: OrderLineModifiers | null | undefined): string {
+    if (!m) return '';
+    const parts: string[] = [];
+    if (m.remove?.length) parts.push(`Remove: ${m.remove.join(', ')}`);
+    if (m.add?.length) parts.push(`Add: ${m.add.join(', ')}`);
+    if (m.substitute?.length) {
+      parts.push(`Sub: ${m.substitute.map(s => `${s.from}→${s.to}`).join(', ')}`);
+    }
+    return parts.join(' · ');
   }
 
   formatCustomizationItem(item: OrderItem): string {
-    const snap = item.customization_summary?.trim();
-    if (snap) return snap;
-    const answers = item.customization_answers;
-    if (!answers || Object.keys(answers).length === 0) return '';
-    const parts: string[] = [];
-    for (const v of Object.values(answers)) {
-      if (Array.isArray(v)) parts.push(v.join(', '));
-      else parts.push(String(v));
+    const snapQ = item.customization_summary?.trim();
+    let c = '';
+    if (snapQ) {
+      c = snapQ;
+    } else {
+      const answers = item.customization_answers;
+      if (answers && Object.keys(answers).length > 0) {
+        const parts: string[] = [];
+        for (const v of Object.values(answers)) {
+          if (Array.isArray(v)) parts.push(v.join(', '));
+          else parts.push(String(v));
+        }
+        c = parts.join(' · ');
+      }
     }
-    return parts.join(' · ');
+    const snapM = item.line_modifiers_summary?.trim();
+    const m = snapM || this.formatLineModifiersFromJson(item.line_modifiers ?? undefined);
+    if (c && m) return `${c} · ${m}`;
+    return c || m || '';
   }
 
   /** Items sorted by status; show pending, preparing, and ready (hide delivered/cancelled so paid orders stay until delivered). */

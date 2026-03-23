@@ -6,29 +6,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-### Fixed
-
-- **PostgreSQL `User.role`:** SQLAlchemy now binds the **`user_role`** enum type name (matching migrations), fixing inserts that failed with **`expression is of type userrole`**. Regression test: **`back/tests/test_user_role_pg_enum.py`**.
-- **GitHub #59 — Orders cards:** Order card header actions stay **top-aligned** with the meta column (no vertical centering that shifted with customer/urgent lines) and **wrap right-aligned** when space is tight (`orders.component.ts` styles).
-- **GitHub #33 — Products table:** Removed the stray gap under the product list by keeping action cells as real table cells (flex only on an inner wrapper), top-aligning body cells, and clipping horizontal scroll inside the card.
-
-### Changed
-
-- **001 log reviewer prompt:** **GitHub issues → `FEAT-…` only** (up to 3/run for **feature coders**, ×5 steps in **`pos-agent-loop`**); **Docker logs → `NEW-…` only** for concrete incidents. **`agents/pos-agent-loop.sh`** 001 message and **`docs/agent-loop.md`** updated.
-- **`agents/pos-agent-loop.sh`:** run **001 log reviewer** first in every full cycle; subcommands **`log`**, **`log-reviewer`**, **`001`**. **`docs/agent-loop.md`** updated.
-- **Agent loop script:** renamed **`agents/run.sh`** → **`agents/pos-agent-loop.sh`** (clearer vs repo-root **`./run.sh`**). **`docs/agent-loop.md`**, **`AGENTS.md`**, **`agents/README.md`** updated.
-- **Agent / git workflow:** Routine work targets **`development`**; **`master`** is promoted only on a **~2h cadence**, **big production-impacting** changes, or **urgent/production** issues (label **`production-urgent`**) — see **`.cursor/rules/git-development-branch-workflow.mdc`**, **`docs/agent-loop.md`**, **`AGENTS.md`**. **`agents/pos-agent-loop.sh`** committer prompt aligned.
-- **Puppeteer tests** (`front/scripts/`): Chrome runs **headless by default**. Use **`HEADLESS=0`**, **`false`**, or **`no`** for a visible window. Logic lives in **`front/scripts/puppeteer-headless.mjs`**. Docs: **`docs/testing.md`**, **`AGENTS.md`**.
-- **`test-landing-version.mjs`**: When **demo/staff credentials** are in `.env` (`DEMO_LOGIN_*` or `LOGIN_*`), also checks **login on tenant 1** and **every visible sidebar link** (plus inventory sublinks). **`go-ahead-loop.sh`** sources **`.env`** before this smoke so local runs exercise the full flow when configured.
-- **001 log reviewer:** refreshed **`agents/001-log-reviewer/time-of-last-review.txt`** (UTC timestamp of last 001 run).
+## [2.0.51] - 2026-03-23
 
 ### Added
 
-- **GitHub #58 (follow-up):** **`docs/REVOLUT.md`** — how **staff tip presets** relate to **Revolut** (subtotal-only charge), default **5/10/15/20** presets, and **`tip_tax_rate_percent`** default **0** for invoice VAT split. **`back/tests/test_order_tip.py`** — explicit **0%** tip, **half-up** rounding, rejection when **order subtotal is zero**.
+- **Week view for online reservations:** Guests can pick a day and time using a clear week layout: open slots look green, full ones red, and closed or past times are greyed out (GitHub #64).
+- **Smarter suggested times:** The booking flow suggests a time a few minutes after "now" instead of always defaulting to the same evening hour; staff get the same idea when creating reservations (GitHub #62).
+- **Extras on each order line:** Staff can note swaps, add-ons, and removals (for example pizza-style changes). Kitchen tickets and printed bills show a short, readable summary (GitHub #50).
+- **Kitchen and bar prep stations:** Owners can name prep stations (kitchen, bar, grill, etc.), choose whether each station shows on the kitchen or bar screen, map products to stations, and set defaults so drinks and dishes go to the right place (GitHub #66).
+- **"My shift" on the dashboard:** Team members see at a glance if they are clocked in and can open their shift page in one tap (GitHub #57).
+- **Edit your own suppliers:** Restaurants can update contact details for providers that belong to them under Settings (GitHub #25).
+- **Tips and Revolut:** Short owner-facing note on how tip buttons relate to card payments with Revolut, plus small tests around edge cases (GitHub #58 follow-up).
+- **Planning docs:** Extra roadmap material for larger future themes (GitHub #52 planning).
 
-- **Agent prompts (markdown):** **`agents/README.md`** plus **`agents/001-log-reviewer/LOG-REVIEWER-PROMPT.md`**, **`002-coder/CODER.md`**, **`003-tester/TESTER.md`**, **`004-closing-reviewer/CLOSING-REVIEWER-PROMPT.md`**, **`006-feature-coder/FEATURE-CODER.md`**, **`007-committer/COMMITTER.md`** — POS-adapted from mac-stats-reviewer for **`cursor-agent`** / **`agents/pos-agent-loop.sh`**.
-- **Agent loop docs & tasks:** **`docs/agent-loop.md`** — mac-stats-reviewer–style pipeline (`new` → … → **`done/YYYY/MM/DD/`**), roles, **`go-ahead-loop.sh`** / **`docs/testing.md`**, optional **[GitHub Issues](https://github.com/satisfecho/pos/issues)** handoff (**`gh`/API**, labels **`agent:planned`** / **`agent:wip`** / **`agent:testing`**, per-role comments). **`agents/tasks/README.md`**, **`agents/tasks/done/README.md`**, **`scripts/move-agent-task-to-done.sh`**, **`agents/pos-agent-loop.sh`** (**`cursor-agent`** orchestrator; **`AGENT_LOOP_SLEEP_MINUTES`**).
-- **GitHub #52 planning**: **`docs/0050-github-issue-52-split-plan.md`** — ten dedicated issue specs (title + body), phased rollout (A–E), dependency diagram, filing checklist; **`docs/0032-github-issues-roadmap.md`** and **`docs/README.md`** link to it.
+### Changed
+
+- **Pay earlier in the flow:** When your rules allow it, staff see a clearer "Pay now" path and short explanation that the kitchen can still be finishing dishes until you mark the order complete (GitHub #23).
+- **Catalog cards:** Long descriptions can expand and collapse; prices line up neatly across the grid (GitHub #34).
+- **Safer server updates:** Production deploy builds new images before stopping the app, keeps the database running during routine updates, and waits until the site answers health checks again. Overlapping deploy jobs are avoided (GitHub #49).
+- **Automated browser checks:** Default test runs no longer pop up a browser window unless you ask for one; optional deeper navigation checks when credentials are configured.
+- **How we ship code:** Day-to-day work lands on a development branch first; production still follows the main branch when you promote a release.
+
+### Fixed
+
+- **Who waits which table:** Waiters and reception can read table and floor assignments without needing extra admin rights (GitHub #65).
+- **New staff accounts:** Resolved a database mismatch that could block creating some users.
+- **Order list layout:** Action buttons on order cards stay aligned when extra lines appear (GitHub #59).
+- **Product list layout:** Removed odd empty space below the products table (GitHub #33).
+
+### Contributors
+
+- Agent playbooks, task folders, and a small **pos-agent-loop** helper script were added so automated assistants can follow the same steps as the team. Issue tracking hooks are documented for those workflows.
 
 ## [2.0.50] - 2026-03-23
 

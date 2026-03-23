@@ -5,7 +5,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { PermissionService } from '../services/permission.service';
-import { ApiService } from '../services/api.service';
+import { ApiService, WorkSession } from '../services/api.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -34,6 +34,24 @@ import { ApiService } from '../services/api.service';
             <span class="action-label">{{ 'DASHBOARD.WHATS_NEW_TITLE' | translate }}</span>
             <span class="action-desc">{{ 'DASHBOARD.WHATS_NEW_DESC' | translate }}</span>
           </button>
+          @if (canViewMyShift()) {
+            <a routerLink="/my-shift" class="action-card" data-testid="dashboard-my-shift">
+              <div class="action-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 6v6l4 2"/>
+                </svg>
+              </div>
+              <span class="action-label">{{ 'DASHBOARD.MY_SHIFT_TITLE' | translate }}</span>
+              @if (shiftStatusLoading()) {
+                <span class="action-desc">{{ 'DASHBOARD.MY_SHIFT_LOADING' | translate }}</span>
+              } @else if (shiftOpen()) {
+                <span class="action-desc action-desc-shift-on">{{ 'DASHBOARD.MY_SHIFT_DESC_ON' | translate }}</span>
+              } @else {
+                <span class="action-desc">{{ 'DASHBOARD.MY_SHIFT_DESC_OFF' | translate }}</span>
+              }
+            </a>
+          }
           <a routerLink="/staff/orders" class="action-card">
             <div class="action-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -289,6 +307,11 @@ import { ApiService } from '../services/api.service';
       color: var(--color-text-muted);
     }
 
+    .action-desc-shift-on {
+      color: var(--color-success, #15803d);
+      font-weight: 500;
+    }
+
     @media (max-width: 768px) {
       .quick-actions {
         grid-template-columns: 1fr;
@@ -488,6 +511,11 @@ export class DashboardComponent implements OnInit {
   user = signal(this.api.getCurrentUser());
   canShowAdminSections = computed(() => this.permissions.isAdmin(this.user()));
   canViewCustomers = computed(() => this.permissions.canAccessRoute(this.user(), '/customers'));
+  canViewMyShift = computed(() => this.permissions.canAccessRoute(this.user(), '/my-shift'));
+
+  /** Open work session when clocked in; null when not; only loaded when `canViewMyShift`. */
+  shiftOpen = signal<WorkSession | null>(null);
+  shiftStatusLoading = signal(false);
 
   showChangelogModal = signal(false);
   changelogHtml = signal<SafeHtml | null>(null);
@@ -495,7 +523,21 @@ export class DashboardComponent implements OnInit {
   changelogError = signal<string | null>(null);
 
   ngOnInit() {
-    this.user.set(this.api.getCurrentUser());
+    const u = this.api.getCurrentUser();
+    this.user.set(u);
+    if (this.permissions.canAccessRoute(u, '/my-shift')) {
+      this.shiftStatusLoading.set(true);
+      this.api.getMyOpenWorkSession().subscribe({
+        next: (s) => {
+          this.shiftOpen.set(s);
+          this.shiftStatusLoading.set(false);
+        },
+        error: () => {
+          this.shiftOpen.set(null);
+          this.shiftStatusLoading.set(false);
+        },
+      });
+    }
   }
 
   openChangelog() {
