@@ -220,6 +220,9 @@
     "SUBCATEGORY_LABEL": "उपश्रेणी",
     "SELECT_CATEGORY": "श्रेणी चुनें",
     "SELECT_SUBCATEGORY": "उपश्रेणी चुनें",
+    "KITCHEN_STATION_LABEL": "तैयारी स्टेशन (KDS)",
+    "KITCHEN_STATION_NONE": "श्रेणी के अनुसार डिफ़ॉल्ट",
+    "KITCHEN_STATION_HINT": "सेटिंग्स में स्टेशन होने पर रसोई/बार डिस्प्ले में फ़िल्टर होता है।",
     "CHANGE_IMAGE": "छवि बदलें",
     "CANCEL": "रद्द करें",
     "UPDATE": "अपडेट करें",
@@ -506,7 +509,9 @@
     "TIMER_ORANGE_MINUTES": "नारंगी (मिनट)",
     "TIMER_RED_MINUTES": "लाल (मिनट)",
     "URGENT": "तत्काल",
-    "TIMER_BAR_HINT": "लाल सीमा की ओर प्रतीक्षा समय की प्रगति"
+    "TIMER_BAR_HINT": "लाल सीमा की ओर प्रतीक्षा समय की प्रगति",
+    "STATION": "स्टेशन",
+    "ALL_STATIONS": "सभी स्टेशन"
   },
   "BAR_DISPLAY": {
     "TITLE": "बार डिस्प्ले"
@@ -856,6 +861,17 @@
     "CONTACT_INFO_SUBTITLE": "रेस्तरां संपर्क जानकारी प्रबंधित करें",
     "OPENING_HOURS_SUBTITLE": "रेस्तरां खुलने का समय कॉन्फ़िगर करें",
     "PAYMENT_SETTINGS_SUBTITLE": "भुगतान विधियां कॉन्फ़िगर करें",
+    "KITCHEN_STATIONS_TAB": "रसोई स्टेशन",
+    "KITCHEN_STATIONS_TITLE": "रसोई और बार स्टेशन",
+    "KITCHEN_STATIONS_SUBTITLE": "स्टेशन परिभाषित करें और उत्पाद मैप करें। रसोई/बार डिस्प्ले स्टेशन से फ़िल्टर कर सकते हैं।",
+    "KITCHEN_STATIONS_DEFAULT_KITCHEN": "डिफ़ॉल्ट (भोजन)",
+    "KITCHEN_STATIONS_DEFAULT_BAR": "डिफ़ॉल्ट (पेय)",
+    "KITCHEN_STATIONS_ROUTE": "डिस्प्ले",
+    "KITCHEN_STATIONS_ROUTE_KITCHEN": "रसोई डिस्प्ले",
+    "KITCHEN_STATIONS_ROUTE_BAR": "बार डिस्प्ले",
+    "KITCHEN_STATIONS_SORT": "क्रम",
+    "KITCHEN_STATIONS_ADD": "स्टेशन जोड़ें",
+    "KITCHEN_STATIONS_NAME_PLACEHOLDER": "उदा. ग्रिल, कोल्ड",
     "RESERVATION_PREPAYMENT_HINT": "ग्राहक द्वारा पुष्टि पर लिया जाने वाला सेंट में राशि। अक्षम करने के लिए 0 सेट करें।",
     "PUBLIC_GOOGLE_REVIEW_URL": "Google review link",
     "PUBLIC_GOOGLE_REVIEW_PLACEHOLDER": "https://g.page/.../review or Google Maps review URL",

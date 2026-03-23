@@ -218,6 +218,9 @@
     "SUBCATEGORY_LABEL": "子类别",
     "SELECT_CATEGORY": "选择类别",
     "SELECT_SUBCATEGORY": "选择子类别",
+    "KITCHEN_STATION_LABEL": "备餐工位（KDS）",
+    "KITCHEN_STATION_NONE": "按类别使用门店默认",
+    "KITCHEN_STATION_HINT": "若已在设置中配置工位，则按工位在厨房或吧台屏显示。",
     "CHANGE_IMAGE": "更换图片",
     "CANCEL": "取消",
     "UPDATE": "更新",
@@ -506,7 +509,9 @@
     "TIMER_ORANGE_MINUTES": "橙色（分钟）",
     "TIMER_RED_MINUTES": "红色（分钟）",
     "URGENT": "加急",
-    "TIMER_BAR_HINT": "等待时间相对红色阈值的进度"
+    "TIMER_BAR_HINT": "等待时间相对红色阈值的进度",
+    "STATION": "工位",
+    "ALL_STATIONS": "全部工位"
   },
   "BAR_DISPLAY": {
     "TITLE": "酒吧显示屏"
@@ -857,6 +862,17 @@
     "OPENING_HOURS_SUBTITLE": "配置餐厅营业时间",
     "RESERVATION_PREPAYMENT_HINT": "确认预订时收取的金额（分）。设为 0 可禁用。",
     "PAYMENT_SETTINGS_SUBTITLE": "配置支付方式",
+    "KITCHEN_STATIONS_TAB": "厨房工位",
+    "KITCHEN_STATIONS_TITLE": "厨房与吧台备餐工位",
+    "KITCHEN_STATIONS_SUBTITLE": "定义工位（如扒炉、冷厨、甜品、吧台）并映射产品。厨房/吧台屏可按工位筛选；未映射产品按下方默认（餐食与饮品）。",
+    "KITCHEN_STATIONS_DEFAULT_KITCHEN": "默认工位（餐食/非饮品）",
+    "KITCHEN_STATIONS_DEFAULT_BAR": "默认工位（饮品）",
+    "KITCHEN_STATIONS_ROUTE": "显示",
+    "KITCHEN_STATIONS_ROUTE_KITCHEN": "厨房屏",
+    "KITCHEN_STATIONS_ROUTE_BAR": "吧台屏",
+    "KITCHEN_STATIONS_SORT": "排序",
+    "KITCHEN_STATIONS_ADD": "添加工位",
+    "KITCHEN_STATIONS_NAME_PLACEHOLDER": "例如：扒炉、冷厨",
     "PUBLIC_GOOGLE_REVIEW_URL": "Google review link",
     "PUBLIC_GOOGLE_REVIEW_PLACEHOLDER": "https://g.page/.../review or Google Maps review URL",
     "PUBLIC_GOOGLE_REVIEW_HINT": "Shown on the thank-you page after guests submit private feedback so they can leave a public Google review.",

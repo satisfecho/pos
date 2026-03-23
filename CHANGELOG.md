@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **i18n (zh-CN, hi):** Kitchen prep stations UI strings (Settings, Products, KDS filter) aligned with en/de/es/ca.
+
 ## [2.0.51] - 2026-03-23
 
 ### Added
