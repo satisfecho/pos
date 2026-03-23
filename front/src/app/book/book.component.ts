@@ -53,7 +53,7 @@ export class BookComponent implements OnInit {
   calendarViewMonth = signal(1);
   bookCalendarDays = signal<Map<string, 'open' | 'closed'>>(new Map());
   formDate = '';
-  formTime = '20:00';
+  formTime = '';
   formPartySize = 2;
   formName = '';
   formPhone = '';
@@ -174,14 +174,11 @@ export class BookComponent implements OnInit {
   }
 
   /**
-   * Earliest allowed quarter-hour today (now + 10 min, ceiling), in tenant TZ.
-   * Matches public API min lead; used to filter the time dropdown for “today”.
+   * Earliest quarter-hour at or after (now + leadMinutes) in the given IANA timezone.
+   * Matches public API default min lead (10 min).
    */
-  minSlotHHmmForSelectedDate(): string | null {
-    if (!this.formDate || this.formDate !== this.tenantTodayDate()) return null;
-    const tz =
-      this.tenant()?.timezone?.trim() || Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const lead = new Date(Date.now() + 10 * 60 * 1000);
+  private earliestQuarterHHmmAfterLeadMinutes(leadMinutes: number, tz: string): string {
+    const lead = new Date(Date.now() + leadMinutes * 60 * 1000);
     const f = new Intl.DateTimeFormat('en-US', {
       timeZone: tz,
       hour: '2-digit',
@@ -191,7 +188,14 @@ export class BookComponent implements OnInit {
     const parts = f.formatToParts(lead);
     const hp = parts.find((p) => p.type === 'hour');
     const mp = parts.find((p) => p.type === 'minute');
-    if (!hp || !mp) return null;
+    if (!hp || !mp) {
+      const d = new Date(lead);
+      const total = d.getHours() * 60 + d.getMinutes();
+      const rounded = Math.ceil(total / 15) * 15;
+      const nh = Math.floor(rounded / 60) % 24;
+      const nm = rounded % 60;
+      return `${String(nh).padStart(2, '0')}:${String(nm).padStart(2, '0')}`;
+    }
     const h = parseInt(hp.value, 10);
     const m = parseInt(mp.value, 10);
     const total = h * 60 + m;
@@ -199,6 +203,38 @@ export class BookComponent implements OnInit {
     const nh = Math.floor(rounded / 60) % 24;
     const nm = rounded % 60;
     return `${String(nh).padStart(2, '0')}:${String(nm).padStart(2, '0')}`;
+  }
+
+  /** Today YYYY-MM-DD in the browser’s local calendar (before tenant TZ is known). */
+  private localCalendarTodayYyyyMmDd(): string {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  /**
+   * Earliest allowed quarter-hour today (now + 10 min, ceiling), in tenant TZ.
+   * Matches public API min lead; used to filter the time dropdown for “today”.
+   */
+  minSlotHHmmForSelectedDate(): string | null {
+    if (!this.formDate || this.formDate !== this.tenantTodayDate()) return null;
+    const tz =
+      this.tenant()?.timezone?.trim() || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return this.earliestQuarterHHmmAfterLeadMinutes(10, tz);
+  }
+
+  /**
+   * Set initial time from opening-hour slots (first slot ≥ min lead when date is today).
+   * Used before next-available returns so the picker does not flash a static default.
+   */
+  private seedPublicBookInitialTime(): void {
+    const opts = this.bookableTimeOptions();
+    if (opts.length) {
+      this.formTime = opts[0];
+      return;
+    }
+    const tz =
+      this.tenant()?.timezone?.trim() || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    this.formTime = this.earliestQuarterHHmmAfterLeadMinutes(10, tz);
   }
 
   private finalizeBookableSlots(slots: string[]): string[] {
@@ -222,7 +258,9 @@ export class BookComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('tenantId');
     const n = id ? parseInt(id, 10) : 0;
     if (n) this.tenantId.set(n);
-    this.formDate = new Date().toISOString().slice(0, 10);
+    const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    this.formDate = this.localCalendarTodayYyyyMmDd();
+    this.formTime = this.earliestQuarterHHmmAfterLeadMinutes(10, browserTz);
   }
 
   ngOnInit(): void {
@@ -242,6 +280,7 @@ export class BookComponent implements OnInit {
         this.calendarViewYear.set(y);
         this.calendarViewMonth.set(m);
         this.loadBookCalendarForView();
+        this.seedPublicBookInitialTime();
         this.onDateChange(this.formDate);
       },
       error: () => {
@@ -434,7 +473,11 @@ export class BookComponent implements OnInit {
 
   /** Round time to nearest 15 minutes (European 24h). */
   roundTimeToQuarter(t: string): string {
-    if (!t) return '20:00';
+    if (!t) {
+      const tz =
+        this.tenant()?.timezone?.trim() || Intl.DateTimeFormat().resolvedOptions().timeZone;
+      return this.earliestQuarterHHmmAfterLeadMinutes(10, tz);
+    }
     const [h, m] = t.split(':').map(Number);
     const quarter = Math.round((h * 60 + (m || 0)) / 15) * 15;
     const nh = Math.floor(quarter / 60) % 24;

@@ -372,7 +372,7 @@ export class ReservationsComponent implements OnInit, OnDestroy {
   private wsSub?: Subscription;
 
   ngOnInit() {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = this.localCalendarTodayYyyyMmDd();
     this.filterDate = today;
     this.load();
     this.loadTables();
@@ -445,24 +445,41 @@ export class ReservationsComponent implements OnInit, OnDestroy {
     return slot ? (slot.over_seats || slot.over_tables) : false;
   }
 
+  /** Local calendar date YYYY-MM-DD (staff UI; avoids UTC midnight shifting the day). */
+  private localCalendarTodayYyyyMmDd(d = new Date()): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  /**
+   * Calendar date (local) and HH:mm for (now + 10 min). If that instant is the next calendar day,
+   * dateStr is that day so the form stays consistent near midnight.
+   */
+  private staffNowPlusTenDateAndTime(): { dateStr: string; timeStr: string } {
+    const x = new Date(Date.now() + 10 * 60 * 1000);
+    return {
+      dateStr: this.localCalendarTodayYyyyMmDd(x),
+      timeStr: `${String(x.getHours()).padStart(2, '0')}:${String(x.getMinutes()).padStart(2, '0')}`,
+    };
+  }
+
   openCreate() {
     this.editingReservation.set(null);
-    const today = new Date().toISOString().slice(0, 10);
+    const { dateStr, timeStr } = this.staffNowPlusTenDateAndTime();
     this.formName = '';
     this.formPhone = '';
     this.formEmail = '';
     this.formClientNotes = '';
     this.formCustomerNotes = '';
     this.formOwnerNotes = '';
-    this.formDate = today;
-    this.formTime = '19:00';
+    this.formDate = dateStr;
+    this.formTime = timeStr;
     this.formPartySize = 2;
     this.formError.set(null);
     this.prefillMessage.set(null);
     this.slotCapacity.set(null);
     this.suggestedTime.set(null);
     this.showForm.set(true);
-    this.onFormDateChange(today);
+    this.onFormDateChange(dateStr);
     this.loadSlotCapacity();
   }
 
@@ -470,11 +487,23 @@ export class ReservationsComponent implements OnInit, OnDestroy {
     const tenantId = this.permissions.getCurrentUser()?.tenant_id;
     if (!tenantId || !dateStr) return;
     const partySize = this.formPartySize || 2;
+    const todayLocal = this.localCalendarTodayYyyyMmDd();
+    const plus10 = this.staffNowPlusTenDateAndTime();
     this.api.getNextAvailableReservation(tenantId, dateStr, partySize, 0).subscribe({
       next: (res) => {
         this.suggestedTime.set(res.time);
         if (!this.editingReservation()) {
-          this.formTime = res.time;
+          if (dateStr === todayLocal && plus10.dateStr !== dateStr) {
+            this.formDate = plus10.dateStr;
+            this.formTime = plus10.timeStr;
+            this.onFormDateChange(plus10.dateStr);
+            return;
+          }
+          if (dateStr === todayLocal) {
+            this.formTime = plus10.timeStr;
+          } else {
+            this.formTime = res.time;
+          }
         }
         this.loadSlotCapacity();
       },

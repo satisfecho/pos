@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **GitHub #62 — Reservation default time:** Public **`/book/{tenant}`** seeds the time dropdown from **now + 10 minutes** (quarter-hour ceiling, tenant timezone after load; browser TZ before) and the **first bookable slot** for today instead of a fixed **20:00**. Staff **Reservations → New** uses **now + 10 minutes** on the correct **local calendar date** (handles midnight rollover); non-today dates still default the time from **next-available**. List filter date uses **local** YYYY-MM-DD instead of UTC.
+
 - **001 log reviewer prompt:** **GitHub issues → `FEAT-…` only** (up to 3/run for **feature coders**, ×5 steps in **`pos-agent-loop`**); **Docker logs → `NEW-…` only** for concrete incidents. **`agents/pos-agent-loop.sh`** 001 message and **`docs/agent-loop.md`** updated.
 - **`agents/pos-agent-loop.sh`:** run **001 log reviewer** first in every full cycle; subcommands **`log`**, **`log-reviewer`**, **`001`**. **`docs/agent-loop.md`** updated.
 - **Agent loop script:** renamed **`agents/run.sh`** → **`agents/pos-agent-loop.sh`** (clearer vs repo-root **`./run.sh`**). **`docs/agent-loop.md`**, **`AGENTS.md`**, **`agents/README.md`** updated.
