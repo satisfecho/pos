@@ -8,7 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Smoke test:** `npm run test:tables-waiter-assignment` — waiter Table view has read-only assignment cells (optional `WAITER_LOGIN_EMAIL` / `WAITER_LOGIN_PASSWORD`; skips if unset).
 - **i18n (zh-CN, hi):** Kitchen prep stations UI strings (Settings, Products, KDS filter) aligned with en/de/es/ca.
+
+### Fixed
+
+- **Tables floor plan:** Selected-table panel shows read-only assigned waiter from table API for roles without `table:write`, consistent with Tiles/Table list (GitHub #65).
 
 ### Changed
 

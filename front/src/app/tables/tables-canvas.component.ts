@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { LowerCasePipe } from '@angular/common';
 import { ApiService, Floor, CanvasTable, User } from '../services/api.service';
+import { PermissionService } from '../services/permission.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { ConfirmationModalComponent } from '../shared/confirmation-modal.component';
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
@@ -449,13 +450,28 @@ interface TableShape {
                   </div>
                 </div>
                 <div class="form-group">
-                  <label>{{ 'TABLES.ASSIGNED_WAITER' | translate }}</label>
-                  <select class="panel-select" (change)="onCanvasWaiterAssign($event)">
-                    <option value="" [selected]="!selectedTable()?.assigned_waiter_id">{{ 'TABLES.UNASSIGNED' | translate }}</option>
-                    @for (w of waiters(); track w.id) {
-                      <option [value]="w.id" [selected]="selectedTable()?.assigned_waiter_id === w.id">{{ w.full_name || w.email }}</option>
+                    <label>{{ 'TABLES.ASSIGNED_WAITER' | translate }}</label>
+                  @if (canManageTableAssignments()) {
+                    <select class="panel-select" (change)="onCanvasWaiterAssign($event)">
+                      <option value="" [selected]="!selectedTable()?.assigned_waiter_id">{{ 'TABLES.UNASSIGNED' | translate }}</option>
+                      @for (w of waiters(); track w.id) {
+                        <option [value]="w.id" [selected]="selectedTable()?.assigned_waiter_id === w.id">{{ w.full_name || w.email }}</option>
+                      }
+                    </select>
+                    @if (!selectedTable()?.assigned_waiter_id && selectedTable()?.effective_waiter_name) {
+                      <div class="waiter-inherited-panel">{{ 'TABLES.SECTION_DEFAULT' | translate }}: {{ selectedTable()?.effective_waiter_name }}</div>
                     }
-                  </select>
+                  } @else {
+                    <div class="panel-waiter-readonly">
+                      @if (selectedTable()?.assigned_waiter_id) {
+                        {{ selectedTable()?.assigned_waiter_name || selectedTable()?.effective_waiter_name || '—' }}
+                      } @else if (selectedTable()?.effective_waiter_name) {
+                        {{ 'TABLES.SECTION_DEFAULT' | translate }}: {{ selectedTable()?.effective_waiter_name }}
+                      } @else {
+                        {{ 'TABLES.UNASSIGNED' | translate }}
+                      }
+                    </div>
+                  }
                 </div>
                 <button class="delete-btn" (click)="deleteSelectedTable()">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1002,6 +1018,22 @@ interface TableShape {
       color: var(--color-text);
     }
 
+    .panel-waiter-readonly {
+      width: 100%;
+      padding: var(--space-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      font-size: 0.8125rem;
+      background: var(--color-bg);
+      color: var(--color-text);
+    }
+
+    .waiter-inherited-panel {
+      margin-top: var(--space-1);
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+    }
+
     /* Shape Palette - Mobile-first: horizontal strip at bottom of canvas */
     .shape-palette {
       position: absolute;
@@ -1273,6 +1305,7 @@ interface TableShape {
 export class TablesCanvasComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private translate = inject(TranslateService);
+  private permissions = inject(PermissionService);
 
   @ViewChild('canvasArea') canvasAreaRef!: ElementRef;
   @ViewChild('canvasSvg') canvasSvgRef!: ElementRef<SVGSVGElement>;
@@ -1356,9 +1389,13 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadData();
-    this.api.getWaiters().subscribe({
-      next: w => this.waiters.set(w),
-      error: () => {}
+    this.api.waitForInitialAuthCheck().subscribe(() => {
+      if (this.canManageTableAssignments()) {
+        this.api.getWaiters().subscribe({
+          next: w => this.waiters.set(w),
+          error: () => {}
+        });
+      }
     });
     // Mouse event listeners
     document.addEventListener('mousemove', this.onMouseMove);
@@ -1498,6 +1535,11 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
 
   // Waiter assignment helpers
   private waiterColors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ef4444', '#14b8a6'];
+
+  /** Owner/admin: can change assignment via user list API (requires user:read). */
+  canManageTableAssignments(): boolean {
+    return this.permissions.hasPermission(this.api.getCurrentUser(), 'table:write');
+  }
 
   getWaiterInitials(table: CanvasTable): string | null {
     const name = table.effective_waiter_name || table.assigned_waiter_name;

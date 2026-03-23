@@ -386,6 +386,7 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `test:demo-data` | `scripts/test-demo-data.mjs` |
 | `test:tables-page` | `scripts/test-tables-page.mjs` |
 | `test:tables-canvas-view-options` | `scripts/test-tables-canvas-view-options.mjs` (Tables: switch Floor plan → Tiles → Table → Floor plan → Table; .env demo user, tenant=1) |
+| `test:tables-waiter-assignment` | `scripts/test-tables-waiter-assignment.mjs` (Waiter: Table view has read-only assignment cells, no `select.waiter-select-inline`; requires `WAITER_LOGIN_EMAIL` / `WAITER_LOGIN_PASSWORD`, else skips with exit 0) |
 | `test:landing-version` | `scripts/test-landing-version.mjs` |
 | `test:landing-provider-links` | `scripts/test-landing-provider-links.mjs` |
 | `test:provider-register` | `scripts/test-provider-register.mjs` |
@@ -462,7 +463,7 @@ GO_AHEAD_LOOP=1 DURATION_SECONDS=120 INTERVAL_SECONDS=60 SKIP_TESTS=1 ./scripts/
 |------|------------|--------|
 | **Reservations** | Public + staff scripts, `run-reservation-tests.sh` | Public flow cancels booking by token; staff flow creates/cancels. |
 | **Demo data** | `test-demo-data.mjs` | Tenant 1: tables, products, `/book/1`. |
-| **Tables** | `test-tables-page.mjs` | View toggle, Table view and data table. |
+| **Tables** | `test-tables-page.mjs`, `test-tables-waiter-assignment.mjs` (optional waiter creds) | View toggle, Table view and data table; waiter assignment visibility (no empty dropdown). |
 | **Landing** | Version, provider links | Version bar; footer links to provider login/register. |
 | **Provider portal** | Register, add-product, landing links | No dedicated “login only” test; add-product covers login + dashboard. |
 | **Staff auth** | Register page content, full register | Who-is-this-for; full registration (no cleanup). |
