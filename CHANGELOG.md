@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- **Docs**: `docs/0031-order-customizations-plan.md` (GitHub **#50** — phased plan; staff UI gap vs existing `ProductQuestion` / menu flow).
+- **Docs**: `docs/0032-github-issues-roadmap.md` (GitHub **#52–#54** — warehouses, kitchen ticket SLAs, marketing/comms).
+- **ROADMAP.md** / **`docs/README.md`**: Links to the new planning docs.
+
 ## [2.0.39] - 2026-03-22
 
 ### Fixed

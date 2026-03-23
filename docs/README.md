@@ -64,6 +64,8 @@ This folder contains deployment guides, feature documentation, implementation pl
 | [0021-working-plan.md](0021-working-plan.md) | Working plan (shift schedule): implementation plan and status. |
 | [0025-reservation-overbooking-detection.md](0025-reservation-overbooking-detection.md) | Reservation overbooking detection: slot capacity, overbooking report, 400 on over capacity. |
 | [0025-test-scenario-one-empty-table.md](0025-test-scenario-one-empty-table.md) | Test scenario: all tables seated except one empty (maps 0025 requirements to this case). |
+| [0031-order-customizations-plan.md](0031-order-customizations-plan.md) | GitHub **#50**: pizza-style order modifiers — existing `ProductQuestion` / `customization_answers`, staff UI gap, phased plan. |
+| [0032-github-issues-roadmap.md](0032-github-issues-roadmap.md) | GitHub **#52–#54**: umbrella roadmap (warehouses, kitchen SLAs, marketing/comms). |
 
 ---
 
