@@ -7860,6 +7860,7 @@ def list_orders(
             "created_at": order.created_at.isoformat(),
             "paid_at": order.paid_at.isoformat() if order.paid_at else None,
             "payment_method": order.payment_method,
+            "staff_urgent": bool(getattr(order, "staff_urgent", False)),
             "items": [
                 {
                     "id": item.id,
@@ -8176,6 +8177,47 @@ def set_order_billing_customer(
     session.add(order)
     session.commit()
     return {"order_id": order.id, "billing_customer_id": order.billing_customer_id}
+
+
+@app.put("/orders/{order_id}/staff-urgent")
+def set_order_staff_urgent(
+    order_id: int,
+    body: models.OrderStaffUrgentUpdate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.ORDER_UPDATE_STATUS))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Mark or clear kitchen urgency (guest waiting for food)."""
+    order = session.exec(
+        select(models.Order).where(
+            models.Order.id == order_id,
+            models.Order.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.status in (models.OrderStatus.cancelled,):
+        raise HTTPException(status_code=400, detail="Cannot change urgency on cancelled orders")
+
+    order.staff_urgent = bool(body.urgent)
+    session.add(order)
+    session.commit()
+
+    table = session.exec(
+        select(models.Table).where(models.Table.id == order.table_id)
+    ).first()
+    publish_order_update(
+        current_user.tenant_id,
+        {
+            "type": "order_urgent_updated",
+            "order_id": order.id,
+            "staff_urgent": order.staff_urgent,
+            "table_name": table.name if table else None,
+        },
+        table_id=order.table_id,
+    )
+    return {"order_id": order.id, "staff_urgent": order.staff_urgent}
 
 
 # ---------- Billing customers (Factura) ----------

@@ -71,11 +71,14 @@ const VIEW_CATEGORY: Record<string, string> = {
         } @else {
           <div class="order-grid">
             @for (order of activeOrders(); track order.id) {
-              <article class="order-card status-{{ order.status }} {{ getTimerColorClass(order) }}">
+              <article class="order-card status-{{ order.status }} {{ getTimerColorClass(order) }}" [class.order-card-urgent]="order.staff_urgent">
                 <div class="order-header">
                   <div class="order-meta">
                     <span class="order-id">#{{ order.id }}</span>
                     <span class="order-table">{{ order.table_name }}</span>
+                    @if (order.staff_urgent) {
+                      <span class="urgent-badge">{{ 'KITCHEN_DISPLAY.URGENT' | translate }}</span>
+                    }
                     @if (order.customer_name) {
                       <span class="order-customer">{{ 'ORDERS.CUSTOMER' | translate }}: {{ order.customer_name }}</span>
                     }
@@ -83,6 +86,11 @@ const VIEW_CATEGORY: Record<string, string> = {
                     <span class="order-waiting" [title]="formatExactTime(order.created_at)">{{ 'KITCHEN_DISPLAY.WAITING' | translate }}: {{ formatWaitingTime(order.created_at) }}</span>
                   </div>
                   <span class="status-badge status-{{ order.status }}">{{ getStatusLabel(order.status) }}</span>
+                </div>
+                <div class="order-timer-bar-wrap" [attr.aria-label]="'KITCHEN_DISPLAY.TIMER_BAR_HINT' | translate">
+                  <div class="order-timer-bar-track">
+                    <div class="order-timer-bar-fill" [class]="getTimerBarFillClass(order)" [style.width.%]="getTimerBarPercent(order)"></div>
+                  </div>
                 </div>
                 <ul class="order-items">
                   @for (item of getSortedItems(order.items); track item.id) {
@@ -277,6 +285,38 @@ const VIEW_CATEGORY: Record<string, string> = {
     }
     .order-card.status-preparing { border-left-color: #3B82F6; }
     .order-card.status-ready { border-left-color: var(--color-success); }
+    .order-card-urgent {
+      box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.45), var(--shadow-sm);
+    }
+    .urgent-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      background: rgba(220, 38, 38, 0.15);
+      color: #b91c1c;
+    }
+    .order-timer-bar-wrap {
+      padding: 0 var(--space-5) var(--space-3);
+    }
+    .order-timer-bar-track {
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+    .order-timer-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.35s ease-out, background 0.25s;
+      min-width: 0;
+    }
+    .timer-fill-green { background: linear-gradient(90deg, #16a34a, #22c55e); }
+    .timer-fill-yellow { background: linear-gradient(90deg, #ca8a04, #eab308); }
+    .timer-fill-orange { background: linear-gradient(90deg, #ea580c, #f97316); }
+    .timer-fill-red { background: linear-gradient(90deg, #b91c1c, #ef4444); }
     .order-card.timer-green { border-left-color: #22c55e; }
     .order-card.timer-yellow { border-left-color: #eab308; }
     .order-card.timer-orange { border-left-color: #f97316; }
@@ -575,10 +615,19 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
       );
       return items.length > 0;
     });
-    return list.map((o) => ({
+    const mapped = list.map((o) => ({
       ...o,
+      staff_urgent: !!o.staff_urgent,
       items: (o.items ?? []).filter((i) => i.category === category),
     }));
+    return mapped.sort((a, b) => {
+      if (!!a.staff_urgent !== !!b.staff_urgent) {
+        return a.staff_urgent ? -1 : 1;
+      }
+      const ta = new Date(a.created_at).getTime();
+      const tb = new Date(b.created_at).getTime();
+      return ta - tb;
+    });
   });
 
   lastRefreshRelative = computed(() => {
@@ -667,6 +716,18 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
     if (min >= (s.orange_minutes ?? 10)) return 'timer-orange';
     if (min >= (s.yellow_minutes ?? 5)) return 'timer-yellow';
     return 'timer-green';
+  }
+
+  /** Fill width 0–100% toward red threshold (visual progress of wait time). */
+  getTimerBarPercent(order: Order): number {
+    const min = this.getElapsedMinutes(order.created_at);
+    const cap = this.timerSettings().red_minutes ?? 15;
+    if (cap <= 0) return 0;
+    return Math.min(100, (min / cap) * 100);
+  }
+
+  getTimerBarFillClass(order: Order): string {
+    return this.getTimerColorClass(order).replace('timer-', 'timer-fill-');
   }
 
   /** Format waiting time with seconds (mm:ss or h:mm:ss) so it ticks every second. */

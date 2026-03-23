@@ -544,6 +544,9 @@ class Order(TenantMixin, table=True):
     # Soft delete: exclude from orders list and book-keeping (e.g. test orders)
     deleted_at: datetime | None = Field(default=None)  # When marked as deleted
     deleted_by_user_id: int | None = Field(default=None, foreign_key="user.id")  # Who deleted it
+
+    # Waiter marked urgent — guest is waiting for food (kitchen/bar display)
+    staff_urgent: bool = Field(default=False, index=True)
     
     items: list["OrderItem"] = Relationship(back_populates="order")
     billing_customer: BillingCustomer | None = Relationship(back_populates="orders")
@@ -809,6 +812,11 @@ class OrderMarkPaid(SQLModel):
 class OrderBillingCustomerSet(SQLModel):
     """Set or clear the billing customer (Factura) for an order."""
     billing_customer_id: int | None = None
+
+
+class OrderStaffUrgentUpdate(SQLModel):
+    """Mark or clear kitchen urgency (guest waiting for food)."""
+    urgent: bool
 
 
 class BillingCustomerCreate(SQLModel):

@@ -369,11 +369,15 @@ def export_report(
         ws_res = wb.create_sheet(L["sheet_reservations"][:31])
         ws_res.append([L["source"], L["count"]])
         for row in res.get("by_source", []):
-            ws_res.append([row["source"], row["count"]])
+            sk = row["source"]
+            src_label = L.get(f"source_{sk}", sk)
+            ws_res.append([src_label, row["count"]])
         ws_res.append([])
         ws_res.append([L["status"], L["count"]])
         for row in res.get("by_status", []):
-            ws_res.append([row["status"], row["count"]])
+            st = row["status"]
+            st_label = L.get(f"res_status_{st}", st)
+            ws_res.append([st_label, row["count"]])
         ws_res.append([])
         ws_res.append([L["total"], res.get("total", 0)])
         # Products
@@ -485,9 +489,10 @@ def export_report(
         ]
     elif report == "products":
         rows = data["by_product"]
-        keys = ["product_name", "quantity", "revenue_cents", "cost_cents", "profit_cents"]
+        keys = ["product_name", "category", "quantity", "revenue_cents", "cost_cents", "profit_cents"]
         header_row = [
             L["product"],
+            L["category"],
             L["quantity"],
             L["revenue_cents"],
             L["cost_cents"],

@@ -392,6 +392,9 @@
     "FINISH_ORDER_MENU": "Abschließen (alles serviert & bezahlt)",
     "FINISH_ORDER_TITLE": "Bestellung abschließen",
     "FINISH_ORDER_HELP": "Alle Positionen werden als serviert markiert und die Bestellung in einem Schritt als bezahlt abgeschlossen.",
+    "MARK_URGENT": "Dringend für Küche",
+    "CLEAR_URGENT": "Dringend aufheben",
+    "URGENT_BADGE": "Dringend",
     "FINISH_ORDER_CONFIRM": "Abschließen & bezahlt",
     "FAILED_TO_FINISH": "Bestellung konnte nicht abgeschlossen werden",
     "PAYMENT_METHOD": "Zahlungsmethode",
@@ -1129,7 +1132,9 @@
     "TIMER_SETTINGS_DESC": "Kartenfarbe wechselt nach diesen Minuten (grün → gelb → orange → rot).",
     "TIMER_YELLOW_MINUTES": "Gelb nach (Min)",
     "TIMER_ORANGE_MINUTES": "Orange nach (Min)",
-    "TIMER_RED_MINUTES": "Rot nach (Min)"
+    "TIMER_RED_MINUTES": "Rot nach (Min)",
+    "URGENT": "Dringend",
+    "TIMER_BAR_HINT": "Wartezeit-Fortschritt bis zur roten Schwelle"
   },
   "BAR_DISPLAY": {
     "TITLE": "Bar-Anzeige"

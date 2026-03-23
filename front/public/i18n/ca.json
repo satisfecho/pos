@@ -387,6 +387,9 @@
     "FINISH_ORDER_MENU": "Finalitzar (servir tot i cobrar)",
     "FINISH_ORDER_TITLE": "Finalitzar comanda",
     "FINISH_ORDER_HELP": "Totes les línies es marquen com servides i la comanda es tanca com a pagada en un sol pas.",
+    "MARK_URGENT": "Urgent per a cuina",
+    "CLEAR_URGENT": "Treure urgent",
+    "URGENT_BADGE": "Urgent",
     "FINISH_ORDER_CONFIRM": "Finalitzar i cobrar",
     "FAILED_TO_FINISH": "No s'ha pogut finalitzar la comanda",
     "PAYMENT_METHOD": "Mètode de pagament",
@@ -1086,7 +1089,9 @@
     "TIMER_SETTINGS_DESC": "El color de la targeta canvia després d'aquests minuts (verd → groc → taronja → vermell).",
     "TIMER_YELLOW_MINUTES": "Groc després de (min)",
     "TIMER_ORANGE_MINUTES": "Taronja després de (min)",
-    "TIMER_RED_MINUTES": "Vermell després de (min)"
+    "TIMER_RED_MINUTES": "Vermell després de (min)",
+    "URGENT": "Urgent",
+    "TIMER_BAR_HINT": "Progrés del temps d'espera fins al llindar vermell"
   },
   "BAR_DISPLAY": {
     "TITLE": "Pantalla bar"

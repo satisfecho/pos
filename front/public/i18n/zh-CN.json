@@ -378,6 +378,9 @@
     "FINISH_ORDER_MENU": "完成（全部上菜并收款）",
     "FINISH_ORDER_TITLE": "完成订单",
     "FINISH_ORDER_HELP": "所有菜品将标记为已上桌，并一步将订单记为已付款。",
+    "MARK_URGENT": "厨房加急",
+    "CLEAR_URGENT": "取消加急",
+    "URGENT_BADGE": "加急",
     "FINISH_ORDER_CONFIRM": "完成并收款",
     "FAILED_TO_FINISH": "无法完成订单",
     "PAYMENT_METHOD": "支付方式",
@@ -474,7 +477,9 @@
     "TIMER_SETTINGS_DESC": "订单卡片颜色在以下分钟数后变化（绿→黄→橙→红）。",
     "TIMER_YELLOW_MINUTES": "黄色（分钟）",
     "TIMER_ORANGE_MINUTES": "橙色（分钟）",
-    "TIMER_RED_MINUTES": "红色（分钟）"
+    "TIMER_RED_MINUTES": "红色（分钟）",
+    "URGENT": "加急",
+    "TIMER_BAR_HINT": "等待时间相对红色阈值的进度"
   },
   "BAR_DISPLAY": {
     "TITLE": "酒吧显示屏"

@@ -27,6 +27,13 @@ _EN: dict[str, str] = {
     "quantity": "Quantity",
     "table": "Table",
     "waiter": "Waiter",
+    "source_public": "Public (online)",
+    "source_staff": "Staff",
+    "res_status_booked": "Booked",
+    "res_status_seated": "Seated",
+    "res_status_finished": "Finished",
+    "res_status_cancelled": "Cancelled",
+    "res_status_no_show": "No-show",
 }
 
 _ES: dict[str, str] = {
@@ -51,6 +58,13 @@ _ES: dict[str, str] = {
     "quantity": "Cantidad",
     "table": "Mesa",
     "waiter": "Camarero",
+    "source_public": "Público (en línea)",
+    "source_staff": "Personal",
+    "res_status_booked": "Reservada",
+    "res_status_seated": "En mesa",
+    "res_status_finished": "Finalizada",
+    "res_status_cancelled": "Cancelada",
+    "res_status_no_show": "No presentado",
 }
 
 _DE: dict[str, str] = {
@@ -75,6 +89,13 @@ _DE: dict[str, str] = {
     "quantity": "Menge",
     "table": "Tisch",
     "waiter": "Kellner",
+    "source_public": "Öffentlich (online)",
+    "source_staff": "Personal",
+    "res_status_booked": "Gebucht",
+    "res_status_seated": "Am Tisch",
+    "res_status_finished": "Beendet",
+    "res_status_cancelled": "Storniert",
+    "res_status_no_show": "Nicht erschienen",
 }
 
 _CA: dict[str, str] = {
@@ -99,6 +120,13 @@ _CA: dict[str, str] = {
     "quantity": "Quantitat",
     "table": "Taula",
     "waiter": "Cambrer",
+    "source_public": "Públic (en línia)",
+    "source_staff": "Personal",
+    "res_status_booked": "Reservada",
+    "res_status_seated": "A la taula",
+    "res_status_finished": "Finalitzada",
+    "res_status_cancelled": "Cancel·lada",
+    "res_status_no_show": "No presentat",
 }
 
 _FR: dict[str, str] = {
@@ -123,6 +151,13 @@ _FR: dict[str, str] = {
     "quantity": "Quantité",
     "table": "Table",
     "waiter": "Serveur",
+    "source_public": "Public (en ligne)",
+    "source_staff": "Personnel",
+    "res_status_booked": "Réservée",
+    "res_status_seated": "À table",
+    "res_status_finished": "Terminée",
+    "res_status_cancelled": "Annulée",
+    "res_status_no_show": "Non présentation",
 }
 
 _ZH: dict[str, str] = {
@@ -147,6 +182,13 @@ _ZH: dict[str, str] = {
     "quantity": "数量",
     "table": "餐桌",
     "waiter": "服务员",
+    "source_public": "公开（在线）",
+    "source_staff": "员工",
+    "res_status_booked": "已预订",
+    "res_status_seated": "已入座",
+    "res_status_finished": "已完成",
+    "res_status_cancelled": "已取消",
+    "res_status_no_show": "未到店",
 }
 
 _HI: dict[str, str] = {
@@ -171,6 +213,13 @@ _HI: dict[str, str] = {
     "quantity": "मात्रा",
     "table": "टेबल",
     "waiter": "वेटर",
+    "source_public": "सार्वजनिक (ऑनलाइन)",
+    "source_staff": "स्टाफ",
+    "res_status_booked": "बुक्ड",
+    "res_status_seated": "बैठे",
+    "res_status_finished": "समाप्त",
+    "res_status_cancelled": "रद्द",
+    "res_status_no_show": "नहीं आए",
 }
 
 _LABELS: dict[str, dict[str, str]] = {
@@ -186,9 +235,14 @@ _LABELS: dict[str, dict[str, str]] = {
 
 def report_export_labels(lang: str | None) -> dict[str, str]:
     """Return label map for export headers; falls back to English."""
-    if not lang:
+    if not lang or not str(lang).strip():
         return _LABELS["en"]
-    code = normalize_language_code(lang.strip())
-    if not code:
-        return _LABELS["en"]
-    return _LABELS.get(code, _LABELS["en"])
+    raw = str(lang).strip()
+    code = normalize_language_code(raw)
+    if code:
+        return _LABELS.get(code, _LABELS["en"])
+    # e.g. exact browser tag already lowercase
+    low = raw.lower().replace("_", "-")
+    if low in _LABELS:
+        return _LABELS[low]
+    return _LABELS["en"]

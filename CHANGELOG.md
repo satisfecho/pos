@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - **GitHub #52 (follow-up)**: **`GET /billing-customers`** list now includes **`birth_date`** (aligned with single-customer and order payloads). **Customers** (`/customers`) — table column and add/edit **birth date** field with i18n. Migration **`20260323120500_billing_customer_birth_date.sql`** added to the repo (idempotent `IF NOT EXISTS`). **`docs/0032-github-issues-roadmap.md`** — per-theme **implementation status** for all #52 bullets; **`docs/0017-billing-customers-factura.md`** and **`ROADMAP.md`** updated accordingly.
+- **GitHub #56**: **Kitchen / bar** — **wait-time progress bar** (fill toward red threshold; color matches timer tier). **Staff urgent** — **`order.staff_urgent`**, **`PUT /orders/{id}/staff-urgent`**, waiter toggle on **Orders**, kitchen **badge + sort**. **Reports CSV/Excel** — export **`lang`** from **`LanguageService`**; localized reservation **source/status** in Excel; **products CSV** includes **category**; **`report_export_labels`** fallback for language tags. Migration **`20260323130000_order_staff_urgent.sql`**. Tests: **`back/tests/test_report_export_i18n.py`**.
 
 ## [2.0.47] - 2026-03-23
 

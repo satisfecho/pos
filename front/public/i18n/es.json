@@ -407,6 +407,9 @@
     "FINISH_ORDER_MENU": "Finalizar (servir todo y cobrar)",
     "FINISH_ORDER_TITLE": "Finalizar pedido",
     "FINISH_ORDER_HELP": "Todas las líneas se marcan como servidas y el pedido se cierra como pagado en un solo paso.",
+    "MARK_URGENT": "Urgente para cocina",
+    "CLEAR_URGENT": "Quitar urgente",
+    "URGENT_BADGE": "Urgente",
     "FINISH_ORDER_CONFIRM": "Finalizar y cobrar",
     "FAILED_TO_FINISH": "No se pudo finalizar el pedido",
     "PAYMENT_METHOD": "Método de Pago",
@@ -503,7 +506,9 @@
     "TIMER_SETTINGS_DESC": "El color de la tarjeta cambia tras estos minutos (verde → amarillo → naranja → rojo).",
     "TIMER_YELLOW_MINUTES": "Amarillo tras (min)",
     "TIMER_ORANGE_MINUTES": "Naranja tras (min)",
-    "TIMER_RED_MINUTES": "Rojo tras (min)"
+    "TIMER_RED_MINUTES": "Rojo tras (min)",
+    "URGENT": "Urgente",
+    "TIMER_BAR_HINT": "Progreso del tiempo de espera hasta el umbral rojo"
   },
   "BAR_DISPLAY": {
     "TITLE": "Pantalla bar"

@@ -408,6 +408,9 @@
     "FINISH_ORDER_MENU": "Finish (serve all & pay)",
     "FINISH_ORDER_TITLE": "Finish order",
     "FINISH_ORDER_HELP": "Every item is marked as served and the order is closed as paid in one step.",
+    "MARK_URGENT": "Urgent for kitchen",
+    "CLEAR_URGENT": "Clear urgent",
+    "URGENT_BADGE": "Urgent",
     "FINISH_ORDER_CONFIRM": "Finish & pay",
     "FAILED_TO_FINISH": "Could not finish order",
     "PAYMENT_METHOD": "Payment Method",
@@ -504,7 +507,9 @@
     "TIMER_SETTINGS_DESC": "Order card color changes after these minutes (green → yellow → orange → red).",
     "TIMER_YELLOW_MINUTES": "Yellow after (min)",
     "TIMER_ORANGE_MINUTES": "Orange after (min)",
-    "TIMER_RED_MINUTES": "Red after (min)"
+    "TIMER_RED_MINUTES": "Red after (min)",
+    "URGENT": "Urgent",
+    "TIMER_BAR_HINT": "Wait time progress toward red threshold"
   },
   "BAR_DISPLAY": {
     "TITLE": "Bar display"

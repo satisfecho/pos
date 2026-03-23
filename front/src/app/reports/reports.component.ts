@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { ApiService, SalesReport } from '../services/api.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { LanguageService } from '../services/language.service';
 import { intlLocaleFromTranslate } from '../shared/intl-locale';
 import { currencySymbolFromIsoCode } from '../shared/currency-symbol';
 
@@ -23,6 +24,7 @@ import { currencySymbolFromIsoCode } from '../shared/currency-symbol';
 export class ReportsComponent implements OnInit {
   private api = inject(ApiService);
   private translate = inject(TranslateService);
+  private languageService = inject(LanguageService);
 
   report = signal<SalesReport | null>(null);
   loading = signal(true);
@@ -234,7 +236,7 @@ export class ReportsComponent implements OnInit {
     this.exporting.set(true);
     const from = this.fromDate();
     const to = this.toDate();
-    this.api.getReportsExport(from, to, 'xlsx', 'summary', this.translate.currentLang).subscribe({
+    this.api.getReportsExport(from, to, 'xlsx', 'summary', this.languageService.getLanguage()).subscribe({
       next: (blob) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -256,7 +258,7 @@ export class ReportsComponent implements OnInit {
     this.exporting.set(true);
     const from = this.fromDate();
     const to = this.toDate();
-    this.api.getReportsExport(from, to, 'csv', report, this.translate.currentLang).subscribe({
+    this.api.getReportsExport(from, to, 'csv', report, this.languageService.getLanguage()).subscribe({
       next: (blob) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');

@@ -378,6 +378,9 @@
     "FINISH_ORDER_MENU": "समाप्त करें (सब परोसा और भुगतान)",
     "FINISH_ORDER_TITLE": "ऑर्डर समाप्त करें",
     "FINISH_ORDER_HELP": "सभी वस्तुएँ परोसी गई के रूप में चिह्नित होती हैं और ऑर्डर एक चरण में भुगतान के रूप में बंद होता है।",
+    "MARK_URGENT": "रसोई के लिए तत्काल",
+    "CLEAR_URGENT": "तत्काल हटाएँ",
+    "URGENT_BADGE": "तत्काल",
     "FINISH_ORDER_CONFIRM": "समाप्त करें और भुगतान",
     "FAILED_TO_FINISH": "ऑर्डर समाप्त नहीं किया जा सका",
     "PAYMENT_METHOD": "भुगतान विधि",
@@ -474,7 +477,9 @@
     "TIMER_SETTINGS_DESC": "इन मिनटों के बाद ऑर्डर कार्ड का रंग बदलता है (हरा → पीला → नारंगी → लाल)।",
     "TIMER_YELLOW_MINUTES": "पीला (मिनट)",
     "TIMER_ORANGE_MINUTES": "नारंगी (मिनट)",
-    "TIMER_RED_MINUTES": "लाल (मिनट)"
+    "TIMER_RED_MINUTES": "लाल (मिनट)",
+    "URGENT": "तत्काल",
+    "TIMER_BAR_HINT": "लाल सीमा की ओर प्रतीक्षा समय की प्रगति"
   },
   "BAR_DISPLAY": {
     "TITLE": "बार डिस्प्ले"

@@ -548,6 +548,8 @@ export interface Order {
   removed_items_count?: number;
   paid_at?: string | null;
   payment_method?: string | null;
+  /** Waiter marked urgent — guest waiting (kitchen/bar). */
+  staff_urgent?: boolean;
 }
 
 export interface MenuResponse {
@@ -1307,6 +1309,13 @@ export class ApiService {
     return this.http.put<{ order_id: number; billing_customer_id: number | null }>(
       `${this.apiUrl}/orders/${orderId}/billing-customer`,
       { billing_customer_id: billingCustomerId }
+    );
+  }
+
+  setOrderStaffUrgent(orderId: number, urgent: boolean): Observable<{ order_id: number; staff_urgent: boolean }> {
+    return this.http.put<{ order_id: number; staff_urgent: boolean }>(
+      `${this.apiUrl}/orders/${orderId}/staff-urgent`,
+      { urgent }
     );
   }
 
