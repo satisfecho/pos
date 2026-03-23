@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ApiService, Product, ProductQuestionStaff, Tax } from '../services/api.service';
+import { ApiService, KitchenStation, Product, ProductQuestionStaff, Tax } from '../services/api.service';
 import { PermissionService } from '../services/permission.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { CommonModule } from '@angular/common';
@@ -130,6 +130,24 @@ import { CategoriesComponent } from './categories.component';
                          }
                        </select>
                      </div>
+                   </div>
+                   <div class="form-group">
+                     <label for="kitchen_station_id">{{ 'PRODUCTS.KITCHEN_STATION_LABEL' | translate }}</label>
+                     <select
+                       id="kitchen_station_id"
+                       [(ngModel)]="formData.kitchen_station_id"
+                       name="kitchen_station_id"
+                       [disabled]="!canEditProducts()"
+                     >
+                       <option [ngValue]="null">{{ 'PRODUCTS.KITCHEN_STATION_NONE' | translate }}</option>
+                       @for (s of kitchenStations(); track s.id) {
+                         <option [ngValue]="s.id">
+                           {{ s.name }}
+                           ({{ s.display_route === 'bar' ? ('SETTINGS.KITCHEN_STATIONS_ROUTE_BAR' | translate) : ('SETTINGS.KITCHEN_STATIONS_ROUTE_KITCHEN' | translate) }})
+                         </option>
+                       }
+                     </select>
+                     <small class="field-hint">{{ 'PRODUCTS.KITCHEN_STATION_HINT' | translate }}</small>
                    </div>
                    <div class="form-group">
                      <label for="product_tax_id">{{ 'PRODUCTS.TAX_OVERRIDE' | translate }}</label>
@@ -520,8 +538,30 @@ export class ProductsComponent implements OnInit {
   error = signal('');
   /** Set when submit was attempted with invalid required fields; cleared on edit or cancel */
   productFormErrors = signal<{ name?: boolean; price?: boolean } | null>(null);
-  formData: { name: string; price: number; cost: number | null; ingredients: string; description: string; category: string; subcategory: string; tax_id?: number | null; available_from?: string; available_until?: string } = { name: '', price: 0, cost: null, ingredients: '', description: '', category: '', subcategory: '' };
+  formData: {
+    name: string;
+    price: number;
+    cost: number | null;
+    ingredients: string;
+    description: string;
+    category: string;
+    subcategory: string;
+    tax_id?: number | null;
+    available_from?: string;
+    available_until?: string;
+    kitchen_station_id?: number | null;
+  } = {
+    name: '',
+    price: 0,
+    cost: null,
+    ingredients: '',
+    description: '',
+    category: '',
+    subcategory: '',
+    kitchen_station_id: null,
+  };
   productTaxes = signal<Tax[]>([]);
+  kitchenStations = signal<KitchenStation[]>([]);
   uploading = signal(false);
   pendingImageFile = signal<File | null>(null);
   pendingImagePreview = signal<string | null>(null);
@@ -573,6 +613,10 @@ export class ProductsComponent implements OnInit {
     this.loadTenantSettingsThenProducts();
     this.loadCategories();
     this.api.getTaxes(true).subscribe({ next: (list) => this.productTaxes.set(list), error: () => this.productTaxes.set([]) });
+    this.api.getKitchenStations().subscribe({
+      next: (list) => this.kitchenStations.set(list),
+      error: () => this.kitchenStations.set([]),
+    });
     this.translate.onLangChange.subscribe(() => this.intlRevision.update((n) => n + 1));
   }
 
@@ -835,6 +879,7 @@ export class ProductsComponent implements OnInit {
       tax_id: product.tax_id ?? null,
       available_from: product.available_from || '',
       available_until: product.available_until || '',
+      kitchen_station_id: product.kitchen_station_id ?? null,
     };
     this.onCategoryChange(); // Update available subcategories
     this.showAddForm.set(false);
@@ -847,7 +892,19 @@ export class ProductsComponent implements OnInit {
 
   openAddForm() {
     this.productFormErrors.set(null);
-    this.formData = { name: '', price: 0, cost: null, ingredients: '', description: '', category: '', subcategory: '', tax_id: null, available_from: '', available_until: '' };
+    this.formData = {
+      name: '',
+      price: 0,
+      cost: null,
+      ingredients: '',
+      description: '',
+      category: '',
+      subcategory: '',
+      tax_id: null,
+      available_from: '',
+      available_until: '',
+      kitchen_station_id: null,
+    };
     this.showAddForm.set(true);
     this.clearQuestionsState();
   }
@@ -855,7 +912,19 @@ export class ProductsComponent implements OnInit {
   cancelForm() {
     this.showAddForm.set(false);
     this.editingProduct.set(null);
-    this.formData = { name: '', price: 0, cost: null, ingredients: '', description: '', category: '', subcategory: '', tax_id: null, available_from: '', available_until: '' };
+    this.formData = {
+      name: '',
+      price: 0,
+      cost: null,
+      ingredients: '',
+      description: '',
+      category: '',
+      subcategory: '',
+      tax_id: null,
+      available_from: '',
+      available_until: '',
+      kitchen_station_id: null,
+    };
     this.availableSubcategories.set([]);
     this.productFormErrors.set(null);
     this.clearPendingImage();
@@ -1098,7 +1167,7 @@ export class ProductsComponent implements OnInit {
     this.productFormErrors.set(null);
     this.error.set('');
     this.saving.set(true);
-    const productData = {
+    const productData: Record<string, unknown> = {
       name: this.formData.name,
       price_cents: Math.round(this.formData.price * 100),
       cost_cents: this.formData.cost != null && this.formData.cost >= 0 ? Math.round(this.formData.cost * 100) : undefined,
@@ -1109,11 +1178,12 @@ export class ProductsComponent implements OnInit {
       tax_id: this.formData.tax_id,
       available_from: this.formData.available_from?.trim() || null,
       available_until: this.formData.available_until?.trim() || null,
+      kitchen_station_id: this.formData.kitchen_station_id ?? null,
     };
 
     const editing = this.editingProduct();
     if (editing?.id) {
-      this.api.updateProduct(editing.id, productData).subscribe({
+      this.api.updateProduct(editing.id, productData as Partial<Product>).subscribe({
         next: (updated) => {
           this.products.update(list => list.map(p => p.id === updated.id ? updated : p));
           this.updateAvailableCategories();
@@ -1124,7 +1194,7 @@ export class ProductsComponent implements OnInit {
         error: (err) => { this.error.set(err.error?.detail || 'Failed to update'); this.saving.set(false); }
       });
     } else {
-      this.api.createProduct(productData as Product).subscribe({
+      this.api.createProduct(productData as unknown as Product).subscribe({
         next: (product) => {
           this.products.update(list => [...list, product]);
           this.updateAvailableCategories();

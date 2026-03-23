@@ -6,51 +6,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-### Changed
-
-- **GitHub #49 — amvara9 deploy safety:** **`scripts/deploy-amvara9.sh`** builds images **before** stopping app containers; avoids **`docker compose down`** by default (stops **front / haproxy / ws-bridge / back** only so **db** and **redis** keep running; **`DEPLOY_FULL_DOWN=1`** restores full down). Optional **`SKIP_ORIGIN_CHECK=1`** bypasses **`git origin`** validation for **`satisfecho/pos`**. Migrations no longer ignore failures; post-**up** wait uses **`/health`** retries. **`.github/workflows/deploy-amvara9.yml`** uses a single **`concurrency: deploy-amvara9`** group. **`docs/0001-ci-cd-amvara9.md`** updated.
+## [2.0.51] - 2026-03-23
 
 ### Added
 
-- **GitHub #25 — Personal providers (edit + API tests):** Staff **`PATCH /providers/{id}`** updates **tenant-owned** providers only (name, contact, URL, **`is_active`**); global/catalog providers return **403**. **Settings → Providers** adds **Edit provider** for personal rows. Backend isolation tests: **`back/tests/test_personal_providers_api.py`**.
+- **Week view for online reservations:** Guests can pick a day and time using a clear week layout: open slots look green, full ones red, and closed or past times are greyed out (GitHub #64).
+- **Smarter suggested times:** The booking flow suggests a time a few minutes after "now" instead of always defaulting to the same evening hour; staff get the same idea when creating reservations (GitHub #62).
+- **Extras on each order line:** Staff can note swaps, add-ons, and removals (for example pizza-style changes). Kitchen tickets and printed bills show a short, readable summary (GitHub #50).
+- **Kitchen and bar prep stations:** Owners can name prep stations (kitchen, bar, grill, etc.), choose whether each station shows on the kitchen or bar screen, map products to stations, and set defaults so drinks and dishes go to the right place (GitHub #66).
+- **"My shift" on the dashboard:** Team members see at a glance if they are clocked in and can open their shift page in one tap (GitHub #57).
+- **Edit your own suppliers:** Restaurants can update contact details for providers that belong to them under Settings (GitHub #25).
+- **Tips and Revolut:** Short owner-facing note on how tip buttons relate to card payments with Revolut, plus small tests around edge cases (GitHub #58 follow-up).
+- **Planning docs:** Extra roadmap material for larger future themes (GitHub #52 planning).
 
-- **GitHub #57 — Staff attendance on dashboard:** The **My shift** card on **Dashboard** shows whether the logged-in staff member is clocked in (via `GET /users/me/work-session`) and links to **`/my-shift`** for **Start shift** / **End shift** and history. i18n **`DASHBOARD.MY_SHIFT_*`**. Existing **WorkSession** APIs and **`back/tests/test_work_session.py`** unchanged.
+### Changed
 
-- **GitHub #50 — Order line modifiers (pizza-style):** Optional structured **`line_modifiers`** on each order line — **`remove`**, **`add`**, **`substitute`** (from/to pairs) — stored as JSON with a **`line_modifiers_summary`** snapshot for kitchen tickets and printed invoices. Public menu **`POST /menu/{token}/order`** and staff **`PUT /orders/{id}/items/{itemId}`** accept the payload; merging duplicate lines requires the same customization **and** the same line modifiers. Migration **`20260323170000_order_item_line_modifiers.sql`**. Staff **Orders → Edit order**: add-item section + per-line **Modifiers** editor. Kitchen display shows modifiers next to product questions. Tests: **`back/tests/test_line_modifiers.py`**.
-
-- **GitHub #64 — Public `/book` week grid:** Replaced the separate **date + month mini-calendar + time dropdown** with a **Monday–Sunday column view**: each column is a day, rows are **15-minute slots**; **green** = free for the chosen party size, **red** = full/booked, **grey** = closed, past, or outside hours. New public API **`GET /reservations/book-week-slots`** (`tenant_id`, `party_size`, optional `week_anchor`). i18n: **`BOOK.WEEK_*`**, **`BOOK.SLOT_*`**. Test: **`back/tests/test_book_week_slots_public.py`**. **`front/scripts/debug-reservations-public.mjs`** updated to choose the first green week slot + party size.
+- **Pay earlier in the flow:** When your rules allow it, staff see a clearer "Pay now" path and short explanation that the kitchen can still be finishing dishes until you mark the order complete (GitHub #23).
+- **Catalog cards:** Long descriptions can expand and collapse; prices line up neatly across the grid (GitHub #34).
+- **Safer server updates:** Production deploy builds new images before stopping the app, keeps the database running during routine updates, and waits until the site answers health checks again. Overlapping deploy jobs are avoided (GitHub #49).
+- **Automated browser checks:** Default test runs no longer pop up a browser window unless you ask for one; optional deeper navigation checks when credentials are configured.
+- **How we ship code:** Day-to-day work lands on a development branch first; production still follows the main branch when you promote a release.
 
 ### Fixed
 
-- **GitHub #65 — Tables / waiter assignment:** Waiters and receptionists now **see** table and floor waiter assignment using names from **`GET /tables`** and **`GET /floors`**. Assignment **dropdowns** remain for roles with **`table:write`** (owner/admin); others get read-only labels. Previously the UI relied on **`GET /users`** for select options, which waiters cannot call.
+- **Who waits which table:** Waiters and reception can read table and floor assignments without needing extra admin rights (GitHub #65).
+- **New staff accounts:** Resolved a database mismatch that could block creating some users.
+- **Order list layout:** Action buttons on order cards stay aligned when extra lines appear (GitHub #59).
+- **Product list layout:** Removed odd empty space below the products table (GitHub #33).
 
-- **PostgreSQL `User.role`:** SQLAlchemy now binds the **`user_role`** enum type name (matching migrations), fixing inserts that failed with **`expression is of type userrole`**. Regression test: **`back/tests/test_user_role_pg_enum.py`**.
-- **GitHub #59 — Orders cards:** Order card header actions stay **top-aligned** with the meta column (no vertical centering that shifted with customer/urgent lines) and **wrap right-aligned** when space is tight (`orders.component.ts` styles).
-- **GitHub #33 — Products table:** Removed the stray gap under the product list by keeping action cells as real table cells (flex only on an inner wrapper), top-aligning body cells, and clipping horizontal scroll inside the card.
+### Contributors
 
-### Changed
-
-- **GitHub #23 — Pay before checkout (staff UX):** **Orders** cards show a prominent **Pay now** action (alongside **Finish** when allowed) and the payment modal explains that kitchen line statuses stay until served or **Finish**. Backend already allowed `mark-paid` before all items are delivered; regression test **`back/tests/test_order_prepay.py`**.
-
-- **GitHub #34 — Catalog cards:** Long **description**, **aromas**, and **elaboration** use **line-clamp** with **Show more / Show less** (i18n); a **flex spacer** before provider prices keeps **price rows aligned** across the grid on `/catalog`.
-
-- **GitHub #62 — Reservation default time:** Public **`/book/{tenant}`** seeds the time dropdown from **now + 10 minutes** (quarter-hour ceiling, tenant timezone after load; browser TZ before) and the **first bookable slot** for today instead of a fixed **20:00**. Staff **Reservations → New** uses **now + 10 minutes** on the correct **local calendar date** (handles midnight rollover); non-today dates still default the time from **next-available**. List filter date uses **local** YYYY-MM-DD instead of UTC.
-
-- **001 log reviewer prompt:** **GitHub issues → `FEAT-…` only** (up to 3/run for **feature coders**, ×5 steps in **`pos-agent-loop`**); **Docker logs → `NEW-…` only** for concrete incidents. **`agents/pos-agent-loop.sh`** 001 message and **`docs/agent-loop.md`** updated.
-- **`agents/pos-agent-loop.sh`:** run **001 log reviewer** first in every full cycle; subcommands **`log`**, **`log-reviewer`**, **`001`**. **`docs/agent-loop.md`** updated.
-- **Agent loop script:** renamed **`agents/run.sh`** → **`agents/pos-agent-loop.sh`** (clearer vs repo-root **`./run.sh`**). **`docs/agent-loop.md`**, **`AGENTS.md`**, **`agents/README.md`** updated.
-- **Agent / git workflow:** Routine work targets **`development`**; **`master`** is promoted only on a **~2h cadence**, **big production-impacting** changes, or **urgent/production** issues (label **`production-urgent`**) — see **`.cursor/rules/git-development-branch-workflow.mdc`**, **`docs/agent-loop.md`**, **`AGENTS.md`**. **`agents/pos-agent-loop.sh`** committer prompt aligned.
-- **Puppeteer tests** (`front/scripts/`): Chrome runs **headless by default**. Use **`HEADLESS=0`**, **`false`**, or **`no`** for a visible window. Logic lives in **`front/scripts/puppeteer-headless.mjs`**. Docs: **`docs/testing.md`**, **`AGENTS.md`**.
-- **`test-landing-version.mjs`**: When **demo/staff credentials** are in `.env` (`DEMO_LOGIN_*` or `LOGIN_*`), also checks **login on tenant 1** and **every visible sidebar link** (plus inventory sublinks). **`go-ahead-loop.sh`** sources **`.env`** before this smoke so local runs exercise the full flow when configured.
-- **001 log reviewer:** refreshed **`agents/001-log-reviewer/time-of-last-review.txt`** (UTC timestamp of last 001 run).
-
-### Added
-
-- **GitHub #58 (follow-up):** **`docs/REVOLUT.md`** — how **staff tip presets** relate to **Revolut** (subtotal-only charge), default **5/10/15/20** presets, and **`tip_tax_rate_percent`** default **0** for invoice VAT split. **`back/tests/test_order_tip.py`** — explicit **0%** tip, **half-up** rounding, rejection when **order subtotal is zero**.
-
-- **Agent prompts (markdown):** **`agents/README.md`** plus **`agents/001-log-reviewer/LOG-REVIEWER-PROMPT.md`**, **`002-coder/CODER.md`**, **`003-tester/TESTER.md`**, **`004-closing-reviewer/CLOSING-REVIEWER-PROMPT.md`**, **`006-feature-coder/FEATURE-CODER.md`**, **`007-committer/COMMITTER.md`** — POS-adapted from mac-stats-reviewer for **`cursor-agent`** / **`agents/pos-agent-loop.sh`**.
-- **Agent loop docs & tasks:** **`docs/agent-loop.md`** — mac-stats-reviewer–style pipeline (`new` → … → **`done/YYYY/MM/DD/`**), roles, **`go-ahead-loop.sh`** / **`docs/testing.md`**, optional **[GitHub Issues](https://github.com/satisfecho/pos/issues)** handoff (**`gh`/API**, labels **`agent:planned`** / **`agent:wip`** / **`agent:testing`**, per-role comments). **`agents/tasks/README.md`**, **`agents/tasks/done/README.md`**, **`scripts/move-agent-task-to-done.sh`**, **`agents/pos-agent-loop.sh`** (**`cursor-agent`** orchestrator; **`AGENT_LOOP_SLEEP_MINUTES`**).
-- **GitHub #52 planning**: **`docs/0050-github-issue-52-split-plan.md`** — ten dedicated issue specs (title + body), phased rollout (A–E), dependency diagram, filing checklist; **`docs/0032-github-issues-roadmap.md`** and **`docs/README.md`** link to it.
+- Agent playbooks, task folders, and a small **pos-agent-loop** helper script were added so automated assistants can follow the same steps as the team. Issue tracking hooks are documented for those workflows.
 
 ## [2.0.50] - 2026-03-23
 

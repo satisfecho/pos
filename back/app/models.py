@@ -179,6 +179,14 @@ class Tenant(SQLModel, table=True):
     # Default tax (IVA) applied system-wide when product has no tax override
     default_tax_id: int | None = Field(default=None, foreign_key="tax.id", index=True)
 
+    # KDS: unmapped products fall back to these prep stations (by category route)
+    default_kitchen_station_id: int | None = Field(
+        default=None, foreign_key="kitchen_station.id", index=True
+    )
+    default_bar_station_id: int | None = Field(
+        default=None, foreign_key="kitchen_station.id", index=True
+    )
+
     users: list["User"] = Relationship(back_populates="tenant")
 
 
@@ -218,6 +226,35 @@ class TenantMixin(SQLModel):
     tenant_id: int = Field(foreign_key="tenant.id")
 
 
+class KitchenStation(SQLModel, table=True):
+    """Prep station for kitchen/bar KDS views and optional ticket split (per product mapping)."""
+
+    __tablename__ = "kitchen_station"
+    id: int | None = Field(default=None, primary_key=True)
+    tenant_id: int = Field(foreign_key="tenant.id", index=True)
+    name: str = Field(max_length=128)
+    sort_order: int = Field(default=0)
+    # Which full-screen KDS route lists this station: /kitchen vs /bar
+    display_route: str = Field(default="kitchen", max_length=16)
+
+
+class KitchenStationCreate(SQLModel):
+    name: str = Field(max_length=128)
+    sort_order: int = 0
+    display_route: str = Field(default="kitchen", max_length=16)
+
+
+class KitchenStationUpdate(SQLModel):
+    name: str | None = Field(default=None, max_length=128)
+    sort_order: int | None = None
+    display_route: str | None = Field(default=None, max_length=16)
+
+
+class KitchenStationDefaultsUpdate(SQLModel):
+    default_kitchen_station_id: int | None = None
+    default_bar_station_id: int | None = None
+
+
 class Product(TenantMixin, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str
@@ -236,6 +273,9 @@ class Product(TenantMixin, table=True):
     # Availability window: customer-facing menu shows product only when today is in [available_from, available_until]
     available_from: date | None = Field(default=None, sa_column=Column(Date, nullable=True))
     available_until: date | None = Field(default=None, sa_column=Column(Date, nullable=True))
+    kitchen_station_id: int | None = Field(
+        default=None, foreign_key="kitchen_station.id", index=True
+    )
 
 
 class ProductQuestionType(str, Enum):
@@ -681,6 +721,7 @@ class ProductUpdate(SQLModel):
     tax_id: int | None = None  # Override default tax; null = use tenant default
     available_from: date | None = None
     available_until: date | None = None
+    kitchen_station_id: int | None = None  # null = clear mapping
 
 
 class TableCreate(SQLModel):

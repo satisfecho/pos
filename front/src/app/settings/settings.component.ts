@@ -16,12 +16,21 @@ import {
 import { SidebarComponent } from '../shared/sidebar.component';
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { TranslationsComponent } from '../translations/translations.component';
+import { KitchenStationsSettingsComponent } from './kitchen-stations-settings.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, FocusFirstInputDirective, TranslateModule, TranslationsComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    SidebarComponent,
+    FocusFirstInputDirective,
+    TranslateModule,
+    TranslationsComponent,
+    KitchenStationsSettingsComponent,
+  ],
   template: `
     <app-sidebar>
       <div class="page-header">
@@ -112,6 +121,17 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
             </svg>
             <span>{{ 'SETTINGS.TAXES' | translate }}</span>
+          </button>
+          <button
+            type="button"
+            class="tab"
+            data-testid="settings-kitchen-stations-tab"
+            [class.active]="activeSection() === 'kitchen-stations'"
+            (click)="activeSection.set('kitchen-stations')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="8" width="7" height="13" rx="1"/>
+            </svg>
+            <span>{{ 'SETTINGS.KITCHEN_STATIONS_TAB' | translate }}</span>
           </button>
           <button 
             type="button" 
@@ -380,6 +400,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               </div>
             </div>
           }
+        } @else if (activeSection() === 'kitchen-stations') {
+          <app-kitchen-stations-settings />
         } @else if (activeSection() === 'translations') {
           <!-- Translations Section (Independent) -->
             <div class="section">
@@ -2144,7 +2166,19 @@ export class SettingsComponent implements OnInit {
   newTaxRate = 10;
   newTaxValidFrom = new Date().toISOString().slice(0, 10);
   newTaxValidTo = '';
-  activeSection = signal<'general' | 'contact' | 'hours' | 'payments' | 'email' | 'reservations' | 'taxes' | 'providers' | 'translations' | 'security'>('general');
+  activeSection = signal<
+    | 'general'
+    | 'contact'
+    | 'hours'
+    | 'payments'
+    | 'email'
+    | 'reservations'
+    | 'taxes'
+    | 'kitchen-stations'
+    | 'providers'
+    | 'translations'
+    | 'security'
+  >('general');
   loading = signal<boolean>(false);
   saving = signal<boolean>(false);
   error = signal<string | null>(null);

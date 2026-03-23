@@ -355,6 +355,28 @@ export interface Product {
   _source?: string; // "tenant_product" or "product" to distinguish between TenantProduct and legacy Product
   /** Optional customization questions (e.g. doneness, spice level) */
   questions?: ProductQuestion[];
+  /** Prep station for KDS (/kitchen vs /bar); null = use tenant default by category */
+  kitchen_station_id?: number | null;
+}
+
+/** Kitchen / bar prep station (owner-defined; filters KDS by station). */
+export interface KitchenStation {
+  id: number;
+  tenant_id: number;
+  name: string;
+  sort_order: number;
+  display_route: 'kitchen' | 'bar';
+}
+
+export interface KitchenStationCreate {
+  name: string;
+  sort_order?: number;
+  display_route?: 'kitchen' | 'bar';
+}
+
+export interface KitchenStationDefaults {
+  default_kitchen_station_id: number | null;
+  default_bar_station_id: number | null;
 }
 
 /** Product customization question (e.g. meat doneness, spice 1–10, multi toppings) */
@@ -573,6 +595,11 @@ export interface OrderItem {
   tax_amount_cents?: number | null;
   /** Product category for kitchen/bar display filtering: "Beverages", "Main Course", etc. */
   category?: string | null;
+  /** Resolved prep station for KDS (after product mapping and tenant defaults) */
+  kitchen_station_id?: number | null;
+  kitchen_station_name?: string | null;
+  /** Which display route this line belongs to: kitchen (/kitchen) or bar (/bar) */
+  kitchen_station_route?: string | null;
 }
 
 /** Billing customer for Factura (tax invoice) */
@@ -1633,6 +1660,33 @@ export class ApiService {
   }
 
   /** Kitchen/Bar display: wait-time thresholds (minutes) for card color. */
+  getKitchenStations(): Observable<KitchenStation[]> {
+    return this.http.get<KitchenStation[]>(`${this.apiUrl}/tenant/kitchen-stations`);
+  }
+
+  createKitchenStation(body: KitchenStationCreate): Observable<KitchenStation> {
+    return this.http.post<KitchenStation>(`${this.apiUrl}/tenant/kitchen-stations`, body);
+  }
+
+  updateKitchenStation(
+    id: number,
+    body: Partial<{ name: string; sort_order: number; display_route: 'kitchen' | 'bar' }>
+  ): Observable<KitchenStation> {
+    return this.http.put<KitchenStation>(`${this.apiUrl}/tenant/kitchen-stations/${id}`, body);
+  }
+
+  deleteKitchenStation(id: number): Observable<{ status: string; id: number }> {
+    return this.http.delete<{ status: string; id: number }>(`${this.apiUrl}/tenant/kitchen-stations/${id}`);
+  }
+
+  getKitchenStationDefaults(): Observable<KitchenStationDefaults> {
+    return this.http.get<KitchenStationDefaults>(`${this.apiUrl}/tenant/kitchen-station-defaults`);
+  }
+
+  updateKitchenStationDefaults(body: Partial<KitchenStationDefaults>): Observable<KitchenStationDefaults> {
+    return this.http.put<KitchenStationDefaults>(`${this.apiUrl}/tenant/kitchen-station-defaults`, body);
+  }
+
   getKitchenDisplaySettings(): Observable<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }> {
     return this.http.get<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }>(
       `${this.apiUrl}/tenant/kitchen-display-settings`

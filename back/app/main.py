@@ -61,6 +61,11 @@ from .product_customization import (
     customization_dicts_equal,
     validate_and_normalize_customization_answers,
 )
+from .kitchen_stations_util import (
+    normalize_display_route,
+    resolve_order_item_kds,
+    validate_kitchen_station_belongs,
+)
 
 # Rate limiting (slowapi)
 try:
@@ -2341,6 +2346,177 @@ def update_kitchen_display_settings(
     }
 
 
+# Kitchen / bar prep stations (KDS filtering, product mapping)
+@app.get("/tenant/kitchen-stations")
+def list_kitchen_stations(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.ORDER_READ))],
+    session: Session = Depends(get_session),
+) -> list[dict]:
+    rows = session.exec(
+        select(models.KitchenStation)
+        .where(models.KitchenStation.tenant_id == current_user.tenant_id)
+        .order_by(models.KitchenStation.sort_order, models.KitchenStation.id)
+    ).all()
+    return [
+        {
+            "id": r.id,
+            "tenant_id": r.tenant_id,
+            "name": r.name,
+            "sort_order": r.sort_order,
+            "display_route": r.display_route,
+        }
+        for r in rows
+    ]
+
+
+@app.get("/tenant/kitchen-station-defaults")
+def get_kitchen_station_defaults(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_READ))],
+    session: Session = Depends(get_session),
+) -> dict:
+    tenant = session.get(models.Tenant, current_user.tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    return {
+        "default_kitchen_station_id": tenant.default_kitchen_station_id,
+        "default_bar_station_id": tenant.default_bar_station_id,
+    }
+
+
+@app.put("/tenant/kitchen-station-defaults")
+def update_kitchen_station_defaults(
+    body: models.KitchenStationDefaultsUpdate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    tenant = session.get(models.Tenant, current_user.tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    data = body.model_dump(exclude_unset=True)
+    if "default_kitchen_station_id" in data:
+        val = data["default_kitchen_station_id"]
+        if val:
+            try:
+                validate_kitchen_station_belongs(session, int(val), current_user.tenant_id)
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid default kitchen station")
+        tenant.default_kitchen_station_id = val
+    if "default_bar_station_id" in data:
+        val = data["default_bar_station_id"]
+        if val:
+            try:
+                validate_kitchen_station_belongs(session, int(val), current_user.tenant_id)
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid default bar station")
+        tenant.default_bar_station_id = val
+    session.add(tenant)
+    session.commit()
+    session.refresh(tenant)
+    return {
+        "default_kitchen_station_id": tenant.default_kitchen_station_id,
+        "default_bar_station_id": tenant.default_bar_station_id,
+    }
+
+
+@app.post("/tenant/kitchen-stations")
+def create_kitchen_station(
+    body: models.KitchenStationCreate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    try:
+        route = normalize_display_route(body.display_route)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    row = models.KitchenStation(
+        tenant_id=current_user.tenant_id,
+        name=body.name.strip() or "Station",
+        sort_order=int(body.sort_order),
+        display_route=route,
+    )
+    session.add(row)
+    session.commit()
+    session.refresh(row)
+    return {
+        "id": row.id,
+        "tenant_id": row.tenant_id,
+        "name": row.name,
+        "sort_order": row.sort_order,
+        "display_route": row.display_route,
+    }
+
+
+@app.put("/tenant/kitchen-stations/{station_id}")
+def update_kitchen_station(
+    station_id: int,
+    body: models.KitchenStationUpdate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    row = session.exec(
+        select(models.KitchenStation).where(
+            models.KitchenStation.id == station_id,
+            models.KitchenStation.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Station not found")
+    if body.name is not None:
+        row.name = body.name.strip() or row.name
+    if body.sort_order is not None:
+        row.sort_order = int(body.sort_order)
+    if body.display_route is not None:
+        try:
+            row.display_route = normalize_display_route(body.display_route)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+    session.add(row)
+    session.commit()
+    session.refresh(row)
+    return {
+        "id": row.id,
+        "tenant_id": row.tenant_id,
+        "name": row.name,
+        "sort_order": row.sort_order,
+        "display_route": row.display_route,
+    }
+
+
+@app.delete("/tenant/kitchen-stations/{station_id}")
+def delete_kitchen_station(
+    station_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    row = session.exec(
+        select(models.KitchenStation).where(
+            models.KitchenStation.id == station_id,
+            models.KitchenStation.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Station not found")
+    tenant = session.get(models.Tenant, current_user.tenant_id)
+    if tenant:
+        if tenant.default_kitchen_station_id == station_id:
+            tenant.default_kitchen_station_id = None
+            session.add(tenant)
+        if tenant.default_bar_station_id == station_id:
+            tenant.default_bar_station_id = None
+            session.add(tenant)
+    for p in session.exec(
+        select(models.Product).where(
+            models.Product.tenant_id == current_user.tenant_id,
+            models.Product.kitchen_station_id == station_id,
+        )
+    ).all():
+        p.kitchen_station_id = None
+        session.add(p)
+    session.delete(row)
+    session.commit()
+    return {"status": "deleted", "id": station_id}
+
+
 # ============ TAXES (IVA) ============
 
 
@@ -2889,6 +3065,13 @@ def create_product(
     session: Session = Depends(get_session),
 ) -> models.Product:
     product.tenant_id = current_user.tenant_id
+    if getattr(product, "kitchen_station_id", None):
+        try:
+            validate_kitchen_station_belongs(
+                session, product.kitchen_station_id, current_user.tenant_id
+            )
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid kitchen station")
     session.add(product)
     session.commit()
     session.refresh(product)
@@ -2934,6 +3117,18 @@ def update_product(
         product.available_from = product_update.available_from
     if product_update.available_until is not None:
         product.available_until = product_update.available_until
+
+    pu = product_update.model_dump(exclude_unset=True)
+    if "kitchen_station_id" in pu:
+        val = pu["kitchen_station_id"]
+        if val is None:
+            product.kitchen_station_id = None
+        else:
+            try:
+                validate_kitchen_station_belongs(session, int(val), current_user.tenant_id)
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid kitchen station")
+            product.kitchen_station_id = int(val)
 
     session.add(product)
     # Sync availability dates to linked TenantProduct(s) so customer menu stays consistent
@@ -8277,6 +8472,14 @@ def list_orders(
         .order_by(models.Order.created_at.desc())
     ).all()
 
+    tenant_row = session.get(models.Tenant, current_user.tenant_id)
+    station_rows = session.exec(
+        select(models.KitchenStation).where(
+            models.KitchenStation.tenant_id == current_user.tenant_id
+        )
+    ).all()
+    station_by_id = {s.id: s for s in station_rows if s.id is not None}
+
     result = []
     for order in orders:
         table = session.exec(select(models.Table).where(models.Table.id == order.table_id)).first()
@@ -8327,7 +8530,7 @@ def list_orders(
                 select(models.Product).where(models.Product.id.in_(product_ids))
             ).all()
             product_map = {p.id: p for p in products}
-        
+
         # Billing customer for Factura (if set)
         billing_customer = None
         if order.billing_customer_id:
@@ -8344,6 +8547,38 @@ def list_orders(
                     "birth_date": bc.birth_date.isoformat() if bc.birth_date else None,
                 }
 
+        order_items_json: list[dict] = []
+        for oi in items:
+            prod = product_map.get(oi.product_id) if product_map else None
+            if tenant_row:
+                kid, knm, krt = resolve_order_item_kds(prod, tenant_row, station_by_id)
+            else:
+                kid, knm, krt = None, None, "kitchen"
+            order_items_json.append(
+                {
+                    "id": oi.id,
+                    "product_name": oi.product_name,
+                    "quantity": oi.quantity,
+                    "price_cents": oi.price_cents,
+                    "notes": oi.notes,
+                    "customization_answers": getattr(oi, "customization_answers", None) or None,
+                    "customization_summary": getattr(oi, "customization_summary", None) or None,
+                    "line_modifiers": getattr(oi, "line_modifiers", None) or None,
+                    "line_modifiers_summary": getattr(oi, "line_modifiers_summary", None) or None,
+                    "status": oi.status.value if hasattr(oi.status, "value") else str(oi.status),
+                    "removed_by_customer": oi.removed_by_customer,
+                    "removed_at": oi.removed_at.isoformat() if oi.removed_at else None,
+                    "removed_reason": oi.removed_reason,
+                    "tax_id": getattr(oi, "tax_id", None),
+                    "tax_rate_percent": getattr(oi, "tax_rate_percent", None),
+                    "tax_amount_cents": getattr(oi, "tax_amount_cents", None),
+                    "category": getattr(product_map.get(oi.product_id), "category", None),
+                    "kitchen_station_id": kid,
+                    "kitchen_station_name": knm,
+                    "kitchen_station_route": krt,
+                }
+            )
+
         result.append({
             "id": order.id,
             "table_name": table.name if table else "Unknown",
@@ -8359,28 +8594,7 @@ def list_orders(
             "paid_at": order.paid_at.isoformat() if order.paid_at else None,
             "payment_method": order.payment_method,
             "staff_urgent": bool(getattr(order, "staff_urgent", False)),
-            "items": [
-                {
-                    "id": item.id,
-                    "product_name": item.product_name,
-                    "quantity": item.quantity,
-                    "price_cents": item.price_cents,
-                    "notes": item.notes,
-                    "customization_answers": getattr(item, "customization_answers", None) or None,
-                    "customization_summary": getattr(item, "customization_summary", None) or None,
-                    "line_modifiers": getattr(item, "line_modifiers", None) or None,
-                    "line_modifiers_summary": getattr(item, "line_modifiers_summary", None) or None,
-                    "status": item.status.value if hasattr(item.status, 'value') else str(item.status),
-                    "removed_by_customer": item.removed_by_customer,
-                    "removed_at": item.removed_at.isoformat() if item.removed_at else None,
-                    "removed_reason": item.removed_reason,
-                    "tax_id": getattr(item, "tax_id", None),
-                    "tax_rate_percent": getattr(item, "tax_rate_percent", None),
-                    "tax_amount_cents": getattr(item, "tax_amount_cents", None),
-                    "category": getattr(product_map.get(item.product_id), "category", None),
-                }
-                for item in items
-            ],
+            "items": order_items_json,
             "subtotal_cents": subtotal_cents,
             "tip_percent_applied": getattr(order, "tip_percent_applied", None),
             "tip_amount_cents": getattr(order, "tip_amount_cents", None),

@@ -27,9 +27,17 @@ The **kitchen display** is a dedicated full-screen view for the kitchen: large, 
 
 Translation keys under `KITCHEN_DISPLAY.*` and `NAV.KITCHEN_DISPLAY` in `front/public/i18n/` (en, de, es, ca).
 
+## Prep stations (optional)
+
+When the tenant defines **kitchen stations** under **Settings → Kitchen stations**, each product can be mapped to a station (or use tenant defaults for unmapped items by category: food vs beverages). Order lines then include `kitchen_station_id`, `kitchen_station_name`, and `kitchen_station_route` (`kitchen` | `bar`).
+
+- **Kitchen display** (`/kitchen`) and **Bar display** (`/bar`) show a **Station** filter when at least one station exists for that route. **All stations** shows every line for that display; a specific station shows only lines resolved to that station.
+- **Query param:** `?station=<id>` bookmarks a station view; omit or `all` for all stations.
+- **Printing:** Browser / invoice printing is unchanged. Splitting physical kitchen tickets per station (e.g. one printout per grill vs cold line) is a follow-up for a local print agent or bridge; see `docs/PRINTING.md`.
+
 ## Technical
 
 - **Component:** `front/src/app/kitchen-display/kitchen-display.component.ts`
 - **Route:** `app.routes.ts` — `/kitchen` with `authGuard` and `orderAccessGuard`
-- **API:** Uses existing `ApiService.getOrders(false)` and WebSocket `orderUpdates$`
-- **Tests:** `front/src/app/kitchen-display/kitchen-display.component.spec.ts`
+- **API:** `ApiService.getOrders(false)` and WebSocket `orderUpdates$`; `GET /tenant/kitchen-stations` for the filter; station CRUD and defaults under Settings (owner/admin).
+- **Tests:** `front/src/app/kitchen-display/kitchen-display.component.spec.ts`; backend `back/tests/test_kitchen_stations.py` (resolution helpers).

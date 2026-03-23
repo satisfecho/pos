@@ -229,6 +229,9 @@
     "SUBCATEGORY_LABEL": "Subcategoria",
     "SELECT_CATEGORY": "Seleccionar Categoria",
     "SELECT_SUBCATEGORY": "Seleccionar Subcategoria",
+    "KITCHEN_STATION_LABEL": "Estació de preparació (KDS)",
+    "KITCHEN_STATION_NONE": "Usar per defecte del local per categoria",
+    "KITCHEN_STATION_HINT": "Es mostra a cuina o bar per estació si el local té estacions a Configuració.",
     "CHANGE_IMAGE": "Canviar Imatge",
     "CANCEL": "Cancel·lar",
     "UPDATE": "Actualitzar",
@@ -890,6 +893,17 @@
     "CONTACT_INFO_SUBTITLE": "Gestiona la informació de contacte del restaurant",
     "OPENING_HOURS_SUBTITLE": "Configura les hores d'obertura del restaurant",
     "PAYMENT_SETTINGS_SUBTITLE": "Configura els mètodes de pagament",
+    "KITCHEN_STATIONS_TAB": "Estacions de cuina",
+    "KITCHEN_STATIONS_TITLE": "Estacions de cuina i barra",
+    "KITCHEN_STATIONS_SUBTITLE": "Defineix estacions (graella, fred, postres, barra…) i assigna productes. Les pantalles de cuina i barra es poden filtrar per estació. Els productes sense assignació usen els valors per defecte (menjar vs. begudes).",
+    "KITCHEN_STATIONS_DEFAULT_KITCHEN": "Estació per defecte (menjar / no beguda)",
+    "KITCHEN_STATIONS_DEFAULT_BAR": "Estació per defecte (begudes)",
+    "KITCHEN_STATIONS_ROUTE": "Pantalla",
+    "KITCHEN_STATIONS_ROUTE_KITCHEN": "Pantalla cuina",
+    "KITCHEN_STATIONS_ROUTE_BAR": "Pantalla barra",
+    "KITCHEN_STATIONS_SORT": "Ordre",
+    "KITCHEN_STATIONS_ADD": "Afegir estació",
+    "KITCHEN_STATIONS_NAME_PLACEHOLDER": "p. ex. Graella, Fred",
     "PUBLIC_GOOGLE_REVIEW_URL": "Google review link",
     "PUBLIC_GOOGLE_REVIEW_PLACEHOLDER": "https://g.page/.../review or Google Maps review URL",
     "PUBLIC_GOOGLE_REVIEW_HINT": "Shown on the thank-you page after guests submit private feedback so they can leave a public Google review.",
@@ -1156,7 +1170,9 @@
     "TIMER_ORANGE_MINUTES": "Taronja després de (min)",
     "TIMER_RED_MINUTES": "Vermell després de (min)",
     "URGENT": "Urgent",
-    "TIMER_BAR_HINT": "Progrés del temps d'espera fins al llindar vermell"
+    "TIMER_BAR_HINT": "Progrés del temps d'espera fins al llindar vermell",
+    "STATION": "Estació",
+    "ALL_STATIONS": "Totes les estacions"
   },
   "BAR_DISPLAY": {
     "TITLE": "Pantalla bar"

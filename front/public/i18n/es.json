@@ -235,6 +235,9 @@
     "SUBCATEGORY_LABEL": "Subcategoría",
     "SELECT_CATEGORY": "Seleccionar Categoría",
     "SELECT_SUBCATEGORY": "Seleccionar Subcategoría",
+    "KITCHEN_STATION_LABEL": "Estación de preparación (KDS)",
+    "KITCHEN_STATION_NONE": "Usar predeterminado del local por categoría",
+    "KITCHEN_STATION_HINT": "Se muestra en cocina o bar por estación si el local tiene estaciones en Ajustes.",
     "TAX_OVERRIDE": "IVA (override)",
     "USE_DEFAULT_TAX": "Usar IVA por defecto",
     "TAX_OVERRIDE_HINT": "Aplicar un IVA distinto a este producto. Dejar por defecto para usar el de Ajustes.",
@@ -533,7 +536,9 @@
     "TIMER_ORANGE_MINUTES": "Naranja tras (min)",
     "TIMER_RED_MINUTES": "Rojo tras (min)",
     "URGENT": "Urgente",
-    "TIMER_BAR_HINT": "Progreso del tiempo de espera hasta el umbral rojo"
+    "TIMER_BAR_HINT": "Progreso del tiempo de espera hasta el umbral rojo",
+    "STATION": "Estación",
+    "ALL_STATIONS": "Todas las estaciones"
   },
   "BAR_DISPLAY": {
     "TITLE": "Pantalla bar"
@@ -932,6 +937,17 @@
     "STAFF_RECEPTIONIST": "Recepción",
     "PAYMENT_SETTINGS": "Configuración de pago",
     "PAYMENT_SETTINGS_SUBTITLE": "Configura la moneda y el procesamiento de pagos",
+    "KITCHEN_STATIONS_TAB": "Estaciones de cocina",
+    "KITCHEN_STATIONS_TITLE": "Estaciones de cocina y barra",
+    "KITCHEN_STATIONS_SUBTITLE": "Define estaciones (parrilla, frío, postres, barra, etc.) y asigna productos. Las pantallas de cocina y barra pueden filtrar por estación. Los productos sin asignar usan los valores predeterminados (comida vs. bebidas).",
+    "KITCHEN_STATIONS_DEFAULT_KITCHEN": "Estación predeterminada (comida / no bebida)",
+    "KITCHEN_STATIONS_DEFAULT_BAR": "Estación predeterminada (bebidas)",
+    "KITCHEN_STATIONS_ROUTE": "Pantalla",
+    "KITCHEN_STATIONS_ROUTE_KITCHEN": "Pantalla cocina",
+    "KITCHEN_STATIONS_ROUTE_BAR": "Pantalla barra",
+    "KITCHEN_STATIONS_SORT": "Orden",
+    "KITCHEN_STATIONS_ADD": "Añadir estación",
+    "KITCHEN_STATIONS_NAME_PLACEHOLDER": "p. ej. Parrilla, Frío",
     "CURRENCY": "Moneda",
     "CURRENCY_HINT": "Código ISO 4217 para precios (productos, menú, pedidos, informes). Use el código que espere su proveedor de pagos (p. ej. EUR, USD, MXN).",
     "DEFAULT_LANGUAGE": "Idioma predeterminado",

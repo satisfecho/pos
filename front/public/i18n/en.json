@@ -237,6 +237,9 @@
     "TAX_OVERRIDE": "Tax (IVA) override",
     "USE_DEFAULT_TAX": "Use default tax",
     "TAX_OVERRIDE_HINT": "Override the default tax for this product. Leave as default to use the tax set in Settings.",
+    "KITCHEN_STATION_LABEL": "Prep station (KDS)",
+    "KITCHEN_STATION_NONE": "Use tenant default by category",
+    "KITCHEN_STATION_HINT": "Shown on kitchen or bar display by station when your restaurant uses prep stations in Settings.",
     "AVAILABLE_FROM": "Available from (date)",
     "AVAILABLE_FROM_HINT": "Customer menu shows this product only from this date. Leave empty for no start limit.",
     "AVAILABLE_UNTIL": "Available until (date)",
@@ -534,7 +537,9 @@
     "TIMER_ORANGE_MINUTES": "Orange after (min)",
     "TIMER_RED_MINUTES": "Red after (min)",
     "URGENT": "Urgent",
-    "TIMER_BAR_HINT": "Wait time progress toward red threshold"
+    "TIMER_BAR_HINT": "Wait time progress toward red threshold",
+    "STATION": "Station",
+    "ALL_STATIONS": "All stations"
   },
   "BAR_DISPLAY": {
     "TITLE": "Bar display"
@@ -951,6 +956,17 @@
     "ADD_TAX": "Add tax rate",
     "TAX_NAME_PLACEHOLDER": "e.g. IVA 10%",
     "ADD_TAX_BUTTON": "Add",
+    "KITCHEN_STATIONS_TAB": "Kitchen stations",
+    "KITCHEN_STATIONS_TITLE": "Kitchen & bar prep stations",
+    "KITCHEN_STATIONS_SUBTITLE": "Define stations (e.g. grill, cold, desserts, bar) and map products. The kitchen and bar displays can filter by station. Unmapped products use the defaults below by category (food vs beverages).",
+    "KITCHEN_STATIONS_DEFAULT_KITCHEN": "Default station (food / non-beverage)",
+    "KITCHEN_STATIONS_DEFAULT_BAR": "Default station (beverages)",
+    "KITCHEN_STATIONS_ROUTE": "Display",
+    "KITCHEN_STATIONS_ROUTE_KITCHEN": "Kitchen display",
+    "KITCHEN_STATIONS_ROUTE_BAR": "Bar display",
+    "KITCHEN_STATIONS_SORT": "Order",
+    "KITCHEN_STATIONS_ADD": "Add station",
+    "KITCHEN_STATIONS_NAME_PLACEHOLDER": "e.g. Grill, Cold prep",
     "CONFIRM_DELETE_TAX": "Delete this tax? Products using it will fall back to default tax.",
     "PROVIDERS": "Providers",
     "PROVIDERS_SUBTITLE": "Add your own suppliers and link products (e.g. supplies not on the menu).",
