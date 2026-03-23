@@ -42,6 +42,11 @@ from .reservation_email_template import MAX_BODY_LEN, MAX_SUBJECT_LEN
 from . import whatsapp_service as whatsapp_svc
 from .phone_utils import normalize_phone_to_e164
 from .contact_validation import normalize_email_address, normalize_phone_e164
+from .tenant_currency import (
+    apply_tenant_currency_api_dict,
+    normalize_tenant_currency_fields,
+    sync_tenant_currency_symbol_from_code,
+)
 
 # Rate limiting (slowapi)
 try:
@@ -803,6 +808,58 @@ def get_public_tenant(
         "public_google_review_url": summary.public_google_review_url,
     }
     return JSONResponse(content=body)
+
+
+@app.get("/public/table-lookup")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_public_menu_per_minute', 30)}/minute",
+    key_func=_rate_limit_key,
+)
+def public_table_lookup(
+    request: Request,
+    q: str = Query(
+        ...,
+        min_length=1,
+        max_length=80,
+        description="Menu URL token (from QR) or printed table name, e.g. T01",
+    ),
+    session: Session = Depends(get_session),
+) -> dict:
+    """Resolve printed table name or full token to the table's menu token (GitHub #38). Public, no auth."""
+    from sqlalchemy import func
+
+    raw = str(q).replace("\x00", "").strip()
+    if not raw:
+        raise HTTPException(status_code=400, detail="Query required")
+
+    by_token = session.exec(select(models.Table).where(models.Table.token == raw)).first()
+    if by_token:
+        return {"table_token": by_token.token, "ambiguous": False, "choices": []}
+
+    key = raw.casefold()
+    stmt = (
+        select(models.Table, models.Tenant)
+        .join(models.Tenant, models.Table.tenant_id == models.Tenant.id)
+        .where(func.lower(func.trim(models.Table.name)) == key)
+    )
+    rows = list(session.exec(stmt).all())
+    if not rows:
+        raise HTTPException(status_code=404, detail="Table not found")
+    if len(rows) == 1:
+        table, _tenant = rows[0]
+        return {"table_token": table.token, "ambiguous": False, "choices": []}
+
+    choices = [
+        {
+            "table_token": table.token,
+            "tenant_id": tenant.id,
+            "tenant_name": tenant.name,
+            "table_name": table.name,
+        }
+        for table, tenant in rows
+    ]
+    choices.sort(key=lambda c: (c["tenant_name"].casefold(), c["table_name"].casefold()))
+    return {"table_token": None, "ambiguous": True, "choices": choices}
 
 
 @app.post("/public/tenants/{tenant_id}/guest-feedback")
@@ -1726,14 +1783,7 @@ def get_tenant_settings(
     if tenant_dict.get("smtp_password"):
         tenant_dict["smtp_password"] = "********"
 
-    # GitHub #41: products list uses currency_code for Intl; unset tenants otherwise
-    # showed ambiguous formatting — default display currency to EUR for API consumers.
-    code = (tenant_dict.get("currency_code") or "").strip()
-    if not code:
-        tenant_dict["currency_code"] = "EUR"
-    sym = (tenant_dict.get("currency") or "").strip()
-    if not sym:
-        tenant_dict["currency"] = "€"
+    apply_tenant_currency_api_dict(tenant_dict)
 
     return tenant_dict
 
@@ -1835,6 +1885,11 @@ def update_tenant_settings(
             and tenant_update.currency.strip()
             else None
         )
+
+    if tenant.currency_code:
+        sym = sync_tenant_currency_symbol_from_code(tenant.currency_code)
+        if sym is not None:
+            tenant.currency = sym
 
     if tenant_update.default_language is not None:
         lang = (
@@ -2047,6 +2102,8 @@ def update_tenant_settings(
     # Don't expose SMTP password; indicate if configured
     if tenant_dict.get("smtp_password"):
         tenant_dict["smtp_password"] = "********"
+
+    apply_tenant_currency_api_dict(tenant_dict)
 
     return tenant_dict
 
@@ -6836,8 +6893,13 @@ def get_menu(
         "tenant_whatsapp": tenant.whatsapp if tenant else None,
         "tenant_address": tenant.address if tenant else None,
         "tenant_website": tenant.website if tenant else None,
-        "tenant_currency": tenant.currency if tenant else None,
-        "tenant_currency_code": tenant.currency_code if tenant else None,
+        "tenant_currency_code": (
+            _menu_cc := normalize_tenant_currency_fields(
+                tenant.currency_code if tenant else None,
+                tenant.currency if tenant else None,
+            )
+        )[0],
+        "tenant_currency": _menu_cc[1],
         "tenant_stripe_publishable_key": tenant.stripe_publishable_key
         if tenant
         else None,

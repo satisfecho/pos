@@ -5,7 +5,8 @@ import { ApiService, CatalogItem, TenantProduct } from '../services/api.service'
 import { SidebarComponent } from '../shared/sidebar.component';
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { environment } from '../../environments/environment';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { currencySymbolFromIsoCode } from '../shared/currency-symbol';
 
 @Component({
   selector: 'app-catalog',
@@ -671,6 +672,7 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 export class CatalogComponent implements OnInit {
   private apiService = inject(ApiService);
+  private translate = inject(TranslateService);
 
   loading = signal(false);
   error = signal('');
@@ -751,22 +753,16 @@ export class CatalogComponent implements OnInit {
       next: (settings) => {
         const code = settings.currency_code || null;
         this.currencyCode.set(code);
-        this.currency.set(settings.currency || (code ? this.getCurrencySymbol(code) : '€'));
+        if (code) {
+          this.currency.set(currencySymbolFromIsoCode(this.translate, code));
+        } else {
+          this.currency.set(settings.currency || '€');
+        }
       },
       error: (err) => {
         console.error('Failed to load tenant settings:', err);
       }
     });
-  }
-
-  private getCurrencySymbol(code: string): string {
-    const locale = navigator.language || 'en-US';
-    const parts = new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency: code,
-      currencyDisplay: 'symbol'
-    }).formatToParts(0);
-    return parts.find(part => part.type === 'currency')?.value || code;
   }
 
   getSubcategories(): string[] {

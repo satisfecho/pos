@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.43] - 2026-03-23
+
+### Added
+
+- **Per-restaurant currency (GitHub #41)**: **Settings → Payments** uses an **ISO 4217** dropdown (EUR, USD, GBP, JPY, MXN, and other common codes). **`currency_code`** is the source of truth; the legacy symbol column stays aligned on save.
+
+### Fixed
+
+- **Currency display (GitHub #41)**: **`GET /tenant/settings`** and **`PUT /tenant/settings`** responses, and the **public menu** payload, now expose a **consistent** `currency_code` + symbol (no more **EUR** with a **$** label from an old legacy field). Staff **Products**, **Catalog**, **Orders**, **Reports**, and **customer menu** formatting use the ISO code first; defaults remain **EUR** when unset.
+
 ## [2.0.42] - 2026-03-23
 
 ### Added

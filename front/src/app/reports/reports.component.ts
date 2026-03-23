@@ -11,6 +11,7 @@ import { SidebarComponent } from '../shared/sidebar.component';
 import { ApiService, SalesReport } from '../services/api.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { intlLocaleFromTranslate } from '../shared/intl-locale';
+import { currencySymbolFromIsoCode } from '../shared/currency-symbol';
 
 @Component({
   selector: 'app-reports',
@@ -77,8 +78,13 @@ export class ReportsComponent implements OnInit {
   private loadTenantCurrency() {
     this.api.getTenantSettings().subscribe({
       next: (s) => {
-        this.currency.set(s.currency || '€');
-        this.currencyCode.set(s.currency_code || null);
+        const code = s.currency_code || null;
+        this.currencyCode.set(code);
+        if (code) {
+          this.currency.set(currencySymbolFromIsoCode(this.translate, code));
+        } else {
+          this.currency.set(s.currency || '€');
+        }
       },
     });
   }

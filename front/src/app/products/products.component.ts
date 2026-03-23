@@ -7,6 +7,7 @@ import { SidebarComponent } from '../shared/sidebar.component';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { intlLocaleFromTranslate } from '../shared/intl-locale';
+import { currencySymbolFromIsoCode } from '../shared/currency-symbol';
 import { CategoriesComponent } from './categories.component';
 
 @Component({
@@ -682,7 +683,11 @@ export class ProductsComponent implements OnInit {
       next: (settings) => {
         const code = settings.currency_code || null;
         this.currencyCode.set(code);
-        this.currency.set(settings.currency || (code ? this.getCurrencySymbol(code) : '€'));
+        if (code) {
+          this.currency.set(currencySymbolFromIsoCode(this.translate, code));
+        } else {
+          this.currency.set(settings.currency || '€');
+        }
         this.loadProducts();
       },
       error: (err) => {
@@ -691,16 +696,6 @@ export class ProductsComponent implements OnInit {
         this.loadProducts();
       },
     });
-  }
-
-  private getCurrencySymbol(code: string): string {
-    const locale = intlLocaleFromTranslate(this.translate);
-    const parts = new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency: code,
-      currencyDisplay: 'symbol',
-    }).formatToParts(0);
-    return parts.find((part) => part.type === 'currency')?.value || code;
   }
 
   formatPrice(priceCents: number): string {

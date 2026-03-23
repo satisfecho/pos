@@ -11,6 +11,8 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { intlLocaleFromTranslate } from '../shared/intl-locale';
+import { currencySymbolFromIsoCode } from '../shared/currency-symbol';
 import {
   ColDef,
   ModuleRegistry,
@@ -1686,7 +1688,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   orders = signal<Order[]>([]);
   loading = signal(true);
-  currency = signal<string>('$');
+  currency = signal<string>('€');
   currencyCode = signal<string | null>(null);
   showRemovedItems = false;
   viewMode = signal<'active' | 'not_paid' | 'history'>('active');
@@ -1758,7 +1760,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   get columnDefs(): ColDef[] {
     const currencySymbol = this.currency();
     const currencyCode = this.currencyCode();
-    const locale = navigator.language || 'en-US';
+    const locale = intlLocaleFromTranslate(this.translate);
     const formatCurrency = (value: number) => {
       if (currencyCode) {
         return new Intl.NumberFormat(locale, {
@@ -2150,12 +2152,16 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.api.getTenantSettings().subscribe({
       next: (settings) => {
         this.tenantSettings.set(settings);
-        this.currency.set(settings.currency || '$');
-        this.currencyCode.set(settings.currency_code || null);
+        const code = settings.currency_code || null;
+        this.currencyCode.set(code);
+        if (code) {
+          this.currency.set(currencySymbolFromIsoCode(this.translate, code));
+        } else {
+          this.currency.set(settings.currency || '€');
+        }
       },
       error: (err) => {
         console.error('Failed to load tenant settings:', err);
-        // Default to $ if settings can't be loaded
       }
     });
   }
@@ -2421,7 +2427,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   formatPrice(priceCents: number): string {
     const currencySymbol = this.currency();
     const currencyCode = this.currencyCode();
-    const locale = navigator.language || 'en-US';
+    const locale = intlLocaleFromTranslate(this.translate);
     if (currencyCode) {
       return new Intl.NumberFormat(locale, {
         style: 'currency',

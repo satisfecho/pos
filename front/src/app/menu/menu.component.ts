@@ -65,8 +65,8 @@ export class MenuComponent implements OnInit, OnDestroy {
   tenantWhatsapp = signal<string | null>(null);
   tenantAddress = signal<string | null>(null);
   tenantWebsite = signal<string | null>(null);
-  tenantCurrency = signal<string>('$');
-  tenantCurrencyCode = signal<string | null>(null);
+  tenantCurrency = signal<string>('€');
+  tenantCurrencyCode = signal<string>('EUR');
   immediatePaymentRequired = signal(false);
   tenantPublicBackgroundColor = signal<string | null>(null);
   tenantRevolutConfigured = signal(false);
@@ -269,8 +269,9 @@ export class MenuComponent implements OnInit, OnDestroy {
         this.tenantWhatsapp.set(data.tenant_whatsapp || null);
         this.tenantAddress.set(data.tenant_address || null);
         this.tenantWebsite.set(data.tenant_website || null);
-        this.tenantCurrency.set(data.tenant_currency || '$');
-        this.tenantCurrencyCode.set(data.tenant_currency_code || null);
+        const code = (data.tenant_currency_code || 'EUR').toUpperCase();
+        this.tenantCurrencyCode.set(code);
+        this.tenantCurrency.set(data.tenant_currency || '€');
         this.immediatePaymentRequired.set(data.tenant_immediate_payment_required || false);
         this.tenantPublicBackgroundColor.set(data.tenant_public_background_color ?? null);
         this.tenantHeaderBackgroundFilename.set(data.tenant_header_background_filename ?? null);
@@ -829,17 +830,13 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   formatPrice(priceCents: number): string {
-    const currencyCode = this.tenantCurrencyCode();
+    const currencyCode = this.tenantCurrencyCode() || 'EUR';
     const locale = navigator.language || 'en-US';
-    if (currencyCode) {
-      return new Intl.NumberFormat(locale, {
-        style: 'currency',
-        currency: currencyCode,
-        currencyDisplay: 'symbol'
-      }).format(priceCents / 100);
-    }
-    const currencySymbol = this.tenantCurrency();
-    return `${currencySymbol}${(priceCents / 100).toFixed(2)}`;
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: currencyCode,
+      currencyDisplay: 'symbol',
+    }).format(priceCents / 100);
   }
 
   sortItems(items: CartItem[]): CartItem[] {

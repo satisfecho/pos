@@ -735,8 +735,13 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                   </div>
                   
                   <div class="form-group">
-                    <label for="currency">{{ 'SETTINGS.CURRENCY' | translate }}</label>
-                    <input type="text" id="currency" [(ngModel)]="formData.currency" name="currency" placeholder="€" class="input-short" />
+                    <label for="currency_code">{{ 'SETTINGS.SELECT_CURRENCY' | translate }}</label>
+                    <select id="currency_code" [(ngModel)]="formData.currency_code" name="currency_code" class="input-medium">
+                      @for (c of currencySelectOptions(); track c) {
+                        <option [value]="c">{{ c }}</option>
+                      }
+                    </select>
+                    <p class="hint">{{ 'SETTINGS.CURRENCY_HINT' | translate }}</p>
                   </div>
                   
                   <div class="divider"></div>
@@ -2002,6 +2007,38 @@ export class SettingsComponent implements OnInit {
   private translate = inject(TranslateService);
   private sanitizer = inject(DomSanitizer);
 
+  /** ISO 4217 codes for per-tenant prices (GitHub #41). */
+  readonly tenantCurrencyCodes: string[] = [
+    'EUR',
+    'USD',
+    'GBP',
+    'JPY',
+    'MXN',
+    'CHF',
+    'CAD',
+    'AUD',
+    'NZD',
+    'CNY',
+    'INR',
+    'BRL',
+    'PLN',
+    'SEK',
+    'NOK',
+    'DKK',
+    'KRW',
+    'TWD',
+  ];
+
+  /** Includes current tenant code if it is not in the standard list (e.g. after API changes). */
+  currencySelectOptions(): string[] {
+    const code = this.settings()?.currency_code;
+    const base = [...this.tenantCurrencyCodes];
+    if (code && !base.includes(code)) {
+      return [code, ...base];
+    }
+    return base;
+  }
+
   settings = signal<TenantSettings | null>(null);
   taxes = signal<Tax[]>([]);
   taxError = signal('');
@@ -2106,7 +2143,7 @@ export class SettingsComponent implements OnInit {
     cif: null,
     default_tax_id: null,
     opening_hours: null,
-    currency: null,
+    currency_code: 'EUR',
     stripe_secret_key: null,
     stripe_publishable_key: null,
     revolut_merchant_secret: null,
@@ -2177,7 +2214,7 @@ export class SettingsComponent implements OnInit {
           cif: settings.cif || null,
           default_tax_id: settings.default_tax_id ?? null,
           opening_hours: settings.opening_hours || null,
-          currency: settings.currency || null,
+          currency_code: settings.currency_code || 'EUR',
           stripe_secret_key: null,
           stripe_publishable_key: settings.stripe_publishable_key || null,
           revolut_merchant_secret: null,
