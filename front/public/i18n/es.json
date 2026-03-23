@@ -359,7 +359,9 @@
     "REMOVING": "Eliminando...",
     "ADD_TO_MENU_TITLE": "Añadir al Menú",
     "PRODUCT_NAME_LABEL": "Nombre del Producto",
-    "PRODUCT_NAME_PLACEHOLDER": "Nombre del producto"
+    "PRODUCT_NAME_PLACEHOLDER": "Nombre del producto",
+    "SHOW_MORE": "Ver más",
+    "SHOW_LESS": "Ver menos"
   },
   "ORDERS": {
     "TITLE": "Pedidos",

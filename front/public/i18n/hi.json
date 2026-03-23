@@ -337,7 +337,9 @@
     "REMOVING": "हटा रहा है...",
     "ADD_TO_MENU_TITLE": "मेनू में जोड़ें",
     "PRODUCT_NAME_LABEL": "उत्पाद का नाम",
-    "PRODUCT_NAME_PLACEHOLDER": "उत्पाद का नाम"
+    "PRODUCT_NAME_PLACEHOLDER": "उत्पाद का नाम",
+    "SHOW_MORE": "और दिखाएं",
+    "SHOW_LESS": "कम दिखाएं"
   },
   "ORDERS": {
     "TITLE": "ऑर्डर",

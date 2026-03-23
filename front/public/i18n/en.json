@@ -360,7 +360,9 @@
     "REMOVING": "Removing...",
     "ADD_TO_MENU_TITLE": "Add to Menu",
     "PRODUCT_NAME_LABEL": "Product Name",
-    "PRODUCT_NAME_PLACEHOLDER": "Product name"
+    "PRODUCT_NAME_PLACEHOLDER": "Product name",
+    "SHOW_MORE": "Show more",
+    "SHOW_LESS": "Show less"
   },
   "ORDERS": {
     "TITLE": "Orders",

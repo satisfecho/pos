@@ -337,7 +337,9 @@
     "REMOVING": "移除中...",
     "ADD_TO_MENU_TITLE": "添加到菜单",
     "PRODUCT_NAME_LABEL": "产品名称",
-    "PRODUCT_NAME_PLACEHOLDER": "产品名称"
+    "PRODUCT_NAME_PLACEHOLDER": "产品名称",
+    "SHOW_MORE": "展开更多",
+    "SHOW_LESS": "收起"
   },
   "ORDERS": {
     "TITLE": "订单",

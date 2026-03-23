@@ -346,7 +346,9 @@
     "REMOVING": "Wird entfernt...",
     "ADD_TO_MENU_TITLE": "Zur Speisekarte hinzufügen",
     "PRODUCT_NAME_LABEL": "Produktname",
-    "PRODUCT_NAME_PLACEHOLDER": "Produktname"
+    "PRODUCT_NAME_PLACEHOLDER": "Produktname",
+    "SHOW_MORE": "Mehr anzeigen",
+    "SHOW_LESS": "Weniger anzeigen"
   },
   "ORDERS": {
     "TITLE": "Bestellungen",

@@ -346,7 +346,9 @@
     "REMOVING": "Traient...",
     "ADD_TO_MENU_TITLE": "Afegir al Menú",
     "PRODUCT_NAME_LABEL": "Nom del Producte",
-    "PRODUCT_NAME_PLACEHOLDER": "Nom del producte"
+    "PRODUCT_NAME_PLACEHOLDER": "Nom del producte",
+    "SHOW_MORE": "Mostra'n més",
+    "SHOW_LESS": "Mostra'n menys"
   },
   "ORDERS": {
     "TITLE": "Comandes",

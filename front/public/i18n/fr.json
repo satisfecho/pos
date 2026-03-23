@@ -345,7 +345,9 @@
     "REMOVING": "Suppression…",
     "ADD_TO_MENU_TITLE": "Ajouter au menu",
     "PRODUCT_NAME_LABEL": "Nom du produit",
-    "PRODUCT_NAME_PLACEHOLDER": "Nom du produit"
+    "PRODUCT_NAME_PLACEHOLDER": "Nom du produit",
+    "SHOW_MORE": "Afficher plus",
+    "SHOW_LESS": "Afficher moins"
   },
   "ORDERS": {
     "TITLE": "Commandes",
