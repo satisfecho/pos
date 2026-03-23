@@ -22,7 +22,7 @@ This document defines a **multi-agent workflow** for this repository, modeled on
 | **002 Coder** (`002-coder-backend/CODER.md`) | **Implementer (main)** | Tasks in status **new** → **wip** | **`back/`**, **`front/`**, tests; task file status + **Testing instructions**; then **untested**. |
 | **006 Feature coder** (`FEATURE-CODER.md`) | **Implementer (FEAT queue)** | Tasks **feat** → **wip** | Same as coder, but only **FEAT-** tasks (if you use that track). |
 | **003 Tester** (`TESTER.md`) | **Verifier** | **untested** → **testing** | Appends **Test report**; **closed** or back to **wip** on failure. Uses **`pytest`** (Docker), **`node front/scripts/…`**, **`npm run test:*`** per task. |
-| **004 Closing reviewer** (`CLOSING-REVIEWER-PROMPT.md`) | **Archivist** | **closed** tasks | Prepends **Closing summary**; moves file to **`agents/tasks/done/`**. |
+| **004 Closing reviewer** (`CLOSING-REVIEWER-PROMPT.md`) | **Archivist** | **closed** tasks | Prepends **Closing summary**; moves file to **`agents/tasks/done/YYYY/MM/`** (date from filename; use **`scripts/move-agent-task-to-done.sh`**). |
 | **007 Committer** (`COMMITTER.md`) | **Changelog / version** | `git status` in POS root | **`CHANGELOG.md`**, **`front/package.json`** + **`front/package-lock.json`** when bumping; git add/commit per **`.cursor/rules/commit-changelog-version.mdc`**. **Does not** edit application source. |
 | **005 OpenClaw reviewer** | **Optional** | Browser/automation findings | Only if you introduce a parallel “FEAT” track for UI/automation work; otherwise skip or fold into log analyst + human. |
 
@@ -48,13 +48,13 @@ Examples: `NEW-20260323-1030-haproxy-503-on-orders.md`, `WIP-20260323-1100-fix-r
 | **wip** | Active implementation | Coder → **untested** when done + testing instructions added |
 | **untested** | Ready for verification | Tester → **testing** |
 | **testing** | Under test | Tester → **closed** (pass) or **wip** (fail) |
-| **closed** | Verified | Closing reviewer prepends summary → moves file to **`agents/tasks/done/`** (same filename; mac-stats-reviewer uses a `CLOSED-…` name — adopt one naming style for POS) |
+| **closed** | Verified | Closing reviewer prepends summary → archives under **`agents/tasks/done/YYYY/MM/`** (same basename; **`YYYY/MM`** from `CLOSED-YYYYMMDD-…` in the name). Use **`./scripts/move-agent-task-to-done.sh`**. |
 
 ### Flow
 
 ```text
   new   ─┐
-         ├─→  wip  →  untested  →  testing  →  closed  →  (done/)
+         ├─→  wip  →  untested  →  testing  →  closed  →  (done/YYYY/MM/)
   feat  ─┘
 ```
 
@@ -63,7 +63,7 @@ Examples: `NEW-20260323-1030-haproxy-503-on-orders.md`, `WIP-20260323-1100-fix-r
 - **new/feat → wip** when work starts (one clear owner per task in **wip**).
 - **wip → untested** only after **Testing instructions** are appended (What to verify / How to test / Pass–fail criteria), same structure as mac-stats-reviewer’s coder prompt.
 - **untested → testing → closed** (or **testing → wip** for rework).
-- **closed → done/** after closing reviewer adds the **Closing summary** at the **top** of the file.
+- **closed → done/YYYY/MM/** after closing reviewer adds the **Closing summary** at the **top** of the file (see **Done archive layout** below).
 
 **Tester loop protection (from `TESTER.md`):** if the same task fails verification more than **three** times, stop cycling; document in **Test report**, close per team policy (mac-stats-reviewer moves to **closed** with explanation).
 
@@ -77,7 +77,7 @@ Not all of this exists yet; treat as the **implementation target** when you adop
 agents/
   tasks/
     README.md              # Copy/adapt from mac-stats-reviewer agents/tasks/README.md
-    done/                  # Closed tasks moved here
+    done/                  # Archived CLOSED-* tasks: done/YYYY/MM/ (see README)
     inbox/                 # Optional: orchestrator-only queue (mac-stats-reviewer pattern)
   001-log-reviewer/
     LOG-REVIEWER-PROMPT.md # Adapt: Docker logs + POS docs, not ~/.mac-stats/debug.log
@@ -95,6 +95,14 @@ agents/
 ```
 
 **Prompt authoring:** Start from the markdown in `~/projects/mac-stats-reviewer/agents/` and replace paths (`~/projects/mac-stats` → this repo root), log locations (**Docker** and **`docs/error-investigation-workflow`**), and stack commands (**`docker compose`**, **`front/scripts/`**).
+
+### Done archive layout (organized)
+
+Unlike a flat **`done/`** folder, POS keeps closed tasks under **`agents/tasks/done/<YYYY>/<MM>/`**. The year and month are taken from the **`YYYYMMDD`** segment in the filename (e.g. `CLOSED-20260323-1200-slug.md` → **`done/2026/03/`**), so archives stay sorted by calendar month without manual filing.
+
+- **Closing reviewer** (or operator): after prepending the closing summary, run  
+  **`./scripts/move-agent-task-to-done.sh agents/tasks/CLOSED-….md`**
+- Details: **`agents/tasks/README.md`**, **`agents/tasks/done/README.md`**
 
 ---
 
@@ -139,7 +147,7 @@ mac-stats-reviewer’s **`agents/autoresearch/README.md`** describes **Track A**
 
 ## Implementation checklist (for maintainers)
 
-1. **`mkdir -p agents/tasks/done`** and add **`agents/tasks/README.md`** (adapt from mac-stats-reviewer; fix paths).
+1. **`agents/tasks/README.md`** and **`agents/tasks/done/README.md`** define the pipeline and **`done/YYYY/MM/`** layout; use **`scripts/move-agent-task-to-done.sh`** when archiving.
 2. **Copy and adapt** numbered agent prompts (`001` … `004`, `007`, optional `006`) from mac-stats-reviewer; strip mac-stats-only steps; add POS Docker/Puppeteer/pytest wording.
 3. **Link from** **`AGENTS.md`** or **`.cursor/rules`** — one line: “Multi-agent task workflow: **`docs/agent-loop.md`**.”
 4. **Train the team** on task renames and **Testing instructions** / **Test report** format (mirror mac-stats-reviewer for consistency).
