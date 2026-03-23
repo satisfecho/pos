@@ -37,3 +37,30 @@ Production deploys can take down running services if the server updates before a
 
 - **Pass:** `bash -n` succeeds; code review confirms build-before-stop, optional **`DEPLOY_FULL_DOWN`**, origin guard + **`SKIP_ORIGIN_CHECK`**, strict migrations, health retry loop, workflow concurrency, docs/changelog updated.
 - **Fail:** Any of the above missing; deploy script exits 0 after failed migrate; or default deploy still runs **`docker compose down`** without **`DEPLOY_FULL_DOWN=1`**.
+
+---
+
+## Test report
+
+1. **Date/time (UTC):** 2026-03-23 13:51 UTC — **Log window:** static verification only (no full deploy); no container log window required.
+
+2. **Environment:** Repo root `/Users/raro42/projects/pos2`; compose files referenced in task not started for this pass. **`BASE_URL`:** N/A (no browser). **Branch:** `development` @ `1ce3576`.
+
+3. **What was tested:** All items under “What to verify” via `bash -n`, file review of `scripts/deploy-amvara9.sh`, `.github/workflows/deploy-amvara9.yml`, `docs/0001-ci-cd-amvara9.md`, `CHANGELOG.md` `[Unreleased]`.
+
+4. **Results:**
+   - **`bash -n scripts/deploy-amvara9.sh`:** **PASS** — exit 0, output `bash -n: OK`.
+   - **Build before stop; default no `down`:** **PASS** — `build back` / `build --no-cache front` at L71–L80; `stop front haproxy ws-bridge back` when `DEPLOY_FULL_DOWN` unset (L90–L91); `docker compose down` only when `DEPLOY_FULL_DOWN=1` (L87–L89).
+   - **Origin guard + `SKIP_ORIGIN_CHECK`:** **PASS** — L52–L68: URL must match `*satisfecho/pos*` or exit 1; bypass when `SKIP_ORIGIN_CHECK=1`.
+   - **Migrations strict (no `|| true`):** **PASS** — L108–110: `run --rm back python -m app.migrate` and `--sync-idempotent` without `|| true` (`set -e` applies).
+   - **Post-`up` `/health` retries:** **PASS** — L119–L141: loop up to 30 attempts, 2s sleep, urllib to `http://127.0.0.1:8020/health`, exit 1 if never healthy.
+   - **Workflow `concurrency.group: deploy-amvara9`:** **PASS** — `.github/workflows/deploy-amvara9.yml` L17–L18 `group: deploy-amvara9`, `cancel-in-progress: false`.
+   - **Docs + changelog:** **PASS** — `docs/0001-ci-cd-amvara9.md` L44–L56 (workflow + script behaviour #49); `CHANGELOG.md` `[Unreleased]` L11 GitHub #49 bullet.
+
+5. **Overall:** **PASS**
+
+6. **Product owner feedback:** Deploy safety goals from #49 are reflected in the script and workflow: images build while the old stack still runs, default teardown stops only app-tier containers, migrations are strict, and health is polled instead of a single long sleep. Production should still be watched on the next real `master` deploy to confirm SSH + smoke steps end-to-end.
+
+7. **URLs tested:** **N/A — no browser**
+
+8. **Relevant log excerpts:** **N/A — no containers** (evidence: host command `bash -n scripts/deploy-amvara9.sh` exited 0).
