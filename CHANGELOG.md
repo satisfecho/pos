@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Agent / git workflow:** Routine work targets **`development`**; **`master`** is promoted only on a **~2h cadence**, **big production-impacting** changes, or **urgent/production** issues (label **`production-urgent`**) — see **`.cursor/rules/git-development-branch-workflow.mdc`**, **`docs/agent-loop.md`**, **`AGENTS.md`**. **`agents/pos-agent-loop.sh`** committer prompt aligned.
 - **Puppeteer tests** (`front/scripts/`): Chrome runs **headless by default**. Use **`HEADLESS=0`**, **`false`**, or **`no`** for a visible window. Logic lives in **`front/scripts/puppeteer-headless.mjs`**. Docs: **`docs/testing.md`**, **`AGENTS.md`**.
 - **`test-landing-version.mjs`**: When **demo/staff credentials** are in `.env` (`DEMO_LOGIN_*` or `LOGIN_*`), also checks **login on tenant 1** and **every visible sidebar link** (plus inventory sublinks). **`go-ahead-loop.sh`** sources **`.env`** before this smoke so local runs exercise the full flow when configured.
+- **001 log reviewer:** updated **`agents/001-log-reviewer/time-of-last-review.txt`** (last run timestamp).
 
 ### Added
 
