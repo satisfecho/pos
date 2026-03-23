@@ -6,16 +6,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **PostgreSQL `User.role`:** SQLAlchemy now binds the **`user_role`** enum type name (matching migrations), fixing inserts that failed with **`expression is of type userrole`**. Regression test: **`back/tests/test_user_role_pg_enum.py`**.
+- **GitHub #59 — Orders cards:** Order card header actions stay **top-aligned** with the meta column (no vertical centering that shifted with customer/urgent lines) and **wrap right-aligned** when space is tight (`orders.component.ts` styles).
+- **GitHub #33 — Products table:** Removed the stray gap under the product list by keeping action cells as real table cells (flex only on an inner wrapper), top-aligning body cells, and clipping horizontal scroll inside the card.
+
 ### Changed
 
-- **Agent / git workflow:** Routine work targets **`development`**; **`master`** is promoted only on a **~2h cadence**, **big production-impacting** changes, or **urgent/production** issues (label **`production-urgent`**) — see **`.cursor/rules/git-development-branch-workflow.mdc`**, **`docs/agent-loop.md`**, **`AGENTS.md`**. **`agents/run.sh`** committer prompt aligned.
+- **001 log reviewer prompt:** **GitHub issues → `FEAT-…` only** (up to 3/run for **feature coders**, ×5 steps in **`pos-agent-loop`**); **Docker logs → `NEW-…` only** for concrete incidents. **`agents/pos-agent-loop.sh`** 001 message and **`docs/agent-loop.md`** updated.
+- **`agents/pos-agent-loop.sh`:** run **001 log reviewer** first in every full cycle; subcommands **`log`**, **`log-reviewer`**, **`001`**. **`docs/agent-loop.md`** updated.
+- **Agent loop script:** renamed **`agents/run.sh`** → **`agents/pos-agent-loop.sh`** (clearer vs repo-root **`./run.sh`**). **`docs/agent-loop.md`**, **`AGENTS.md`**, **`agents/README.md`** updated.
+- **Agent / git workflow:** Routine work targets **`development`**; **`master`** is promoted only on a **~2h cadence**, **big production-impacting** changes, or **urgent/production** issues (label **`production-urgent`**) — see **`.cursor/rules/git-development-branch-workflow.mdc`**, **`docs/agent-loop.md`**, **`AGENTS.md`**. **`agents/pos-agent-loop.sh`** committer prompt aligned.
 - **Puppeteer tests** (`front/scripts/`): Chrome runs **headless by default**. Use **`HEADLESS=0`**, **`false`**, or **`no`** for a visible window. Logic lives in **`front/scripts/puppeteer-headless.mjs`**. Docs: **`docs/testing.md`**, **`AGENTS.md`**.
 - **`test-landing-version.mjs`**: When **demo/staff credentials** are in `.env` (`DEMO_LOGIN_*` or `LOGIN_*`), also checks **login on tenant 1** and **every visible sidebar link** (plus inventory sublinks). **`go-ahead-loop.sh`** sources **`.env`** before this smoke so local runs exercise the full flow when configured.
+- **001 log reviewer:** refreshed **`agents/001-log-reviewer/time-of-last-review.txt`** (UTC timestamp of last 001 run).
 
 ### Added
 
-- **Agent loop docs & tasks:** **`docs/agent-loop.md`** — mac-stats-reviewer–style pipeline (`new` → … → **`done/YYYY/MM/DD/`**), roles, **`go-ahead-loop.sh`** / **`docs/testing.md`**, optional **[GitHub Issues](https://github.com/satisfecho/pos/issues)** handoff (**`gh`/API**, labels **`agent:planned`** / **`agent:wip`** / **`agent:testing`**, per-role comments). **`agents/tasks/README.md`**, **`agents/tasks/done/README.md`**, **`scripts/move-agent-task-to-done.sh`**, **`agents/run.sh`** (**`cursor-agent`** orchestrator; **`AGENT_LOOP_SLEEP_MINUTES`**).
+- **GitHub #58 (follow-up):** **`docs/REVOLUT.md`** — how **staff tip presets** relate to **Revolut** (subtotal-only charge), default **5/10/15/20** presets, and **`tip_tax_rate_percent`** default **0** for invoice VAT split. **`back/tests/test_order_tip.py`** — explicit **0%** tip, **half-up** rounding, rejection when **order subtotal is zero**.
+
+- **Agent prompts (markdown):** **`agents/README.md`** plus **`agents/001-log-reviewer/LOG-REVIEWER-PROMPT.md`**, **`002-coder/CODER.md`**, **`003-tester/TESTER.md`**, **`004-closing-reviewer/CLOSING-REVIEWER-PROMPT.md`**, **`006-feature-coder/FEATURE-CODER.md`**, **`007-committer/COMMITTER.md`** — POS-adapted from mac-stats-reviewer for **`cursor-agent`** / **`agents/pos-agent-loop.sh`**.
+- **Agent loop docs & tasks:** **`docs/agent-loop.md`** — mac-stats-reviewer–style pipeline (`new` → … → **`done/YYYY/MM/DD/`**), roles, **`go-ahead-loop.sh`** / **`docs/testing.md`**, optional **[GitHub Issues](https://github.com/satisfecho/pos/issues)** handoff (**`gh`/API**, labels **`agent:planned`** / **`agent:wip`** / **`agent:testing`**, per-role comments). **`agents/tasks/README.md`**, **`agents/tasks/done/README.md`**, **`scripts/move-agent-task-to-done.sh`**, **`agents/pos-agent-loop.sh`** (**`cursor-agent`** orchestrator; **`AGENT_LOOP_SLEEP_MINUTES`**).
 - **GitHub #52 planning**: **`docs/0050-github-issue-52-split-plan.md`** — ten dedicated issue specs (title + body), phased rollout (A–E), dependency diagram, filing checklist; **`docs/0032-github-issues-roadmap.md`** and **`docs/README.md`** link to it.
+
+## [2.0.50] - 2026-03-23
+
+### Added
+
+- **GitHub #62 — Public book page:** **Month calendar** next to the date field (Mon–Sun grid, prev/next month, legend). **Closed days** use opening hours (`GET /reservations/book-calendar`); **past days** and **outside the 12‑month window** are disabled. **Tenant `timezone`** is included on **`GET /public/tenants/{id}`** so “today” and time filtering match the restaurant. **Public** bookings require **at least 10 minutes** lead time (`RESERVATION_PUBLIC_MIN_LEAD_MINUTES`); **`GET /reservations/next-available`** gains **`min_lead_minutes`** (default **10**; staff uses **0**). Time dropdown for **today** hides slots before that cutoff. i18n: **`BOOK.CAL_*`**. API message **`reservation_min_lead_time`** (en, es).
 
 ## [2.0.49] - 2026-03-23
 

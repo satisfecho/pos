@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Any
 from uuid import uuid4
 
-from sqlalchemy import Column, Date, DateTime, Time
+from sqlalchemy import Column, Date, DateTime, Enum as SAEnum, Time
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -188,7 +188,20 @@ class User(SQLModel, table=True):
     hashed_password: str
     full_name: str | None = None
     token_version: int = Field(default=0)  # Increment to invalidate all tokens
-    role: UserRole = Field(default=UserRole.waiter)  # User role for RBAC
+    # DB type is user_role (migrations); SQLAlchemy default would be userrole — bind explicitly.
+    role: UserRole = Field(
+        default=UserRole.waiter,
+        sa_column=Column(
+            SAEnum(
+                UserRole,
+                name="user_role",
+                native_enum=True,
+                create_type=False,
+                values_callable=lambda cls: [m.value for m in cls],
+            ),
+            nullable=False,
+        ),
+    )
 
     tenant_id: int | None = Field(default=None, foreign_key="tenant.id")
     tenant: Tenant | None = Relationship(back_populates="users")

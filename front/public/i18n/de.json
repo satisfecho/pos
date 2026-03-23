@@ -562,7 +562,13 @@
     "ARRIVAL_TOLERANCE_MINUTES": "Bitte kommen Sie innerhalb von {{minutes}} Minuten nach Ihrer Buchungszeit.",
     "DRESS_CODE": "Kleiderordnung",
     "ADDRESS": "Adresse",
-    "OPEN_IN_GOOGLE_MAPS": "In Google Maps öffnen"
+    "OPEN_IN_GOOGLE_MAPS": "In Google Maps öffnen",
+    "CALENDAR_LABEL": "Datum wählen",
+    "CAL_PREV_MONTH": "Vorheriger Monat",
+    "CAL_NEXT_MONTH": "Nächster Monat",
+    "CAL_CLOSED": "Geschlossen",
+    "CAL_AVAILABLE": "Geöffnet",
+    "CAL_SELECTED": "Ausgewählt"
   },
   "FEEDBACK": {
     "TITLE": "Wie war Ihr Besuch?",

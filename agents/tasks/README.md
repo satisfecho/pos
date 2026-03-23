@@ -59,5 +59,5 @@ See **`done/README.md`** for a short index of the archive tree.
 - **new → wip** / **feat → wip** when work starts.
 - **wip → untested** when implementation is complete and **Testing instructions** are at the end of the task file.
 - **untested → testing** when the tester starts.
-- **testing → closed** when verification passes (or per loop-protection policy).
+- **testing → closed** when verification passes: rename **`TESTING-…`** → **`CLOSED-…`** (keep the same **`YYYYMMDD-HHMM-slug`**; only change the status prefix). On failure, **testing → wip**.
 - **closed → done/YYYY/MM/DD/** after the closing summary is added (use **`move-agent-task-to-done.sh`** or an equivalent `mkdir` + `mv`).

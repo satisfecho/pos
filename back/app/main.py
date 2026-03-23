@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import time as _time
+from calendar import monthrange
 from datetime import date, timedelta, datetime, time, timezone
 
 import requests
@@ -37,6 +38,9 @@ from .inventory_service import deduct_inventory_for_order
 from . import inventory_models
 from .translation_service import TranslationService
 from .messages import get_message
+
+# Minimum advance booking for public (unauthenticated) reservations
+RESERVATION_PUBLIC_MIN_LEAD_MINUTES = 10
 from .permissions import Permission, require_permission, require_role, has_permission
 from . import email_service as email_svc
 from .reservation_email_template import MAX_BODY_LEN, MAX_SUBJECT_LEN
@@ -672,6 +676,8 @@ class TenantSummary(_BaseModel):
     reservation_dress_code: str | None = None
     public_google_review_url: str | None = None
     public_google_maps_url: str | None = None
+    # IANA timezone (e.g. Europe/Madrid) for public book page date/time UX
+    timezone: str | None = None
 
 
 TAKE_AWAY_TABLE_NAMES = ("take away", "home ordering", "takeaway", "take-away")
@@ -760,6 +766,7 @@ def _tenant_to_summary(t: models.Tenant, session: Session) -> TenantSummary:
         reservation_dress_code=t.reservation_dress_code,
         public_google_review_url=t.public_google_review_url,
         public_google_maps_url=t.public_google_maps_url,
+        timezone=t.timezone,
     )
 
 
@@ -818,6 +825,7 @@ def get_public_tenant(
         "reservation_dress_code": summary.reservation_dress_code,
         "public_google_review_url": summary.public_google_review_url,
         "public_google_maps_url": summary.public_google_maps_url,
+        "timezone": summary.timezone,
     }
     return JSONResponse(content=body)
 
@@ -5814,8 +5822,20 @@ def create_reservation(
     max_ahead_date = now_local.date() + timedelta(days=366)
     if res_date > max_ahead_date:
         raise HTTPException(status_code=400, detail=get_message("reservation_date_too_far", lang))
-    if res_date == now_local.date():
-        if res_time <= now_local.time():
+    res_dt = datetime.combine(res_date, res_time, tzinfo=tz)
+    if not current_user:
+        min_dt = now_local + timedelta(minutes=RESERVATION_PUBLIC_MIN_LEAD_MINUTES)
+        if res_dt < min_dt:
+            raise HTTPException(
+                status_code=400,
+                detail=get_message(
+                    "reservation_min_lead_time",
+                    lang,
+                    minutes=RESERVATION_PUBLIC_MIN_LEAD_MINUTES,
+                ),
+            )
+    else:
+        if res_dt <= now_local:
             raise HTTPException(status_code=400, detail="Reservation time must be in the future")
     _raise_if_reservation_time_invalid_for_opening_hours(tenant, res_date, res_time)
     total_seats, total_tables = _reservable_capacity_for_tenant(
@@ -5920,11 +5940,45 @@ def get_reservation_prefill_by_phone(
     return _reservation_to_dict(r, session, include_client_tech=False)
 
 
+@app.get("/reservations/book-calendar")
+def get_reservation_book_calendar(
+    tenant_id: int = Query(...),
+    year: int = Query(..., ge=2000, le=2100),
+    month: int = Query(..., ge=1, le=12),
+    session: Session = Depends(get_session),
+) -> dict:
+    """Public: per-day open/closed for a month from tenant opening hours (for book page calendar)."""
+    tenant = session.get(models.Tenant, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    _, last_day = monthrange(year, month)
+    days: list[dict] = []
+    for dom in range(1, last_day + 1):
+        d = date(year, month, dom)
+        windows = _opening_service_windows_for_date(tenant, d)
+        if windows is None:
+            state = "open"
+        elif len(windows) == 0:
+            state = "closed"
+        else:
+            state = "open"
+        days.append({"date": d.isoformat(), "state": state})
+
+    return {"year": year, "month": month, "days": days}
+
+
 @app.get("/reservations/next-available")
 def get_next_available_reservation_time(
     tenant_id: int = Query(...),
     date_str: str = Query(..., alias="date"),
     party_size: int = Query(2, ge=1, le=100, description="Party size for capacity check"),
+    min_lead_minutes: int = Query(
+        10,
+        ge=0,
+        le=240,
+        description="Earliest slot must be at least this many minutes from now (use 0 for staff tools)",
+    ),
     session: Session = Depends(get_session),
 ) -> dict:
     """Public: find the next slot with capacity (by seats and table count)."""
@@ -5934,6 +5988,7 @@ def get_next_available_reservation_time(
 
     tz = ZoneInfo(tenant.timezone) if tenant.timezone else timezone.utc
     now_local = datetime.now(tz)
+    min_dt = now_local + timedelta(minutes=min_lead_minutes)
 
     try:
         check_date = _parse_reservation_date(date_str)
@@ -5949,7 +6004,8 @@ def get_next_available_reservation_time(
             continue
 
         for slot_time in _quarter_slot_times_for_windows(windows):
-            if d == now_local.date() and slot_time <= now_local.time():
+            slot_dt = datetime.combine(d, slot_time, tzinfo=tz)
+            if slot_dt < min_dt:
                 continue
 
             total_seats, total_tables = _reservable_capacity_for_tenant(

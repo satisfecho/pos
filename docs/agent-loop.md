@@ -43,7 +43,7 @@ If **none** of the above applies: **push `development` only**; do **not** merge 
 
 | mac-stats-reviewer agent | POS role | Typical inputs | Writes / edits |
 |--------------------------|----------|----------------|----------------|
-| **001 Log reviewer** (`LOG-REVIEWER-PROMPT.md`) | **Log / incident analyst** | `docker logs pos-front`, `pos-back`, `pos-haproxy`, `pos-postgres`; optional app logs | **New task files** in `agents/tasks/` with high-level instructions only (no code). Uses **`docs/`**, **`AGENTS.md`**, error-investigation workflow. |
+| **001 Log reviewer** (`LOG-REVIEWER-PROMPT.md`) | **GitHub → FEAT; logs → NEW** | **Issues:** up to **3 × `FEAT-…`** / run for **feature coders** (×5 in loop). **Logs:** **`NEW-…`** only for concrete Docker log incidents | **`agents/tasks/`** only. **`gh`** on issues. See **001** prompt — never use **`NEW-`** for GitHub-sourced work. |
 | **002 Coder** (`002-coder-backend/CODER.md`) | **Implementer (main)** | Tasks in status **new** → **wip** | **`back/`**, **`front/`**, tests; task file status + **Testing instructions**; then **untested**. |
 | **006 Feature coder** (`FEATURE-CODER.md`) | **Implementer (FEAT queue)** | Tasks **feat** → **wip** | Same as coder, but only **FEAT-** tasks (if you use that track). |
 | **003 Tester** (`TESTER.md`) | **Verifier** | **untested** → **testing** | Appends **Test report**; **closed** or back to **wip** on failure. Uses **`pytest`** (Docker), **`node front/scripts/…`**, **`npm run test:*`** per task. |
@@ -62,7 +62,7 @@ Adapted filename pattern and statuses — **same semantics** as mac-stats-review
 ### Filename pattern
 
 `<STATUS>-<YYYYMMDD-HHMM>-<slug>.md`  
-Examples: `NEW-20260323-1030-haproxy-503-on-orders.md`, `WIP-20260323-1100-fix-rate-limit-banner.md`
+Examples: `FEAT-20260323-1030-github-issue-50.md` (GitHub → feature coder), `NEW-20260323-1100-haproxy-503-logs.md` (logs → main coder), `WIP-20260323-1200-fix-rate-limit-banner.md`
 
 ### Statuses
 
@@ -94,33 +94,35 @@ Examples: `NEW-20260323-1030-haproxy-503-on-orders.md`, `WIP-20260323-1100-fix-r
 
 ---
 
-## Agent loop script (`agents/run.sh`)
+## Agent loop script (`agents/pos-agent-loop.sh`)
 
-Same idea as **mac-stats-reviewer** `agents/run.sh`: one entrypoint to run **feature coder → coder → tester → closing reviewer → committer** on a timer, or single steps.
+Same idea as **mac-stats-reviewer** `agents/run.sh`, but named for clarity: one entrypoint to run **log reviewer (001) → feature coder (×5) → coder → tester → closing reviewer → committer** on a timer, or single steps.
 
 | Invocation | Behaviour |
 |------------|-----------|
-| **`./agents/run.sh`** | Full cycle every **`AGENT_LOOP_SLEEP_MINUTES`** (default **5**); requires **`cursor-agent`** on `PATH`. |
-| **`./agents/run.sh coder`** | Run coder step only if **`NEW-*.md`** exists (and prompt file present). |
-| **`./agents/run.sh tester`** | Run tester if **`UNTESTED-*.md`** exists. |
-| **`./agents/run.sh feat`** | Run feature coder if **`FEAT-*.md`** exists. |
-| **`./agents/run.sh closing-review`** | Run closer if **`CLOSED-*.md`** still in **`agents/tasks/`**. |
-| **`./agents/run.sh committer`** | Run committer if POS repo has unstaged/staged changes. |
-| **`./agents/run.sh help`** | Usage. |
+| **`./agents/pos-agent-loop.sh`** | Full cycle every **`AGENT_LOOP_SLEEP_MINUTES`** (default **5**); requires **`cursor-agent`** on `PATH`. |
+| **`./agents/pos-agent-loop.sh log`** (or **`log-reviewer`**, **`001`**) | Run **001** log / incident reviewer (always invoked when prompt exists; first step in full cycle). |
+| **`./agents/pos-agent-loop.sh coder`** | Run coder step only if **`NEW-*.md`** exists (and prompt file present). |
+| **`./agents/pos-agent-loop.sh tester`** | Run tester if **`UNTESTED-*.md`** exists. |
+| **`./agents/pos-agent-loop.sh feat`** | Run feature coder if **`FEAT-*.md`** exists. |
+| **`./agents/pos-agent-loop.sh closing-review`** | Run closer if **`CLOSED-*.md`** still in **`agents/tasks/`**. |
+| **`./agents/pos-agent-loop.sh committer`** | Run committer if POS repo has unstaged/staged changes. |
+| **`./agents/pos-agent-loop.sh help`** | Usage. |
 
 **Docker / stack:** still start with repo-root **`./run.sh`** or **`./run.sh -dev`** — this script does **not** replace the POS application runner.
 
-**Prompts:** steps **skip** if the corresponding markdown under **`agents/002-coder/`**, **`003-tester/`**, etc. is missing (copy/adapt from mac-stats-reviewer). Steps also skip if **`cursor-agent`** is missing (single commands); the **infinite loop** exits immediately if **`cursor-agent`** is not installed.
+**Prompts:** steps **skip** if the corresponding markdown under **`agents/001-log-reviewer/`**, **`agents/002-coder/`**, **`003-tester/`**, etc. is missing. Steps also skip if **`cursor-agent`** is missing (single commands); the **infinite loop** exits immediately if **`cursor-agent`** is not installed.
 
 ---
 
 ## Where files live in POS (target layout)
 
-Not all of this exists yet; treat as the **implementation target** when you adopt the loop.
+Prompt markdown lives under **`agents/00*-*/*/`** (see **`agents/README.md`**). **`tasks/`** holds active task files.
 
 ```text
 agents/
-  run.sh                 # Orchestrator (mac-stats-reviewer style); see section above
+  README.md              # Index of prompts
+  pos-agent-loop.sh      # Orchestrator (mac-stats-reviewer style); see section above
   tasks/
     README.md              # Copy/adapt from mac-stats-reviewer agents/tasks/README.md
     done/                  # Archived CLOSED-* tasks: done/YYYY/MM/DD/ (see README)
@@ -209,7 +211,7 @@ Adjust names to taste (`status/planned`, etc.); keep them **documented here** so
 
 | Role | When | Update the issue |
 |------|------|------------------|
-| **Reviewer** (log / planning) | After creating the task file for issue **#NN** | Add comment: link to task path under **`agents/tasks/…`**, short plan; add label **`agent:planned`**. Optionally remove **`agent:needs-triage`** if you use triage labels. |
+| **Reviewer** (001 / planning) | After creating **`FEAT-…`** for issue **#NN** (never **`NEW-`** for GitHub) | Comment: link **`agents/tasks/FEAT-…md`**; label **`agent:planned`**. Optionally remove **`agent:needs-triage`**. |
 | **Coder** & **Feature coder** | When renaming task **new/feat → wip** | Add comment: “Implementation started”; **`agent:planned` → `agent:wip`** (remove planned, add wip). |
 | **Tester** | When renaming **untested → testing** | Add comment: “Verification started” (commands/env if useful); **`agent:wip` → `agent:testing`**. |
 | **Closer** | After **Test report** is **PASS** and task is **closed**, before/after `move-agent-task-to-done.sh` | Comment: one-paragraph outcome + pointer to merged commit or PR if applicable; remove **`agent:testing`** / **`agent:wip`**. **Close the issue** if the feature is fully delivered and tracked only here; **leave open** if the issue is a parent epic or has follow-ups (say so in the comment). |
@@ -223,7 +225,7 @@ export GH_TOKEN=…   # or rely on `gh auth login`
 
 gh issue list --repo satisfecho/pos --state open --limit 30
 
-gh issue comment 50 --repo satisfecho/pos --body "Task file: agents/tasks/NEW-20260323-1030-order-tip.md — planned for implementation."
+gh issue comment 50 --repo satisfecho/pos --body "Task file: agents/tasks/FEAT-20260323-1030-order-tip.md — planned for implementation (feature queue)."
 
 gh issue edit 50 --repo satisfecho/pos --add-label "agent:planned"
 
@@ -261,10 +263,10 @@ mac-stats-reviewer’s **`agents/autoresearch/README.md`** describes **Track A**
 ## Implementation checklist (for maintainers)
 
 1. **`agents/tasks/README.md`** and **`agents/tasks/done/README.md`** define the pipeline and **`done/YYYY/MM/DD/`** layout; use **`scripts/move-agent-task-to-done.sh`** when archiving.
-2. **Copy and adapt** numbered agent prompts (`001` … `004`, `007`, optional `006`) from mac-stats-reviewer; strip mac-stats-only steps; add POS Docker/Puppeteer/pytest wording.
+2. **Prompts** ship in **`agents/00*-*/*.md`**; refine them as needed (upstream reference: mac-stats-reviewer).
 3. **Link from** **`AGENTS.md`** or **`.cursor/rules`** — one line: “Multi-agent task workflow: **`docs/agent-loop.md`**.”
 4. **Train the team** on task renames and **Testing instructions** / **Test report** format (mirror mac-stats-reviewer for consistency).
-5. **`agents/run.sh`** — orchestrator for **`cursor-agent`** (see **Agent loop script** above).
+5. **`agents/pos-agent-loop.sh`** — orchestrator for **`cursor-agent`** (see **Agent loop script** above).
 6. **Optional:** add **`agents/start-all-agents.sh`**-style helpers only if you run multiple Cursor sessions regularly.
 
 ---

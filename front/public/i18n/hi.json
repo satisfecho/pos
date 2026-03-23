@@ -572,7 +572,13 @@
     "ERROR_INVALID_LINK": "अमान्य बुकिंग लिंक। कृपया रेस्तरां द्वारा प्रदान किए गए लिंक का उपयोग करें।",
     "ERROR_FAILED": "बुकिंग विफल। कृपया पुनः प्रयास करें।",
     "ADDRESS": "पता",
-    "OPEN_IN_GOOGLE_MAPS": "Google Maps में खोलें"
+    "OPEN_IN_GOOGLE_MAPS": "Google Maps में खोलें",
+    "CALENDAR_LABEL": "तारीख चुनें",
+    "CAL_PREV_MONTH": "पिछला महीना",
+    "CAL_NEXT_MONTH": "अगला महीना",
+    "CAL_CLOSED": "बंद",
+    "CAL_AVAILABLE": "खुला दिन",
+    "CAL_SELECTED": "चयनित"
   },
   "RESERVATIONS": {
     "TITLE": "आरक्षण",

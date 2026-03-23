@@ -572,7 +572,13 @@
     "ERROR_INVALID_LINK": "无效的预订链接。请使用餐厅提供的链接。",
     "ERROR_FAILED": "预订失败。请重试。",
     "ADDRESS": "地址",
-    "OPEN_IN_GOOGLE_MAPS": "在 Google 地图中打开"
+    "OPEN_IN_GOOGLE_MAPS": "在 Google 地图中打开",
+    "CALENDAR_LABEL": "选择日期",
+    "CAL_PREV_MONTH": "上一月",
+    "CAL_NEXT_MONTH": "下一月",
+    "CAL_CLOSED": "休息",
+    "CAL_AVAILABLE": "营业日",
+    "CAL_SELECTED": "已选"
   },
   "RESERVATIONS": {
     "TITLE": "预订管理",

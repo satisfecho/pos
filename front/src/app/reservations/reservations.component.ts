@@ -173,7 +173,13 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               </div>
               <div class="form-group">
                 <label>{{ 'RESERVATIONS.TIME' | translate }}</label>
-                <input type="time" [(ngModel)]="formTime" (ngModelChange)="loadSlotCapacity()" />
+                <input
+                  type="time"
+                  [(ngModel)]="formTime"
+                  (ngModelChange)="loadSlotCapacity()"
+                  (focus)="openNativeTimePicker($event)"
+                  (change)="dismissNativeTimePickerAfterCommit($event)"
+                />
                 @if (suggestedTime()) {
                   <small class="suggested-time" (click)="formTime = suggestedTime()!">{{ 'RESERVATIONS.SUGGESTED_TIME' | translate }}: {{ suggestedTime() }}</small>
                 }
@@ -464,7 +470,7 @@ export class ReservationsComponent implements OnInit, OnDestroy {
     const tenantId = this.permissions.getCurrentUser()?.tenant_id;
     if (!tenantId || !dateStr) return;
     const partySize = this.formPartySize || 2;
-    this.api.getNextAvailableReservation(tenantId, dateStr, partySize).subscribe({
+    this.api.getNextAvailableReservation(tenantId, dateStr, partySize, 0).subscribe({
       next: (res) => {
         this.suggestedTime.set(res.time);
         if (!this.editingReservation()) {
@@ -474,6 +480,23 @@ export class ReservationsComponent implements OnInit, OnDestroy {
       },
       error: () => this.suggestedTime.set(null),
     });
+  }
+
+  /** Open time UI on focus (not only via the browser’s clock icon) when supported. */
+  openNativeTimePicker(ev: Event): void {
+    const el = ev.target as HTMLInputElement;
+    if (el && typeof el.showPicker === 'function') {
+      try {
+        el.showPicker();
+      } catch {
+        // No user activation or browser blocked programmatic open — typing still works.
+      }
+    }
+  }
+
+  /** Close the native picker after the user commits a time (Chrome/Chromium often keep it open otherwise). */
+  dismissNativeTimePickerAfterCommit(ev: Event): void {
+    (ev.target as HTMLInputElement)?.blur();
   }
 
   loadSlotCapacity() {
