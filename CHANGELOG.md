@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **GitHub #23 — Pay before checkout (staff UX):** **Orders** cards show a prominent **Pay now** action (alongside **Finish** when allowed) and the payment modal explains that kitchen line statuses stay until served or **Finish**. Backend already allowed `mark-paid` before all items are delivered; regression test **`back/tests/test_order_prepay.py`**.
+
 - **GitHub #34 — Catalog cards:** Long **description**, **aromas**, and **elaboration** use **line-clamp** with **Show more / Show less** (i18n); a **flex spacer** before provider prices keeps **price rows aligned** across the grid on `/catalog`.
 
 - **GitHub #62 — Reservation default time:** Public **`/book/{tenant}`** seeds the time dropdown from **now + 10 minutes** (quarter-hour ceiling, tenant timezone after load; browser TZ before) and the **first bookable slot** for today instead of a fixed **20:00**. Staff **Reservations → New** uses **now + 10 minutes** on the correct **local calendar date** (handles midnight rollover); non-today dates still default the time from **next-available**. List filter date uses **local** YYYY-MM-DD instead of UTC.

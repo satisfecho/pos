@@ -127,6 +127,17 @@ ModuleRegistry.registerModules([
                           </svg>
                           {{ 'COMMON.EDIT' | translate }}
                         </button>
+                        @if (order.status !== 'paid' && order.status !== 'cancelled' && canMarkPaid()) {
+                          <button
+                            type="button"
+                            class="btn"
+                            [class.btn-secondary]="canFinishOrder()"
+                            [class.btn-primary]="!canFinishOrder()"
+                            (click)="markAsPaid(order)"
+                            [title]="'ORDERS.PAY_NOW_HINT' | translate">
+                            {{ 'ORDERS.PAY_NOW' | translate }}
+                          </button>
+                        }
                         @if (order.status !== 'paid' && order.status !== 'cancelled' && canFinishOrder()) {
                           <button type="button" class="btn btn-success" (click)="openFinishPaymentModal(order)" [title]="'ORDERS.FINISH_ORDER_MENU' | translate">
                             {{ 'ORDERS.FINISH_ORDER' | translate }}
@@ -394,6 +405,17 @@ ModuleRegistry.registerModules([
                             </svg>
                             {{ 'COMMON.EDIT' | translate }}
                           </button>
+                          @if (order.status !== 'paid' && order.status !== 'cancelled' && canMarkPaid()) {
+                            <button
+                              type="button"
+                              class="btn"
+                              [class.btn-secondary]="canFinishOrder()"
+                              [class.btn-primary]="!canFinishOrder()"
+                              (click)="markAsPaid(order)"
+                              [title]="'ORDERS.PAY_NOW_HINT' | translate">
+                              {{ 'ORDERS.PAY_NOW' | translate }}
+                            </button>
+                          }
                           @if (order.status !== 'paid' && order.status !== 'cancelled' && canFinishOrder()) {
                             <button type="button" class="btn btn-success" (click)="openFinishPaymentModal(order)" [title]="'ORDERS.FINISH_ORDER_MENU' | translate">
                               {{ 'ORDERS.FINISH_ORDER' | translate }}
@@ -853,6 +875,8 @@ ModuleRegistry.registerModules([
                 }
                 @if (paymentModalFinishMode()) {
                   <p class="modal-hint">{{ 'ORDERS.FINISH_ORDER_HELP' | translate }}</p>
+                } @else {
+                  <p class="modal-hint">{{ 'ORDERS.PAY_NOW_HELP' | translate }}</p>
                 }
                 <div class="form-group">
                   <label for="payment-method">{{ 'ORDERS.PAYMENT_METHOD' | translate }}</label>
