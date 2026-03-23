@@ -147,6 +147,12 @@ Put these in **`config.env`** (copy from `config.env.example` if needed). The fi
    - `POST /orders/{order_id}/confirm-revolut-payment?table_token=...`  
    Backend uses **GET order** with the stored `revolut_order_id` to verify state (e.g. COMPLETED/AUTHORISED/CAPTURED), then marks the order as paid and sets `payment_method = 'revolut'`.
 
+### POS tips (staff checkout) vs this flow
+
+- **Revolut** charges the **menu subtotal only** (active line items). Tips are **not** included in the Revolut order amount.
+- **Configurable tips** apply when staff uses **Mark as paid** or **Finish order** in the POS (`PUT /orders/{id}/mark-paid`, `PUT /orders/{id}/finish`) with optional `tip_percent`. Allowed values come from the tenant’s **`tip_preset_percents`** (up to four percentages, set in **Settings**). If the column is still `NULL` after older databases, the app treats presets as **5 / 10 / 15 / 20** (see migration `20260323140000_tenant_tip_presets_and_order_tip.sql`).
+- **Tip VAT on invoices:** **`tip_tax_rate_percent`** (integer **0–100**, database default **0**) is used only to split **gross** tip into a VAT portion for the printed invoice breakdown. **Default 0** means no VAT line for tips—set this to your jurisdiction’s rate if tips must appear in the same VAT summary as goods.
+
 ---
 
 ## Backend implementation notes

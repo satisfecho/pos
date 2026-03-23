@@ -91,6 +91,45 @@ class TestOrderTip(PgClientTestCase):
         self.assertIsNone(pct)
         self.assertEqual(amt, 0)
 
+    def test_resolve_explicit_zero_percent(self):
+        pct, amt = _resolve_tip_on_mark_paid(
+            self.session, self.tenant, self.order.id, 0
+        )
+        self.assertIsNone(pct)
+        self.assertEqual(amt, 0)
+
+    def test_tip_amount_rounds_half_up(self):
+        from sqlmodel import select
+
+        item = self.session.exec(
+            select(models.OrderItem).where(models.OrderItem.order_id == self.order.id)
+        ).first()
+        item.price_cents = 335
+        item.quantity = 1
+        self.session.add(item)
+        self.session.commit()
+        # (335 * 10 + 50) // 100 = 34
+        pct, amt = _resolve_tip_on_mark_paid(
+            self.session, self.tenant, self.order.id, 10
+        )
+        self.assertEqual(pct, 10)
+        self.assertEqual(amt, 34)
+
+    def test_reject_tip_when_order_subtotal_zero(self):
+        empty = models.Order(
+            table_id=self.table.id,
+            tenant_id=self.tenant.id,
+            status=models.OrderStatus.pending,
+        )
+        self.session.add(empty)
+        self.session.commit()
+        self.session.refresh(empty)
+        with self.assertRaises(HTTPException) as ctx:
+            _resolve_tip_on_mark_paid(
+                self.session, self.tenant, empty.id, 10
+            )
+        self.assertEqual(ctx.exception.status_code, 400)
+
     def test_reject_percent_not_in_presets(self):
         with self.assertRaises(HTTPException) as ctx:
             _resolve_tip_on_mark_paid(
