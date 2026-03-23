@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { ApiService, Table, TenantSettings, Floor, TableActivateResponse, User } from '../services/api.service';
+import { PermissionService } from '../services/permission.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { ConfirmationModalComponent } from '../shared/confirmation-modal.component';
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
@@ -174,14 +175,26 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
                       </td>
                       <td class="pin-cell">{{ table.order_pin ?? '—' }}</td>
                       <td>
-                        <select class="waiter-select-inline" (change)="onWaiterAssign(table, $event)">
-                          <option value="" [selected]="!table.assigned_waiter_id">{{ 'TABLES.UNASSIGNED' | translate }}</option>
-                          @for (w of waiters(); track w.id) {
-                            <option [value]="w.id" [selected]="table.assigned_waiter_id === w.id">{{ w.full_name || w.email }}</option>
+                        @if (canManageTableAssignments()) {
+                          <select class="waiter-select-inline" (change)="onWaiterAssign(table, $event)">
+                            <option value="" [selected]="!table.assigned_waiter_id">{{ 'TABLES.UNASSIGNED' | translate }}</option>
+                            @for (w of waiters(); track w.id) {
+                              <option [value]="w.id" [selected]="table.assigned_waiter_id === w.id">{{ w.full_name || w.email }}</option>
+                            }
+                          </select>
+                          @if (!table.assigned_waiter_id && table.effective_waiter_name) {
+                            <div class="waiter-inherited-inline">{{ table.effective_waiter_name }}</div>
                           }
-                        </select>
-                        @if (!table.assigned_waiter_id && table.effective_waiter_name) {
-                          <div class="waiter-inherited-inline">{{ table.effective_waiter_name }}</div>
+                        } @else {
+                          <div class="waiter-readonly-inline">
+                            @if (table.assigned_waiter_id) {
+                              {{ table.assigned_waiter_name || table.effective_waiter_name || '—' }}
+                            } @else if (table.effective_waiter_name) {
+                              {{ 'TABLES.SECTION_DEFAULT' | translate }}: {{ table.effective_waiter_name }}
+                            } @else {
+                              {{ 'TABLES.UNASSIGNED' | translate }}
+                            }
+                          </div>
                         }
                       </td>
                       <td class="td-actions">
@@ -218,12 +231,16 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
                     </div>
                     <div class="floor-waiter-assign">
                       <label class="floor-waiter-label">{{ 'TABLES.DEFAULT_WAITER' | translate }}:</label>
-                      <select class="waiter-select waiter-select-sm" (change)="onFloorWaiterAssign(floor, $event)">
-                        <option value="" [selected]="!floor.default_waiter_id">{{ 'TABLES.UNASSIGNED' | translate }}</option>
-                        @for (w of waiters(); track w.id) {
-                          <option [value]="w.id" [selected]="floor.default_waiter_id === w.id">{{ w.full_name || w.email }}</option>
-                        }
-                      </select>
+                      @if (canManageTableAssignments()) {
+                        <select class="waiter-select waiter-select-sm" (change)="onFloorWaiterAssign(floor, $event)">
+                          <option value="" [selected]="!floor.default_waiter_id">{{ 'TABLES.UNASSIGNED' | translate }}</option>
+                          @for (w of waiters(); track w.id) {
+                            <option [value]="w.id" [selected]="floor.default_waiter_id === w.id">{{ w.full_name || w.email }}</option>
+                          }
+                        </select>
+                      } @else {
+                        <span class="waiter-readonly-floor">{{ floor.default_waiter_name || ('TABLES.UNASSIGNED' | translate) }}</span>
+                      }
                     </div>
                   </div>
                   
@@ -321,14 +338,26 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
                               <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
                               <circle cx="12" cy="7" r="4"/>
                             </svg>
-                            <select class="waiter-select" (change)="onWaiterAssign(table, $event)">
-                              <option value="" [selected]="!table.assigned_waiter_id">{{ 'TABLES.UNASSIGNED' | translate }}</option>
-                              @for (w of waiters(); track w.id) {
-                                <option [value]="w.id" [selected]="table.assigned_waiter_id === w.id">{{ w.full_name || w.email }}</option>
-                              }
-                            </select>
+                            @if (canManageTableAssignments()) {
+                              <select class="waiter-select" (change)="onWaiterAssign(table, $event)">
+                                <option value="" [selected]="!table.assigned_waiter_id">{{ 'TABLES.UNASSIGNED' | translate }}</option>
+                                @for (w of waiters(); track w.id) {
+                                  <option [value]="w.id" [selected]="table.assigned_waiter_id === w.id">{{ w.full_name || w.email }}</option>
+                                }
+                              </select>
+                            } @else {
+                              <span class="waiter-readonly">
+                                @if (table.assigned_waiter_id) {
+                                  {{ table.assigned_waiter_name || table.effective_waiter_name || '—' }}
+                                } @else if (table.effective_waiter_name) {
+                                  {{ 'TABLES.SECTION_DEFAULT' | translate }}: {{ table.effective_waiter_name }}
+                                } @else {
+                                  {{ 'TABLES.UNASSIGNED' | translate }}
+                                }
+                              </span>
+                            }
                           </div>
-                          @if (!table.assigned_waiter_id && table.effective_waiter_name) {
+                          @if (canManageTableAssignments() && !table.assigned_waiter_id && table.effective_waiter_name) {
                             <div class="waiter-inherited">{{ 'TABLES.SECTION_DEFAULT' | translate }}: {{ table.effective_waiter_name }}</div>
                           }
                         </div>
@@ -708,6 +737,15 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
       padding-left: 22px;
       font-style: italic;
     }
+    .waiter-readonly {
+      flex: 1;
+      font-size: 0.8125rem;
+      color: var(--color-text);
+    }
+    .waiter-readonly-floor {
+      font-size: 0.75rem;
+      color: var(--color-text);
+    }
 
     /* Session Actions */
     .session-actions {
@@ -751,6 +789,7 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
     .tables-data-table .pin-cell { font-family: ui-monospace, monospace; font-weight: 600; letter-spacing: 0.05em; }
     .tables-data-table .waiter-select-inline { padding: var(--space-1) var(--space-2); border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.8125rem; background: var(--color-surface); color: var(--color-text); min-width: 120px; }
     .tables-data-table .waiter-inherited-inline { font-size: 0.6875rem; color: var(--color-text-muted); font-style: italic; margin-top: 2px; }
+    .tables-data-table .waiter-readonly-inline { font-size: 0.8125rem; color: var(--color-text); }
     .tables-data-table .status-inline { display: inline-flex; align-items: center; gap: var(--space-1); }
     .tables-data-table .table-cell-edit { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
     .tables-data-table .edit-input-inline,
@@ -766,6 +805,7 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
 })
 export class TablesComponent implements OnInit {
   private api = inject(ApiService);
+  private permissions = inject(PermissionService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -876,10 +916,19 @@ export class TablesComponent implements OnInit {
     }
     this.loadData();
     this.loadTenantSettings();
-    this.api.getWaiters().subscribe({
-      next: waiters => this.waiters.set(waiters),
-      error: () => {}
+    this.api.waitForInitialAuthCheck().subscribe(() => {
+      if (this.canManageTableAssignments()) {
+        this.api.getWaiters().subscribe({
+          next: waiters => this.waiters.set(waiters),
+          error: () => {}
+        });
+      }
     });
+  }
+
+  /** Owner/admin: can change table/floor waiter assignment (requires user list API). */
+  canManageTableAssignments(): boolean {
+    return this.permissions.hasPermission(this.api.getCurrentUser(), 'table:write');
   }
 
   loadData() {
