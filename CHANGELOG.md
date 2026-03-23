@@ -10,6 +10,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **Puppeteer tests** (`front/scripts/`): Chrome runs **headless by default**. Use **`HEADLESS=0`**, **`false`**, or **`no`** for a visible window. Logic lives in **`front/scripts/puppeteer-headless.mjs`**. Docs: **`docs/testing.md`**, **`AGENTS.md`**.
 
+## [2.0.46] - 2026-03-23
+
+### Added
+
+- **GitHub #24 (fast checkout)**: Staff **Orders** — **Finish** marks **all active line items as delivered** and **marks the order paid** in one API call (`PUT /orders/{id}/finish`). Green **Finish** button on order cards, **Finish (serve all & pay)** in the status menu, and in **Edit order**; payment method matches **Mark as paid**. Requires **`order:update_status`** and **`order:mark_paid`**. **i18n**: `ORDERS.FINISH_*` in all locale files.
+
+### Fixed
+
+- **Customers / Angular build**: **`createBillingCustomer`** TypeScript payload allows **`birth_date: null`** so the billing form matches the API type and **`ng serve`** compiles.
+
+## [2.0.45] - 2026-03-23
+
+### Added
+
+- **GitHub #52 (umbrella)**: **`docs/0032-github-issues-roadmap.md`** now includes an **implementation status** table for each #52 theme (warehouses, split bill, join tables, offline, migration, Google/surveys, birthdays, marketing, central kitchen, Uber Eats) with **what exists vs. not started** and links to related docs.
+- **Birth date on billing customers (#52 — cumpleaños / CRM)**: Optional **`birth_date`** on **`BillingCustomer`**; **Customers** list and add/edit form; **`GET/POST/PUT`** `/billing-customers` and nested **`billing_customer`** on orders return it. Migration **`20260323120000_billing_customer_birth_date.sql`**. See **`docs/0017-billing-customers-factura.md`**.
+
 ## [2.0.44] - 2026-03-23
 
 ### Added

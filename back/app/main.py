@@ -47,6 +47,11 @@ from .tenant_currency import (
     normalize_tenant_currency_fields,
     sync_tenant_currency_symbol_from_code,
 )
+from .product_customization import (
+    choice_options_is_multi,
+    customization_dicts_equal,
+    validate_and_normalize_customization_answers,
+)
 
 # Rate limiting (slowapi)
 try:
@@ -2912,6 +2917,11 @@ def list_product_questions(
             "options": q.options,
             "sort_order": q.sort_order,
             "required": q.required,
+            "multi": (
+                choice_options_is_multi(q.options)
+                if q.type == models.ProductQuestionType.choice
+                else False
+            ),
         }
         for q in questions
     ]
@@ -2927,19 +2937,35 @@ def _validate_product_question_options(
         if options is None:
             raise HTTPException(
                 status_code=422,
-                detail="choice questions require options as a non-empty list of strings",
+                detail="choice questions require options as a non-empty list of strings or {choices, multi}",
             )
-        if not isinstance(options, list):
-            raise HTTPException(
-                status_code=422, detail="choice options must be a JSON array of strings"
-            )
-        opts = [str(x).strip() for x in options if str(x).strip()]
-        if not opts:
-            raise HTTPException(
-                status_code=422,
-                detail="choice questions require at least one option",
-            )
-        return opts
+        if isinstance(options, list):
+            opts = [str(x).strip() for x in options if str(x).strip()]
+            if not opts:
+                raise HTTPException(
+                    status_code=422,
+                    detail="choice questions require at least one option",
+                )
+            return opts
+        if isinstance(options, dict):
+            multi = bool(options.get("multi"))
+            raw_choices = options.get("choices")
+            if not isinstance(raw_choices, list):
+                raise HTTPException(
+                    status_code=422,
+                    detail="choice options must be a list of strings or {choices: string[], multi?: boolean}",
+                )
+            opts = [str(x).strip() for x in raw_choices if str(x).strip()]
+            if not opts:
+                raise HTTPException(
+                    status_code=422,
+                    detail="choice questions require at least one option in choices",
+                )
+            return {"choices": opts, "multi": multi}
+        raise HTTPException(
+            status_code=422,
+            detail="choice options must be a JSON array of strings or {choices: string[], multi?: boolean}",
+        )
     if qtype == models.ProductQuestionType.scale:
         if options is None or not isinstance(options, dict):
             raise HTTPException(
@@ -3007,6 +3033,11 @@ def create_product_question(
         "options": question.options,
         "sort_order": question.sort_order,
         "required": question.required,
+        "multi": (
+            choice_options_is_multi(question.options)
+            if question.type == models.ProductQuestionType.choice
+            else False
+        ),
     }
 
 
@@ -3076,6 +3107,11 @@ def update_product_question(
         "options": question.options,
         "sort_order": question.sort_order,
         "required": question.required,
+        "multi": (
+            choice_options_is_multi(question.options)
+            if question.type == models.ProductQuestionType.choice
+            else False
+        ),
     }
 
 
@@ -6575,6 +6611,11 @@ def get_menu(
                 "label": q.label,
                 "options": q.options,
                 "required": q.required,
+                "multi": (
+                    choice_options_is_multi(q.options)
+                    if q.type == models.ProductQuestionType.choice
+                    else False
+                ),
             })
 
     # Combine products from both sources
@@ -7072,6 +7113,7 @@ def get_current_order(
                     "price_cents": item.price_cents,
                     "notes": item.notes,
                     "customization_answers": getattr(item, "customization_answers", None) or None,
+                    "customization_summary": getattr(item, "customization_summary", None) or None,
                     "status": item.status.value if hasattr(item.status, "value") else str(item.status),
                     "tax_rate_percent": getattr(item, "tax_rate_percent", None),
                     "tax_amount_cents": getattr(item, "tax_amount_cents", None),
@@ -7133,6 +7175,7 @@ def get_table_order_history(
                     "quantity": item.quantity,
                     "price_cents": item.price_cents,
                     "customization_answers": getattr(item, "customization_answers", None) or None,
+                    "customization_summary": getattr(item, "customization_summary", None) or None,
                 }
                 for item in items
             ],
@@ -7456,7 +7499,10 @@ def create_order(
 
         # Check if this product already exists in the order with same customization (only active, non-removed items)
         # Match by effective_product_id and same customization_answers so we merge only when preferences match
-        item_answers = (item.customization_answers or {}) if hasattr(item, "customization_answers") else {}
+        raw_answers = item.customization_answers if hasattr(item, "customization_answers") else None
+        item_answers, cust_summary = validate_and_normalize_customization_answers(
+            session, table.tenant_id, effective_product_id, raw_answers
+        )
         existing_items = session.exec(
             select(models.OrderItem).where(
                 models.OrderItem.order_id == order.id,
@@ -7468,7 +7514,7 @@ def create_order(
         existing_item = None
         for ei in existing_items:
             ei_answers = ei.customization_answers or {}
-            if ei_answers == item_answers:
+            if customization_dicts_equal(ei_answers, item_answers or {}):
                 existing_item = ei
                 break
 
@@ -7497,6 +7543,7 @@ def create_order(
                 cost_cents=cost_cents,
                 notes=item.notes,
                 customization_answers=item_answers if item_answers else None,
+                customization_summary=cust_summary,
                 status=models.OrderItemStatus.pending,
                 added_by_session=order_data.session_id,
                 location_flagged=location_flagged,
@@ -7796,6 +7843,7 @@ def list_orders(
                     "address": bc.address,
                     "email": bc.email,
                     "phone": bc.phone,
+                    "birth_date": bc.birth_date.isoformat() if bc.birth_date else None,
                 }
 
         result.append({
@@ -7820,6 +7868,7 @@ def list_orders(
                     "price_cents": item.price_cents,
                     "notes": item.notes,
                     "customization_answers": getattr(item, "customization_answers", None) or None,
+                    "customization_summary": getattr(item, "customization_summary", None) or None,
                     "status": item.status.value if hasattr(item.status, 'value') else str(item.status),
                     "removed_by_customer": item.removed_by_customer,
                     "removed_at": item.removed_at.isoformat() if item.removed_at else None,
@@ -7950,6 +7999,73 @@ def mark_order_paid(
         "order_id": order.id,
         "payment_method": payment_data.payment_method,
         "paid_at": order.paid_at.isoformat()
+    }
+
+
+@app.put("/orders/{order_id}/finish")
+def finish_order(
+    order_id: int,
+    payment_data: models.OrderMarkPaid,
+    current_user: Annotated[
+        models.User,
+        Depends(require_permission(Permission.ORDER_UPDATE_STATUS, Permission.ORDER_MARK_PAID)),
+    ],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Mark all active line items as delivered and the order as paid in one step (fast checkout)."""
+    order = session.exec(
+        select(models.Order).where(
+            models.Order.id == order_id,
+            models.Order.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.status == models.OrderStatus.paid or order.paid_at:
+        raise HTTPException(status_code=400, detail="Order is already paid.")
+    if order.status == models.OrderStatus.cancelled:
+        raise HTTPException(status_code=400, detail="Cannot finish a cancelled order.")
+
+    items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order_id)).all()
+    active_items = [item for item in items if not item.removed_by_customer]
+    now = datetime.now(timezone.utc)
+    for item in active_items:
+        if item.status == models.OrderItemStatus.cancelled:
+            continue
+        if item.status != models.OrderItemStatus.delivered:
+            item.status = models.OrderItemStatus.delivered
+            item.status_updated_at = now
+            item.delivered_by_user_id = current_user.id
+            session.add(item)
+
+    order.status = models.OrderStatus.paid
+    order.paid_at = now
+    order.paid_by_user_id = current_user.id
+    order.payment_method = payment_data.payment_method
+
+    session.add(order)
+    session.commit()
+
+    table = session.exec(select(models.Table).where(models.Table.id == order.table_id)).first()
+    publish_order_update(
+        current_user.tenant_id,
+        {
+            "type": "order_paid",
+            "order_id": order.id,
+            "table_name": table.name if table else "Unknown",
+            "payment_method": payment_data.payment_method,
+        },
+        table_id=order.table_id,
+    )
+
+    return {
+        "status": "paid",
+        "order_id": order.id,
+        "payment_method": payment_data.payment_method,
+        "paid_at": order.paid_at.isoformat(),
     }
 
 
@@ -8118,6 +8234,7 @@ def create_billing_customer(
         address=body.address,
         email=body.email,
         phone=body.phone,
+        birth_date=body.birth_date,
     )
     session.add(customer)
     session.commit()
@@ -8130,6 +8247,7 @@ def create_billing_customer(
         "address": customer.address,
         "email": customer.email,
         "phone": customer.phone,
+        "birth_date": customer.birth_date.isoformat() if customer.birth_date else None,
         "created_at": customer.created_at.isoformat(),
     }
 
@@ -8156,6 +8274,7 @@ def get_billing_customer(
         "address": customer.address,
         "email": customer.email,
         "phone": customer.phone,
+        "birth_date": customer.birth_date.isoformat() if customer.birth_date else None,
         "created_at": customer.created_at.isoformat(),
     }
 
@@ -8187,6 +8306,9 @@ def update_billing_customer(
         customer.email = body.email
     if body.phone is not None:
         customer.phone = body.phone
+    _bc_upd = body.model_dump(exclude_unset=True)
+    if "birth_date" in _bc_upd:
+        customer.birth_date = _bc_upd["birth_date"]
     customer.updated_at = datetime.now(timezone.utc)
     session.add(customer)
     session.commit()
@@ -8199,6 +8321,7 @@ def update_billing_customer(
         "address": customer.address,
         "email": customer.email,
         "phone": customer.phone,
+        "birth_date": customer.birth_date.isoformat() if customer.birth_date else None,
         "created_at": customer.created_at.isoformat(),
     }
 

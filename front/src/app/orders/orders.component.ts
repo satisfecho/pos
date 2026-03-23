@@ -110,6 +110,11 @@ ModuleRegistry.registerModules([
                           </svg>
                           {{ 'COMMON.EDIT' | translate }}
                         </button>
+                        @if (order.status !== 'paid' && order.status !== 'cancelled' && canFinishOrder()) {
+                          <button type="button" class="btn btn-success" (click)="openFinishPaymentModal(order)" [title]="'ORDERS.FINISH_ORDER_MENU' | translate">
+                            {{ 'ORDERS.FINISH_ORDER' | translate }}
+                          </button>
+                        }
                         <div class="status-control">
                           <button 
                             class="status-badge-btn" 
@@ -165,6 +170,18 @@ ModuleRegistry.registerModules([
                                   </button>
                                 </div>
                               }
+                              @if (order.status !== 'paid' && order.status !== 'cancelled' && canFinishOrder()) {
+                                <div class="dropdown-section">
+                                  <button 
+                                    class="dropdown-item forward"
+                                    (click)="openFinishPaymentModal(order); statusDropdownOpen.set(null)">
+                                    {{ 'ORDERS.FINISH_ORDER_MENU' | translate }}
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                      <polyline points="9,18 15,12 9,6"/>
+                                    </svg>
+                                  </button>
+                                </div>
+                              }
                               @if (order.status === 'paid' && canMarkPaid()) {
                                 <div class="dropdown-section">
                                   <button 
@@ -210,7 +227,7 @@ ModuleRegistry.registerModules([
                             </span>
                             <span class="item-name">{{ item.product_name }}</span>
                             @if (hasItemCustomization(item)) {
-                              <span class="item-customization">{{ formatCustomization(item.customization_answers!) }}</span>
+                              <span class="item-customization">{{ formatCustomizationItem(item) }}</span>
                             }
                           </div>
                           <div class="item-details-row">
@@ -352,6 +369,11 @@ ModuleRegistry.registerModules([
                             </svg>
                             {{ 'COMMON.EDIT' | translate }}
                           </button>
+                          @if (order.status !== 'paid' && order.status !== 'cancelled' && canFinishOrder()) {
+                            <button type="button" class="btn btn-success" (click)="openFinishPaymentModal(order)" [title]="'ORDERS.FINISH_ORDER_MENU' | translate">
+                              {{ 'ORDERS.FINISH_ORDER' | translate }}
+                            </button>
+                          }
                           <div class="status-control">
                             <button 
                               class="status-badge-btn" 
@@ -407,6 +429,18 @@ ModuleRegistry.registerModules([
                                     </button>
                                   </div>
                                 }
+                                @if (order.status !== 'paid' && order.status !== 'cancelled' && canFinishOrder()) {
+                                  <div class="dropdown-section">
+                                    <button 
+                                      class="dropdown-item forward"
+                                      (click)="openFinishPaymentModal(order); statusDropdownOpen.set(null)">
+                                      {{ 'ORDERS.FINISH_ORDER_MENU' | translate }}
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="9,18 15,12 9,6"/>
+                                      </svg>
+                                    </button>
+                                  </div>
+                                }
                                 @if (order.status === 'paid' && canMarkPaid()) {
                                   <div class="dropdown-section">
                                     <button 
@@ -452,7 +486,7 @@ ModuleRegistry.registerModules([
                               </span>
                               <span class="item-name">{{ item.product_name }}</span>
                               @if (hasItemCustomization(item)) {
-                                <span class="item-customization">{{ formatCustomization(item.customization_answers!) }}</span>
+                                <span class="item-customization">{{ formatCustomizationItem(item) }}</span>
                               }
                             </div>
                             <div class="item-details-row">
@@ -677,6 +711,9 @@ ModuleRegistry.registerModules([
                 @if (order.status !== 'paid' && order.status !== 'cancelled' && canMarkPaid()) {
                   <button type="button" class="btn btn-primary" (click)="markEditOrderAsPaid(order)">{{ 'ORDERS.MARK_AS_PAID' | translate }}</button>
                 }
+                @if (order.status !== 'paid' && order.status !== 'cancelled' && canFinishOrder()) {
+                  <button type="button" class="btn btn-success" (click)="markEditOrderFinish(order)">{{ 'ORDERS.FINISH_ORDER' | translate }}</button>
+                }
               </div>
             </div>
           </div>
@@ -725,12 +762,12 @@ ModuleRegistry.registerModules([
           </div>
         }
 
-        <!-- Mark as Paid Modal -->
+        <!-- Mark as Paid / Finish order Modal -->
         @if (orderToMarkPaid()) {
           <div class="modal-overlay" (click)="closePaymentModal()">
             <div class="modal" (click)="$event.stopPropagation()" appFocusFirstInput>
               <div class="modal-header">
-                <h3>{{ 'ORDERS.MARK_ORDER_AS_PAID' | translate }}</h3>
+                <h3>{{ paymentModalFinishMode() ? ('ORDERS.FINISH_ORDER_TITLE' | translate) : ('ORDERS.MARK_ORDER_AS_PAID' | translate) }}</h3>
                 <button class="icon-btn" (click)="closePaymentModal()">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M18 6L6 18M6 6l12 12"/>
@@ -739,6 +776,9 @@ ModuleRegistry.registerModules([
               </div>
               <div class="modal-body">
                 <p>{{ 'ORDERS.ORDER_ID' | translate }}{{ orderToMarkPaid()!.id }} - {{ 'ORDERS.TOTAL' | translate }}: {{ formatPrice(orderToMarkPaid()!.total_cents) }}</p>
+                @if (paymentModalFinishMode()) {
+                  <p class="modal-hint">{{ 'ORDERS.FINISH_ORDER_HELP' | translate }}</p>
+                }
                 <div class="form-group">
                   <label for="payment-method">{{ 'ORDERS.PAYMENT_METHOD' | translate }}</label>
                   <select id="payment-method" [(ngModel)]="paymentMethod" class="form-select">
@@ -752,7 +792,13 @@ ModuleRegistry.registerModules([
               <div class="modal-actions">
                 <button class="btn btn-secondary" (click)="closePaymentModal()">{{ 'ORDERS.CANCEL' | translate }}</button>
                 <button class="btn btn-primary" (click)="confirmMarkAsPaid()" [disabled]="processingPayment()">
-                  {{ processingPayment() ? ('ORDERS.PROCESSING' | translate) : ('ORDERS.MARK_AS_PAID' | translate) }}
+                  @if (processingPayment()) {
+                    {{ 'ORDERS.PROCESSING' | translate }}
+                  } @else if (paymentModalFinishMode()) {
+                    {{ 'ORDERS.FINISH_ORDER_CONFIRM' | translate }}
+                  } @else {
+                    {{ 'ORDERS.MARK_AS_PAID' | translate }}
+                  }
                 </button>
               </div>
             </div>
@@ -1431,6 +1477,13 @@ ModuleRegistry.registerModules([
       font-weight: 500;
     }
 
+    .modal-body p.modal-hint {
+      margin-top: calc(-1 * var(--space-3));
+      font-weight: 400;
+      font-size: 0.875rem;
+      color: var(--color-text-muted);
+    }
+
     .modal-order-edit { max-width: 520px; }
     .modal-order-edit .modal-body { max-height: 70vh; overflow-y: auto; }
     .edit-order-items { margin-bottom: var(--space-4); }
@@ -1664,6 +1717,11 @@ export class OrdersComponent implements OnInit, OnDestroy {
   canUpdateStatus = computed(() => this.permissions.hasPermission(this.api.getCurrentUser(), 'order:update_status'));
   canUpdateItemStatus = computed(() => this.permissions.hasPermission(this.api.getCurrentUser(), 'order:item_status'));
   canMarkPaid = computed(() => this.permissions.hasPermission(this.api.getCurrentUser(), 'order:mark_paid'));
+  /** Finish (deliver all + pay) needs both status updates and mark-paid (same as backend). */
+  canFinishOrder = computed(() =>
+    this.permissions.hasPermission(this.api.getCurrentUser(), 'order:update_status') &&
+    this.permissions.hasPermission(this.api.getCurrentUser(), 'order:mark_paid')
+  );
   canCancelOrder = computed(() => this.permissions.hasPermission(this.api.getCurrentUser(), 'order:cancel'));
   canRemoveItem = computed(() => this.permissions.hasPermission(this.api.getCurrentUser(), 'order:remove_item'));
   canDeleteOrder = computed(() => this.permissions.hasPermission(this.api.getCurrentUser(), 'order:delete'));
@@ -1693,6 +1751,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
   showRemovedItems = false;
   viewMode = signal<'active' | 'not_paid' | 'history'>('active');
   orderToMarkPaid = signal<Order | null>(null);
+  /** When true, payment modal confirms finish (deliver all + pay) instead of pay-only. */
+  paymentModalFinishMode = signal(false);
   paymentMethod = 'cash';
   processingPayment = signal(false);
   statusDropdownOpen = signal<number | null>(null); // Order ID for which dropdown is open
@@ -2070,7 +2130,16 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   markEditOrderAsPaid(order: Order) {
     this.closeOrderEdit();
+    this.paymentModalFinishMode.set(false);
     this.orderToMarkPaid.set(order);
+    this.paymentMethod = 'cash';
+  }
+
+  markEditOrderFinish(order: Order) {
+    this.closeOrderEdit();
+    this.paymentModalFinishMode.set(true);
+    this.orderToMarkPaid.set(order);
+    this.paymentMethod = 'cash';
   }
 
   getStatusLabel(status: string): string {
@@ -2081,14 +2150,31 @@ export class OrdersComponent implements OnInit, OnDestroy {
     return this.translate.instant(`ITEM_STATUS.${status}`) || status;
   }
 
-  hasItemCustomization(item: { customization_answers?: Record<string, string | number> | null }): boolean {
+  hasItemCustomization(item: {
+    customization_answers?: Record<string, string | number | string[]> | null;
+    customization_summary?: string | null;
+  }): boolean {
+    if (item?.customization_summary?.trim()) return true;
     const a = item?.customization_answers;
     return !!a && typeof a === 'object' && Object.keys(a).length > 0;
   }
 
-  formatCustomization(answers: Record<string, string | number>): string {
+  formatCustomizationItem(item: OrderItem): string {
+    const snap = item.customization_summary?.trim();
+    if (snap) return snap;
+    return this.formatCustomizationFromAnswers(item.customization_answers);
+  }
+
+  formatCustomizationFromAnswers(
+    answers: Record<string, string | number | string[]> | null | undefined
+  ): string {
     if (!answers || Object.keys(answers).length === 0) return '';
-    return Object.values(answers).join(' · ');
+    const parts: string[] = [];
+    for (const v of Object.values(answers)) {
+      if (Array.isArray(v)) parts.push(v.join(', '));
+      else parts.push(String(v));
+    }
+    return parts.join(' · ');
   }
 
   dismissWaiterAlert(): void {
@@ -2307,8 +2393,12 @@ export class OrdersComponent implements OnInit, OnDestroy {
     const rows = items.map(i => {
       const lineTotal = (i.price_cents || 0) * (i.quantity || 1);
       const taxCents = i.tax_amount_cents ?? 0;
+      const cust = this.formatCustomizationItem(i);
+      const nameCell = cust
+        ? `${this.escapeHtml(i.product_name || '')}<br/><span style="font-size:11px;color:#555;">${this.escapeHtml(cust)}</span>`
+        : this.escapeHtml(i.product_name || '');
       return `<tr>
-        <td>${this.escapeHtml(i.product_name || '')}</td>
+        <td>${nameCell}</td>
         <td style="text-align:center">${i.quantity || 1}</td>
         <td style="text-align:right">${this.formatPrice(i.price_cents || 0)}</td>
         <td style="text-align:right">${taxCents > 0 ? this.formatPrice(taxCents) : '—'}</td>
@@ -2739,12 +2829,21 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   markAsPaid(order: Order) {
     this.statusDropdownOpen.set(null); // Close dropdown
+    this.paymentModalFinishMode.set(false);
     this.orderToMarkPaid.set(order);
     this.paymentMethod = 'cash'; // Reset to default
   }
 
+  openFinishPaymentModal(order: Order) {
+    this.statusDropdownOpen.set(null);
+    this.paymentModalFinishMode.set(true);
+    this.orderToMarkPaid.set(order);
+    this.paymentMethod = 'cash';
+  }
+
   closePaymentModal() {
     this.orderToMarkPaid.set(null);
+    this.paymentModalFinishMode.set(false);
     this.processingPayment.set(false);
   }
 
@@ -2753,7 +2852,10 @@ export class OrdersComponent implements OnInit, OnDestroy {
     if (!order || !this.paymentMethod) return;
 
     this.processingPayment.set(true);
-    this.api.markOrderPaid(order.id, this.paymentMethod).subscribe({
+    const req = this.paymentModalFinishMode()
+      ? this.api.finishOrder(order.id, this.paymentMethod)
+      : this.api.markOrderPaid(order.id, this.paymentMethod);
+    req.subscribe({
       next: () => {
         this.processingPayment.set(false);
         this.closePaymentModal();
@@ -2761,7 +2863,12 @@ export class OrdersComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.processingPayment.set(false);
-        this.showToast(this.translate.instant('ORDERS.FAILED_TO_MARK_PAID'), 'error');
+        this.showToast(
+          this.translate.instant(
+            this.paymentModalFinishMode() ? 'ORDERS.FAILED_TO_FINISH' : 'ORDERS.FAILED_TO_MARK_PAID'
+          ),
+          'error'
+        );
       }
     });
   }

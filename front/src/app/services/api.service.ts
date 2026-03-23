@@ -309,12 +309,14 @@ export interface Product {
   questions?: ProductQuestion[];
 }
 
-/** Product customization question (e.g. meat doneness, spice 1–10) */
+/** Product customization question (e.g. meat doneness, spice 1–10, multi toppings) */
 export interface ProductQuestion {
   id: number;
   type: 'choice' | 'scale' | 'text';
   label: string;
-  options?: string[] | { min: number; max: number } | null;
+  options?: string[] | { min: number; max: number } | { choices: string[]; multi?: boolean } | null;
+  /** True when choice options use multi-select ({ choices, multi: true }) */
+  multi?: boolean;
   required?: boolean;
   sort_order?: number;
 }
@@ -323,12 +325,13 @@ export interface ProductQuestion {
 export type ProductQuestionStaff = Omit<ProductQuestion, 'sort_order' | 'required'> & {
   sort_order: number;
   required: boolean;
+  multi?: boolean;
 };
 
 export interface ProductQuestionCreatePayload {
   type: 'choice' | 'scale' | 'text';
   label: string;
-  options?: string[] | { min: number; max: number } | null;
+  options?: string[] | { min: number; max: number } | { choices: string[]; multi?: boolean } | null;
   sort_order?: number;
   required?: boolean;
 }
@@ -336,7 +339,7 @@ export interface ProductQuestionCreatePayload {
 export interface ProductQuestionUpdatePayload {
   type?: 'choice' | 'scale' | 'text';
   label?: string;
-  options?: string[] | { min: number; max: number } | null;
+  options?: string[] | { min: number; max: number } | { choices: string[]; multi?: boolean } | null;
   sort_order?: number;
   required?: boolean;
 }
@@ -500,7 +503,9 @@ export interface OrderItem {
   cost_cents?: number | null;
   notes?: string;
   /** Answers to product questions: { question_id: value } */
-  customization_answers?: Record<string, string | number> | null;
+  customization_answers?: Record<string, string | number | string[]> | null;
+  /** Snapshot "Label: value · …" at order time */
+  customization_summary?: string | null;
   status?: string;  // pending, preparing, ready, delivered, cancelled
   removed_by_customer?: boolean;
   removed_at?: string;
@@ -521,6 +526,8 @@ export interface BillingCustomer {
   address?: string | null;
   email?: string | null;
   phone?: string | null;
+  /** ISO date YYYY-MM-DD; optional CRM / occasions */
+  birth_date?: string | null;
   created_at: string;
 }
 
@@ -644,8 +651,8 @@ export interface OrderItemCreate {
   quantity: number;
   notes?: string;
   source?: string; // "tenant_product" or "product" to distinguish between TenantProduct and legacy Product
-  /** Answers to product questions: { question_id: value } (string for choice/text, number for scale) */
-  customization_answers?: Record<string, string | number>;
+  /** Answers: string | number | string[] (multi choice) per question id */
+  customization_answers?: Record<string, string | number | string[]>;
 }
 
 export interface OrderCreate {
@@ -1280,6 +1287,11 @@ export class ApiService {
     return this.http.put(`${this.apiUrl}/orders/${orderId}/mark-paid`, { payment_method: paymentMethod });
   }
 
+  /** Deliver all active items and mark order paid in one request (staff fast checkout). */
+  finishOrder(orderId: number, paymentMethod: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/orders/${orderId}/finish`, { payment_method: paymentMethod });
+  }
+
   unmarkOrderPaid(orderId: number): Observable<{ status: string; order_id: number; new_status: string }> {
     return this.http.put<{ status: string; order_id: number; new_status: string }>(
       `${this.apiUrl}/orders/${orderId}/unmark-paid`,
@@ -1308,7 +1320,15 @@ export class ApiService {
     return this.http.get<BillingCustomer>(`${this.apiUrl}/billing-customers/${id}`);
   }
 
-  createBillingCustomer(data: { name: string; company_name?: string; tax_id?: string; address?: string; email?: string; phone?: string }): Observable<BillingCustomer> {
+  createBillingCustomer(data: {
+    name: string;
+    company_name?: string;
+    tax_id?: string;
+    address?: string;
+    email?: string;
+    phone?: string;
+    birth_date?: string | null;
+  }): Observable<BillingCustomer> {
     return this.http.post<BillingCustomer>(`${this.apiUrl}/billing-customers`, data);
   }
 
