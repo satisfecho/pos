@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue #60 asked for better native time-picker UX on staff **Create reservation** (open on input focus, close after selecting a time, not only via the clock icon).
+- **What was done:** Implementation in `front/src/app/reservations/reservations.component.ts`: `showPicker()` on focus where supported and `blur()` after a committed `change` on the native `type="time"` input; public `/book` flow unchanged.
+- **What was tested:** Tester followed items 1–6 (stack, modal, focus, pick time, blur, `npm run test:landing-version`); **overall PASS** with slot-capacity API checks and smoke OK.
+- **Why closed:** Verification passed; deliverable matches scope.
+- **Closed at (UTC):** 2026-03-23 14:17
+---
+
 # Timer picker: dismiss on select, open on input focus (reservations)
 
 ## GitHub
