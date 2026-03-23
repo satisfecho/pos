@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub #49 reported that production deploys could leave the stack down when image builds failed after containers were torn down, and asked for safer ordering, branch-correct checkout, deploy concurrency, and reliable smoke checks.
+- **What was done:** `scripts/deploy-amvara9.sh` was reordered to build images before stopping app containers, default teardown uses `stop` (not `down` unless `DEPLOY_FULL_DOWN=1`), an origin URL guard with `SKIP_ORIGIN_CHECK` was added, migrations run without swallowing failures, and post-`up` readiness polls `/health`; `.github/workflows/deploy-amvara9.yml` gained `concurrency.group: deploy-amvara9` and checkout by ref; `docs/0001-ci-cd-amvara9.md` and `CHANGELOG.md` were updated.
+- **What was tested:** Tester **PASS** — `bash -n`, static review of deploy script, workflow, docs, and changelog (no full server deploy in this pass).
+- **Why closed:** Tester reported **PASS** against all documented pass/fail criteria.
+- **Closed at (UTC):** 2026-03-23 14:45
+---
+
 # Improve deployment pipeline to prevent downtime on failed builds
 
 ## GitHub
