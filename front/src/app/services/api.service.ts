@@ -297,6 +297,29 @@ export interface ProductQuestion {
   label: string;
   options?: string[] | { min: number; max: number } | null;
   required?: boolean;
+  sort_order?: number;
+}
+
+/** Staff list/create response (sort order + required always set). */
+export type ProductQuestionStaff = Omit<ProductQuestion, 'sort_order' | 'required'> & {
+  sort_order: number;
+  required: boolean;
+};
+
+export interface ProductQuestionCreatePayload {
+  type: 'choice' | 'scale' | 'text';
+  label: string;
+  options?: string[] | { min: number; max: number } | null;
+  sort_order?: number;
+  required?: boolean;
+}
+
+export interface ProductQuestionUpdatePayload {
+  type?: 'choice' | 'scale' | 'text';
+  label?: string;
+  options?: string[] | { min: number; max: number } | null;
+  sort_order?: number;
+  required?: boolean;
 }
 
 export interface CatalogCategories {
@@ -941,6 +964,40 @@ export class ApiService {
     const formData = new FormData();
     formData.append('file', file);
     return this.http.post<Product>(`${this.apiUrl}/products/${productId}/image`, formData);
+  }
+
+  getProductQuestions(productId: number): Observable<ProductQuestionStaff[]> {
+    return this.http.get<ProductQuestionStaff[]>(`${this.apiUrl}/products/${productId}/questions`);
+  }
+
+  createProductQuestion(
+    productId: number,
+    body: ProductQuestionCreatePayload
+  ): Observable<ProductQuestionStaff> {
+    return this.http.post<ProductQuestionStaff>(`${this.apiUrl}/products/${productId}/questions`, body);
+  }
+
+  updateProductQuestion(
+    productId: number,
+    questionId: number,
+    body: ProductQuestionUpdatePayload
+  ): Observable<ProductQuestionStaff> {
+    return this.http.patch<ProductQuestionStaff>(
+      `${this.apiUrl}/products/${productId}/questions/${questionId}`,
+      body
+    );
+  }
+
+  deleteProductQuestion(productId: number, questionId: number): Observable<{ status: string; id: number }> {
+    return this.http.delete<{ status: string; id: number }>(
+      `${this.apiUrl}/products/${productId}/questions/${questionId}`
+    );
+  }
+
+  reorderProductQuestions(productId: number, questionIds: number[]): Observable<ProductQuestionStaff[]> {
+    return this.http.put<ProductQuestionStaff[]>(`${this.apiUrl}/products/${productId}/questions/reorder`, {
+      question_ids: questionIds,
+    });
   }
 
   getProductImageUrl(product: Product): string | null {

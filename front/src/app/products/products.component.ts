@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ApiService, Product, Tax } from '../services/api.service';
+import { ApiService, Product, ProductQuestionStaff, Tax } from '../services/api.service';
 import { PermissionService } from '../services/permission.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { CommonModule } from '@angular/common';
@@ -181,6 +181,91 @@ import { CategoriesComponent } from './categories.component';
                        }
                      </div>
                    </div>
+
+                   @if (canEditProducts() && editingProduct()?.id) {
+                     <div class="form-group product-questions-section">
+                       <label>{{ 'PRODUCTS.CUSTOMIZATIONS_TITLE' | translate }}</label>
+                       <p class="field-hint">{{ 'PRODUCTS.CUSTOMIZATIONS_HINT' | translate }}</p>
+                       @if (questionsLoading()) {
+                         <p class="questions-loading">{{ 'PRODUCTS.QUESTIONS_LOADING' | translate }}</p>
+                       } @else if (questionEditorMode() === null) {
+                         @if (sortedProductQuestions().length === 0) {
+                           <p class="questions-empty">{{ 'PRODUCTS.QUESTIONS_NONE' | translate }}</p>
+                         } @else {
+                           <ul class="question-list" role="list">
+                             @for (q of sortedProductQuestions(); track q.id; let idx = $index) {
+                               <li class="question-row">
+                                 <div class="question-row-main">
+                                   <span class="question-type-badge">{{ ('PRODUCTS.QUESTION_BADGE_' + q.type.toUpperCase()) | translate }}</span>
+                                   <span class="question-label-text">{{ q.label }}</span>
+                                   @if (q.required) {
+                                     <span class="question-required-badge">{{ 'PRODUCTS.QUESTION_REQUIRED_BADGE' | translate }}</span>
+                                   }
+                                 </div>
+                                 <div class="question-row-actions">
+                                   <button type="button" class="btn btn-ghost btn-sm" (click)="moveQuestion(idx, -1)" [disabled]="questionSaving() || idx === 0" [title]="'PRODUCTS.QUESTION_MOVE_UP' | translate">↑</button>
+                                   <button type="button" class="btn btn-ghost btn-sm" (click)="moveQuestion(idx, 1)" [disabled]="questionSaving() || idx === sortedProductQuestions().length - 1" [title]="'PRODUCTS.QUESTION_MOVE_DOWN' | translate">↓</button>
+                                   <button type="button" class="btn btn-ghost btn-sm" (click)="openQuestionEditor(q.id)" [disabled]="questionSaving()">{{ 'PRODUCTS.QUESTION_EDIT' | translate }}</button>
+                                   <button type="button" class="btn btn-ghost btn-sm btn-danger-ghost" (click)="confirmDeleteQuestion(q)" [disabled]="questionSaving()">{{ 'PRODUCTS.QUESTION_DELETE' | translate }}</button>
+                                 </div>
+                               </li>
+                             }
+                           </ul>
+                         }
+                         <button type="button" class="btn btn-secondary btn-sm" (click)="openQuestionEditor('new')" [disabled]="questionSaving()">{{ 'PRODUCTS.QUESTION_ADD' | translate }}</button>
+                       } @else {
+                         <div class="question-editor-card">
+                           <h4 class="question-editor-title">{{ questionEditorMode() === 'new' ? ('PRODUCTS.QUESTION_NEW' | translate) : ('PRODUCTS.QUESTION_EDIT_TITLE' | translate) }}</h4>
+                           <div class="form-row">
+                             <div class="form-group">
+                               <label for="q-type">{{ 'PRODUCTS.QUESTION_FIELD_TYPE' | translate }}</label>
+                               <select id="q-type" name="q-type" [(ngModel)]="questionDraft.type" [disabled]="questionSaving()">
+                                 <option value="choice">{{ 'PRODUCTS.QUESTION_TYPE_CHOICE' | translate }}</option>
+                                 <option value="scale">{{ 'PRODUCTS.QUESTION_TYPE_SCALE' | translate }}</option>
+                                 <option value="text">{{ 'PRODUCTS.QUESTION_TYPE_TEXT' | translate }}</option>
+                               </select>
+                             </div>
+                             <div class="form-group flex-grow">
+                               <label for="q-label">{{ 'PRODUCTS.QUESTION_FIELD_LABEL' | translate }}</label>
+                               <input id="q-label" type="text" name="q-label" [(ngModel)]="questionDraft.label" [disabled]="questionSaving()" [placeholder]="'PRODUCTS.QUESTION_LABEL_PLACEHOLDER' | translate">
+                             </div>
+                           </div>
+                           @if (questionDraft.type === 'choice') {
+                             <div class="form-group">
+                               <label for="q-options">{{ 'PRODUCTS.QUESTION_FIELD_OPTIONS' | translate }}</label>
+                               <textarea id="q-options" name="q-options" rows="4" [(ngModel)]="questionDraft.choiceLines" [disabled]="questionSaving()" [placeholder]="'PRODUCTS.QUESTION_OPTIONS_PLACEHOLDER' | translate"></textarea>
+                             </div>
+                           }
+                           @if (questionDraft.type === 'scale') {
+                             <div class="form-row">
+                               <div class="form-group form-group-sm">
+                                 <label for="q-min">{{ 'PRODUCTS.QUESTION_SCALE_MIN' | translate }}</label>
+                                 <input id="q-min" type="number" name="q-min" [(ngModel)]="questionDraft.scaleMin" [disabled]="questionSaving()">
+                               </div>
+                               <div class="form-group form-group-sm">
+                                 <label for="q-max">{{ 'PRODUCTS.QUESTION_SCALE_MAX' | translate }}</label>
+                                 <input id="q-max" type="number" name="q-max" [(ngModel)]="questionDraft.scaleMax" [disabled]="questionSaving()">
+                               </div>
+                             </div>
+                           }
+                           <div class="form-group checkbox-row">
+                             <label>
+                               <input type="checkbox" name="q-req" [(ngModel)]="questionDraft.required" [disabled]="questionSaving()">
+                               {{ 'PRODUCTS.QUESTION_FIELD_REQUIRED' | translate }}
+                             </label>
+                           </div>
+                           <div class="question-editor-actions">
+                             <button type="button" class="btn btn-secondary btn-sm" (click)="cancelQuestionEditor()" [disabled]="questionSaving()">{{ 'PRODUCTS.CANCEL' | translate }}</button>
+                             <button type="button" class="btn btn-primary btn-sm" (click)="saveQuestionEditor()" [disabled]="questionSaving()">{{ 'PRODUCTS.QUESTION_SAVE' | translate }}</button>
+                           </div>
+                         </div>
+                       }
+                     </div>
+                   }
+                   @if (canEditProducts() && showAddForm() && !editingProduct()?.id) {
+                     <p class="field-hint product-questions-hint-new">{{ 'PRODUCTS.CUSTOMIZATIONS_AFTER_SAVE' | translate }}</p>
+                   }
+
                    <div class="form-actions">
                      <button type="button" class="btn btn-secondary" (click)="cancelForm()">{{ 'PRODUCTS.CANCEL' | translate }}</button>
                      <button type="submit" class="btn btn-primary" [disabled]="saving() || !canEditProducts()">
@@ -440,6 +525,31 @@ export class ProductsComponent implements OnInit {
   selectedSubcategory = signal<string | null>(null);
   availableCategories = signal<string[]>([]);
   availableSubcategoriesForFilter = signal<string[]>([]);
+
+  /** Menu customization questions for the product being edited (existing products only). */
+  productQuestions = signal<ProductQuestionStaff[]>([]);
+  questionsLoading = signal(false);
+  questionEditorMode = signal<null | 'new' | number>(null);
+  questionSaving = signal(false);
+  questionDraft: {
+    type: 'choice' | 'scale' | 'text';
+    label: string;
+    choiceLines: string;
+    scaleMin: number;
+    scaleMax: number;
+    required: boolean;
+  } = {
+    type: 'choice',
+    label: '',
+    choiceLines: '',
+    scaleMin: 1,
+    scaleMax: 10,
+    required: false,
+  };
+
+  sortedProductQuestions = computed(() =>
+    [...this.productQuestions()].sort((a, b) => a.sort_order - b.sort_order || a.id - b.id)
+  );
 
   ngOnInit() {
     this.loadTenantSettingsThenProducts();
@@ -716,12 +826,18 @@ export class ProductsComponent implements OnInit {
     };
     this.onCategoryChange(); // Update available subcategories
     this.showAddForm.set(false);
+    if (product.id) {
+      this.loadProductQuestions(product.id);
+    } else {
+      this.clearQuestionsState();
+    }
   }
 
   openAddForm() {
     this.productFormErrors.set(null);
     this.formData = { name: '', price: 0, cost: null, ingredients: '', description: '', category: '', subcategory: '', tax_id: null, available_from: '', available_until: '' };
     this.showAddForm.set(true);
+    this.clearQuestionsState();
   }
 
   cancelForm() {
@@ -731,6 +847,197 @@ export class ProductsComponent implements OnInit {
     this.availableSubcategories.set([]);
     this.productFormErrors.set(null);
     this.clearPendingImage();
+    this.clearQuestionsState();
+  }
+
+  private clearQuestionsState() {
+    this.productQuestions.set([]);
+    this.questionsLoading.set(false);
+    this.questionEditorMode.set(null);
+    this.questionSaving.set(false);
+    this.resetQuestionDraft();
+  }
+
+  private resetQuestionDraft() {
+    this.questionDraft = {
+      type: 'choice',
+      label: '',
+      choiceLines: '',
+      scaleMin: 1,
+      scaleMax: 10,
+      required: false,
+    };
+  }
+
+  loadProductQuestions(productId: number) {
+    this.questionsLoading.set(true);
+    this.questionEditorMode.set(null);
+    this.resetQuestionDraft();
+    this.api.getProductQuestions(productId).subscribe({
+      next: (list) => {
+        this.productQuestions.set(list);
+        this.questionsLoading.set(false);
+      },
+      error: () => {
+        this.productQuestions.set([]);
+        this.questionsLoading.set(false);
+      },
+    });
+  }
+
+  openQuestionEditor(mode: 'new' | number) {
+    this.questionEditorMode.set(mode);
+    if (mode === 'new') {
+      this.resetQuestionDraft();
+      return;
+    }
+    const q = this.productQuestions().find((x) => x.id === mode);
+    if (!q) {
+      this.questionEditorMode.set(null);
+      return;
+    }
+    this.questionDraft.type = q.type;
+    this.questionDraft.label = q.label;
+    this.questionDraft.required = q.required;
+    if (q.type === 'choice' && Array.isArray(q.options)) {
+      this.questionDraft.choiceLines = q.options.join('\n');
+    } else {
+      this.questionDraft.choiceLines = '';
+    }
+    if (q.type === 'scale' && q.options && typeof q.options === 'object' && !Array.isArray(q.options)) {
+      this.questionDraft.scaleMin = (q.options as { min: number; max: number }).min;
+      this.questionDraft.scaleMax = (q.options as { min: number; max: number }).max;
+    } else {
+      this.questionDraft.scaleMin = 1;
+      this.questionDraft.scaleMax = 10;
+    }
+  }
+
+  cancelQuestionEditor() {
+    this.questionEditorMode.set(null);
+    this.resetQuestionDraft();
+  }
+
+  saveQuestionEditor() {
+    const pid = this.editingProduct()?.id;
+    if (!pid) return;
+    const mode = this.questionEditorMode();
+    if (mode === null) return;
+    const label = this.questionDraft.label.trim();
+    if (!label) {
+      this.error.set(this.translate.instant('PRODUCTS.QUESTION_LABEL_REQUIRED'));
+      return;
+    }
+    let options: string[] | { min: number; max: number } | null | undefined;
+    if (this.questionDraft.type === 'choice') {
+      const opts = this.questionDraft.choiceLines
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (opts.length === 0) {
+        this.error.set(this.translate.instant('PRODUCTS.QUESTION_OPTIONS_REQUIRED'));
+        return;
+      }
+      options = opts;
+    } else if (this.questionDraft.type === 'scale') {
+      if (this.questionDraft.scaleMin >= this.questionDraft.scaleMax) {
+        this.error.set(this.translate.instant('PRODUCTS.QUESTION_SCALE_INVALID'));
+        return;
+      }
+      options = { min: this.questionDraft.scaleMin, max: this.questionDraft.scaleMax };
+    } else {
+      options = null;
+    }
+    this.error.set('');
+    this.questionSaving.set(true);
+    if (mode === 'new') {
+      const list = this.productQuestions();
+      const nextOrder =
+        list.length === 0 ? 0 : Math.max(...list.map((q) => q.sort_order), 0) + 1;
+      this.api
+        .createProductQuestion(pid, {
+          type: this.questionDraft.type,
+          label,
+          options: this.questionDraft.type === 'text' ? null : options,
+          required: this.questionDraft.required,
+          sort_order: nextOrder,
+        })
+        .subscribe({
+          next: (q) => {
+            this.productQuestions.update((arr) => [...arr, q]);
+            this.cancelQuestionEditor();
+            this.questionSaving.set(false);
+          },
+          error: (err) => {
+            this.error.set(err.error?.detail || this.translate.instant('PRODUCTS.QUESTION_SAVE_FAILED'));
+            this.questionSaving.set(false);
+          },
+        });
+    } else {
+      this.api
+        .updateProductQuestion(pid, mode, {
+          type: this.questionDraft.type,
+          label,
+          options: this.questionDraft.type === 'text' ? null : options,
+          required: this.questionDraft.required,
+        })
+        .subscribe({
+          next: (q) => {
+            this.productQuestions.update((arr) => arr.map((x) => (x.id === q.id ? q : x)));
+            this.cancelQuestionEditor();
+            this.questionSaving.set(false);
+          },
+          error: (err) => {
+            this.error.set(err.error?.detail || this.translate.instant('PRODUCTS.QUESTION_SAVE_FAILED'));
+            this.questionSaving.set(false);
+          },
+        });
+    }
+  }
+
+  moveQuestion(index: number, dir: -1 | 1) {
+    const pid = this.editingProduct()?.id;
+    if (!pid) return;
+    const list = [...this.sortedProductQuestions()];
+    const j = index + dir;
+    if (j < 0 || j >= list.length) return;
+    const a = list[index]!;
+    const b = list[j]!;
+    list[index] = b;
+    list[j] = a;
+    const ids = list.map((q) => q.id);
+    this.questionSaving.set(true);
+    this.api.reorderProductQuestions(pid, ids).subscribe({
+      next: (updated) => {
+        this.productQuestions.set(updated);
+        this.questionSaving.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.error?.detail || this.translate.instant('PRODUCTS.QUESTION_REORDER_FAILED'));
+        this.questionSaving.set(false);
+      },
+    });
+  }
+
+  confirmDeleteQuestion(q: ProductQuestionStaff) {
+    const pid = this.editingProduct()?.id;
+    if (!pid) return;
+    const msg = this.translate.instant('PRODUCTS.QUESTION_DELETE_CONFIRM', { label: q.label });
+    if (!globalThis.confirm?.(msg)) return;
+    this.questionSaving.set(true);
+    this.api.deleteProductQuestion(pid, q.id).subscribe({
+      next: () => {
+        this.productQuestions.update((arr) => arr.filter((x) => x.id !== q.id));
+        if (this.questionEditorMode() === q.id) {
+          this.cancelQuestionEditor();
+        }
+        this.questionSaving.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.error?.detail || this.translate.instant('PRODUCTS.QUESTION_DELETE_FAILED'));
+        this.questionSaving.set(false);
+      },
+    });
   }
 
   clearProductFormError(field: 'name' | 'price') {

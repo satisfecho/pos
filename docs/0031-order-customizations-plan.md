@@ -8,20 +8,21 @@
 |-------|--------|
 | **DB** | `product_question` (`ProductQuestion`): `choice`, `scale`, `text`; JSON `options`; `required`, `sort_order`. |
 | **Order lines** | `OrderItem.customization_answers` (JSONB): `{"question_id": value}` — choice/text as string, scale as int. |
-| **API** | Staff: `GET`/`POST /products/{id}/questions` (`list_product_questions`, `create_product_question`). **No `PUT`/`PATCH`/`DELETE`/reorder yet** — add when building the staff UI. Public menu payload includes `questions` per product; `POST` order accepts `customization_answers` on each line (`OrderItemCreate`). |
+| **API** | Staff: `GET`/`POST /products/{id}/questions`; **`PATCH`/`DELETE` `/products/{id}/questions/{qid}`**; **`PUT` `/products/{id}/questions/reorder`**. `POST` create validates `options` (choice list, scale min/max). Public menu includes `questions`; orders accept `customization_answers`. |
 | **Customer menu** | `menu.component.ts`: modal collects answers before add-to-cart; cart merge keys include `customization_answers`. |
+| **Staff UI** | **`/products`**: when editing an existing product, section **Customer menu customizations** — list, add, edit, delete, reorder (↑↓). New products: hint to save first. |
 
-**Gap:** There is **no staff UI** on `/products` (or equivalent) to define questions per product. Tenants must use the API (or seeds) today. Issue #50 also implies **richer modifier semantics** than a single `choice` per question.
+**Remaining for #50:** Richer “swap/add topping” semantics (Phase 2) and clearer kitchen/invoice display of answers (Phase 3).
 
 ## Suggested phases
 
-### Phase 1 — Staff configuration (highest leverage)
+### Phase 1 — Staff configuration (highest leverage) — **done**
 
 1. **Products screen**: Section “Customizations” per product: list questions, add/edit/delete/reorder.
-2. **Backend**: Implement `PATCH`/`DELETE` (and optional `PUT` batch reorder) for `/products/{id}/questions/{question_id}` — today only `GET` + `POST` exist.
-3. Validate `options` shape client-side for `choice` (list of labels) and `scale` (`min`/`max`).
-4. **i18n** for labels in UI (field `label` stays tenant-entered text for customer-facing copy).
-5. **Tests**: Puppeteer or API test — create question, open menu (test table), submit order with answers, assert line payload / kitchen display text.
+2. **Backend**: `PATCH`/`DELETE` + `PUT …/reorder`; stricter validation on create/update for `options`.
+3. Validate `options` client-side for `choice` (lines) and `scale` (`min`/`max`).
+4. **i18n** (`en`, `es`, `de`, `fr`, `ca`, `zh-CN`, `hi`) for staff strings.
+5. **Tests** (optional follow-up): Puppeteer — create question, menu flow with answers.
 
 ### Phase 2 — Pizza-style “swap / add” (extends model)
 

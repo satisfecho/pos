@@ -180,3 +180,122 @@
         flex: none;
     }
 }
+
+// Product customization questions (staff edit form)
+.product-questions-section {
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+}
+
+.product-questions-hint-new {
+    margin-top: var(--space-2);
+}
+
+.questions-loading,
+.questions-empty {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin: var(--space-2) 0;
+}
+
+.question-list {
+    list-style: none;
+    margin: 0 0 var(--space-3);
+    padding: 0;
+}
+
+.question-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    margin-bottom: var(--space-2);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.question-row-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+    flex: 1;
+}
+
+.question-type-badge {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+}
+
+.question-label-text {
+    font-size: 0.875rem;
+    color: var(--color-text);
+    word-break: break-word;
+}
+
+.question-required-badge {
+    font-size: 0.6875rem;
+    color: var(--color-primary);
+    font-weight: 500;
+}
+
+.question-row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    align-items: center;
+}
+
+.btn-danger-ghost {
+    color: var(--color-error, #dc2626);
+
+    &:hover:not(:disabled) {
+        color: var(--color-error, #b91c1c);
+        background: rgba(220, 38, 38, 0.08);
+    }
+}
+
+.question-editor-card {
+    margin-top: var(--space-3);
+    padding: var(--space-3);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.question-editor-title {
+    margin: 0 0 var(--space-3);
+    font-size: 0.9375rem;
+    font-weight: 600;
+}
+
+.question-editor-actions {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+}
+
+.flex-grow {
+    flex: 1;
+    min-width: 160px;
+}
+
+.checkbox-row label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 0.875rem;
+    cursor: pointer;
+}

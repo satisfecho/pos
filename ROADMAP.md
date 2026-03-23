@@ -29,7 +29,7 @@
 ### ❌ Missing Features / To Be Implemented
 - **Order management Phase 4 (advanced)**: Batch status updates, status/audit history, item replacement, modification after payment/refund, analytics. See `docs/0007-implementation-verification.md` § "NOT IMPLEMENTED (Phase 4)".
 - **Stricter “immediate payment” (optional)**: Today the menu auto-opens payment after place order; customers can still close the modal. A strict “cannot place another order or proceed without paying” flow is not enforced.
-- **Order customizations (GitHub [#50](https://github.com/satisfecho/pos/issues/50))**: Customer menu already supports `ProductQuestion` answers; **staff product UI to configure questions** and richer “swap/add topping” semantics are planned. See `docs/0031-order-customizations-plan.md`.
+- **Order customizations (GitHub [#50](https://github.com/satisfecho/pos/issues/50))**: **Phase 1 done** — staff configure questions on **`/products`** (edit product); customer menu already collects answers. **Still open:** pizza-style swap/add toppings, multi-select, priced modifiers — see `docs/0031-order-customizations-plan.md`.
 - **Large multi-topic tracks ([#52](https://github.com/satisfecho/pos/issues/52)–[#54](https://github.com/satisfecho/pos/issues/54))**: Warehouses, split bills, kitchen SLA/gradients, marketing/comms — summarized in `docs/0032-github-issues-roadmap.md` (split into smaller issues before build).
 
 ### Documentation reference

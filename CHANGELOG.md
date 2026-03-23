@@ -4,13 +4,16 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [2.0.41] - 2026-03-23
 
 ### Added
 
-- **Docs**: `docs/0031-order-customizations-plan.md` (GitHub **#50** — phased plan; staff UI gap vs existing `ProductQuestion` / menu flow).
-- **Docs**: `docs/0032-github-issues-roadmap.md` (GitHub **#52–#54** — warehouses, kitchen ticket SLAs, marketing/comms).
-- **ROADMAP.md** / **`docs/README.md`**: Links to the new planning docs.
+- **Products / menu customizations (GitHub #50, Phase 1)**: Staff **`/products`** edit form includes **customer menu customizations** for saved products (list, add, edit, delete, reorder). Backend: **`PATCH` / `DELETE` `/products/{id}/questions/{question_id}`**, **`PUT` `/products/{id}/questions/reorder`**, stricter **`options`** validation on create/update (`choice` list, `scale` min/max, `text`). **`ProductQuestion.options`** typing allows JSON arrays.
+- **i18n**: New **`PRODUCTS.*`** strings for the customization editor (**`en`**, **`es`**, **`de`**, **`fr`**, **`ca`**, **`zh-CN`**, **`hi`**).
+
+### Changed
+
+- **`docs/0031-order-customizations-plan.md`**: Phase 1 marked **done**; API / staff UI rows updated.
 
 ## [2.0.40] - 2026-03-23
 

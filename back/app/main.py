@@ -2848,6 +2848,51 @@ def list_product_questions(
     ]
 
 
+def _validate_product_question_options(
+    qtype: models.ProductQuestionType, options: dict | list | None
+) -> dict | list | None:
+    """Normalize and validate options for choice / scale / text."""
+    if qtype == models.ProductQuestionType.text:
+        return None
+    if qtype == models.ProductQuestionType.choice:
+        if options is None:
+            raise HTTPException(
+                status_code=422,
+                detail="choice questions require options as a non-empty list of strings",
+            )
+        if not isinstance(options, list):
+            raise HTTPException(
+                status_code=422, detail="choice options must be a JSON array of strings"
+            )
+        opts = [str(x).strip() for x in options if str(x).strip()]
+        if not opts:
+            raise HTTPException(
+                status_code=422,
+                detail="choice questions require at least one option",
+            )
+        return opts
+    if qtype == models.ProductQuestionType.scale:
+        if options is None or not isinstance(options, dict):
+            raise HTTPException(
+                status_code=422,
+                detail='scale questions require options as {"min": int, "max": int}',
+            )
+        try:
+            mn = int(options["min"])
+            mx = int(options["max"])
+        except (KeyError, TypeError, ValueError) as e:
+            raise HTTPException(
+                status_code=422,
+                detail='scale options must be {"min": int, "max": int}',
+            ) from e
+        if mn >= mx:
+            raise HTTPException(
+                status_code=422, detail="scale min must be less than max"
+            )
+        return {"min": mn, "max": mx}
+    return options
+
+
 @app.post("/products/{product_id}/questions")
 @limiter.limit(
     f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
@@ -2869,12 +2914,16 @@ def create_product_question(
     ).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
+    lab = body.label.strip() if isinstance(body.label, str) else body.label
+    if not lab:
+        raise HTTPException(status_code=422, detail="label cannot be empty")
+    opts = _validate_product_question_options(body.type, body.options)
     question = models.ProductQuestion(
         tenant_id=current_user.tenant_id,
         product_id=product_id,
         type=body.type,
-        label=body.label,
-        options=body.options,
+        label=lab,
+        options=opts,
         sort_order=body.sort_order,
         required=body.required,
     )
@@ -2889,6 +2938,169 @@ def create_product_question(
         "sort_order": question.sort_order,
         "required": question.required,
     }
+
+
+@app.patch("/products/{product_id}/questions/{question_id}")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def update_product_question(
+    request: Request,
+    product_id: int,
+    question_id: int,
+    body: models.ProductQuestionUpdate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.PRODUCT_WRITE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Update a customization question (staff)."""
+    product = session.exec(
+        select(models.Product).where(
+            models.Product.id == product_id,
+            models.Product.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    question = session.exec(
+        select(models.ProductQuestion).where(
+            models.ProductQuestion.id == question_id,
+            models.ProductQuestion.product_id == product_id,
+            models.ProductQuestion.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    old_type = question.type
+    new_type = body.type if body.type is not None else question.type
+
+    if body.label is not None:
+        lab = body.label.strip()
+        if not lab:
+            raise HTTPException(status_code=422, detail="label cannot be empty")
+        question.label = lab
+
+    if body.sort_order is not None:
+        question.sort_order = body.sort_order
+
+    if body.required is not None:
+        question.required = body.required
+
+    if body.options is not None:
+        question.options = _validate_product_question_options(new_type, body.options)
+    elif body.type is not None and body.type != old_type:
+        question.options = _validate_product_question_options(new_type, None)
+
+    if body.type is not None:
+        question.type = body.type
+
+    session.add(question)
+    session.commit()
+    session.refresh(question)
+    return {
+        "id": question.id,
+        "type": question.type.value if hasattr(question.type, "value") else str(question.type),
+        "label": question.label,
+        "options": question.options,
+        "sort_order": question.sort_order,
+        "required": question.required,
+    }
+
+
+@app.delete("/products/{product_id}/questions/{question_id}")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def delete_product_question(
+    request: Request,
+    product_id: int,
+    question_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.PRODUCT_WRITE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Delete a customization question (staff)."""
+    product = session.exec(
+        select(models.Product).where(
+            models.Product.id == product_id,
+            models.Product.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    question = session.exec(
+        select(models.ProductQuestion).where(
+            models.ProductQuestion.id == question_id,
+            models.ProductQuestion.product_id == product_id,
+            models.ProductQuestion.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+    session.delete(question)
+    session.commit()
+    return {"status": "deleted", "id": question_id}
+
+
+@app.put("/products/{product_id}/questions/reorder")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def reorder_product_questions(
+    request: Request,
+    product_id: int,
+    body: models.ProductQuestionReorder,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.PRODUCT_WRITE))],
+    session: Session = Depends(get_session),
+) -> list[dict]:
+    """Set sort_order from the given question id order (0, 1, 2, …)."""
+    product = session.exec(
+        select(models.Product).where(
+            models.Product.id == product_id,
+            models.Product.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    existing = session.exec(
+        select(models.ProductQuestion).where(
+            models.ProductQuestion.product_id == product_id,
+            models.ProductQuestion.tenant_id == current_user.tenant_id,
+        )
+    ).all()
+    existing_ids = {q.id for q in existing if q.id is not None}
+    if set(body.question_ids) != existing_ids:
+        raise HTTPException(
+            status_code=422,
+            detail="question_ids must include every question for this product exactly once",
+        )
+
+    id_to_question = {q.id: q for q in existing if q.id is not None}
+    for i, qid in enumerate(body.question_ids):
+        id_to_question[qid].sort_order = i
+        session.add(id_to_question[qid])
+    session.commit()
+
+    questions = session.exec(
+        select(models.ProductQuestion).where(
+            models.ProductQuestion.product_id == product_id,
+            models.ProductQuestion.tenant_id == current_user.tenant_id,
+        ).order_by(models.ProductQuestion.sort_order, models.ProductQuestion.id)
+    ).all()
+    return [
+        {
+            "id": q.id,
+            "type": q.type.value if hasattr(q.type, "value") else str(q.type),
+            "label": q.label,
+            "options": q.options,
+            "sort_order": q.sort_order,
+            "required": q.required,
+        }
+        for q in questions
+    ]
 
 
 # ============ PROVIDERS ============
