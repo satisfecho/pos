@@ -43,7 +43,7 @@ If **none** of the above applies: **push `development` only**; do **not** merge 
 
 | mac-stats-reviewer agent | POS role | Typical inputs | Writes / edits |
 |--------------------------|----------|----------------|----------------|
-| **001 Log reviewer** (`LOG-REVIEWER-PROMPT.md`) | **GitHub backlog + optional logs** | **[Issues](https://github.com/satisfecho/pos/issues)** / **`gh issue list`**; up to **3** new **`NEW-`/`FEAT-`** tasks per run; then optional Docker logs | **Task files** in **`agents/tasks/`** only (no app code). **`gh`** comment + **`agent:planned`**. See prompt for dedupe rules. |
+| **001 Log reviewer** (`LOG-REVIEWER-PROMPT.md`) | **GitHub → FEAT; logs → NEW** | **Issues:** up to **3 × `FEAT-…`** / run for **feature coders** (×5 in loop). **Logs:** **`NEW-…`** only for concrete Docker log incidents | **`agents/tasks/`** only. **`gh`** on issues. See **001** prompt — never use **`NEW-`** for GitHub-sourced work. |
 | **002 Coder** (`002-coder-backend/CODER.md`) | **Implementer (main)** | Tasks in status **new** → **wip** | **`back/`**, **`front/`**, tests; task file status + **Testing instructions**; then **untested**. |
 | **006 Feature coder** (`FEATURE-CODER.md`) | **Implementer (FEAT queue)** | Tasks **feat** → **wip** | Same as coder, but only **FEAT-** tasks (if you use that track). |
 | **003 Tester** (`TESTER.md`) | **Verifier** | **untested** → **testing** | Appends **Test report**; **closed** or back to **wip** on failure. Uses **`pytest`** (Docker), **`node front/scripts/…`**, **`npm run test:*`** per task. |
@@ -62,7 +62,7 @@ Adapted filename pattern and statuses — **same semantics** as mac-stats-review
 ### Filename pattern
 
 `<STATUS>-<YYYYMMDD-HHMM>-<slug>.md`  
-Examples: `NEW-20260323-1030-haproxy-503-on-orders.md`, `WIP-20260323-1100-fix-rate-limit-banner.md`
+Examples: `FEAT-20260323-1030-github-issue-50.md` (GitHub → feature coder), `NEW-20260323-1100-haproxy-503-logs.md` (logs → main coder), `WIP-20260323-1200-fix-rate-limit-banner.md`
 
 ### Statuses
 
@@ -211,7 +211,7 @@ Adjust names to taste (`status/planned`, etc.); keep them **documented here** so
 
 | Role | When | Update the issue |
 |------|------|------------------|
-| **Reviewer** (log / planning) | After creating the task file for issue **#NN** | Add comment: link to task path under **`agents/tasks/…`**, short plan; add label **`agent:planned`**. Optionally remove **`agent:needs-triage`** if you use triage labels. |
+| **Reviewer** (001 / planning) | After creating **`FEAT-…`** for issue **#NN** (never **`NEW-`** for GitHub) | Comment: link **`agents/tasks/FEAT-…md`**; label **`agent:planned`**. Optionally remove **`agent:needs-triage`**. |
 | **Coder** & **Feature coder** | When renaming task **new/feat → wip** | Add comment: “Implementation started”; **`agent:planned` → `agent:wip`** (remove planned, add wip). |
 | **Tester** | When renaming **untested → testing** | Add comment: “Verification started” (commands/env if useful); **`agent:wip` → `agent:testing`**. |
 | **Closer** | After **Test report** is **PASS** and task is **closed**, before/after `move-agent-task-to-done.sh` | Comment: one-paragraph outcome + pointer to merged commit or PR if applicable; remove **`agent:testing`** / **`agent:wip`**. **Close the issue** if the feature is fully delivered and tracked only here; **leave open** if the issue is a parent epic or has follow-ups (say so in the comment). |
@@ -225,7 +225,7 @@ export GH_TOKEN=…   # or rely on `gh auth login`
 
 gh issue list --repo satisfecho/pos --state open --limit 30
 
-gh issue comment 50 --repo satisfecho/pos --body "Task file: agents/tasks/NEW-20260323-1030-order-tip.md — planned for implementation."
+gh issue comment 50 --repo satisfecho/pos --body "Task file: agents/tasks/FEAT-20260323-1030-order-tip.md — planned for implementation (feature queue)."
 
 gh issue edit 50 --repo satisfecho/pos --add-label "agent:planned"
 
