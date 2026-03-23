@@ -1,18 +1,19 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService, SUPPORTED_LANGUAGES, LanguageCode } from '../services/language.service';
 
 @Component({
   selector: 'app-language-picker',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   template: `
     <div class="language-picker">
       <select
         [(ngModel)]="currentLanguageValue"
         class="language-select"
-        aria-label="Select language"
+        [attr.aria-label]="'SETTINGS.SELECT_LANGUAGE' | translate"
       >
         @for (lang of languages; track lang.code) {
           <option [value]="lang.code">{{ lang.label }}</option>
