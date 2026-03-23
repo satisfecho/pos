@@ -198,6 +198,9 @@ import { CategoriesComponent } from './categories.component';
                                <li class="question-row">
                                  <div class="question-row-main">
                                    <span class="question-type-badge">{{ ('PRODUCTS.QUESTION_BADGE_' + q.type.toUpperCase()) | translate }}</span>
+                                   @if (q.multi && q.type === 'choice') {
+                                   <span class="question-type-badge question-multi-badge">{{ 'PRODUCTS.QUESTION_BADGE_MULTI' | translate }}</span>
+                                   }
                                    <span class="question-label-text">{{ q.label }}</span>
                                    @if (q.required) {
                                      <span class="question-required-badge">{{ 'PRODUCTS.QUESTION_REQUIRED_BADGE' | translate }}</span>
@@ -235,6 +238,12 @@ import { CategoriesComponent } from './categories.component';
                              <div class="form-group">
                                <label for="q-options">{{ 'PRODUCTS.QUESTION_FIELD_OPTIONS' | translate }}</label>
                                <textarea id="q-options" name="q-options" rows="4" [(ngModel)]="questionDraft.choiceLines" [disabled]="questionSaving()" [placeholder]="'PRODUCTS.QUESTION_OPTIONS_PLACEHOLDER' | translate"></textarea>
+                             </div>
+                             <div class="form-group checkbox-row">
+                               <label>
+                                 <input type="checkbox" name="q-multi" [(ngModel)]="questionDraft.choiceMulti" [disabled]="questionSaving()">
+                                 {{ 'PRODUCTS.QUESTION_CHOICE_MULTI' | translate }}
+                               </label>
                              </div>
                            }
                            @if (questionDraft.type === 'scale') {
@@ -537,6 +546,8 @@ export class ProductsComponent implements OnInit {
     type: 'choice' | 'scale' | 'text';
     label: string;
     choiceLines: string;
+    /** When true, choice options are stored as { choices, multi: true } (guest picks several). */
+    choiceMulti: boolean;
     scaleMin: number;
     scaleMax: number;
     required: boolean;
@@ -544,6 +555,7 @@ export class ProductsComponent implements OnInit {
     type: 'choice',
     label: '',
     choiceLines: '',
+    choiceMulti: false,
     scaleMin: 1,
     scaleMax: 10,
     required: false,
@@ -859,6 +871,7 @@ export class ProductsComponent implements OnInit {
       type: 'choice',
       label: '',
       choiceLines: '',
+      choiceMulti: false,
       scaleMin: 1,
       scaleMax: 10,
       required: false,
@@ -897,8 +910,20 @@ export class ProductsComponent implements OnInit {
     this.questionDraft.required = q.required;
     if (q.type === 'choice' && Array.isArray(q.options)) {
       this.questionDraft.choiceLines = q.options.join('\n');
+      this.questionDraft.choiceMulti = false;
+    } else if (
+      q.type === 'choice' &&
+      q.options &&
+      typeof q.options === 'object' &&
+      !Array.isArray(q.options) &&
+      'choices' in q.options
+    ) {
+      const o = q.options as { choices: string[]; multi?: boolean };
+      this.questionDraft.choiceLines = (o.choices || []).join('\n');
+      this.questionDraft.choiceMulti = !!o.multi;
     } else {
       this.questionDraft.choiceLines = '';
+      this.questionDraft.choiceMulti = false;
     }
     if (q.type === 'scale' && q.options && typeof q.options === 'object' && !Array.isArray(q.options)) {
       this.questionDraft.scaleMin = (q.options as { min: number; max: number }).min;
@@ -924,7 +949,7 @@ export class ProductsComponent implements OnInit {
       this.error.set(this.translate.instant('PRODUCTS.QUESTION_LABEL_REQUIRED'));
       return;
     }
-    let options: string[] | { min: number; max: number } | null | undefined;
+    let options: string[] | { min: number; max: number } | { choices: string[]; multi: boolean } | null | undefined;
     if (this.questionDraft.type === 'choice') {
       const opts = this.questionDraft.choiceLines
         .split('\n')
@@ -934,7 +959,7 @@ export class ProductsComponent implements OnInit {
         this.error.set(this.translate.instant('PRODUCTS.QUESTION_OPTIONS_REQUIRED'));
         return;
       }
-      options = opts;
+      options = this.questionDraft.choiceMulti ? { choices: opts, multi: true } : opts;
     } else if (this.questionDraft.type === 'scale') {
       if (this.questionDraft.scaleMin >= this.questionDraft.scaleMax) {
         this.error.set(this.translate.instant('PRODUCTS.QUESTION_SCALE_INVALID'));

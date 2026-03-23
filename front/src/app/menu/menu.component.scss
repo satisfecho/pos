@@ -2083,6 +2083,25 @@ $cart-expanded-max: 60vh;
     margin-bottom: var(--space-2);
   }
 
+  .question-multi-choices {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .question-check-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    font-size: 0.9375rem;
+    cursor: pointer;
+
+    input {
+      margin-top: 0.2rem;
+      accent-color: var(--color-primary);
+    }
+  }
+
   .question-select {
     width: 100%;
     padding: var(--space-3);

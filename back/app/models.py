@@ -1,5 +1,6 @@
 from datetime import date, datetime, time, timezone
 from enum import Enum
+from typing import Any
 from uuid import uuid4
 
 from sqlalchemy import Column, Date, Time
@@ -236,7 +237,7 @@ class ProductQuestion(TenantMixin, table=True):
     product_id: int = Field(foreign_key="product.id", index=True)
     type: ProductQuestionType = Field(index=True)
     label: str = Field(max_length=256)  # e.g. "How would you like your meat?"
-    # JSON: choice = list of strings; scale = {"min": int, "max": int}; text = null
+    # JSON: choice = list of strings OR {"choices": [...], "multi": bool}; scale = {"min", "max"}; text = null
     options: dict | list | None = Field(default=None, sa_column=Column(JSONB, nullable=True))
     sort_order: int = Field(default=0)
     required: bool = Field(default=False)
@@ -509,6 +510,7 @@ class BillingCustomer(TenantMixin, table=True):
     address: str | None = None
     email: str | None = Field(default=None, index=True)
     phone: str | None = None
+    birth_date: date | None = Field(default=None, sa_column=Column(Date, nullable=True))
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     orders: list["Order"] = Relationship(back_populates="billing_customer")
@@ -564,8 +566,10 @@ class OrderItem(SQLModel, table=True):
     price_cents: int  # Snapshot of price at order time (tax-inclusive)
     cost_cents: int | None = None  # Snapshot of cost at order time for profit
     notes: str | None = None  # Item-specific notes (e.g., "no onions")
-    # Structured answers to product questions: {"question_id": value} (value: str for choice/text, int for scale)
+    # Structured answers to product questions: {"question_id": value} (value: str for choice/text, int for scale, list[str] for multi choice)
     customization_answers: dict | None = Field(default=None, sa_column=Column(JSONB, nullable=True))
+    # Human-readable snapshot at order time: "Q1: A · Q2: B, C" (kitchen / invoices)
+    customization_summary: str | None = Field(default=None, max_length=1024)
     # Tax snapshot at order time for invoice breakdown
     tax_id: int | None = Field(default=None, foreign_key="tax.id", index=True)
     tax_rate_percent: int | None = None  # e.g. 10, 21, 0
@@ -762,7 +766,8 @@ class OrderItemCreate(SQLModel):
     quantity: int
     notes: str | None = None
     source: str | None = None  # "tenant_product" or "product" to distinguish between TenantProduct and legacy Product
-    customization_answers: dict | None = None  # {"question_id": value} for product questions
+    # Values: str | int | list[str] (multi-select choice), etc.
+    customization_answers: dict[str, Any] | None = None  # {"question_id": value}
 
 
 class OrderCreate(SQLModel):
@@ -813,6 +818,7 @@ class BillingCustomerCreate(SQLModel):
     address: str | None = None
     email: str | None = None
     phone: str | None = None
+    birth_date: date | None = None
 
 
 class BillingCustomerUpdate(SQLModel):
@@ -822,6 +828,7 @@ class BillingCustomerUpdate(SQLModel):
     address: str | None = None
     email: str | None = None
     phone: str | None = None
+    birth_date: date | None = None
 
 
 class OrderItemStaffUpdate(SQLModel):

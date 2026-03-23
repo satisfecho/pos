@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **Puppeteer tests** (`front/scripts/`): Chrome runs **headless by default**. Use **`HEADLESS=0`**, **`false`**, or **`no`** for a visible window. Logic lives in **`front/scripts/puppeteer-headless.mjs`**. Docs: **`docs/testing.md`**, **`AGENTS.md`**.
 
+## [2.0.47] - 2026-03-23
+
+### Added
+
+- **GitHub #50 — order customizations (pizza-style):** **Multi-select** choice questions: staff save options as **`{ choices: string[], multi: true }`** (or a plain list for single select). Public **menu** shows checkboxes; **`customization_answers`** may store **`string[]`** per question id. **`POST /menu/.../order`** validates answers server-side and merges lines using normalized equality. **`OrderItem.customization_summary`** snapshots **“Label: value · …”** for kitchen, staff orders, order history, current order, and **printed invoice**. Migration **`20260323121000_orderitem_customization_summary.sql`**. Module **`back/app/product_customization.py`**. Docs: **`docs/0031-order-customizations-plan.md`**.
+
 ## [2.0.46] - 2026-03-23
 
 ### Added
@@ -25,7 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - **GitHub #52 (umbrella)**: **`docs/0032-github-issues-roadmap.md`** now includes an **implementation status** table for each #52 theme (warehouses, split bill, join tables, offline, migration, Google/surveys, birthdays, marketing, central kitchen, Uber Eats) with **what exists vs. not started** and links to related docs.
-- **Birth date on billing customers (#52 — cumpleaños / CRM)**: Optional **`birth_date`** on **`BillingCustomer`**; **Customers** list and add/edit form; **`GET/POST/PUT`** `/billing-customers` and nested **`billing_customer`** on orders return it. Migration **`20260323120000_billing_customer_birth_date.sql`**. See **`docs/0017-billing-customers-factura.md`**.
+- **Birth date on billing customers (#52 — cumpleaños / CRM)**: Optional **`birth_date`** on **`BillingCustomer`**; **Customers** list and add/edit form; **`GET/POST/PUT`** `/billing-customers` and nested **`billing_customer`** on orders return it. Migration **`20260323120500_billing_customer_birth_date.sql`**. See **`docs/0017-billing-customers-factura.md`**.
 
 ## [2.0.44] - 2026-03-23
 

@@ -91,7 +91,7 @@ const VIEW_CATEGORY: Record<string, string> = {
                         <span class="item-qty">{{ item.quantity }}×</span>
                         <span class="item-name">{{ item.product_name }}</span>
                         @if (hasCustomization(item)) {
-                          <span class="item-customization">{{ formatCustomization(item.customization_answers ?? {}) }}</span>
+                          <span class="item-customization">{{ formatCustomizationItem(item) }}</span>
                         }
                         @if (item.notes) {
                           <span class="item-notes">{{ item.notes }}</span>
@@ -757,15 +757,23 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
     return this.translate.instant('ITEM_STATUS.' + status) || status;
   }
 
-  /** Format customization answers for display (e.g. "Medium · 7"). */
   hasCustomization(item: OrderItem): boolean {
+    if (item?.customization_summary?.trim()) return true;
     const a = item?.customization_answers;
     return !!a && typeof a === 'object' && Object.keys(a).length > 0;
   }
 
-  formatCustomization(answers: Record<string, string | number>): string {
+  formatCustomizationItem(item: OrderItem): string {
+    const snap = item.customization_summary?.trim();
+    if (snap) return snap;
+    const answers = item.customization_answers;
     if (!answers || Object.keys(answers).length === 0) return '';
-    return Object.values(answers).join(' · ');
+    const parts: string[] = [];
+    for (const v of Object.values(answers)) {
+      if (Array.isArray(v)) parts.push(v.join(', '));
+      else parts.push(String(v));
+    }
+    return parts.join(' · ');
   }
 
   /** Items sorted by status; show pending, preparing, and ready (hide delivered/cancelled so paid orders stay until delivered). */

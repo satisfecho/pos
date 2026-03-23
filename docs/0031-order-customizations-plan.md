@@ -12,7 +12,7 @@
 | **Customer menu** | `menu.component.ts`: modal collects answers before add-to-cart; cart merge keys include `customization_answers`. |
 | **Staff UI** | **`/products`**: when editing an existing product, section **Customer menu customizations** — list, add, edit, delete, reorder (↑↓). New products: hint to save first. |
 
-**Remaining for #50:** Richer “swap/add topping” semantics (Phase 2) and clearer kitchen/invoice display of answers (Phase 3).
+**Remaining for #50:** Optional **price deltas** per modifier (Phase 2C-style) if product needs “+€1 per extra”; otherwise multi-select + snapshot covers the pizza use case.
 
 ## Suggested phases
 
@@ -26,23 +26,18 @@
 
 ### Phase 2 — Pizza-style “swap / add” (extends model)
 
-GitHub #50 needs **multiple independent toggles or groups** (remove X, add Y), optional **price deltas**, and clear kitchen copy.
+**Implemented (2026-03): option B — multi-select `choice`.**
 
-Pick one direction (document the choice in ADR or this file when implemented):
-
-- **A — Multiple questions**  
-  One question per topping group (“Extra cheese”, “No onion”) as `choice` with options Yes/No or option lists. Simple but many questions for complex pizzas.
-
-- **B — Multi-select `choice`**  
-  Extend `ProductQuestionType` or `options` schema so `choice` allows **multiple** selected values; store e.g. `{"42": ["pepperoni", "mushroom"]}` or normalized IDs. Requires API + menu UI + migration rules for existing single-string answers.
-
-- **C — Modifier catalog**  
-  Reusable modifiers (with optional `price_cents` delta) attached to products via join table; order line stores chosen modifier IDs + snapshot prices. Heavier schema, best for “+€1 per extra”.
+- **Staff / API:** Choice options may be a **plain list** (single `<select>`) or **`{"choices": [...], "multi": true}`** (checkboxes on the customer menu). Validated in `_validate_product_question_options` and in `product_customization.py`.
+- **Storage:** `OrderItem.customization_answers` uses **string keys**; multi answers are **`string[]`** (sorted when normalizing for merge and validation).
+- **Customer menu:** `multi` flag on each question in the public menu payload; modal renders checkboxes vs single select.
+- **Not implemented:** Per-option **price deltas** — use **C — Modifier catalog** (or manual price products) if needed later.
+- **A — Multiple questions** remains a valid pattern for yes/no groups without multi-select.
 
 ### Phase 3 — Staff orders & kitchen
 
-1. Ensure **orders** and **kitchen** UIs print/read `customization_answers` with **human-readable** labels (resolve `question_id` → current `label` + option text; snapshot on order if questions later change).
-2. **Print invoice / ticket**: Include customization lines where applicable.
+1. **Done:** `OrderItem.customization_summary` (**VARCHAR 1024**) is set at **order create** from current question **labels** and answer text (`"Cooking: Medium · Toppings: Olives, Mushrooms"`). Staff **Orders**, **Kitchen**, **customer current order**, **order history**, and **printed invoice** prefer this snapshot; they fall back to formatting raw `customization_answers` (including `string[]` for legacy rows without a summary).
+2. **Print invoice / ticket:** First column includes the summary under the product name when present.
 
 ### Phase 4 — Hardening
 
@@ -56,7 +51,8 @@ Pick one direction (document the choice in ADR or this file when implemented):
 
 ## References
 
-- `back/app/models.py` — `ProductQuestion`, `ProductQuestionType`, `OrderItem.customization_answers`
+- `back/app/models.py` — `ProductQuestion`, `ProductQuestionType`, `OrderItem.customization_answers`, `OrderItem.customization_summary`
+- `back/app/product_customization.py` — validate / normalize answers, merge equality, option helpers
 - `back/app/main.py` — product question routes; menu order merge logic (~`customization_answers`)
 - `front/src/app/menu/menu.component.ts` — customer flow
 - `docs/0008-order-management-logic.md` — order lifecycle

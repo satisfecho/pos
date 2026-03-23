@@ -200,8 +200,8 @@
               </span>
               <div class="item-name-block">
                 <span class="item-name">{{ item.product.name }}</span>
-                @if (formatCustomizationSummary(item.customization_answers)) {
-                <span class="item-customization">{{ formatCustomizationSummary(item.customization_answers) }}</span>
+                @if (formatCustomizationSummary(item.customization_answers, item.customization_summary)) {
+                <span class="item-customization">{{ formatCustomizationSummary(item.customization_answers, item.customization_summary) }}</span>
                 }
               </div>
               <span class="item-price">{{ formatPrice(item.product.price_cents * item.quantity) }}</span>
@@ -488,8 +488,8 @@
         <div class="cart-item-card">
           <div class="cart-item-info">
             <span class="cart-item-name">{{ item.product.name }}</span>
-            @if (formatCustomizationSummary(item.customization_answers)) {
-            <span class="cart-item-customization">{{ formatCustomizationSummary(item.customization_answers) }}</span>
+            @if (formatCustomizationSummary(item.customization_answers, item.customization_summary)) {
+            <span class="cart-item-customization">{{ formatCustomizationSummary(item.customization_answers, item.customization_summary) }}</span>
             }
             <span class="cart-item-price">{{ formatPrice(item.product.price_cents * item.quantity) }}</span>
           </div>
@@ -726,7 +726,17 @@
         @for (q of productToAddWithQuestions()!.questions; track q.id) {
         <div class="customization-question">
           <label class="question-label">{{ q.label }}{{ q.required ? ' *' : '' }}</label>
-          @if (isChoiceOptionsArray(q)) {
+          @if (isMultiChoiceQuestion(q)) {
+          <div class="question-multi-choices">
+            @for (opt of getChoiceOptions(q); track opt) {
+            <label class="question-check-row">
+              <input type="checkbox" [checked]="isMultiOptionChecked(q.id, opt)"
+                (change)="toggleMultiChoiceAnswer(q.id, opt, $any($event.target).checked)" />
+              <span>{{ opt }}</span>
+            </label>
+            }
+          </div>
+          } @else if (isChoiceSingleSelect(q) && isChoiceOptionsArray(q)) {
           <select class="question-select" [value]="customizationAnswersForm()[q.id]"
             (change)="setCustomizationAnswer(q.id, $any($event.target).value)">
             <option value="">{{ 'COMMON.SELECT' | translate }}</option>

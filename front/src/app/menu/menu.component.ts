@@ -3,7 +3,7 @@ import { DomSanitizer, SafeResourceUrl, SafeStyle } from '@angular/platform-brow
 import { FormsModule } from '@angular/forms';
 import { CommonModule, SlicePipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { ApiService, Product, OrderItemCreate, OrderHistoryItem } from '../services/api.service';
+import { ApiService, Product, ProductQuestion, OrderItemCreate, OrderHistoryItem } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
 import { environment } from '../../environments/environment';
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
@@ -15,7 +15,9 @@ interface CartItem {
   quantity: number;
   notes: string;
   /** Answers to product questions: { question_id: value } */
-  customization_answers?: Record<string, string | number>;
+  customization_answers?: Record<string, string | number | string[]>;
+  /** From API after order placed */
+  customization_summary?: string | null;
   status?: string;  // Item status from backend
   itemId?: number;  // Backend item ID for editing
 }
@@ -95,7 +97,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   /** When set, show modal to collect product question answers before adding to cart */
   productToAddWithQuestions = signal<Product | null>(null);
   /** Collected answers for productToAddWithQuestions (question_id -> value) */
-  customizationAnswersForm = signal<Record<string, string | number>>({});
+  customizationAnswersForm = signal<Record<string, string | number | string[]>>({});
 
   // Customer identity
   customerName = signal('');
@@ -644,7 +646,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     }
   }
 
-  getProductKey(product: Product, customizationAnswers?: Record<string, string | number>): string {
+  getProductKey(product: Product, customizationAnswers?: Record<string, string | number | string[]>): string {
     if (!product) return 'null-product';
     const source = product._source || 'unknown';
     const id = product.id ?? 'no-id';
@@ -738,7 +740,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   // ============================================
   // CART OPERATIONS
   // ============================================
-  addToCart(product: Product, customizationAnswers?: Record<string, string | number>) {
+  addToCart(product: Product, customizationAnswers?: Record<string, string | number | string[]>) {
     const productKey = this.getProductKey(product, customizationAnswers);
     this.cart.update(items => {
       const existing = items.find(i => this.getProductKey(i.product, i.customization_answers) === productKey);
@@ -767,12 +769,45 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.customizationAnswersForm.update(prev => ({ ...prev, [questionId]: value }));
   }
 
+  /** Multi-select choice: toggle one option; keeps sorted unique list. */
+  toggleMultiChoiceAnswer(questionId: number, option: string, checked: boolean): void {
+    this.customizationAnswersForm.update(prev => {
+      const cur = prev[questionId];
+      let arr = Array.isArray(cur) ? [...cur] : [];
+      if (checked) {
+        if (!arr.includes(option)) arr.push(option);
+      } else {
+        arr = arr.filter(x => x !== option);
+      }
+      arr.sort();
+      return { ...prev, [questionId]: arr };
+    });
+  }
+
+  isMultiChoiceQuestion(q: ProductQuestion): boolean {
+    return q.type === 'choice' && !!q.multi;
+  }
+
+  isChoiceSingleSelect(q: ProductQuestion): boolean {
+    return q.type === 'choice' && !q.multi;
+  }
+
   isChoiceOptionsArray(q: { type: string; options?: unknown }): boolean {
     return q.type === 'choice' && Array.isArray(q.options);
   }
 
-  getChoiceOptions(q: { options?: unknown }): string[] {
-    return Array.isArray(q.options) ? (q.options as string[]) : [];
+  getChoiceOptions(q: ProductQuestion): string[] {
+    if (Array.isArray(q.options)) return q.options as string[];
+    if (q.options && typeof q.options === 'object' && 'choices' in q.options) {
+      const c = (q.options as { choices?: string[] }).choices;
+      return Array.isArray(c) ? c : [];
+    }
+    return [];
+  }
+
+  isMultiOptionChecked(questionId: number, option: string): boolean {
+    const cur = this.customizationAnswersForm()[questionId];
+    return Array.isArray(cur) && cur.includes(option);
   }
 
   confirmAddWithQuestions() {
@@ -780,7 +815,13 @@ export class MenuComponent implements OnInit, OnDestroy {
     if (!product) return;
     const answers = this.customizationAnswersForm();
     const required = product.questions?.filter(q => q.required) ?? [];
-    const missing = required.filter(q => answers[q.id] === undefined || answers[q.id] === '' || answers[q.id] === null);
+    const missing = required.filter(q => {
+      const v = answers[q.id];
+      if (q.type === 'choice' && q.multi) {
+        return !Array.isArray(v) || v.length === 0;
+      }
+      return v === undefined || v === '' || v === null;
+    });
     if (missing.length > 0) {
       return; // could show validation message
     }
@@ -1008,10 +1049,23 @@ export class MenuComponent implements OnInit, OnDestroy {
     return labels[status] || status;
   }
 
-  /** Human-readable summary of customization answers for display (e.g. "Medium, 7"). */
-  formatCustomizationSummary(answers: Record<string, string | number> | undefined): string {
+  /**
+   * Human-readable customization for cart / active order row.
+   * Prefer API snapshot when present (placed items).
+   */
+  formatCustomizationSummary(
+    answers: Record<string, string | number | string[]> | undefined,
+    summary?: string | null
+  ): string {
+    const s = summary?.trim();
+    if (s) return s;
     if (!answers || Object.keys(answers).length === 0) return '';
-    return Object.values(answers).join(' · ');
+    const parts: string[] = [];
+    for (const v of Object.values(answers)) {
+      if (Array.isArray(v)) parts.push(v.join(', '));
+      else parts.push(String(v));
+    }
+    return parts.join(' · ');
   }
 
   getItemStatusLabel(status: string): string {
@@ -1051,6 +1105,7 @@ export class MenuComponent implements OnInit, OnDestroy {
               quantity: item.quantity,
               notes: item.notes || '',
               customization_answers: item.customization_answers || undefined,
+              customization_summary: item.customization_summary ?? undefined,
               status: item.status,
               itemId: item.id
             } as CartItem))),
