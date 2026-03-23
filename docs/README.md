@@ -9,6 +9,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | Need to… | See |
 |----------|-----|
 | Run Puppeteer/UI tests | [testing.md](testing.md) |
+| Multi-agent task loop (mac-stats-reviewer style) | [agent-loop.md](agent-loop.md) |
 | Deploy to a server | [0004-deployment.md](0004-deployment.md) |
 | Set up CI/CD (amvara9) | [0001-ci-cd-amvara9.md](0001-ci-cd-amvara9.md) |
 | Configure Gmail for email | [0018-gmail-setup.md](0018-gmail-setup.md) |
@@ -74,6 +75,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 
 | Doc | Description |
 |-----|-------------|
+| [agent-loop.md](agent-loop.md) | Multi-agent workflow (task statuses, roles, `agents/` layout); modeled on mac-stats-reviewer; links to **`go-ahead-loop.sh`** and testing smokes. |
 | [0007-implementation-verification.md](0007-implementation-verification.md) | Implementation verification: what’s done vs Phase 4 (batch, audit, etc.). |
 | [0012-translation-implementation.md](0012-translation-implementation.md) | Translation (i18n): frontend, backend, DB content. |
 | [0013-verification-alternatives.md](0013-verification-alternatives.md) | Customer verification alternatives (SMS, etc.). |

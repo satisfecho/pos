@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **`docs/agent-loop.md`** — mac-stats-reviewer–style multi-agent workflow for POS: task pipeline (`new` → … → `done/`), role mapping (log analyst, coder, tester, closing reviewer, committer), target `agents/` layout, integration with **`go-ahead-loop.sh`** and **`docs/testing.md`**.
 - **GitHub #52 planning**: **`docs/0050-github-issue-52-split-plan.md`** — ten dedicated issue specs (title + body), phased rollout (A–E), dependency diagram, filing checklist; **`docs/0032-github-issues-roadmap.md`** and **`docs/README.md`** link to it.
 
 ## [2.0.49] - 2026-03-23
