@@ -2816,6 +2816,7 @@ async def upload_product_image(
 )
 def list_product_questions(
     request: Request,
+    response: Response,
     product_id: int,
     current_user: Annotated[models.User, Depends(require_permission(Permission.PRODUCT_READ))],
     session: Session = Depends(get_session),
@@ -2900,6 +2901,7 @@ def _validate_product_question_options(
 )
 def create_product_question(
     request: Request,
+    response: Response,
     product_id: int,
     body: models.ProductQuestionCreate,
     current_user: Annotated[models.User, Depends(require_permission(Permission.PRODUCT_WRITE))],
@@ -2947,6 +2949,7 @@ def create_product_question(
 )
 def update_product_question(
     request: Request,
+    response: Response,
     product_id: int,
     question_id: int,
     body: models.ProductQuestionUpdate,
@@ -3015,6 +3018,7 @@ def update_product_question(
 )
 def delete_product_question(
     request: Request,
+    response: Response,
     product_id: int,
     question_id: int,
     current_user: Annotated[models.User, Depends(require_permission(Permission.PRODUCT_WRITE))],
@@ -3050,6 +3054,7 @@ def delete_product_question(
 )
 def reorder_product_questions(
     request: Request,
+    response: Response,
     product_id: int,
     body: models.ProductQuestionReorder,
     current_user: Annotated[models.User, Depends(require_permission(Permission.PRODUCT_WRITE))],
