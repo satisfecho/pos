@@ -10,6 +10,10 @@
 # Before any deploy steps, a full DB backup is taken (pg_dump) to BACKUP_DIR (default
 # ./backups). Only the last BACKUP_RETAIN backups are kept (default 10). Set these
 # env vars on the server to override.
+#
+# Optional env (GitHub #49):
+#   SKIP_ORIGIN_CHECK=1  — do not require git remote origin to match satisfecho/pos.
+#   DEPLOY_FULL_DOWN=1   — use docker compose down instead of stopping app-tier only.
 
 set -e
 # Expect to be run from repo root on server, e.g. cd /development/pos && bash -s
@@ -45,7 +49,26 @@ else
   echo "Database container not running; skipping backup (virgin or first deploy)."
 fi
 
-# Build while current stack is still running so downtime is only for the switch (down → migrate → up).
+# Fail before long builds if this checkout is not the expected GitHub repo (forks: SKIP_ORIGIN_CHECK=1).
+if [ "${SKIP_ORIGIN_CHECK:-0}" != "1" ]; then
+  ORIGIN_URL=$(git remote get-url origin 2>/dev/null || true)
+  if [ -n "$ORIGIN_URL" ]; then
+    case "$ORIGIN_URL" in
+      *satisfecho/pos*)
+        echo "Git origin OK: $ORIGIN_URL"
+        ;;
+      *)
+        echo "::error::Git origin is not satisfecho/pos: $ORIGIN_URL"
+        echo "Set SKIP_ORIGIN_CHECK=1 to bypass (forks / mirrors)."
+        exit 1
+        ;;
+    esac
+  else
+    echo "Warning: could not read git remote origin; continuing."
+  fi
+fi
+
+# Build while the stack is still running: if build fails, we never stop db/redis or the prior app.
 echo "Building back image first..."
 docker compose $COMPOSE_OPTS build back
 
@@ -59,14 +82,20 @@ docker compose $COMPOSE_OPTS build --no-cache front
 echo "Ensure certbot dirs exist (webroot for certbot, haproxy-certs for combined PEM; see certbot/README.md)..."
 mkdir -p certbot/www certbot/haproxy-certs
 
-echo "Stopping existing containers (downtime starts here)..."
-docker compose $COMPOSE_OPTS down --remove-orphans || true
-echo "Force-remove haproxy container if present (avoids port 4202 already in use)..."
+# Prefer stopping app-tier only so PostgreSQL/Redis keep running (shorter outage, no full stack teardown).
+echo "Stopping app-tier containers (downtime starts here; db/redis stay up unless DEPLOY_FULL_DOWN=1)..."
+if [ "${DEPLOY_FULL_DOWN:-0}" = "1" ]; then
+  echo "DEPLOY_FULL_DOWN=1: full docker compose down (legacy / emergency)."
+  docker compose $COMPOSE_OPTS down --remove-orphans || true
+else
+  docker compose $COMPOSE_OPTS stop front haproxy ws-bridge back 2>/dev/null || true
+fi
+echo "Force-remove haproxy container if present (clears stuck name/port binds)..."
 docker rm -f pos-haproxy 2>/dev/null || true
-echo "Waiting for ports to be released..."
-sleep 10
+echo "Brief pause for port release..."
+sleep 3
 
-echo "Starting db and redis only for migrations..."
+echo "Ensuring db and redis are up for migrations..."
 docker compose $COMPOSE_OPTS up -d db redis
 echo "Waiting for db to be healthy..."
 for i in 1 2 3 4 5 6 7 8 9 10; do
@@ -76,19 +105,41 @@ for i in 1 2 3 4 5 6 7 8 9 10; do
 done
 
 echo "Running migrations (before app serves traffic)..."
-docker compose $COMPOSE_OPTS run --rm back python -m app.migrate || true
+docker compose $COMPOSE_OPTS run --rm back python -m app.migrate
 echo "Running migration sync (repair if schema_version was wrong)..."
-docker compose $COMPOSE_OPTS run --rm back python -m app.migrate --sync-idempotent || true
+docker compose $COMPOSE_OPTS run --rm back python -m app.migrate --sync-idempotent
 
 echo "Starting all services (back, front, haproxy, ws-bridge use newly built images)..."
-if ! docker compose $COMPOSE_OPTS up -d; then
+if ! docker compose $COMPOSE_OPTS up -d --remove-orphans; then
   echo "First up failed (possible port race); waiting 10s and retrying..."
   sleep 10
-  docker compose $COMPOSE_OPTS up -d
+  docker compose $COMPOSE_OPTS up -d --remove-orphans
 fi
 
-echo "Waiting for back to be ready..."
-sleep 15
+echo "Waiting for back /health (retry loop)..."
+BACK_HEALTH_OK=""
+for i in $(seq 1 30); do
+  if docker compose $COMPOSE_OPTS exec -T back python3 -c "
+import sys
+import urllib.request
+try:
+    r = urllib.request.urlopen('http://127.0.0.1:8020/health', timeout=4)
+    code = getattr(r, 'status', r.getcode())
+    sys.exit(0 if code == 200 else 1)
+except Exception:
+    sys.exit(1)
+" 2>/dev/null; then
+    BACK_HEALTH_OK=1
+    break
+  fi
+  echo "Back not healthy yet (attempt $i/30)..."
+  sleep 2
+done
+if [ -z "$BACK_HEALTH_OK" ]; then
+  echo "::error::Back did not become healthy in time. Check: docker compose $COMPOSE_OPTS logs --tail=80 back"
+  exit 1
+fi
+echo "Back health check passed."
 
 # Verify back serves upload routes (explicit routes fix menu/catalog/product images; see docs/0027-amvara9-menu-images-troubleshooting.md)
 echo "Verifying back has upload image routes..."

@@ -45,7 +45,15 @@ You can override defaults with these repository secrets:
 
 - **File:** `.github/workflows/deploy-amvara9.yml`
 - **Trigger:** Push to `master` or `main`
-- **Steps:** SSH to amvara9 → `git pull origin master` → `docker compose up --build -d` → run migrations
+- **Concurrency:** A single **`deploy-amvara9`** group queues jobs so two pushes cannot overlap on the same server checkout.
+- **Steps:** SSH to amvara9 → `git fetch` → **`git checkout` + `reset --hard` to the pushed branch** (`${{ github.ref_name }}`, e.g. `master`) → **`bash scripts/deploy-amvara9.sh`**
+- **Deploy script behaviour (GitHub #49):**
+  - **`docker compose build`** for **back** and **front** runs **before** stopping app containers; a failed build leaves the previous stack running.
+  - By default, **`docker compose down` is not used**; only **front**, **haproxy**, **ws-bridge**, and **back** are stopped so **db** and **redis** stay up. Override with **`DEPLOY_FULL_DOWN=1`** on the server for a full teardown.
+  - **`git remote get-url origin`** must contain **`satisfecho/pos`** unless **`SKIP_ORIGIN_CHECK=1`** (forks/mirrors).
+  - Migrations run with **strict failure** (script exits if migrate or sync-idempotent fails).
+  - After **`up -d`**, the script waits for **`http://127.0.0.1:8020/health`** inside the **back** container (retries) instead of a fixed long sleep.
+- **Post-deploy smoke:** The workflow retries **landing**, **app-version** meta, and **`/api/health`** against **`SMOKE_TEST_BASE_URL`** (default **https://www.satisfecho.de**).
 
 ## First deploy
 

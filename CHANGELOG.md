@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **GitHub #49 — amvara9 deploy safety:** **`scripts/deploy-amvara9.sh`** builds images **before** stopping app containers; avoids **`docker compose down`** by default (stops **front / haproxy / ws-bridge / back** only so **db** and **redis** keep running; **`DEPLOY_FULL_DOWN=1`** restores full down). Optional **`SKIP_ORIGIN_CHECK=1`** bypasses **`git origin`** validation for **`satisfecho/pos`**. Migrations no longer ignore failures; post-**up** wait uses **`/health`** retries. **`.github/workflows/deploy-amvara9.yml`** uses a single **`concurrency: deploy-amvara9`** group. **`docs/0001-ci-cd-amvara9.md`** updated.
+
 ### Added
 
 - **GitHub #25 — Personal providers (edit + API tests):** Staff **`PATCH /providers/{id}`** updates **tenant-owned** providers only (name, contact, URL, **`is_active`**); global/catalog providers return **403**. **Settings → Providers** adds **Edit provider** for personal rows. Backend isolation tests: **`back/tests/test_personal_providers_api.py`**.
