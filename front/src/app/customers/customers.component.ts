@@ -79,6 +79,7 @@ import { TranslateModule } from '@ngx-translate/core';
                   <th>{{ 'CUSTOMERS.TAX_ID' | translate }}</th>
                   <th>{{ 'CUSTOMERS.EMAIL' | translate }}</th>
                   <th>{{ 'CUSTOMERS.PHONE' | translate }}</th>
+                  <th>{{ 'CUSTOMERS.BIRTH_DATE' | translate }}</th>
                   @if (canWrite()) {
                     <th></th>
                   }
@@ -92,6 +93,7 @@ import { TranslateModule } from '@ngx-translate/core';
                     <td>{{ c.tax_id || '—' }}</td>
                     <td>{{ c.email || '—' }}</td>
                     <td>{{ c.phone || '—' }}</td>
+                    <td>{{ c.birth_date || '—' }}</td>
                     @if (canWrite()) {
                       <td class="actions">
                         <button class="icon-btn" [title]="'COMMON.EDIT' | translate" (click)="openModal(c)">
@@ -152,6 +154,11 @@ import { TranslateModule } from '@ngx-translate/core';
                 <label for="cust-phone">{{ 'CUSTOMERS.PHONE' | translate }}</label>
                 <input id="cust-phone" type="text" [(ngModel)]="form.phone" name="phone" />
               </div>
+              <div class="form-group">
+                <label for="cust-birth">{{ 'CUSTOMERS.BIRTH_DATE' | translate }}</label>
+                <input id="cust-birth" type="date" [(ngModel)]="form.birth_date" name="birth_date" />
+                <p class="field-hint">{{ 'CUSTOMERS.BIRTH_DATE_HINT' | translate }}</p>
+              </div>
               <div class="modal-actions">
                 <button type="button" class="btn btn-secondary" (click)="closeModal()">{{ 'COMMON.CANCEL' | translate }}</button>
                 <button type="submit" class="btn btn-primary" [disabled]="!form.name.trim() || saving()">
@@ -193,6 +200,7 @@ import { TranslateModule } from '@ngx-translate/core';
     .icon-btn-danger:hover { color: var(--color-danger, #dc2626); }
     .error-banner { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: #fef2f2; color: #b91c1c; border-radius: 6px; margin-bottom: 1rem; }
     .empty-icon { margin-bottom: 0.5rem; color: var(--color-text-muted); }
+    .field-hint { margin: 0.35rem 0 0; font-size: 0.8rem; color: var(--color-text-muted); }
   `]
 })
 export class CustomersComponent implements OnInit {
@@ -208,13 +216,22 @@ export class CustomersComponent implements OnInit {
   deleting = signal<BillingCustomer | null>(null);
   searchTerm = '';
 
-  form: { name: string; company_name: string; tax_id: string; address: string; email: string; phone: string } = {
+  form: {
+    name: string;
+    company_name: string;
+    tax_id: string;
+    address: string;
+    email: string;
+    phone: string;
+    birth_date: string;
+  } = {
     name: '',
     company_name: '',
     tax_id: '',
     address: '',
     email: '',
-    phone: ''
+    phone: '',
+    birth_date: ''
   };
 
   canWrite(): boolean {
@@ -242,10 +259,19 @@ export class CustomersComponent implements OnInit {
         tax_id: c.tax_id ?? '',
         address: c.address ?? '',
         email: c.email ?? '',
-        phone: c.phone ?? ''
+        phone: c.phone ?? '',
+        birth_date: c.birth_date ?? ''
       };
     } else {
-      this.form = { name: '', company_name: '', tax_id: '', address: '', email: '', phone: '' };
+      this.form = {
+        name: '',
+        company_name: '',
+        tax_id: '',
+        address: '',
+        email: '',
+        phone: '',
+        birth_date: ''
+      };
     }
     this.showModal.set(true);
   }
@@ -258,7 +284,15 @@ export class CustomersComponent implements OnInit {
   save() {
     if (!this.form.name.trim()) return;
     this.saving.set(true);
-    const payload = {
+    const payload: {
+      name: string;
+      company_name?: string;
+      tax_id?: string;
+      address?: string;
+      email?: string;
+      phone?: string;
+      birth_date?: string | null;
+    } = {
       name: this.form.name.trim(),
       company_name: this.form.company_name?.trim() || undefined,
       tax_id: this.form.tax_id?.trim() || undefined,
@@ -268,11 +302,15 @@ export class CustomersComponent implements OnInit {
     };
     const editing = this.editing();
     if (editing) {
+      payload.birth_date = this.form.birth_date.trim() || null;
       this.api.updateBillingCustomer(editing.id, payload).subscribe({
         next: () => { this.saving.set(false); this.closeModal(); this.load(); },
         error: err => { this.error.set(err.error?.detail || 'Update failed'); this.saving.set(false); }
       });
     } else {
+      if (this.form.birth_date.trim()) {
+        payload.birth_date = this.form.birth_date.trim();
+      }
       this.api.createBillingCustomer(payload).subscribe({
         next: () => { this.saving.set(false); this.closeModal(); this.load(); },
         error: err => { this.error.set(err.error?.detail || 'Create failed'); this.saving.set(false); }

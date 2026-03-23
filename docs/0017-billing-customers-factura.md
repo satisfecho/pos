@@ -15,7 +15,7 @@ Restaurants often need to issue **tax invoices (Factura)** to B2B customers or a
 
 - **Access**: Staff with order access (owner, admin, waiter, receptionist). Write (add/edit/delete) requires `billing_customer:write` (owner, admin, waiter).
 - **List**: All billing customers for the tenant, with search by name, company name, tax ID, or email.
-- **Add**: “Add customer” opens a form: Name (required), Company name, Tax ID / CIF, Address, Email, Phone.
+- **Add**: “Add customer” opens a form: Name (required), Company name, Tax ID / CIF, Address, Email, Phone, optional **Birth date** (CRM / occasions; not printed on the tax invoice).
 - **Edit / Delete**: From the table; delete does not remove the link on orders that already reference the customer (order keeps the saved data).
 
 ---
@@ -34,7 +34,7 @@ Restaurants often need to issue **tax invoices (Factura)** to B2B customers or a
 
 ## Backend
 
-- **Model**: `BillingCustomer` (tenant-scoped): `name`, `company_name`, `tax_id`, `address`, `email`, `phone`.
+- **Model**: `BillingCustomer` (tenant-scoped): `name`, `company_name`, `tax_id`, `address`, `email`, `phone`, optional `birth_date` (date only).
 - **Order**: Optional `billing_customer_id`; `GET /orders` includes `billing_customer_id` and nested `billing_customer` when set.
 - **Endpoints**:
   - `GET /billing-customers?search=...` — list (with optional search).

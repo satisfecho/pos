@@ -6,22 +6,22 @@ This file **summarizes** large, multi-track items that are tracked on GitHub. It
 
 ## [#52 — Various topics to enhance](https://github.com/satisfecho/pos/issues/52)
 
-Umbrella list — **split into separate issues** before implementation.
+Umbrella list. **This table is the source of truth** for “is it done?” until each theme has its own GitHub issue.
 
-| Theme | Notes |
-|--------|--------|
-| **Multiple warehouses (“almacenes”)** | e.g. meat → cold room; needs inventory model, locations, stock moves. |
-| **Split invoice** | Partial payments or multi-party bills; touches orders, payments, printing. |
-| **Join tables** | Floor plan + session: combined covers, single bill or split — align with `docs/0008-order-management-logic.md`. |
-| **Offline operation** | Service worker / local queue / sync — major architecture. |
-| **Migrate from existing system** | Import pipelines (CSV/API), mapping, cutover runbook. |
-| **Opinion surveys / Google** | Public feedback + Google review URL (partially related to guest feedback features). |
-| **Birthdays (“cumpleaños”)** | CRM-style dates, optional marketing triggers — overlaps [#54](https://github.com/satisfecho/pos/issues/54). |
-| **Marketing / special offers** | Promotions engine, eligibility, menu pricing — overlaps [#54](https://github.com/satisfecho/pos/issues/54). |
-| **Central kitchen → branches** | Multi-tenant or multi-site fulfillment; supply chain. |
-| **Uber Eats interface** | External aggregator integration. |
+| Theme | Status in product | Docs / notes |
+|--------|-------------------|--------------|
+| **Multiple warehouses (“almacenes”)** | Not started | Inventory today is purchase-oriented; needs locations, stock moves, picking. |
+| **Split invoice** | Not started | Partial payments / multi-payer bills: orders, Stripe, Factura printing. |
+| **Join tables** | Not started | Physical merge of tables + one or many bills: see `docs/0008-order-management-logic.md` (sessions per device already). |
+| **Offline operation** | Not started | Service worker, local queue, conflict resolution — large architecture change. |
+| **Migrate from existing system** | Partial | Seeds, imports exist for catalog/demo; no generic “import any POS” pipeline or runbook. |
+| **Opinion surveys / Google** | **Partial** | Guest feedback `/feedback/:id`, **Settings → Google review URL**, thank-you step — see [#54](https://github.com/satisfecho/pos/issues/54), `CHANGELOG.md`. |
+| **Birthdays (“cumpleaños”)** | **Partial** | Optional **`birth_date`** on **billing customers** (Customers / Factura CRM); not on reservations yet. Automated campaigns → [#54](https://github.com/satisfecho/pos/issues/54). |
+| **Marketing / special offers** | Not started | Promotions / pricing rules — overlaps [#54](https://github.com/satisfecho/pos/issues/54). |
+| **Central kitchen → branches** | Not started | Cross-tenant or multi-site supply; out of scope of current schema. |
+| **Uber Eats interface** | Not started | Aggregator menu sync / orders — see `docs/0031-order-customizations-plan.md` (delivery integrations). |
 
-**Recommendation:** Close #52 once each bullet has its own issue (or link to existing docs), and prioritise one vertical (e.g. split invoice OR warehouses).
+**Recommendation:** Open **one GitHub issue per “Not started” row** when scheduling work. **Close #52** when maintainers agree the umbrella is fully tracked (sub-issues filed) and this table stays updated.
 
 ---
 

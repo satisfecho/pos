@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **Puppeteer tests** (`front/scripts/`): Chrome runs **headless by default**. Use **`HEADLESS=0`**, **`false`**, or **`no`** for a visible window. Logic lives in **`front/scripts/puppeteer-headless.mjs`**. Docs: **`docs/testing.md`**, **`AGENTS.md`**.
 
+## [2.0.48] - 2026-03-23
+
+### Added
+
+- **GitHub #52 (follow-up)**: **`GET /billing-customers`** list now includes **`birth_date`** (aligned with single-customer and order payloads). **Customers** (`/customers`) — table column and add/edit **birth date** field with i18n. Migration **`20260323120500_billing_customer_birth_date.sql`** added to the repo (idempotent `IF NOT EXISTS`). **`docs/0032-github-issues-roadmap.md`** — per-theme **implementation status** for all #52 bullets; **`docs/0017-billing-customers-factura.md`** and **`ROADMAP.md`** updated accordingly.
+
 ## [2.0.47] - 2026-03-23
 
 ### Added
@@ -30,8 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- **GitHub #52 (umbrella)**: **`docs/0032-github-issues-roadmap.md`** now includes an **implementation status** table for each #52 theme (warehouses, split bill, join tables, offline, migration, Google/surveys, birthdays, marketing, central kitchen, Uber Eats) with **what exists vs. not started** and links to related docs.
-- **Birth date on billing customers (#52 — cumpleaños / CRM)**: Optional **`birth_date`** on **`BillingCustomer`**; **Customers** list and add/edit form; **`GET/POST/PUT`** `/billing-customers` and nested **`billing_customer`** on orders return it. Migration **`20260323120500_billing_customer_birth_date.sql`**. See **`docs/0017-billing-customers-factura.md`**.
+- **Birth date on billing customers (#52 — CRM)**: Optional **`birth_date`** on **`BillingCustomer`**; **`POST/PUT/GET`** `/billing-customers/{id}` and nested **`billing_customer`** on **orders** return it. API + model + i18n keys; see **`docs/0017-billing-customers-factura.md`**. (List endpoint, **Customers** UI, migration file, and roadmap status table completed in **2.0.48**.)
 
 ## [2.0.44] - 2026-03-23
 

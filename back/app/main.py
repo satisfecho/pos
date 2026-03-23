@@ -8214,6 +8214,7 @@ def list_billing_customers(
             "address": c.address,
             "email": c.email,
             "phone": c.phone,
+            "birth_date": c.birth_date.isoformat() if c.birth_date else None,
             "created_at": c.created_at.isoformat(),
         }
         for c in customers
