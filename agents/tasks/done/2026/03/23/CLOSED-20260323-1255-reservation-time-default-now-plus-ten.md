@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Reservation time defaults were wrong (e.g. fixed evening time); they should follow **now + 10 minutes** (and opening/availability) for public booking and staff “new reservation”.
+- **What was done:** Public book flow uses earliest bookable quarter after lead time in tenant TZ (`book.component.ts`); staff new reservation defaults to local date + now+10 with UTC-date drift fixes (`reservations.component.ts`); **`CHANGELOG.md`** `[Unreleased]` updated per coder notes.
+- **What was tested:** Public `/book/1`, staff New reservation (today + future date), `debug-reservations-public.mjs`, `test:landing-version`, front build logs — **overall PASS** per test report.
+- **Why closed:** Tester **PASS** on all listed criteria; acceptance met.
+- **Closed at (UTC):** 2026-03-23 14:37
+---
+
 # Feedback / Time in reservation have to be the time now + 10 minutes
 
 ## GitHub
