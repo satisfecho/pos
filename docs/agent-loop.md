@@ -43,7 +43,7 @@ If **none** of the above applies: **push `development` only**; do **not** merge 
 
 | mac-stats-reviewer agent | POS role | Typical inputs | Writes / edits |
 |--------------------------|----------|----------------|----------------|
-| **001 Log reviewer** (`LOG-REVIEWER-PROMPT.md`) | **Log / incident analyst** | `docker logs pos-front`, `pos-back`, `pos-haproxy`, `pos-postgres`; optional app logs | **New task files** in `agents/tasks/` with high-level instructions only (no code). Uses **`docs/`**, **`AGENTS.md`**, error-investigation workflow. |
+| **001 Log reviewer** (`LOG-REVIEWER-PROMPT.md`) | **GitHub backlog + optional logs** | **[Issues](https://github.com/satisfecho/pos/issues)** / **`gh issue list`**; up to **3** new **`NEW-`/`FEAT-`** tasks per run; then optional Docker logs | **Task files** in **`agents/tasks/`** only (no app code). **`gh`** comment + **`agent:planned`**. See prompt for dedupe rules. |
 | **002 Coder** (`002-coder-backend/CODER.md`) | **Implementer (main)** | Tasks in status **new** → **wip** | **`back/`**, **`front/`**, tests; task file status + **Testing instructions**; then **untested**. |
 | **006 Feature coder** (`FEATURE-CODER.md`) | **Implementer (FEAT queue)** | Tasks **feat** → **wip** | Same as coder, but only **FEAT-** tasks (if you use that track). |
 | **003 Tester** (`TESTER.md`) | **Verifier** | **untested** → **testing** | Appends **Test report**; **closed** or back to **wip** on failure. Uses **`pytest`** (Docker), **`node front/scripts/…`**, **`npm run test:*`** per task. |
