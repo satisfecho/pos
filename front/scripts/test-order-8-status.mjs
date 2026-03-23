@@ -12,9 +12,10 @@
  *   LOGIN_EMAIL     Staff user email (required)
  *   LOGIN_PASSWORD  Staff password (required)
  *   ORDER_ID        Order number to test (default: 8)
- *   HEADLESS        Set to 1 to run headless (default: 0)
+ *   HEADLESS       Default headless; set 0, false, or no for a visible browser.
  */
 
+import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const puppeteer = require('puppeteer-core');
@@ -41,7 +42,7 @@ async function main() {
     baseUrl = baseUrl || 'http://satisfecho.de';
   }
 
-  const headless = process.env.HEADLESS === '1' || process.env.HEADLESS === 'true';
+  const headless = isHeadless();
   const loginEmail = process.env.LOGIN_EMAIL;
   const loginPassword = process.env.LOGIN_PASSWORD;
   const orderId = process.env.ORDER_ID || '8';

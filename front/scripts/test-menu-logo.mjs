@@ -9,10 +9,12 @@
  *   BASE_URL - app URL (default: auto-detect 4202, 4203, 4200)
  *   TABLE_TOKEN - table token for /menu/{token} (default: fetched via API after login)
  *   LOGIN_EMAIL, LOGIN_PASSWORD (or DEMO_LOGIN_EMAIL, DEMO_LOGIN_PASSWORD) - for API table fetch
+ *   HEADLESS - default headless; set 0/false/no for a visible browser
  *
  * Loads .env from project root if vars unset.
  */
 
+import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 import { readFileSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
@@ -112,7 +114,7 @@ async function main() {
   console.log('Menu URL:', menuUrl);
   console.log('---');
 
-  const headless = process.env.HEADLESS === '1' || process.env.HEADLESS === 'true';
+  const headless = isHeadless();
   const browser = await puppeteer.launch({
     executablePath: CHROME_PATH,
     headless,

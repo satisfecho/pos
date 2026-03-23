@@ -18,6 +18,7 @@
  * Chrome: PUPPETEER_EXECUTABLE_PATH or /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
  */
 
+import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 import { readFileSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
@@ -83,7 +84,7 @@ async function main() {
   console.log('Login:', LOGIN_EMAIL ? `${LOGIN_EMAIL} (from env)` : 'NOT SET – set LOGIN_EMAIL and LOGIN_PASSWORD or DEMO_OWNER_EMAIL / DEMO_OWNER_PASSWORD');
   console.log('---');
 
-  const headless = process.env.HEADLESS === '1' || process.env.HEADLESS === 'true';
+  const headless = isHeadless();
   const browser = await puppeteer.launch({
     executablePath: CHROME_PATH,
     headless,

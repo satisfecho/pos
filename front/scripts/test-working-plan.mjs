@@ -15,13 +15,14 @@
  *   LOGIN_EMAIL    Owner/admin email (or set DEMO_LOGIN_EMAIL in .env)
  *   LOGIN_PASSWORD Password (or set DEMO_LOGIN_PASSWORD in .env)
  *   TENANT_ID      Tenant for login URL (default 1); use so login uses /login?tenant=1 and user is Owner
- *   HEADLESS       Set to 1 to run headless
+ *   HEADLESS       Default headless; set 0, false, or no for a visible browser.
  *
  * Note: The working-plan route is lazy-loaded. If you don't see UI changes after editing the component,
  * do a full page refresh (Ctrl+Shift+R / Cmd+Shift+R) or restart the dev server; hot reload often
  * does not invalidate lazy-loaded chunks.
  */
 
+import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 import { readFileSync, existsSync } from 'fs';
 import { join, resolve } from 'path';
@@ -70,7 +71,7 @@ async function main() {
     baseUrl = baseUrl || 'http://satisfecho.de';
   }
 
-  const headless = process.env.HEADLESS === '1' || process.env.HEADLESS === 'true';
+  const headless = isHeadless();
   const loginEmail =
     process.env.LOGIN_EMAIL ||
     process.env.ADMIN_EMAIL ||

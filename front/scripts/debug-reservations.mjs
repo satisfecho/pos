@@ -5,11 +5,12 @@
  * Reservations screen does not open.
  *
  * Usage (from front/): node scripts/debug-reservations.mjs
- * Optional env: BASE_URL (default http://localhost:4202), LOGIN_EMAIL, LOGIN_PASSWORD
+ * Optional env: BASE_URL (default http://localhost:4202), LOGIN_EMAIL, LOGIN_PASSWORD, HEADLESS (default headless; 0/false/no = visible)
  *
  * Chrome must be installed at: /Applications/Google Chrome.app (macOS)
  */
 
+import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const puppeteer = require('puppeteer-core');
@@ -42,7 +43,7 @@ async function main() {
   console.log('Tenant ID:', tenantId);
   console.log('---');
 
-  const headless = process.env.HEADLESS === '1' || process.env.HEADLESS === 'true';
+  const headless = isHeadless();
   const browser = await puppeteer.launch({
     executablePath: CHROME_PATH,
     headless,

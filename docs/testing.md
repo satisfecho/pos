@@ -15,7 +15,7 @@ Tests auto-detect the first responding port among **4203, 4202, 4200** when `BAS
 | Variable | Description |
 |----------|-------------|
 | `BASE_URL` | App base URL (e.g. `http://127.0.0.1:4203`, `http://satisfecho.de`). Default: auto-detect localhost port or fallback. |
-| `HEADLESS` | `1` or `true` for headless Chrome; default `0` (visible). |
+| `HEADLESS` | Default **headless**. Set `0`, `false`, or `no` for a visible Chrome window. |
 | `PUPPETEER_EXECUTABLE_PATH` | Path to Chrome binary; default macOS: `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`. |
 | `LOGIN_EMAIL` / `LOGIN_PASSWORD` | Staff/demo user for login-required tests. Often loaded from `.env` as `DEMO_LOGIN_EMAIL` / `DEMO_LOGIN_PASSWORD`. |
 

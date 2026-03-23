@@ -8,9 +8,10 @@
  *   node front/scripts/test-rate-limit-puppeteer.mjs
  *   BASE_URL=http://127.0.0.1:4202 HEADLESS=1 node front/scripts/test-rate-limit-puppeteer.mjs
  *
- * Env: BASE_URL, HEADLESS
+ * Env: BASE_URL, HEADLESS (default headless; 0/false/no = visible)
  */
 
+import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const puppeteer = require('puppeteer-core');
@@ -39,7 +40,7 @@ async function main() {
     baseUrl = baseUrl || 'http://127.0.0.1:4202';
   }
 
-  const headless = process.env.HEADLESS === '1' || process.env.HEADLESS === 'true';
+  const headless = isHeadless();
   console.log('BASE_URL:', baseUrl);
   console.log('Headless:', headless);
   console.log('Submitting wrong login', LOGIN_ATTEMPTS, 'times to trigger rate limit...');

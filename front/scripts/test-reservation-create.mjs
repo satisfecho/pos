@@ -13,9 +13,10 @@
  *   BASE_URL   Default: https://www.satisfecho.de (amvara9). For local: auto-detect 4203/4202/4200.
  *   TENANT_ID  Tenant for /book/:id (default 1)
  *   TEST_EMAIL Customer email for the reservation (default ralf.roeber@amvara.de so confirmations can be verified).
- *   HEADLESS   Set to 1 to run headless
+ *   HEADLESS       Default headless; set 0, false, or no for a visible browser.
  */
 
+import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const puppeteer = require('puppeteer-core');
@@ -43,7 +44,7 @@ async function main() {
   const baseUrl = await resolveBaseUrl();
   const tenantId = process.env.TENANT_ID || '1';
   const bookUrl = new URL(`/book/${tenantId}`, baseUrl).href;
-  const headless = process.env.HEADLESS === '1' || process.env.HEADLESS === 'true';
+  const headless = isHeadless();
 
   console.log('test-reservation-create (Puppeteer)');
   console.log('BASE_URL:', baseUrl);

@@ -13,9 +13,10 @@
  *   PROVIDER_EMAIL      Email (default: provider-<timestamp>@amvara.de)
  *   PROVIDER_PASSWORD   Password (default: testpass123)
  *   PROVIDER_FULL_NAME  Full name (default: Test Provider User)
- *   HEADLESS            Set to 1 to run headless (default: 0)
+ *   HEADLESS       Default headless; set 0, false, or no for a visible browser.
  */
 
+import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const puppeteer = require('puppeteer-core');
@@ -48,7 +49,7 @@ async function main() {
   const password = process.env.PROVIDER_PASSWORD || 'testpass123';
   const fullName = process.env.PROVIDER_FULL_NAME || 'Test Provider User';
 
-  const headless = process.env.HEADLESS === '1' || process.env.HEADLESS === 'true';
+  const headless = isHeadless();
   const registerUrl = new URL('/provider/register', baseUrl).href;
 
   console.log('BASE_URL:', baseUrl);

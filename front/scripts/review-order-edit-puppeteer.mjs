@@ -5,9 +5,12 @@
  *
  * Usage (from repo root, front + back running):
  *   node front/scripts/review-order-edit-puppeteer.mjs
- *   BASE_URL=http://127.0.0.1:4202 HEADLESS=1 node front/scripts/review-order-edit-puppeteer.mjs
+ *   BASE_URL=http://127.0.0.1:4202 node front/scripts/review-order-edit-puppeteer.mjs
+ *
+ * Default headless; set HEADLESS=0 to watch the browser.
  */
 
+import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 import { readFileSync, existsSync, mkdirSync } from 'fs';
 import { join, resolve } from 'path';
@@ -53,7 +56,7 @@ async function main() {
     process.exit(1);
   }
 
-  const headless = process.env.HEADLESS === '1' || process.env.HEADLESS === 'true';
+  const headless = isHeadless();
   const browser = await puppeteer.launch({
     executablePath: CHROME_PATH,
     headless,

@@ -13,9 +13,10 @@
  *   LOGIN_EMAIL    Owner/admin email (or DEMO_LOGIN_EMAIL in .env)
  *   LOGIN_PASSWORD Password (or DEMO_LOGIN_PASSWORD in .env)
  *   TENANT_ID      Tenant for login (default 1)
- *   HEADLESS       Set to 1 to run headless
+ *   HEADLESS       Default headless; set 0, false, or no for a visible browser.
  */
 
+import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 import { readFileSync, existsSync } from 'fs';
 import { join, resolve } from 'path';
@@ -66,7 +67,7 @@ async function main() {
     baseUrl = baseUrl || 'http://localhost:4202';
   }
 
-  const headless = process.env.HEADLESS === '1' || process.env.HEADLESS === 'true';
+  const headless = isHeadless();
   const loginEmail =
     process.env.LOGIN_EMAIL ||
     process.env.ADMIN_EMAIL ||

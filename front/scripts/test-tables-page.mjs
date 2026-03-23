@@ -13,9 +13,10 @@
  *   LOGIN_EMAIL    Staff user email (or DEMO_LOGIN_EMAIL)
  *   LOGIN_PASSWORD Password (or DEMO_LOGIN_PASSWORD)
  *   TENANT_ID      Tenant for login, e.g. 1 (default: 1)
- *   HEADLESS       Set to 1 for headless (default: 0)
+ *   HEADLESS       Default headless; set 0, false, or no for a visible browser.
  */
 
+import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 import { readFileSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
@@ -68,7 +69,7 @@ async function main() {
     baseUrl = baseUrl || 'http://satisfecho.de';
   }
 
-  const headless = process.env.HEADLESS === '1' || process.env.HEADLESS === 'true';
+  const headless = isHeadless();
   const loginEmail = process.env.LOGIN_EMAIL || process.env.DEMO_LOGIN_EMAIL;
   const loginPassword = process.env.LOGIN_PASSWORD || process.env.DEMO_LOGIN_PASSWORD;
   const tenantId = process.env.TENANT_ID != null ? process.env.TENANT_ID : '1';

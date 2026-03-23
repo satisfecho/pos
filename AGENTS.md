@@ -67,11 +67,11 @@ Full-stack Point of Sale (POS) system.
 
 **After every new feature, fix, or code change** that can affect the running app (frontend, backend, config, Docker, env), **smoke tests are required** so regressions (503, broken routes, failed build, broken flows) are caught before the user hits them.
 
-**Before telling the user something is fixed:** Run a relevant Puppeteer test (or other smoke test) first. Do not report "it's fixed" until the test has passed. For example: after fixing `/api/docs`, run `BASE_URL=http://127.0.0.1:4202 HEADLESS=1 node front/scripts/test-api-docs.mjs`; after fixing the landing page, run `npm run test:landing-version`; after fixing a specific flow, run the matching Puppeteer script. Only then tell the user the fix is done.
+**Before telling the user something is fixed:** Run a relevant Puppeteer test (or other smoke test) first. Do not report "it's fixed" until the test has passed. For example: after fixing `/api/docs`, run `BASE_URL=http://127.0.0.1:4202 node front/scripts/test-api-docs.mjs`; after fixing the landing page, run `npm run test:landing-version`; after fixing a specific flow, run the matching Puppeteer script. (Puppeteer defaults to headless; set `HEADLESS=0` to watch the browser.) Only then tell the user the fix is done.
 
 1. **Minimum:** Confirm the app responds (e.g. `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:4202/` returns 200) or run the Puppeteer landing test:
    ```bash
-   cd front && BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:landing-version
+   cd front && BASE_URL=http://127.0.0.1:4202 npm run test:landing-version
    ```
 2. **For changes that add or touch a specific flow:** Run the relevant Puppeteer test (e.g. after Reports work: `npm run test:reports` from `front/` with `LOGIN_EMAIL`/`LOGIN_PASSWORD` for an admin/owner user).
 3. If the app is not up, run `docker compose ps` and `docker compose logs --tail=50 front` (and back/haproxy as needed) to diagnose before concluding.
@@ -178,7 +178,7 @@ Exit 0 means tenant 1 has T01–T10 with the correct seat counts; exit 1 reports
 
 **Demo products (tenant 1):** Deploy also runs `app.seeds.seed_demo_products`, which seeds a default menu (main courses, beverages) for tenant 1. Idempotent; no images. To run manually: `docker compose exec back python -m app.seeds.seed_demo_products`.
 
-**Puppeteer test (demo data):** Verifies tenant 1 has ≥10 tables and ≥10 products and /book/1 loads. Run with tenant 1 credentials: `BASE_URL=http://satisfecho.de LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/test-demo-data.mjs` (or `npm run test:demo-data` from front/). Set `HEADLESS=1` for headless.
+**Puppeteer test (demo data):** Verifies tenant 1 has ≥10 tables and ≥10 products and /book/1 loads. Run with tenant 1 credentials: `BASE_URL=http://satisfecho.de LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/test-demo-data.mjs` (or `npm run test:demo-data` from front/). Runs headless by default; use `HEADLESS=0` to show the browser.
 
 **Puppeteer test (catalog + images):** `front/scripts/test-catalog.mjs` logs in, opens /catalog, and reports total cards, how many have loaded images vs placeholders. Compare dev vs amvara9: `BASE_URL=http://127.0.0.1:4202 LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/test-catalog.mjs` and same with `BASE_URL=http://satisfecho.de`. Catalog data (ProductCatalog, ProviderProduct, images) comes from wine/beer/pizza import seeds, not from deploy; amvara9 has no catalog unless those imports are run on the server.
 

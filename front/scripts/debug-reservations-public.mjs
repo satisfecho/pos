@@ -6,10 +6,11 @@
  * 3. Assert success, then optionally open view page and cancel
  *
  * Usage (from front/): node scripts/debug-reservations-public.mjs
- * Optional env: BASE_URL, TENANT_ID (default 1)
+ * Optional env: BASE_URL, TENANT_ID (default 1), HEADLESS (default headless; 0/false/no = visible)
  * Chrome: /Applications/Google Chrome.app (macOS)
  */
 
+import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const puppeteer = require('puppeteer-core');
@@ -43,7 +44,7 @@ async function main() {
   console.log('Book URL (public, no login):', bookUrl);
   console.log('---');
 
-  const headless = process.env.HEADLESS === '1' || process.env.HEADLESS === 'true';
+  const headless = isHeadless();
   const browser = await puppeteer.launch({
     executablePath: CHROME_PATH,
     headless,

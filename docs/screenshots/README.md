@@ -12,7 +12,7 @@ LOGIN_EMAIL=owner@amvara.de LOGIN_PASSWORD=secret node front/scripts/capture-scr
 # Or: npm run capture-screenshots --prefix front
 ```
 
-Optional: set `PROVIDER_TEST_EMAIL` and `PROVIDER_TEST_PASSWORD` to also capture the provider dashboard. Use `HEADLESS=1` to run without opening a visible browser.
+Optional: set `PROVIDER_TEST_EMAIL` and `PROVIDER_TEST_PASSWORD` to also capture the provider dashboard. Runs headless by default; set `HEADLESS=0` to open a visible browser.
 
 ## Adding screenshots manually
 

@@ -9,6 +9,7 @@
  *   BASE_URL=http://127.0.0.1:4202 node front/scripts/test-staff-menu-link-puppeteer.mjs
  */
 
+import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 import { readFileSync, existsSync } from 'fs';
 import { join, resolve } from 'path';
@@ -56,7 +57,7 @@ async function main() {
 
   const browser = await puppeteer.launch({
     executablePath: CHROME_PATH,
-    headless: process.env.HEADLESS === '1' || process.env.HEADLESS === 'true',
+    headless: isHeadless(),
     defaultViewport: { width: 1280, height: 900 },
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });

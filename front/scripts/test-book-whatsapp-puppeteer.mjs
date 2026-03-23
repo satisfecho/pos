@@ -8,9 +8,10 @@
  *   node front/scripts/test-book-whatsapp-puppeteer.mjs
  *   BASE_URL=http://127.0.0.1:4202 HEADLESS=1 node front/scripts/test-book-whatsapp-puppeteer.mjs
  *
- * Env: BASE_URL, HEADLESS, API_BASE (defaults to BASE_URL; use if API is on another origin)
+ * Env: BASE_URL, HEADLESS (default headless; 0/false/no = visible), API_BASE (defaults to BASE_URL; use if API is on another origin)
  */
 
+import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const puppeteer = require('puppeteer-core');
@@ -40,7 +41,7 @@ async function main() {
   }
 
   const apiBase = process.env.API_BASE || baseUrl;
-  const headless = process.env.HEADLESS === '1' || process.env.HEADLESS === 'true';
+  const headless = isHeadless();
 
   console.log('BASE_URL:', baseUrl);
   console.log('API_BASE:', apiBase);

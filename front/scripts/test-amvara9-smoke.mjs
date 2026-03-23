@@ -9,9 +9,10 @@
  *
  * Env:
  *   BASE_URL   Base URL (default: https://www.satisfecho.de)
- *   HEADLESS  Set to 1 to run headless
+ *   HEADLESS       Default headless; set 0, false, or no for a visible browser.
  */
 
+import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const puppeteer = require('puppeteer-core');
@@ -24,7 +25,7 @@ const DEFAULT_BASE = 'https://www.satisfecho.de';
 
 async function main() {
   const baseUrl = process.env.BASE_URL || DEFAULT_BASE;
-  const headless = process.env.HEADLESS === '1' || process.env.HEADLESS === 'true';
+  const headless = isHeadless();
 
   console.log('amvara9 smoke test');
   console.log('BASE_URL:', baseUrl);

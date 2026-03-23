@@ -2,7 +2,7 @@
 /**
  * Puppeteer test: registration flow (create account).
  * Opens /register, fills form, submits, checks for success.
- * Default: headless false so you can watch the browser.
+ * Default: headless (set HEADLESS=0 to watch the browser).
  *
  * Usage (from front/ or repo root):
  *   node front/scripts/test-register.mjs
@@ -14,9 +14,10 @@
  *   REGISTER_PASSWORD Password (default: testpass123)
  *   REGISTER_FULL_NAME Full name (default: Test User)
  *   REGISTER_TENANT_NAME Organization name (default: Test Restaurant)
- *   HEADLESS          Set to 1 to run headless (default: 0 = visible browser so you can watch)
+ *   HEADLESS       Default headless; set 0, false, or no for a visible browser.
  */
 
+import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const puppeteer = require('puppeteer-core');
@@ -49,8 +50,7 @@ async function main() {
   const fullName = process.env.REGISTER_FULL_NAME || 'Test User';
   const tenantName = process.env.REGISTER_TENANT_NAME || 'Test Restaurant';
 
-  // Default visible browser for this test (set HEADLESS=1 to run headless)
-  const headless = process.env.HEADLESS === '1' || process.env.HEADLESS === 'true';
+  const headless = isHeadless();
 
   console.log('Launching Chrome at', CHROME_PATH);
   console.log('Register URL:', registerUrl);

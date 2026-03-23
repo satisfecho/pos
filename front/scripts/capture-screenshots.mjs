@@ -13,9 +13,10 @@
  *   LOGIN_PASSWORD       Staff password
  *   PROVIDER_TEST_EMAIL   Optional: provider login for provider dashboard screenshot
  *   PROVIDER_TEST_PASSWORD
- *   HEADLESS              Set to 1 to run headless (default: 0 = visible)
+ *   HEADLESS       Default headless; set 0, false, or no for a visible browser.
  */
 
+import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 import { existsSync, readFileSync, mkdirSync } from 'fs';
 import { resolve, dirname, join } from 'path';
@@ -118,7 +119,7 @@ async function main() {
   const loginPassword = process.env.LOGIN_PASSWORD || process.env.DEMO_LOGIN_PASSWORD;
   const providerEmail = process.env.PROVIDER_TEST_EMAIL;
   const providerPassword = process.env.PROVIDER_TEST_PASSWORD;
-  const headless = process.env.HEADLESS === '1' || process.env.HEADLESS === 'true';
+  const headless = isHeadless();
 
   console.log('BASE_URL:', baseUrl);
   console.log('Output dir:', outDir);

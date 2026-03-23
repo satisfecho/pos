@@ -6,7 +6,7 @@
 #
 # Env:
 #   BASE_URLS     Space-separated list of base URLs (default: 127.0.0.1 then satisfecho.de)
-#   HEADLESS      Set to 1 to run headless
+#   HEADLESS      Default 1 (headless); set 0 for a visible browser
 #   STAFF_TEST    Set to 1 to also run staff reservation test (needs LOGIN_EMAIL, LOGIN_PASSWORD or .env)
 #   TENANT_ID     Tenant id for book page (default 1)
 # For local dev (ng serve / docker dev) front often runs on 4202; set BASE_URLS="http://127.0.0.1:4202" if needed.

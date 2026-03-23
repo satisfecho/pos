@@ -4,6 +4,7 @@
  * Run: LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/debug-working-plan-calendar.mjs
  * Or: npm run test:working-plan --prefix front (uses same .env); then run this with BASE_URL set.
  */
+import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 import { readFileSync, existsSync } from 'fs';
 import { join, resolve } from 'path';
@@ -47,7 +48,7 @@ async function main() {
 
   const browser = await puppeteer.launch({
     executablePath: CHROME_PATH,
-    headless: process.env.HEADLESS === '1',
+    headless: isHeadless(),
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
 
