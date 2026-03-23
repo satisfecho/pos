@@ -67,7 +67,13 @@ while [ "$(date +%s)" -lt "$END_TS" ]; do
     else
       log "ERROR: pytest failed"
     fi
-    if (cd front && BASE_URL="$BASE_URL" HEADLESS=1 npm run test:landing-version) 2>&1 | tee -a "$GO_AHEAD_LOG"; then
+    if (
+      set -a
+      # shellcheck disable=SC1090
+      [ -f "$REPO_ROOT/.env" ] && . "$REPO_ROOT/.env"
+      set +a
+      cd front && BASE_URL="$BASE_URL" HEADLESS=1 npm run test:landing-version
+    ) 2>&1 | tee -a "$GO_AHEAD_LOG"; then
       log "landing-version: OK"
     else
       log "ERROR: landing-version failed"
