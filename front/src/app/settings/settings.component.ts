@@ -785,6 +785,40 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                       <p class="hint">{{ 'SETTINGS.IMMEDIATE_PAYMENT_HINT' | translate }}</p>
                     </div>
                   </div>
+
+                  <div class="divider"></div>
+
+                  <h3>{{ 'SETTINGS.TIP_PRESETS_TITLE' | translate }}</h3>
+                  <p class="hint">{{ 'SETTINGS.TIP_PRESETS_HINT' | translate }}</p>
+                  <div class="form-row" style="display: flex; flex-wrap: wrap; gap: 12px;">
+                    @for (idx of [0, 1, 2, 3]; track idx) {
+                      <div class="form-group" style="min-width: 100px;">
+                        <label [attr.for]="'tip_preset_' + idx">{{ 'SETTINGS.TIP_PRESET_LABEL' | translate: { n: idx + 1 } }}</label>
+                        <input
+                          type="number"
+                          [id]="'tip_preset_' + idx"
+                          min="0"
+                          max="100"
+                          [(ngModel)]="tipPresetEdit[idx]"
+                          [name]="'tip_preset_' + idx"
+                          class="input-small"
+                        />
+                      </div>
+                    }
+                  </div>
+                  <div class="form-group">
+                    <label for="tip_tax_rate_percent">{{ 'SETTINGS.TIP_TAX_RATE' | translate }}</label>
+                    <input
+                      type="number"
+                      id="tip_tax_rate_percent"
+                      min="0"
+                      max="100"
+                      [(ngModel)]="formData.tip_tax_rate_percent"
+                      name="tip_tax_rate_percent"
+                      class="input-small"
+                    />
+                    <p class="hint">{{ 'SETTINGS.TIP_TAX_RATE_HINT' | translate }}</p>
+                  </div>
                   
                   <div class="divider"></div>
                   
@@ -2127,6 +2161,9 @@ export class SettingsComponent implements OnInit {
     { key: 'receptionist', labelKey: 'SETTINGS.STAFF_RECEPTIONIST' },
   ];
 
+  /** Four inputs → saved as unique non-zero percentages (max 4); all zero = tips disabled in POS */
+  tipPresetEdit: number[] = [5, 10, 15, 20];
+
   openingHours: Record<string, {
     open: string;
     close: string;
@@ -2182,6 +2219,7 @@ export class SettingsComponent implements OnInit {
     reservation_reminder_2h_enabled: false,
     public_google_review_url: null,
     public_google_maps_url: null,
+    tip_tax_rate_percent: 0,
   };
 
   allTimezones: string[] = [];
@@ -2254,7 +2292,20 @@ export class SettingsComponent implements OnInit {
           reservation_reminder_2h_enabled: settings.reservation_reminder_2h_enabled ?? false,
           public_google_review_url: settings.public_google_review_url ?? null,
           public_google_maps_url: settings.public_google_maps_url ?? null,
+          tip_tax_rate_percent: settings.tip_tax_rate_percent ?? 0,
         };
+        const tip = settings.tip_preset_percents;
+        if (Array.isArray(tip) && tip.length > 0) {
+          this.tipPresetEdit = [...tip.map((x) => Math.min(100, Math.max(0, Math.floor(Number(x) || 0))))];
+          while (this.tipPresetEdit.length < 4) {
+            this.tipPresetEdit.push(0);
+          }
+          this.tipPresetEdit = this.tipPresetEdit.slice(0, 4);
+        } else if (Array.isArray(tip) && tip.length === 0) {
+          this.tipPresetEdit = [0, 0, 0, 0];
+        } else {
+          this.tipPresetEdit = [5, 10, 15, 20];
+        }
         this.timezoneSearch = settings.timezone || '';
         this.parseOpeningHours(settings.opening_hours);
         this.loadTaxes();
@@ -2886,6 +2937,24 @@ export class SettingsComponent implements OnInit {
     // Always send reminder options so they are persisted (default false if unset)
     updateData.reservation_reminder_24h_enabled = this.formData.reservation_reminder_24h_enabled ?? false;
     updateData.reservation_reminder_2h_enabled = this.formData.reservation_reminder_2h_enabled ?? false;
+
+    const seen = new Set<number>();
+    const tipPresets: number[] = [];
+    for (const x of this.tipPresetEdit) {
+      const v = Math.min(100, Math.max(0, Math.floor(Number(x) || 0)));
+      if (v > 0 && !seen.has(v)) {
+        seen.add(v);
+        tipPresets.push(v);
+      }
+      if (tipPresets.length >= 4) {
+        break;
+      }
+    }
+    updateData.tip_preset_percents = tipPresets;
+    updateData.tip_tax_rate_percent = Math.min(
+      100,
+      Math.max(0, Math.floor(Number(this.formData.tip_tax_rate_percent) || 0))
+    );
 
     if (updateData.stripe_secret_key === '') {
       delete updateData.stripe_secret_key;

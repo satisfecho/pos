@@ -13,7 +13,7 @@ import requests
 from zoneinfo import ZoneInfo
 from io import BytesIO
 from pathlib import Path
-from typing import Annotated, Dict, List, Tuple
+from typing import Annotated, Any, Dict, List, Tuple
 from uuid import uuid4
 
 from PIL import Image
@@ -25,6 +25,7 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Res
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel as _BaseModel
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
 from . import models, security
@@ -1422,6 +1423,151 @@ def otp_disable(
     return {"status": "ok", "otp_enabled": False}
 
 
+# ============ STAFF WORK SESSION (clock in / out) ============
+
+
+def _require_tenant_staff_for_work_session(user: models.User) -> None:
+    if user.tenant_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Work sessions are only for restaurant staff accounts",
+        )
+
+
+def _work_session_to_dict(ws: models.WorkSession, user_name: str) -> dict:
+    duration_minutes: int | None = None
+    if ws.ended_at is not None and ws.started_at is not None:
+        duration_minutes = max(0, int((ws.ended_at - ws.started_at).total_seconds() // 60))
+    return {
+        "id": ws.id,
+        "tenant_id": ws.tenant_id,
+        "user_id": ws.user_id,
+        "user_name": user_name,
+        "started_at": ws.started_at.isoformat() if ws.started_at else None,
+        "ended_at": ws.ended_at.isoformat() if ws.ended_at else None,
+        "duration_minutes": duration_minutes,
+        "start_ip": ws.start_ip,
+        "end_ip": ws.end_ip,
+    }
+
+
+@app.get("/users/me/work-session")
+def get_my_open_work_session(
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session),
+) -> dict | None:
+    """Current open clock-in for this user, or null if not on shift."""
+    _require_tenant_staff_for_work_session(current_user)
+    open_row = session.exec(
+        select(models.WorkSession).where(
+            models.WorkSession.user_id == current_user.id,
+            models.WorkSession.ended_at.is_(None),
+        )
+    ).first()
+    if not open_row:
+        return None
+    name = current_user.full_name or current_user.email or ""
+    return _work_session_to_dict(open_row, name)
+
+
+@app.post("/users/me/work-session/start")
+def start_my_work_session(
+    request: Request,
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Clock in: start a work session. At most one open session per user."""
+    _require_tenant_staff_for_work_session(current_user)
+    assert current_user.tenant_id is not None
+    existing = session.exec(
+        select(models.WorkSession).where(
+            models.WorkSession.user_id == current_user.id,
+            models.WorkSession.ended_at.is_(None),
+        )
+    ).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Already clocked in; clock out first",
+        )
+    ip = _client_ip_from_request(request)
+    ws = models.WorkSession(
+        tenant_id=current_user.tenant_id,
+        user_id=current_user.id,
+        started_at=datetime.now(timezone.utc),
+        start_ip=ip,
+    )
+    session.add(ws)
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Could not start session (already clocked in?)",
+        )
+    session.refresh(ws)
+    name = current_user.full_name or current_user.email or ""
+    return _work_session_to_dict(ws, name)
+
+
+@app.post("/users/me/work-session/end")
+def end_my_work_session(
+    request: Request,
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Clock out: close the current open work session."""
+    _require_tenant_staff_for_work_session(current_user)
+    open_row = session.exec(
+        select(models.WorkSession).where(
+            models.WorkSession.user_id == current_user.id,
+            models.WorkSession.ended_at.is_(None),
+        )
+    ).first()
+    if not open_row:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No open work session to end",
+        )
+    open_row.ended_at = datetime.now(timezone.utc)
+    open_row.end_ip = _client_ip_from_request(request)
+    session.add(open_row)
+    session.commit()
+    session.refresh(open_row)
+    name = current_user.full_name or current_user.email or ""
+    return _work_session_to_dict(open_row, name)
+
+
+@app.get("/users/me/work-sessions")
+def list_my_work_sessions(
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session),
+    from_date: str = Query(..., description="Start date YYYY-MM-DD (UTC day)"),
+    to_date: str = Query(..., description="End date YYYY-MM-DD (UTC day, inclusive)"),
+) -> list[dict]:
+    """List this user's completed and open sessions in a date range (by started_at, UTC calendar days)."""
+    _require_tenant_staff_for_work_session(current_user)
+    try:
+        fd = datetime.strptime(from_date, "%Y-%m-%d").date()
+        td = datetime.strptime(to_date, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format; use YYYY-MM-DD")
+    if fd > td:
+        raise HTTPException(status_code=400, detail="from_date must be <= to_date")
+    start_utc = datetime.combine(fd, time.min, tzinfo=timezone.utc)
+    end_exclusive = datetime.combine(td + timedelta(days=1), time.min, tzinfo=timezone.utc)
+    rows = session.exec(
+        select(models.WorkSession)
+        .where(models.WorkSession.user_id == current_user.id)
+        .where(models.WorkSession.started_at >= start_utc)
+        .where(models.WorkSession.started_at < end_exclusive)
+        .order_by(models.WorkSession.started_at.desc())
+    ).all()
+    name = current_user.full_name or current_user.email or ""
+    return [_work_session_to_dict(r, name) for r in rows]
+
+
 # ============ USER MANAGEMENT ============
 
 
@@ -2075,6 +2221,15 @@ def update_tenant_settings(
         tenant.reservation_reminder_24h_enabled = tenant_update.reservation_reminder_24h_enabled
     if tenant_update.reservation_reminder_2h_enabled is not None:
         tenant.reservation_reminder_2h_enabled = tenant_update.reservation_reminder_2h_enabled
+
+    if tenant_update.tip_preset_percents is not None:
+        tenant.tip_preset_percents = _tip_presets_from_request(
+            tenant_update.tip_preset_percents
+        )
+    if tenant_update.tip_tax_rate_percent is not None:
+        tenant.tip_tax_rate_percent = max(
+            0, min(100, int(tenant_update.tip_tax_rate_percent))
+        )
 
     # Kitchen/Bar display timer thresholds (minutes)
     if tenant_update.kitchen_display_timer_yellow_minutes is not None:
@@ -7731,6 +7886,94 @@ def call_waiter(
 
 # ============ ORDERS (Protected) ============
 
+
+def _tip_presets_from_request(raw: Any) -> list[int]:
+    """Validate owner-submitted tip presets: 0–4 unique integers 0–100."""
+    if not isinstance(raw, list):
+        raise HTTPException(
+            status_code=400, detail="tip_preset_percents must be a JSON array"
+        )
+    out: list[int] = []
+    for x in raw:
+        try:
+            v = int(x)
+        except (TypeError, ValueError):
+            continue
+        if 0 <= v <= 100:
+            out.append(v)
+    seen: set[int] = set()
+    uniq: list[int] = []
+    for v in out:
+        if v not in seen:
+            seen.add(v)
+            uniq.append(v)
+    if len(uniq) > 4:
+        raise HTTPException(
+            status_code=400, detail="At most 4 tip percentages are allowed"
+        )
+    return uniq
+
+
+def _allowed_tip_presets(tenant: models.Tenant) -> list[int]:
+    """Presets offered at checkout; None in DB means legacy default 5/10/15/20."""
+    raw = tenant.tip_preset_percents
+    if raw is None:
+        return [5, 10, 15, 20]
+    if isinstance(raw, str):
+        try:
+            raw = json.loads(raw)
+        except json.JSONDecodeError:
+            return []
+    if not isinstance(raw, list):
+        return []
+    try:
+        return _tip_presets_from_request(raw)
+    except HTTPException:
+        return []
+
+
+def _active_order_subtotal_cents(session: Session, order_id: int) -> int:
+    items = session.exec(
+        select(models.OrderItem).where(models.OrderItem.order_id == order_id)
+    ).all()
+    active = [
+        i
+        for i in items
+        if not i.removed_by_customer
+        and i.removed_by_user_id is None
+        and i.status != models.OrderItemStatus.cancelled
+    ]
+    return sum(i.price_cents * i.quantity for i in active)
+
+
+def _resolve_tip_on_mark_paid(
+    session: Session,
+    tenant: models.Tenant,
+    order_id: int,
+    tip_percent: int | None,
+) -> tuple[int | None, int]:
+    """Returns (tip_percent_applied, tip_amount_cents)."""
+    subtotal = _active_order_subtotal_cents(session, order_id)
+    tp = 0 if tip_percent is None else int(tip_percent)
+    if tp < 0 or tp > 100:
+        raise HTTPException(status_code=400, detail="Invalid tip_percent")
+    if tp == 0:
+        return None, 0
+    allowed = _allowed_tip_presets(tenant)
+    if not allowed:
+        raise HTTPException(
+            status_code=400, detail="Tips are disabled for this restaurant"
+        )
+    if tp not in allowed:
+        raise HTTPException(
+            status_code=400, detail="Tip percent is not allowed for this restaurant"
+        )
+    if subtotal <= 0:
+        raise HTTPException(status_code=400, detail="Cannot add a tip to an empty order")
+    amt = (subtotal * tp + 50) // 100
+    return tp, amt
+
+
 def compute_order_status_from_items(items: list[models.OrderItem]) -> models.OrderStatus:
     """Compute order status from item statuses (single source of truth)."""
     if not items:
@@ -7819,7 +8062,9 @@ def list_orders(
         # Do not list orders that have no products (empty orders are not allowed)
         if len(active_items) == 0:
             continue
-        total_cents = sum(item.price_cents * item.quantity for item in active_items)
+        subtotal_cents = sum(item.price_cents * item.quantity for item in active_items)
+        tip_amt = int(order.tip_amount_cents or 0)
+        total_cents = subtotal_cents + tip_amt
 
         # Product categories for kitchen/bar display filtering (one query per order)
         product_ids = list({i.product_id for i in items})
@@ -7881,6 +8126,9 @@ def list_orders(
                 }
                 for item in items
             ],
+            "subtotal_cents": subtotal_cents,
+            "tip_percent_applied": getattr(order, "tip_percent_applied", None),
+            "tip_amount_cents": getattr(order, "tip_amount_cents", None),
             "total_cents": total_cents,
             "removed_items_count": len([item for item in all_items if item.removed_by_customer])
         })
@@ -7976,12 +8224,21 @@ def mark_order_paid(
     if order.status == models.OrderStatus.cancelled:
         raise HTTPException(status_code=400, detail="Cannot mark a cancelled order as paid.")
     
+    tenant = session.get(models.Tenant, current_user.tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    tip_pct, tip_amt = _resolve_tip_on_mark_paid(
+        session, tenant, order_id, payment_data.tip_percent
+    )
+
     # Allow pre-pay: staff can mark as paid even when not all items are delivered (e.g. customer pays before food is ready).
     # Mark as paid
     order.status = models.OrderStatus.paid
     order.paid_at = datetime.now(timezone.utc)
     order.paid_by_user_id = current_user.id
     order.payment_method = payment_data.payment_method
+    order.tip_percent_applied = tip_pct
+    order.tip_amount_cents = tip_amt if tip_amt else None
     
     session.add(order)
     session.commit()
@@ -7999,7 +8256,9 @@ def mark_order_paid(
         "status": "paid",
         "order_id": order.id,
         "payment_method": payment_data.payment_method,
-        "paid_at": order.paid_at.isoformat()
+        "paid_at": order.paid_at.isoformat(),
+        "tip_percent_applied": order.tip_percent_applied,
+        "tip_amount_cents": order.tip_amount_cents,
     }
 
 
@@ -8030,6 +8289,13 @@ def finish_order(
     if order.status == models.OrderStatus.cancelled:
         raise HTTPException(status_code=400, detail="Cannot finish a cancelled order.")
 
+    tenant = session.get(models.Tenant, current_user.tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    tip_pct, tip_amt = _resolve_tip_on_mark_paid(
+        session, tenant, order_id, payment_data.tip_percent
+    )
+
     items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order_id)).all()
     active_items = [item for item in items if not item.removed_by_customer]
     now = datetime.now(timezone.utc)
@@ -8046,6 +8312,8 @@ def finish_order(
     order.paid_at = now
     order.paid_by_user_id = current_user.id
     order.payment_method = payment_data.payment_method
+    order.tip_percent_applied = tip_pct
+    order.tip_amount_cents = tip_amt if tip_amt else None
 
     session.add(order)
     session.commit()
@@ -8067,6 +8335,8 @@ def finish_order(
         "order_id": order.id,
         "payment_method": payment_data.payment_method,
         "paid_at": order.paid_at.isoformat(),
+        "tip_percent_applied": order.tip_percent_applied,
+        "tip_amount_cents": order.tip_amount_cents,
     }
 
 
@@ -8097,6 +8367,8 @@ def unmark_order_paid(
     order.paid_at = None
     order.paid_by_user_id = None
     order.payment_method = None
+    order.tip_percent_applied = None
+    order.tip_amount_cents = None
     # Restore workflow status from items (do not leave status as 'paid')
     items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order_id)).all()
     order.status = compute_order_status_from_items(list(items))

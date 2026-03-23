@@ -70,6 +70,19 @@ export interface ShiftUpdate {
   label?: string | null;
 }
 
+/** Recorded clock-in/out (attendance), not the planned working plan shift. */
+export interface WorkSession {
+  id: number;
+  tenant_id: number;
+  user_id: number;
+  user_name: string;
+  started_at: string;
+  ended_at: string | null;
+  duration_minutes: number | null;
+  start_ip: string | null;
+  end_ip: string | null;
+}
+
 export interface AuthResponse {
   access_token: string;
   token_type: string;
@@ -545,6 +558,10 @@ export interface Order {
   created_at: string;
   items: OrderItem[];
   total_cents: number;
+  /** Sum of active line items (excludes tip); same as total_cents when no tip */
+  subtotal_cents?: number;
+  tip_percent_applied?: number | null;
+  tip_amount_cents?: number | null;
   removed_items_count?: number;
   paid_at?: string | null;
   payment_method?: string | null;
@@ -646,6 +663,10 @@ export interface TenantSettings {
   reservation_reminder_2h_enabled?: boolean | null;
   public_google_review_url?: string | null;
   public_google_maps_url?: string | null;
+  /** Up to 4 tip percentages for POS checkout; empty array disables tips; omit/null = default 5/10/15/20 */
+  tip_preset_percents?: number[] | null;
+  /** VAT rate 0–100 on tip for invoice breakdown (tax-inclusive tip) */
+  tip_tax_rate_percent?: number | null;
 }
 
 export interface OrderItemCreate {
@@ -1285,13 +1306,21 @@ export class ApiService {
   }
 
   // Restaurant staff endpoints
-  markOrderPaid(orderId: number, paymentMethod: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/orders/${orderId}/mark-paid`, { payment_method: paymentMethod });
+  markOrderPaid(orderId: number, paymentMethod: string, tipPercent?: number | null): Observable<any> {
+    const body: { payment_method: string; tip_percent?: number } = { payment_method: paymentMethod };
+    if (tipPercent != null && tipPercent > 0) {
+      body.tip_percent = tipPercent;
+    }
+    return this.http.put(`${this.apiUrl}/orders/${orderId}/mark-paid`, body);
   }
 
   /** Deliver all active items and mark order paid in one request (staff fast checkout). */
-  finishOrder(orderId: number, paymentMethod: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/orders/${orderId}/finish`, { payment_method: paymentMethod });
+  finishOrder(orderId: number, paymentMethod: string, tipPercent?: number | null): Observable<any> {
+    const body: { payment_method: string; tip_percent?: number } = { payment_method: paymentMethod };
+    if (tipPercent != null && tipPercent > 0) {
+      body.tip_percent = tipPercent;
+    }
+    return this.http.put(`${this.apiUrl}/orders/${orderId}/finish`, body);
   }
 
   unmarkOrderPaid(orderId: number): Observable<{ status: string; order_id: number; new_status: string }> {
@@ -1844,6 +1873,33 @@ export class ApiService {
         return r === 'owner' || r === 'admin' || r === 'kitchen' || r === 'bartender' || r === 'waiter' || r === 'receptionist';
       }))
     );
+  }
+
+  /** Current open work session, or null. */
+  getMyOpenWorkSession(): Observable<WorkSession | null> {
+    return this.http.get<WorkSession | null>(`${this.apiUrl}/users/me/work-session`);
+  }
+
+  startMyWorkSession(): Observable<WorkSession> {
+    return this.http.post<WorkSession>(`${this.apiUrl}/users/me/work-session/start`, {});
+  }
+
+  endMyWorkSession(): Observable<WorkSession> {
+    return this.http.post<WorkSession>(`${this.apiUrl}/users/me/work-session/end`, {});
+  }
+
+  getMyWorkSessions(fromDate: string, toDate: string): Observable<WorkSession[]> {
+    const params = new HttpParams().set('from_date', fromDate).set('to_date', toDate);
+    return this.http.get<WorkSession[]>(`${this.apiUrl}/users/me/work-sessions`, { params });
+  }
+
+  /** Owner/admin: all staff attendance in range (UTC days by started_at). */
+  getReportWorkSessions(fromDate: string, toDate: string, userId?: number): Observable<WorkSession[]> {
+    let params = new HttpParams().set('from_date', fromDate).set('to_date', toDate);
+    if (userId != null) {
+      params = params.set('user_id', String(userId));
+    }
+    return this.http.get<WorkSession[]>(`${this.apiUrl}/reports/work-sessions`, { params });
   }
 
   /** Changelog (CHANGELOG.md from project root, served by backend). */

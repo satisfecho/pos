@@ -14,6 +14,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **GitHub #52 planning**: **`docs/0050-github-issue-52-split-plan.md`** — ten dedicated issue specs (title + body), phased rollout (A–E), dependency diagram, filing checklist; **`docs/0032-github-issues-roadmap.md`** and **`docs/README.md`** link to it.
 
+## [2.0.49] - 2026-03-23
+
+### Added
+
+- **GitHub #58 — POS tips**: **Settings → Payments** — up to **four tip percentages** (default 5/10/15/20), optional **tip VAT rate** for invoice breakdown. **`PUT /orders/{id}/mark-paid`** and **`PUT /orders/{id}/finish`** accept optional **`tip_percent`**; order stores **`tip_percent_applied`** and **`tip_amount_cents`**. **`GET /orders`** returns **`subtotal_cents`**, tip fields, and **`total_cents`** including tip. **Unmark paid** clears tip. **Printed invoice** shows subtotal, tip line, and VAT split when configured. Migration **`20260323140000_tenant_tip_presets_and_order_tip.sql`**. Tests: **`back/tests/test_order_tip.py`**. i18n: **`ORDERS.*`** tip keys, **`SETTINGS.TIP_*`**.
+
 ## [2.0.48] - 2026-03-23
 
 ### Added

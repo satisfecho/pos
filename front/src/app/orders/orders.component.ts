@@ -791,7 +791,31 @@ ModuleRegistry.registerModules([
                 </button>
               </div>
               <div class="modal-body">
-                <p>{{ 'ORDERS.ORDER_ID' | translate }}{{ orderToMarkPaid()!.id }} - {{ 'ORDERS.TOTAL' | translate }}: {{ formatPrice(orderToMarkPaid()!.total_cents) }}</p>
+                <p>{{ 'ORDERS.ORDER_ID' | translate }}{{ orderToMarkPaid()!.id }}</p>
+                <p class="payment-amount-line">
+                  {{ 'ORDERS.SUBTOTAL' | translate }}: {{ formatPrice(orderPaymentSubtotal(orderToMarkPaid()!)) }}
+                </p>
+                @if (tipPresetsForPayment().length > 0) {
+                  <div class="form-group payment-tip-group">
+                    <span class="form-label-text">{{ 'ORDERS.TIP' | translate }}</span>
+                    <div class="tip-preset-buttons">
+                      <button type="button" class="btn btn-sm" [class.btn-primary]="paymentTipPercent === 0" [class.btn-secondary]="paymentTipPercent !== 0" (click)="paymentTipPercent = 0">
+                        {{ 'ORDERS.TIP_NONE' | translate }}
+                      </button>
+                      @for (p of tipPresetsForPayment(); track p) {
+                        <button type="button" class="btn btn-sm" [class.btn-primary]="paymentTipPercent === p" [class.btn-secondary]="paymentTipPercent !== p" (click)="paymentTipPercent = p">
+                          {{ p }}%
+                        </button>
+                      }
+                    </div>
+                    @if (paymentTipPercent > 0) {
+                      <p class="modal-hint payment-tip-preview">
+                        {{ 'ORDERS.TIP_AMOUNT' | translate }}: {{ formatPrice(paymentTipPreviewCents(orderToMarkPaid()!)) }}
+                        — {{ 'ORDERS.AMOUNT_DUE' | translate }}: {{ formatPrice(paymentGrandTotalCents(orderToMarkPaid()!)) }}
+                      </p>
+                    }
+                  </div>
+                }
                 @if (paymentModalFinishMode()) {
                   <p class="modal-hint">{{ 'ORDERS.FINISH_ORDER_HELP' | translate }}</p>
                 }
@@ -1513,6 +1537,25 @@ ModuleRegistry.registerModules([
       color: var(--color-text-muted);
     }
 
+    .payment-amount-line { margin-bottom: var(--space-3); }
+    .payment-tip-group .form-label-text {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: var(--space-2);
+    }
+    .tip-preset-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
+    }
+    .tip-preset-buttons .btn-sm {
+      padding: var(--space-2) var(--space-3);
+      font-size: 0.8125rem;
+    }
+    .payment-tip-preview { margin-top: var(--space-2); margin-bottom: 0; }
+
     .modal-order-edit { max-width: 520px; }
     .modal-order-edit .modal-body { max-height: 70vh; overflow-y: auto; }
     .edit-order-items { margin-bottom: var(--space-4); }
@@ -1783,6 +1826,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
   /** When true, payment modal confirms finish (deliver all + pay) instead of pay-only. */
   paymentModalFinishMode = signal(false);
   paymentMethod = 'cash';
+  /** Selected POS tip preset percent; 0 = no tip */
+  paymentTipPercent = 0;
   processingPayment = signal(false);
   statusDropdownOpen = signal<number | null>(null); // Order ID for which dropdown is open
   itemStatusDropdownOpen = signal<string | null>(null); // "orderId-itemId" for which dropdown is open
@@ -2170,6 +2215,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.paymentModalFinishMode.set(false);
     this.orderToMarkPaid.set(order);
     this.paymentMethod = 'cash';
+    this.paymentTipPercent = 0;
   }
 
   markEditOrderFinish(order: Order) {
@@ -2177,6 +2223,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.paymentModalFinishMode.set(true);
     this.orderToMarkPaid.set(order);
     this.paymentMethod = 'cash';
+    this.paymentTipPercent = 0;
   }
 
   getStatusLabel(status: string): string {
@@ -2443,6 +2490,38 @@ export class OrdersComponent implements OnInit, OnDestroy {
       </tr>`;
     }).join('');
 
+    const subtotalCents = items.reduce(
+      (s, i) => s + (i.price_cents || 0) * (i.quantity || 1),
+      0
+    );
+    const tipAmt = order.tip_amount_cents || 0;
+    const tipPct = order.tip_percent_applied;
+    const tipTaxRate = Math.min(
+      100,
+      Math.max(0, Math.floor(Number(settings?.tip_tax_rate_percent) || 0))
+    );
+    let tipTaxPart = 0;
+    if (tipAmt > 0 && tipTaxRate > 0) {
+      const den = 100 + tipTaxRate;
+      tipTaxPart = Math.floor((tipAmt * tipTaxRate + den / 2) / den);
+    }
+    const tipLabel =
+      tipPct != null && tipPct > 0
+        ? this.translate.instant('ORDERS.INVOICE_TIP_LINE', { percent: tipPct })
+        : this.translate.instant('ORDERS.TIP');
+    const tipRowsHtml =
+      tipAmt > 0
+        ? `<tr>
+        <td colspan="4" style="text-align:right;font-size:12px;color:#555;">${this.escapeHtml(this.translate.instant('ORDERS.INVOICE_SUBTOTAL'))}</td>
+        <td style="text-align:right">${this.formatPrice(subtotalCents)}</td>
+      </tr>
+      <tr>
+        <td colspan="3">${this.escapeHtml(tipLabel)}</td>
+        <td style="text-align:right">${tipTaxPart > 0 ? this.formatPrice(tipTaxPart) : '—'}</td>
+        <td style="text-align:right">${this.formatPrice(tipAmt)}</td>
+      </tr>`
+        : '';
+
     // Totals by tax rate for invoice breakdown
     const taxByRate: Record<number, number> = {};
     items.forEach(i => {
@@ -2452,6 +2531,9 @@ export class OrdersComponent implements OnInit, OnDestroy {
         taxByRate[rate] = (taxByRate[rate] ?? 0) + cents;
       }
     });
+    if (tipTaxPart > 0) {
+      taxByRate[tipTaxRate] = (taxByRate[tipTaxRate] ?? 0) + tipTaxPart;
+    }
     const totalTaxCents = Object.values(taxByRate).reduce((a, b) => a + b, 0);
     const taxSummaryRows = Object.entries(taxByRate)
       .sort(([a], [b]) => Number(a) - Number(b))
@@ -2516,6 +2598,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     </thead>
     <tbody>
       ${rows}
+      ${tipRowsHtml}
     </tbody>
     ${taxSummaryRows}
     ${totalTaxCents > 0 ? `<tr><td colspan="4" style="text-align:right; font-size: 12px;">${this.translate.instant('ORDERS.TOTAL_TAX')}</td><td style="text-align:right">${this.formatPrice(totalTaxCents)}</td></tr>` : ''}
@@ -2883,6 +2966,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.paymentModalFinishMode.set(false);
     this.orderToMarkPaid.set(order);
     this.paymentMethod = 'cash'; // Reset to default
+    this.paymentTipPercent = 0;
   }
 
   openFinishPaymentModal(order: Order) {
@@ -2890,12 +2974,61 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.paymentModalFinishMode.set(true);
     this.orderToMarkPaid.set(order);
     this.paymentMethod = 'cash';
+    this.paymentTipPercent = 0;
   }
 
   closePaymentModal() {
     this.orderToMarkPaid.set(null);
     this.paymentModalFinishMode.set(false);
     this.processingPayment.set(false);
+    this.paymentTipPercent = 0;
+  }
+
+  orderPaymentSubtotal(order: Order): number {
+    if (order.subtotal_cents != null && order.subtotal_cents >= 0) {
+      return order.subtotal_cents;
+    }
+    const items = (order.items || []).filter(
+      i => !i.removed_by_customer && i.status !== 'cancelled'
+    );
+    return items.reduce((s, i) => s + (i.price_cents || 0) * (i.quantity || 0), 0);
+  }
+
+  tipPresetsForPayment(): number[] {
+    const s = this.tenantSettings();
+    const raw = s?.tip_preset_percents;
+    if (raw == null) {
+      return [5, 10, 15, 20];
+    }
+    if (raw.length === 0) {
+      return [];
+    }
+    const seen = new Set<number>();
+    const out: number[] = [];
+    for (const p of raw) {
+      const v = Math.floor(Number(p));
+      if (v > 0 && v <= 100 && !seen.has(v)) {
+        seen.add(v);
+        out.push(v);
+      }
+      if (out.length >= 4) {
+        break;
+      }
+    }
+    return out;
+  }
+
+  paymentTipPreviewCents(order: Order | null | undefined): number {
+    if (!order) return 0;
+    const sub = this.orderPaymentSubtotal(order);
+    const p = this.paymentTipPercent;
+    if (!p || sub <= 0) return 0;
+    return Math.floor((sub * p + 50) / 100);
+  }
+
+  paymentGrandTotalCents(order: Order | null | undefined): number {
+    if (!order) return 0;
+    return this.orderPaymentSubtotal(order) + this.paymentTipPreviewCents(order);
   }
 
   confirmMarkAsPaid() {
@@ -2903,9 +3036,13 @@ export class OrdersComponent implements OnInit, OnDestroy {
     if (!order || !this.paymentMethod) return;
 
     this.processingPayment.set(true);
+    const tip =
+      this.paymentTipPercent > 0 && this.tipPresetsForPayment().includes(this.paymentTipPercent)
+        ? this.paymentTipPercent
+        : null;
     const req = this.paymentModalFinishMode()
-      ? this.api.finishOrder(order.id, this.paymentMethod)
-      : this.api.markOrderPaid(order.id, this.paymentMethod);
+      ? this.api.finishOrder(order.id, this.paymentMethod, tip)
+      : this.api.markOrderPaid(order.id, this.paymentMethod, tip);
     req.subscribe({
       next: () => {
         this.processingPayment.set(false);

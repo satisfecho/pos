@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Any
 from uuid import uuid4
 
-from sqlalchemy import Column, Date, Time
+from sqlalchemy import Column, Date, DateTime, Time
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -170,6 +170,11 @@ class Tenant(SQLModel, table=True):
     kitchen_display_timer_yellow_minutes: int | None = Field(default=5)
     kitchen_display_timer_orange_minutes: int | None = Field(default=10)
     kitchen_display_timer_red_minutes: int | None = Field(default=15)
+
+    # POS checkout: up to 4 tip percentages (e.g. 5,10,15,20); empty list disables tips; null = legacy default in API
+    tip_preset_percents: list | None = Field(default=None, sa_column=Column(JSONB, nullable=True))
+    # VAT/IVA rate (0–100) applied to tip amount for invoice breakdown (tax-inclusive tip, same basis as menu prices)
+    tip_tax_rate_percent: int | None = Field(default=0)
 
     # Default tax (IVA) applied system-wide when product has no tax override
     default_tax_id: int | None = Field(default=None, foreign_key="tax.id", index=True)
@@ -443,6 +448,18 @@ class Shift(TenantMixin, table=True):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+class WorkSession(TenantMixin, table=True):
+    """Recorded clock-in/out times for tenant staff (payroll / attendance); not the planned working plan."""
+
+    __tablename__ = "work_session"
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id", index=True)
+    started_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))
+    ended_at: datetime | None = Field(default=None, sa_column=Column(DateTime(timezone=True), nullable=True))
+    start_ip: str | None = Field(default=None, max_length=45)
+    end_ip: str | None = Field(default=None, max_length=45)
+
+
 class ReservationStatus(str, Enum):
     booked = "booked"
     seated = "seated"
@@ -535,6 +552,8 @@ class Order(TenantMixin, table=True):
     paid_by_user_id: int | None = None  # Who marked it as paid (staff)
     payment_method: str | None = None  # 'stripe', 'cash', 'terminal', 'revolut', etc.
     revolut_order_id: str | None = None  # Revolut Merchant order id when paying via Revolut
+    tip_percent_applied: int | None = None  # Preset % charged as tip when staff marked paid (null = no tip)
+    tip_amount_cents: int | None = None  # Tip amount in cents (gross; VAT split uses tenant tip_tax_rate_percent)
 
     # Location verification tracking
     location_verified: bool | None = Field(default=None)  # None=not checked, True=inside, False=outside
@@ -807,6 +826,7 @@ class OrderItemCancel(SQLModel):
 
 class OrderMarkPaid(SQLModel):
     payment_method: str = "cash"  # 'cash', 'terminal', 'stripe', etc.
+    tip_percent: int | None = None  # 0 or omitted = no tip; otherwise must be in tenant tip_preset_percents
 
 
 class OrderBillingCustomerSet(SQLModel):
@@ -914,6 +934,10 @@ class TenantUpdate(SQLModel):
     kitchen_display_timer_yellow_minutes: int | None = None
     kitchen_display_timer_orange_minutes: int | None = None
     kitchen_display_timer_red_minutes: int | None = None
+
+    # POS tips: up to 4 percentages (0–100 each); empty list disables tip buttons
+    tip_preset_percents: list | None = None
+    tip_tax_rate_percent: int | None = Field(default=None, ge=0, le=100)
 
 
 class TenantProductCreate(SQLModel):
