@@ -1026,9 +1026,24 @@ ModuleRegistry.registerModules([
       &.status-completed { border-left-color: var(--color-text-muted); }
     }
 
-    .order-header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); border-bottom: 1px solid var(--color-border); margin-bottom: var(--space-3); }
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--space-3);
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--color-border);
+      margin-bottom: var(--space-3);
+    }
     .order-header-main { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
-    .order-header-actions { flex-shrink: 0; display: flex; align-items: center; gap: var(--space-2); }
+    .order-header-actions {
+      flex-shrink: 0;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--space-2);
+    }
     .btn-edit-order {
       display: inline-flex; align-items: center; gap: var(--space-2);
       padding: var(--space-2) var(--space-3); min-height: 44px;

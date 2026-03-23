@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **GitHub #59 — Orders cards:** Order card header actions stay **top-aligned** with the meta column (no vertical centering that shifted with customer/urgent lines) and **wrap right-aligned** when space is tight (`orders.component.ts` styles).
 - **GitHub #33 — Products table:** Removed the stray gap under the product list by keeping action cells as real table cells (flex only on an inner wrapper), top-aligning body cells, and clipping horizontal scroll inside the card.
 
 ### Changed
