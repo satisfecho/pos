@@ -121,6 +121,10 @@
     "HELP_DISCUSSIONS": "Diskussion starten (GitHub)",
     "WHATS_NEW_TITLE": "Was ist neu",
     "WHATS_NEW_DESC": "Neueste Änderungen und neue Funktionen",
+    "MY_SHIFT_TITLE": "Meine Schicht",
+    "MY_SHIFT_LOADING": "Status wird geladen…",
+    "MY_SHIFT_DESC_OFF": "Zur Arbeitszeiterfassung einchecken",
+    "MY_SHIFT_DESC_ON": "Sie sind eingecheckt — öffnen zum Auschecken oder für die Historie",
     "CHANGELOG_TITLE": "Changelog",
     "CHANGELOG_LOADING": "Wird geladen…"
   },

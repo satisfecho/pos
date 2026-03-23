@@ -121,6 +121,10 @@
     "HELP_DISCUSSIONS": "Iniciar una discusión (GitHub)",
     "WHATS_NEW_TITLE": "Qué hay de nuevo",
     "WHATS_NEW_DESC": "Últimos cambios y nuevas funciones",
+    "MY_SHIFT_TITLE": "Mi turno",
+    "MY_SHIFT_LOADING": "Comprobando asistencia…",
+    "MY_SHIFT_DESC_OFF": "Marca entrada para registrar tu jornada",
+    "MY_SHIFT_DESC_ON": "Estás en jornada — abre para marcar salida o ver el historial",
     "CHANGELOG_TITLE": "Registro de cambios",
     "CHANGELOG_LOADING": "Cargando…"
   },

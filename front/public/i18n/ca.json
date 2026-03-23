@@ -121,6 +121,10 @@
     "HELP_DISCUSSIONS": "Discussions (GitHub)",
     "WHATS_NEW_TITLE": "Què hi ha de nou",
     "WHATS_NEW_DESC": "Últims canvis i noves funcionalitats",
+    "MY_SHIFT_TITLE": "El meu torn",
+    "MY_SHIFT_LOADING": "Comprovant assistència…",
+    "MY_SHIFT_DESC_OFF": "Marca l'entrada per registrar la jornada",
+    "MY_SHIFT_DESC_ON": "Estàs en jornada — obre per marcar la sortida o veure l'historial",
     "CHANGELOG_TITLE": "Registre de canvis",
     "CHANGELOG_LOADING": "Carregant…"
   },

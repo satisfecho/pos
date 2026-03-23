@@ -113,6 +113,10 @@
     "HELP_DISCUSSIONS": "发起讨论 (GitHub)",
     "WHATS_NEW_TITLE": "更新内容",
     "WHATS_NEW_DESC": "最新变更与新功能",
+    "MY_SHIFT_TITLE": "我的班次",
+    "MY_SHIFT_LOADING": "正在检查考勤…",
+    "MY_SHIFT_DESC_OFF": "上班打卡以记录工时",
+    "MY_SHIFT_DESC_ON": "您已打卡上班 — 打开以下班打卡或查看记录",
     "CHANGELOG_TITLE": "更新日志",
     "CHANGELOG_LOADING": "加载中…"
   },

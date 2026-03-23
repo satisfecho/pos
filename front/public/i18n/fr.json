@@ -121,6 +121,10 @@
     "HELP_DISCUSSIONS": "Ouvrir une discussion (GitHub)",
     "WHATS_NEW_TITLE": "Nouveautés",
     "WHATS_NEW_DESC": "Dernières modifications et nouvelles fonctionnalités",
+    "MY_SHIFT_TITLE": "Mon service",
+    "MY_SHIFT_LOADING": "Vérification de la présence…",
+    "MY_SHIFT_DESC_OFF": "Pointez l’arrivée pour enregistrer vos heures",
+    "MY_SHIFT_DESC_ON": "Vous êtes pointé(e) — ouvrez pour pointer le départ ou voir l’historique",
     "CHANGELOG_TITLE": "Journal des modifications",
     "CHANGELOG_LOADING": "Chargement…"
   },

@@ -121,6 +121,10 @@
     "HELP_DISCUSSIONS": "Start a discussion (GitHub)",
     "WHATS_NEW_TITLE": "What's new",
     "WHATS_NEW_DESC": "Latest changes and new features",
+    "MY_SHIFT_TITLE": "My shift",
+    "MY_SHIFT_LOADING": "Checking attendance…",
+    "MY_SHIFT_DESC_OFF": "Clock in to record working hours",
+    "MY_SHIFT_DESC_ON": "You are clocked in — open to clock out or view history",
     "CHANGELOG_TITLE": "Changelog",
     "CHANGELOG_LOADING": "Loading…"
   },
