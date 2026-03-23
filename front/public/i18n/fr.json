@@ -657,7 +657,13 @@
     "ARRIVAL_TOLERANCE_MINUTES": "Merci d'arriver dans les {{minutes}} minutes suivant votre heure.",
     "DRESS_CODE": "Tenue",
     "ADDRESS": "Adresse",
-    "OPEN_IN_GOOGLE_MAPS": "Ouvrir dans Google Maps"
+    "OPEN_IN_GOOGLE_MAPS": "Ouvrir dans Google Maps",
+    "CALENDAR_LABEL": "Choisir la date",
+    "CAL_PREV_MONTH": "Mois précédent",
+    "CAL_NEXT_MONTH": "Mois suivant",
+    "CAL_CLOSED": "Fermé",
+    "CAL_AVAILABLE": "Ouvert",
+    "CAL_SELECTED": "Sélectionné"
   },
   "RESERVATIONS": {
     "TITLE": "Réservations",

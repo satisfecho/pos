@@ -131,9 +131,61 @@
         }
         <div class="book-card">
           <form (ngSubmit)="submit()" class="book-form">
-            <div class="form-group">
+            <div class="form-group book-date-block">
               <label>{{ 'RESERVATIONS.DATE' | translate }}</label>
-              <input type="date" [(ngModel)]="formDate" name="date" required [min]="minDate()" [max]="maxBookDate()" (ngModelChange)="onDateChange($event)" />
+              <input
+                type="date"
+                [(ngModel)]="formDate"
+                name="date"
+                required
+                [min]="minBookableDateInput()"
+                [max]="maxBookDateStr()"
+                (ngModelChange)="onDateChange($event)"
+              />
+              <div class="book-calendar" aria-label="{{ 'BOOK.CALENDAR_LABEL' | translate }}">
+                <div class="book-calendar-toolbar">
+                  <button type="button" class="btn-cal-nav" (click)="calendarPrevMonth()" [attr.aria-label]="'BOOK.CAL_PREV_MONTH' | translate">
+                    ‹
+                  </button>
+                  <span class="book-calendar-title">{{ calendarTitle() }}</span>
+                  <button
+                    type="button"
+                    class="btn-cal-nav"
+                    (click)="calendarNextMonth()"
+                    [disabled]="!canGoCalendarNext()"
+                    [attr.aria-label]="'BOOK.CAL_NEXT_MONTH' | translate"
+                  >
+                    ›
+                  </button>
+                </div>
+                <div class="book-calendar-weekdays">
+                  @for (wd of calendarWeekdayLabels(); track wd) {
+                    <span class="cal-wd">{{ wd }}</span>
+                  }
+                </div>
+                <div class="book-calendar-grid">
+                  @for (cell of calendarCells(); track $index) {
+                    @if (cell === null) {
+                      <span class="cal-cell cal-empty"></span>
+                    } @else {
+                      <button
+                        type="button"
+                        class="cal-cell cal-day-btn"
+                        [ngClass]="dayCellClasses(cell.date)"
+                        [disabled]="!isCalendarDaySelectable(cell.date)"
+                        (click)="selectCalendarDay(cell.date)"
+                      >
+                        {{ cell.day }}
+                      </button>
+                    }
+                  }
+                </div>
+                <div class="book-calendar-legend">
+                  <span class="leg-item"><span class="leg-swatch leg-open"></span>{{ 'BOOK.CAL_AVAILABLE' | translate }}</span>
+                  <span class="leg-item"><span class="leg-swatch leg-closed"></span>{{ 'BOOK.CAL_CLOSED' | translate }}</span>
+                  <span class="leg-item"><span class="leg-swatch leg-selected"></span>{{ 'BOOK.CAL_SELECTED' | translate }}</span>
+                </div>
+              </div>
             </div>
             <div class="form-group">
               <label>{{ 'RESERVATIONS.TIME' | translate }}</label>
@@ -148,7 +200,15 @@
             </div>
             <div class="form-group">
               <label>{{ 'RESERVATIONS.PARTY_SIZE' | translate }}</label>
-              <input type="number" min="1" max="20" [(ngModel)]="formPartySize" name="partySize" required />
+              <input
+                type="number"
+                min="1"
+                max="20"
+                [(ngModel)]="formPartySize"
+                name="partySize"
+                required
+                (ngModelChange)="onPartySizeChange()"
+              />
             </div>
             <div class="form-group">
               <label>{{ 'RESERVATIONS.CUSTOMER_NAME' | translate }}</label>

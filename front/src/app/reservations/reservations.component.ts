@@ -470,7 +470,7 @@ export class ReservationsComponent implements OnInit, OnDestroy {
     const tenantId = this.permissions.getCurrentUser()?.tenant_id;
     if (!tenantId || !dateStr) return;
     const partySize = this.formPartySize || 2;
-    this.api.getNextAvailableReservation(tenantId, dateStr, partySize).subscribe({
+    this.api.getNextAvailableReservation(tenantId, dateStr, partySize, 0).subscribe({
       next: (res) => {
         this.suggestedTime.set(res.time);
         if (!this.editingReservation()) {

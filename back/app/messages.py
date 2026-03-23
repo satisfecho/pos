@@ -10,6 +10,7 @@ MESSAGES = {
         "invalid_phone": "Invalid phone number",
         "invalid_reservation_token": "Invalid or unknown reservation link",
         "reservation_date_too_far": "Reservation date cannot be more than 12 months in advance",
+        "reservation_min_lead_time": "Reservation must be at least {minutes} minutes from now",
         "incorrect_username_or_password": "Incorrect username or password",
         "invalid_entity_type": "Invalid entity type. Allowed: {allowed}",
         "access_denied": "Access denied",
@@ -56,6 +57,7 @@ MESSAGES = {
         "stripe_not_configured": "Stripe no configurado para este inquilino",
         "payment_not_completed": "Pago no completado",
         "order_must_have_at_least_one_item": "El pedido debe tener al menos un artículo",
+        "reservation_min_lead_time": "La reserva debe ser al menos {minutes} minutos desde ahora",
     },
     "ca": {
         "database_error": "Error de base de dades",

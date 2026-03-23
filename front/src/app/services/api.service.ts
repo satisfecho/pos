@@ -253,6 +253,20 @@ export interface TenantSummary {
   public_google_review_url?: string | null;
   /** Google Maps place or directions URL (Share link). */
   public_google_maps_url?: string | null;
+  /** IANA timezone for reservation date/time UX (e.g. Europe/Madrid). */
+  timezone?: string | null;
+}
+
+/** GET /reservations/book-calendar — one month of open/closed days from opening hours. */
+export interface ReservationBookCalendarDay {
+  date: string;
+  state: 'open' | 'closed';
+}
+
+export interface ReservationBookCalendarResponse {
+  year: number;
+  month: number;
+  days: ReservationBookCalendarDay[];
 }
 
 /** One restaurant when several share the same printed table name. */
@@ -1190,10 +1204,31 @@ export class ApiService {
     return this.http.post<Reservation>(`${this.apiUrl}/reservations`, data);
   }
 
-  getNextAvailableReservation(tenantId: number, date: string, partySize?: number): Observable<{ date: string; time: string }> {
+  getNextAvailableReservation(
+    tenantId: number,
+    date: string,
+    partySize?: number,
+    /** 0 = staff (earliest slot same day); omit/default 10 = public book lead time */
+    minLeadMinutes?: number
+  ): Observable<{ date: string; time: string }> {
     let params: Record<string, string> = { tenant_id: tenantId.toString(), date };
     if (partySize != null && partySize > 0) params['party_size'] = String(partySize);
+    if (minLeadMinutes !== undefined) params['min_lead_minutes'] = String(minLeadMinutes);
     return this.http.get<{ date: string; time: string }>(`${this.apiUrl}/reservations/next-available`, { params });
+  }
+
+  getReservationBookCalendar(
+    tenantId: number,
+    year: number,
+    month: number
+  ): Observable<ReservationBookCalendarResponse> {
+    return this.http.get<ReservationBookCalendarResponse>(`${this.apiUrl}/reservations/book-calendar`, {
+      params: {
+        tenant_id: String(tenantId),
+        year: String(year),
+        month: String(month),
+      },
+    });
   }
 
   cancelReservationPublic(id: number, token: string): Observable<Reservation> {

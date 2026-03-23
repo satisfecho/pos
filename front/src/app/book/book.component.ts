@@ -1,4 +1,5 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { NgClass } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl, SafeStyle } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -10,7 +11,7 @@ import { contactEmailValid, contactPhoneValid } from '../shared/contact-validato
 @Component({
   selector: 'app-book',
   standalone: true,
-  imports: [FormsModule, TranslateModule, LanguagePickerComponent],
+  imports: [FormsModule, NgClass, TranslateModule, LanguagePickerComponent],
   templateUrl: './book.component.html',
   styleUrl: './book.component.scss',
 })
@@ -18,11 +19,19 @@ export class BookComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  /** Latest bookable date (~12 months ahead, aligned with backend). */
-  maxBookDate(): string {
-    const d = new Date();
-    d.setTime(d.getTime() + 366 * 24 * 60 * 60 * 1000);
-    return d.toISOString().slice(0, 10);
+  /** Latest bookable date (~12 months ahead from “today” in tenant timezone). */
+  maxBookDateStr(): string {
+    const base = this.tenantTodayDate();
+    const [y, m, d] = base.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    dt.setDate(dt.getDate() + 366);
+    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+  }
+
+  /** Minimum date for the date input (today in tenant TZ when loaded). */
+  minBookableDateInput(): string {
+    if (this.tenant()) return this.tenantTodayDate();
+    return new Date().toISOString().slice(0, 10);
   }
 
   goManageReservation(): void {
@@ -35,11 +44,14 @@ export class BookComponent implements OnInit {
   private translate = inject(TranslateService);
   private sanitizer = inject(DomSanitizer);
 
-  minDate = () => new Date().toISOString().slice(0, 10);
   tenantId = signal<number>(0);
   tenant = signal<TenantSummary | null>(null);
   logoUrl = signal<string | null>(null);
   loading = signal(true);
+  /** Month grid for book-calendar API (year + 1–12). */
+  calendarViewYear = signal(0);
+  calendarViewMonth = signal(1);
+  bookCalendarDays = signal<Map<string, 'open' | 'closed'>>(new Map());
   formDate = '';
   formTime = '20:00';
   formPartySize = 2;
@@ -72,7 +84,7 @@ export class BookComponent implements OnInit {
     const json = this.tenant()?.opening_hours;
     const dateStr = this.formDate;
     if (!json?.trim() || !dateStr) {
-      return this.timeOptions;
+      return this.finalizeBookableSlots([...this.timeOptions]);
     }
     try {
       const oh = JSON.parse(json) as Record<string, Record<string, unknown>>;
@@ -137,10 +149,63 @@ export class BookComponent implements OnInit {
         }
       }
       out.sort();
-      return out.length ? out : this.timeOptions;
+      const raw = out.length ? out : [...this.timeOptions];
+      return this.finalizeBookableSlots(raw);
     } catch {
-      return this.timeOptions;
+      return this.finalizeBookableSlots([...this.timeOptions]);
     }
+  }
+
+  private hhmmToMinutes(s: string): number {
+    const [h, m] = s.split(':').map((x) => parseInt(x, 10));
+    return (h || 0) * 60 + (m || 0);
+  }
+
+  /** Today YYYY-MM-DD in tenant IANA timezone (or browser TZ as fallback). */
+  tenantTodayDate(): string {
+    const tz =
+      this.tenant()?.timezone?.trim() || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: tz,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date());
+  }
+
+  /**
+   * Earliest allowed quarter-hour today (now + 10 min, ceiling), in tenant TZ.
+   * Matches public API min lead; used to filter the time dropdown for “today”.
+   */
+  minSlotHHmmForSelectedDate(): string | null {
+    if (!this.formDate || this.formDate !== this.tenantTodayDate()) return null;
+    const tz =
+      this.tenant()?.timezone?.trim() || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const lead = new Date(Date.now() + 10 * 60 * 1000);
+    const f = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    });
+    const parts = f.formatToParts(lead);
+    const hp = parts.find((p) => p.type === 'hour');
+    const mp = parts.find((p) => p.type === 'minute');
+    if (!hp || !mp) return null;
+    const h = parseInt(hp.value, 10);
+    const m = parseInt(mp.value, 10);
+    const total = h * 60 + m;
+    const rounded = Math.ceil(total / 15) * 15;
+    const nh = Math.floor(rounded / 60) % 24;
+    const nm = rounded % 60;
+    return `${String(nh).padStart(2, '0')}:${String(nm).padStart(2, '0')}`;
+  }
+
+  private finalizeBookableSlots(slots: string[]): string[] {
+    const minS = this.minSlotHHmmForSelectedDate();
+    if (!minS) return slots;
+    const minM = this.hhmmToMinutes(minS);
+    return slots.filter((x) => this.hhmmToMinutes(x) >= minM);
   }
 
   /** If current formTime is not in allowed slots, pick the first allowed (or keep next-available suggestion). */
@@ -151,17 +216,13 @@ export class BookComponent implements OnInit {
     }
   }
 
-  today = computed(() => new Date().toISOString().slice(0, 10));
-
   googleMapsUrl = computed(() => this.tenant()?.public_google_maps_url?.trim() || null);
 
   constructor() {
     const id = this.route.snapshot.paramMap.get('tenantId');
     const n = id ? parseInt(id, 10) : 0;
     if (n) this.tenantId.set(n);
-    const today = new Date().toISOString().slice(0, 10);
-    this.formDate = today;
-    this.onDateChange(today);
+    this.formDate = new Date().toISOString().slice(0, 10);
   }
 
   ngOnInit(): void {
@@ -176,12 +237,144 @@ export class BookComponent implements OnInit {
         const url = this.api.getTenantLogoUrl(t.logo_filename ?? undefined, t.id);
         this.logoUrl.set(url);
         this.loading.set(false);
-        this.syncFormTimeToAllowed();
+        this.formDate = this.tenantTodayDate();
+        const [y, m] = this.formDate.split('-').map(Number);
+        this.calendarViewYear.set(y);
+        this.calendarViewMonth.set(m);
+        this.loadBookCalendarForView();
+        this.onDateChange(this.formDate);
       },
       error: () => {
         this.loading.set(false);
       },
     });
+  }
+
+  loadBookCalendarForView(): void {
+    const tid = this.tenantId();
+    const y = this.calendarViewYear();
+    const mo = this.calendarViewMonth();
+    if (!tid || y < 2000) return;
+    this.api.getReservationBookCalendar(tid, y, mo).subscribe({
+      next: (res) => {
+        const map = new Map<string, 'open' | 'closed'>();
+        for (const d of res.days) {
+          map.set(d.date, d.state);
+        }
+        this.bookCalendarDays.set(map);
+      },
+      error: () => this.bookCalendarDays.set(new Map()),
+    });
+  }
+
+  calendarWeekdayLabels(): string[] {
+    const locale = this.translate.currentLang || this.translate.defaultLang || 'en';
+    const fmt = new Intl.DateTimeFormat(locale, { weekday: 'short' });
+    const monday = new Date(2024, 0, 8);
+    return Array.from({ length: 7 }, (_, i) =>
+      fmt.format(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i))
+    );
+  }
+
+  calendarTitle(): string {
+    const y = this.calendarViewYear();
+    const m = this.calendarViewMonth();
+    const locale = this.translate.currentLang || this.translate.defaultLang || 'en';
+    return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(
+      new Date(y, m - 1, 1)
+    );
+  }
+
+  calendarCells(): ({ date: string; day: number } | null)[] {
+    const y = this.calendarViewYear();
+    const m = this.calendarViewMonth();
+    if (y < 2000) return [];
+    const first = new Date(y, m - 1, 1);
+    const startDow = first.getDay();
+    const mondayIndex = (startDow + 6) % 7;
+    const lastDay = new Date(y, m, 0).getDate();
+    const cells: ({ date: string; day: number } | null)[] = [];
+    for (let i = 0; i < mondayIndex; i++) cells.push(null);
+    for (let d = 1; d <= lastDay; d++) {
+      const dateStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      cells.push({ date: dateStr, day: d });
+    }
+    while (cells.length % 7 !== 0) cells.push(null);
+    return cells;
+  }
+
+  calendarPrevMonth(): void {
+    let y = this.calendarViewYear();
+    let mo = this.calendarViewMonth();
+    mo -= 1;
+    if (mo < 1) {
+      mo = 12;
+      y -= 1;
+    }
+    this.calendarViewYear.set(y);
+    this.calendarViewMonth.set(mo);
+    this.loadBookCalendarForView();
+  }
+
+  calendarNextMonth(): void {
+    let y = this.calendarViewYear();
+    let mo = this.calendarViewMonth();
+    mo += 1;
+    if (mo > 12) {
+      mo = 1;
+      y += 1;
+    }
+    this.calendarViewYear.set(y);
+    this.calendarViewMonth.set(mo);
+    this.loadBookCalendarForView();
+  }
+
+  /** True if the month after the current view still has at least one bookable day. */
+  canGoCalendarNext(): boolean {
+    let y = this.calendarViewYear();
+    let mo = this.calendarViewMonth();
+    mo += 1;
+    if (mo > 12) {
+      mo = 1;
+      y += 1;
+    }
+    const firstNext = `${y}-${String(mo).padStart(2, '0')}-01`;
+    return firstNext <= this.maxBookDateStr();
+  }
+
+  isCalendarDaySelectable(dateStr: string): boolean {
+    if (!dateStr) return false;
+    if (dateStr < this.tenantTodayDate()) return false;
+    if (dateStr > this.maxBookDateStr()) return false;
+    const st = this.bookCalendarDays().get(dateStr);
+    if (st === 'closed') return false;
+    return true;
+  }
+
+  selectCalendarDay(dateStr: string): void {
+    if (!this.isCalendarDaySelectable(dateStr)) return;
+    this.formDate = dateStr;
+    this.onDateChange(dateStr);
+  }
+
+  dayCellClasses(dateStr: string): Record<string, boolean> {
+    const closed = this.bookCalendarDays().get(dateStr) === 'closed';
+    const past = dateStr < this.tenantTodayDate();
+    const selected = dateStr === this.formDate;
+    const selectable = this.isCalendarDaySelectable(dateStr);
+    return {
+      'cal-past': past,
+      'cal-closed': closed && !past,
+      'cal-selected': selected,
+      'cal-selectable': selectable && !selected,
+    };
+  }
+
+  onPartySizeChange(): void {
+    const tid = this.tenantId();
+    if (tid && this.formDate) {
+      this.onDateChange(this.formDate);
+    }
   }
 
   getLogoSafeUrl(url: string | null): SafeResourceUrl | null {
@@ -204,9 +397,20 @@ export class BookComponent implements OnInit {
   }
 
   onDateChange(dateStr: string) {
+    if (dateStr?.length >= 10) {
+      const y = parseInt(dateStr.slice(0, 4), 10);
+      const m = parseInt(dateStr.slice(5, 7), 10);
+      if (y >= 2000 && m >= 1 && m <= 12) {
+        if (this.calendarViewYear() !== y || this.calendarViewMonth() !== m) {
+          this.calendarViewYear.set(y);
+          this.calendarViewMonth.set(m);
+          this.loadBookCalendarForView();
+        }
+      }
+    }
     const tid = this.tenantId();
     if (!tid || !dateStr) return;
-    this.api.getNextAvailableReservation(tid, dateStr).subscribe({
+    this.api.getNextAvailableReservation(tid, dateStr, this.formPartySize).subscribe({
       next: (res) => {
         const time = this.roundTimeToQuarter(res.time);
         this.suggestedTime.set(time);
@@ -214,6 +418,13 @@ export class BookComponent implements OnInit {
         // If the next available slot is on a different date (e.g. tomorrow), show that date so the suggested time is not in the past
         if (res.date) {
           this.formDate = res.date;
+          const ry = parseInt(res.date.slice(0, 4), 10);
+          const rm = parseInt(res.date.slice(5, 7), 10);
+          if (ry >= 2000 && rm >= 1 && rm <= 12) {
+            this.calendarViewYear.set(ry);
+            this.calendarViewMonth.set(rm);
+            this.loadBookCalendarForView();
+          }
         }
         this.syncFormTimeToAllowed();
       },

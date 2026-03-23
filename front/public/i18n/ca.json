@@ -557,7 +557,13 @@
     "ARRIVAL_TOLERANCE_MINUTES": "Si us plau, arriba en {{minutes}} minuts de la teva hora.",
     "DRESS_CODE": "Codi de vestir",
     "ADDRESS": "Adreça",
-    "OPEN_IN_GOOGLE_MAPS": "Obrir a Google Maps"
+    "OPEN_IN_GOOGLE_MAPS": "Obrir a Google Maps",
+    "CALENDAR_LABEL": "Trieu la data",
+    "CAL_PREV_MONTH": "Mes anterior",
+    "CAL_NEXT_MONTH": "Mes següent",
+    "CAL_CLOSED": "Tancat",
+    "CAL_AVAILABLE": "Obert",
+    "CAL_SELECTED": "Seleccionat"
   },
   "RESERVATIONS": {
     "TITLE": "Reserves",

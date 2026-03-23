@@ -30,6 +30,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Agent loop docs & tasks:** **`docs/agent-loop.md`** — mac-stats-reviewer–style pipeline (`new` → … → **`done/YYYY/MM/DD/`**), roles, **`go-ahead-loop.sh`** / **`docs/testing.md`**, optional **[GitHub Issues](https://github.com/satisfecho/pos/issues)** handoff (**`gh`/API**, labels **`agent:planned`** / **`agent:wip`** / **`agent:testing`**, per-role comments). **`agents/tasks/README.md`**, **`agents/tasks/done/README.md`**, **`scripts/move-agent-task-to-done.sh`**, **`agents/pos-agent-loop.sh`** (**`cursor-agent`** orchestrator; **`AGENT_LOOP_SLEEP_MINUTES`**).
 - **GitHub #52 planning**: **`docs/0050-github-issue-52-split-plan.md`** — ten dedicated issue specs (title + body), phased rollout (A–E), dependency diagram, filing checklist; **`docs/0032-github-issues-roadmap.md`** and **`docs/README.md`** link to it.
 
+## [2.0.50] - 2026-03-23
+
+### Added
+
+- **GitHub #62 — Public book page:** **Month calendar** next to the date field (Mon–Sun grid, prev/next month, legend). **Closed days** use opening hours (`GET /reservations/book-calendar`); **past days** and **outside the 12‑month window** are disabled. **Tenant `timezone`** is included on **`GET /public/tenants/{id}`** so “today” and time filtering match the restaurant. **Public** bookings require **at least 10 minutes** lead time (`RESERVATION_PUBLIC_MIN_LEAD_MINUTES`); **`GET /reservations/next-available`** gains **`min_lead_minutes`** (default **10**; staff uses **0**). Time dropdown for **today** hides slots before that cutoff. i18n: **`BOOK.CAL_*`**. API message **`reservation_min_lead_time`** (en, es).
+
 ## [2.0.49] - 2026-03-23
 
 ### Added

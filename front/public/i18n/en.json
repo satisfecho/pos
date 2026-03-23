@@ -684,7 +684,13 @@
     "CONTACT_RESTAURANT": "Contact the restaurant",
     "VIEW_LINK_UNAVAILABLE": "Open the link from your confirmation email to view or cancel this reservation.",
     "ADDRESS": "Address",
-    "OPEN_IN_GOOGLE_MAPS": "Open in Google Maps"
+    "OPEN_IN_GOOGLE_MAPS": "Open in Google Maps",
+    "CALENDAR_LABEL": "Choose date",
+    "CAL_PREV_MONTH": "Previous month",
+    "CAL_NEXT_MONTH": "Next month",
+    "CAL_CLOSED": "Closed",
+    "CAL_AVAILABLE": "Open day",
+    "CAL_SELECTED": "Selected date"
   },
   "FEEDBACK": {
     "TITLE": "How was your visit?",
