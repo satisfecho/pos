@@ -274,7 +274,7 @@ import { CategoriesComponent } from './categories.component';
                    </div>
                 </form>
               </div>
-            }
+            } @else {
 
             @if (error()) {
               <div class="error-banner">
@@ -465,6 +465,7 @@ import { CategoriesComponent } from './categories.component';
                   </tbody>
                 </table>
               </div>
+            }
             }
           }
 
