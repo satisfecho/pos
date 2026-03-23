@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Staff/guest menu orders hit PostgreSQL NOT NULL on `orderitem.price_cents` (e.g. Pozole on order 431) because some lines were inserted without a resolved selling price.
+- **What was done:** `POST /menu/{table_token}/order` now resolves line price from tenant menu row → linked provider product → linked product (and related fallbacks), and returns **400** with a clear “no selling price” message instead of committing null `price_cents`; regression coverage was added in `test_menu_order_line_price_fallback.py`.
+- **What was tested:** Pytest on `test_menu_order_line_price_fallback.py` and `test_public_menu_order_response.py` — **7 passed**; tester recorded overall **PASS** against the task’s pass/fail criteria.
+- **Why closed:** Verification passed; no open failure against stated acceptance criteria.
+- **Closed at (UTC):** 2026-03-23 16:11
+---
+
 # Order item INSERT fails: `price_cents` null violates NOT NULL
 
 ## Source
