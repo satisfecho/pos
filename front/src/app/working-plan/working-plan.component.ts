@@ -179,9 +179,25 @@ function isValidView(v: string | null): v is ViewMode {
             @for (row of calendarGrid(); track row.weekIndex) {
               <div class="calendar-row">
                 @for (cell of row.days; track cell.trackId) {
-                  <div class="calendar-cell" [class.calendar-cell-empty]="!cell.day" [class.calendar-day-matches]="cell.hasIssue">
+                  <div
+                    class="calendar-cell"
+                    [class.calendar-cell-empty]="!cell.day"
+                    [class.calendar-cell-closed]="cell.isClosed"
+                    [class.calendar-day-matches]="cell.hasIssue"
+                    [class.calendar-day-ok]="cell.showOk"
+                  >
                     @if (cell.day) {
                       <span class="calendar-day-num">{{ cell.day }}</span>
+                      @if (cell.isClosed) {
+                        <span class="calendar-closed-label">{{ 'WORKING_PLAN.CLOSED_DAY' | translate }}</span>
+                      }
+                      @if (cell.shiftLines?.length) {
+                        <ul class="calendar-shift-lines">
+                          @for (line of cell.shiftLines; track $index) {
+                            <li>{{ line }}</li>
+                          }
+                        </ul>
+                      }
                     }
                   </div>
                 }
@@ -362,14 +378,19 @@ function isValidView(v: string | null): v is ViewMode {
     .calendar-grid { display: flex; flex-direction: column; gap: 2px; max-width: 42rem; }
     .calendar-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
     .calendar-cell {
-      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      min-height: 4.75rem; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start;
       border: 1px solid var(--border-color, #eee); border-radius: 6px;
-      font-size: 0.875rem; min-width: 0;
+      font-size: 0.875rem; min-width: 0; padding: 0.3rem 0.35rem; gap: 0.15rem;
     }
     .calendar-cell-header { font-weight: 600; background: var(--card-bg, #f8f8f8); aspect-ratio: auto; padding: 0.25rem 0; }
     .calendar-cell-empty { background: var(--bg-muted, #f5f5f5); border-color: transparent; }
+    .calendar-cell-closed:not(.calendar-day-matches) { background: var(--bg-muted, #ececec); color: var(--text-muted, #666); }
     .calendar-day-matches { background: rgba(220, 38, 38, 0.25); border-color: var(--danger, #dc2626); }
-    .calendar-day-num { font-weight: 500; }
+    .calendar-day-ok { background: rgba(22, 163, 74, 0.2); border-color: var(--color-success, #16a34a); }
+    .calendar-day-num { font-weight: 600; flex-shrink: 0; }
+    .calendar-closed-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.02em; opacity: 0.85; }
+    .calendar-shift-lines { list-style: none; margin: 0; padding: 0; font-size: 0.65rem; line-height: 1.25; color: var(--text, #222); overflow: hidden; }
+    .calendar-shift-lines li { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   `],
 })
 export class WorkingPlanComponent implements OnInit, OnDestroy {
@@ -462,13 +483,46 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
     const daysInMonth = last.getDate();
     const startOffset = (first.getDay() + 6) % 7;
     const pad = (n: number) => String(n).padStart(2, '0');
-    type Cell = { trackId: string; day?: number; dateStr?: string; hasIssue?: boolean };
+    type Cell = {
+      trackId: string;
+      day?: number;
+      dateStr?: string;
+      hasIssue?: boolean;
+      isClosed?: boolean;
+      showOk?: boolean;
+      shiftLines?: string[];
+    };
     const cells: Cell[] = [];
     let idx = 0;
     for (let i = 0; i < startOffset; i++) cells.push({ trackId: `empty-${idx++}` });
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${year}-${pad(monthIdx + 1)}-${pad(d)}`;
-      cells.push({ trackId: dateStr, day: d, dateStr, hasIssue: this.dayHasRequirementIssue(dateStr) });
+      const dayKey = DAY_KEYS[new Date(dateStr + 'T12:00:00').getDay()];
+      const closed = this.isDayClosed(dayKey);
+      const hasIssue = this.dayHasRequirementIssue(dateStr);
+      const hasReq = this.dayHasPersonnelRequirements(dayKey);
+      const showOk = !closed && hasReq && !hasIssue && this.dayMatchesRequirements(dateStr);
+      const dayShifts = this.shifts()
+        .filter((s) => s.date === dateStr)
+        .sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''));
+      const lines = dayShifts.map((s) => this.formatShiftLine(s));
+      const maxLines = 5;
+      const shiftLines =
+        lines.length > maxLines
+          ? [
+              ...lines.slice(0, maxLines),
+              this.translate.instant('WORKING_PLAN.CALENDAR_MORE_SHIFTS', { count: lines.length - maxLines }),
+            ]
+          : lines;
+      cells.push({
+        trackId: dateStr,
+        day: d,
+        dateStr,
+        hasIssue,
+        isClosed: closed,
+        showOk,
+        shiftLines,
+      });
     }
     const total = cells.length;
     const remainder = total % 7;
@@ -603,6 +657,11 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
     return hasAnyRequirement;
   }
 
+  /** At least one role has required headcount > 0 for this weekday (opening hours). */
+  private dayHasPersonnelRequirements(dayKey: string): boolean {
+    return STAFF_KEYS.some((sk) => this.getRequiredForRole(dayKey, sk) > 0);
+  }
+
   /** True if this date has a staffing issue: any role has too many or not enough people vs requirements. */
   dayHasRequirementIssue(dateStr: string): boolean {
     const dayKey = DAY_KEYS[new Date(dateStr + 'T12:00:00').getDay()];
@@ -617,24 +676,29 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  /** Next date in the current week range that is open and has a free slot for the current user's role; else first open day of week. */
+  /** Date range used for “Add shift” suggestions: visible month in calendar view, else current week. */
+  private getScheduleContextRange(): { from: string; to: string } {
+    return this.viewMode() === 'calendar' ? getMonthRange(this.calendarMonth()) : this.weekRange();
+  }
+
+  /** Next date in the context range that is open and has a free slot for the current user's role; else first open day. */
   getSuggestedDateForNewShift(): string {
-    const { from, to } = this.weekRange();
+    const { from, to } = this.getScheduleContextRange();
     const user = this.api.getCurrentUser();
     const staffKey = user ? roleToStaffKey(user.role ?? '') : null;
 
-    const datesInWeek: string[] = [];
+    const datesInRange: string[] = [];
     const fromDate = new Date(from + 'T12:00:00');
     const toDate = new Date(to + 'T12:00:00');
     for (let d = new Date(fromDate); d <= toDate; d.setDate(d.getDate() + 1)) {
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
-      datesInWeek.push(`${y}-${m}-${day}`);
+      datesInRange.push(`${y}-${m}-${day}`);
     }
 
     if (staffKey) {
-      for (const date of datesInWeek) {
+      for (const date of datesInRange) {
         const dayKey = DAY_KEYS[new Date(date + 'T12:00:00').getDay()];
         if (this.isDayClosed(dayKey)) continue;
         const required = this.getRequiredForRole(dayKey, staffKey);
@@ -642,7 +706,7 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
         if (required > 0 && scheduled < required) return date;
       }
     } else {
-      for (const date of datesInWeek) {
+      for (const date of datesInRange) {
         const dayKey = DAY_KEYS[new Date(date + 'T12:00:00').getDay()];
         if (this.isDayClosed(dayKey)) continue;
         for (const sk of STAFF_KEYS) {
@@ -653,7 +717,9 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
       }
     }
 
-    const firstOpenDate = datesInWeek.find((date) => !this.isDayClosed(DAY_KEYS[new Date(date + 'T12:00:00').getDay()]));
+    const firstOpenDate = datesInRange.find(
+      (date) => !this.isDayClosed(DAY_KEYS[new Date(date + 'T12:00:00').getDay()]),
+    );
     return firstOpenDate ?? from;
   }
 
@@ -734,8 +800,30 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
     return t !== key ? t : role;
   }
 
+  /** One line per shift for the calendar cell (name, role, time). */
+  private formatShiftLine(s: Shift): string {
+    const name = (s.user_name || '').trim();
+    const role = this.getRoleLabel(s.user_role || '');
+    const time = `${s.start_time}–${s.end_time}`;
+    if (name && role) return `${name} (${role}) ${time}`;
+    if (name) return `${name} ${time}`;
+    return time;
+  }
+
+  /** After save, show the shift in calendar/week: jump to the saved date’s month and week. */
+  private focusScheduleOnDate(isoDate: string): void {
+    const d = new Date(isoDate + 'T12:00:00');
+    if (Number.isNaN(d.getTime())) return;
+    this.weekStart.set(new Date(d));
+    if (this.viewMode() === 'calendar') {
+      const cm = this.calendarMonth();
+      if (d.getFullYear() !== cm.getFullYear() || d.getMonth() !== cm.getMonth()) {
+        this.calendarMonth.set(new Date(d.getFullYear(), d.getMonth(), 1));
+      }
+    }
+  }
+
   openCreate(): void {
-    const { from } = this.weekRange();
     this.editingShift.set(null);
     const currentUser = this.api.getCurrentUser();
     const users = this.scheduleUsers();
@@ -815,6 +903,7 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
       };
       this.api.updateShift(edit.id, payload).subscribe({
         next: () => {
+          this.focusScheduleOnDate(this.formDate);
           this.closeModal();
           this.load();
           this.showToast(this.translate.instant('WORKING_PLAN.UPDATED'), 'success');
@@ -835,6 +924,7 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
       };
       this.api.createShift(payload).subscribe({
         next: () => {
+          this.focusScheduleOnDate(this.formDate);
           this.closeModal();
           this.load();
           this.showToast(this.translate.instant('WORKING_PLAN.SAVED'), 'success');
