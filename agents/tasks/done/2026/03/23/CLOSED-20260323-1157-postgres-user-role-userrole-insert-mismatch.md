@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Postgres logged a type mismatch on **`INSERT INTO "user"`** — column **`role`** expects **`user_role`** but the driver bound **`userrole`**.
+- **What was done:** Coder set **`User.role`** to use SQLAlchemy **`Enum`** with **`name="user_role"`** and **`create_type=False`**, and added **`back/tests/test_user_role_pg_enum.py`** for all **`UserRole`** values.
+- **What was tested:** **`test_user_role_pg_enum`** and **`test_work_session`** in the back container — **PASS** (**2 passed**); no new enum mismatch errors in the sampled postgres log window.
+- **Why closed:** Tester reported **PASS** against all pass/fail criteria.
+- **Closed at (UTC):** 2026-03-23 13:31
+---
+
 # PostgreSQL: user insert fails — `user_role` vs `userrole` enum mismatch
 
 ## GitHub

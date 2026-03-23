@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub **#34** asked for consistent catalog card body height so provider prices align, with expand/collapse for long copy.
+- **What was done:** Coder updated the catalog card layout (line-clamp, **Show more** / **Show less**, spacer before prices), added i18n keys, and noted the change in **CHANGELOG** `[Unreleased]`.
+- **What was tested:** Tester ran **`/catalog`** checks (alignment, a11y, Spanish UI), **`npm run test:landing-version`**, and **`npm run test:catalog`** — all **PASS**; Angular build clean.
+- **Why closed:** All pass/fail criteria met per tester report (**PASS**).
+- **Closed at (UTC):** 2026-03-23 13:30
+---
+
 # Feedback / consistency in catalog description (badge area)
 
 ## Status
