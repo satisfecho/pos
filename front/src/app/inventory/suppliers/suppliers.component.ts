@@ -9,6 +9,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SidebarComponent } from '../../shared/sidebar.component';
+import { FocusFirstInputDirective } from '../../shared/focus-first-input.directive';
 import { InventoryService } from '../inventory.service';
 import { Supplier, SupplierCreate, SupplierUpdate } from '../inventory.types';
 import { TranslateModule } from '@ngx-translate/core';
@@ -16,7 +17,7 @@ import { TranslateModule } from '@ngx-translate/core';
 @Component({
   selector: 'app-suppliers',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, SidebarComponent, TranslateModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, SidebarComponent, FocusFirstInputDirective, TranslateModule],
   template: `
     <app-sidebar>
       <div class="page-header">
@@ -114,7 +115,7 @@ import { TranslateModule } from '@ngx-translate/core';
       <!-- Create/Edit Modal -->
       @if (showModal()) {
         <div class="modal-overlay" (click)="closeModal()">
-          <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal" (click)="$event.stopPropagation()" appFocusFirstInput>
             <div class="form-header">
               <h3>{{ editingSupplier() ? ('INVENTORY.SUPPLIERS.EDIT_SUPPLIER' | translate) : ('INVENTORY.SUPPLIERS.NEW_SUPPLIER' | translate) }}</h3>
               <button class="icon-btn" (click)="closeModal()">

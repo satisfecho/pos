@@ -7,12 +7,13 @@ import { FormsModule } from '@angular/forms';
 import { ApiService, BillingCustomer } from '../services/api.service';
 import { PermissionService } from '../services/permission.service';
 import { SidebarComponent } from '../shared/sidebar.component';
+import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-customers',
   standalone: true,
-  imports: [FormsModule, SidebarComponent, TranslateModule],
+  imports: [FormsModule, SidebarComponent, FocusFirstInputDirective, TranslateModule],
   template: `
     <app-sidebar>
       <div class="page-header">
@@ -117,7 +118,7 @@ import { TranslateModule } from '@ngx-translate/core';
       <!-- Add/Edit Modal -->
       @if (showModal()) {
         <div class="modal-overlay" (click)="closeModal()">
-          <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal" (click)="$event.stopPropagation()" appFocusFirstInput>
             <div class="modal-header">
               <h3>{{ editing() ? ('CUSTOMERS.EDIT' | translate) : ('CUSTOMERS.ADD' | translate) }}</h3>
               <button class="icon-btn" (click)="closeModal()">

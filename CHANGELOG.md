@@ -12,6 +12,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Docs**: `docs/0032-github-issues-roadmap.md` (GitHub **#52–#54** — warehouses, kitchen ticket SLAs, marketing/comms).
 - **ROADMAP.md** / **`docs/README.md`**: Links to the new planning docs.
 
+## [2.0.40] - 2026-03-23
+
+### Fixed
+
+- **UX (GitHub #32)**: Form dialogs move keyboard focus to the first `input` / `select` / `textarea` when opened. The shared `appFocusFirstInput` directive now uses `afterNextRender` plus short deferred passes so focus reliably wins over the opening click and late-rendered fields. Wired on billing **Customers**, inventory **suppliers**, **items** (create/edit + adjust stock), **purchase orders** (create + receive-goods), and the menu **payment message** step; existing modals (reservations, orders, settings, etc.) use the same directive.
+
 ## [2.0.39] - 2026-03-22
 
 ### Fixed

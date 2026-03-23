@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { SidebarComponent } from '../../shared/sidebar.component';
+import { FocusFirstInputDirective } from '../../shared/focus-first-input.directive';
 import { InventoryService } from '../inventory.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
@@ -24,7 +25,15 @@ import {
 @Component({
   selector: 'app-purchase-orders',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, SidebarComponent, TranslateModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    ReactiveFormsModule,
+    SidebarComponent,
+    FocusFirstInputDirective,
+    TranslateModule,
+  ],
   template: `
     <app-sidebar>
       <div class="page-header">
@@ -130,7 +139,7 @@ import {
       <!-- Create PO Modal -->
       @if (showCreateModal()) {
         <div class="modal-overlay" (click)="closeModal()">
-          <div class="modal modal-lg" (click)="$event.stopPropagation()">
+          <div class="modal modal-lg" (click)="$event.stopPropagation()" appFocusFirstInput>
             <div class="form-header">
               <h3>{{ 'INVENTORY.PURCHASE_ORDERS.CREATE_TITLE' | translate }}</h3>
               <button class="icon-btn" (click)="closeModal()">

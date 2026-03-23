@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { SidebarComponent } from '../../shared/sidebar.component';
+import { FocusFirstInputDirective } from '../../shared/focus-first-input.directive';
 import { InventoryService } from '../inventory.service';
 import { TranslateModule } from '@ngx-translate/core';
 import {
@@ -25,7 +26,15 @@ import {
 @Component({
   selector: 'app-inventory-items',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, SidebarComponent, TranslateModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    SidebarComponent,
+    FocusFirstInputDirective,
+    TranslateModule,
+  ],
   template: `
     <app-sidebar>
       <div class="page-header">
@@ -176,7 +185,7 @@ import {
       <!-- Create/Edit Modal -->
       @if (showItemModal()) {
         <div class="modal-overlay" (click)="closeModals()">
-          <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal" (click)="$event.stopPropagation()" appFocusFirstInput>
             <div class="form-header">
               <h3>{{ editingItem() ? ('INVENTORY.ITEMS.EDIT_ITEM' | translate) : ('INVENTORY.ITEMS.NEW_ITEM' | translate) }}</h3>
               <button class="icon-btn" (click)="closeModals()">
@@ -259,7 +268,7 @@ import {
       <!-- Stock Adjustment Modal -->
       @if (showAdjustModal()) {
         <div class="modal-overlay" (click)="closeModals()">
-          <div class="modal modal-sm" (click)="$event.stopPropagation()">
+          <div class="modal modal-sm" (click)="$event.stopPropagation()" appFocusFirstInput>
             <div class="form-header">
               <h3>{{ 'INVENTORY.ITEMS.ADJUST_STOCK' | translate }}</h3>
               <button class="icon-btn" (click)="closeModals()">

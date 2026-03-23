@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../../shared/sidebar.component';
+import { FocusFirstInputDirective } from '../../shared/focus-first-input.directive';
 import { InventoryService } from '../inventory.service';
 import { PurchaseOrder, ReceiveGoodsInput, ReceivedItemInput } from '../inventory.types';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -17,7 +18,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 @Component({
   selector: 'app-purchase-order-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, SidebarComponent, TranslateModule],
+  imports: [CommonModule, RouterModule, FormsModule, SidebarComponent, FocusFirstInputDirective, TranslateModule],
   template: `
     <app-sidebar>
       @if (loading()) {
@@ -116,7 +117,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
         <!-- Receive Goods Modal -->
         @if (showReceiveModal()) {
           <div class="modal-overlay" (click)="showReceiveModal.set(false)">
-            <div class="modal modal-lg" (click)="$event.stopPropagation()">
+            <div class="modal modal-lg" (click)="$event.stopPropagation()" appFocusFirstInput>
               <div class="form-header">
                 <h3>{{ 'INVENTORY.PURCHASE_ORDERS.RECEIVE_GOODS' | translate }}</h3>
                 <button class="icon-btn" (click)="showReceiveModal.set(false)">
