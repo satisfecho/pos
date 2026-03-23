@@ -53,7 +53,7 @@ step_log_reviewer() {
   run_agent "log reviewer (001)" \
     "true" \
     "001-log-reviewer/LOG-REVIEWER-PROMPT.md" \
-    "Start log and incident review now. Check Docker logs and GitHub issues per your prompt; create NEW tasks only when warranted. Do your job."
+    "Run the 001 workflow: GitHub issues first — open https://github.com/satisfecho/pos/issues (or gh issue list), pick up to 3 open issues without existing tasks, create NEW- (or FEAT-) files in agents/tasks/, comment and label agent:planned. Then optional Docker log pass. Do your job."
 }
 
 step_feat() {

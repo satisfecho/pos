@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **001 log reviewer prompt:** each run must sweep **[GitHub Issues](https://github.com/satisfecho/pos/issues)** — pick **up to 3** open issues without an existing task, create **`NEW-…`** (or **`FEAT-…`** for large epics) under **`agents/tasks/`**, **`gh` comment + `agent:planned`**; optional Docker log pass after. **`agents/pos-agent-loop.sh`** 001 message aligned.
 - **`agents/pos-agent-loop.sh`:** run **001 log reviewer** first in every full cycle; subcommands **`log`**, **`log-reviewer`**, **`001`**. **`docs/agent-loop.md`** updated.
 - **Agent loop script:** renamed **`agents/run.sh`** → **`agents/pos-agent-loop.sh`** (clearer vs repo-root **`./run.sh`**). **`docs/agent-loop.md`**, **`AGENTS.md`**, **`agents/README.md`** updated.
 - **Agent / git workflow:** Routine work targets **`development`**; **`master`** is promoted only on a **~2h cadence**, **big production-impacting** changes, or **urgent/production** issues (label **`production-urgent`**) — see **`.cursor/rules/git-development-branch-workflow.mdc`**, **`docs/agent-loop.md`**, **`AGENTS.md`**. **`agents/pos-agent-loop.sh`** committer prompt aligned.
