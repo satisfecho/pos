@@ -127,6 +127,72 @@ Optional: track last version bump time in **`agents/007-committer/last-version-b
 
 ---
 
+## GitHub Issues integration (optional)
+
+**Is it possible?** **Yes.** [Issues for this repo](https://github.com/satisfecho/pos/issues) can be updated from the agent workflow using the **GitHub REST API** or the **`gh` CLI**, as long as a credential with permission to read/write issues is available (see **Authentication** below). Issues do **not** have a built-in “WIP” field; use **labels** (and/or **GitHub Projects** “Status”) so each role can signal state in a consistent, machine-friendly way.
+
+### Authentication (required for updates)
+
+- **Fine-grained PAT** or **classic PAT** with **Issues** read/write on `satisfecho/pos`, **or** **`gh auth login`** on the machine running the agent.
+- Expose to tools as **`GH_TOKEN`** / **`GITHUB_TOKEN`** (many tools accept either). **Never** commit tokens; use shell env, CI secrets, or local keychain via `gh`.
+- In **GitHub Actions**, the default `GITHUB_TOKEN` can comment and label on the same repo when workflows are enabled.
+
+### Linking a task file to an issue
+
+At the top of each task markdown (or immediately under the title), add a stable pointer:
+
+```markdown
+## GitHub
+- **Issue:** https://github.com/satisfecho/pos/issues/NN
+```
+
+The **reviewer** uses the [issue list](https://github.com/satisfecho/pos/issues) as the **input backlog**. When they create the feature/task file, they record **`NN`** in that section (and optionally quote the issue title in the task body).
+
+### Suggested labels (create once in the repo)
+
+| Label | Meaning |
+|--------|--------|
+| **`agent:planned`** | Task file exists; scoped for implementation (reviewer handoff). |
+| **`agent:wip`** | Coder or feature coder is implementing (rename task to **wip** in sync with this). |
+| **`agent:testing`** | Tester is running **Testing instructions** (task in **testing**). |
+
+Adjust names to taste (`status/planned`, etc.); keep them **documented here** so every agent uses the same set.
+
+### Role → GitHub actions (recommended)
+
+| Role | When | Update the issue |
+|------|------|------------------|
+| **Reviewer** (log / planning) | After creating the task file for issue **#NN** | Add comment: link to task path under **`agents/tasks/…`**, short plan; add label **`agent:planned`**. Optionally remove **`agent:needs-triage`** if you use triage labels. |
+| **Coder** & **Feature coder** | When renaming task **new/feat → wip** | Add comment: “Implementation started”; **`agent:planned` → `agent:wip`** (remove planned, add wip). |
+| **Tester** | When renaming **untested → testing** | Add comment: “Verification started” (commands/env if useful); **`agent:wip` → `agent:testing`**. |
+| **Closer** | After **Test report** is **PASS** and task is **closed**, before/after `move-agent-task-to-done.sh` | Comment: one-paragraph outcome + pointer to merged commit or PR if applicable; remove **`agent:testing`** / **`agent:wip`**. **Close the issue** if the feature is fully delivered and tracked only here; **leave open** if the issue is a parent epic or has follow-ups (say so in the comment). |
+
+On **test failure** (**testing → wip**), the tester should comment on the issue with what failed and keep or restore **`agent:wip`** as appropriate.
+
+### Example `gh` commands (run from any directory)
+
+```bash
+export GH_TOKEN=…   # or rely on `gh auth login`
+
+gh issue list --repo satisfecho/pos --state open --limit 30
+
+gh issue comment 50 --repo satisfecho/pos --body "Task file: agents/tasks/NEW-20260323-1030-order-tip.md — planned for implementation."
+
+gh issue edit 50 --repo satisfecho/pos --add-label "agent:planned"
+
+gh issue edit 50 --repo satisfecho/pos --remove-label "agent:planned" --add-label "agent:wip"
+```
+
+Equivalent **HTTP** calls are documented in [GitHub REST: Issues](https://docs.github.com/en/rest/issues/issues).
+
+### Limits and expectations
+
+- **Agents do not talk to GitHub by default** — prompts must instruct the agent to run **`gh`** or **`curl`** (with token), or a human performs the issue update alongside the task rename.
+- **Rate limits** apply; batch comments sparingly.
+- **Parent/child issues:** if one task maps to a **single** GitHub issue, keep a **1:1** link in the task file. If one issue spans multiple tasks, note that in comments and link each task file from the issue thread.
+
+---
+
 ## What we are not copying blindly
 
 | mac-stats-reviewer item | POS note |
@@ -158,6 +224,7 @@ mac-stats-reviewer’s **`agents/autoresearch/README.md`** describes **Track A**
 ## Related POS documentation
 
 - **`AGENTS.md`** — Docker, smoke tests, git, frontend log checks.
+- **`docs/0032-github-issues-roadmap.md`** — Umbrella issues **#52–#54** and links.
 - **`docs/testing.md`** — Puppeteer scripts, **`go-ahead-loop.sh`**.
 - **`.cursor/rules/error-investigation-workflow.mdc`** — log order for incidents.
 - **`.cursor/rules/commit-changelog-version.mdc`** — changelog and version bump when cutting work.

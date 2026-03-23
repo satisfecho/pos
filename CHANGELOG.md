@@ -13,8 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- **Agent tasks archive:** **`agents/tasks/README.md`**, **`agents/tasks/done/README.md`** — closed tasks go under **`done/YYYY/MM/DD/`** (one folder per calendar day from `CLOSED-YYYYMMDD-…`). **`scripts/move-agent-task-to-done.sh`** moves a file from **`agents/tasks/`** into the matching day folder. **`docs/agent-loop.md`** updated for this layout.
-- **`docs/agent-loop.md`** — mac-stats-reviewer–style multi-agent workflow for POS: task pipeline (`new` → … → `done/`), role mapping (log analyst, coder, tester, closing reviewer, committer), target `agents/` layout, integration with **`go-ahead-loop.sh`** and **`docs/testing.md`**.
+- **Agent loop docs & tasks:** **`docs/agent-loop.md`** — mac-stats-reviewer–style pipeline (`new` → … → **`done/YYYY/MM/DD/`**), roles, **`go-ahead-loop.sh`** / **`docs/testing.md`**, optional **[GitHub Issues](https://github.com/satisfecho/pos/issues)** handoff (**`gh`/API**, labels **`agent:planned`** / **`agent:wip`** / **`agent:testing`**, per-role comments). **`agents/tasks/README.md`**, **`agents/tasks/done/README.md`**, **`scripts/move-agent-task-to-done.sh`**.
 - **GitHub #52 planning**: **`docs/0050-github-issue-52-split-plan.md`** — ten dedicated issue specs (title + body), phased rollout (A–E), dependency diagram, filing checklist; **`docs/0032-github-issues-roadmap.md`** and **`docs/README.md`** link to it.
 
 ## [2.0.49] - 2026-03-23

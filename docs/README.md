@@ -9,7 +9,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | Need to… | See |
 |----------|-----|
 | Run Puppeteer/UI tests | [testing.md](testing.md) |
-| Multi-agent task loop (mac-stats-reviewer style) | [agent-loop.md](agent-loop.md) |
+| Multi-agent task loop + GitHub Issues handoff | [agent-loop.md](agent-loop.md) |
 | Deploy to a server | [0004-deployment.md](0004-deployment.md) |
 | Set up CI/CD (amvara9) | [0001-ci-cd-amvara9.md](0001-ci-cd-amvara9.md) |
 | Configure Gmail for email | [0018-gmail-setup.md](0018-gmail-setup.md) |
