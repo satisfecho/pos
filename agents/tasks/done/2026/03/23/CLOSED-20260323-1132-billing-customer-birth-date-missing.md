@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Long-lived local databases never applied the original `billing_customer.birth_date` migration because it had a lower version than already-applied migrations, so ORM queries hit `UndefinedColumn` and returned HTTP 500 on orders and billing-customer endpoints.
+- **What was done:** A repair migration (`20260323160000_billing_customer_birth_date_repair.sql`) was added so pending stacks pick up the column idempotently; the `user_role`/`userrole` insert was not reproduced and was deferred.
+- **What was tested:** Migrate to `20260323160000`, `\d billing_customer` for `birth_date`, authenticated `GET /api/orders` and `GET /api/billing-customers`, and back logs for `ProgrammingError`/`birth_date` — all passed.
+- **Why closed:** Tester reported **PASS** on all pass/fail criteria.
+- **Closed at (UTC):** 2026-03-23 11:37
+---
+
 # CLOSED-20260323-1132-billing-customer-birth-date-missing
 
 ## Summary
