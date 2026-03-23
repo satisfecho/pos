@@ -794,6 +794,18 @@ export interface ProviderCreate {
   email?: string | null;
 }
 
+/** PATCH body for a personal (tenant-owned) provider in Settings. */
+export interface PersonalProviderPatch {
+  name?: string;
+  url?: string | null;
+  full_company_name?: string | null;
+  address?: string | null;
+  tax_number?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  is_active?: boolean;
+}
+
 export interface CatalogItem {
   id: number;
   name: string;
@@ -1855,6 +1867,10 @@ export class ApiService {
 
   createProvider(body: ProviderCreate): Observable<Provider> {
     return this.http.post<Provider>(`${this.apiUrl}/providers`, body);
+  }
+
+  patchPersonalProvider(providerId: number, body: PersonalProviderPatch): Observable<Provider> {
+    return this.http.patch<Provider>(`${this.apiUrl}/providers/${providerId}`, body);
   }
 
   /** Create a product on a tenant-owned (personal) provider (admin/settings). */

@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **GitHub #25 — Personal providers (edit + API tests):** Staff **`PATCH /providers/{id}`** updates **tenant-owned** providers only (name, contact, URL, **`is_active`**); global/catalog providers return **403**. **Settings → Providers** adds **Edit provider** for personal rows. Backend isolation tests: **`back/tests/test_personal_providers_api.py`**.
+
 - **GitHub #57 — Staff attendance on dashboard:** The **My shift** card on **Dashboard** shows whether the logged-in staff member is clocked in (via `GET /users/me/work-session`) and links to **`/my-shift`** for **Start shift** / **End shift** and history. i18n **`DASHBOARD.MY_SHIFT_*`**. Existing **WorkSession** APIs and **`back/tests/test_work_session.py`** unchanged.
 
 - **GitHub #50 — Order line modifiers (pizza-style):** Optional structured **`line_modifiers`** on each order line — **`remove`**, **`add`**, **`substitute`** (from/to pairs) — stored as JSON with a **`line_modifiers_summary`** snapshot for kitchen tickets and printed invoices. Public menu **`POST /menu/{token}/order`** and staff **`PUT /orders/{id}/items/{itemId}`** accept the payload; merging duplicate lines requires the same customization **and** the same line modifiers. Migration **`20260323170000_order_item_line_modifiers.sql`**. Staff **Orders → Edit order**: add-item section + per-line **Modifiers** editor. Kitchen display shows modifiers next to product questions. Tests: **`back/tests/test_line_modifiers.py`**.

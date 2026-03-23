@@ -981,6 +981,19 @@ class ProviderCreate(SQLModel):
     email: str | None = None
 
 
+class PersonalProviderUpdate(SQLModel):
+    """Partial update for a tenant-owned provider (Settings / staff API)."""
+
+    name: str | None = None
+    url: str | None = None
+    full_company_name: str | None = None
+    address: str | None = None
+    tax_number: str | None = None
+    phone: str | None = None
+    email: str | None = None
+    is_active: bool | None = None
+
+
 class ProviderRegister(SQLModel):
     """Body for provider self-registration."""
     provider_name: str

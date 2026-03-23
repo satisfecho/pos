@@ -3465,6 +3465,80 @@ def create_provider(
     return provider
 
 
+@app.patch("/providers/{provider_id}")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def update_personal_provider(
+    request: Request,
+    response: Response,
+    provider_id: int,
+    body: models.PersonalProviderUpdate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.CATALOG_WRITE))],
+    session: Session = Depends(get_session),
+) -> models.Provider:
+    """Update a tenant-owned (personal) provider. Global/catalog providers cannot be edited here."""
+    if current_user.tenant_id is None:
+        raise HTTPException(status_code=403, detail="Tenant required")
+    provider = session.exec(
+        select(models.Provider).where(models.Provider.id == provider_id)
+    ).first()
+    if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    if provider.tenant_id is None:
+        raise HTTPException(
+            status_code=403,
+            detail="Catalog providers cannot be edited from restaurant settings",
+        )
+    if provider.tenant_id != current_user.tenant_id:
+        raise HTTPException(status_code=404, detail="Provider not found")
+
+    data = body.model_dump(exclude_unset=True)
+    if "name" in data:
+        new_name = (data["name"] or "").strip()
+        if not new_name:
+            raise HTTPException(status_code=422, detail="Name cannot be empty")
+        if new_name != provider.name:
+            existing = session.exec(
+                select(models.Provider).where(
+                    models.Provider.tenant_id == current_user.tenant_id,
+                    models.Provider.name == new_name,
+                    models.Provider.id != provider.id,
+                )
+            ).first()
+            if existing:
+                raise HTTPException(
+                    status_code=409,
+                    detail="A provider with this name already exists",
+                )
+        provider.name = new_name
+    str_fields = (
+        "url",
+        "full_company_name",
+        "address",
+        "tax_number",
+        "phone",
+        "email",
+    )
+    for key in str_fields:
+        if key not in data:
+            continue
+        val = data[key]
+        if val is None:
+            setattr(provider, key, None)
+        else:
+            s = str(val).strip()
+            setattr(provider, key, s or None)
+    if "is_active" in data and data["is_active"] is not None:
+        provider.is_active = bool(data["is_active"])
+
+    session.add(provider)
+    session.commit()
+    session.refresh(provider)
+    return provider
+
+
 # ============ PRODUCT CATALOG ============
 
 

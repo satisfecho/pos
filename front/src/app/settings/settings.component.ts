@@ -3,7 +3,16 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { ApiService, Provider, ProviderCreate, ProviderProduct, ProviderProductCreate, Tax, TenantSettings } from '../services/api.service';
+import {
+  ApiService,
+  PersonalProviderPatch,
+  Provider,
+  ProviderCreate,
+  ProviderProduct,
+  ProviderProductCreate,
+  Tax,
+  TenantSettings,
+} from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { TranslationsComponent } from '../translations/translations.component';
@@ -226,7 +235,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                       <td>{{ isOwnProvider(p) ? ('SETTINGS.PROVIDER_PERSONAL' | translate) : ('SETTINGS.PROVIDER_CATALOG' | translate) }}</td>
                       <td>
                         @if (isOwnProvider(p)) {
-                          <button type="button" class="btn btn-sm btn-secondary" (click)="openAddProductModal(p)">{{ 'SETTINGS.ADD_PRODUCT_TO_PROVIDER' | translate }}</button>
+                          <button type="button" class="btn btn-sm btn-secondary" (click)="openEditProviderModal(p)" data-testid="settings-edit-provider-btn">{{ 'SETTINGS.EDIT_PROVIDER' | translate }}</button>
+                          <button type="button" class="btn btn-sm btn-secondary" (click)="openAddProductModal(p)" style="margin-left: 0.25rem;">{{ 'SETTINGS.ADD_PRODUCT_TO_PROVIDER' | translate }}</button>
                           <button type="button" class="btn btn-sm btn-secondary" (click)="toggleProviderProducts(p)" style="margin-left: 0.25rem;">
                             {{ (p.id != null && providerProductsExpanded().has(p.id)) ? ('SETTINGS.HIDE_PRODUCTS' | translate) : ('SETTINGS.SHOW_PRODUCTS' | translate) }}
                           </button>
@@ -284,6 +294,48 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                   </div>
                   <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" (click)="closeAddProviderModal()">{{ 'COMMON.CANCEL' | translate }}</button>
+                    <button type="submit" class="btn btn-primary">{{ 'COMMON.SAVE' | translate }}</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          }
+          <!-- Edit Personal Provider Modal -->
+          @if (showEditProviderModal()) {
+            <div class="modal-overlay" (click)="closeEditProviderModal()">
+              <div class="modal-content" (click)="$event.stopPropagation()" appFocusFirstInput>
+                <div class="modal-header">
+                  <h3>{{ 'SETTINGS.EDIT_PROVIDER' | translate }}</h3>
+                  <button type="button" class="btn-icon" (click)="closeEditProviderModal()">×</button>
+                </div>
+                <form (ngSubmit)="saveEditedProvider()">
+                  <div class="modal-body">
+                    <div class="form-group">
+                      <label for="editProviderName">{{ 'SETTINGS.PROVIDER_NAME' | translate }} *</label>
+                      <input id="editProviderName" type="text" [(ngModel)]="editProviderName" name="editProviderName" required />
+                    </div>
+                    <div class="form-group">
+                      <label for="editProviderUrl">{{ 'SETTINGS.PROVIDER_URL_OPTIONAL' | translate }}</label>
+                      <input id="editProviderUrl" type="text" [(ngModel)]="editProviderUrl" name="editProviderUrl" />
+                    </div>
+                    <div class="form-group">
+                      <label for="editProviderPhone">{{ 'SETTINGS.PROVIDER_PHONE' | translate }}</label>
+                      <input id="editProviderPhone" type="text" [(ngModel)]="editProviderPhone" name="editProviderPhone" />
+                    </div>
+                    <div class="form-group">
+                      <label for="editProviderEmail">{{ 'SETTINGS.PROVIDER_EMAIL' | translate }}</label>
+                      <input id="editProviderEmail" type="email" [(ngModel)]="editProviderEmail" name="editProviderEmail" />
+                    </div>
+                    <div class="form-group checkbox-small">
+                      <input id="editProviderActive" type="checkbox" [(ngModel)]="editProviderActive" name="editProviderActive" />
+                      <label for="editProviderActive">{{ 'SETTINGS.PROVIDER_ACTIVE' | translate }}</label>
+                    </div>
+                    @if (editProviderError()) {
+                      <p class="field-error">{{ editProviderError() }}</p>
+                    }
+                  </div>
+                  <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" (click)="closeEditProviderModal()">{{ 'COMMON.CANCEL' | translate }}</button>
                     <button type="submit" class="btn btn-primary">{{ 'COMMON.SAVE' | translate }}</button>
                   </div>
                 </form>
@@ -2108,6 +2160,14 @@ export class SettingsComponent implements OnInit {
   providerProductsMap = signal<Record<number, ProviderProduct[]>>({});
   providerProductsExpanded = signal<Set<number>>(new Set());
   showAddProviderModal = signal(false);
+  showEditProviderModal = signal(false);
+  editingProvider = signal<Provider | null>(null);
+  editProviderName = '';
+  editProviderUrl = '';
+  editProviderPhone = '';
+  editProviderEmail = '';
+  editProviderActive = true;
+  editProviderError = signal('');
   showAddProductModal = signal(false);
   selectedProviderForProduct = signal<Provider | null>(null);
   newProviderName = '';
@@ -2438,6 +2498,53 @@ export class SettingsComponent implements OnInit {
         this.loadProviders();
       },
       error: (err) => this.providerError.set(err?.error?.detail || 'Failed to add provider'),
+    });
+  }
+
+  openEditProviderModal(p: Provider) {
+    this.editingProvider.set(p);
+    this.editProviderName = p.name || '';
+    this.editProviderUrl = p.url || '';
+    this.editProviderPhone = p.phone || '';
+    this.editProviderEmail = p.email || '';
+    this.editProviderActive = p.is_active !== false;
+    this.editProviderError.set('');
+    this.showEditProviderModal.set(true);
+  }
+
+  closeEditProviderModal() {
+    this.showEditProviderModal.set(false);
+    this.editingProvider.set(null);
+  }
+
+  saveEditedProvider() {
+    const p = this.editingProvider();
+    const id = p?.id;
+    if (id == null) return;
+    this.editProviderError.set('');
+    const name = this.editProviderName?.trim();
+    if (!name) {
+      this.editProviderError.set(this.translate.instant('SETTINGS.PROVIDER_NAME_REQUIRED'));
+      return;
+    }
+    const body: PersonalProviderPatch = {
+      name,
+      url: this.editProviderUrl?.trim() || null,
+      phone: this.editProviderPhone?.trim() || null,
+      email: this.editProviderEmail?.trim() || null,
+      is_active: this.editProviderActive,
+    };
+    this.api.patchPersonalProvider(id, body).subscribe({
+      next: () => {
+        this.closeEditProviderModal();
+        this.loadProviders();
+      },
+      error: (err) =>
+        this.editProviderError.set(
+          typeof err?.error?.detail === 'string'
+            ? err.error.detail
+            : 'Failed to update provider',
+        ),
     });
   }
 

@@ -162,7 +162,7 @@ npm run test:settings-providers --prefix front
 ```
 
 - **Env:** `BASE_URL`, `LOGIN_EMAIL`/`LOGIN_PASSWORD` or `DEMO_LOGIN_EMAIL`/`DEMO_LOGIN_PASSWORD` (from `.env`). `TENANT_ID` (default `1`). `HEADLESS`.
-- **Asserts:** After login, `/settings` loads; Providers tab is present; clicking it shows the Providers section and the Add provider button (`data-testid="settings-providers-section"`, `data-testid="settings-add-provider-btn"`).
+- **Asserts:** After login, `/settings` loads; Providers tab is present; clicking it shows the Providers section and the Add provider button (`data-testid="settings-providers-section"`, `data-testid="settings-add-provider-btn"`). Personal providers also show **Edit provider** (`data-testid="settings-edit-provider-btn"`).
 
 ---
 
