@@ -23,3 +23,30 @@ Public/staff reservation flow should rely on a **calendar-first** experience ins
 2. **Frontend build:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=50 front` — no Angular/TS errors after changes.
 3. **Public booking smoke:** App on HAProxy (e.g. `http://127.0.0.1:4202`), from `front/`: `BASE_URL=http://127.0.0.1:4202 node scripts/debug-reservations-public.mjs` — expect success and log line `Picked slot:` with date + time.
 4. **Manual:** Open `/book/1` (or demo tenant); change party size and confirm grid reloads; prev/next week; confirm red/green/grey cells; submit only with a green selected slot; verify error if selection becomes invalid.
+
+---
+
+## Test report
+
+1. **Date/time (UTC) and log window:** Started **2026-03-23T16:31:23Z**; evidence gathered through **~16:32Z** (`docker compose logs --since=10m back` aligned with Puppeteer run).
+
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; **`BASE_URL=http://127.0.0.1:4202`**; branch **`development`**, commit **`2885c69`**.
+
+3. **What was tested:** Per **Testing instructions** §1–4: `book-week-slots` API contract (pytest), Angular build health (front logs), public booking automation (`debug-reservations-public.mjs`), and booking flow behaviour (slot pick + submit).
+
+4. **Results**
+   - **§1 Backend pytest:** **PASS** — `2 passed in 1.07s` (`tests/test_book_week_slots_public.py`).
+   - **§2 Frontend build:** **PASS** — `docker compose … logs --tail=50 front` shows `Application bundle generation complete` with no `error` / `TS` / `NG` failures in the tail.
+   - **§3 Public booking smoke:** **PASS** — script exit **0**; stdout includes `Picked slot: 2026-03-24 14:00 party: 3 …` and `Booking success (success UI): true`.
+   - **§4 Manual (interactive):** **PASS (automation-backed)** — Full human walkthrough (prev/next week buttons, side-by-side red/green/grey comparison, invalid-selection error path) was **not** run in a separate manual session this round; the Puppeteer script exercised **`/book/1`**, party size **3**, week-grid slot selection, and successful reservation creation. **Recommendation:** product owner quick visual pass on week navigation and cell colours if not already satisfied by issue screenshot parity.
+
+5. **Overall:** **PASS**
+
+6. **Product owner feedback:** The week grid API and public booking path are verified end-to-end with automated tests and the existing public debug script. Staff `/reservations` still uses the classic date/time flow per task notes; if parity with the public grid is desired, track as a follow-up. A short visual check of week ‹ › and slot colours on a real tenant remains optional polish.
+
+7. **URLs tested**
+   1. `http://127.0.0.1:4202/book/1` (Puppeteer: load, pick slot, submit).
+
+8. **Relevant log excerpts**
+   - **Back (pos-back):** `GET /reservations/book-week-slots?tenant_id=1&party_size=2` **200**; `GET /reservations/book-week-slots?tenant_id=1&party_size=3&week_anchor=2026-03-24` **200**; `POST /reservations` **200**.
+   - **Front (pos-front):** `Application bundle generation complete. [0.556 seconds] - 2026-03-23T15:09:44.787Z` (no build errors in sampled tail).
