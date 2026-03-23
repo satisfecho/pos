@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Move a CLOSED-* task from agents/tasks/ to agents/tasks/done/YYYY/MM/
+# Move a CLOSED-* task from agents/tasks/ to agents/tasks/done/YYYY/MM/DD/
 # using the YYYYMMDD segment in the filename (see agents/tasks/README.md).
 #
 # Usage (repo root):
@@ -40,17 +40,18 @@ case "$TASK_PATH" in
     ;;
 esac
 
-# CLOSED-20260323-... -> 2026 03
+# CLOSED-20260323-... -> 2026 03 23
 DATE_PART="${BASENAME#CLOSED-}"
 YEAR="${DATE_PART:0:4}"
 MONTH="${DATE_PART:4:2}"
+DAY="${DATE_PART:6:2}"
 
-if ! [[ "$YEAR" =~ ^[0-9]{4}$ && "$MONTH" =~ ^(0[1-9]|1[0-2])$ ]]; then
-  echo "$0: could not parse YYYYMM from filename: $BASENAME" >&2
+if ! [[ "$YEAR" =~ ^[0-9]{4}$ && "$MONTH" =~ ^(0[1-9]|1[0-2])$ && "$DAY" =~ ^(0[1-9]|[12][0-9]|3[01])$ ]]; then
+  echo "$0: could not parse YYYYMMDD from filename: $BASENAME" >&2
   exit 1
 fi
 
-DEST_DIR="$TASKS_DIR/done/$YEAR/$MONTH"
+DEST_DIR="$TASKS_DIR/done/$YEAR/$MONTH/$DAY"
 mkdir -p "$DEST_DIR"
 
 DEST_PATH="$DEST_DIR/$BASENAME"
@@ -60,4 +61,4 @@ if [ -e "$DEST_PATH" ]; then
 fi
 
 mv "$TASK_PATH" "$DEST_PATH"
-echo "moved to agents/tasks/done/$YEAR/$MONTH/$BASENAME"
+echo "moved to agents/tasks/done/$YEAR/$MONTH/$DAY/$BASENAME"

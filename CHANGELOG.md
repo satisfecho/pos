@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- **Agent tasks archive:** **`agents/tasks/README.md`**, **`agents/tasks/done/README.md`** — closed tasks go under **`done/YYYY/MM/`** (from `CLOSED-YYYYMMDD-…` filenames). **`scripts/move-agent-task-to-done.sh`** moves a file from **`agents/tasks/`** into the right month folder. **`docs/agent-loop.md`** updated for this layout.
+- **Agent tasks archive:** **`agents/tasks/README.md`**, **`agents/tasks/done/README.md`** — closed tasks go under **`done/YYYY/MM/DD/`** (one folder per calendar day from `CLOSED-YYYYMMDD-…`). **`scripts/move-agent-task-to-done.sh`** moves a file from **`agents/tasks/`** into the matching day folder. **`docs/agent-loop.md`** updated for this layout.
 - **`docs/agent-loop.md`** — mac-stats-reviewer–style multi-agent workflow for POS: task pipeline (`new` → … → `done/`), role mapping (log analyst, coder, tester, closing reviewer, committer), target `agents/` layout, integration with **`go-ahead-loop.sh`** and **`docs/testing.md`**.
 - **GitHub #52 planning**: **`docs/0050-github-issue-52-split-plan.md`** — ten dedicated issue specs (title + body), phased rollout (A–E), dependency diagram, filing checklist; **`docs/0032-github-issues-roadmap.md`** and **`docs/README.md`** link to it.
 

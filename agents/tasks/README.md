@@ -8,7 +8,7 @@ Tasks move through a single pipeline from creation to closure. See **`docs/agent
 
 Examples: `NEW-20260323-1030-haproxy-503-on-orders.md`, `CLOSED-20260323-1200-fix-login-banner.md`
 
-The **`<YYYYMMDD>`** segment (8 digits after the first `-`) is used to place archived tasks under **`done/YYYY/MM/`** (see below).
+The **`<YYYYMMDD>`** segment (8 digits after the first `-`) is used to place archived tasks under **`done/YYYY/MM/DD/`** (see below). When renaming a task to **`CLOSED-…`**, use the **calendar day that work finished** (UTC or your team convention) in `YYYYMMDD` so each day’s folder reflects tasks completed that day.
 
 ## Statuses
 
@@ -25,7 +25,7 @@ The **`<YYYYMMDD>`** segment (8 digits after the first `-`) is used to place arc
 
 ```text
   new   ─┐
-         ├─→  wip  →  untested  →  testing  →  closed  →  done/YYYY/MM/
+         ├─→  wip  →  untested  →  testing  →  closed  →  done/YYYY/MM/DD/
   feat  ─┘
 ```
 
@@ -36,13 +36,13 @@ Do not skip statuses. On test failure: **testing → wip** (coder fixes), then *
 Closed tasks are **not** kept in a single flat **`done/`** directory. After the closing reviewer prepends the **Closing summary**, the file is moved to:
 
 ```text
-agents/tasks/done/<YYYY>/<MM>/<same-filename>.md
+agents/tasks/done/<YYYY>/<MM>/<DD>/<same-filename>.md
 ```
 
-- **`<YYYY>`** and **`<MM>`** come from the **8-digit date in the filename** (`YYYYMMDD` right after the status prefix), not from “today”.  
-  Example: `CLOSED-20260323-1200-slug.md` → **`agents/tasks/done/2026/03/CLOSED-20260323-1200-slug.md`**
+- **`<YYYY>`**, **`<MM>`**, and **`<DD>`** come from the **8-digit date in the filename** (`YYYYMMDD` right after the status prefix), not from “today” when you run the script.  
+  Example: `CLOSED-20260323-1200-slug.md` → **`agents/tasks/done/2026/03/23/CLOSED-20260323-1200-slug.md`**
 - **Same basename** as in **`agents/tasks/`**; only the directory changes.
-- This keeps **`done/`** browsable by month and avoids hundreds of files in one folder.
+- One folder per **calendar day**; all tasks whose `CLOSED-` stamp shares that day live in the same **`DD`** folder.
 
 **Helper (recommended):** from repo root,
 
@@ -50,7 +50,7 @@ agents/tasks/done/<YYYY>/<MM>/<same-filename>.md
 ./scripts/move-agent-task-to-done.sh agents/tasks/CLOSED-20260323-1200-example-slug.md
 ```
 
-The script creates **`done/YYYY/MM`** if needed and moves the file. It only accepts **`CLOSED-`** filenames.
+The script creates **`done/YYYY/MM/DD`** if needed and moves the file. It only accepts **`CLOSED-`** filenames.
 
 See **`done/README.md`** for a short index of the archive tree.
 
@@ -60,4 +60,4 @@ See **`done/README.md`** for a short index of the archive tree.
 - **wip → untested** when implementation is complete and **Testing instructions** are at the end of the task file.
 - **untested → testing** when the tester starts.
 - **testing → closed** when verification passes (or per loop-protection policy).
-- **closed → done/YYYY/MM/** after the closing summary is added (use **`move-agent-task-to-done.sh`** or an equivalent `mkdir` + `mv`).
+- **closed → done/YYYY/MM/DD/** after the closing summary is added (use **`move-agent-task-to-done.sh`** or an equivalent `mkdir` + `mv`).
