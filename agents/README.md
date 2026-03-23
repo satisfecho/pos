@@ -1,6 +1,6 @@
 # POS agent prompts
 
-Markdown prompts for **`cursor-agent`** (see **`run.sh`**). Paths are relative to **`agents/`**.
+Markdown prompts for **`cursor-agent`** (see **`pos-agent-loop.sh`**). Paths are relative to **`agents/`**.
 
 | # | File | Role |
 |---|------|------|

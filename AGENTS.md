@@ -79,7 +79,7 @@ Full-stack Point of Sale (POS) system.
 
 **Long-running repeat (optional):** `scripts/go-ahead-loop.sh` pulls git (`--rebase --autostash`) and reruns Docker pytest plus `npm run test:landing-version` on an interval for hours (default ~8h). Requires `GO_AHEAD_LOOP=1`. For a detached run: `scripts/start-go-ahead-loop-background.sh` (see `docs/testing.md`).
 
-**Multi-agent task workflow (optional):** Task pipeline and roles modeled on mac-stats-reviewer — see **`docs/agent-loop.md`** (target `agents/tasks/`, coder/tester/closing/committer handoffs). Orchestrator: **`./agents/run.sh`** (requires **`cursor-agent`** on `PATH`; does not start Docker — use **`./run.sh`** for the stack).
+**Multi-agent task workflow (optional):** Task pipeline and roles modeled on mac-stats-reviewer — see **`docs/agent-loop.md`** (target `agents/tasks/`, coder/tester/closing/committer handoffs). Orchestrator: **`./agents/pos-agent-loop.sh`** (requires **`cursor-agent`** on `PATH`; does not start Docker — use **`./run.sh`** for the stack).
 
 See **Reservation tests (Puppeteer)** and **Demo tables** below for more test scripts; `docs/testing.md` lists all Puppeteer tests.
 

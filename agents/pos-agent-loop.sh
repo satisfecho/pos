@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Agent loop orchestrator (mac-stats-reviewer style). Run from repo root:
-#   ./agents/run.sh [COMMAND]
+# POS agent loop orchestrator (mac-stats-reviewer style). Run from repo root:
+#   ./agents/pos-agent-loop.sh [COMMAND]
 # or:
-#   cd agents && ./run.sh [COMMAND]
+#   cd agents && ./pos-agent-loop.sh [COMMAND]
 #
 # Starts Docker stack: use ./run.sh -dev at repo root (separate from this file).
 # Requires: cursor-agent on PATH (Cursor CLI), unless you only use subcommands that skip.

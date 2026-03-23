@@ -94,19 +94,19 @@ Examples: `NEW-20260323-1030-haproxy-503-on-orders.md`, `WIP-20260323-1100-fix-r
 
 ---
 
-## Agent loop script (`agents/run.sh`)
+## Agent loop script (`agents/pos-agent-loop.sh`)
 
-Same idea as **mac-stats-reviewer** `agents/run.sh`: one entrypoint to run **feature coder → coder → tester → closing reviewer → committer** on a timer, or single steps.
+Same idea as **mac-stats-reviewer** `agents/run.sh`, but named for clarity: one entrypoint to run **feature coder → coder → tester → closing reviewer → committer** on a timer, or single steps.
 
 | Invocation | Behaviour |
 |------------|-----------|
-| **`./agents/run.sh`** | Full cycle every **`AGENT_LOOP_SLEEP_MINUTES`** (default **5**); requires **`cursor-agent`** on `PATH`. |
-| **`./agents/run.sh coder`** | Run coder step only if **`NEW-*.md`** exists (and prompt file present). |
-| **`./agents/run.sh tester`** | Run tester if **`UNTESTED-*.md`** exists. |
-| **`./agents/run.sh feat`** | Run feature coder if **`FEAT-*.md`** exists. |
-| **`./agents/run.sh closing-review`** | Run closer if **`CLOSED-*.md`** still in **`agents/tasks/`**. |
-| **`./agents/run.sh committer`** | Run committer if POS repo has unstaged/staged changes. |
-| **`./agents/run.sh help`** | Usage. |
+| **`./agents/pos-agent-loop.sh`** | Full cycle every **`AGENT_LOOP_SLEEP_MINUTES`** (default **5**); requires **`cursor-agent`** on `PATH`. |
+| **`./agents/pos-agent-loop.sh coder`** | Run coder step only if **`NEW-*.md`** exists (and prompt file present). |
+| **`./agents/pos-agent-loop.sh tester`** | Run tester if **`UNTESTED-*.md`** exists. |
+| **`./agents/pos-agent-loop.sh feat`** | Run feature coder if **`FEAT-*.md`** exists. |
+| **`./agents/pos-agent-loop.sh closing-review`** | Run closer if **`CLOSED-*.md`** still in **`agents/tasks/`**. |
+| **`./agents/pos-agent-loop.sh committer`** | Run committer if POS repo has unstaged/staged changes. |
+| **`./agents/pos-agent-loop.sh help`** | Usage. |
 
 **Docker / stack:** still start with repo-root **`./run.sh`** or **`./run.sh -dev`** — this script does **not** replace the POS application runner.
 
@@ -121,7 +121,7 @@ Prompt markdown lives under **`agents/00*-*/*/`** (see **`agents/README.md`**). 
 ```text
 agents/
   README.md              # Index of prompts
-  run.sh                 # Orchestrator (mac-stats-reviewer style); see section above
+  pos-agent-loop.sh      # Orchestrator (mac-stats-reviewer style); see section above
   tasks/
     README.md              # Copy/adapt from mac-stats-reviewer agents/tasks/README.md
     done/                  # Archived CLOSED-* tasks: done/YYYY/MM/DD/ (see README)
@@ -265,7 +265,7 @@ mac-stats-reviewer’s **`agents/autoresearch/README.md`** describes **Track A**
 2. **Prompts** ship in **`agents/00*-*/*.md`**; refine them as needed (upstream reference: mac-stats-reviewer).
 3. **Link from** **`AGENTS.md`** or **`.cursor/rules`** — one line: “Multi-agent task workflow: **`docs/agent-loop.md`**.”
 4. **Train the team** on task renames and **Testing instructions** / **Test report** format (mirror mac-stats-reviewer for consistency).
-5. **`agents/run.sh`** — orchestrator for **`cursor-agent`** (see **Agent loop script** above).
+5. **`agents/pos-agent-loop.sh`** — orchestrator for **`cursor-agent`** (see **Agent loop script** above).
 6. **Optional:** add **`agents/start-all-agents.sh`**-style helpers only if you run multiple Cursor sessions regularly.
 
 ---
