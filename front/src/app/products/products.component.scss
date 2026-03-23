@@ -61,6 +61,32 @@
     flex-shrink: 0;
 }
 
+// Products list table: avoid flex-on-<td> row-height glitches (GitHub #33) and clip scroll to card radius
+.products-data-table {
+    overflow: hidden;
+}
+
+.products-table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.products-data-table table tbody td {
+    vertical-align: top;
+}
+
+.products-data-table td.actions {
+    display: table-cell;
+}
+
+.products-data-table .actions-inner {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
 // Search row
 .search-row {
     margin-bottom: var(--space-4);
