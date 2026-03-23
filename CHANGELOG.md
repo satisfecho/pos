@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **`agents/pos-agent-loop.sh`:** run **001 log reviewer** first in every full cycle; subcommands **`log`**, **`log-reviewer`**, **`001`**. **`docs/agent-loop.md`** updated.
 - **Agent loop script:** renamed **`agents/run.sh`** → **`agents/pos-agent-loop.sh`** (clearer vs repo-root **`./run.sh`**). **`docs/agent-loop.md`**, **`AGENTS.md`**, **`agents/README.md`** updated.
 - **Agent / git workflow:** Routine work targets **`development`**; **`master`** is promoted only on a **~2h cadence**, **big production-impacting** changes, or **urgent/production** issues (label **`production-urgent`**) — see **`.cursor/rules/git-development-branch-workflow.mdc`**, **`docs/agent-loop.md`**, **`AGENTS.md`**. **`agents/pos-agent-loop.sh`** committer prompt aligned.
 - **Puppeteer tests** (`front/scripts/`): Chrome runs **headless by default**. Use **`HEADLESS=0`**, **`false`**, or **`no`** for a visible window. Logic lives in **`front/scripts/puppeteer-headless.mjs`**. Docs: **`docs/testing.md`**, **`AGENTS.md`**.

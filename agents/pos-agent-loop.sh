@@ -48,6 +48,14 @@ run_agent() {
   echo ""
 }
 
+step_log_reviewer() {
+  echo "-----> log reviewer (001) <----"
+  run_agent "log reviewer (001)" \
+    "true" \
+    "001-log-reviewer/LOG-REVIEWER-PROMPT.md" \
+    "Start log and incident review now. Check Docker logs and GitHub issues per your prompt; create NEW tasks only when warranted. Do your job."
+}
+
 step_feat() {
   echo "-----> feature coding (FEAT) <----"
   run_agent "feature coding (FEAT)" \
@@ -90,6 +98,7 @@ step_committer() {
 
 run_full_cycle() {
   echo "$(date)"
+  step_log_reviewer
   local i
   for i in 1 2 3 4 5; do
     step_feat
@@ -107,6 +116,7 @@ Usage: $(basename "$0") [COMMAND]
   (no args)       Run full agent cycle every ${AGENT_LOOP_SLEEP_MINUTES:-5} minutes (loop; sleep is minute-based via conversion to seconds).
 
   Single run:
+    log, log-reviewer, 001   Log / incident reviewer (001; runs first in full cycle)
     feat, feature   Feature coder (FEAT-*.md in agents/tasks/)
     coder           Coder (NEW-*.md)
     tester          Tester (UNTESTED-*.md)
@@ -130,6 +140,7 @@ if [[ -n "${1:-}" ]]; then
       usage
       exit 0
       ;;
+    log | log-reviewer | 001) step_log_reviewer ;;
     feat | feature) step_feat ;;
     coder) step_coder ;;
     tester) step_tester ;;

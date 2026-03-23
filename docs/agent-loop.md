@@ -96,11 +96,12 @@ Examples: `NEW-20260323-1030-haproxy-503-on-orders.md`, `WIP-20260323-1100-fix-r
 
 ## Agent loop script (`agents/pos-agent-loop.sh`)
 
-Same idea as **mac-stats-reviewer** `agents/run.sh`, but named for clarity: one entrypoint to run **feature coder → coder → tester → closing reviewer → committer** on a timer, or single steps.
+Same idea as **mac-stats-reviewer** `agents/run.sh`, but named for clarity: one entrypoint to run **log reviewer (001) → feature coder (×5) → coder → tester → closing reviewer → committer** on a timer, or single steps.
 
 | Invocation | Behaviour |
 |------------|-----------|
 | **`./agents/pos-agent-loop.sh`** | Full cycle every **`AGENT_LOOP_SLEEP_MINUTES`** (default **5**); requires **`cursor-agent`** on `PATH`. |
+| **`./agents/pos-agent-loop.sh log`** (or **`log-reviewer`**, **`001`**) | Run **001** log / incident reviewer (always invoked when prompt exists; first step in full cycle). |
 | **`./agents/pos-agent-loop.sh coder`** | Run coder step only if **`NEW-*.md`** exists (and prompt file present). |
 | **`./agents/pos-agent-loop.sh tester`** | Run tester if **`UNTESTED-*.md`** exists. |
 | **`./agents/pos-agent-loop.sh feat`** | Run feature coder if **`FEAT-*.md`** exists. |
@@ -110,7 +111,7 @@ Same idea as **mac-stats-reviewer** `agents/run.sh`, but named for clarity: one 
 
 **Docker / stack:** still start with repo-root **`./run.sh`** or **`./run.sh -dev`** — this script does **not** replace the POS application runner.
 
-**Prompts:** steps **skip** if the corresponding markdown under **`agents/002-coder/`**, **`003-tester/`**, etc. is missing (copy/adapt from mac-stats-reviewer). Steps also skip if **`cursor-agent`** is missing (single commands); the **infinite loop** exits immediately if **`cursor-agent`** is not installed.
+**Prompts:** steps **skip** if the corresponding markdown under **`agents/001-log-reviewer/`**, **`agents/002-coder/`**, **`003-tester/`**, etc. is missing. Steps also skip if **`cursor-agent`** is missing (single commands); the **infinite loop** exits immediately if **`cursor-agent`** is not installed.
 
 ---
 
