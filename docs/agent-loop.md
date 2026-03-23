@@ -116,10 +116,11 @@ Same idea as **mac-stats-reviewer** `agents/run.sh`: one entrypoint to run **fea
 
 ## Where files live in POS (target layout)
 
-Not all of this exists yet; treat as the **implementation target** when you adopt the loop.
+Prompt markdown lives under **`agents/00*-*/*/`** (see **`agents/README.md`**). **`tasks/`** holds active task files.
 
 ```text
 agents/
+  README.md              # Index of prompts
   run.sh                 # Orchestrator (mac-stats-reviewer style); see section above
   tasks/
     README.md              # Copy/adapt from mac-stats-reviewer agents/tasks/README.md
@@ -261,7 +262,7 @@ mac-stats-reviewer’s **`agents/autoresearch/README.md`** describes **Track A**
 ## Implementation checklist (for maintainers)
 
 1. **`agents/tasks/README.md`** and **`agents/tasks/done/README.md`** define the pipeline and **`done/YYYY/MM/DD/`** layout; use **`scripts/move-agent-task-to-done.sh`** when archiving.
-2. **Copy and adapt** numbered agent prompts (`001` … `004`, `007`, optional `006`) from mac-stats-reviewer; strip mac-stats-only steps; add POS Docker/Puppeteer/pytest wording.
+2. **Prompts** ship in **`agents/00*-*/*.md`**; refine them as needed (upstream reference: mac-stats-reviewer).
 3. **Link from** **`AGENTS.md`** or **`.cursor/rules`** — one line: “Multi-agent task workflow: **`docs/agent-loop.md`**.”
 4. **Train the team** on task renames and **Testing instructions** / **Test report** format (mirror mac-stats-reviewer for consistency).
 5. **`agents/run.sh`** — orchestrator for **`cursor-agent`** (see **Agent loop script** above).

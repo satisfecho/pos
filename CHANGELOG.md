@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Agent prompts (markdown):** **`agents/README.md`** plus **`agents/001-log-reviewer/LOG-REVIEWER-PROMPT.md`**, **`002-coder/CODER.md`**, **`003-tester/TESTER.md`**, **`004-closing-reviewer/CLOSING-REVIEWER-PROMPT.md`**, **`006-feature-coder/FEATURE-CODER.md`**, **`007-committer/COMMITTER.md`** — POS-adapted from mac-stats-reviewer for **`cursor-agent`** / **`agents/run.sh`**.
 - **Agent loop docs & tasks:** **`docs/agent-loop.md`** — mac-stats-reviewer–style pipeline (`new` → … → **`done/YYYY/MM/DD/`**), roles, **`go-ahead-loop.sh`** / **`docs/testing.md`**, optional **[GitHub Issues](https://github.com/satisfecho/pos/issues)** handoff (**`gh`/API**, labels **`agent:planned`** / **`agent:wip`** / **`agent:testing`**, per-role comments). **`agents/tasks/README.md`**, **`agents/tasks/done/README.md`**, **`scripts/move-agent-task-to-done.sh`**, **`agents/run.sh`** (**`cursor-agent`** orchestrator; **`AGENT_LOOP_SLEEP_MINUTES`**).
 - **GitHub #52 planning**: **`docs/0050-github-issue-52-split-plan.md`** — ten dedicated issue specs (title + body), phased rollout (A–E), dependency diagram, filing checklist; **`docs/0032-github-issues-roadmap.md`** and **`docs/README.md`** link to it.
 
