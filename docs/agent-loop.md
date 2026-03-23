@@ -14,6 +14,31 @@ This document defines a **multi-agent workflow** for this repository, modeled on
 
 ---
 
+## Git branching and production (essential)
+
+This is **part of the agent strategy**, not optional tooling guidance.
+
+| Branch | Role |
+|--------|------|
+| **`development`** | **Default for all routine work.** Agents commit here and **`git push origin development`**. |
+| **`master`** | **Production line** (deployments such as amvara9 typically follow **`master`**). Updated **only** when promoting from **`development`**. |
+
+### When to merge `development` → `master` (and push `master`)
+
+Merge **only** if **at least one** applies:
+
+1. **~2-hour cadence** — Batch integrate tested commits from **`development`** into **`master`** about every **two hours** (operator or scheduler). Avoid merging **every** small commit individually.
+2. **Big production change** — Material impact: security, payments, data integrity, critical user-visible breakage, blocking migrations, multi-tenant risk, etc. Document why in commit/PR.
+3. **Urgent / explicit production** — The **GitHub issue** or **human** says **urgent**, **hotfix**, **production**, **deploy now**, or similar. Use label **`production-urgent`** on the issue when applicable so agents and humans agree on intent.
+
+If **none** of the above applies: **push `development` only**; do **not** merge to **`master`**.
+
+**Cursor / agents:** **`.cursor/rules/git-development-branch-workflow.mdc`** (`alwaysApply: true`) encodes this; it overrides looser “push master every time” habits.
+
+**Committer agent:** Changelog and version bumps happen on **`development`**; merging to **`master`** is a **separate** step that follows the table above.
+
+---
+
 ## Roles (mapping from mac-stats-reviewer)
 
 | mac-stats-reviewer agent | POS role | Typical inputs | Writes / edits |
@@ -131,7 +156,7 @@ Unlike a flat **`done/`** folder, POS keeps closed tasks under **`agents/tasks/d
 
 - **Per task:** Tester follows **Testing instructions**; prefer scripts already listed in **`docs/testing.md`** and **`AGENTS.md`** (Puppeteer, `pytest` in container).
 - **After substantive edits (including agent work):** Minimum smoke: HTTP 200 on app URL or **`npm run test:landing-version`** with **`BASE_URL`**; if Angular touched, check **`docker compose … logs --tail=80 front`** for compile errors (**`AGENTS.md`**).
-- **Long-running pull + test loop (already in POS):** **`scripts/go-ahead-loop.sh`** — `git pull --rebase --autostash`, Docker **pytest**, **`npm run test:landing-version`**. Opt-in **`GO_AHEAD_LOOP=1`**. See **`docs/testing.md`** (section *Long-running smoke loop*). This is **not** a substitute for task-driven testing; it complements it like a release health cadence.
+- **Long-running pull + test loop (already in POS):** **`scripts/go-ahead-loop.sh`** — `git pull --rebase --autostash`, Docker **pytest**, **`npm run test:landing-version`**. Opt-in **`GO_AHEAD_LOOP=1`**. See **`docs/testing.md`** (section *Long-running smoke loop*). Run it from a **`development`** checkout so pulls match the integration branch. This is **not** a substitute for task-driven testing; it complements it like a release health cadence.
 
 ---
 
@@ -142,7 +167,7 @@ mac-stats-reviewer’s committer edits **`CHANGELOG.md`** and **`src-tauri/Cargo
 - Update **`CHANGELOG.md`** under **`[Unreleased]`** (Keep a Changelog style).
 - Version source: **`front/package.json`** and **`front/package-lock.json`** (see **`.cursor/rules/commit-changelog-version.mdc`**).
 - **No application source** edits by the committer role.
-- **Push policy:** follow **`AGENTS.md`** (SSH remote, push when asked or as part of agreed workflow — do not contradict team rules).
+- **Branch policy:** commit on **`development`**; **`git push origin development`**. Merge to **`master`** only per **Git branching and production** above — not on every committer run.
 
 Optional: track last version bump time in **`agents/007-committer/last-version-bump.txt`** if you want mac-stats-reviewer’s “at most twice a day” style cap.
 
@@ -176,6 +201,7 @@ The **reviewer** uses the [issue list](https://github.com/satisfecho/pos/issues)
 | **`agent:planned`** | Task file exists; scoped for implementation (reviewer handoff). |
 | **`agent:wip`** | Coder or feature coder is implementing (rename task to **wip** in sync with this). |
 | **`agent:testing`** | Tester is running **Testing instructions** (task in **testing**). |
+| **`production-urgent`** | Issue may be merged to **`master`** immediately (bypasses normal 2h batch only in the sense of *intent* — still follow tests/review). |
 
 Adjust names to taste (`status/planned`, etc.); keep them **documented here** so every agent uses the same set.
 
@@ -245,7 +271,8 @@ mac-stats-reviewer’s **`agents/autoresearch/README.md`** describes **Track A**
 
 ## Related POS documentation
 
-- **`AGENTS.md`** — Docker, smoke tests, git, frontend log checks.
+- **`AGENTS.md`** — Docker, smoke tests, **`development` / `master`**, frontend log checks.
+- **`.cursor/rules/git-development-branch-workflow.mdc`** — always-on branch and promotion rules for agents.
 - **`docs/0032-github-issues-roadmap.md`** — Umbrella issues **#52–#54** and links.
 - **`docs/testing.md`** — Puppeteer scripts, **`go-ahead-loop.sh`**.
 - **`.cursor/rules/error-investigation-workflow.mdc`** — log order for incidents.

@@ -18,3 +18,5 @@ When the user says **"commit"** (or asks to commit changes):
    - Add a new `## [X.Y.Z] - YYYY-MM-DD` section in CHANGELOG.md with the entries being released; clear or reduce `[Unreleased]` accordingly.
 
 3. **If in doubt** whether to bump: prefer bumping when there are user-facing fixes or features; skip for trivial or internal-only tweaks unless the user asks for a release.
+
+4. **Branching:** Changelog commits belong on **`development`** by default. Promoting those commits to **`master`** follows **`.cursor/rules/git-development-branch-workflow.mdc`** (not every “commit” implies an immediate **`master`** push).

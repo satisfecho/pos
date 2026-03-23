@@ -85,7 +85,7 @@ step_committer() {
   run_agent "committer (changelog + commit)" \
     "cd \"$REPO_ROOT\" && { ! git diff --quiet 2>/dev/null || ! git diff --staged --quiet 2>/dev/null; }" \
     "007-committer/COMMITTER.md" \
-    "Check this POS repo for uncommitted changes. Update CHANGELOG.md and front/package.json per project rules; commit. Do your job. Push only if appropriate per AGENTS.md."
+    "Check this POS repo for uncommitted changes on branch development. Update CHANGELOG.md and front/package.json per project rules; commit. Push origin development. Merge development to master only per .cursor/rules/git-development-branch-workflow.mdc (2h batch, big prod change, or production-urgent issue / explicit user ask)."
 }
 
 run_full_cycle() {
