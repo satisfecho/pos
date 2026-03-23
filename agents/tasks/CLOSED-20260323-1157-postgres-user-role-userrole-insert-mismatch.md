@@ -39,3 +39,27 @@ Optional: watch **`pos-postgres`** logs during registration or seeds — no rela
 ### Pass/fail criteria
 - **Pass:** `test_user_role_pg_enum` and `test_work_session` complete with exit code **0**.
 - **Fail:** Any **`column "role" is of type user_role but expression is of type userrole`** (or pytest errors) from user inserts.
+
+---
+
+## Test report
+
+1. **Date/time (UTC) / log window:** **2026-03-23 12:24:24 UTC** (verification run). Postgres log sample: `docker logs pos-postgres` tail ~80 lines (includes historical **2026-03-23 10:23:18 UTC** ERROR from pre-fix incident; no new `userrole` vs `user_role` lines observed after pytest run in that window beyond that historical entry).
+
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; **`BASE_URL`:** N/A (no browser); branch **`development`**, commit **`7430fb1`**.
+
+3. **What was tested:** Per **What to verify**: all **`UserRole`** inserts against PostgreSQL via **`test_user_role_pg_enum`**; staff/session user creation via **`test_work_session`**.
+
+4. **Results:**
+   - Inserts for every **`UserRole`** without enum type mismatch: **PASS** — `2 passed in 2.65s` from pytest (includes **`test_user_role_pg_enum`** coverage).
+   - **`test_work_session`** still passes: **PASS** — same pytest invocation, exit code **0**.
+
+5. **Overall:** **PASS**.
+
+6. **Product owner feedback:** User registration and role assignment against PostgreSQL should no longer hit the **`userrole` vs `user_role`** binding error. The new enum test gives a clear regression guard if the ORM mapping drifts again.
+
+7. **URLs tested:** **N/A — no browser**.
+
+8. **Relevant log excerpts:**
+   - **pytest (back container):** `.. [100%]` / `2 passed in 2.65s`
+   - **pos-postgres (tail, context):** Historical line documents the original failure mode (`p4::userrole` vs column `user_role`); current pytest run produced no new matching ERROR in the sampled tail (inserts exercised successfully via tests above).
