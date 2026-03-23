@@ -26,3 +26,33 @@ When choosing a reservation time, the default should reflect **“now + 10 minut
 3. **Staff:** Log in, **Reservations → New**. **Date** should match the local calendar day for **now+10**; **time** ≈ current time + 10 minutes. Pick a **future** date: time should match **suggested / next-available** behaviour. **`Suggested time`** still shows API hint.
 4. Automated: **`cd front && BASE_URL=http://127.0.0.1:4202 node scripts/debug-reservations-public.mjs`**; **`BASE_URL=http://127.0.0.1:4202 npm run test:landing-version`** (with demo **`LOGIN_*`** if exercising staff nav).
 5. **Front build:** **`docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=80 front`** — no **TS** / **NG** errors after edits.
+
+---
+
+## Test report (tester)
+
+1. **Date/time (UTC):** 2026-03-23T14:35:47Z (verification run). Log window: **pos-front** tail ~14:13–14:35Z (compose timestamps).
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; **BASE_URL** `http://127.0.0.1:4202` (HAProxy); branch **development**, commit **5680707**.
+3. **What was tested:** Items 1–5 under **Testing instructions** (public book default slot, staff New reservation defaults + future date, automated smokes, front logs).
+4. **Results:**
+   - **Stack / URL reachable:** **PASS** — `docker compose ps` shows haproxy `0.0.0.0:4202->4202/tcp`.
+   - **Public book default (criterion 2):** **PASS** — After load, `#book-hidden-date` / `#book-hidden-time` were `2026-03-24` / `14:00` with tenant **Europe/Madrid** “today” `2026-03-23` and expected min quarter after now+10 `15:45`: first bookable slot is **next calendar day** (opening / availability), which satisfies “first slot inside opening hours” branch of the instruction.
+   - **Party size / grid (criterion 2):** **PASS** — `debug-reservations-public.mjs` sets party size **3**, picks first available week slot, completes booking; no fatal console errors.
+   - **Staff New — today + now+10 (criterion 3):** **PASS** — After demo login, modal showed date `2026-03-23`, time `15:45`, matching local calendar date and time for now+10 (±2 min tolerance).
+   - **Staff — future date uses next-available time (criterion 3):** **PASS** — Date set to `2026-03-24`, time became `14:00` (API-driven), non-empty.
+   - **Automated scripts (criterion 4):** **PASS** — `BASE_URL=http://127.0.0.1:4202 node scripts/debug-reservations-public.mjs` exit **0**; `BASE_URL=http://127.0.0.1:4202 npm run test:landing-version` exit **0**.
+   - **Front build (criterion 5):** **PASS** — `docker compose … logs --tail=80 front` shows **Application bundle generation complete**; no **TS** / **NG** / bundle failure lines in tail.
+5. **Overall:** **PASS** (all criteria met).
+6. **Product owner feedback:** Reservation defaults now follow **minimum lead** and **availability** instead of a fixed evening time. Public booking can land on the **next day** when “today” has no suitable slot in Madrid TZ, which matches the intended “first available” behaviour. Staff get **immediate, accurate** now+10 defaults without UTC date drift.
+7. **URLs tested:**
+   1. `http://127.0.0.1:4202/book/1`
+   2. `http://127.0.0.1:4202/login?tenant=1`
+   3. `http://127.0.0.1:4202/reservations`
+   4. `http://127.0.0.1:4202/` (via `test:landing-version` nav)
+8. **Relevant log excerpts:**
+
+```
+pos-front  | Application bundle generation complete. [0.015 seconds] - 2026-03-23T14:13:07.601Z
+```
+
+**GitHub:** Comment on **#62** and label updates were **not applied** — `gh issue comment` failed with `Resource not accessible by personal access token (addComment)`.
