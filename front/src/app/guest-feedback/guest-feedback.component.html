@@ -1,5 +1,37 @@
 <app-sidebar>
-  <div class="page-header">
+  @if (tenantId != null) {
+    <section class="feedback-qr-card" aria-labelledby="feedback-qr-heading">
+      <h2 id="feedback-qr-heading" class="feedback-qr-title">{{ 'FEEDBACK.QR_CARD_TITLE' | translate }}</h2>
+      <p class="feedback-qr-hint">{{ 'FEEDBACK.QR_CARD_HINT' | translate }}</p>
+      <div class="feedback-qr-wrap">
+        <qrcode
+          [qrdata]="feedbackPublicUrl()"
+          [width]="220"
+          [errorCorrectionLevel]="'M'"
+          cssClass="feedback-qr-code"
+        ></qrcode>
+      </div>
+      <p class="feedback-qr-url">
+        <code>{{ feedbackPublicUrl() }}</code>
+      </p>
+      <div class="feedback-qr-actions no-print-on-feedback-qr">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="copyFeedbackUrl()">
+          {{ 'FEEDBACK.COPY_FEEDBACK_URL' | translate }}
+        </button>
+        <button type="button" class="btn btn-primary btn-sm" (click)="printFeedbackQr()">
+          {{ 'FEEDBACK.PRINT_QR' | translate }}
+        </button>
+        <a [routerLink]="['/feedback', tenantId]" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">
+          {{ 'FEEDBACK.VIEW_PUBLIC_FORM' | translate }}
+        </a>
+      </div>
+      @if (urlCopied()) {
+        <p class="feedback-url-copied no-print-on-feedback-qr" role="status">{{ 'FEEDBACK.URL_COPIED' | translate }}</p>
+      }
+    </section>
+  }
+
+  <div class="page-header no-print-on-feedback-qr">
     <h1>{{ 'FEEDBACK.STAFF_TITLE' | translate }}</h1>
     <div class="page-header-actions">
       @if (tenantId != null) {
@@ -12,13 +44,13 @@
   </div>
 
   @if (loading()) {
-    <div class="empty-state"><p>{{ 'FEEDBACK.LOADING' | translate }}</p></div>
+    <div class="empty-state no-print-on-feedback-qr"><p>{{ 'FEEDBACK.LOADING' | translate }}</p></div>
   } @else if (error()) {
-    <div class="empty-state"><p class="form-error">{{ error() }}</p></div>
+    <div class="empty-state no-print-on-feedback-qr"><p class="form-error">{{ error() }}</p></div>
   } @else if (items().length === 0) {
-    <div class="empty-state"><p>{{ 'FEEDBACK.NONE' | translate }}</p></div>
+    <div class="empty-state no-print-on-feedback-qr"><p>{{ 'FEEDBACK.NONE' | translate }}</p></div>
   } @else {
-    <div class="feedback-table-wrap">
+    <div class="feedback-table-wrap no-print-on-feedback-qr">
       <table class="feedback-table">
         <thead>
           <tr>

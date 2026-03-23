@@ -1159,6 +1159,11 @@
     "COL_COMMENT": "Comment",
     "COL_CONTACT": "Contact",
     "COL_RESERVATION": "Reservation",
-    "LINK_FROM_RESERVATION": "Tell us how we did"
+    "LINK_FROM_RESERVATION": "Tell us how we did",
+    "QR_CARD_TITLE": "Codi QR d’opinions",
+    "QR_CARD_HINT": "Els clients escanejen per obrir el formulari públic. «Imprimir QR» per una pàgina neta a taules o caixa.",
+    "COPY_FEEDBACK_URL": "Copiar enllaç",
+    "PRINT_QR": "Imprimir QR",
+    "URL_COPIED": "Enllaç copiat al porta-retalls."
   }
 }

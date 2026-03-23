@@ -1091,6 +1091,11 @@
     "COL_COMMENT": "Comment",
     "COL_CONTACT": "Contact",
     "COL_RESERVATION": "Reservation",
-    "LINK_FROM_RESERVATION": "Tell us how we did"
+    "LINK_FROM_RESERVATION": "Tell us how we did",
+    "QR_CARD_TITLE": "反馈二维码",
+    "QR_CARD_HINT": "顾客扫码打开公开反馈表。使用「打印二维码」可得到适合桌贴或收银台的简洁页面。",
+    "COPY_FEEDBACK_URL": "复制链接",
+    "PRINT_QR": "打印二维码",
+    "URL_COPIED": "链接已复制到剪贴板。"
   }
 }

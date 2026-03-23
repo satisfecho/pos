@@ -566,7 +566,12 @@
     "COL_COMMENT": "Kommentar",
     "COL_CONTACT": "Kontakt",
     "COL_RESERVATION": "Reservierung",
-    "LINK_FROM_RESERVATION": "Wie war Ihr Besuch?"
+    "LINK_FROM_RESERVATION": "Wie war Ihr Besuch?",
+    "QR_CARD_TITLE": "Feedback-QR-Code",
+    "QR_CARD_HINT": "Gäste scannen den Code für das öffentliche Formular. „QR drucken“ für eine saubere Seite an Tischen oder Kasse.",
+    "COPY_FEEDBACK_URL": "Link kopieren",
+    "PRINT_QR": "QR drucken",
+    "URL_COPIED": "Link in die Zwischenablage kopiert."
   },
   "RESERVATIONS": {
     "TITLE": "Reservierungen",

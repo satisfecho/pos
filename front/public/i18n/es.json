@@ -654,7 +654,12 @@
     "COL_COMMENT": "Comentario",
     "COL_CONTACT": "Contacto",
     "COL_RESERVATION": "Reserva",
-    "LINK_FROM_RESERVATION": "Cuéntanos cómo fue"
+    "LINK_FROM_RESERVATION": "Cuéntanos cómo fue",
+    "QR_CARD_TITLE": "Código QR de opiniones",
+    "QR_CARD_HINT": "Los clientes escanean para abrir el formulario público. Usa «Imprimir QR» para una página limpia en mesas o caja.",
+    "COPY_FEEDBACK_URL": "Copiar enlace",
+    "PRINT_QR": "Imprimir QR",
+    "URL_COPIED": "Enlace copiado al portapapeles."
   },
   "RESERVATIONS": {
     "TITLE": "Reservaciones",

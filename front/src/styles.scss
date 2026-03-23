@@ -229,3 +229,25 @@ select {
     background: var(--color-text-muted);
   }
 }
+
+/* Guest feedback: print only the QR block (see GuestFeedbackComponent.printFeedbackQr) */
+@media print {
+  body.print-feedback-qr-only {
+    .layout > .sidebar,
+    .layout > .mobile-header,
+    .layout > .overlay {
+      display: none !important;
+    }
+
+    .layout > .main {
+      margin: 0 !important;
+      padding: 1.5rem !important;
+      width: 100% !important;
+      max-width: none !important;
+    }
+
+    .no-print-on-feedback-qr {
+      display: none !important;
+    }
+  }
+}

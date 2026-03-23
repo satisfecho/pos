@@ -1158,6 +1158,11 @@
     "COL_COMMENT": "Comment",
     "COL_CONTACT": "Contact",
     "COL_RESERVATION": "Reservation",
-    "LINK_FROM_RESERVATION": "Tell us how we did"
+    "LINK_FROM_RESERVATION": "Tell us how we did",
+    "QR_CARD_TITLE": "Code QR — avis",
+    "QR_CARD_HINT": "Les clients scannent pour ouvrir le formulaire public. Utilisez « Imprimer le QR » pour une page à afficher.",
+    "COPY_FEEDBACK_URL": "Copier le lien",
+    "PRINT_QR": "Imprimer le QR",
+    "URL_COPIED": "Lien copié dans le presse-papiers."
   }
 }

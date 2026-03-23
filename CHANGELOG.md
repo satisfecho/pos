@@ -4,6 +4,13 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.42] - 2026-03-23
+
+### Added
+
+- **Guest feedback (staff)**: **`/guest-feedback`** shows a **QR code** for the public form (`/feedback/{tenantId}`), **copy link**, and **Print QR** — print stylesheet hides sidebar and the feedback table so owners get a clean page for table tents or the register.
+- **i18n**: **`FEEDBACK.QR_*`** / **`COPY_FEEDBACK_URL`** / **`PRINT_QR`** / **`URL_COPIED`** in all locale files.
+
 ## [2.0.41] - 2026-03-23
 
 ### Added
