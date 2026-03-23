@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** The staff Products view showed a thin white gap at the bottom of the product table/card (GitHub #33), caused by global `td.actions` flex and overflow interaction with the table card.
+- **What was done:** Layout/CSS fixes in `products.component` (inner `.products-table-scroll`, `td.actions` as table cell with `.actions-inner` for flex, overflow on `.products-data-table`); CHANGELOG `[Unreleased]` notes #33.
+- **What was tested:** `test:landing-version` exit 0 with `/products` in the flow; front build clean in log tail; manual check—no gap, actions right-aligned, horizontal scroll on 480px viewport; dark theme not re-checked (optional).
+- **Why closed:** Tester test report **overall PASS**; all stated pass criteria met.
+- **Closed at (UTC):** 2026-03-23 12:06
+---
+
 # Visual error at product section
 
 ## GitHub
