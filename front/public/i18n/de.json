@@ -539,7 +539,9 @@
     "CANCELLATION_POLICY": "Stornobedingungen",
     "ARRIVAL_TOLERANCE": "Toleranz Ankunft",
     "ARRIVAL_TOLERANCE_MINUTES": "Bitte kommen Sie innerhalb von {{minutes}} Minuten nach Ihrer Buchungszeit.",
-    "DRESS_CODE": "Kleiderordnung"
+    "DRESS_CODE": "Kleiderordnung",
+    "ADDRESS": "Adresse",
+    "OPEN_IN_GOOGLE_MAPS": "In Google Maps öffnen"
   },
   "FEEDBACK": {
     "TITLE": "Wie war Ihr Besuch?",
@@ -742,6 +744,9 @@
     "PUBLIC_GOOGLE_REVIEW_URL": "Google-Bewertungslink",
     "PUBLIC_GOOGLE_REVIEW_PLACEHOLDER": "https://g.page/.../review oder Google-Maps-Link",
     "PUBLIC_GOOGLE_REVIEW_HINT": "Wird nach dem privaten Feedback auf der Dankesseite angezeigt, damit Gäste eine öffentliche Google-Bewertung abgeben können.",
+    "PUBLIC_GOOGLE_MAPS_URL": "Google-Maps-Link (Ort oder Route)",
+    "PUBLIC_GOOGLE_MAPS_PLACEHOLDER": "https://maps.app.goo.gl/... oder „Link teilen“ aus Google Maps",
+    "PUBLIC_GOOGLE_MAPS_HINT": "Optional. Wird auf Buchungs-, Reservierungs- und Feedback-Seiten angezeigt. „Teilen → Link kopieren“ aus Maps oder dem Unternehmensprofil (nicht derselbe Link wie bei der Bewertung).",
     "LOGO": "Logo",
     "OPENING_HOURS": "Öffnungszeiten",
     "PAYMENT_SETTINGS": "Zahlungseinstellungen",

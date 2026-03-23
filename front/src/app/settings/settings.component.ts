@@ -586,6 +586,18 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                     <small class="field-hint">{{ 'SETTINGS.PUBLIC_GOOGLE_REVIEW_HINT' | translate }}</small>
                   </div>
 
+                  <div class="form-group">
+                    <label for="public_google_maps_url">{{ 'SETTINGS.PUBLIC_GOOGLE_MAPS_URL' | translate }}</label>
+                    <input
+                      type="url"
+                      id="public_google_maps_url"
+                      [(ngModel)]="formData.public_google_maps_url"
+                      name="public_google_maps_url"
+                      [placeholder]="'SETTINGS.PUBLIC_GOOGLE_MAPS_PLACEHOLDER' | translate"
+                    />
+                    <small class="field-hint">{{ 'SETTINGS.PUBLIC_GOOGLE_MAPS_HINT' | translate }}</small>
+                  </div>
+
                   <div class="form-row">
                     <div class="form-group">
                       <label for="tax_id">{{ 'SETTINGS.TAX_ID' | translate }}</label>
@@ -2169,6 +2181,7 @@ export class SettingsComponent implements OnInit {
     reservation_reminder_24h_enabled: false,
     reservation_reminder_2h_enabled: false,
     public_google_review_url: null,
+    public_google_maps_url: null,
   };
 
   allTimezones: string[] = [];
@@ -2240,6 +2253,7 @@ export class SettingsComponent implements OnInit {
           reservation_reminder_24h_enabled: settings.reservation_reminder_24h_enabled ?? false,
           reservation_reminder_2h_enabled: settings.reservation_reminder_2h_enabled ?? false,
           public_google_review_url: settings.public_google_review_url ?? null,
+          public_google_maps_url: settings.public_google_maps_url ?? null,
         };
         this.timezoneSearch = settings.timezone || '';
         this.parseOpeningHours(settings.opening_hours);

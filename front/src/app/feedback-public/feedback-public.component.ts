@@ -40,6 +40,7 @@ export class FeedbackPublicComponent implements OnInit {
   stars = [1, 2, 3, 4, 5];
 
   googleReviewUrl = computed(() => this.tenant()?.public_google_review_url?.trim() || null);
+  googleMapsUrl = computed(() => this.tenant()?.public_google_maps_url?.trim() || null);
 
   ngOnInit() {
     const idParam = this.route.snapshot.paramMap.get('tenantId');

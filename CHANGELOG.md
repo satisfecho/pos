@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.44] - 2026-03-23
+
+### Added
+
+- **Google Maps on public pages (GitHub #54)**: **Settings → Contact** includes an optional **Google Maps link** (`public_google_maps_url`). **Public API** also exposes **`address`** so guests see the street address on **book**, **reservation view**, and **feedback** pages, with an **Open in Google Maps** button when the maps URL is set. **Note:** Google does not allow auto-posting reviews; the existing **Google review** field remains the supported way to deep-link guests to leave a public review after private feedback.
+
 ## [2.0.43] - 2026-03-23
 
 ### Added

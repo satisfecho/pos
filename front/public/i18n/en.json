@@ -632,7 +632,9 @@
     "INVALID_EMAIL": "Enter a valid email address.",
     "INVALID_PHONE": "Enter a valid phone number (including country code if needed).",
     "CONTACT_RESTAURANT": "Contact the restaurant",
-    "VIEW_LINK_UNAVAILABLE": "Open the link from your confirmation email to view or cancel this reservation."
+    "VIEW_LINK_UNAVAILABLE": "Open the link from your confirmation email to view or cancel this reservation.",
+    "ADDRESS": "Address",
+    "OPEN_IN_GOOGLE_MAPS": "Open in Google Maps"
   },
   "FEEDBACK": {
     "TITLE": "How was your visit?",
@@ -839,6 +841,9 @@
     "PUBLIC_GOOGLE_REVIEW_URL": "Google review link",
     "PUBLIC_GOOGLE_REVIEW_PLACEHOLDER": "https://g.page/.../review or Google Maps review URL",
     "PUBLIC_GOOGLE_REVIEW_HINT": "Shown on the thank-you page after guests submit private feedback so they can leave a public Google review.",
+    "PUBLIC_GOOGLE_MAPS_URL": "Google Maps link (place or directions)",
+    "PUBLIC_GOOGLE_MAPS_PLACEHOLDER": "https://maps.app.goo.gl/... or Share link from Google Maps",
+    "PUBLIC_GOOGLE_MAPS_HINT": "Optional. Shown on the booking page, reservation view, and feedback page so guests can open your location in Google Maps. Use Share → Copy link from your Business Profile or Maps listing (not the same as the review link).",
     "TAX_ID": "Tax ID / VAT",
     "TAX_ID_PLACEHOLDER": "e.g. DE123456789",
     "CIF": "CIF / NIF",

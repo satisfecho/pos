@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl, SafeStyle } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -31,6 +31,8 @@ export class ReservationViewComponent implements OnInit {
   updatingDelay = signal(false);
   delaySuccess = signal(false);
   delayRateLimited = signal(false);
+
+  googleMapsUrl = computed(() => this.tenant()?.public_google_maps_url?.trim() || null);
 
   getStatusKey(): string {
     const s = this.reservation()?.status;

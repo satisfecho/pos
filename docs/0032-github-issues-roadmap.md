@@ -48,7 +48,9 @@ Umbrella list — **split into separate issues** before implementation.
 - Guest feedback and public tenant branding may already cover part of “feedback link”; extend rather than duplicate.
 - **Marketing automation** implies new subsystems: consent, templates, provider (SMTP vs SMS gateway), queues, unsubscribe.
 
-**Suggested slices:** (1) feedback URL + optional contact on existing flow, (2) tenant-configurable review link (Google), (3) outbound email for one trigger (e.g. post-order thank-you), (4) SMS provider + compliance, (5) segmentation / campaigns UI.
+**Suggested slices:** (1) feedback URL + optional contact on existing flow, (2) tenant-configurable **Google review** deep link + optional **Google Maps place/directions** link on public book / reservation / feedback pages, (3) outbound email for one trigger (e.g. post-order thank-you), (4) SMS provider + compliance, (5) segmentation / campaigns UI.
+
+**Note:** Google does **not** allow third parties to **post** reviews via API; only to **link** guests to the official “Write a review” / Maps listing flow.
 
 ---
 

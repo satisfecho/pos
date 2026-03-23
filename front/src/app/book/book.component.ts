@@ -153,6 +153,8 @@ export class BookComponent implements OnInit {
 
   today = computed(() => new Date().toISOString().slice(0, 10));
 
+  googleMapsUrl = computed(() => this.tenant()?.public_google_maps_url?.trim() || null);
+
   constructor() {
     const id = this.route.snapshot.paramMap.get('tenantId');
     const n = id ? parseInt(id, 10) : 0;

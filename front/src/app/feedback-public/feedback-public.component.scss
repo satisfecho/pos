@@ -44,8 +44,21 @@
   font-weight: 600;
 }
 
-.feedback-google-btn {
-  margin-top: 1rem;
+.feedback-thankyou-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.feedback-google-btn,
+.feedback-maps-btn {
+  margin-top: 0;
+  text-align: center;
 }
 
 .btn-submit-feedback {

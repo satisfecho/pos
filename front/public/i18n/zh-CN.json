@@ -547,7 +547,9 @@
     "VIEW_OR_CANCEL": "查看或取消我的预订",
     "VIEW_TITLE": "我的预订",
     "ERROR_INVALID_LINK": "无效的预订链接。请使用餐厅提供的链接。",
-    "ERROR_FAILED": "预订失败。请重试。"
+    "ERROR_FAILED": "预订失败。请重试。",
+    "ADDRESS": "地址",
+    "OPEN_IN_GOOGLE_MAPS": "在 Google 地图中打开"
   },
   "RESERVATIONS": {
     "TITLE": "预订管理",
@@ -777,7 +779,10 @@
     "PAYMENT_SETTINGS_SUBTITLE": "配置支付方式",
     "PUBLIC_GOOGLE_REVIEW_URL": "Google review link",
     "PUBLIC_GOOGLE_REVIEW_PLACEHOLDER": "https://g.page/.../review or Google Maps review URL",
-    "PUBLIC_GOOGLE_REVIEW_HINT": "Shown on the thank-you page after guests submit private feedback so they can leave a public Google review."
+    "PUBLIC_GOOGLE_REVIEW_HINT": "Shown on the thank-you page after guests submit private feedback so they can leave a public Google review.",
+    "PUBLIC_GOOGLE_MAPS_URL": "Google 地图链接（地点或路线）",
+    "PUBLIC_GOOGLE_MAPS_PLACEHOLDER": "https://maps.app.goo.gl/... 或从 Google 地图复制的分享链接",
+    "PUBLIC_GOOGLE_MAPS_HINT": "可选。显示在预订、订单与反馈页，便于在 Google 地图中打开位置。请使用地图中的「分享 → 复制链接」（与评价链接不同）。"
   },
   "PAYMENTS": {
     "PAYMENT": "支付",

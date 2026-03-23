@@ -654,6 +654,7 @@ class TenantSummary(_BaseModel):
     phone: str | None = None
     email: str | None = None
     whatsapp: str | None = None
+    address: str | None = None
     opening_hours: str | None = None
     public_background_color: str | None = None
     take_away_table_token: str | None = None  # Token for take-away/home ordering if a table is configured
@@ -664,6 +665,7 @@ class TenantSummary(_BaseModel):
     reservation_arrival_tolerance_minutes: int | None = None
     reservation_dress_code: str | None = None
     public_google_review_url: str | None = None
+    public_google_maps_url: str | None = None
 
 
 TAKE_AWAY_TABLE_NAMES = ("take away", "home ordering", "takeaway", "take-away")
@@ -741,6 +743,7 @@ def _tenant_to_summary(t: models.Tenant, session: Session) -> TenantSummary:
         phone=t.phone,
         email=t.email,
         whatsapp=t.whatsapp,
+        address=t.address,
         opening_hours=t.opening_hours,
         public_background_color=t.public_background_color,
         take_away_table_token=take_away_token,
@@ -750,11 +753,12 @@ def _tenant_to_summary(t: models.Tenant, session: Session) -> TenantSummary:
         reservation_arrival_tolerance_minutes=t.reservation_arrival_tolerance_minutes,
         reservation_dress_code=t.reservation_dress_code,
         public_google_review_url=t.public_google_review_url,
+        public_google_maps_url=t.public_google_maps_url,
     )
 
 
-def _normalize_public_google_review_url(raw: str | None) -> str | None:
-    """Allow only http(s) URLs for the public review link; bounded length."""
+def _normalize_public_http_url(raw: str | None) -> str | None:
+    """Allow only http(s) URLs for public tenant links (review, maps); bounded length."""
     if raw is None:
         return None
     if not isinstance(raw, str):
@@ -797,6 +801,7 @@ def get_public_tenant(
         "phone": summary.phone,
         "email": summary.email,
         "whatsapp": summary.whatsapp,
+        "address": summary.address,
         "opening_hours": summary.opening_hours,
         "public_background_color": summary.public_background_color,
         "take_away_table_token": summary.take_away_table_token,
@@ -806,6 +811,7 @@ def get_public_tenant(
         "reservation_arrival_tolerance_minutes": summary.reservation_arrival_tolerance_minutes,
         "reservation_dress_code": summary.reservation_dress_code,
         "public_google_review_url": summary.public_google_review_url,
+        "public_google_maps_url": summary.public_google_maps_url,
     }
     return JSONResponse(content=body)
 
@@ -2010,8 +2016,12 @@ def update_tenant_settings(
             tenant.public_background_color = None
 
     if tenant_update.public_google_review_url is not None:
-        tenant.public_google_review_url = _normalize_public_google_review_url(
+        tenant.public_google_review_url = _normalize_public_http_url(
             tenant_update.public_google_review_url
+        )
+    if tenant_update.public_google_maps_url is not None:
+        tenant.public_google_maps_url = _normalize_public_http_url(
+            tenant_update.public_google_maps_url
         )
 
     # Reservation options (pre-payment, policies, reminders)

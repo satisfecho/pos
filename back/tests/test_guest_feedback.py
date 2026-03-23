@@ -11,7 +11,12 @@ from app import models
 class TestGuestFeedback(PgClientTestCase):
     def setUp(self):
         super().setUp()
-        tenant = models.Tenant(name="T1", public_google_review_url="https://g.page/r/test-place/review")
+        tenant = models.Tenant(
+            name="T1",
+            address="123 Main St",
+            public_google_review_url="https://g.page/r/test-place/review",
+            public_google_maps_url="https://maps.google.com/?q=Test",
+        )
         self.session.add(tenant)
         self.session.commit()
         self.session.refresh(tenant)
@@ -34,7 +39,10 @@ class TestGuestFeedback(PgClientTestCase):
     def test_public_tenant_includes_google_review_url(self):
         r = self.client.get(f"/public/tenants/{self.tenant_id}")
         self.assertEqual(r.status_code, 200, r.text)
-        self.assertEqual(r.json().get("public_google_review_url"), "https://g.page/r/test-place/review")
+        data = r.json()
+        self.assertEqual(data.get("public_google_review_url"), "https://g.page/r/test-place/review")
+        self.assertEqual(data.get("public_google_maps_url"), "https://maps.google.com/?q=Test")
+        self.assertEqual(data.get("address"), "123 Main St")
 
     def test_submit_guest_feedback_minimal(self):
         r = self.client.post(

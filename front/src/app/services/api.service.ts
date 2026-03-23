@@ -223,6 +223,8 @@ export interface TenantSummary {
   phone?: string | null;
   email?: string | null;
   whatsapp?: string | null;
+  /** Mailing / street address (shown on public book and reservation pages when set). */
+  address?: string | null;
   opening_hours?: string | null;
   /** Background color for public pages (hex, e.g. #1E22AA for RAL5002 Azul). */
   public_background_color?: string | null;
@@ -236,6 +238,8 @@ export interface TenantSummary {
   reservation_dress_code?: string | null;
   /** Google Maps / Business Profile "Write a review" URL (thank-you page on public feedback form). */
   public_google_review_url?: string | null;
+  /** Google Maps place or directions URL (Share link). */
+  public_google_maps_url?: string | null;
 }
 
 /** One restaurant when several share the same printed table name. */
@@ -632,6 +636,7 @@ export interface TenantSettings {
   reservation_reminder_24h_enabled?: boolean | null;
   reservation_reminder_2h_enabled?: boolean | null;
   public_google_review_url?: string | null;
+  public_google_maps_url?: string | null;
 }
 
 export interface OrderItemCreate {

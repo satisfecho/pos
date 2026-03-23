@@ -627,7 +627,9 @@
     "CANCELLATION_POLICY": "Política de cancelación",
     "ARRIVAL_TOLERANCE": "Tolerancia de llegada",
     "ARRIVAL_TOLERANCE_MINUTES": "Por favor, llega dentro de {{minutes}} minutos de tu hora de reserva.",
-    "DRESS_CODE": "Código de vestimenta"
+    "DRESS_CODE": "Código de vestimenta",
+    "ADDRESS": "Dirección",
+    "OPEN_IN_GOOGLE_MAPS": "Abrir en Google Maps"
   },
   "FEEDBACK": {
     "TITLE": "¿Cómo fue tu visita?",
@@ -803,6 +805,9 @@
     "PUBLIC_GOOGLE_REVIEW_URL": "Enlace de reseña en Google",
     "PUBLIC_GOOGLE_REVIEW_PLACEHOLDER": "https://g.page/.../review o URL de reseña en Google Maps",
     "PUBLIC_GOOGLE_REVIEW_HINT": "Se muestra en la página de agradecimiento tras enviar la opinión privada para que los clientes puedan dejar una reseña pública en Google.",
+    "PUBLIC_GOOGLE_MAPS_URL": "Enlace de Google Maps (lugar o cómo llegar)",
+    "PUBLIC_GOOGLE_MAPS_PLACEHOLDER": "https://maps.app.goo.gl/... o enlace Compartir de Google Maps",
+    "PUBLIC_GOOGLE_MAPS_HINT": "Opcional. Se muestra en reservas y opiniones para abrir la ubicación en Google Maps. Usa Compartir → Copiar enlace (no es el mismo enlace que el de reseña).",
     "LOGO": "Logo",
     "UPLOAD_LOGO": "Subir Logo",
     "UPLOAD_LOGO_HINT": "Imagen cuadrada, máx 2MB (JPG, PNG, WebP, AVIF, SVG)",

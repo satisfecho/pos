@@ -547,7 +547,9 @@
     "VIEW_OR_CANCEL": "मेरा आरक्षण देखें या रद्द करें",
     "VIEW_TITLE": "मेरा आरक्षण",
     "ERROR_INVALID_LINK": "अमान्य बुकिंग लिंक। कृपया रेस्तरां द्वारा प्रदान किए गए लिंक का उपयोग करें।",
-    "ERROR_FAILED": "बुकिंग विफल। कृपया पुनः प्रयास करें।"
+    "ERROR_FAILED": "बुकिंग विफल। कृपया पुनः प्रयास करें।",
+    "ADDRESS": "पता",
+    "OPEN_IN_GOOGLE_MAPS": "Google Maps में खोलें"
   },
   "RESERVATIONS": {
     "TITLE": "आरक्षण",
@@ -777,7 +779,10 @@
     "RESERVATION_PREPAYMENT_HINT": "ग्राहक द्वारा पुष्टि पर लिया जाने वाला सेंट में राशि। अक्षम करने के लिए 0 सेट करें।",
     "PUBLIC_GOOGLE_REVIEW_URL": "Google review link",
     "PUBLIC_GOOGLE_REVIEW_PLACEHOLDER": "https://g.page/.../review or Google Maps review URL",
-    "PUBLIC_GOOGLE_REVIEW_HINT": "Shown on the thank-you page after guests submit private feedback so they can leave a public Google review."
+    "PUBLIC_GOOGLE_REVIEW_HINT": "Shown on the thank-you page after guests submit private feedback so they can leave a public Google review.",
+    "PUBLIC_GOOGLE_MAPS_URL": "Google Maps लिंक (स्थान या दिशा)",
+    "PUBLIC_GOOGLE_MAPS_PLACEHOLDER": "https://maps.app.goo.gl/... या Google Maps से साझा लिंक",
+    "PUBLIC_GOOGLE_MAPS_HINT": "वैकल्पिक। बुकिंग, आरक्षण और फ़ीडबैक पृष्ठ पर दिखता है। Maps में साझा करें → लिंक कॉपि करें (समीक्षा लिंक नहीं)।"
   },
   "PAYMENTS": {
     "PAYMENT": "भुगतान",

@@ -534,7 +534,9 @@
     "CANCELLATION_POLICY": "Política de cancel·lació",
     "ARRIVAL_TOLERANCE": "Tolerància d'arribada",
     "ARRIVAL_TOLERANCE_MINUTES": "Si us plau, arriba en {{minutes}} minuts de la teva hora.",
-    "DRESS_CODE": "Codi de vestir"
+    "DRESS_CODE": "Codi de vestir",
+    "ADDRESS": "Adreça",
+    "OPEN_IN_GOOGLE_MAPS": "Obrir a Google Maps"
   },
   "RESERVATIONS": {
     "TITLE": "Reserves",
@@ -812,7 +814,10 @@
     "PAYMENT_SETTINGS_SUBTITLE": "Configura els mètodes de pagament",
     "PUBLIC_GOOGLE_REVIEW_URL": "Google review link",
     "PUBLIC_GOOGLE_REVIEW_PLACEHOLDER": "https://g.page/.../review or Google Maps review URL",
-    "PUBLIC_GOOGLE_REVIEW_HINT": "Shown on the thank-you page after guests submit private feedback so they can leave a public Google review."
+    "PUBLIC_GOOGLE_REVIEW_HINT": "Shown on the thank-you page after guests submit private feedback so they can leave a public Google review.",
+    "PUBLIC_GOOGLE_MAPS_URL": "Enllaç de Google Maps (lloc o com arribar)",
+    "PUBLIC_GOOGLE_MAPS_PLACEHOLDER": "https://maps.app.goo.gl/... o enllaç Compartir de Google Maps",
+    "PUBLIC_GOOGLE_MAPS_HINT": "Opcional. Es mostra a reserves i feedback per obrir la ubicació a Google Maps. Utilitza Compartir → Copiar enllaç (no és el mateix que l’enllaç de ressenya)."
   },
   "PAYMENTS": {
     "PAYMENT": "Pagament",

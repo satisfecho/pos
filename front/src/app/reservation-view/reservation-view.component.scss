@@ -213,6 +213,28 @@
   opacity: 0.7;
 }
 
+.restaurant-location {
+  margin-top: var(--space-3);
+  font-size: 0.875rem;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  opacity: 0.95;
+
+  .restaurant-address {
+    margin: 0 0 var(--space-2);
+    .oh-label {
+      font-weight: 600;
+      margin-right: var(--space-2);
+    }
+  }
+
+  .book-maps-btn {
+    margin-top: var(--space-2);
+  }
+}
+
 .table-pill {
   display: inline-flex;
   align-items: center;

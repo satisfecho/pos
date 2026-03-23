@@ -37,6 +37,26 @@
         </div>
         <div class="hero-info">
           <h1 class="restaurant-name">{{ tenant()?.name }}</h1>
+          @if (tenant()?.address?.trim() || googleMapsUrl()) {
+            <div class="restaurant-location">
+              @if (tenant()?.address?.trim()) {
+                <p class="restaurant-address">
+                  <span class="oh-label">{{ 'BOOK.ADDRESS' | translate }}:</span>
+                  {{ tenant()!.address }}
+                </p>
+              }
+              @if (googleMapsUrl()) {
+                <a
+                  [href]="googleMapsUrl()!"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-secondary book-maps-btn"
+                >
+                  {{ 'BOOK.OPEN_IN_GOOGLE_MAPS' | translate }}
+                </a>
+              }
+            </div>
+          }
         </div>
       </div>
     </header>
@@ -44,11 +64,18 @@
       <div class="book-card book-success-card">
         <h2 class="success-title">{{ 'FEEDBACK.THANK_YOU' | translate }}</h2>
         <p class="success-message">{{ 'FEEDBACK.THANK_YOU_DETAIL' | translate }}</p>
-        @if (googleReviewUrl()) {
-          <a [href]="googleReviewUrl()!" target="_blank" rel="noopener noreferrer" class="btn btn-primary feedback-google-btn">
-            {{ 'FEEDBACK.OPEN_GOOGLE_REVIEW' | translate }}
-          </a>
-        }
+        <div class="feedback-thankyou-actions">
+          @if (googleReviewUrl()) {
+            <a [href]="googleReviewUrl()!" target="_blank" rel="noopener noreferrer" class="btn btn-primary feedback-google-btn">
+              {{ 'FEEDBACK.OPEN_GOOGLE_REVIEW' | translate }}
+            </a>
+          }
+          @if (googleMapsUrl()) {
+            <a [href]="googleMapsUrl()!" target="_blank" rel="noopener noreferrer" class="btn btn-secondary feedback-maps-btn">
+              {{ 'BOOK.OPEN_IN_GOOGLE_MAPS' | translate }}
+            </a>
+          }
+        </div>
       </div>
     </main>
   } @else {
@@ -75,6 +102,26 @@
           <div class="table-pill book-pill">
             <span>{{ 'FEEDBACK.TITLE' | translate }}</span>
           </div>
+          @if (tenant()?.address?.trim() || googleMapsUrl()) {
+            <div class="restaurant-location">
+              @if (tenant()?.address?.trim()) {
+                <p class="restaurant-address">
+                  <span class="oh-label">{{ 'BOOK.ADDRESS' | translate }}:</span>
+                  {{ tenant()!.address }}
+                </p>
+              }
+              @if (googleMapsUrl()) {
+                <a
+                  [href]="googleMapsUrl()!"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-secondary book-maps-btn"
+                >
+                  {{ 'BOOK.OPEN_IN_GOOGLE_MAPS' | translate }}
+                </a>
+              }
+            </div>
+          }
         </div>
       </div>
     </header>

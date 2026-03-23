@@ -605,7 +605,9 @@
     "CANCELLATION_POLICY": "Politique d'annulation",
     "ARRIVAL_TOLERANCE": "Tolérance d'arrivée",
     "ARRIVAL_TOLERANCE_MINUTES": "Merci d'arriver dans les {{minutes}} minutes suivant votre heure.",
-    "DRESS_CODE": "Tenue"
+    "DRESS_CODE": "Tenue",
+    "ADDRESS": "Adresse",
+    "OPEN_IN_GOOGLE_MAPS": "Ouvrir dans Google Maps"
   },
   "RESERVATIONS": {
     "TITLE": "Réservations",
@@ -840,7 +842,10 @@
     "RESERVATION_REMINDER_2H_HINT": "Si activé, un rappel peut être envoyé (manuel ou automatisé) deux heures avant.",
     "PUBLIC_GOOGLE_REVIEW_URL": "Google review link",
     "PUBLIC_GOOGLE_REVIEW_PLACEHOLDER": "https://g.page/.../review or Google Maps review URL",
-    "PUBLIC_GOOGLE_REVIEW_HINT": "Shown on the thank-you page after guests submit private feedback so they can leave a public Google review."
+    "PUBLIC_GOOGLE_REVIEW_HINT": "Shown on the thank-you page after guests submit private feedback so they can leave a public Google review.",
+    "PUBLIC_GOOGLE_MAPS_URL": "Lien Google Maps (lieu ou itinéraire)",
+    "PUBLIC_GOOGLE_MAPS_PLACEHOLDER": "https://maps.app.goo.gl/... ou lien Partager depuis Google Maps",
+    "PUBLIC_GOOGLE_MAPS_HINT": "Facultatif. Affiché sur la réservation et l’avis pour ouvrir l’emplacement dans Google Maps. Utilisez Partager → Copier le lien (différent du lien d’avis)."
   },
   "PAYMENTS": {
     "PAYMENT": "Paiement",

@@ -74,6 +74,26 @@
               <span class="oh-text">{{ formatOpeningHours(tenant()?.opening_hours) }}</span>
             </div>
           }
+          @if (tenant()?.address?.trim() || googleMapsUrl()) {
+            <div class="restaurant-location">
+              @if (tenant()?.address?.trim()) {
+                <p class="restaurant-address">
+                  <span class="oh-label">{{ 'BOOK.ADDRESS' | translate }}:</span>
+                  {{ tenant()!.address }}
+                </p>
+              }
+              @if (googleMapsUrl()) {
+                <a
+                  [href]="googleMapsUrl()!"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-secondary book-maps-btn"
+                >
+                  {{ 'BOOK.OPEN_IN_GOOGLE_MAPS' | translate }}
+                </a>
+              }
+            </div>
+          }
         </div>
       </div>
     </header>
@@ -174,6 +194,26 @@
               <p><strong>{{ 'RESERVATIONS.CUSTOMER_PHONE' | translate }}:</strong> {{ successReservation()?.customer_phone }}</p>
             }
           </div>
+          @if (tenant()?.address?.trim() || googleMapsUrl()) {
+            <div class="restaurant-location book-success-location">
+              @if (tenant()?.address?.trim()) {
+                <p class="restaurant-address">
+                  <span class="oh-label">{{ 'BOOK.ADDRESS' | translate }}:</span>
+                  {{ tenant()!.address }}
+                </p>
+              }
+              @if (googleMapsUrl()) {
+                <a
+                  [href]="googleMapsUrl()!"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-secondary book-maps-btn"
+                >
+                  {{ 'BOOK.OPEN_IN_GOOGLE_MAPS' | translate }}
+                </a>
+              }
+            </div>
+          }
           @if (tenant()?.phone || tenant()?.email || tenant()?.whatsapp) {
             <div class="book-success-contact">
               <h3 class="success-contact-title">{{ 'BOOK.CONTACT_RESTAURANT' | translate }}</h3>
