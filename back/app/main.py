@@ -26,7 +26,8 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Res
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel as _BaseModel
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy import event
+from sqlalchemy.exc import IntegrityError, InvalidRequestError
 from sqlmodel import Session, select
 
 from . import models, security
@@ -2987,12 +2988,18 @@ def list_products(
                 ).first()
                 if provider:
                     image_filename = f"providers/{provider.token}/products/{provider_product.image_filename}"
-        
+
+        sell_price = tp.price_cents
+        if sell_price is None:
+            sell_price = _price_cents_from_tenant_product_row(session, tp)
+        if sell_price is None:
+            continue
+
         # Create Product entry
         product = models.Product(
             tenant_id=tp.tenant_id,
             name=tp.name,
-            price_cents=tp.price_cents,
+            price_cents=sell_price,
             description=catalog_item.description if catalog_item else None,
             image_filename=image_filename,
             ingredients=tp.ingredients,
@@ -4724,10 +4731,12 @@ def update_tenant_product(
     if not tenant_product:
         raise HTTPException(status_code=404, detail="Tenant product not found")
 
+    partial = product_update.model_dump(exclude_unset=True)
     if product_update.name is not None:
         tenant_product.name = product_update.name
-    if product_update.price_cents is not None:
-        tenant_product.price_cents = product_update.price_cents
+    # DB column is NOT NULL; explicit JSON null must not clear the selling price.
+    if "price_cents" in partial and partial["price_cents"] is not None:
+        tenant_product.price_cents = partial["price_cents"]
     if product_update.cost_cents is not None:
         tenant_product.cost_cents = product_update.cost_cents
     if product_update.is_active is not None:
@@ -7892,6 +7901,25 @@ def _finalize_menu_order_line_price_cents(
     )
 
 
+@event.listens_for(Session, "before_flush")
+def _tenantproduct_price_cents_guard(
+    session: Session, flush_context: object, instances: object | None
+) -> None:
+    """Never persist tenantproduct.price_cents = NULL (column is NOT NULL). Coalesce from provider/product."""
+    for obj in session.new.union(session.dirty):
+        if not isinstance(obj, models.TenantProduct):
+            continue
+        if obj.price_cents is not None:
+            continue
+        resolved = _price_cents_from_tenant_product_row(session, obj)
+        if resolved is not None:
+            obj.price_cents = resolved
+            continue
+        raise InvalidRequestError(
+            "tenantproduct.price_cents cannot be NULL; set a menu price or link a supplier/product price."
+        )
+
+
 def _tax_amount_cents_inclusive(price_cents: int, quantity: int, rate_percent: int) -> int:
     """Tax amount from tax-inclusive price. rate_percent e.g. 10, 21, 0."""
     if rate_percent <= 0:
@@ -8106,6 +8134,8 @@ def create_order(
                 session.flush()
                 effective_product_id = new_product.id
                 tenant_product.product_id = new_product.id
+                if tenant_product.price_cents is None:
+                    tenant_product.price_cents = link_price
                 session.add(tenant_product)
                 price_cents = link_price
         elif item.source == "product":
@@ -8160,6 +8190,8 @@ def create_order(
                     session.flush()
                     effective_product_id = new_product.id
                     tenant_product.product_id = new_product.id
+                    if tenant_product.price_cents is None:
+                        tenant_product.price_cents = link_price
                     session.add(tenant_product)
                     price_cents = link_price
             else:

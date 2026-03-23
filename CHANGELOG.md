@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **Catalog menu rows:** Prevent `tenantproduct.price_cents` from being cleared to NULL (database NOT NULL): flush-time coalesce from supplier or linked product price, safer product backfill from catalog-only items, and PUT ignores explicit null price.
 - **Tables floor plan:** Selected-table panel shows read-only assigned waiter from table API for roles without `table:write`, consistent with Tiles/Table list (GitHub #65).
 
 ### Changed
