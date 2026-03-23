@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub issue #23 asked for payment before checkout so staff can record payment while an order is still in progress, not only at a single checkout moment.
+- **What was done:** Backend `mark-paid` already allowed pre-completion payment; the staff orders UI added **Pay now** on active/unpaid cards (with permission), a modal with **`ORDERS.PAY_NOW_HELP`**, and pytest coverage in `test_order_prepay.py` for line items staying **preparing** after early pay.
+- **What was tested:** Pytest `test_order_prepay.py`, front build log check, `npm run test:landing-version`, manual/Puppeteer pay-early, and finish API smoke — all **PASS** per the test report.
+- **Why closed:** Tester **overall PASS**; all stated pass/fail criteria met.
+- **Closed at (UTC):** 2026-03-23 15:58
+---
+
 # Pay before checkout
 
 ## GitHub
