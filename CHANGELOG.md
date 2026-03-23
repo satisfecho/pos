@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **Puppeteer tests** (`front/scripts/`): Chrome runs **headless by default**. Use **`HEADLESS=0`**, **`false`**, or **`no`** for a visible window. Logic lives in **`front/scripts/puppeteer-headless.mjs`**. Docs: **`docs/testing.md`**, **`AGENTS.md`**.
 
+### Added
+
+- **GitHub #52 planning**: **`docs/0050-github-issue-52-split-plan.md`** — ten dedicated issue specs (title + body), phased rollout (A–E), dependency diagram, filing checklist; **`docs/0032-github-issues-roadmap.md`** and **`docs/README.md`** link to it.
+
 ## [2.0.48] - 2026-03-23
 
 ### Added

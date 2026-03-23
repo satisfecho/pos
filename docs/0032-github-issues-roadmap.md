@@ -21,7 +21,9 @@ Umbrella list. **This table is the source of truth** for “is it done?” until
 | **Central kitchen → branches** | Not started | Cross-tenant or multi-site supply; out of scope of current schema. |
 | **Uber Eats interface** | Not started | Aggregator menu sync / orders — see `docs/0031-order-customizations-plan.md` (delivery integrations). |
 
-**Recommendation:** Open **one GitHub issue per “Not started” row** when scheduling work. **Close #52** when maintainers agree the umbrella is fully tracked (sub-issues filed) and this table stays updated.
+**Dedicated issues & phased plan:** Specs (copy-paste titles/bodies), dependency graph, and filing instructions are in **[0050-github-issue-52-split-plan.md](0050-github-issue-52-split-plan.md)**. After creating the GitHub issues, add their numbers in a comment on [#52](https://github.com/satisfecho/pos/issues/52) and optionally add an **Issue** column to the table above.
+
+**Recommendation:** **Close #52** when maintainers agree the umbrella is fully tracked (children filed or linked) and this table stays updated.
 
 ---
 
