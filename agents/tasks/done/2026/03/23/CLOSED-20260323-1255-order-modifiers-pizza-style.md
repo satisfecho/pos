@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Order-line pizza-style modifiers (remove / add / substitute) were implemented and the tester signed off with an overall **PASS** on issue **#50**.
+- **What was done:** `OrderItem` gained validated `line_modifiers` (JSONB) and summary text; API create/update/merge behaviour; staff Orders UI, kitchen, and invoice surfaces; migration and pytest coverage as recorded in the task body.
+- **What was tested:** DB migrate, `tests/test_line_modifiers.py` (6 passed), landing smoke on **4202**, and manual staff orders / kitchen / print invoice / clear modifiers / merge-split behaviour — all **PASS** per the embedded test report.
+- **Why closed:** All stated pass/fail criteria met; tester overall **PASS**.
+- **Closed at (UTC):** 2026-03-23 16:51
+---
+
 # Change plate ordered with products like pizza
 
 ## GitHub
