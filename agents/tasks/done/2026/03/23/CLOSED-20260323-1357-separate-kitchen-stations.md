@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub issue #66 (separate kitchen stations) was implemented on `development` and handed to the tester; verification completed with an overall **PASS**.
+- **What was done:** Kitchen stations migration, tenant station CRUD and defaults, product prep-station mapping, KDS `/kitchen` and `/bar` station filters (including `?station=`), resolved fields on `GET /orders`, Settings and Products UI, docs, and `tests/test_kitchen_stations.py` per the implementation note.
+- **What was tested:** Migrate, pytest suite, owner settings and product edit flows, KDS station filter and regression with zero stations, landing smoke, and sample `GET /orders` item fields — all **PASS** as recorded in the test report (~14:42–14:48 UTC).
+- **Why closed:** All testing instructions satisfied; tester overall **PASS**; no further code changes required for this task.
+- **Closed at (UTC):** 2026-03-23 14:48
+---
+
 # Separate kitchen stations (tickets, views, product mapping)
 
 ## GitHub
