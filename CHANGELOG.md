@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - **GitHub #58 — POS tips**: **Settings → Payments** — up to **four tip percentages** (default 5/10/15/20), optional **tip VAT rate** for invoice breakdown. **`PUT /orders/{id}/mark-paid`** and **`PUT /orders/{id}/finish`** accept optional **`tip_percent`**; order stores **`tip_percent_applied`** and **`tip_amount_cents`**. **`GET /orders`** returns **`subtotal_cents`**, tip fields, and **`total_cents`** including tip. **Unmark paid** clears tip. **Printed invoice** shows subtotal, tip line, and VAT split when configured. Migration **`20260323140000_tenant_tip_presets_and_order_tip.sql`**. Tests: **`back/tests/test_order_tip.py`**. i18n: **`ORDERS.*`** tip keys, **`SETTINGS.TIP_*`**.
+- **GitHub #57 — staff attendance (clock in/out)**: Table **`work_session`** for **recorded** on-site times (separate from **working plan** `shift` scheduling). API: **`GET /users/me/work-session`**, **`POST .../work-session/start`**, **`POST .../work-session/end`**, **`GET /users/me/work-sessions`**; **start/end IP** from the server’s view (proxy headers) for audit. Staff page **`/my-shift`** + nav **My shift**; **Reports** adds an **attendance** table and **`GET /reports/work-sessions`**. Migration **`20260323150000_work_session.sql`**. Test **`back/tests/test_work_session.py`**. i18n: **`MY_SHIFT.*`**, **`REPORTS.WORK_SESSIONS_*`**, **`NAV.MY_SHIFT`**.
 
 ## [2.0.48] - 2026-03-23
 

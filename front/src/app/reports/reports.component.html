@@ -317,6 +317,47 @@
         </div>
       </section>
     }
+
+    @if (canViewAttendance()) {
+      <section class="report-section" data-testid="reports-work-sessions">
+        <h2>{{ 'REPORTS.WORK_SESSIONS_TITLE' | translate }}</h2>
+        <p class="muted work-sessions-hint">{{ 'REPORTS.WORK_SESSIONS_HINT' | translate }}</p>
+        @if (workSessionsLoading()) {
+          <p class="muted">{{ 'REPORTS.WORK_SESSIONS_LOADING' | translate }}</p>
+        } @else if (workSessionsError()) {
+          <div class="error-banner">{{ workSessionsError() }}</div>
+        } @else if (workSessions().length === 0) {
+          <p class="muted">{{ 'REPORTS.WORK_SESSIONS_EMPTY' | translate }}</p>
+        } @else {
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>{{ 'REPORTS.WORK_SESSIONS_COL_STAFF' | translate }}</th>
+                  <th>{{ 'REPORTS.WORK_SESSIONS_COL_START' | translate }}</th>
+                  <th>{{ 'REPORTS.WORK_SESSIONS_COL_END' | translate }}</th>
+                  <th>{{ 'REPORTS.WORK_SESSIONS_COL_DURATION' | translate }}</th>
+                  <th>{{ 'REPORTS.WORK_SESSIONS_COL_START_IP' | translate }}</th>
+                  <th>{{ 'REPORTS.WORK_SESSIONS_COL_END_IP' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of workSessions(); track row.id) {
+                  <tr>
+                    <td>{{ row.user_name }}</td>
+                    <td>{{ formatWorkSessionDt(row.started_at) }}</td>
+                    <td>{{ row.ended_at ? formatWorkSessionDt(row.ended_at) : '—' }}</td>
+                    <td>{{ formatWorkSessionDuration(row) }}</td>
+                    <td class="muted">{{ row.start_ip || '—' }}</td>
+                    <td class="muted">{{ row.end_ip || '—' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    }
   }
   </div>
 </app-sidebar>

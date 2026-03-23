@@ -27,6 +27,7 @@ export const routes: Routes = [
 
   // Protected routes - accessible by all authenticated users
   { path: 'dashboard', canActivate: [authGuard], loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent) },
+  { path: 'my-shift', canActivate: [authGuard], loadComponent: () => import('./my-shift/my-shift.component').then(m => m.MyShiftComponent) },
 
   // Products - all roles can view, but editing is handled in component
   { path: 'products', canActivate: [authGuard], loadComponent: () => import('./products/products.component').then(m => m.ProductsComponent) },

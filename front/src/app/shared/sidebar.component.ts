@@ -43,6 +43,15 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
              </svg>
              <span>{{ 'NAV.HOME' | translate }}</span>
            </a>
+           @if (canViewMyShift()) {
+             <a routerLink="/my-shift" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <circle cx="12" cy="12" r="10"/>
+                 <path d="M12 6v6l4 2"/>
+               </svg>
+               <span>{{ 'NAV.MY_SHIFT' | translate }}</span>
+             </a>
+           }
            <a routerLink="/staff/orders" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
@@ -246,6 +255,11 @@ export class SidebarComponent implements OnInit {
   canViewReports = computed(() => this.permissions.isAdmin(this.user()));
   canViewWorkingPlan = computed(() => this.permissions.hasPermission(this.user(), 'schedule:read'));
   canViewUsers = computed(() => this.permissions.isAdmin(this.user()));
+  /** Tenant staff (not provider portal users). */
+  canViewMyShift = computed(() => {
+    const u = this.user();
+    return !!u && u.tenant_id != null && String(u.role).toLowerCase() !== 'provider';
+  });
 
   ngOnInit() {
     this.api.user$.subscribe(user => {

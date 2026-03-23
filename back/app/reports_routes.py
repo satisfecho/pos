@@ -10,7 +10,7 @@ from datetime import date, datetime, time, timedelta, timezone
 from io import BytesIO, StringIO
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlmodel import Session, select
 
@@ -538,3 +538,57 @@ def export_report(
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename=pos2-sales-{report}-{from_date}-{to_date}.csv"},
     )
+
+
+def _work_session_row_dict(ws: models.WorkSession, user_name: str) -> dict:
+    duration_minutes: int | None = None
+    if ws.ended_at is not None and ws.started_at is not None:
+        duration_minutes = max(0, int((ws.ended_at - ws.started_at).total_seconds() // 60))
+    return {
+        "id": ws.id,
+        "tenant_id": ws.tenant_id,
+        "user_id": ws.user_id,
+        "user_name": user_name,
+        "started_at": ws.started_at.isoformat() if ws.started_at else None,
+        "ended_at": ws.ended_at.isoformat() if ws.ended_at else None,
+        "duration_minutes": duration_minutes,
+        "start_ip": ws.start_ip,
+        "end_ip": ws.end_ip,
+    }
+
+
+@router.get("/work-sessions")
+def report_work_sessions(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.REPORT_READ))],
+    session: Session = Depends(get_session),
+    from_date: str = Query(..., description="Start date YYYY-MM-DD (UTC day)"),
+    to_date: str = Query(..., description="End date YYYY-MM-DD (UTC day, inclusive)"),
+    user_id: int | None = Query(None, description="Filter by staff user id (optional)"),
+) -> list[dict]:
+    """All tenant staff clock-in/out rows in range (by started_at, UTC). Owner and admin only."""
+    if current_user.tenant_id is None:
+        raise HTTPException(status_code=403, detail="Tenant required")
+    try:
+        fd = datetime.strptime(from_date, "%Y-%m-%d").date()
+        td = datetime.strptime(to_date, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format; use YYYY-MM-DD")
+    if fd > td:
+        raise HTTPException(status_code=400, detail="from_date must be <= to_date")
+    start_utc = datetime.combine(fd, time.min, tzinfo=timezone.utc)
+    end_exclusive = datetime.combine(td + timedelta(days=1), time.min, tzinfo=timezone.utc)
+    q = (
+        select(models.WorkSession)
+        .where(models.WorkSession.tenant_id == current_user.tenant_id)
+        .where(models.WorkSession.started_at >= start_utc)
+        .where(models.WorkSession.started_at < end_exclusive)
+    )
+    if user_id is not None:
+        q = q.where(models.WorkSession.user_id == user_id)
+    rows = session.exec(q.order_by(models.WorkSession.started_at.desc())).all()
+    out: list[dict] = []
+    for ws in rows:
+        u = session.get(models.User, ws.user_id)
+        name = (u.full_name or u.email or "") if u else ""
+        out.append(_work_session_row_dict(ws, name))
+    return out

@@ -135,6 +135,7 @@ const ROUTE_ROLES: Record<string, UserRole[]> = {
   '/settings': ['owner', 'admin'],
   '/users': ['owner', 'admin'],
   '/working-plan': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
+  '/my-shift': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
 };
 
 @Injectable({

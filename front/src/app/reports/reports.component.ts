@@ -8,7 +8,8 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../shared/sidebar.component';
-import { ApiService, SalesReport } from '../services/api.service';
+import { ApiService, SalesReport, WorkSession } from '../services/api.service';
+import { PermissionService } from '../services/permission.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../services/language.service';
 import { intlLocaleFromTranslate } from '../shared/intl-locale';
@@ -25,11 +26,15 @@ export class ReportsComponent implements OnInit {
   private api = inject(ApiService);
   private translate = inject(TranslateService);
   private languageService = inject(LanguageService);
+  private permissions = inject(PermissionService);
 
   report = signal<SalesReport | null>(null);
   loading = signal(true);
   error = signal<string | null>(null);
   exporting = signal(false);
+  workSessions = signal<WorkSession[]>([]);
+  workSessionsLoading = signal(false);
+  workSessionsError = signal<string | null>(null);
   fromDate = signal('');
   toDate = signal('');
   currency = signal('€');
@@ -101,12 +106,57 @@ export class ReportsComponent implements OnInit {
       next: (data) => {
         this.report.set(data);
         this.loading.set(false);
+        this.loadWorkSessions();
       },
       error: (err) => {
         this.error.set(err?.message || 'Failed to load report');
         this.loading.set(false);
       },
     });
+  }
+
+  canViewAttendance(): boolean {
+    return this.permissions.hasPermission(this.api.getCurrentUser(), 'report:read');
+  }
+
+  loadWorkSessions(): void {
+    if (!this.canViewAttendance()) {
+      this.workSessions.set([]);
+      return;
+    }
+    const from = this.fromDate();
+    const to = this.toDate();
+    if (!from || !to) return;
+    this.workSessionsLoading.set(true);
+    this.workSessionsError.set(null);
+    this.api.getReportWorkSessions(from, to).subscribe({
+      next: (rows) => {
+        this.workSessions.set(rows);
+        this.workSessionsLoading.set(false);
+      },
+      error: () => {
+        this.workSessions.set([]);
+        this.workSessionsLoading.set(false);
+        this.workSessionsError.set('Failed to load attendance');
+      },
+    });
+  }
+
+  formatWorkSessionDt(iso: string | null): string {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? iso : d.toLocaleString();
+  }
+
+  formatWorkSessionDuration(row: WorkSession): string {
+    if (row.duration_minutes != null && row.duration_minutes >= 0) {
+      const h = Math.floor(row.duration_minutes / 60);
+      const m = row.duration_minutes % 60;
+      if (h > 0) return `${h}h ${m}m`;
+      return `${m}m`;
+    }
+    if (!row.ended_at) return '…';
+    return '—';
   }
 
   formatCurrency(cents: number): string {
