@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Orders header actions inside order cards had inconsistent vertical alignment (“floating” vs top); layout was stabilized with explicit flex rules.
+- **What was done:** `orders.component.ts` styles: `.order-header` uses `align-items: flex-start` and gap; `.order-header-actions` uses `flex-wrap: wrap` and `justify-content: flex-end` for predictable top/right alignment when content wraps.
+- **What was tested:** Front build green; staff Orders page; computed styles on five `.order-header` samples; `review-order-edit-puppeteer.mjs` — all PASS per test report.
+- **Why closed:** Tester overall **PASS**; acceptance criteria met.
+- **Closed at (UTC):** 2026-03-23 14:25
+---
+
 # Order header actions: stable alignment in badge (Orders)
 
 ## GitHub
