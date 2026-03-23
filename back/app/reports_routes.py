@@ -7,7 +7,7 @@ excludes removed and cancelled items. For restaurant owner revenue analysis.
 
 from collections import defaultdict
 from datetime import date, datetime, time, timedelta, timezone
-from io import BytesIO
+from io import BytesIO, StringIO
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
@@ -298,12 +298,15 @@ def get_sales_reports(
 
 def _csv_stream(rows: list[dict], keys: list[str], header_row: list[str]) -> bytes:
     import csv
-    buf = BytesIO()
+
+    # csv.writer requires a text stream; BytesIO expects bytes and raises TypeError.
+    buf = StringIO()
     writer = csv.writer(buf)
     writer.writerow(header_row)
     for r in rows:
         writer.writerow([r.get(k, "") for k in keys])
-    return buf.getvalue()
+    # utf-8-sig so Excel recognizes UTF-8 when headers contain non-ASCII (localized exports).
+    return buf.getvalue().encode("utf-8-sig")
 
 
 @router.get("/export")
