@@ -238,6 +238,21 @@ export interface TenantSummary {
   public_google_review_url?: string | null;
 }
 
+/** One restaurant when several share the same printed table name. */
+export interface PublicTableLookupChoice {
+  table_token: string;
+  tenant_id: number;
+  tenant_name: string;
+  table_name: string;
+}
+
+/** GET /public/table-lookup — token or printed name (e.g. T01) → menu token. */
+export interface PublicTableLookupResponse {
+  table_token: string | null;
+  ambiguous: boolean;
+  choices: PublicTableLookupChoice[];
+}
+
 /** Staff list + public submit response context */
 export interface GuestFeedback {
   id: number;
@@ -1512,6 +1527,13 @@ export class ApiService {
   /** List all tenants (public, no auth). For landing page tenant picker. */
   getPublicTenants(): Observable<TenantSummary[]> {
     return this.http.get<TenantSummary[]>(`${this.apiUrl}/public/tenants`);
+  }
+
+  /** Resolve QR/menu token or printed table name (e.g. T01) to menu token. Public, no auth. */
+  lookupPublicTable(q: string): Observable<PublicTableLookupResponse> {
+    return this.http.get<PublicTableLookupResponse>(`${this.apiUrl}/public/table-lookup`, {
+      params: { q },
+    });
   }
 
   /** Get one tenant's public info (for book/menu branding). Public, no auth. */

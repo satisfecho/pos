@@ -817,6 +817,7 @@ def get_public_tenant(
 )
 def public_table_lookup(
     request: Request,
+    response: Response,
     q: str = Query(
         ...,
         min_length=1,

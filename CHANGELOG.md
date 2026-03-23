@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 - **Currency display (GitHub #41)**: **`GET /tenant/settings`** and **`PUT /tenant/settings`** responses, and the **public menu** payload, now expose a **consistent** `currency_code` + symbol (no more **EUR** with a **$** label from an old legacy field). Staff **Products**, **Catalog**, **Orders**, **Reports**, and **customer menu** formatting use the ISO code first; defaults remain **EUR** when unset.
+- **Landing / table code (GitHub #38)**: The homepage field expected the **menu URL token** (from the QR code), while guests type the **printed table name** (e.g. `T01`), which showed a confusing menu error. **`GET /public/table-lookup`** resolves token or printed name (case-insensitive, trimmed); the landing page calls it before opening **`/menu/...`**. If several tenants share the same table name, the user picks a restaurant. **`slowapi`**: `public_table_lookup` takes **`response: Response`** so rate limiting with **`key_func`** does not return 500. **Tests**: **`back/tests/test_public_table_lookup.py`**. Register page test matcher **`test-register-page.mjs`** extended for the updated guest hint.
 
 ## [2.0.42] - 2026-03-23
 

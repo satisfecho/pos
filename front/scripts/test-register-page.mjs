@@ -111,7 +111,7 @@ async function main() {
     // Assert expected explanation content (EN or other locales)
     const hasWho = /who is this for|für wen|para quién|per a qui|这是给谁|questo per/i.test(title);
     const hasProviderContext = /restaurant|business|owner|dashboard|staff|negoci|geschäft|restaurante|ristorante/i.test(providers);
-    const hasGuestHint = /book a table|table code|don't need|do not need|homepage|reservar|tisch|taula|mesa|无需|need an account/i.test(guests);
+    const hasGuestHint = /book a table|table code|table name|qr field|don't need|do not need|homepage|reservar|tisch|taula|mesa|无需|need an account/i.test(guests);
 
     console.log('   Explanation block:', explanation.byClass ? 'by class' : 'by page content');
     console.log('   Title match:', hasWho ? 'OK' : 'missing');

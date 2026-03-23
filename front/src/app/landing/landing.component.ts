@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
-import { ApiService, TenantSummary } from '../services/api.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ApiService, PublicTableLookupChoice, TenantSummary } from '../services/api.service';
 import { FormsModule } from '@angular/forms';
 import { LanguagePickerComponent } from '../shared/language-picker.component';
 import { environment } from '../../environments/environment';
@@ -26,12 +26,34 @@ import { environment } from '../../environments/environment';
             [(ngModel)]="tableCode"
             [placeholder]="'LANDING.TABLE_CODE_PLACEHOLDER' | translate"
             class="table-code-input"
+            (ngModelChange)="onTableCodeInput()"
             (keyup.enter)="goToTableMenu()"
           />
-          <button type="button" class="btn-go" (click)="goToTableMenu()">
+          <button
+            type="button"
+            class="btn-go"
+            [disabled]="tableLookupLoading()"
+            (click)="goToTableMenu()"
+          >
             {{ 'LANDING.GO' | translate }}
           </button>
         </div>
+        @if (tableLookupError()) {
+          <p class="table-lookup-error" role="alert">{{ tableLookupError() }}</p>
+        }
+        @if (tableLookupChoices().length > 0) {
+          <p class="table-lookup-pick-title">{{ 'LANDING.TABLE_MULTIPLE_TITLE' | translate }}</p>
+          <p class="table-lookup-pick-hint">{{ 'LANDING.TABLE_MULTIPLE_HINT' | translate }}</p>
+          <ul class="table-lookup-choices">
+            @for (c of tableLookupChoices(); track c.tenant_id + '-' + c.table_token) {
+              <li>
+                <button type="button" class="table-lookup-choice-btn" (click)="selectRestaurantForTable(c)">
+                  {{ c.tenant_name }}
+                </button>
+              </li>
+            }
+          </ul>
+        }
         <p class="takeaway-hint">
           <a routerLink="/orders" class="link-takeaway">{{ 'LANDING.ORDER_TAKEAWAY' | translate }}</a>
         </p>
@@ -210,6 +232,57 @@ import { environment } from '../../environments/environment';
       background: var(--color-primary-hover);
     }
 
+    .btn-go:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .table-lookup-error {
+      margin: var(--space-3) 0 0;
+      font-size: 0.875rem;
+      color: var(--color-error);
+    }
+
+    .table-lookup-pick-title {
+      margin: var(--space-4) 0 var(--space-2);
+      font-weight: 600;
+      font-size: 0.9375rem;
+      color: var(--color-text);
+    }
+
+    .table-lookup-pick-hint {
+      margin: 0 0 var(--space-3);
+      font-size: 0.875rem;
+      color: var(--color-text-muted);
+    }
+
+    .table-lookup-choices {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .table-lookup-choice-btn {
+      width: 100%;
+      padding: var(--space-3) var(--space-4);
+      text-align: center;
+      background: var(--color-surface);
+      color: var(--color-primary);
+      border: 1px solid var(--color-primary);
+      border-radius: var(--radius-md);
+      font-weight: 500;
+      font-size: 0.9375rem;
+      cursor: pointer;
+    }
+
+    .table-lookup-choice-btn:hover {
+      background: var(--color-primary);
+      color: white;
+    }
+
     .takeaway-hint {
       margin: var(--space-4) 0 0;
       text-align: center;
@@ -305,6 +378,7 @@ import { environment } from '../../environments/environment';
 export class LandingComponent implements OnInit {
   private api = inject(ApiService);
   private router = inject(Router);
+  private translate = inject(TranslateService);
 
   version = environment.version;
   commitHash = environment.commitHash;
@@ -313,6 +387,9 @@ export class LandingComponent implements OnInit {
   loading = signal(true);
   error = signal<string | null>(null);
   tableCode = '';
+  tableLookupLoading = signal(false);
+  tableLookupError = signal<string | null>(null);
+  tableLookupChoices = signal<PublicTableLookupChoice[]>([]);
 
   ngOnInit(): void {
     // `ApiService` constructor already calls `checkAuth()` once; avoid a second `/users/me` (extra 401 noise).
@@ -345,10 +422,48 @@ export class LandingComponent implements OnInit {
     return this.api.getTenantLogoUrl(tenant.logo_filename ?? undefined, tenant.id);
   }
 
-  goToTableMenu(): void {
-    const token = this.tableCode?.trim();
-    if (token) {
-      this.router.navigate(['/menu', token]);
+  onTableCodeInput(): void {
+    this.tableLookupError.set(null);
+    if (this.tableLookupChoices().length > 0) {
+      this.tableLookupChoices.set([]);
     }
+  }
+
+  goToTableMenu(): void {
+    const raw = this.tableCode?.trim();
+    if (!raw) {
+      return;
+    }
+    this.tableLookupError.set(null);
+    this.tableLookupChoices.set([]);
+    this.tableLookupLoading.set(true);
+    this.api.lookupPublicTable(raw).subscribe({
+      next: (res) => {
+        this.tableLookupLoading.set(false);
+        if (res.table_token) {
+          void this.router.navigate(['/menu', res.table_token]);
+          return;
+        }
+        if (res.ambiguous && res.choices?.length) {
+          this.tableLookupChoices.set(res.choices);
+          return;
+        }
+        this.tableLookupError.set(this.translate.instant('LANDING.TABLE_LOOKUP_FAILED'));
+      },
+      error: (err) => {
+        this.tableLookupLoading.set(false);
+        if (err?.status === 404) {
+          this.tableLookupError.set(this.translate.instant('LANDING.TABLE_NOT_FOUND'));
+        } else {
+          this.tableLookupError.set(this.translate.instant('LANDING.TABLE_LOOKUP_FAILED'));
+        }
+      },
+    });
+  }
+
+  selectRestaurantForTable(choice: PublicTableLookupChoice): void {
+    this.tableLookupChoices.set([]);
+    this.tableLookupError.set(null);
+    void this.router.navigate(['/menu', choice.table_token]);
   }
 }
