@@ -3,7 +3,13 @@ import { NgClass } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl, SafeStyle } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ApiService, Reservation, ReservationCreate, TenantSummary } from '../services/api.service';
+import {
+  ApiService,
+  Reservation,
+  ReservationCreate,
+  ReservationBookWeekSlotsResponse,
+  TenantSummary,
+} from '../services/api.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguagePickerComponent } from '../shared/language-picker.component';
 import { contactEmailValid, contactPhoneValid } from '../shared/contact-validators';
@@ -48,10 +54,9 @@ export class BookComponent implements OnInit {
   tenant = signal<TenantSummary | null>(null);
   logoUrl = signal<string | null>(null);
   loading = signal(true);
-  /** Month grid for book-calendar API (year + 1–12). */
-  calendarViewYear = signal(0);
-  calendarViewMonth = signal(1);
-  bookCalendarDays = signal<Map<string, 'open' | 'closed'>>(new Map());
+  /** Mon–Sun slot grid (public book-week-slots API). */
+  bookWeekSlots = signal<ReservationBookWeekSlotsResponse | null>(null);
+  weekSlotsLoading = signal(false);
   formDate = '';
   formTime = '';
   formPartySize = 2;
@@ -63,102 +68,154 @@ export class BookComponent implements OnInit {
   submitting = signal(false);
   error = signal<string | null>(null);
   successReservation = signal<Reservation | null>(null);
-  suggestedTime = signal<string | null>(null);
 
-  /** Time options for reservation: 00:00, 00:15, ... 23:45 (European 24h). */
-  timeOptions: string[] = (() => {
-    const opts: string[] = [];
-    for (let h = 0; h < 24; h++) {
-      for (const m of [0, 15, 30, 45]) {
-        opts.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
-      }
-    }
-    return opts;
-  })();
-
-  /**
-   * 15-minute slots for the selected date: within opening hours and at least 1h before closing (matches backend).
-   * If hours are not configured, all quarter hours are shown.
-   */
-  bookableTimeOptions(): string[] {
-    const json = this.tenant()?.opening_hours;
-    const dateStr = this.formDate;
-    if (!json?.trim() || !dateStr) {
-      return this.finalizeBookableSlots([...this.timeOptions]);
-    }
-    try {
-      const oh = JSON.parse(json) as Record<string, Record<string, unknown>>;
-      const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-      const d = new Date(`${dateStr}T12:00:00`);
-      const dayKey = dayKeys[d.getDay()];
-      const day = oh[dayKey];
-      if (!day || typeof day !== 'object') {
-        return [];
-      }
-      const dh = day as Record<string, unknown>;
-      if (dh['closed']) {
-        return [];
-      }
-      const parseMin = (s: unknown): number | null => {
-        if (s == null || typeof s !== 'string') return null;
-        const p = s.trim().split(':').map((x) => parseInt(x, 10));
-        if (p.length < 1 || Number.isNaN(p[0])) return null;
-        const h = p[0];
-        const m = p[1] ?? 0;
-        return h * 60 + m;
-      };
-      const allowedBeforeClose = (closeMin: number, resMin: number): boolean => {
-        const lastMins = (closeMin - 60 + 24 * 60) % (24 * 60);
-        return resMin <= lastMins;
-      };
-      type Win = { open: string; close: string };
-      const windows: Win[] = [];
-      if (dh['hasBreak'] === true) {
-        const mo = (dh['morningOpen'] as string) || (dh['open'] as string);
-        const mc = dh['morningClose'] as string;
-        const eo = dh['eveningOpen'] as string;
-        const ec = (dh['eveningClose'] as string) || (dh['close'] as string);
-        if (mo && mc && eo && ec) {
-          windows.push({ open: mo, close: mc }, { open: eo, close: ec });
-        }
-      } else {
-        const o = dh['open'] as string;
-        const c = (dh['eveningClose'] as string) || (dh['close'] as string);
-        if (o && c) {
-          windows.push({ open: o, close: c });
-        }
-      }
-      const seen = new Set<string>();
-      const out: string[] = [];
-      for (const w of windows) {
-        const om = parseMin(w.open);
-        const cm = parseMin(w.close);
-        if (om === null || cm === null) continue;
-        let t = Math.floor((om + 14) / 15) * 15;
-        while (t < cm) {
-          if (allowedBeforeClose(cm, t)) {
-            const hh = Math.floor(t / 60) % 24;
-            const mm = t % 60;
-            const key = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-            if (!seen.has(key)) {
-              seen.add(key);
-              out.push(key);
-            }
-          }
-          t += 15;
-        }
-      }
-      out.sort();
-      const raw = out.length ? out : [...this.timeOptions];
-      return this.finalizeBookableSlots(raw);
-    } catch {
-      return this.finalizeBookableSlots([...this.timeOptions]);
-    }
+  private addIsoDays(iso: string, delta: number): string {
+    const [y, m, d] = iso.split('-').map(Number);
+    const dt = new Date(y, m - 1, d + delta);
+    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
   }
 
-  private hhmmToMinutes(s: string): number {
-    const [h, m] = s.split(':').map((x) => parseInt(x, 10));
-    return (h || 0) * 60 + (m || 0);
+  loadBookWeekSlots(weekAnchor?: string | null): void {
+    const tid = this.tenantId();
+    if (!tid) return;
+    this.weekSlotsLoading.set(true);
+    this.api.getReservationBookWeekSlots(tid, this.formPartySize, weekAnchor ?? undefined).subscribe({
+      next: (res) => {
+        this.bookWeekSlots.set(res);
+        this.weekSlotsLoading.set(false);
+        this.ensureSelectionFitsGrid();
+      },
+      error: () => {
+        this.bookWeekSlots.set(null);
+        this.weekSlotsLoading.set(false);
+      },
+    });
+  }
+
+  slotState(dateStr: string, timeStr: string): string {
+    const w = this.bookWeekSlots();
+    if (!w || !timeStr) return 'out_of_hours';
+    const day = w.days.find((d) => d.date === dateStr);
+    if (!day) return 'out_of_hours';
+    return day.cells[timeStr] ?? 'out_of_hours';
+  }
+
+  weekSlotButtonClass(dateStr: string, timeStr: string): Record<string, boolean> {
+    const st = this.slotState(dateStr, timeStr);
+    const selected = dateStr === this.formDate && timeStr === this.formTime;
+    return {
+      'ws-available': st === 'available',
+      'ws-full': st === 'full',
+      'ws-muted':
+        st === 'past' ||
+        st === 'closed_day' ||
+        st === 'out_of_hours' ||
+        st === 'out_of_range',
+      'ws-selected': selected && st === 'available',
+    };
+  }
+
+  weekSlotSelectable(dateStr: string, timeStr: string): boolean {
+    return this.slotState(dateStr, timeStr) === 'available';
+  }
+
+  selectWeekSlot(dateStr: string, timeStr: string): void {
+    if (!this.weekSlotSelectable(dateStr, timeStr)) return;
+    this.formDate = dateStr;
+    this.formTime = timeStr;
+  }
+
+  /** Accessible name for a week grid cell (day, time, availability). */
+  slotAriaLabel(dateStr: string, timeStr: string): string {
+    const st = this.slotState(dateStr, timeStr);
+    const keyMap: Record<string, string> = {
+      available: 'BOOK.SLOT_STATE_AVAILABLE',
+      full: 'BOOK.SLOT_STATE_FULL',
+      past: 'BOOK.SLOT_STATE_PAST',
+      closed_day: 'BOOK.SLOT_STATE_CLOSED_DAY',
+      out_of_hours: 'BOOK.SLOT_STATE_OUT_OF_HOURS',
+      out_of_range: 'BOOK.SLOT_STATE_OUT_OF_RANGE',
+    };
+    const msg = this.translate.instant(keyMap[st] || 'BOOK.SLOT_STATE_OUT_OF_HOURS');
+    return `${this.weekDayColumnHeader(dateStr)} ${timeStr}. ${msg}`;
+  }
+
+  weekRangeTitle(): string {
+    const w = this.bookWeekSlots();
+    if (!w?.days.length) return '';
+    const first = w.days[0].date;
+    const last = w.days[w.days.length - 1].date;
+    const locale = this.translate.currentLang || this.translate.defaultLang || 'en';
+    const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
+    const a = new Date(first + 'T12:00:00');
+    const b = new Date(last + 'T12:00:00');
+    return `${a.toLocaleDateString(locale, opts)} – ${b.toLocaleDateString(locale, { ...opts, year: 'numeric' })}`;
+  }
+
+  weekDayColumnHeader(dateStr: string): string {
+    const locale = this.translate.currentLang || this.translate.defaultLang || 'en';
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    const wd = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(dt);
+    return `${wd} ${d}`;
+  }
+
+  weekTimes(): string[] {
+    return this.bookWeekSlots()?.times ?? [];
+  }
+
+  weekDays(): { date: string }[] {
+    return this.bookWeekSlots()?.days ?? [];
+  }
+
+  canWeekPrev(): boolean {
+    const w = this.bookWeekSlots();
+    if (!w) return false;
+    return w.week_start > w.earliest_week_monday;
+  }
+
+  canWeekNext(): boolean {
+    const w = this.bookWeekSlots();
+    if (!w) return false;
+    const next = this.addIsoDays(w.week_start, 7);
+    return next <= this.maxBookDateStr();
+  }
+
+  weekPrev(): void {
+    const w = this.bookWeekSlots();
+    if (!w || !this.canWeekPrev()) return;
+    this.loadBookWeekSlots(this.addIsoDays(w.week_start, -7));
+  }
+
+  weekNext(): void {
+    const w = this.bookWeekSlots();
+    if (!w || !this.canWeekNext()) return;
+    this.loadBookWeekSlots(this.addIsoDays(w.week_start, 7));
+  }
+
+  private ensureSelectionFitsGrid(): void {
+    const w = this.bookWeekSlots();
+    if (!w) return;
+    if (this.slotState(this.formDate, this.formTime) === 'available') return;
+    for (const day of w.days) {
+      for (const t of w.times) {
+        if (day.cells[t] === 'available') {
+          this.formDate = day.date;
+          this.formTime = t;
+          return;
+        }
+      }
+    }
+    const tid = this.tenantId();
+    if (!tid) return;
+    this.api.getNextAvailableReservation(tid, this.tenantTodayDate(), this.formPartySize).subscribe({
+      next: (res) => {
+        this.formDate = res.date;
+        this.formTime = this.roundTimeToQuarter(res.time);
+        this.loadBookWeekSlots(res.date);
+      },
+      error: () => {},
+    });
   }
 
   /** Today YYYY-MM-DD in tenant IANA timezone (or browser TZ as fallback). */
@@ -205,62 +262,12 @@ export class BookComponent implements OnInit {
     return `${String(nh).padStart(2, '0')}:${String(nm).padStart(2, '0')}`;
   }
 
-  /** Today YYYY-MM-DD in the browser’s local calendar (before tenant TZ is known). */
-  private localCalendarTodayYyyyMmDd(): string {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  }
-
-  /**
-   * Earliest allowed quarter-hour today (now + 10 min, ceiling), in tenant TZ.
-   * Matches public API min lead; used to filter the time dropdown for “today”.
-   */
-  minSlotHHmmForSelectedDate(): string | null {
-    if (!this.formDate || this.formDate !== this.tenantTodayDate()) return null;
-    const tz =
-      this.tenant()?.timezone?.trim() || Intl.DateTimeFormat().resolvedOptions().timeZone;
-    return this.earliestQuarterHHmmAfterLeadMinutes(10, tz);
-  }
-
-  /**
-   * Set initial time from opening-hour slots (first slot ≥ min lead when date is today).
-   * Used before next-available returns so the picker does not flash a static default.
-   */
-  private seedPublicBookInitialTime(): void {
-    const opts = this.bookableTimeOptions();
-    if (opts.length) {
-      this.formTime = opts[0];
-      return;
-    }
-    const tz =
-      this.tenant()?.timezone?.trim() || Intl.DateTimeFormat().resolvedOptions().timeZone;
-    this.formTime = this.earliestQuarterHHmmAfterLeadMinutes(10, tz);
-  }
-
-  private finalizeBookableSlots(slots: string[]): string[] {
-    const minS = this.minSlotHHmmForSelectedDate();
-    if (!minS) return slots;
-    const minM = this.hhmmToMinutes(minS);
-    return slots.filter((x) => this.hhmmToMinutes(x) >= minM);
-  }
-
-  /** If current formTime is not in allowed slots, pick the first allowed (or keep next-available suggestion). */
-  private syncFormTimeToAllowed(): void {
-    const opts = this.bookableTimeOptions();
-    if (opts.length && !opts.includes(this.formTime)) {
-      this.formTime = opts[0];
-    }
-  }
-
   googleMapsUrl = computed(() => this.tenant()?.public_google_maps_url?.trim() || null);
 
   constructor() {
     const id = this.route.snapshot.paramMap.get('tenantId');
     const n = id ? parseInt(id, 10) : 0;
     if (n) this.tenantId.set(n);
-    const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    this.formDate = this.localCalendarTodayYyyyMmDd();
-    this.formTime = this.earliestQuarterHHmmAfterLeadMinutes(10, browserTz);
   }
 
   ngOnInit(): void {
@@ -276,12 +283,8 @@ export class BookComponent implements OnInit {
         this.logoUrl.set(url);
         this.loading.set(false);
         this.formDate = this.tenantTodayDate();
-        const [y, m] = this.formDate.split('-').map(Number);
-        this.calendarViewYear.set(y);
-        this.calendarViewMonth.set(m);
-        this.loadBookCalendarForView();
-        this.seedPublicBookInitialTime();
-        this.onDateChange(this.formDate);
+        this.formTime = '';
+        this.loadBookWeekSlots();
       },
       error: () => {
         this.loading.set(false);
@@ -289,131 +292,14 @@ export class BookComponent implements OnInit {
     });
   }
 
-  loadBookCalendarForView(): void {
-    const tid = this.tenantId();
-    const y = this.calendarViewYear();
-    const mo = this.calendarViewMonth();
-    if (!tid || y < 2000) return;
-    this.api.getReservationBookCalendar(tid, y, mo).subscribe({
-      next: (res) => {
-        const map = new Map<string, 'open' | 'closed'>();
-        for (const d of res.days) {
-          map.set(d.date, d.state);
-        }
-        this.bookCalendarDays.set(map);
-      },
-      error: () => this.bookCalendarDays.set(new Map()),
-    });
-  }
-
-  calendarWeekdayLabels(): string[] {
-    const locale = this.translate.currentLang || this.translate.defaultLang || 'en';
-    const fmt = new Intl.DateTimeFormat(locale, { weekday: 'short' });
-    const monday = new Date(2024, 0, 8);
-    return Array.from({ length: 7 }, (_, i) =>
-      fmt.format(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i))
-    );
-  }
-
-  calendarTitle(): string {
-    const y = this.calendarViewYear();
-    const m = this.calendarViewMonth();
-    const locale = this.translate.currentLang || this.translate.defaultLang || 'en';
-    return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(
-      new Date(y, m - 1, 1)
-    );
-  }
-
-  calendarCells(): ({ date: string; day: number } | null)[] {
-    const y = this.calendarViewYear();
-    const m = this.calendarViewMonth();
-    if (y < 2000) return [];
-    const first = new Date(y, m - 1, 1);
-    const startDow = first.getDay();
-    const mondayIndex = (startDow + 6) % 7;
-    const lastDay = new Date(y, m, 0).getDate();
-    const cells: ({ date: string; day: number } | null)[] = [];
-    for (let i = 0; i < mondayIndex; i++) cells.push(null);
-    for (let d = 1; d <= lastDay; d++) {
-      const dateStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      cells.push({ date: dateStr, day: d });
-    }
-    while (cells.length % 7 !== 0) cells.push(null);
-    return cells;
-  }
-
-  calendarPrevMonth(): void {
-    let y = this.calendarViewYear();
-    let mo = this.calendarViewMonth();
-    mo -= 1;
-    if (mo < 1) {
-      mo = 12;
-      y -= 1;
-    }
-    this.calendarViewYear.set(y);
-    this.calendarViewMonth.set(mo);
-    this.loadBookCalendarForView();
-  }
-
-  calendarNextMonth(): void {
-    let y = this.calendarViewYear();
-    let mo = this.calendarViewMonth();
-    mo += 1;
-    if (mo > 12) {
-      mo = 1;
-      y += 1;
-    }
-    this.calendarViewYear.set(y);
-    this.calendarViewMonth.set(mo);
-    this.loadBookCalendarForView();
-  }
-
-  /** True if the month after the current view still has at least one bookable day. */
-  canGoCalendarNext(): boolean {
-    let y = this.calendarViewYear();
-    let mo = this.calendarViewMonth();
-    mo += 1;
-    if (mo > 12) {
-      mo = 1;
-      y += 1;
-    }
-    const firstNext = `${y}-${String(mo).padStart(2, '0')}-01`;
-    return firstNext <= this.maxBookDateStr();
-  }
-
-  isCalendarDaySelectable(dateStr: string): boolean {
-    if (!dateStr) return false;
-    if (dateStr < this.tenantTodayDate()) return false;
-    if (dateStr > this.maxBookDateStr()) return false;
-    const st = this.bookCalendarDays().get(dateStr);
-    if (st === 'closed') return false;
-    return true;
-  }
-
-  selectCalendarDay(dateStr: string): void {
-    if (!this.isCalendarDaySelectable(dateStr)) return;
-    this.formDate = dateStr;
-    this.onDateChange(dateStr);
-  }
-
-  dayCellClasses(dateStr: string): Record<string, boolean> {
-    const closed = this.bookCalendarDays().get(dateStr) === 'closed';
-    const past = dateStr < this.tenantTodayDate();
-    const selected = dateStr === this.formDate;
-    const selectable = this.isCalendarDaySelectable(dateStr);
-    return {
-      'cal-past': past,
-      'cal-closed': closed && !past,
-      'cal-selected': selected,
-      'cal-selectable': selectable && !selected,
-    };
-  }
-
   onPartySizeChange(): void {
     const tid = this.tenantId();
-    if (tid && this.formDate) {
-      this.onDateChange(this.formDate);
-    }
+    if (!tid) return;
+    const anchor =
+      this.formDate ||
+      this.bookWeekSlots()?.week_start ||
+      this.tenantTodayDate();
+    this.loadBookWeekSlots(anchor);
   }
 
   getLogoSafeUrl(url: string | null): SafeResourceUrl | null {
@@ -433,42 +319,6 @@ export class BookComponent implements OnInit {
   getWhatsAppUrl(phone: string): string {
     const digits = (phone || '').replace(/\D/g, '');
     return `https://wa.me/${digits}`;
-  }
-
-  onDateChange(dateStr: string) {
-    if (dateStr?.length >= 10) {
-      const y = parseInt(dateStr.slice(0, 4), 10);
-      const m = parseInt(dateStr.slice(5, 7), 10);
-      if (y >= 2000 && m >= 1 && m <= 12) {
-        if (this.calendarViewYear() !== y || this.calendarViewMonth() !== m) {
-          this.calendarViewYear.set(y);
-          this.calendarViewMonth.set(m);
-          this.loadBookCalendarForView();
-        }
-      }
-    }
-    const tid = this.tenantId();
-    if (!tid || !dateStr) return;
-    this.api.getNextAvailableReservation(tid, dateStr, this.formPartySize).subscribe({
-      next: (res) => {
-        const time = this.roundTimeToQuarter(res.time);
-        this.suggestedTime.set(time);
-        this.formTime = time;
-        // If the next available slot is on a different date (e.g. tomorrow), show that date so the suggested time is not in the past
-        if (res.date) {
-          this.formDate = res.date;
-          const ry = parseInt(res.date.slice(0, 4), 10);
-          const rm = parseInt(res.date.slice(5, 7), 10);
-          if (ry >= 2000 && rm >= 1 && rm <= 12) {
-            this.calendarViewYear.set(ry);
-            this.calendarViewMonth.set(rm);
-            this.loadBookCalendarForView();
-          }
-        }
-        this.syncFormTimeToAllowed();
-      },
-      error: () => this.suggestedTime.set(null),
-    });
   }
 
   /** Round time to nearest 15 minutes (European 24h). */
@@ -559,6 +409,14 @@ export class BookComponent implements OnInit {
     const em = this.formEmail.trim();
     if (em && !contactEmailValid(em)) {
       this.error.set(this.translate.instant('BOOK.INVALID_EMAIL'));
+      return;
+    }
+    if (!this.formDate?.trim() || !this.formTime?.trim()) {
+      this.error.set(this.translate.instant('BOOK.PICK_SLOT'));
+      return;
+    }
+    if (this.slotState(this.formDate, this.formTime) !== 'available') {
+      this.error.set(this.translate.instant('BOOK.SLOT_UNAVAILABLE'));
       return;
     }
     this.submitting.set(true);

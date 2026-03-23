@@ -269,6 +269,27 @@ export interface ReservationBookCalendarResponse {
   days: ReservationBookCalendarDay[];
 }
 
+/** GET /reservations/book-week-slots — Mon–Sun grid of slot states for public booking. */
+export type ReservationBookWeekSlotState =
+  | 'available'
+  | 'full'
+  | 'past'
+  | 'closed_day'
+  | 'out_of_hours'
+  | 'out_of_range';
+
+export interface ReservationBookWeekDay {
+  date: string;
+  cells: Record<string, ReservationBookWeekSlotState>;
+}
+
+export interface ReservationBookWeekSlotsResponse {
+  week_start: string;
+  earliest_week_monday: string;
+  times: string[];
+  days: ReservationBookWeekDay[];
+}
+
 /** One restaurant when several share the same printed table name. */
 export interface PublicTableLookupChoice {
   table_token: string;
@@ -1228,6 +1249,21 @@ export class ApiService {
         year: String(year),
         month: String(month),
       },
+    });
+  }
+
+  getReservationBookWeekSlots(
+    tenantId: number,
+    partySize: number,
+    weekAnchor?: string | null
+  ): Observable<ReservationBookWeekSlotsResponse> {
+    const params: Record<string, string> = {
+      tenant_id: String(tenantId),
+      party_size: String(partySize),
+    };
+    if (weekAnchor?.trim()) params['week_anchor'] = weekAnchor.trim();
+    return this.http.get<ReservationBookWeekSlotsResponse>(`${this.apiUrl}/reservations/book-week-slots`, {
+      params,
     });
   }
 

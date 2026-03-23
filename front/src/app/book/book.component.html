@@ -131,71 +131,88 @@
         }
         <div class="book-card">
           <form (ngSubmit)="submit()" class="book-form">
-            <div class="form-group book-date-block">
-              <label>{{ 'RESERVATIONS.DATE' | translate }}</label>
-              <input
-                type="date"
-                [(ngModel)]="formDate"
-                name="date"
-                required
-                [min]="minBookableDateInput()"
-                [max]="maxBookDateStr()"
-                (ngModelChange)="onDateChange($event)"
-              />
-              <div class="book-calendar" aria-label="{{ 'BOOK.CALENDAR_LABEL' | translate }}">
-                <div class="book-calendar-toolbar">
-                  <button type="button" class="btn-cal-nav" (click)="calendarPrevMonth()" [attr.aria-label]="'BOOK.CAL_PREV_MONTH' | translate">
-                    ‹
-                  </button>
-                  <span class="book-calendar-title">{{ calendarTitle() }}</span>
-                  <button
-                    type="button"
-                    class="btn-cal-nav"
-                    (click)="calendarNextMonth()"
-                    [disabled]="!canGoCalendarNext()"
-                    [attr.aria-label]="'BOOK.CAL_NEXT_MONTH' | translate"
-                  >
-                    ›
-                  </button>
-                </div>
-                <div class="book-calendar-weekdays">
-                  @for (wd of calendarWeekdayLabels(); track wd) {
-                    <span class="cal-wd">{{ wd }}</span>
+            <div class="form-group book-week-block">
+              <span class="book-week-label" id="book-week-heading">{{ 'BOOK.WEEK_GRID_LABEL' | translate }}</span>
+              <p class="book-week-hint">{{ 'BOOK.WEEK_GRID_HINT' | translate }}</p>
+              <div
+                class="book-week-toolbar"
+                role="group"
+                [attr.aria-label]="'BOOK.WEEK_NAV_LABEL' | translate"
+              >
+                <button
+                  type="button"
+                  class="btn-cal-nav"
+                  (click)="weekPrev()"
+                  [disabled]="!canWeekPrev() || weekSlotsLoading()"
+                  [attr.aria-label]="'BOOK.WEEK_PREV' | translate"
+                >
+                  ‹
+                </button>
+                <span class="book-week-title" aria-live="polite">{{ weekRangeTitle() }}</span>
+                <button
+                  type="button"
+                  class="btn-cal-nav"
+                  (click)="weekNext()"
+                  [disabled]="!canWeekNext() || weekSlotsLoading()"
+                  [attr.aria-label]="'BOOK.WEEK_NEXT' | translate"
+                >
+                  ›
+                </button>
+              </div>
+              @if (weekSlotsLoading()) {
+                <p class="book-week-loading">{{ 'BOOK.WEEK_LOADING' | translate }}</p>
+              }
+              <div
+                class="book-week-scroll"
+                role="region"
+                [attr.aria-labelledby]="'book-week-heading'"
+                tabindex="0"
+              >
+                <div
+                  class="book-week-grid"
+                  role="grid"
+                  [attr.aria-rowcount]="weekTimes().length + 1"
+                  [attr.aria-colcount]="weekDays().length + 1"
+                >
+                  <div class="week-corner" role="presentation"></div>
+                  @for (col of weekDays(); track col.date) {
+                    <div class="week-col-head" role="columnheader">
+                      {{ weekDayColumnHeader(col.date) }}
+                    </div>
                   }
-                </div>
-                <div class="book-calendar-grid">
-                  @for (cell of calendarCells(); track $index) {
-                    @if (cell === null) {
-                      <span class="cal-cell cal-empty"></span>
-                    } @else {
+                  @for (timeStr of weekTimes(); track timeStr; let ri = $index) {
+                    <div class="week-row-label" role="rowheader" [attr.aria-rowindex]="ri + 2">{{ timeStr }}</div>
+                    @for (col of weekDays(); track col.date; let ci = $index) {
                       <button
                         type="button"
-                        class="cal-cell cal-day-btn"
-                        [ngClass]="dayCellClasses(cell.date)"
-                        [disabled]="!isCalendarDaySelectable(cell.date)"
-                        (click)="selectCalendarDay(cell.date)"
-                      >
-                        {{ cell.day }}
-                      </button>
+                        class="week-slot"
+                        role="gridcell"
+                        [attr.aria-rowindex]="ri + 2"
+                        [attr.aria-colindex]="ci + 2"
+                        [attr.aria-label]="slotAriaLabel(col.date, timeStr)"
+                        [ngClass]="weekSlotButtonClass(col.date, timeStr)"
+                        [disabled]="!weekSlotSelectable(col.date, timeStr) || weekSlotsLoading()"
+                        (click)="selectWeekSlot(col.date, timeStr)"
+                      ></button>
                     }
                   }
                 </div>
-                <div class="book-calendar-legend">
-                  <span class="leg-item"><span class="leg-swatch leg-open"></span>{{ 'BOOK.CAL_AVAILABLE' | translate }}</span>
-                  <span class="leg-item"><span class="leg-swatch leg-closed"></span>{{ 'BOOK.CAL_CLOSED' | translate }}</span>
-                  <span class="leg-item"><span class="leg-swatch leg-selected"></span>{{ 'BOOK.CAL_SELECTED' | translate }}</span>
-                </div>
               </div>
-            </div>
-            <div class="form-group">
-              <label>{{ 'RESERVATIONS.TIME' | translate }}</label>
-              <select [(ngModel)]="formTime" name="time" required>
-                @for (t of bookableTimeOptions(); track t) {
-                  <option [value]="t">{{ t }}</option>
-                }
-              </select>
-              @if (suggestedTime()) {
-                <small class="suggested-time" (click)="formTime = suggestedTime()!">{{ 'RESERVATIONS.SUGGESTED_TIME' | translate }}: {{ suggestedTime() }}</small>
+              <div class="book-week-legend" aria-hidden="true">
+                <span class="leg-item"><span class="leg-swatch leg-free"></span>{{ 'BOOK.SLOT_FREE' | translate }}</span>
+                <span class="leg-item"><span class="leg-swatch leg-full"></span>{{ 'BOOK.SLOT_FULL' | translate }}</span>
+                <span class="leg-item"><span class="leg-swatch leg-muted"></span>{{ 'BOOK.SLOT_OTHER' | translate }}</span>
+              </div>
+              <p class="visually-hidden">
+                <label for="book-hidden-date">{{ 'RESERVATIONS.DATE' | translate }}</label>
+                <input id="book-hidden-date" type="text" [(ngModel)]="formDate" name="date" readonly tabindex="-1" />
+                <label for="book-hidden-time">{{ 'RESERVATIONS.TIME' | translate }}</label>
+                <input id="book-hidden-time" type="text" [(ngModel)]="formTime" name="time" readonly tabindex="-1" />
+              </p>
+              @if (formDate && formTime) {
+                <p class="book-selected-summary" aria-live="polite">
+                  {{ 'BOOK.SELECTED_SLOT' | translate }}: {{ formDate }} {{ formTime }}
+                </p>
               }
             </div>
             <div class="form-group">

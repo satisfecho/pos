@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **GitHub #64 — Public `/book` week grid:** Replaced the separate **date + month mini-calendar + time dropdown** with a **Monday–Sunday column view**: each column is a day, rows are **15-minute slots**; **green** = free for the chosen party size, **red** = full/booked, **grey** = closed, past, or outside hours. New public API **`GET /reservations/book-week-slots`** (`tenant_id`, `party_size`, optional `week_anchor`). i18n: **`BOOK.WEEK_*`**, **`BOOK.SLOT_*`**. Test: **`back/tests/test_book_week_slots_public.py`**. **`front/scripts/debug-reservations-public.mjs`** updated to choose the first green week slot + party size.
+
 ### Fixed
 
 - **PostgreSQL `User.role`:** SQLAlchemy now binds the **`user_role`** enum type name (matching migrations), fixing inserts that failed with **`expression is of type userrole`**. Regression test: **`back/tests/test_user_role_pg_enum.py`**.

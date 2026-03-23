@@ -5968,6 +5968,115 @@ def get_reservation_book_calendar(
     return {"year": year, "month": month, "days": days}
 
 
+def _monday_on_or_before(d: date) -> date:
+    """ISO weekday: Monday=0 … Sunday=6."""
+    return d - timedelta(days=d.weekday())
+
+
+@app.get("/reservations/book-week-slots")
+def get_reservation_book_week_slots(
+    tenant_id: int = Query(...),
+    week_anchor: str | None = Query(
+        None,
+        alias="week_anchor",
+        description="Any date YYYY-MM-DD in the target week; Mon–Sun grid (tenant calendar). Omit = week containing today",
+    ),
+    party_size: int = Query(2, ge=1, le=100),
+    session: Session = Depends(get_session),
+) -> dict:
+    """Public: per-slot availability for a Mon–Sun grid (party size and capacity)."""
+    tenant = session.get(models.Tenant, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    tz = ZoneInfo(tenant.timezone) if tenant.timezone else timezone.utc
+    now_local = datetime.now(tz)
+    today_local = now_local.date()
+    min_dt = now_local + timedelta(minutes=RESERVATION_PUBLIC_MIN_LEAD_MINUTES)
+    max_book = today_local + timedelta(days=366)
+
+    if week_anchor and str(week_anchor).strip():
+        try:
+            anchor_day = _parse_reservation_date(str(week_anchor).strip())
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+    else:
+        anchor_day = today_local
+
+    anchor_monday = _monday_on_or_before(anchor_day)
+
+    all_slot_times: set[time] = set()
+    for i in range(7):
+        d = anchor_monday + timedelta(days=i)
+        windows = _opening_service_windows_for_date(tenant, d)
+        if windows is None:
+            windows = [(time(8, 0), time(23, 0))]
+        if len(windows) == 0:
+            continue
+        for st in _quarter_slot_times_for_windows(windows):
+            all_slot_times.add(st)
+
+    times_sorted = sorted(all_slot_times, key=lambda x: x.hour * 60 + x.minute)
+    time_strings = [t.strftime("%H:%M") for t in times_sorted]
+
+    days_out: list[dict] = []
+    for i in range(7):
+        d = anchor_monday + timedelta(days=i)
+        cells: dict[str, str] = {}
+        windows = _opening_service_windows_for_date(tenant, d)
+        if windows is None:
+            windows = [(time(8, 0), time(23, 0))]
+        day_closed = len(windows) == 0
+        allowed_times = set()
+        if not day_closed:
+            allowed_times = set(_quarter_slot_times_for_windows(windows))
+
+        for st in times_sorted:
+            key = st.strftime("%H:%M")
+            if d > max_book:
+                cells[key] = "out_of_range"
+                continue
+            if day_closed:
+                cells[key] = "closed_day"
+                continue
+            if st not in allowed_times:
+                cells[key] = "out_of_hours"
+                continue
+            if d < today_local:
+                cells[key] = "past"
+                continue
+            slot_dt = datetime.combine(d, st, tzinfo=tz)
+            if slot_dt < min_dt:
+                cells[key] = "past"
+                continue
+
+            total_seats, total_tables = _reservable_capacity_for_tenant(
+                session, tenant_id, d, tenant, st
+            )
+            if total_tables < 1 or total_seats < party_size:
+                cells[key] = "full"
+                continue
+
+            reserved_guests, reserved_parties = _demand_for_slot(
+                session, tenant_id, d, st, exclude_reservation_id=None
+            )
+            if reserved_guests + party_size <= total_seats and reserved_parties + 1 <= total_tables:
+                cells[key] = "available"
+            else:
+                cells[key] = "full"
+
+        days_out.append({"date": d.isoformat(), "cells": cells})
+
+    earliest_week_monday = _monday_on_or_before(today_local)
+
+    return {
+        "week_start": anchor_monday.isoformat(),
+        "earliest_week_monday": earliest_week_monday.isoformat(),
+        "times": time_strings,
+        "days": days_out,
+    }
+
+
 @app.get("/reservations/next-available")
 def get_next_available_reservation_time(
     tenant_id: int = Query(...),
