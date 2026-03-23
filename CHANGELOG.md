@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- **Agent workflow:** Append 001-log-reviewer GitHub sweep / Docker log pass entry (2026-03-23).
+- **Agents:** 001-log-reviewer `time-of-last-review.txt` — GitHub/issue sweep and Docker log pass lines updated (2026-03-23).
 
 ## [2.0.51] - 2026-03-23
 
