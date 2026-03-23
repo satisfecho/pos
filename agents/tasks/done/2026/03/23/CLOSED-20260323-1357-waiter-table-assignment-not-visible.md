@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Waiters saw empty assignment controls on Tables because the UI built waiter options from `getWaiters()` / `GET /users`, which requires `user:read` that waiters lack, even though table APIs already exposed assignment fields.
+- **What was done:** Roles with `table:write` keep per-table and floor assignment dropdowns; others see read-only labels from table/floor payloads (`assigned_waiter_*`, `effective_waiter_*`, `default_waiter_name`); `getWaiters()` runs only when `table:write` is present.
+- **What was tested:** Owner/admin table view controls, waiter read-only assigned names and unassigned labels, API checks, `test:landing-version` and `test:tables-page` — all required items passed (receptionist optional skipped).
+- **Why closed:** Tester reported overall **PASS**; no failed required criteria.
+- **Closed at (UTC):** 2026-03-23 15:00
+---
+
 # Waiter cannot see table assignment (owner-assigned tables)
 
 ## GitHub
