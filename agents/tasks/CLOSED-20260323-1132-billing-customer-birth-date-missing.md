@@ -1,4 +1,4 @@
-# UNTESTED-20260323-1132-billing-customer-birth-date-missing
+# CLOSED-20260323-1132-billing-customer-birth-date-missing
 
 ## Summary
 
@@ -55,3 +55,62 @@ No open issue was found that explicitly tracks this incident. Optional: open a b
 
 - **Pass:** Migrate applies `20260323160000` once on affected DBs; `\d billing_customer` shows `birth_date`; orders/billing-customer endpoints no longer raise `billing_customer.birth_date does not exist`.
 - **Fail:** Column still missing after migrate, or 500s with `UndefinedColumn` for `birth_date` persist.
+
+---
+
+## Test report
+
+### Date/time (UTC) and log window
+
+- **Started:** 2026-03-23 11:36 UTC  
+- **Log window reviewed:** `pos-back` last ~10 minutes + tail ~30 lines after API calls (same UTC window).
+
+### Environment
+
+- **Compose:** `docker-compose.yml` + `docker-compose.dev.yml`  
+- **BASE_URL:** `http://127.0.0.1:4202` (HAProxy → back)  
+- **Branch / commit:** `development` @ `0b20a45`
+
+### What was tested
+
+- Per **Testing instructions**: migrate path, `\d billing_customer`, authenticated **`GET /api/orders`** and **`GET /api/billing-customers`**, back logs for `ProgrammingError` / `birth_date`.
+
+### Results
+
+| Criterion | Result | Evidence |
+|-----------|--------|----------|
+| `python -m app.migrate` applies repair / DB at expected version | **PASS** | `Database is up to date (version 20260323160000)`; `20260323160000_billing_customer_birth_date_repair.sql` status **applied** |
+| `billing_customer.birth_date` exists, type `DATE`, nullable | **PASS** | `psql \d billing_customer` shows `birth_date \| date \| \| \|` (nullable) |
+| **`GET /api/orders`** returns 200, no `UndefinedColumn` on `birth_date` | **PASS** | HTTP 200; JSON includes nested `billing_customer` with `"birth_date":null` where applicable |
+| **`GET /api/billing-customers`** returns 200, no `UndefinedColumn` | **PASS** | HTTP 200; list entries include `birth_date` field |
+| Back logs free of `ProgrammingError` / `birth_date` missing in reviewed window | **PASS** | `docker compose logs --since=10m back` piped through `grep -iE` on `birth_date`, `ProgrammingError`, `UndefinedColumn` → no matches |
+
+### Overall
+
+**PASS** — All pass/fail criteria met.
+
+### Product owner feedback
+
+The repair migration brings long-lived dev databases in line with the ORM so staff can open orders and billing customers without 500 errors. The column is present and nullable; existing rows show `birth_date` as null until edited in the product.
+
+### URLs tested
+
+1. `http://127.0.0.1:4202/api/token?tenant_id=1` (POST, form login)  
+2. `http://127.0.0.1:4202/api/orders` (GET)  
+3. `http://127.0.0.1:4202/api/billing-customers` (GET)
+
+### Relevant log excerpts
+
+`pos-back` (uvicorn access, via `docker compose … logs --tail=30 back`):
+
+```text
+pos-back  | INFO:     172.30.0.3:36012 - "POST /token?tenant_id=1 HTTP/1.1" 200 OK
+pos-back  | INFO:     172.30.0.3:36026 - "GET /orders HTTP/1.1" 200 OK
+pos-back  | INFO:     172.30.0.3:36040 - "GET /billing-customers HTTP/1.1" 200 OK
+```
+
+`app.migrate` (excerpt):
+
+```text
+INFO: Database is up to date (version 20260323160000)
+```
