@@ -543,6 +543,13 @@ export interface PublicReservationUpdate {
   customer_notes?: string | null;
 }
 
+/** Structured pizza-style modifiers (remove / add / substitute); optional with product questions */
+export interface OrderLineModifiers {
+  remove?: string[];
+  add?: string[];
+  substitute?: { from: string; to: string }[];
+}
+
 export interface OrderItem {
   id?: number;
   product_name: string;
@@ -554,6 +561,9 @@ export interface OrderItem {
   customization_answers?: Record<string, string | number | string[]> | null;
   /** Snapshot "Label: value · …" at order time */
   customization_summary?: string | null;
+  line_modifiers?: OrderLineModifiers | null;
+  /** Human-readable remove/add/sub snapshot for kitchen and invoices */
+  line_modifiers_summary?: string | null;
   status?: string;  // pending, preparing, ready, delivered, cancelled
   removed_by_customer?: boolean;
   removed_at?: string;
@@ -711,6 +721,7 @@ export interface OrderItemCreate {
   source?: string; // "tenant_product" or "product" to distinguish between TenantProduct and legacy Product
   /** Answers: string | number | string[] (multi choice) per question id */
   customization_answers?: Record<string, string | number | string[]>;
+  line_modifiers?: OrderLineModifiers;
 }
 
 export interface OrderCreate {
@@ -1459,6 +1470,19 @@ export class ApiService {
 
   updateOrderItemQuantityStaff(orderId: number, itemId: number, quantity: number): Observable<any> {
     return this.http.put(`${this.apiUrl}/orders/${orderId}/items/${itemId}`, { quantity });
+  }
+
+  /** Staff: quantity, notes, and/or line_modifiers (omit fields you do not change). */
+  updateOrderItemStaff(
+    orderId: number,
+    itemId: number,
+    body: {
+      quantity?: number;
+      notes?: string | null;
+      line_modifiers?: OrderLineModifiers | Record<string, unknown> | null;
+    },
+  ): Observable<any> {
+    return this.http.put(`${this.apiUrl}/orders/${orderId}/items/${itemId}`, body);
   }
 
   removeOrderItemStaff(orderId: number, itemId: number, reason?: string): Observable<any> {

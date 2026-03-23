@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **GitHub #50 — Order line modifiers (pizza-style):** Optional structured **`line_modifiers`** on each order line — **`remove`**, **`add`**, **`substitute`** (from/to pairs) — stored as JSON with a **`line_modifiers_summary`** snapshot for kitchen tickets and printed invoices. Public menu **`POST /menu/{token}/order`** and staff **`PUT /orders/{id}/items/{itemId}`** accept the payload; merging duplicate lines requires the same customization **and** the same line modifiers. Migration **`20260323170000_order_item_line_modifiers.sql`**. Staff **Orders → Edit order**: add-item section + per-line **Modifiers** editor. Kitchen display shows modifiers next to product questions. Tests: **`back/tests/test_line_modifiers.py`**.
+
 - **GitHub #64 — Public `/book` week grid:** Replaced the separate **date + month mini-calendar + time dropdown** with a **Monday–Sunday column view**: each column is a day, rows are **15-minute slots**; **green** = free for the chosen party size, **red** = full/booked, **grey** = closed, past, or outside hours. New public API **`GET /reservations/book-week-slots`** (`tenant_id`, `party_size`, optional `week_anchor`). i18n: **`BOOK.WEEK_*`**, **`BOOK.SLOT_*`**. Test: **`back/tests/test_book_week_slots_public.py`**. **`front/scripts/debug-reservations-public.mjs`** updated to choose the first green week slot + party size.
 
 ### Fixed

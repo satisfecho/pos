@@ -605,6 +605,9 @@ class OrderItem(SQLModel, table=True):
     customization_answers: dict | None = Field(default=None, sa_column=Column(JSONB, nullable=True))
     # Human-readable snapshot at order time: "Q1: A · Q2: B, C" (kitchen / invoices)
     customization_summary: str | None = Field(default=None, max_length=1024)
+    # Pizza-style modifiers: {"remove": [...], "add": [...], "substitute": [{"from","to"}, ...]}
+    line_modifiers: dict | None = Field(default=None, sa_column=Column(JSONB, nullable=True))
+    line_modifiers_summary: str | None = Field(default=None, max_length=1024)
     # Tax snapshot at order time for invoice breakdown
     tax_id: int | None = Field(default=None, foreign_key="tax.id", index=True)
     tax_rate_percent: int | None = None  # e.g. 10, 21, 0
@@ -803,6 +806,8 @@ class OrderItemCreate(SQLModel):
     source: str | None = None  # "tenant_product" or "product" to distinguish between TenantProduct and legacy Product
     # Values: str | int | list[str] (multi-select choice), etc.
     customization_answers: dict[str, Any] | None = None  # {"question_id": value}
+    # Structured remove/add/substitute (validated in API); optional extra on top of product questions
+    line_modifiers: dict[str, Any] | None = None
 
 
 class OrderCreate(SQLModel):
@@ -875,6 +880,7 @@ class BillingCustomerUpdate(SQLModel):
 class OrderItemStaffUpdate(SQLModel):
     quantity: int | None = None
     notes: str | None = None
+    line_modifiers: dict[str, Any] | None = None
 
 
 class TenantUpdate(SQLModel):

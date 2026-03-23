@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ApiService, Order, OrderItem } from '../services/api.service';
+import { ApiService, Order, OrderItem, OrderLineModifiers } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
 import { PermissionService } from '../services/permission.service';
 import { Subscription } from 'rxjs';
@@ -821,20 +821,48 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
   hasCustomization(item: OrderItem): boolean {
     if (item?.customization_summary?.trim()) return true;
     const a = item?.customization_answers;
-    return !!a && typeof a === 'object' && Object.keys(a).length > 0;
+    if (!!a && typeof a === 'object' && Object.keys(a).length > 0) return true;
+    if (item?.line_modifiers_summary?.trim()) return true;
+    const m = item?.line_modifiers;
+    if (!m || typeof m !== 'object') return false;
+    return (
+      (!!m.remove && m.remove.length > 0) ||
+      (!!m.add && m.add.length > 0) ||
+      (!!m.substitute && m.substitute.length > 0)
+    );
+  }
+
+  private formatLineModifiersFromJson(m: OrderLineModifiers | null | undefined): string {
+    if (!m) return '';
+    const parts: string[] = [];
+    if (m.remove?.length) parts.push(`Remove: ${m.remove.join(', ')}`);
+    if (m.add?.length) parts.push(`Add: ${m.add.join(', ')}`);
+    if (m.substitute?.length) {
+      parts.push(`Sub: ${m.substitute.map(s => `${s.from}→${s.to}`).join(', ')}`);
+    }
+    return parts.join(' · ');
   }
 
   formatCustomizationItem(item: OrderItem): string {
-    const snap = item.customization_summary?.trim();
-    if (snap) return snap;
-    const answers = item.customization_answers;
-    if (!answers || Object.keys(answers).length === 0) return '';
-    const parts: string[] = [];
-    for (const v of Object.values(answers)) {
-      if (Array.isArray(v)) parts.push(v.join(', '));
-      else parts.push(String(v));
+    const snapQ = item.customization_summary?.trim();
+    let c = '';
+    if (snapQ) {
+      c = snapQ;
+    } else {
+      const answers = item.customization_answers;
+      if (answers && Object.keys(answers).length > 0) {
+        const parts: string[] = [];
+        for (const v of Object.values(answers)) {
+          if (Array.isArray(v)) parts.push(v.join(', '));
+          else parts.push(String(v));
+        }
+        c = parts.join(' · ');
+      }
     }
-    return parts.join(' · ');
+    const snapM = item.line_modifiers_summary?.trim();
+    const m = snapM || this.formatLineModifiersFromJson(item.line_modifiers ?? undefined);
+    if (c && m) return `${c} · ${m}`;
+    return c || m || '';
   }
 
   /** Items sorted by status; show pending, preparing, and ready (hide delivered/cancelled so paid orders stay until delivered). */

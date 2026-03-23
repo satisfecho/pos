@@ -52,6 +52,10 @@ from .tenant_currency import (
     normalize_tenant_currency_fields,
     sync_tenant_currency_symbol_from_code,
 )
+from .line_modifiers import (
+    line_modifiers_equal,
+    validate_and_normalize_line_modifiers,
+)
 from .product_customization import (
     choice_options_is_multi,
     customization_dicts_equal,
@@ -7434,6 +7438,8 @@ def get_current_order(
                     "notes": item.notes,
                     "customization_answers": getattr(item, "customization_answers", None) or None,
                     "customization_summary": getattr(item, "customization_summary", None) or None,
+                    "line_modifiers": getattr(item, "line_modifiers", None) or None,
+                    "line_modifiers_summary": getattr(item, "line_modifiers_summary", None) or None,
                     "status": item.status.value if hasattr(item.status, "value") else str(item.status),
                     "tax_rate_percent": getattr(item, "tax_rate_percent", None),
                     "tax_amount_cents": getattr(item, "tax_amount_cents", None),
@@ -7496,6 +7502,8 @@ def get_table_order_history(
                     "price_cents": item.price_cents,
                     "customization_answers": getattr(item, "customization_answers", None) or None,
                     "customization_summary": getattr(item, "customization_summary", None) or None,
+                    "line_modifiers": getattr(item, "line_modifiers", None) or None,
+                    "line_modifiers_summary": getattr(item, "line_modifiers_summary", None) or None,
                 }
                 for item in items
             ],
@@ -7823,6 +7831,8 @@ def create_order(
         item_answers, cust_summary = validate_and_normalize_customization_answers(
             session, table.tenant_id, effective_product_id, raw_answers
         )
+        raw_lm = getattr(item, "line_modifiers", None)
+        norm_modifiers, lm_summary = validate_and_normalize_line_modifiers(raw_lm)
         existing_items = session.exec(
             select(models.OrderItem).where(
                 models.OrderItem.order_id == order.id,
@@ -7834,7 +7844,9 @@ def create_order(
         existing_item = None
         for ei in existing_items:
             ei_answers = ei.customization_answers or {}
-            if customization_dicts_equal(ei_answers, item_answers or {}):
+            if customization_dicts_equal(ei_answers, item_answers or {}) and line_modifiers_equal(
+                getattr(ei, "line_modifiers", None), norm_modifiers
+            ):
                 existing_item = ei
                 break
 
@@ -7864,6 +7876,8 @@ def create_order(
                 notes=item.notes,
                 customization_answers=item_answers if item_answers else None,
                 customization_summary=cust_summary,
+                line_modifiers=norm_modifiers,
+                line_modifiers_summary=lm_summary,
                 status=models.OrderItemStatus.pending,
                 added_by_session=order_data.session_id,
                 location_flagged=location_flagged,
@@ -8280,6 +8294,8 @@ def list_orders(
                     "notes": item.notes,
                     "customization_answers": getattr(item, "customization_answers", None) or None,
                     "customization_summary": getattr(item, "customization_summary", None) or None,
+                    "line_modifiers": getattr(item, "line_modifiers", None) or None,
+                    "line_modifiers_summary": getattr(item, "line_modifiers_summary", None) or None,
                     "status": item.status.value if hasattr(item.status, 'value') else str(item.status),
                     "removed_by_customer": item.removed_by_customer,
                     "removed_at": item.removed_at.isoformat() if item.removed_at else None,
@@ -9100,7 +9116,14 @@ def update_order_item_staff(
         item.notes = item_update.notes
         item.modified_by_user_id = current_user.id
         item.modified_at = datetime.now(timezone.utc)
-    
+
+    if item_update.line_modifiers is not None:
+        norm_lm, lm_summary = validate_and_normalize_line_modifiers(item_update.line_modifiers)
+        item.line_modifiers = norm_lm
+        item.line_modifiers_summary = lm_summary
+        item.modified_by_user_id = current_user.id
+        item.modified_at = datetime.now(timezone.utc)
+
     session.add(item)
     
     # Recompute order status and total

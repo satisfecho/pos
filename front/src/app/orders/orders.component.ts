@@ -2,7 +2,16 @@ import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../environments/environment';
-import { ApiService, Order, OrderItem, TenantSettings, BillingCustomer, TenantProduct, OrderItemCreate } from '../services/api.service';
+import {
+  ApiService,
+  Order,
+  OrderItem,
+  TenantSettings,
+  BillingCustomer,
+  TenantProduct,
+  OrderItemCreate,
+  OrderLineModifiers,
+} from '../services/api.service';
 import { AudioService } from '../services/audio.service';
 import { WaiterAlertService, WaiterAlertItem } from '../services/waiter-alert.service';
 import { PermissionService, Permission } from '../services/permission.service';
@@ -234,8 +243,8 @@ ModuleRegistry.registerModules([
                               }
                             </span>
                             <span class="item-name">{{ item.product_name }}</span>
-                            @if (hasItemCustomization(item)) {
-                              <span class="item-customization">{{ formatCustomizationItem(item) }}</span>
+                            @if (hasItemModifiersLine(item)) {
+                              <span class="item-customization">{{ formatItemModifiersLine(item) }}</span>
                             }
                           </div>
                           <div class="item-details-row">
@@ -501,8 +510,8 @@ ModuleRegistry.registerModules([
                                 }
                               </span>
                               <span class="item-name">{{ item.product_name }}</span>
-                              @if (hasItemCustomization(item)) {
-                                <span class="item-customization">{{ formatCustomizationItem(item) }}</span>
+                              @if (hasItemModifiersLine(item)) {
+                                <span class="item-customization">{{ formatItemModifiersLine(item) }}</span>
                               }
                             </div>
                             <div class="item-details-row">
@@ -672,21 +681,39 @@ ModuleRegistry.registerModules([
                   <div class="edit-order-label">{{ 'ORDERS.ITEMS' | translate }}</div>
                   @for (item of getSortedItems(order.items); track item.id) {
                     @if (!item.removed_by_customer) {
-                      <div class="edit-order-row">
-                        <span class="edit-item-name">{{ item.product_name }}</span>
-                        <input type="number" class="quantity-input" [value]="item.quantity" min="1"
-                          (change)="updateEditItemQuantity(order.id, item.id!, +$any($event.target).value)"
-                        />
-                        <select class="form-select edit-item-status" [ngModel]="item.status"
-                          (ngModelChange)="updateEditItemStatus(order.id, item.id!, $event)"
-                          [name]="'edit-status-' + item.id">
-                          @for (s of ['pending','preparing','ready','delivered','cancelled']; track s) {
-                            <option [value]="s">{{ getItemStatusLabel(s) }}</option>
-                          }
-                        </select>
-                        <button type="button" class="btn btn-sm btn-remove-item" (click)="removeEditItem(order.id, item.id!, item.status ?? 'pending')" [title]="'ORDERS.REMOVE_ITEM' | translate">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        </button>
+                      <div class="edit-order-item-block">
+                        <div class="edit-order-row">
+                          <span class="edit-item-name">{{ item.product_name }}</span>
+                          <input type="number" class="quantity-input" [value]="item.quantity" min="1"
+                            (change)="updateEditItemQuantity(order.id, item.id!, +$any($event.target).value)"
+                          />
+                          <select class="form-select edit-item-status" [ngModel]="item.status"
+                            (ngModelChange)="updateEditItemStatus(order.id, item.id!, $event)"
+                            [name]="'edit-status-' + item.id">
+                            @for (s of ['pending','preparing','ready','delivered','cancelled']; track s) {
+                              <option [value]="s">{{ getItemStatusLabel(s) }}</option>
+                            }
+                          </select>
+                          <button type="button" class="btn btn-sm btn-secondary" (click)="toggleModifierEdit(item)">
+                            {{ modifierEditItemId === item.id ? ('COMMON.CANCEL' | translate) : ('ORDERS.MODIFIERS' | translate) }}
+                          </button>
+                          <button type="button" class="btn btn-sm btn-remove-item" (click)="removeEditItem(order.id, item.id!, item.status ?? 'pending')" [title]="'ORDERS.REMOVE_ITEM' | translate">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                          </button>
+                        </div>
+                        @if (modifierEditItemId === item.id) {
+                          <div class="modifier-edit-fields">
+                            <label class="modifier-label">{{ 'ORDERS.LINE_MODIFIERS_REMOVE' | translate }}</label>
+                            <input type="text" class="form-input" [(ngModel)]="modifierEditRemove" [name]="'mod-rem-' + item.id" [placeholder]="'ORDERS.LINE_MODIFIERS_REMOVE_PLACEHOLDER' | translate" />
+                            <label class="modifier-label">{{ 'ORDERS.LINE_MODIFIERS_ADD' | translate }}</label>
+                            <input type="text" class="form-input" [(ngModel)]="modifierEditAdd" [name]="'mod-add-' + item.id" [placeholder]="'ORDERS.LINE_MODIFIERS_ADD_PLACEHOLDER' | translate" />
+                            <label class="modifier-label">{{ 'ORDERS.LINE_MODIFIERS_SUBSTITUTE' | translate }}</label>
+                            <textarea class="form-input modifier-textarea" rows="2" [(ngModel)]="modifierEditSubstitute" [name]="'mod-sub-' + item.id" [placeholder]="'ORDERS.LINE_MODIFIERS_SUBSTITUTE_PLACEHOLDER' | translate"></textarea>
+                            <button type="button" class="btn btn-primary btn-sm" (click)="saveItemModifiers(order.id, item)" [disabled]="savingItemModifiers()">
+                              {{ savingItemModifiers() ? ('COMMON.LOADING' | translate) : ('ORDERS.SAVE_MODIFIERS' | translate) }}
+                            </button>
+                          </div>
+                        }
                       </div>
                     }
                   }
@@ -706,6 +733,14 @@ ModuleRegistry.registerModules([
                       <button type="button" class="btn btn-primary" (click)="addItemToEditOrder()" [disabled]="!addItemProductId || addItemQuantity < 1 || addingItem()">
                         {{ addingItem() ? ('COMMON.LOADING' | translate) : ('COMMON.ADD' | translate) }}
                       </button>
+                    </div>
+                    <div class="add-modifiers-fields">
+                      <label class="modifier-label">{{ 'ORDERS.LINE_MODIFIERS_REMOVE' | translate }}</label>
+                      <input type="text" class="form-input" [(ngModel)]="addItemModifiersRemove" name="addModRem" [placeholder]="'ORDERS.LINE_MODIFIERS_REMOVE_PLACEHOLDER' | translate" />
+                      <label class="modifier-label">{{ 'ORDERS.LINE_MODIFIERS_ADD' | translate }}</label>
+                      <input type="text" class="form-input" [(ngModel)]="addItemModifiersAdd" name="addModAdd" [placeholder]="'ORDERS.LINE_MODIFIERS_ADD_PLACEHOLDER' | translate" />
+                      <label class="modifier-label">{{ 'ORDERS.LINE_MODIFIERS_SUBSTITUTE' | translate }}</label>
+                      <textarea class="form-input modifier-textarea" rows="2" [(ngModel)]="addItemModifiersSubstitute" name="addModSub" [placeholder]="'ORDERS.LINE_MODIFIERS_SUBSTITUTE_PLACEHOLDER' | translate"></textarea>
                     </div>
                   </div>
                 }
@@ -1577,8 +1612,9 @@ ModuleRegistry.registerModules([
     .edit-order-label { font-size: 0.75rem; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: var(--space-2); }
     .edit-order-row {
       display: flex; align-items: center; gap: var(--space-2);
-      padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border);
+      padding: var(--space-2) 0;
     }
+    .modal-order-edit .edit-order-row { border-bottom: none; }
     .edit-order-row .edit-item-name { flex: 1; min-width: 0; font-size: 0.9375rem; }
     .edit-order-row .quantity-input { width: 56px; }
     .edit-order-row .edit-item-status { width: 120px; }
@@ -1587,6 +1623,15 @@ ModuleRegistry.registerModules([
     .add-items-section .add-items-row { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
     .add-items-section .add-items-row .form-select { flex: 1; min-width: 160px; }
     .add-items-section .add-items-row .quantity-input { width: 56px; }
+    .edit-order-item-block { border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-2); margin-bottom: var(--space-1); }
+    .edit-order-item-block:last-child { border-bottom: none; }
+    .modifier-edit-fields, .add-modifiers-fields {
+      display: flex; flex-direction: column; gap: var(--space-1);
+      margin-top: var(--space-2); padding-left: var(--space-1);
+    }
+    .modifier-label { font-size: 0.6875rem; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-top: var(--space-1); }
+    .modifier-textarea { resize: vertical; min-height: 2.5rem; font-family: inherit; }
+    .add-modifiers-fields { margin-top: var(--space-3); }
 
     .form-group {
       margin-bottom: var(--space-4);
@@ -1611,6 +1656,22 @@ ModuleRegistry.registerModules([
     }
 
     .form-select:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-light);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: var(--space-3);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      font-size: 0.9375rem;
+      background: var(--color-surface);
+      color: var(--color-text);
+      box-sizing: border-box;
+    }
+    .form-input:focus {
       outline: none;
       border-color: var(--color-primary);
       box-shadow: 0 0 0 3px var(--color-primary-light);
@@ -1859,8 +1920,17 @@ export class OrdersComponent implements OnInit, OnDestroy {
   editOrderBillingId: number | null = null;
   addItemProductId: number | null = null;
   addItemQuantity = 1;
+  addItemModifiersRemove = '';
+  addItemModifiersAdd = '';
+  addItemModifiersSubstitute = '';
   addingItem = signal(false);
   staffMenuToken: string | null = null;
+  /** Edit modifiers for a line in the order edit modal (item id). */
+  modifierEditItemId: number | null = null;
+  modifierEditRemove = '';
+  modifierEditAdd = '';
+  modifierEditSubstitute = '';
+  savingItemModifiers = signal(false);
 
   // Toast notification system (replaces native alerts)
   toast = signal<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -2173,16 +2243,26 @@ export class OrdersComponent implements OnInit, OnDestroy {
     const order = this.editOrder();
     if (!order?.table_token || !this.addItemProductId || this.addItemQuantity < 1 || !this.staffMenuToken) return;
     this.addingItem.set(true);
-    const items: OrderItemCreate[] = [{
+    const lm = this.buildLineModifiersFromStrings(
+      this.addItemModifiersRemove,
+      this.addItemModifiersAdd,
+      this.addItemModifiersSubstitute,
+    );
+    const row: OrderItemCreate = {
       product_id: this.addItemProductId,
       quantity: this.addItemQuantity,
-      source: 'tenant_product'
-    }];
+      source: 'tenant_product',
+    };
+    if (lm) row.line_modifiers = lm;
+    const items: OrderItemCreate[] = [row];
     this.api.submitOrder(order.table_token, { items, staff_access: this.staffMenuToken }).subscribe({
       next: () => {
         this.addingItem.set(false);
         this.addItemProductId = null;
         this.addItemQuantity = 1;
+        this.addItemModifiersRemove = '';
+        this.addItemModifiersAdd = '';
+        this.addItemModifiersSubstitute = '';
         this.refreshEditOrder(order.id);
       },
       error: () => {
@@ -2258,10 +2338,130 @@ export class OrdersComponent implements OnInit, OnDestroy {
     return !!a && typeof a === 'object' && Object.keys(a).length > 0;
   }
 
+  hasLineModifiersItem(item: OrderItem): boolean {
+    if (item?.line_modifiers_summary?.trim()) return true;
+    const m = item?.line_modifiers;
+    if (!m || typeof m !== 'object') return false;
+    return (
+      (Array.isArray(m.remove) && m.remove.length > 0) ||
+      (Array.isArray(m.add) && m.add.length > 0) ||
+      (Array.isArray(m.substitute) && m.substitute.length > 0)
+    );
+  }
+
+  hasItemModifiersLine(item: OrderItem): boolean {
+    return this.hasItemCustomization(item) || this.hasLineModifiersItem(item);
+  }
+
   formatCustomizationItem(item: OrderItem): string {
     const snap = item.customization_summary?.trim();
     if (snap) return snap;
     return this.formatCustomizationFromAnswers(item.customization_answers);
+  }
+
+  formatLineModifiersFromJson(m: OrderLineModifiers | null | undefined): string {
+    if (!m) return '';
+    const parts: string[] = [];
+    if (m.remove?.length) parts.push(`Remove: ${m.remove.join(', ')}`);
+    if (m.add?.length) parts.push(`Add: ${m.add.join(', ')}`);
+    if (m.substitute?.length) {
+      parts.push(`Sub: ${m.substitute.map(s => `${s.from}→${s.to}`).join(', ')}`);
+    }
+    return parts.join(' · ');
+  }
+
+  formatItemModifiersLine(item: OrderItem): string {
+    const c = this.formatCustomizationItem(item);
+    const snap = item.line_modifiers_summary?.trim();
+    const m = snap || this.formatLineModifiersFromJson(item.line_modifiers ?? undefined);
+    if (c && m) return `${c} · ${m}`;
+    return c || m || '';
+  }
+
+  private parseCommaSeparatedLabels(s: string): string[] {
+    return s
+      .split(/[,;]/)
+      .map(x => x.trim())
+      .filter(Boolean);
+  }
+
+  private parseSubstituteLines(s: string): { from: string; to: string }[] {
+    const out: { from: string; to: string }[] = [];
+    const lines = s.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    for (const line of lines) {
+      let from = '';
+      let to = '';
+      if (line.includes('→')) {
+        const p = line.split('→');
+        from = (p[0] || '').trim();
+        to = (p.slice(1).join('→') || '').trim();
+      } else if (line.includes('->')) {
+        const p = line.split('->');
+        from = (p[0] || '').trim();
+        to = (p.slice(1).join('->') || '').trim();
+      } else if (line.toLowerCase().includes(' to ')) {
+        const idx = line.toLowerCase().indexOf(' to ');
+        from = line.slice(0, idx).trim();
+        to = line.slice(idx + 4).trim();
+      } else if (line.includes('=')) {
+        const p = line.split('=');
+        from = (p[0] || '').trim();
+        to = (p.slice(1).join('=') || '').trim();
+      }
+      if (from && to) out.push({ from, to });
+    }
+    return out;
+  }
+
+  buildLineModifiersFromStrings(remove: string, add: string, substitute: string): OrderLineModifiers | undefined {
+    const r = this.parseCommaSeparatedLabels(remove);
+    const a = this.parseCommaSeparatedLabels(add);
+    const sub = this.parseSubstituteLines(substitute);
+    if (r.length === 0 && a.length === 0 && sub.length === 0) return undefined;
+    const lm: OrderLineModifiers = {};
+    if (r.length) lm.remove = r;
+    if (a.length) lm.add = a;
+    if (sub.length) lm.substitute = sub;
+    return lm;
+  }
+
+  fillModifierEditFields(item: OrderItem) {
+    const m = item.line_modifiers;
+    this.modifierEditRemove = m?.remove?.join(', ') ?? '';
+    this.modifierEditAdd = m?.add?.join(', ') ?? '';
+    this.modifierEditSubstitute =
+      m?.substitute?.map(p => `${p.from} → ${p.to}`).join('\n') ?? '';
+  }
+
+  toggleModifierEdit(item: OrderItem) {
+    if (this.modifierEditItemId === item.id) {
+      this.modifierEditItemId = null;
+      return;
+    }
+    this.modifierEditItemId = item.id ?? null;
+    this.fillModifierEditFields(item);
+  }
+
+  saveItemModifiers(orderId: number, item: OrderItem) {
+    if (!item.id) return;
+    const lm = this.buildLineModifiersFromStrings(
+      this.modifierEditRemove,
+      this.modifierEditAdd,
+      this.modifierEditSubstitute,
+    );
+    this.savingItemModifiers.set(true);
+    this.api.updateOrderItemStaff(orderId, item.id, { line_modifiers: lm ?? {} }).subscribe({
+      next: () => {
+        this.savingItemModifiers.set(false);
+        this.modifierEditItemId = null;
+        this.refreshEditOrder(orderId);
+        this.showToast(this.translate.instant('ORDERS.ITEM_UPDATED'), 'success');
+      },
+      error: () => {
+        this.savingItemModifiers.set(false);
+        this.showToast(this.translate.instant('ORDERS.FAILED_TO_UPDATE_ITEM'), 'error');
+      },
+    });
   }
 
   formatCustomizationFromAnswers(
@@ -2377,6 +2577,13 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.editOrderBillingId = order.billing_customer_id ?? null;
     this.addItemProductId = null;
     this.addItemQuantity = 1;
+    this.addItemModifiersRemove = '';
+    this.addItemModifiersAdd = '';
+    this.addItemModifiersSubstitute = '';
+    this.modifierEditItemId = null;
+    this.modifierEditRemove = '';
+    this.modifierEditAdd = '';
+    this.modifierEditSubstitute = '';
     this.api.getTenantProducts(true).subscribe({
       next: list => this.editOrderTenantProducts.set(list),
       error: () => this.editOrderTenantProducts.set([])
@@ -2400,6 +2607,10 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.editOrderTenantProducts.set([]);
     this.editOrderBillingCustomers.set([]);
     this.staffMenuToken = null;
+    this.modifierEditItemId = null;
+    this.addItemModifiersRemove = '';
+    this.addItemModifiersAdd = '';
+    this.addItemModifiersSubstitute = '';
   }
 
   openEditOrderModal(order: Order) {
@@ -2492,7 +2703,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     const rows = items.map(i => {
       const lineTotal = (i.price_cents || 0) * (i.quantity || 1);
       const taxCents = i.tax_amount_cents ?? 0;
-      const cust = this.formatCustomizationItem(i);
+      const cust = this.formatItemModifiersLine(i);
       const nameCell = cust
         ? `${this.escapeHtml(i.product_name || '')}<br/><span style="font-size:11px;color:#555;">${this.escapeHtml(cust)}</span>`
         : this.escapeHtml(i.product_name || '');
