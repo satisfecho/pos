@@ -187,6 +187,9 @@ class Tenant(SQLModel, table=True):
         default=None, foreign_key="kitchen_station.id", index=True
     )
 
+    # Staff app: JSONB stores only disabled module keys; see tenant_ui_modules.resolve_tenant_ui_modules
+    ui_modules: dict | None = Field(default=None, sa_column=Column(JSONB, nullable=True))
+
     users: list["User"] = Relationship(back_populates="tenant")
 
 
@@ -994,6 +997,9 @@ class TenantUpdate(SQLModel):
     kitchen_display_timer_yellow_minutes: int | None = None
     kitchen_display_timer_orange_minutes: int | None = None
     kitchen_display_timer_red_minutes: int | None = None
+
+    # Staff UI: show/hide sidebar, dashboard tiles, and routes per module
+    ui_modules: dict[str, bool] | None = None
 
     # POS tips: up to 4 percentages (0–100 each); empty list disables tip buttons
     tip_preset_percents: list | None = None

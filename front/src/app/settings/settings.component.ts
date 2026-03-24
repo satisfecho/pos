@@ -12,6 +12,8 @@ import {
   ProviderProductCreate,
   Tax,
   TenantSettings,
+  DEFAULT_TENANT_UI_MODULES,
+  TenantUiModuleKey,
 } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
@@ -52,6 +54,18 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               <rect x="3" y="14" width="7" height="7"/>
             </svg>
             <span>{{ 'SETTINGS.BUSINESS_PROFILE' | translate }}</span>
+          </button>
+
+          <button
+            type="button"
+            class="tab"
+            data-testid="settings-navigation-tab"
+            [class.active]="activeSection() === 'navigation'"
+            (click)="activeSection.set('navigation')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 6h16M4 12h16M4 18h10"/>
+            </svg>
+            <span>{{ 'SETTINGS.NAVIGATION_UI_TAB' | translate }}</span>
           </button>
           
           <button 
@@ -122,6 +136,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
             </svg>
             <span>{{ 'SETTINGS.TAXES' | translate }}</span>
           </button>
+          @if (settingsModuleTabVisible('kitchen_bar')) {
           <button
             type="button"
             class="tab"
@@ -133,6 +148,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
             </svg>
             <span>{{ 'SETTINGS.KITCHEN_STATIONS_TAB' | translate }}</span>
           </button>
+          }
+          @if (settingsModuleTabVisible('providers')) {
           <button 
             type="button" 
             class="tab" 
@@ -145,6 +162,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
             </svg>
             <span>{{ 'SETTINGS.PROVIDERS' | translate }}</span>
           </button>
+          }
           <button 
             type="button" 
             class="tab" 
@@ -176,6 +194,50 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           <div class="loading-state">
             <div class="spinner"></div>
             <p>{{ 'SETTINGS.LOADING_SETTINGS' | translate }}</p>
+          </div>
+        } @else if (activeSection() === 'navigation') {
+          <div class="section" data-testid="settings-navigation-section">
+            <div class="section-header">
+              <h2>{{ 'SETTINGS.UI_MODULES_TITLE' | translate }}</h2>
+              <p>{{ 'SETTINGS.UI_MODULES_HINT' | translate }}</p>
+            </div>
+            <form (ngSubmit)="saveSettings()" class="settings-form">
+              @for (row of uiModuleRows; track row.key) {
+                <div class="form-group checkbox-row">
+                  <label class="switch">
+                    <input
+                      type="checkbox"
+                      [id]="'ui_mod_' + row.key"
+                      [(ngModel)]="formData.ui_modules![row.key]"
+                      [name]="'ui_mod_' + row.key"
+                    />
+                    <span class="slider round"></span>
+                  </label>
+                  <div>
+                    <label class="check-label" [attr.for]="'ui_mod_' + row.key">{{ row.labelKey | translate }}</label>
+                    <p class="hint">{{ row.descKey | translate }}</p>
+                  </div>
+                </div>
+              }
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary" (click)="cancel()">{{ 'SETTINGS.CANCEL' | translate }}</button>
+                <button type="submit" class="btn btn-primary" [disabled]="saving()">
+                  {{ saving() ? ('SETTINGS.SAVING' | translate) : ('SETTINGS.SAVE_CHANGES' | translate) }}
+                </button>
+              </div>
+              @if (error()) {
+                <div class="toast error">
+                  <span>{{ error() }}</span>
+                  <button type="button" class="toast-close" (click)="error.set(null)" aria-label="Dismiss">×</button>
+                </div>
+              }
+              @if (success()) {
+                <div class="toast success">
+                  <span>{{ success() }}</span>
+                  <button type="button" class="toast-close" (click)="success.set(null)" aria-label="Dismiss">×</button>
+                </div>
+              }
+            </form>
           </div>
         } @else if (activeSection() === 'taxes') {
           <!-- Taxes (IVA) Section -->
@@ -2168,6 +2230,7 @@ export class SettingsComponent implements OnInit {
   newTaxValidTo = '';
   activeSection = signal<
     | 'general'
+    | 'navigation'
     | 'contact'
     | 'hours'
     | 'payments'
@@ -2179,6 +2242,27 @@ export class SettingsComponent implements OnInit {
     | 'translations'
     | 'security'
   >('general');
+
+  readonly uiModuleRows: { key: TenantUiModuleKey; labelKey: string; descKey: string }[] = [
+    { key: 'tables', labelKey: 'SETTINGS.UI_MODULE_TABLES', descKey: 'SETTINGS.UI_MODULE_TABLES_DESC' },
+    {
+      key: 'working_plan',
+      labelKey: 'SETTINGS.UI_MODULE_WORKING_PLAN',
+      descKey: 'SETTINGS.UI_MODULE_WORKING_PLAN_DESC',
+    },
+    { key: 'providers', labelKey: 'SETTINGS.UI_MODULE_PROVIDERS', descKey: 'SETTINGS.UI_MODULE_PROVIDERS_DESC' },
+    {
+      key: 'reservations',
+      labelKey: 'SETTINGS.UI_MODULE_RESERVATIONS',
+      descKey: 'SETTINGS.UI_MODULE_RESERVATIONS_DESC',
+    },
+    {
+      key: 'kitchen_bar',
+      labelKey: 'SETTINGS.UI_MODULE_KITCHEN_BAR',
+      descKey: 'SETTINGS.UI_MODULE_KITCHEN_BAR_DESC',
+    },
+    { key: 'inventory', labelKey: 'SETTINGS.UI_MODULE_INVENTORY', descKey: 'SETTINGS.UI_MODULE_INVENTORY_DESC' },
+  ];
   loading = signal<boolean>(false);
   saving = signal<boolean>(false);
   error = signal<string | null>(null);
@@ -2314,6 +2398,7 @@ export class SettingsComponent implements OnInit {
     public_google_review_url: null,
     public_google_maps_url: null,
     tip_tax_rate_percent: 0,
+    ui_modules: { ...DEFAULT_TENANT_UI_MODULES },
   };
 
   allTimezones: string[] = [];
@@ -2339,6 +2424,12 @@ export class SettingsComponent implements OnInit {
       }
     });
     this.loadSettings();
+  }
+
+  settingsModuleTabVisible(key: TenantUiModuleKey): boolean {
+    const s = this.settings();
+    if (!s?.ui_modules) return true;
+    return s.ui_modules[key] !== false;
   }
 
   loadSettings() {
@@ -2387,6 +2478,10 @@ export class SettingsComponent implements OnInit {
           public_google_review_url: settings.public_google_review_url ?? null,
           public_google_maps_url: settings.public_google_maps_url ?? null,
           tip_tax_rate_percent: settings.tip_tax_rate_percent ?? 0,
+          ui_modules: {
+            ...DEFAULT_TENANT_UI_MODULES,
+            ...(settings.ui_modules || {}),
+          },
         };
         const tip = settings.tip_preset_percents;
         if (Array.isArray(tip) && tip.length > 0) {
@@ -3097,6 +3192,11 @@ export class SettingsComponent implements OnInit {
       Math.max(0, Math.floor(Number(this.formData.tip_tax_rate_percent) || 0))
     );
 
+    updateData.ui_modules = {
+      ...DEFAULT_TENANT_UI_MODULES,
+      ...(this.formData.ui_modules || {}),
+    };
+
     if (updateData.stripe_secret_key === '') {
       delete updateData.stripe_secret_key;
     }
@@ -3110,6 +3210,7 @@ export class SettingsComponent implements OnInit {
     this.api.updateTenantSettings(updateData).subscribe({
       next: (updatedSettings) => {
         this.settings.set(updatedSettings);
+        this.api.applyTenantUiModulesFromSettings(updatedSettings);
         this.success.set('Settings saved successfully!');
         this.saving.set(false);
       },

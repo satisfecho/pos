@@ -53,6 +53,7 @@ from .tenant_currency import (
     normalize_tenant_currency_fields,
     sync_tenant_currency_symbol_from_code,
 )
+from .tenant_ui_modules import merge_tenant_ui_modules_patch, resolve_tenant_ui_modules
 from .line_modifiers import (
     line_modifiers_equal,
     validate_and_normalize_line_modifiers,
@@ -1968,6 +1969,7 @@ def get_tenant_settings(
         tenant_dict["smtp_password"] = "********"
 
     apply_tenant_currency_api_dict(tenant_dict)
+    tenant_dict["ui_modules"] = resolve_tenant_ui_modules(tenant.ui_modules)
 
     return tenant_dict
 
@@ -2265,6 +2267,13 @@ def update_tenant_settings(
     if tenant_update.kitchen_display_timer_red_minutes is not None:
         tenant.kitchen_display_timer_red_minutes = max(0, tenant_update.kitchen_display_timer_red_minutes)
 
+    if tenant_update.ui_modules is not None:
+        if not isinstance(tenant_update.ui_modules, dict):
+            raise HTTPException(status_code=400, detail="ui_modules must be an object")
+        tenant.ui_modules = merge_tenant_ui_modules_patch(
+            tenant.ui_modules, tenant_update.ui_modules
+        )
+
     session.add(tenant)
     session.commit()
     session.refresh(tenant)
@@ -2301,6 +2310,7 @@ def update_tenant_settings(
         tenant_dict["smtp_password"] = "********"
 
     apply_tenant_currency_api_dict(tenant_dict)
+    tenant_dict["ui_modules"] = resolve_tenant_ui_modules(tenant.ui_modules)
 
     return tenant_dict
 

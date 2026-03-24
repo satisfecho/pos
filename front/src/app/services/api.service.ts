@@ -17,6 +17,24 @@ import { environment } from '../../environments/environment';
 // Interfaces
 export type UserRole = 'owner' | 'admin' | 'kitchen' | 'bartender' | 'waiter' | 'receptionist' | 'provider';
 
+/** Staff sidebar/dashboard/route modules (tenant owner toggles in Settings). */
+export type TenantUiModuleKey =
+  | 'tables'
+  | 'working_plan'
+  | 'providers'
+  | 'reservations'
+  | 'kitchen_bar'
+  | 'inventory';
+
+export const DEFAULT_TENANT_UI_MODULES: Record<TenantUiModuleKey, boolean> = {
+  tables: true,
+  working_plan: true,
+  providers: true,
+  reservations: true,
+  kitchen_bar: true,
+  inventory: true,
+};
+
 export interface User {
   id?: number;
   email: string;
@@ -739,6 +757,8 @@ export interface TenantSettings {
   tip_preset_percents?: number[] | null;
   /** VAT rate 0–100 on tip for invoice breakdown (tax-inclusive tip) */
   tip_tax_rate_percent?: number | null;
+  /** Resolved flags for staff UI modules (GET always expands defaults). */
+  ui_modules?: Partial<Record<TenantUiModuleKey, boolean>> | null;
 }
 
 export interface OrderItemCreate {
@@ -916,6 +936,11 @@ export class ApiService {
 
   /** True when current user is owner and working plan was updated by someone else (show '*' in nav). */
   workingPlanHasUpdates = signal(false);
+
+  private tenantUiModulesResolved = signal(false);
+  /** Effective flags after GET /tenant/settings (defaults all true). */
+  tenantUiModules = signal<Record<TenantUiModuleKey, boolean>>({ ...DEFAULT_TENANT_UI_MODULES });
+
   private orderUpdates = new Subject<any>();
   private reservationUpdates = new Subject<any>();
   private ws: WebSocket | null = null;
@@ -1026,6 +1051,8 @@ export class ApiService {
   /** Clears local state immediately and returns an Observable that completes when the server has processed logout. Callers should navigate after subscribe. */
   logout(): Observable<unknown> {
     this.userSubject.next(null);
+    this.tenantUiModulesResolved.set(false);
+    this.tenantUiModules.set({ ...DEFAULT_TENANT_UI_MODULES });
     this.disconnectWebSocket();
     return this.http.post(`${this.apiUrl}/logout`, {}).pipe(
       catchError(() => of(undefined))
@@ -1650,9 +1677,46 @@ export class ApiService {
     });
   }
 
+  applyTenantUiModulesFromSettings(settings: Pick<TenantSettings, 'ui_modules'> | null): void {
+    const m = settings?.ui_modules;
+    const next = { ...DEFAULT_TENANT_UI_MODULES };
+    if (m && typeof m === 'object') {
+      (Object.keys(DEFAULT_TENANT_UI_MODULES) as TenantUiModuleKey[]).forEach((k) => {
+        if (typeof (m as Record<string, boolean>)[k] === 'boolean') {
+          next[k] = (m as Record<string, boolean>)[k] as boolean;
+        }
+      });
+    }
+    this.tenantUiModules.set(next);
+    this.tenantUiModulesResolved.set(true);
+  }
+
+  /** For route guards: loads settings once per session (after login). */
+  ensureTenantUiModulesLoaded(): Observable<void> {
+    if (this.tenantUiModulesResolved()) {
+      return of(void 0);
+    }
+    return this.getTenantSettings().pipe(
+      map(() => void 0),
+      catchError(() => {
+        this.applyTenantUiModulesFromSettings(null);
+        return of(void 0);
+      })
+    );
+  }
+
+  isUiModuleEnabled(moduleKey: TenantUiModuleKey): boolean {
+    if (!this.tenantUiModulesResolved()) {
+      return true;
+    }
+    return this.tenantUiModules()[moduleKey] !== false;
+  }
+
   // Tenant Settings
   getTenantSettings(): Observable<TenantSettings> {
-    return this.http.get<TenantSettings>(`${this.apiUrl}/tenant/settings`);
+    return this.http
+      .get<TenantSettings>(`${this.apiUrl}/tenant/settings`)
+      .pipe(tap((s) => this.applyTenantUiModulesFromSettings(s)));
   }
 
   updateTenantSettings(settings: Partial<TenantSettings>): Observable<TenantSettings> {

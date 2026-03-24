@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **Agents:** Bump-version task for issue #70 moved from `UNTESTED-20260324-2131-bump-version` to `WIP-20260324-2131-bump-version` (tester notes: package/changelog at 2.0.54; refresh generated `commit-hash` / run `get-commit-hash.js` so the landing footer matches the package version).
 
+## [2.0.55] - 2026-03-24
+
+### Added
+
+- **Tenant UI modules (GitHub #72):** Per-tenant toggles for staff areas (`tables`, `working_plan`, `providers`, `reservations`, `kitchen_bar`, `inventory`) stored in `tenant.ui_modules` (JSONB, compact), exposed on `GET`/`PUT` `/tenant/settings` as a resolved `ui_modules` map. Settings **Navigation** tab; sidebar and dashboard respect flags; direct URLs to disabled routes redirect to `/dashboard`. i18n en/es/de for new strings.
+
 ## [2.0.54] - 2026-03-24
 
 ### Added
