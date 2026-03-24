@@ -52,3 +52,58 @@ Many **CLOSED** archives under `agents/tasks/done/` document repeated implementa
 | Front Docker logs (recent) | **PASS** (bundle complete, no TS errors) |
 
 **GitHub:** **#67** still needs human/product confirmation and close when satisfied.
+
+---
+
+## Test report (tester, 2026-03-24 UTC)
+
+**Start:** 2026-03-24T06:20:55Z — **End:** 2026-03-24T06:22:30Z (approx.). **Log window cited:** `docker logs pos-front` tail after run (~06:21–06:22Z host).
+
+### Environment
+
+- **Compose:** `docker-compose.yml` + `docker-compose.dev.yml`
+- **BASE_URL:** `http://127.0.0.1:4202` (HAProxy → front)
+- **Branch / commit:** `development` @ `627d59b`
+
+### What was tested
+
+Per **Testing instructions** §1–4 (automated primary, manual/Accept-Language as exercised by `test-feedback-public-i18n.mjs`, regression landing). §5 production spot-check **not** run (optional).
+
+### Results
+
+| Criterion | Result | Evidence |
+|-----------|--------|----------|
+| §1 `test-feedback-public-i18n.mjs` exit 0, all RESULT lines | **PASS** | Exit 0; console: es stub OK; en/de/fr/es/ca/zh-CN/hi; token URL; thank-you (de); `/feedback/0` error UI |
+| §2 Manual spot-check (form, errors, thank-you, tab title) | **PASS** | Same script asserts `document.title` for de/fr/es/ca/zh/hi, thank-you title, invalid-tenant title; body has no `FEEDBACK.*` leaks |
+| §3 Accept-Language / first visit (`es-ES` stub, no `pos_language`) | **PASS** | Script block “Browser default locale (es, navigator stub) on first load OK” |
+| §4 `npm run test:landing-version --prefix front` | **PASS** | exit_code: 0, `>>> RESULT: Landing version OK` |
+| §5 Production / GitHub | **N/A** | Optional; not executed this run |
+| Front build health | **PASS** | `docker logs pos-front`: `Application bundle generation complete` for `feedback-public-component`, no TS error lines in tail |
+
+### Overall
+
+**PASS** — Local Docker verification matches task acceptance; no failed criteria.
+
+### Product owner feedback
+
+Public feedback i18n is covered by the dedicated Puppeteer suite across supported locales, including document titles and post-submit states. Remaining decision is whether production (**satisfecho.de**) matches dev and whether **#67** should be closed after that confirmation; this test run does not replace a live prod check if product still requires it.
+
+### URLs tested (Puppeteer)
+
+1. `http://127.0.0.1:4202/feedback/1` (multiple locale passes via in-page language control)
+2. `http://127.0.0.1:4202/feedback/1?token=test-token-00000000-0000-0000-0000-000000000001` (script token path)
+3. `http://127.0.0.1:4202/feedback/0` (invalid tenant error UI)
+4. `http://127.0.0.1:4202/` and staff routes via `test:landing-version` (regression only; full nav including `/guest-feedback`)
+
+### GitHub
+
+Attempted `gh issue comment 67` for workflow sync: **failed** — `Resource not accessible by personal access token (addComment)`. Labels **`agent:testing`** / **`agent:wip`** were **not** updated via API. Human or token with `issues: write` should comment on **#67** and adjust labels per **`docs/agent-loop.md`** (closer removes **`agent:testing`** after archive).
+
+### Relevant log excerpts
+
+```text
+# pos-front (tail)
+Application bundle generation complete. [0.254 seconds] - 2026-03-24T04:46:37.705Z
+Lazy chunk files    | Names                     | Raw size
+chunk-XQUQA5VT.js   | feedback-public-component | 75.06 kB |
+```
