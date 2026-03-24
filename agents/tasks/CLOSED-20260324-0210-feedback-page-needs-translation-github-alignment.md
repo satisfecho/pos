@@ -44,3 +44,31 @@ Public feedback (`/feedback/{tenant}`) should be fully localized. Implementation
 ### Suggested GitHub comment (human with token)
 
 > Re-verified on dev (2026-03-24): `/feedback/1` OK; i18n JSON valid; `FEEDBACK` keys aligned across locales; landing smoke passes. Matches archived QA PASS for #67. Closing as completed unless new gaps are reported.
+
+## Test report
+
+1. **Date/time (UTC):** 2026-03-24 02:02–02:16 UTC (approx.). **Log window:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=200 front` after tests; grep for `error TS` / `NG…` / bundle failure → no matches.
+
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; **BASE_URL** `http://127.0.0.1:4202`; branch **development** @ `91d1ae5`. Puppeteer **puppeteer-core** + host Chrome `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`.
+
+3. **What was tested:** Per **Testing instructions** — §1 public `/feedback/1` with `<select class="language-select">` set to `fr`, `ca`, `zh-CN`, `hi`; asserted translated form copy (not English `FEEDBACK.INTRO`); §2 `/feedback/0` after `fr` on `/feedback/1` same session — French `INVALID_TENANT`; §3 `test:landing-version` + front log sanity.
+
+4. **Results:**
+   - **§1 Load + locales:** **PASS** — `curl` HTTP 200 `/feedback/1` and `/feedback/0`. Puppeteer: after `page.select('select.language-select', <code>)`, body does not contain English intro `"We would love to hear"`; `fr` contains `"Expérience globale"`. Evidence: console lines `PASS feedback form locale fr|ca|zh-CN|hi`.
+   - **§2 Invalid tenant:** **PASS** — After `fr`, `/feedback/0` body contains `Lien de restaurant invalide.` and not English `Invalid feedback link`. Evidence: `PASS /feedback/0 invalid tenant in FR`.
+   - **§3 Build / automated:** **PASS** — `npm run test:landing-version --prefix front` exit **0** (~43s); result line `Landing version OK; demo login (tenant=1) OK; sidebar nav OK.` Front log tail shows `Application bundle generation complete`; no `error TS` / `NG` / bundle-failure in sampled window.
+
+5. **Overall:** **PASS**.
+
+6. **Product owner feedback:** Public feedback still localizes correctly for the four requested locales via the header `<select>`; invalid-tenant messaging follows the selected language when carried from `/feedback/1`. No regression vs archived **CLOSED-20260323-2214** verification on this stack.
+
+7. **URLs tested:**
+   1. `http://127.0.0.1:4202/feedback/1` (locale checks)
+   2. `http://127.0.0.1:4202/feedback/0` (invalid tenant after French)
+   3. `http://127.0.0.1:4202/` (via `test:landing-version`)
+
+8. **Relevant log excerpts:**
+   - Front: `Application bundle generation complete. … 2026-03-24T01:48:49.929Z` (among recent successful builds in tail).
+   - `test:landing-version`: `>>> RESULT: Landing version OK; demo login (tenant=1) OK; sidebar nav OK.` / exit 0.
+
+**GitHub:** Intended **start** label **`agent:testing`** / comment on **#67** per `agents/003-tester/TESTER.md`; **`gh issue comment 67`** failed: `GraphQL: Resource not accessible by personal access token (addComment)`. **Human handoff:** post verification or closing comment on **#67**, set labels per `docs/agent-loop.md`, **close #67** when product accepts (use suggested comment in task body).
