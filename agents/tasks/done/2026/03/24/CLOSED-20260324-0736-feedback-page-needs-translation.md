@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub issue #67 (public guest feedback i18n) completed another dev/test cycle: coder confirmed existing implementation meets the bar; an independent tester re-ran the full feedback-public i18n smoke on local Docker.
+- **What was done:** No additional product code in this pass; `FeedbackPublicComponent` already uses the translate pipe and `translate.get` for the document title; `FEEDBACK` / `BOOK` keys are present across locale JSON. Tester noted `gh issue comment` failed from this environment (token scope); GitHub sync remains a human/token follow-up per `docs/agent-loop.md`.
+- **What was tested:** `npm run test:feedback-public-i18n --prefix front` with `BASE_URL=http://127.0.0.1:4202` — **PASS** (exit 0, five `>>> RESULT: … OK` lines; error and thank-you paths; front logs show successful bundle generation).
+- **Why closed:** Tester overall **PASS**; all pass/fail criteria in the task met; optional production verification on satisfecho.de and issue #67 close remain product decisions.
+- **Closed at (UTC):** 2026-03-24 07:40
+---
+
 # Feedback page needs translation
 
 ## GitHub
