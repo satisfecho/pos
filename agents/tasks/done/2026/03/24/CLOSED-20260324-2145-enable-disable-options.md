@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue #72 asked for tenant-configurable visibility of major UI areas (tables, working plan, providers, etc.) so unused modules disappear from the dashboard and sidebar.
+- **What was done:** Shipped `tenant.ui_modules` (JSONB, disabled keys only), full boolean map on `GET`/`PUT` `/tenant/settings`, Settings → Navigation toggles, `uiModuleGuard` redirect for disabled deep links, and en/es/de strings; backend helper + migration and focused pytest coverage.
+- **What was tested:** Tester reported **PASS**: `tests/test_tenant_ui_modules.py`, clean Angular build, `test:landing-version`, and Puppeteer/manual toggle and redirect checks on port 4202.
+- **Why closed:** Test report overall **PASS**; product goal and testing instructions satisfied.
+- **Closed at (UTC):** 2026-03-24 22:45
+---
+
 # Enable + Disable Options
 
 ## GitHub
