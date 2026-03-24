@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Puppeteer: public /feedback/:tenant uses translations (no raw FEEDBACK.* keys in DOM).
- * Default locale, then de/fr/es/ca/zh-CN/hi; token URL; POST submit → thank-you (de); invalid /feedback/0 (#67).
+ * Default locale, then de/fr/es/ca/zh-CN/hi; token URL; POST submit → thank-you (de); invalid /feedback/0;
+ * missing tenant /feedback/999999999 (404); (#67).
  * Fresh profile + navigator.language stub es-ES before load (no pos_language): asserts initial UI
  * uses LanguageService browser detection (first visit; complements manual picker).
  *
@@ -327,6 +328,34 @@ async function main() {
       throw new Error(`Expected DE document title for invalid tenant, got: ${titleInvalidDe}`);
     }
     console.log('>>> RESULT: Invalid tenant /feedback/0 error UI i18n OK');
+
+    // Missing tenant (API 404): FEEDBACK.TENANT_NOT_FOUND must be translated (issue #67).
+    const urlMissing = new URL('/feedback/999999999', baseUrl).href;
+    await page.goto(urlMissing, { waitUntil: 'networkidle2', timeout: 25000 });
+    await page.waitForSelector('.language-select', { timeout: 15000 });
+    await page.select('.language-select', 'en');
+    await sleep(600);
+    await page.waitForFunction(
+      () => {
+        const t = document.body?.innerText || '';
+        return t.includes('Restaurant not found') && !t.includes('FEEDBACK.');
+      },
+      { timeout: 15000 }
+    );
+    await page.select('.language-select', 'de');
+    await sleep(600);
+    await page.waitForFunction(
+      () => {
+        const t = document.body?.innerText || '';
+        return t.includes('Restaurant nicht gefunden') && !t.includes('FEEDBACK.');
+      },
+      { timeout: 10000 }
+    );
+    const titleMissingDe = await page.title();
+    if (!titleMissingDe.includes('nicht gefunden')) {
+      throw new Error(`Expected DE document title for missing tenant, got: ${titleMissingDe}`);
+    }
+    console.log('>>> RESULT: Missing tenant (404) error UI i18n OK');
   } finally {
     await browser.close();
   }
