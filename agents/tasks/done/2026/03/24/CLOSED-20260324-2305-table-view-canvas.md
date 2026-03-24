@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub issue #75 asked for minimal navigation from the tables floor-plan canvas to that table’s staff orders context (one click instead of hunting the list).
+- **What was done:** Selected-table panel on the canvas links to `/staff/orders` with `focusOrder` or `focusTableId`; orders page applies focus (tab, scroll, or history modal) and strips query params via `replaceUrl`; i18n keys added; new Puppeteer `test:tables-canvas-open-orders` and `docs/testing.md` updates.
+- **What was tested:** `test:tables-canvas-open-orders` and `test:tables-canvas-view-options` **PASS**; manual check confirmed clean `/staff/orders` URL after focus; no-order-role shortcut hidden per code review (no second test user in env).
+- **Why closed:** Tester **Test report** overall **PASS**; criteria met.
+- **Closed at (UTC):** 2026-03-24 23:22
+---
+
 # Table view > canvas
 
 ## GitHub
