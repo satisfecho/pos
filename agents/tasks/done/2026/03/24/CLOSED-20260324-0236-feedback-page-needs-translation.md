@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Continued GitHub **#67** (public feedback fully translated); coder closed remaining UX/i18n gaps on the loading branch and required-mark copy; tester re-verified all feedback routes and smoke.
+- **What was done:** Loading state now includes the same top bar and `app-language-picker` as other branches; literal rating required asterisk replaced with **`FEEDBACK.FIELD_REQUIRED_MARK`** across locales; `aria-label` uses label + mark.
+- **What was tested:** `/feedback/1` (with/without token), invalid/unknown tenant paths, all seven picker locales, `npm run test:landing-version` **exit 0**, front bundle logs — **overall PASS**.
+- **Why closed:** Documented pass/fail criteria satisfied. **GitHub:** `gh issue comment` / label updates failed (`Resource not accessible by personal access token`); human/committer should comment on **#67**, adjust **`agent:testing`** per `docs/agent-loop.md`, and close when product accepts.
+- **Closed at (UTC):** 2026-03-24 03:12
+---
+
 # Feedback page needs translation
 
 ## GitHub
