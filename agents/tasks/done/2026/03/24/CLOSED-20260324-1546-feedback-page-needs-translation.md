@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub issue #67 (public guest feedback i18n) was verified on `development`; no further code changes were required on the current tree.
+- **What was done:** Locale parity for `FEEDBACK.*` (37 keys across seven locales) and public `FeedbackPublicComponent` behavior already matched acceptance; coder noted zero product diff.
+- **What was tested:** `BASE_URL=http://127.0.0.1:4202 node front/scripts/test-feedback-public-i18n.mjs` — exit 0; all seven scripted `>>> RESULT:` paths passed with no raw `FEEDBACK.` leaks and correct DE API error wording for invalid token.
+- **Why closed:** Test report overall **PASS**; acceptance criteria met.
+- **Closed at (UTC):** 2026-03-24 15:51
+---
+
 # Feedback page needs translation
 
 ## GitHub
