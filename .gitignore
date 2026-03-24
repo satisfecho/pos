@@ -1,4 +1,7 @@
+tmp/*
+time-of-last-review.txt
 .DS_Store
+*.swp
 # Python
 __pycache__/
 *.py[cod]
@@ -55,4 +58,5 @@ dist/
 # IDEs
 .idea/
 .cursor/
+.factory/
 
