@@ -42,3 +42,28 @@ Public guest feedback URLs (e.g. `/feedback/{tenant}` with `?token=…`) must sh
 ### GitHub (#67)
 
 - After tester **closed** loop: comment on the issue, align labels per **`docs/agent-loop.md`**; close when product accepts (human if no API token).
+
+---
+
+## Test report
+
+1. **Date/time (UTC):** 2026-03-24 04:35:55 – 04:36:20 (verification run). Log excerpts below from **04:36** UTC (HAProxy / front).
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; **`BASE_URL`** `http://127.0.0.1:4202`; branch **`development`**, commit **`cae97c7`**.
+3. **What was tested:** Public feedback i18n per **What to verify** (locales, token URL, invalid tenant `/feedback/0`).
+4. **Results:**
+   - No raw `FEEDBACK.*` in visible text on `/feedback/1` after picker cycles (**PASS**) — evidence: `npm run test:feedback-public-i18n` stdout: “no FEEDBACK.* leaks”.
+   - Document title matches selected locale (**PASS**) — same script assertion path (title checks in script).
+   - Token URL `?token=…` copy/title (**PASS**) — stdout: “Token URL path OK”.
+   - `/feedback/0` translated error + Deutsch switch, no raw keys (**PASS**) — stdout: “Invalid tenant /feedback/0 error UI i18n OK”.
+   - Script exit code (**PASS**) — exit **0**.
+5. **Overall:** **PASS** (all criteria above).
+6. **Product owner feedback:** Automated coverage now includes **hi** and invalid-tenant **de** assertions; local dev stack behaviour matches the stated acceptance criteria. Optional production spot-check on **satisfecho.de** was not run in this pass; recommend a quick manual picker check on prod before closing **#67** if desired.
+7. **URLs tested:**
+   1. `http://127.0.0.1:4202/feedback/1` (en, de, fr, es, ca, zh-CN, hi via picker)
+   2. `http://127.0.0.1:4202/feedback/1?token=dummy-token-for-i18n-smoke`
+   3. `http://127.0.0.1:4202/feedback/0` (invalid tenant; en then de)
+8. **Relevant log excerpts:**
+   - HAProxy (sample during run): `GET /i18n/es.json`, `GET /i18n/en.json`, `GET /api/public/tenants/1` → **200**.
+   - Front: `Application bundle generation complete` for lazy `feedback-public-component`; no TS/build errors in tail.
+
+**GitHub (#67):** `gh issue comment` failed with *Resource not accessible by personal access token* — human should post the PASS summary and adjust labels per `docs/agent-loop.md`.
