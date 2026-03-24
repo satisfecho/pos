@@ -30,3 +30,32 @@ Public guest feedback URLs (e.g. `https://satisfecho.de/feedback/1?token=…`) m
 3. **Manual spot-check:** Open `/feedback/1` (and with a real or dummy `?token=`). Switch **English → Deutsch → Français → Español → Català → 中文（简体）**; confirm form labels, buttons, intro, and thank-you copy are fully translated (no `FEEDBACK.` literals). Optionally hard-refresh and confirm the **tab title** never flashes a raw key during load.
 4. **Regression:** `BASE_URL=http://127.0.0.1:4202 npm run test:landing-version --prefix front` exits **0**.
 5. **Product / GitHub:** If all pass, note on **#67** for closure when product agrees.
+
+---
+
+## Test report
+
+1. **Date/time (UTC) and log window:** 2026-03-24T04:24Z (verification ~04:19–04:24Z). Docker `pos-front` tail reviewed for the same window (rebuild lines only; no errors).
+
+2. **Environment:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml` (HAProxy `0.0.0.0:4202->4202/tcp`). **`BASE_URL`:** `http://127.0.0.1:4202`. **Branch:** `development` @ `20b72f6`.
+
+3. **What was tested:** Per **Testing instructions** §1–4: stack reachability implied by tests; automated public-feedback i18n (all listed locales + token URL); regression landing/nav; manual spot-check criteria **as exercised by** `test-feedback-public-i18n.mjs` (picker locales en/de/fr/es/ca/zh-CN, `document.title` + body, no `FEEDBACK.*` substrings).
+
+4. **Results:**
+   - **Stack / HAProxy:** **PASS** — services up; tests reached the app on 4202.
+   - **§2 Automated feedback i18n:** **PASS** — exit 0; two `>>> RESULT:` lines as specified (`Public feedback i18n OK …`, `Token URL path OK …`).
+   - **§3 Manual spot-check:** **PASS** (equivalent) — script drives the same locale sequence and assertions (labels/title/no raw keys); no separate interactive browser session beyond Puppeteer.
+   - **§4 Regression landing-version:** **PASS** — exit 0; `>>> RESULT: Landing version OK …`.
+
+5. **Overall:** **PASS**
+
+6. **Product owner feedback:** Public feedback i18n automation now covers six locales plus a token URL and confirms no leaked `FEEDBACK.*` keys in the checked DOM/title paths. Landing and main nav still smoke-clean after these changes. Please confirm in production (`/feedback/{tenant}` with real token) and close **#67** when satisfied.
+
+7. **URLs tested (Puppeteer):**
+   1. `http://127.0.0.1:4202/feedback/1` (per-locale navigation and assertions).
+   2. `http://127.0.0.1:4202/feedback/1?token=…` (dummy token path; script assertion).
+   3. `http://127.0.0.1:4202/` and logged-in sidebar routes (landing-version script).
+
+8. **Relevant log excerpts:** `docker logs pos-front 2>&1 | tail -n 40` — `Application bundle generation complete` for `feedback-public-component` / `main` with timestamps ~`2026-03-24T04:09Z`–`04:21Z`; no TS/NG errors in tail.
+
+**GitHub automation:** `gh issue comment` / label edit for **#67** failed with `Resource not accessible by personal access token (addComment)`. Human: post verification summary on **#67**, adjust labels (`agent:testing` → remove when done), and close the issue per product sign-off.
