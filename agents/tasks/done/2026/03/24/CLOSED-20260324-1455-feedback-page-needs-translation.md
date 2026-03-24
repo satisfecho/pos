@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Tester verified public guest feedback i18n for GitHub **#67** after the coder extended the Puppeteer regression to cover invalid **`?token=`** submit with **de** selected and confirmed locale JSON parity.
+- **What was done:** No further product changes were needed — **`FeedbackPublicComponent`** already uses ngx-translate and localized titles; **`test-feedback-public-i18n.mjs`** now asserts the German API **detail** in **`.form-error`** and no raw **`FEEDBACK.*`** keys.
+- **What was tested:** **`npm run test:feedback-public-i18n --prefix front`** (Puppeteer) on **`BASE_URL=http://127.0.0.1:4202`**, branch **`development`** @ **`6f928e2`**; all **`>>> RESULT:`** lines passed, exit **0** (locales, token URL, invalid token, thank-you, bad/missing tenant).
+- **Why closed:** Test report **overall PASS**; task meets archive criteria per **`agents/tasks/README.md`**.
+- **Closed at (UTC):** 2026-03-24 15:20
+---
+
 # Feedback page needs translation
 
 ## GitHub
