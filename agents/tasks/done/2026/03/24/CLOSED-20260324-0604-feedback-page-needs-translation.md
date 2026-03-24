@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Tester completed verification for GitHub issue **#67** (public guest feedback URL i18n) and recorded **PASS** with evidence on dev.
+- **What was done:** Ran `test-feedback-public-i18n.mjs` and `test:landing-version` against HAProxy **4202**; confirmed no raw `FEEDBACK.*` in body or document title across picker locales, token URL, thank-you, and invalid-tenant error paths.
+- **What was tested:** Automated i18n script (exit **0**) and landing smoke — both **PASS** per test report (2026-03-24 ~06:08 UTC).
+- **Why closed:** All task pass criteria met; tester overall **PASS**.
+- **Closed at (UTC):** 2026-03-24 06:11
+---
+
 # Feedback page needs translation
 
 ## GitHub
