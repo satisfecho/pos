@@ -91,6 +91,10 @@ export class FeedbackPublicComponent implements OnInit, OnDestroy {
       key = 'FEEDBACK.LOADING';
     } else if (this.submitted()) {
       key = 'FEEDBACK.THANK_YOU';
+    } else if (err === 'invalid_tenant') {
+      key = 'FEEDBACK.INVALID_TENANT';
+    } else if (err === 'tenant_not_found') {
+      key = 'FEEDBACK.TENANT_NOT_FOUND';
     } else {
       key = 'FEEDBACK.TITLE';
     }

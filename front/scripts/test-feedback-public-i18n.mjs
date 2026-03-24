@@ -149,6 +149,24 @@ async function main() {
     }
 
     console.log('>>> RESULT: Public feedback i18n OK (en + de + fr + es, no FEEDBACK.* leaks)');
+
+    // Token query (reservation deep link): same i18n expectations, no raw keys in DOM
+    const urlWithToken = new URL(`/feedback/${tenantId}`, baseUrl);
+    urlWithToken.searchParams.set('token', 'dummy-token-for-i18n-smoke');
+    await page.goto(urlWithToken.href, { waitUntil: 'networkidle2', timeout: 25000 });
+    await page.waitForSelector('.language-select', { timeout: 15000 });
+    await page.waitForFunction(
+      () => {
+        const t = document.body?.innerText || '';
+        return t.length > 80 && !t.includes('FEEDBACK.');
+      },
+      { timeout: 15000 }
+    );
+    const bodyToken = await page.evaluate(() => document.body.innerText);
+    if (bodyToken.includes('FEEDBACK.')) {
+      throw new Error('Raw i18n keys visible with ?token= (en): ' + bodyToken.slice(0, 400));
+    }
+    console.log('>>> RESULT: Token URL path OK (no FEEDBACK.* leaks)');
   } finally {
     await browser.close();
   }
