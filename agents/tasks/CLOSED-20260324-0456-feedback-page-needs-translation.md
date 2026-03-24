@@ -27,3 +27,34 @@ Public guest feedback URLs (e.g. `/feedback/{tenant}?token=…`) must show **the
 3. Optional manual: open `/feedback/1`, `/feedback/1?token=dummy`, cycle the language picker; open `/feedback/0` and confirm error strings and tab title track the picker — **no** raw **`FEEDBACK.`** substrings in the visible page.
 4. If product requires: repeat a quick spot-check on **staging/production** (GitHub **#67**).
 5. **GitHub:** After pass, add a short verification comment on **#67**; close the issue when product accepts (automation may not have Issues write access).
+
+---
+
+## Test report
+
+1. **Date/time (UTC):** 2026-03-24T05:00:44Z (script start). **Log window:** ~05:00:44Z–05:01:05Z (HAProxy timestamps 24/Mar/2026:05:00:51–05:00:54).
+
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; **BASE_URL** `http://127.0.0.1:4202`; branch **development**; **TENANT_ID** default `1` (script).
+
+3. **What was tested:** Per **Testing instructions** §1–2 (stack + `test-feedback-public-i18n.mjs`). Optional manual §3 and staging/prod §4 not run.
+
+4. **Results:**
+   - **Stack reachable / script exit 0:** **PASS** — `node front/scripts/test-feedback-public-i18n.mjs` exited **0**.
+   - **Four `>>> RESULT:` lines including es navigator stub and /feedback/0 i18n:** **PASS** — console showed all four expected lines verbatim.
+   - **No raw `FEEDBACK.*` in automated DOM checks:** **PASS** — script asserts absence of `FEEDBACK.` in body/title checks.
+   - **Optional manual / prod spot-check:** **N/A** (not required for automated criteria).
+
+5. **Overall:** **PASS**.
+
+6. **Product owner feedback:** Public feedback i18n is covered by the extended Puppeteer script, including first-load browser locale (es stub) and invalid-tenant error copy across locales. Staging/production were not exercised in this run; if anything still looks untranslated on a specific URL, capture locale and a screenshot for a follow-up.
+
+7. **URLs tested** (Puppeteer, tenant `1` unless noted):
+   1. `http://127.0.0.1:4202/feedback/1` (multiple passes: es auto, then picker locales)
+   2. `http://127.0.0.1:4202/feedback/1?token=dummy-token-for-i18n-smoke`
+   3. `http://127.0.0.1:4202/feedback/0` (invalid tenant, en then de)
+
+8. **Relevant log excerpts:**
+   - **HAProxy:** `GET /feedback/1` and related assets 200/304; `GET /api/public/tenants/1` 200; `GET /feedback/0` 200; `GET /i18n/en.json`, `GET /i18n/de.json` 304 — timestamps `24/Mar/2026:05:00:51`–`05:00:54`.
+   - **pos-front:** Recent lines show `feedback-public-component` lazy chunk rebuild complete with no errors (e.g. `Application bundle generation complete` at 2026-03-24T04:46:37.705Z prior to test window).
+
+**GitHub:** `gh issue comment 67` failed (`Resource not accessible by personal access token`). Per task instructions, a human should add the short verification comment on **#67** and close when product accepts.
