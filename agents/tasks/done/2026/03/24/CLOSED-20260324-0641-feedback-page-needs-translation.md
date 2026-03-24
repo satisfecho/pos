@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub **#67** (public guest feedback `/feedback/{tenant}` fully localized) was driven through coder verification and tester Puppeteer runs on **development** @ **d8abbe1**.
+- **What was done:** Coder confirmed **37** `FEEDBACK` keys per locale with no gaps vs `en.json`, `FeedbackPublicComponent` uses the translate pipe and `TranslateService` for tab title; **no application code changes** were required in the final pass.
+- **What was tested:** `test-feedback-public-i18n.mjs` and `npm run test:landing-version --prefix front` both **PASS** (2026-03-24 ~06:44–06:45 UTC per test report).
+- **Why closed:** Tester reported **PASS** overall; acceptance criteria for i18n and regression met; ready for archive. Optional production spot-check / human **#67** close with product remains outside this file.
+- **Closed at (UTC):** 2026-03-24 07:20
+---
+
 # Feedback page needs translation
 
 ## GitHub
