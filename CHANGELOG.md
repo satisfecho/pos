@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Agents:** Bump-version task for issue #70 moved from `UNTESTED-20260324-2131-bump-version` to `WIP-20260324-2131-bump-version` (tester notes: package/changelog at 2.0.54; refresh generated `commit-hash` / run `get-commit-hash.js` so the landing footer matches the package version).
+
 ## [2.0.54] - 2026-03-24
 
 ### Added
