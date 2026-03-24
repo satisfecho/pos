@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub **#67** (public feedback i18n) was implemented and handed to testing; mandatory automated checks were run on the local Docker stack (`BASE_URL=http://127.0.0.1:4202`, branch **development**, commit **`4d1a4d7`**).
+- **What was done:** Coder verified **FEEDBACK** key parity across locales and extended `front/scripts/test-feedback-public-i18n.mjs` with a POST submit → thank-you path; tester executed the task’s mandatory items (public feedback i18n script + landing regression).
+- **What was tested:** `node front/scripts/test-feedback-public-i18n.mjs` **PASS** (exit 0; no `FEEDBACK.` leaks in asserted checks); `npm run test:landing-version --prefix front` **PASS**; optional manual `/feedback/1` and production spot-check **not** run.
+- **Why closed:** Tester **overall PASS** (no failed criteria); acceptance bar met on local Docker per test report and product-owner note (prod confirmation remains optional before closing **#67** on GitHub).
+- **Closed at (UTC):** 2026-03-24 05:37
+---
+
 # Feedback page needs translation
 
 ## GitHub
