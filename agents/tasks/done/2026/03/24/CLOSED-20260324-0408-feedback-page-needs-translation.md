@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue **#67** (public guest feedback i18n) was verified after coder changes to tab titles, i18n parity, and the public feedback Puppeteer script.
+- **What was done:** Coder aligned `FEEDBACK` keys across locales, error-route document titles, and extended `test-feedback-public-i18n.mjs` for token URLs; tester ran automated checks and manual spot-checks on invalid-tenant routes.
+- **What was tested:** `npm run test:feedback-public-i18n` and `npm run test:landing-version` both **PASS**; no literal `FEEDBACK.` in UI; language picker and error-specific titles confirmed.
+- **Why closed:** Test report **overall PASS**; acceptance criteria met. GitHub comment/label/close on **#67** remains for a human with Issues write access (PAT could not add comments).
+- **Closed at (UTC):** 2026-03-24 04:14
+---
+
 # Feedback page needs translation
 
 ## GitHub
