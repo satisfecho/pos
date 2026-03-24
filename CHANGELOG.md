@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Smoke test:** `test:feedback-public-i18n` now checks **fr** after **de** (document title + visible copy, no raw `FEEDBACK.*` in the DOM) in addition to default **en** (GitHub #67).
 - **Agents:** 001-log-reviewer `time-of-last-review.txt` — GitHub/issue sweep and Docker log pass lines appended (2026-03-23, through 22:55Z UTC).
 
 ## [2.0.52] - 2026-03-24

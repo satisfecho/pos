@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Puppeteer: public /feedback/:tenant uses translations (no raw FEEDBACK.* keys in DOM).
- * Switches to Deutsch and checks expected German copy + document title.
+ * Default locale, then Deutsch, then Français (issue #67: multiple non-default locales).
  *
  * Usage:
  *   BASE_URL=http://127.0.0.1:4202 node front/scripts/test-feedback-public-i18n.mjs
@@ -107,12 +107,30 @@ async function main() {
       throw new Error('Raw i18n keys visible after switch to de');
     }
 
-    const docTitle = await page.title();
-    if (!docTitle.includes('Wie war')) {
-      throw new Error(`Expected DE document title to include "Wie war", got: ${docTitle}`);
+    const docTitleDe = await page.title();
+    if (!docTitleDe.includes('Wie war')) {
+      throw new Error(`Expected DE document title to include "Wie war", got: ${docTitleDe}`);
     }
 
-    console.log('>>> RESULT: Public feedback i18n OK (en + de, no FEEDBACK.* leaks)');
+    await page.select('.language-select', 'fr');
+    await sleep(600);
+
+    await page.waitForFunction(
+      () => (document.body?.innerText || '').includes('Comment s'),
+      { timeout: 10000 }
+    );
+
+    const bodyFr = await page.evaluate(() => document.body.innerText);
+    if (bodyFr.includes('FEEDBACK.')) {
+      throw new Error('Raw i18n keys visible after switch to fr');
+    }
+
+    const docTitleFr = await page.title();
+    if (!docTitleFr.includes('Comment')) {
+      throw new Error(`Expected FR document title to include "Comment", got: ${docTitleFr}`);
+    }
+
+    console.log('>>> RESULT: Public feedback i18n OK (en + de + fr, no FEEDBACK.* leaks)');
   } finally {
     await browser.close();
   }
