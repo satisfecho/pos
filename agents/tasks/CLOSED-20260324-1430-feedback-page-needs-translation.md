@@ -30,3 +30,49 @@ Public guest feedback URL (e.g. `/feedback/{tenant}` with optional `?token=…`)
   - Optional: `python3 -m json.tool front/public/i18n/fr.json` (and other locales) — must exit 0.
   - After front edits: `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=80 front` — no Angular/TS build errors.
 - **Pass/fail:** Puppeteer script exits 0 and prints all `>>> RESULT: … OK` lines; French locale shows human-readable French strings, not keys.
+
+---
+
+## Test report
+
+1. **Date/time (UTC) and log window:** Verification run **2026-03-24T14:33Z–14:35Z** (script finished ~14:34:37Z). Front container log tail reviewed for the same session.
+
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; **BASE_URL** `http://127.0.0.1:4202`; git branch **development**, **c9fcd92**.
+
+3. **What was tested:** As in **Testing instructions**: `/feedback/:tenantId` with and without `?token=…`; locales **en, de, fr, es, ca, zh-CN, hi**; browser default **es** (navigator stub); POST submit → thank-you (**de**); **`/feedback/0`** error UI; no raw **`FEEDBACK.*`** in DOM or document title; optional JSON validation on locale files; front build health via container logs.
+
+4. **Results:**
+   - All listed locales, no `FEEDBACK.*` leaks (incl. FR human copy): **PASS** — `>>> RESULT: Public feedback i18n OK (en + de + fr + es + ca + zh-CN + hi, no FEEDBACK.* leaks)`
+   - Token URL path: **PASS** — `>>> RESULT: Token URL path OK (no FEEDBACK.* leaks)`
+   - Post-submit thank-you (de): **PASS** — `>>> RESULT: Post-submit thank-you page i18n OK (de, no FEEDBACK.* leaks)`
+   - Invalid tenant `/feedback/0`: **PASS** — `>>> RESULT: Invalid tenant /feedback/0 error UI i18n OK`
+   - Browser default locale (es) first load: **PASS** — `>>> RESULT: Browser default locale (es, navigator stub) on first load OK (no FEEDBACK.* leaks)`
+   - `python3 -m json.tool` on **`front/public/i18n/*.json`** (incl. `fr.json`): **PASS** — all exit 0
+   - `docker compose … logs --tail=80 front`: **PASS** — `Application bundle generation complete`, no TS/Angular errors in tail
+
+5. **Overall:** **PASS**
+
+6. **Product owner feedback:** Public feedback is localized end-to-end for every locale in scope, including French after the JSON fix. Thank-you and invalid-tenant states show real copy, not keys. Dev verification matches acceptance; issue **#67** can be closed or left for production sign-off per team habit.
+
+7. **URLs tested:**
+   1. `http://127.0.0.1:4202/feedback/1`
+   2. `http://127.0.0.1:4202/feedback/1?token=dummy-token-for-i18n-smoke`
+   3. `http://127.0.0.1:4202/feedback/0`
+
+8. **Relevant log excerpts:**
+
+Puppeteer (exit code 0):
+
+```
+>>> RESULT: Browser default locale (es, navigator stub) on first load OK (no FEEDBACK.* leaks)
+>>> RESULT: Public feedback i18n OK (en + de + fr + es + ca + zh-CN + hi, no FEEDBACK.* leaks)
+>>> RESULT: Token URL path OK (no FEEDBACK.* leaks)
+>>> RESULT: Post-submit thank-you page i18n OK (de, no FEEDBACK.* leaks)
+>>> RESULT: Invalid tenant /feedback/0 error UI i18n OK
+```
+
+`pos-front` (tail):
+
+```
+Application bundle generation complete. [0.022 seconds] - 2026-03-24T14:32:32.085Z
+```
