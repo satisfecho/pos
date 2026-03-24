@@ -42,3 +42,31 @@ Prior **`agents/tasks/done/`** archives document repeated dev/test **PASS** on *
 2. **Regression:** `BASE_URL=http://127.0.0.1:4202 npm run test:landing-version --prefix front` — exit **0**.
 3. **Manual (optional):** Open `/feedback/1`, cycle language picker; repeat with `?token=…`; open `/feedback/0` and confirm error strings are translated, not raw keys.
 4. **Production (optional):** Same checks on **satisfecho.de** before closing **#67**.
+
+---
+
+## Test report
+
+1. **Date/time (UTC) and log window:** Started **2026-03-24 07:17:19 UTC**; finished **2026-03-24 07:18:05 UTC** (approx.). Docker `pos-front` / `pos-back` tails reviewed for the same window.
+
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; **BASE_URL** `http://127.0.0.1:4202` (HAProxy → front). Branch **development**, commit **a6d14f7**.
+
+3. **What was tested:** Items 1–2 from **Testing instructions** (primary feedback i18n smoke + landing regression). Items 3–4 (manual browser sweep, production) **not** run this pass.
+
+4. **Results:**
+   - **Primary (`test:feedback-public-i18n`):** **PASS** — exit 0; console lines: browser default locale (es stub) OK; en+de+fr+es+ca+zh-CN+hi OK; token URL OK; post-submit thank-you (de) OK; invalid tenant `/feedback/0` OK; all “no FEEDBACK.* leaks”.
+   - **Regression (`test:landing-version`):** **PASS** — exit 0; “Landing version OK; demo login (tenant=1) OK; sidebar nav OK.”
+
+5. **Overall:** **PASS** (required automated criteria met).
+
+6. **Product owner feedback:** Guest feedback i18n automation on dev matches the acceptance described in **#67**: locales, token path, thank-you, and invalid-tenant error are covered without raw `FEEDBACK.*` in the DOM. Optional manual language-picker pass and **satisfecho.de** spot-check remain for product sign-off before closing the issue.
+
+7. **URLs tested (Puppeteer, primary script):**
+   1. `http://127.0.0.1:4202/feedback/1` (multiple locale switches and loads)
+   2. `http://127.0.0.1:4202/feedback/1?token=…` (test token query)
+   3. `http://127.0.0.1:4202/feedback/0` (invalid tenant)
+   - **Landing regression** additionally hit `/`, `/dashboard`, and 15+ staff routes per `test-landing-version.mjs` (sidebar nav).
+
+8. **Relevant log excerpts:**
+   - **pos-back:** `GET /public/tenants/1` 200; `POST /public/tenants/1/guest-feedback` 200 (feedback submit during i18n test).
+   - **pos-front:** `Application bundle generation complete` for `feedback-public-component` chunk (no TS/NG errors in tail).
