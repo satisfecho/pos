@@ -43,3 +43,34 @@ Public guest feedback at `/feedback/{tenant}` (e.g. with `?token=…`) must show
 ### Follow-up (outside tester script)
 
 - Optional production spot-check on **https://satisfecho.de**; GitHub **#67** verification comment and close when product accepts (see issue and `docs/agent-loop.md`).
+
+---
+
+## Test report (tester)
+
+1. **Date/time (UTC)** and log window: **2026-03-24 07:28–07:29 UTC** (verification run); Docker front log excerpts reviewed for lines ending ~04:46Z (no errors in tail).
+
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; **BASE_URL** `http://127.0.0.1:4202` (HAProxy); branch **development**, commit **38d24b1**; **HEADLESS=1** for Puppeteer.
+
+3. **What was tested:** Per “What to verify”: public `/feedback/1` with navigator-language stub (es-ES first visit); locale picker **en, de, fr, es, ca, zh-CN, hi** (body + document title); `/feedback/1?token=…`; post-submit thank-you in **de**; invalid tenant **`/feedback/0`** (en + de error copy and title).
+
+4. **Results:**
+   - No raw `FEEDBACK.*` in body or title (all locales + token path): **PASS** — script assertions and `>>> RESULT: … OK` lines.
+   - Thank-you and error states fully translated: **PASS** — `Vielen Dank` / `Ungültiger Restaurant` checks passed.
+   - Script exit **0**, all five summary lines **OK**: **PASS** — `node front/scripts/test-feedback-public-i18n.mjs` exit code 0.
+   - Angular build healthy: **PASS** — `docker compose … logs --tail=80 front` shows `Application bundle generation complete`, no TS/template errors in tail.
+
+5. **Overall:** **PASS** (all criteria met).
+
+6. **Product owner feedback:** Public feedback matches the acceptance bar for local dev: every checked locale shows real copy, tab titles follow the language, and deep-link and error paths stay translated. Production on satisfecho.de was not exercised in this run; if you want parity proof there, a short manual pass is still optional. Closing the GitHub issue remains a product decision once you are satisfied.
+
+7. **URLs tested:**
+   1. `http://127.0.0.1:4202/feedback/1`
+   2. `http://127.0.0.1:4202/feedback/1?token=dummy-token-for-i18n-smoke`
+   3. `http://127.0.0.1:4202/feedback/0`
+
+8. **Relevant log excerpts:**
+   - Puppeteer stdout: `>>> RESULT: Browser default locale (es, navigator stub) on first load OK …` through `>>> RESULT: Invalid tenant /feedback/0 error UI i18n OK`; process exit **0**.
+   - `pos-front` (tail): `Application bundle generation complete. [0.254 seconds] - 2026-03-24T04:46:37.705Z` (and prior successful rebuilds; no error lines in sampled tail).
+
+**GitHub:** `gh issue comment 67` failed from this environment (`Resource not accessible by personal access token`). Closer should comment on **#67** manually with the same summary if needed.
