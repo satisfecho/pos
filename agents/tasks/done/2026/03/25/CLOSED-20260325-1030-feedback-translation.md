@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub issue #67 (feedback page i18n) was implemented on `development` and handed to the tester for verification.
+- **What was done:** Public `FeedbackPublicComponent` uses the `translate` pipe / `translate.instant` for errors; `FEEDBACK.*` keys exist in en, de, es, fr, ca, zh-CN, and hi; document title follows locale.
+- **What was tested:** `BASE_URL=http://127.0.0.1:4202 node front/scripts/test-feedback-public-i18n.mjs` — all scripted paths passed with no raw `FEEDBACK.*` key leaks in the DOM.
+- **Why closed:** Test report overall **PASS**; acceptance criteria met.
+- **Closed at (UTC):** 2026-03-24 15:40
+---
+
 # Feedback page needs translation
 
 ## GitHub
