@@ -1233,6 +1233,8 @@
     "SUBMIT": "Envoyer l'avis",
     "SENDING": "Envoi en cours...",
     "SUBMIT_ERROR": "Impossible d'envoyer l'avis. Veuillez réessayer plus tard.",
+    "VALIDATION_ERROR": "Veuillez vérifier vos informations et réessayer.",
+    "RATE_LIMIT": "Trop d'envois. Veuillez réessayer dans quelques instants.",
     "THANK_YOU": "Merci !",
     "THANK_YOU_DETAIL": "Nous vous remercions d'avoir pris le temps de partager votre avis.",
     "OPEN_GOOGLE_REVIEW": "Laisser un avis public sur Google",

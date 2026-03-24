@@ -742,6 +742,8 @@
     "SUBMIT": "Enviar opinión",
     "SENDING": "Enviando...",
     "SUBMIT_ERROR": "No se pudo enviar la opinión. Inténtalo más tarde.",
+    "VALIDATION_ERROR": "Revisa los datos e inténtalo de nuevo.",
+    "RATE_LIMIT": "Demasiados envíos. Espera un momento e inténtalo de nuevo.",
     "THANK_YOU": "¡Gracias!",
     "THANK_YOU_DETAIL": "Agradecemos que hayas dedicado tiempo a compartir tu opinión.",
     "OPEN_GOOGLE_REVIEW": "Dejar una reseña pública en Google",

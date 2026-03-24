@@ -747,6 +747,8 @@
     "SUBMIT": "Send feedback",
     "SENDING": "Sending...",
     "SUBMIT_ERROR": "Could not send feedback. Please try again later.",
+    "VALIDATION_ERROR": "Please check your input and try again.",
+    "RATE_LIMIT": "Too many submissions. Please try again in a little while.",
     "THANK_YOU": "Thank you!",
     "THANK_YOU_DETAIL": "We appreciate you taking the time to share your feedback.",
     "OPEN_GOOGLE_REVIEW": "Leave a public review on Google",

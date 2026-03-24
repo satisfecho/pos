@@ -1250,6 +1250,8 @@
     "SUBMIT": "Enviar opinió",
     "SENDING": "S'està enviant...",
     "SUBMIT_ERROR": "No s'ha pogut enviar l'opinió. Torneu-ho a provar més tard.",
+    "VALIDATION_ERROR": "Reviseu les dades i torneu-ho a provar.",
+    "RATE_LIMIT": "Massa enviaments. Espereu una estona i torneu-ho a provar.",
     "THANK_YOU": "Gràcies!",
     "THANK_YOU_DETAIL": "Agraïm que hàgiu dedicat temps a compartir la vostra opinió.",
     "OPEN_GOOGLE_REVIEW": "Deixar una ressenya pública a Google",

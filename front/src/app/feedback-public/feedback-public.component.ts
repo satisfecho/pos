@@ -117,10 +117,21 @@ export class FeedbackPublicComponent implements OnInit {
       },
       error: (err) => {
         this.submitting.set(false);
+        const status = err?.status;
         const d = err?.error?.detail;
-        this.submitError.set(
-          typeof d === 'string' ? d : this.translate.instant('FEEDBACK.SUBMIT_ERROR'),
-        );
+        if (status === 429) {
+          this.submitError.set(this.translate.instant('FEEDBACK.RATE_LIMIT'));
+          return;
+        }
+        if (status === 422 || Array.isArray(d)) {
+          this.submitError.set(this.translate.instant('FEEDBACK.VALIDATION_ERROR'));
+          return;
+        }
+        if (typeof d === 'string' && d.trim()) {
+          this.submitError.set(d);
+          return;
+        }
+        this.submitError.set(this.translate.instant('FEEDBACK.SUBMIT_ERROR'));
       },
     });
   }

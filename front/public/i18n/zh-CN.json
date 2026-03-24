@@ -1182,6 +1182,8 @@
     "SUBMIT": "提交反馈",
     "SENDING": "正在提交...",
     "SUBMIT_ERROR": "无法提交反馈，请稍后重试。",
+    "VALIDATION_ERROR": "请检查输入后重试。",
+    "RATE_LIMIT": "提交过于频繁，请稍后再试。",
     "THANK_YOU": "谢谢！",
     "THANK_YOU_DETAIL": "感谢您抽出时间分享反馈。",
     "OPEN_GOOGLE_REVIEW": "在 Google 上撰写公开评价",

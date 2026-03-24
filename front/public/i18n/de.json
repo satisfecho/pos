@@ -605,6 +605,8 @@
     "SUBMIT": "Feedback senden",
     "SENDING": "Wird gesendet...",
     "SUBMIT_ERROR": "Feedback konnte nicht gesendet werden. Bitte später erneut versuchen.",
+    "VALIDATION_ERROR": "Bitte prüfen Sie Ihre Eingaben und versuchen Sie es erneut.",
+    "RATE_LIMIT": "Zu viele Einsendungen. Bitte versuchen Sie es später erneut.",
     "THANK_YOU": "Vielen Dank!",
     "THANK_YOU_DETAIL": "Wir schätzen Ihre Zeit und Ihr Feedback.",
     "OPEN_GOOGLE_REVIEW": "Öffentliche Bewertung bei Google abgeben",
