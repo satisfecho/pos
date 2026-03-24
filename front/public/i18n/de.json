@@ -384,6 +384,7 @@
     "LOADING": "Laden...",
     "REFRESH": "Aktualisieren",
     "NO_ORDERS_DESC": "Derzeit keine aktiven Bestellungen",
+    "FOCUS_TABLE_NO_ORDERS": "Keine Bestellungen für diesen Tisch gefunden.",
     "ORDER_HISTORY": "Bestellverlauf",
     "NO_ORDER_HISTORY_YET": "Noch keine Bestellungen im Verlauf",
     "NOT_PAID_YET": "Noch nicht bezahlt",
@@ -568,7 +569,9 @@
     "VIEW_TABLE": "Tabelle",
     "COL_STATUS": "Status",
     "PIN": "PIN",
-    "OPEN_MENU": "Menü öffnen"
+    "OPEN_MENU": "Menü öffnen",
+    "OPEN_STAFF_ORDER": "Bestellung öffnen",
+    "VIEW_TABLE_ORDERS": "Bestellungen für diesen Tisch"
   },
   "TABLE_STATUS": {
     "available": "Verfügbar",

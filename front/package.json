@@ -16,6 +16,7 @@
     "test:tables-page": "node scripts/test-tables-page.mjs",
     "test:tables-waiter-assignment": "node scripts/test-tables-waiter-assignment.mjs",
     "test:tables-canvas-view-options": "node scripts/test-tables-canvas-view-options.mjs",
+    "test:tables-canvas-open-orders": "node scripts/test-tables-canvas-open-orders.mjs",
     "test:landing-version": "node scripts/test-landing-version.mjs",
     "test:landing-provider-links": "node scripts/test-landing-provider-links.mjs",
     "test:provider-register": "node scripts/test-provider-register.mjs",

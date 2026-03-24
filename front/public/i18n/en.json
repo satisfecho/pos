@@ -396,6 +396,7 @@
     "DATE": "Date",
     "NO_ORDERS": "No orders yet",
     "NO_ORDERS_DESC": "Orders will appear here when customers place them",
+    "FOCUS_TABLE_NO_ORDERS": "No orders found for this table.",
     "ACTIVE_ORDERS": "Active Orders",
     "NOT_PAID_YET": "Not Paid Yet",
     "SHOW_REMOVED_ITEMS": "Show Removed Items",
@@ -688,7 +689,9 @@
     "VIEW_TABLE": "List view",
     "COL_STATUS": "Status",
     "PIN": "PIN",
-    "OPEN_MENU": "Open menu"
+    "OPEN_MENU": "Open menu",
+    "OPEN_STAFF_ORDER": "Open order",
+    "VIEW_TABLE_ORDERS": "Orders for this table"
   },
   "TABLE_STATUS": {
     "available": "Available",

@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Tables floor plan (GitHub #75):** Selected-table panel links to **Staff orders** — `?focusOrder=` when the table has `active_order_id`, else `?focusTableId=` to jump to the right order/tab (scroll or open edit for history). Same roles as `/staff/orders`. New Puppeteer `test:tables-canvas-open-orders`.
+
 ### Changed
 
 - **Reservation reminders (GitHub #74):** Reminder email HTML/text use the same manage-reservation link label as confirmation (“View or change your reservation online”); the href is HTML-escaped. URL remains `/reservation?token=…` when `PUBLIC_APP_BASE_URL` is set.
