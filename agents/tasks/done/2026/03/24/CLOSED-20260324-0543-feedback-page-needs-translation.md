@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub **#67** (public feedback page i18n) was verified end-to-end on the local Docker stack and handed off as **CLOSED** for archival.
+- **What was done:** Task records coder review of `FeedbackPublicComponent` / `FEEDBACK` keys across locales, parity with `en.json`, and no further code changes needed on current `development`.
+- **What was tested:** `npm run test:feedback-public-i18n` and `npm run test:landing-version` (with `BASE_URL=http://127.0.0.1:4202`) — **PASS**; optional manual and production spot-checks were not run.
+- **Why closed:** All **required** testing instructions met with **PASS**; evidence in the test report and logs.
+- **Closed at (UTC):** 2026-03-24 05:48
+---
+
 # Feedback page needs translation
 
 ## GitHub
