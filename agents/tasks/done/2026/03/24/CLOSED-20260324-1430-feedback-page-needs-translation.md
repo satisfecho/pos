@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Tester handed off after a full PASS on public feedback i18n verification (issue #67), following the French locale JSON fix and cross-locale checks.
+- **What was done:** `front/public/i18n/fr.json` `FEEDBACK` block was repaired to valid JSON and aligned with other locales; remaining locales were validated; `FeedbackPublicComponent` already localized title and copy via translate pipe / stream and API errors via `Accept-Language`.
+- **What was tested:** `BASE_URL=http://127.0.0.1:4202 node front/scripts/test-feedback-public-i18n.mjs` (exit 0, all `>>> RESULT: … OK`), `python3 -m json.tool` on all `front/public/i18n/*.json`, and front container logs — no `FEEDBACK.*` leaks in DOM or title for en, de, fr, es, ca, zh-CN, hi.
+- **Why closed:** Overall **PASS** in the test report; acceptance criteria met for localized guest-visible feedback flow on dev.
+- **Closed at (UTC):** 2026-03-24 14:36
+---
+
 # Feedback page needs translation
 
 ## GitHub
