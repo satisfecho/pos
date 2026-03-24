@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Close-the-loop landing task for GitHub #69: coder confirmed no further product changes were needed beyond prior archived work; tester re-ran full landing verification and reported PASS.
+- **What was done:** Re-verified `LandingComponent` scope, `LANDING.*` i18n parity across seven `front/public/i18n/*.json` files, and recorded smoke evidence; issue #69 remains open for maintainer/closer to align GitHub state (per task notes).
+- **What was tested:** HTTP 200 on `/`, `test-landing-provider-links.mjs` and `test-landing-version.mjs` exit 0, Docker front build log clean, DE locale without exposed keys, required `data-testid`s and narrow/wide layout — **overall PASS**.
+- **Why closed:** Tester pass criteria satisfied; task ready for archive per agent workflow.
+- **Closed at (UTC):** 2026-03-24 19:04
+---
+
 # Nice the landing page
 
 ## GitHub
