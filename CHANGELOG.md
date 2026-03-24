@@ -25,6 +25,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **Agents:** 001-log-reviewer `time-of-last-review.txt` — GitHub/issue sweep and Docker log pass lines appended (2026-03-23, through 22:55Z UTC).
 
+## [2.0.52] - 2026-03-24
+
+### Added
+
+- **Smoke test:** `npm run test:feedback-public-i18n` — public `/feedback/:tenant` resolves translations (en + de); fails if raw `FEEDBACK.*` keys appear in the DOM (GitHub #67).
+
+### Fixed
+
+- **i18n bootstrap (Accept-Language interceptor):** Inject `LanguageService` only for API requests (`environment.apiUrl`). Loading `/i18n/*.json` during bootstrap no longer hits a circular dependency, so ngx-translate loads locale files and public routes (`/feedback/*`, `/book/*`, etc.) show translated copy on first paint (GitHub #67).
+- **Public feedback (browser tab title):** Tab title uses `FEEDBACK.LOADING` / `FEEDBACK.TITLE` / `FEEDBACK.THANK_YOU` plus tenant name when available (GitHub #67).
+- **i18n (ca, fr, hi, zh-CN):** `NAV.GUEST_FEEDBACK` and `RESERVATIONS.VIEW_FEEDBACK_PAGE` translated (GitHub #67).
+
 ## [2.0.51] - 2026-03-23
 
 ### Added

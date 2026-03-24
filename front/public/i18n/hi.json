@@ -58,7 +58,7 @@
     "BEVERAGES_DISPLAY": "पेय डिस्प्ले",
     "WORKING_PLAN": "कार्य योजना",
     "MY_SHIFT": "मेरी शिफ्ट",
-    "GUEST_FEEDBACK": "Guest feedback",
+    "GUEST_FEEDBACK": "मेहमान प्रतिक्रिया",
     "LOGOUT": "लॉग आउट"
   },
   "LANDING": {
@@ -656,7 +656,7 @@
     "ERROR_MISSING_TOKEN": "आरक्षण टोकन गायब है। अपनी पुष्टि के लिंक का उपयोग करें।",
     "ERROR_NOT_FOUND": "आरक्षण नहीं मिला या लिंक समाप्त हो गया।",
     "VIEW_PUBLIC_PAGE": "View public booking page",
-    "VIEW_FEEDBACK_PAGE": "Public feedback page"
+    "VIEW_FEEDBACK_PAGE": "सार्वजनिक प्रतिक्रिया पृष्ठ"
   },
   "MY_SHIFT": {
     "TITLE": "मेरी शिफ्ट",

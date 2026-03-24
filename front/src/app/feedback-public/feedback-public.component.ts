@@ -1,11 +1,12 @@
-import { Component, inject, signal, OnInit, computed } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl, SafeStyle } from '@angular/platform-browser';
+import { Component, inject, signal, OnInit, computed, OnDestroy } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl, SafeStyle, Title } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService, TenantSummary } from '../services/api.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguagePickerComponent } from '../shared/language-picker.component';
 import { contactEmailValid, contactPhoneValid } from '../shared/contact-validators';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-feedback-public',
@@ -14,11 +15,13 @@ import { contactEmailValid, contactPhoneValid } from '../shared/contact-validato
   templateUrl: './feedback-public.component.html',
   styleUrls: ['../book/book.component.scss', './feedback-public.component.scss'],
 })
-export class FeedbackPublicComponent implements OnInit {
+export class FeedbackPublicComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private api = inject(ApiService);
   private translate = inject(TranslateService);
   private sanitizer = inject(DomSanitizer);
+  private title = inject(Title);
+  private langSub?: Subscription;
 
   tenantId = signal(0);
   tenant = signal<TenantSummary | null>(null);
@@ -44,28 +47,59 @@ export class FeedbackPublicComponent implements OnInit {
   googleMapsUrl = computed(() => this.tenant()?.public_google_maps_url?.trim() || null);
 
   ngOnInit() {
+    this.langSub = this.translate.onLangChange.subscribe(() => this.updateDocumentTitle());
+
     const idParam = this.route.snapshot.paramMap.get('tenantId');
     const tid = idParam ? parseInt(idParam, 10) : NaN;
     if (!Number.isFinite(tid) || tid < 1) {
       this.errorKind.set('invalid_tenant');
       this.loading.set(false);
+      this.updateDocumentTitle();
       return;
     }
     this.tenantId.set(tid);
     const tok = this.route.snapshot.queryParamMap.get('token');
     this.reservationToken.set(tok?.trim() || null);
+    this.updateDocumentTitle();
 
     this.api.getPublicTenant(tid).subscribe({
       next: (t) => {
         this.tenant.set(t);
         this.logoUrl.set(this.api.getTenantLogoUrl(t.logo_filename ?? undefined, t.id));
         this.loading.set(false);
+        this.updateDocumentTitle();
       },
       error: () => {
         this.errorKind.set('tenant_not_found');
         this.loading.set(false);
+        this.updateDocumentTitle();
       },
     });
+  }
+
+  ngOnDestroy(): void {
+    this.langSub?.unsubscribe();
+  }
+
+  /** Browser tab title follows selected language (issue #67). */
+  private updateDocumentTitle(): void {
+    const t = this.tenant();
+    const name = t?.name?.trim();
+    const err = this.errorKind();
+    let key: string;
+    if (this.loading() && !err) {
+      key = 'FEEDBACK.LOADING';
+    } else if (this.submitted()) {
+      key = 'FEEDBACK.THANK_YOU';
+    } else {
+      key = 'FEEDBACK.TITLE';
+    }
+    const part = this.translate.instant(key);
+    if (name && !err) {
+      this.title.setTitle(`${name} – ${part}`);
+    } else {
+      this.title.setTitle(part);
+    }
   }
 
   getLogoSafeUrl(url: string | null): SafeResourceUrl | null {
@@ -114,6 +148,7 @@ export class FeedbackPublicComponent implements OnInit {
       next: () => {
         this.submitted.set(true);
         this.submitting.set(false);
+        this.updateDocumentTitle();
       },
       error: (err) => {
         this.submitting.set(false);

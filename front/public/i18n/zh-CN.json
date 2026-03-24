@@ -58,7 +58,7 @@
     "BEVERAGES_DISPLAY": "饮品显示屏",
     "WORKING_PLAN": "排班计划",
     "MY_SHIFT": "我的班次",
-    "GUEST_FEEDBACK": "Guest feedback",
+    "GUEST_FEEDBACK": "顾客反馈",
     "LOGOUT": "退出登录"
   },
   "LANDING": {
@@ -656,7 +656,7 @@
     "ERROR_MISSING_TOKEN": "缺少预订令牌。请使用确认中的链接。",
     "ERROR_NOT_FOUND": "未找到预订或链接已过期。",
     "VIEW_PUBLIC_PAGE": "View public booking page",
-    "VIEW_FEEDBACK_PAGE": "Public feedback page"
+    "VIEW_FEEDBACK_PAGE": "公开反馈页面"
   },
   "MY_SHIFT": {
     "TITLE": "我的班次",

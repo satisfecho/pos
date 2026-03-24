@@ -1,6 +1,6 @@
 {
   "name": "front",
-  "version": "2.0.51",
+  "version": "2.0.52",
   "scripts": {
     "ng": "ng",
     "prebuild": "node scripts/get-commit-hash.js",
@@ -37,6 +37,7 @@
     "test:rate-limit-puppeteer": "node scripts/test-rate-limit-puppeteer.mjs",
     "test:book-whatsapp": "node scripts/test-book-whatsapp-puppeteer.mjs",
     "test:reservation-create": "node scripts/test-reservation-create.mjs",
+    "test:feedback-public-i18n": "node scripts/test-feedback-public-i18n.mjs",
     "capture-screenshots": "node scripts/capture-screenshots.mjs"
   },
   "prettier": {

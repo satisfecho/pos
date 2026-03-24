@@ -58,7 +58,7 @@
     "BEVERAGES_DISPLAY": "Écran boissons",
     "WORKING_PLAN": "Plan de travail",
     "MY_SHIFT": "Mon service",
-    "GUEST_FEEDBACK": "Guest feedback",
+    "GUEST_FEEDBACK": "Avis clients",
     "LOGOUT": "Déconnexion"
   },
   "LANDING": {
@@ -751,7 +751,7 @@
     "SENDING": "Envoi...",
     "DELAY_SENT": "Avis envoyé. Nous avons été informés.",
     "VIEW_PUBLIC_PAGE": "View public booking page",
-    "VIEW_FEEDBACK_PAGE": "Public feedback page"
+    "VIEW_FEEDBACK_PAGE": "Page d'avis publique"
   },
   "WORKING_PLAN": {
     "TITLE": "Plan de travail",

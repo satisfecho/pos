@@ -58,7 +58,7 @@
     "BEVERAGES_DISPLAY": "Pantalla de begudes",
     "WORKING_PLAN": "Pla de treball",
     "MY_SHIFT": "El meu torn",
-    "GUEST_FEEDBACK": "Guest feedback",
+    "GUEST_FEEDBACK": "Comentaris de clients",
     "LOGOUT": "Tancar sessió"
   },
   "LANDING": {
@@ -654,7 +654,7 @@
     "SENDING": "Enviant...",
     "DELAY_SENT": "Avis enviat. Ens han informat.",
     "VIEW_PUBLIC_PAGE": "View public booking page",
-    "VIEW_FEEDBACK_PAGE": "Public feedback page"
+    "VIEW_FEEDBACK_PAGE": "Pàgina pública de comentaris"
   },
   "MY_SHIFT": {
     "TITLE": "El meu torn",
