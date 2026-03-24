@@ -388,7 +388,7 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `test:tables-canvas-view-options` | `scripts/test-tables-canvas-view-options.mjs` (Tables: switch Floor plan → Tiles → Table → Floor plan → Table; .env demo user, tenant=1) |
 | `test:tables-waiter-assignment` | `scripts/test-tables-waiter-assignment.mjs` (Waiter: Table view has read-only assignment cells, no `select.waiter-select-inline`; requires `WAITER_LOGIN_EMAIL` / `WAITER_LOGIN_PASSWORD`, else skips with exit 0) |
 | `test:landing-version` | `scripts/test-landing-version.mjs` |
-| `test:feedback-public-i18n` | `scripts/test-feedback-public-i18n.mjs` (public `/feedback/:tenant`; en + de, no raw `FEEDBACK.*` in DOM) |
+| `test:feedback-public-i18n` | `scripts/test-feedback-public-i18n.mjs` (public `/feedback/:tenant` and `?token=`; locale picker en/de/fr/es/ca/zh-CN/hi; invalid `/feedback/0`; no raw `FEEDBACK.*` in DOM; document titles localized) |
 | `test:landing-provider-links` | `scripts/test-landing-provider-links.mjs` |
 | `test:provider-register` | `scripts/test-provider-register.mjs` |
 | `test:provider-add-product` | `scripts/test-provider-add-product.mjs` |

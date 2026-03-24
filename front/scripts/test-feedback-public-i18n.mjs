@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Puppeteer: public /feedback/:tenant uses translations (no raw FEEDBACK.* keys in DOM).
- * Default locale, then Deutsch, Français, Español (issue #67: multiple non-default locales).
+ * Default locale, then de/fr/es/ca/zh-CN/hi; token URL; invalid tenant /feedback/0 (issue #67).
  *
  * Usage:
  *   BASE_URL=http://127.0.0.1:4202 node front/scripts/test-feedback-public-i18n.mjs
@@ -184,8 +184,26 @@ async function main() {
       throw new Error(`Expected zh-CN document title to include Chinese prompt, got: ${docTitleZh}`);
     }
 
+    await page.select('.language-select', 'hi');
+    await sleep(600);
+
+    await page.waitForFunction(
+      () => (document.body?.innerText || '').includes('आपकी मुलाक़ात'),
+      { timeout: 10000 }
+    );
+
+    const bodyHi = await page.evaluate(() => document.body.innerText);
+    if (bodyHi.includes('FEEDBACK.')) {
+      throw new Error('Raw i18n keys visible after switch to hi');
+    }
+
+    const docTitleHi = await page.title();
+    if (!docTitleHi.includes('आपकी')) {
+      throw new Error(`Expected HI document title to include Hindi prompt, got: ${docTitleHi}`);
+    }
+
     console.log(
-      '>>> RESULT: Public feedback i18n OK (en + de + fr + es + ca + zh-CN, no FEEDBACK.* leaks)'
+      '>>> RESULT: Public feedback i18n OK (en + de + fr + es + ca + zh-CN + hi, no FEEDBACK.* leaks)'
     );
 
     // Token query (reservation deep link): same i18n expectations, no raw keys in DOM
@@ -205,6 +223,36 @@ async function main() {
       throw new Error('Raw i18n keys visible with ?token= (en): ' + bodyToken.slice(0, 400));
     }
     console.log('>>> RESULT: Token URL path OK (no FEEDBACK.* leaks)');
+
+    // Invalid tenant id: error state must be translated (issue #67).
+    // Prior steps leave a non-en locale in localStorage; assert EN copy explicitly.
+    await page.select('.language-select', 'en');
+    await sleep(600);
+
+    const urlInvalid = new URL('/feedback/0', baseUrl).href;
+    await page.goto(urlInvalid, { waitUntil: 'networkidle2', timeout: 25000 });
+    await page.waitForSelector('.language-select', { timeout: 15000 });
+    await page.waitForFunction(
+      () => {
+        const t = document.body?.innerText || '';
+        return t.includes('Invalid restaurant') && !t.includes('FEEDBACK.');
+      },
+      { timeout: 15000 }
+    );
+    await page.select('.language-select', 'de');
+    await sleep(600);
+    await page.waitForFunction(
+      () => {
+        const t = document.body?.innerText || '';
+        return t.includes('Ungültiger Restaurant') && !t.includes('FEEDBACK.');
+      },
+      { timeout: 10000 }
+    );
+    const titleInvalidDe = await page.title();
+    if (!titleInvalidDe.includes('Ungültiger')) {
+      throw new Error(`Expected DE document title for invalid tenant, got: ${titleInvalidDe}`);
+    }
+    console.log('>>> RESULT: Invalid tenant /feedback/0 error UI i18n OK');
   } finally {
     await browser.close();
   }
