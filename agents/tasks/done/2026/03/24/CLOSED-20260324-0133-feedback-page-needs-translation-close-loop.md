@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Follow-up task for GitHub **#67** (public feedback page translation) after an earlier CLOSED archive; goal was re-verify delivery and align GitHub state.
+- **What was done:** No further code changes; tester re-ran stack checks, Puppeteer locale sweep (fr, ca, zh-CN, hi), invalid-tenant path, `test:landing-version`, and front build log review. **`gh` comment and close** on #67 failed again (`Resource not accessible by personal access token`); issue currently has **no** `agent:testing` / `agent:wip` labels — human with repo permissions should comment, close #67 when product agrees.
+- **What was tested:** Per test report — all sections **PASS** (stack, locale sweep, automated landing, front logs); GitHub API actions **N/A (token)**.
+- **Why closed:** All verification criteria met; task archived per agent loop (GitHub handoff documented).
+- **Closed at (UTC):** 2026-03-24 01:39
+---
+
 # Feedback page needs translation — verification & GitHub close loop
 
 ## GitHub
