@@ -2,6 +2,8 @@
 /**
  * Puppeteer: public /feedback/:tenant uses translations (no raw FEEDBACK.* keys in DOM).
  * Default locale, then de/fr/es/ca/zh-CN/hi; token URL; invalid tenant /feedback/0 (issue #67).
+ * Fresh profile + navigator.language stub es-ES before load (no pos_language): asserts initial UI
+ * uses LanguageService browser detection (first visit; complements manual picker).
  *
  * Usage:
  *   BASE_URL=http://127.0.0.1:4202 node front/scripts/test-feedback-public-i18n.mjs
@@ -67,6 +69,48 @@ async function main() {
   console.log('Tenant:', tenantId);
   console.log('---');
 
+  const feedbackUrl = new URL(`/feedback/${tenantId}`, baseUrl).href;
+
+  // No stored pos_language: LanguageService reads navigator.language on first load.
+  // Stub before document loads (evaluateOnNewDocument); CDP/--lang alone did not flip navigator in this stack.
+  const browserEsAuto = await puppeteer.launch({
+    executablePath: CHROME_PATH,
+    headless,
+    defaultViewport: { width: 1280, height: 720 },
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
+  const pageEsAuto = await browserEsAuto.newPage();
+  await pageEsAuto.evaluateOnNewDocument(() => {
+    Object.defineProperty(navigator, 'language', {
+      get: () => 'es-ES',
+      configurable: true,
+    });
+    Object.defineProperty(navigator, 'languages', {
+      get: () => ['es-ES', 'es', 'en'],
+      configurable: true,
+    });
+  });
+  try {
+    await pageEsAuto.goto(feedbackUrl, { waitUntil: 'networkidle2', timeout: 25000 });
+    await pageEsAuto.waitForSelector('.language-select', { timeout: 15000 });
+    await pageEsAuto.waitForFunction(
+      () => {
+        const t = document.body?.innerText || '';
+        return t.includes('Cómo fue') && !t.includes('FEEDBACK.');
+      },
+      { timeout: 15000 }
+    );
+    const titleEsAuto = await pageEsAuto.title();
+    if (!titleEsAuto.includes('Cómo')) {
+      throw new Error(`Expected ES auto-detect document title to include "Cómo", got: ${titleEsAuto}`);
+    }
+    console.log(
+      '>>> RESULT: Browser default locale (es, navigator stub) on first load OK (no FEEDBACK.* leaks)'
+    );
+  } finally {
+    await browserEsAuto.close();
+  }
+
   const browser = await puppeteer.launch({
     executablePath: CHROME_PATH,
     headless,
@@ -77,7 +121,7 @@ async function main() {
   const page = await browser.newPage();
 
   try {
-    const url = new URL(`/feedback/${tenantId}`, baseUrl).href;
+    const url = feedbackUrl;
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 25000 });
 
     await page.waitForSelector('.language-select', { timeout: 15000 });
