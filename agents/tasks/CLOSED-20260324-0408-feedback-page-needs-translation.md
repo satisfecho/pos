@@ -49,3 +49,47 @@ Prior implementation and multiple **CLOSED** archives under `agents/tasks/done/`
 ### GitHub (tester / closer)
 
 - Issue **#67:** after verification, update labels/comments per `docs/agent-loop.md`; close when product accepts.
+
+---
+
+## Test report
+
+1. **Date/time (UTC)** and log window.  
+   **2026-03-24 04:11–04:13 UTC.** Log window for evidence: **04:09–04:12** (container timestamps align with HAProxy `24/Mar/2026:04:12:*`).
+
+2. **Environment.**  
+   Compose: `docker-compose.yml` + `docker-compose.dev.yml`. **`BASE_URL`:** `http://127.0.0.1:4202` (HAProxy → front). **Branch:** `development` @ `0fe62d6`.
+
+3. **What was tested.**  
+   Per “What to verify”: public `/feedback/1` and token URL i18n (en/de/fr/es), document titles on locale switch; landing smoke; invalid-tenant error routes `/feedback/0` and `/feedback/999999` (no raw keys, error-specific titles).
+
+4. **Results.**
+
+   | Criterion | Result | Evidence |
+   |-----------|--------|----------|
+   | `npm run test:feedback-public-i18n` | **PASS** | Exit 0; console: “Public feedback i18n OK …”; “Token URL path OK”. |
+   | `npm run test:landing-version` | **PASS** | Exit 0; “Landing version OK; demo login … sidebar nav OK.” |
+   | No literal `FEEDBACK.` in UI (happy + token paths) | **PASS** | Covered by i18n script assertions + spot-check error routes. |
+   | Language picker + document titles (de/fr/es) | **PASS** | Script asserts DE/FR/ES body phrases and title substrings (“Wie war”, “Comment”, “Cómo”). |
+   | Error routes: copy + title match error (not generic form title) | **PASS** | Spot-check: `/feedback/0` title “Invalid restaurant link.”; `/feedback/999999` title “Restaurant not found.”; no `FEEDBACK.` in `document.body.innerText`. |
+
+5. **Overall:** **PASS.**
+
+6. **Product owner feedback.**  
+   Public feedback and the tokenized URL behave as intended for localization: automated checks cover four locales and titles, and invalid-tenant pages show human-readable English error titles without leaking i18n keys. Landing navigation smoke did not regress. **Issue #67** can be closed from a product perspective once someone with Issues write access applies the GitHub comment/label/close steps below.
+
+7. **URLs tested (numbered).**
+
+   1. `http://127.0.0.1:4202/feedback/1` (Puppeteer: `test:feedback-public-i18n`)
+   2. `http://127.0.0.1:4202/feedback/1?token=dummy-token-for-i18n-smoke` (same script)
+   3. `http://127.0.0.1:4202/feedback/0` (Puppeteer spot-check)
+   4. `http://127.0.0.1:4202/feedback/999999` (Puppeteer spot-check)
+   5. `http://127.0.0.1:4202/` and staff sidebar targets from `test:landing-version` (/, /dashboard, /my-shift, /staff/orders, /reservations, /guest-feedback, /tables, /kitchen, /bar, /customers, /products, /catalog, /reports, /working-plan, /users, /settings, /inventory/*)
+
+8. **Relevant log excerpts.**
+
+   - **pos-front** (build healthy during window):  
+     `Application bundle generation complete. [0.312 seconds] - 2026-03-24T04:09:56.900Z` … lazy chunk `feedback-public-component`.
+   - **pos-haproxy** (sample lines **04:12:11**): `GET /i18n/en.json` **200/304**; API `GET /api/users/me` **200** (landing test traffic).
+
+**GitHub automation:** `gh issue comment 67` / label update failed here with `Resource not accessible by personal access token (addComment)`. **Human/closer:** add “Verification passed” comment on **#67**, set labels per `docs/agent-loop.md` (**remove `agent:testing` / `agent:wip`** as appropriate), and **close #67** if accepted.
