@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Tester verified guest feedback public i18n after the coder extended the Puppeteer regression script to cover missing-tenant (404) UI in English and German.
+- **What was done:** Locale JSONs and `FeedbackPublicComponent` were already aligned with #67; the coder added assertions for `FEEDBACK.TENANT_NOT_FOUND` in body and document title for en/de in `front/scripts/test-feedback-public-i18n.mjs`.
+- **What was tested:** `node front/scripts/test-feedback-public-i18n.mjs` against `BASE_URL=http://127.0.0.1:4202` on `development` @ `aaa09f3`; all six `>>> RESULT:` lines OK, no raw `FEEDBACK.` leaks; optional manual and production checks were not run (N/A per task).
+- **Why closed:** Test report **PASS**; task handed off from tester; archived per agent-loop closing workflow.
+- **Closed at (UTC):** 2026-03-24 14:49
+---
+
 # Feedback page needs translation
 
 ## GitHub
