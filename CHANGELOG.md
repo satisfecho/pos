@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [2.0.54] - 2026-03-24
+
 ### Added
 
 - **Smoke test:** `npm run test:tables-waiter-assignment` — waiter Table view has read-only assignment cells (optional `WAITER_LOGIN_EMAIL` / `WAITER_LOGIN_PASSWORD`; skips if unset).
