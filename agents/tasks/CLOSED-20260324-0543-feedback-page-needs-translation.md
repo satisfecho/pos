@@ -38,3 +38,26 @@ Multiple **`agents/tasks/done/`** archives document repeated implementation and 
 4. Optional prod: spot-check **satisfecho.de** if product wants **#67** closed with a prod-specific note.
 
 **Closer / product:** On tester **PASS**, mirror verification on GitHub **#67** when agreed; archive per `agents/tasks/README.md`.
+
+---
+
+## Test report (tester)
+
+1. **Date/time (UTC)** — Started **2026-03-24 05:46:18 UTC**; automated runs finished **~05:46:30–05:47:15 UTC**. Log window for excerpts: HAProxy **24/Mar/2026:05:46:30–05:46:33** UTC.
+2. **Environment** — Compose: `docker-compose.yml` + `docker-compose.dev.yml`; **`BASE_URL`** `http://127.0.0.1:4202`; branch **`development`**; commit **`de5d50f`**; **`HEADLESS=1`** for Puppeteer.
+3. **What was tested** — Testing instructions §1–§2 (required). §3–§4 optional: not executed (rely on automated coverage).
+4. **Results**
+   - §1 `test:feedback-public-i18n`: **PASS** — exit **0**; five `>>> RESULT:` lines as specified; script asserts no `FEEDBACK.` in body/title checks.
+   - §2 `test:landing-version`: **PASS** — exit **0**; `>>> RESULT: Landing version OK; demo login (tenant=1) OK; sidebar nav OK.`
+   - §3 optional manual: **N/A** (not run).
+   - §4 optional prod: **N/A** (not run).
+5. **Overall:** **PASS** (all required criteria).
+6. **Product owner feedback** — Local Docker verification matches prior PASS archives: public feedback stays fully translated across locales, token URLs, thank-you, and invalid-tenant paths without raw i18n keys. Production spot-check on satisfecho.de remains optional before closing **#67** if product wants an explicit prod note.
+7. **URLs tested** (Puppeteer; full URLs)
+   1. `http://127.0.0.1:4202/feedback/1` — ES navigator stub first load; locale loop (en → de → fr → es → ca → zh-CN → hi); post-submit flow; invalid-tenant navigation from this session.
+   2. `http://127.0.0.1:4202/feedback/1?token=dummy-token-for-i18n-smoke`
+   3. `http://127.0.0.1:4202/feedback/0` — error UI (en + de title check).
+   4. Landing regression additionally exercised staff app routes from **`http://127.0.0.1:4202/`** through dashboard and sidebar (see script output); not duplicated here in full.
+8. **Relevant log excerpts**
+   - **pos-haproxy:** `GET /api/public/tenants/1` **200**; `POST /api/public/tenants/1/guest-feedback` **200**; `GET /feedback/0` **200**; `GET /i18n/de.json` **304** (sample lines **24/Mar/2026:05:46:30–05:46:33** UTC).
+   - **pos-front:** tail shows `Application bundle generation complete` with no TS/build errors in the sampled window.
