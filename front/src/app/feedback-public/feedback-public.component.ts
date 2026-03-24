@@ -24,7 +24,8 @@ export class FeedbackPublicComponent implements OnInit {
   tenant = signal<TenantSummary | null>(null);
   logoUrl = signal<string | null>(null);
   loading = signal(true);
-  error = signal<string | null>(null);
+  /** Invalid id or missing tenant; copy uses translate pipe so the picker updates wording. */
+  errorKind = signal<'invalid_tenant' | 'tenant_not_found' | null>(null);
   submitting = signal(false);
   submitted = signal(false);
   submitError = signal<string | null>(null);
@@ -46,7 +47,7 @@ export class FeedbackPublicComponent implements OnInit {
     const idParam = this.route.snapshot.paramMap.get('tenantId');
     const tid = idParam ? parseInt(idParam, 10) : NaN;
     if (!Number.isFinite(tid) || tid < 1) {
-      this.error.set(this.translate.instant('FEEDBACK.INVALID_TENANT'));
+      this.errorKind.set('invalid_tenant');
       this.loading.set(false);
       return;
     }
@@ -61,7 +62,7 @@ export class FeedbackPublicComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set(this.translate.instant('FEEDBACK.TENANT_NOT_FOUND'));
+        this.errorKind.set('tenant_not_found');
         this.loading.set(false);
       },
     });

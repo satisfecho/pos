@@ -12,13 +12,24 @@
         </div>
       </div>
     </div>
-  } @else if (error()) {
-    <main class="book-content">
-      <div class="book-card" style="margin-top: 2rem">
-        <h1>{{ 'FEEDBACK.TITLE' | translate }}</h1>
-        <p class="form-error">{{ error() }}</p>
+  } @else if (errorKind()) {
+    <div class="feedback-error-shell">
+      <div class="feedback-error-bar">
+        <app-language-picker class="book-language-picker"></app-language-picker>
       </div>
-    </main>
+      <main class="book-content">
+        <div class="book-card" style="margin-top: 2rem">
+          <h1>{{ 'FEEDBACK.TITLE' | translate }}</h1>
+          <p class="form-error">
+            @if (errorKind() === 'invalid_tenant') {
+              {{ 'FEEDBACK.INVALID_TENANT' | translate }}
+            } @else if (errorKind() === 'tenant_not_found') {
+              {{ 'FEEDBACK.TENANT_NOT_FOUND' | translate }}
+            }
+          </p>
+        </div>
+      </main>
+    </div>
   } @else if (submitted()) {
     <header
       class="hero-header"
