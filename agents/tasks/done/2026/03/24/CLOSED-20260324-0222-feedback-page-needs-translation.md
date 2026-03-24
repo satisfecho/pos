@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Follow-up on GitHub **#67** (public feedback fully localized); prior work was archived; this task captured a coder fix for the invalid-tenant error path and full tester re-verification.
+- **What was done:** Error branch now uses `errorKind` + `translate` pipe, `app-language-picker`, and layout shell styles so locale can change on `/feedback/0` (and related errors); i18n JSON parity across locales was confirmed.
+- **What was tested:** Per instructions §1–4: `/feedback/1` (form, thank-you, BOOK strings, multiple locales via Puppeteer), `/feedback/0` picker + title/error updates, `test:landing-version` **exit 0**, front bundle logs — **overall PASS**.
+- **Why closed:** All documented pass/fail criteria met; ready for archive. **GitHub:** close **#67** when product accepts; if automation lacks **Issues: write**, a human should post the closing comment per `docs/agent-loop.md`.
+- **Closed at (UTC):** 2026-03-24 02:29
+---
+
 # Feedback page needs translation
 
 ## GitHub
