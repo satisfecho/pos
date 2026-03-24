@@ -36,3 +36,30 @@ The amvara9 build pipeline should run **`docker buildx prune`** so temporary Bui
 
 - **Pass:** Script remains **`set -e`**-safe; prune runs after successful **back** + **front** builds; **`SKIP_BUILDX_PRUNE=1`** skips; doc in **`docs/0001-ci-cd-amvara9.md`** matches behaviour.
 - **Fail:** Deploy aborts on prune failure without intentional design, or prune runs before builds complete.
+
+---
+
+## Test report
+
+1. **Date/time (UTC) and log window:** 2026-03-24T22:36:15Z — verification window ~22:35–22:37Z; no app containers required for this task.
+
+2. **Environment:** Repo `/Users/raro42/projects/pos2`, branch `development`, commit `61e8ebc`. Compose N/A for executed checks. **`BASE_URL`:** N/A — no browser.
+
+3. **What was tested:** Pass/fail criteria from task: `set -e` safety and non-fatal prune; prune order after back + front builds; `SKIP_BUILDX_PRUNE=1`; doc alignment with `scripts/deploy-amvara9.sh`.
+
+4. **Results:**
+   - **`set -e` + prune failure non-aborting:** **PASS** — `docker buildx prune -f` is only in `if …; then … else … fi` (lines 91–95 of `scripts/deploy-amvara9.sh`), so a failing prune does not exit the script under `set -e`.
+   - **Prune after back + front builds:** **PASS** — `docker compose … build back` (line 75), then `build --no-cache front` (line 82), then prune block (lines 84–96).
+   - **`SKIP_BUILDX_PRUNE=1` skips prune:** **PASS** — lines 87–88 echo skip message and skip the prune branch.
+   - **`docs/0001-ci-cd-amvara9.md` matches behaviour:** **PASS** — bullet documents post-build prune, `-f`, `SKIP_BUILDX_PRUNE=1`, non-fatal warnings (line 56).
+   - **`bash -n scripts/deploy-amvara9.sh`:** **PASS** — exit code 0.
+
+5. **Overall:** **PASS**
+
+6. **Product owner feedback:** Deploy now trims unused BuildKit cache after each successful image rebuild on amvara9, which should slow disk fill-up from CI layers. Operators can set `SKIP_BUILDX_PRUNE=1` if they need to preserve cache; a failed prune only logs a warning so production rollout is not blocked by a flaky buildx command.
+
+7. **URLs tested:** N/A — no browser.
+
+8. **Relevant log excerpts:** N/A — verification was static analysis + `bash -n`. Optional full deploy/build+prune on a host with Docker was not run (marked optional in task).
+
+**GitHub:** Comment posted on #73 at verification start. `gh issue edit` to add label `agent:testing` failed (label not defined in repo); closer can add labels or close issue per `docs/agent-loop.md`.

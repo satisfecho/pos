@@ -21,3 +21,29 @@ See **`docs/0030-reservation-confirmation-email-troubleshooting.md`** (confirmat
 ## Testing instructions
 - **Unit:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T back pytest tests/test_reservation_reminder_email.py -q`
 - **Manual:** With SMTP + `PUBLIC_APP_BASE_URL` set, create a **public** booking (token present), then staff **Send reminder** on that reservation. Inbox: link text should read “View or change your reservation online” and open the manage page; confirmation emails unchanged.
+
+---
+
+## Test report
+
+1. **Date/time (UTC) and log window:** 2026-03-24T22:36–22:38Z approx.
+
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`, branch `development`, commit `61e8ebc`. **`BASE_URL`:** not used for executed checks (no browser run).
+
+3. **What was tested:** Unit tests per task; code review of reminder template strings in `email_service.py`; manual SMTP/inbox flow not executed (no configured test inbox in this run).
+
+4. **Results:**
+   - **Unit `pytest tests/test_reservation_reminder_email.py -q`:** **PASS** — `2 passed in 0.09s`.
+   - **Reminder copy and manage URL in HTML/text (via tests):** **PASS** — asserts “View or change your reservation online”, full `view_url` in text, `href` matches URL, no “view or cancel” substring in HTML.
+   - **HTML `href` escaping for quotes in token URL:** **PASS** — `test_reminder_href_escapes_quotes_in_url`.
+   - **Manual (live send + inbox + manage page):** **NOT EXECUTED** — outbound SMTP and a real inbox were not configured for this verification; recommend staging smoke per task text.
+
+5. **Overall:** **PASS** (automated verification complete; manual inbox step deferred to staging/PO).
+
+6. **Product owner feedback:** Guests get the same “view or change” wording as confirmation, with safe `href` encoding. Unit tests lock the behaviour in CI; a one-off check on staging with real mail still confirms SMTP wiring and the public manage URL end-to-end.
+
+7. **URLs tested:** N/A — no browser (manual manage-page open not run).
+
+8. **Relevant log excerpts:** Pytest stdout: `.. [100%]` / `2 passed in 0.09s`. `pos-back` container logs in the window showed routine `/docs` traffic only; pytest does not emit through uvicorn.
+
+**GitHub:** Comment posted on #74 at start. Label `agent:testing` may be missing in repo (same as #73).
