@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub [#67](https://github.com/satisfecho/pos/issues/67) — public `/feedback/{tenant}` (with optional token) needed full translation coverage and correct document titles after locale/translation load.
+- **What was done:** Coder merged `TranslateService.onLangChange` with `onTranslationChange` in `FeedbackPublicComponent` so the browser tab title tracks the active locale when translations arrive after first paint; confirmed `FEEDBACK` / related `BOOK` keys across all seven locale files; automated smoke via `front/scripts/test-feedback-public-i18n.mjs` per task notes.
+- **What was tested:** On docker dev (`BASE_URL=http://127.0.0.1:4202`), `node front/scripts/test-feedback-public-i18n.mjs` and `npm run test:landing-version --prefix front` — **PASS**; no raw `FEEDBACK.*` in body text, titles and invalid-tenant copy verified across locales; front bundle generation clean in logs.
+- **Why closed:** Tester test report records **PASS** for all stated criteria; archive per `agents/tasks/README.md`. `gh issue comment` / close may still require a human token (Issues write) — see task body.
+- **Closed at (UTC):** 2026-03-24 04:50
+---
+
 # Feedback page needs translation
 
 ## GitHub
