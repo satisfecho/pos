@@ -35,3 +35,27 @@ Public guest feedback at `/feedback/{tenant}` (e.g. with `?token=…`) must be *
 ### Pass / fail criteria
 - **Pass:** Script exits 0; no `FEEDBACK.` substring in `document.body.innerText` or document title during checks; front logs show successful bundle generation after changes.
 - **Fail:** Any raw `FEEDBACK.*` in DOM/title, or script assertion errors (locale string / title mismatch).
+
+## Test report
+
+1. **Date/time (UTC):** 2026-03-24T08:01Z (verification run). **Log window:** `pos-front` tail ~2026-03-24T03:35Z–08:00Z (compose log timestamps, UTC).
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; `BASE_URL=http://127.0.0.1:4202`; branch `development`, commit `496d43b`.
+3. **What was tested:** Per “What to verify”: first-load browser locale (es stub), locale picker `en`→`de`→`fr`→`es`→`ca`→`zh-CN`→`hi` (body + document title), `/feedback/1?token=…`, submit → thank-you in DE, invalid `/feedback/0` EN + DE.
+4. **Results:**
+   - First visit / auto locale (es): **PASS** — script: “Browser default locale (es, navigator stub) on first load OK”.
+   - Locales + titles: **PASS** — “Public feedback i18n OK (en + de + fr + es + ca + zh-CN + hi, no FEEDBACK.* leaks)”.
+   - Token URL: **PASS** — “Token URL path OK”.
+   - Thank-you (DE): **PASS** — “Post-submit thank-you page i18n OK (de, no FEEDBACK.* leaks)”.
+   - Invalid tenant: **PASS** — “Invalid tenant /feedback/0 error UI i18n OK”.
+   - Front build: **PASS** — `Application bundle generation complete` in `docker compose … logs --tail=80 front`; no TS/Angular errors in tail.
+   - Pass criteria (exit 0, no `FEEDBACK.` in body/title): **PASS** — `node front/scripts/test-feedback-public-i18n.mjs` exited 0.
+5. **Overall:** **PASS**.
+6. **Product owner feedback:** Public feedback i18n is covered by an automated Puppeteer script on local Docker; this run confirms translated body and tab title across all supported picker languages, including first paint with a Spanish browser locale and the post-submit thank-you state. Production (`satisfecho.de`) was not re-run in this pass; optional after deploy per task instructions.
+7. **URLs tested:**
+   1. `http://127.0.0.1:4202/feedback/1` (first load es stub; picker sweeps)
+   2. `http://127.0.0.1:4202/feedback/1?token=dummy-token-for-i18n-smoke`
+   3. `http://127.0.0.1:4202/feedback/1` (submit flow → thank-you)
+   4. `http://127.0.0.1:4202/feedback/0` (invalid tenant EN/DE)
+8. **Relevant log excerpts:** `pos-front`: `Application bundle generation complete. [0.354 seconds] - 2026-03-24T07:59:39.500Z` (and prior successful rebuilds in same tail; no “failed” / TS error lines).
+
+**GitHub sync:** `gh issue comment 67` failed with “Resource not accessible by personal access token (addComment)”; issue labels/comment not updated from CI. Human or a PAT with **issues:write** can mirror this PASS on #67 per `docs/agent-loop.md`.
