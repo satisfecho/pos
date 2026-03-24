@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Tester re-verified public guest feedback i18n for GitHub **#67** on **development** @ **b5bd0f5** after prior archived CLOSED tasks for the same theme.
+- **What was done:** Task documents aligned implementation (translate pipe, `TranslateService` title, localized API errors, `FEEDBACK` keys in seven locales) and recorded a full Puppeteer run plus log window review.
+- **What was tested:** `npm run test:feedback-public-i18n --prefix front` with `BASE_URL=http://127.0.0.1:4202` — **PASS** (all five `>>> RESULT: … OK` lines); HAProxy/front logs in the 06:55 UTC window showed no errors relevant to the run.
+- **Why closed:** Tester **overall PASS**; archive criteria satisfied. GitHub **#67** remains for product sign-off / optional prod spot-check; prior attempt to apply labels via `gh` failed (token scope).
+- **Closed at (UTC):** 2026-03-24 06:56
+---
+
 # Feedback page needs translation
 
 ## GitHub
