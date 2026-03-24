@@ -38,3 +38,44 @@ Prior implementation and tester **PASS** are recorded in **`agents/tasks/done/20
 ### Pass / fail criteria
 - **Pass:** Both scripts exit `0`; build log shows successful bundle generation; no raw `LANDING.*` in footer when switching language.
 - **Fail:** Non-zero script exit, build errors, missing keys, or broken `/provider/login` / `/provider/register` navigation from footer.
+
+---
+
+## Test report
+
+1. **Date/time (UTC)** and log window  
+   - Started verification: **2026-03-24T18:46Z** (approx.). Finished: **2026-03-24T18:50Z**.  
+   - Docker `front` log window reviewed: rebuild lines around **2026-03-24T18:44:30Z**–**18:44:40Z** (UTC).
+
+2. **Environment**  
+   - Compose: `docker-compose.yml` + `docker-compose.dev.yml`.  
+   - **BASE_URL:** `http://127.0.0.1:4202` (HAProxy → front).  
+   - Branch: **development** @ **bcfdb1d**.
+
+3. **What was tested** (from “What to verify”)  
+   - `/` loads; footer provider links translated (no raw `LANDING.*`); `data-testid` present; Angular front logs clean; Puppeteer scripts per instructions; manual DE via language `<select>`.
+
+4. **Results**  
+   - **`/` loads (200):** **PASS** — `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:4202/` → `200`.  
+   - **Footer `data-testid` + navigation:** **PASS** — `test-landing-provider-links.mjs` exit `0`; “Provider login link: OK”, “Register as provider link: OK”, register page load OK.  
+   - **Landing version + extended nav (optional script):** **PASS** — `test-landing-version.mjs` exit `0`; version element present; demo login + sidebar + inventory sublinks OK.  
+   - **Angular build clean (Docker front):** **PASS** — `logs --tail=80 front` shows `Application bundle generation complete` with no TS/NG error lines in the tail.  
+   - **i18n footer (DE, no raw keys):** **PASS** — Puppeteer: `select.language-select` → `de`; texts `"Anbieter-Login"` / `"Als Anbieter registrieren"`; `LANDING.` not present in link text.
+
+5. **Overall:** **PASS**
+
+6. **Product owner feedback**  
+   The public landing at `/` remains stable on current `development`: automated checks confirm provider footer links, version smoke, and a clean Angular dev build in Docker. German footer labels for provider login/register render correctly, so the recent i18n footer change behaves as intended. **#69** is ready for maintainer/closer to close or to post a final verification comment.
+
+7. **URLs tested**  
+   1. `http://127.0.0.1:4202/`  
+   2. `http://127.0.0.1:4202/provider/register` (via footer link from test script)  
+   3. `http://127.0.0.1:4202/dashboard` and other staff routes (from `test-landing-version.mjs` only)
+
+8. **Relevant log excerpts**  
+   - `pos-front`: `Application bundle generation complete. [0.009 seconds] - 2026-03-24T18:44:40.903Z`  
+   - `test-landing-provider-links.mjs`: `>>> RESULT: Landing shows provider login and register links; register link works.`  
+   - `test-landing-version.mjs`: `>>> RESULT: Landing version OK; demo login (tenant=1) OK; sidebar nav OK.`
+
+9. **GitHub**  
+   - `gh issue comment 69` failed: `Resource not accessible by personal access token (addComment)`. Issue **#69** had no `agent:wip` / `agent:testing` labels at test time. Maintainer/closer: post verification manually or widen token scope.
