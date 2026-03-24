@@ -24,3 +24,47 @@ Tenants want a cleaner dashboard and sidebar by **hiding modules they do not use
 - **What to verify:** Saving toggles updates DB and UI; disabled modules are absent from sidebar and dashboard; visiting a disabled path (e.g. `/tables`) redirects to `/dashboard`; re-enabling restores access; `GET /tenant/settings` always returns all six `ui_modules` keys.
 - **How to test:** Apply migrations (`python -m app.migrate` in `back`). Backend: `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T back python3 -m pytest tests/test_tenant_ui_modules.py -q`. Frontend: with app on **4202**, log in as tenant admin, open **Settings → Navigation**, turn off e.g. **Tables & floor plan**, save, confirm no Tables link and `/tables` → dashboard; turn back on and confirm `/tables` loads. Smoke (all modules default on): `BASE_URL=http://127.0.0.1:4202 npm run test:landing-version --prefix front`.
 - **Pass / fail:** Pytest green; Angular build clean (`docker compose … logs --tail=80 front`); manual toggle flow behaves as above; smoke test passes with default tenant (all modules enabled).
+
+---
+
+## Test report
+
+1. **Date/time (UTC) and log window:** Started **2026-03-24 22:15 UTC**; finished **2026-03-24 22:21 UTC**. Evidence gathered from container logs and commands in that window.
+
+2. **Environment:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml`; **`BASE_URL`** `http://127.0.0.1:4202` (HAProxy); git branch **`development`**.
+
+3. **What was tested:** Per **Testing instructions**: persistence/API resolution (pytest + authenticated `GET /api/tenant/settings`); Settings → Navigation save; sidebar and dashboard hide `/tables` when module off; direct `/tables` → `/dashboard`; re-enable restores `/tables`; smoke with all modules on (`test:landing-version`).
+
+4. **Results:**
+   - **Pytest `tests/test_tenant_ui_modules.py`:** **PASS** — `5 passed in 0.01s`.
+   - **Angular build (front container):** **PASS** — last lines show `Application bundle generation complete` with no TS/NG errors in `--tail=80 front`.
+   - **Smoke `npm run test:landing-version` (default modules on):** **PASS** — exit 0; demo login + sidebar nav OK.
+   - **Manual/automation (Puppeteer, tenant 1 admin, repo `.env` creds):** **PASS** — toggle off **Tables** → save → no `a.nav-link` to `/tables`; no any `a[href]` to `/tables` on `/dashboard`; navigate to `/tables` ends on `/dashboard`; `fetch('/api/tenant/settings')` returns all six `ui_modules` keys as booleans with `tables: false`; re-enable → save → `/tables` loads.
+   - **DB migrations:** **PASS** (implicit) — API and UI accepted `ui_modules` read/write; no migration errors observed.
+
+5. **Overall:** **PASS** (no failed criteria).
+
+6. **Product owner feedback:** Owners can hide unused areas from **Settings → Navigation**; the sidebar and dashboard stay consistent with those choices, and bookmarked routes to disabled modules safely land on the dashboard. The API always exposes a full boolean map so clients do not need to guess defaults.
+
+7. **URLs tested:**
+   1. `http://127.0.0.1:4202/`
+   2. `http://127.0.0.1:4202/login?tenant=1`
+   3. `http://127.0.0.1:4202/dashboard`
+   4. `http://127.0.0.1:4202/settings` (Navigation tab)
+   5. `http://127.0.0.1:4202/tables` (redirect when disabled; loads when enabled)
+   6. Relative `GET /api/tenant/settings` (same origin, session cookie)
+
+8. **Relevant log excerpts (last section):**
+
+```
+pos-back | "GET /tenant/settings HTTP/1.1" 200 OK
+pos-back | "PUT /tenant/settings HTTP/1.1" 200 OK
+pos-back | "GET /tables HTTP/1.1" 200 OK
+```
+
+```
+pos-front | Application bundle generation complete. [0.519 seconds] - 2026-03-24T22:00:40.923Z
+pos-front | Page reload sent to client(s).
+```
+
+**GitHub:** Comment posted on **#72** at start and on **PASS**; `gh issue edit --add-label agent:testing` failed (**label not defined** in repo).
