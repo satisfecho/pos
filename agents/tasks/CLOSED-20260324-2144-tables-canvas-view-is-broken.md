@@ -37,3 +37,31 @@ See **`docs/testing.md`** — `test:tables-canvas-view-options` / `front/scripts
 
 - **Pass:** Puppeteer script completes with exit code **0** and logs `Tables canvas view-options test passed`.
 - **Fail:** Script errors, canvas header missing, or navigation ends on `/dashboard` for an owner/admin user when opening `/tables/canvas`.
+
+---
+
+## Test report
+
+1. **Date/time (UTC) and log window:** 2026-03-24 ~22:00–22:01 UTC; `docker compose … logs --tail=40 front` sampled immediately after the run (~22:01 UTC).
+
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; `BASE_URL=http://127.0.0.1:4202`; branch `development` @ `132ced7`; Puppeteer `HEADLESS=1`.
+
+3. **What was tested:** Per “What to verify”: `/tables/canvas` shows floor-plan canvas (script asserts three view options + canvas flow); `/tables` list and view toggles exercised by `test-tables-canvas-view-options.mjs`.
+
+4. **Results**
+   - Direct `/tables/canvas` after owner login shows canvas + view options (Floor plan, Tiles, Table): **PASS** — script logged “Three view options visible” and “Floor plan (canvas) visible”.
+   - No redirect to `/dashboard` during canvas flow: **PASS** — script completed without dashboard assertion failure; exit 0.
+   - `/tables` list still reachable and toggles work: **PASS** — steps 4–7 (Tiles, Table, back to floor plan, table list) succeeded.
+
+5. **Overall:** **PASS**
+
+6. **Product owner feedback:** The floor-plan URL again matches the canvas experience users expect. View switching (floor plan ↔ tiles ↔ table) behaved consistently through the automated flow, which reduces risk of staff confusion when managing the dining layout.
+
+7. **URLs tested**
+   1. `http://127.0.0.1:4202/` (curl smoke)
+   2. `http://127.0.0.1:4202/tables/canvas` (Puppeteer after login, tenant 1)
+   3. In-app navigation among tables views per script (same origin)
+
+8. **Relevant log excerpts**
+   - Front (build health): `Application bundle generation complete. [0.519 seconds] - 2026-03-24T22:00:40.923Z` — no TS/Angular errors in tail.
+   - Puppeteer stdout: `>>> RESULT: Tables canvas view-options test passed (Floor plan → Tiles → Table → Floor plan → Table).` — exit code 0.
