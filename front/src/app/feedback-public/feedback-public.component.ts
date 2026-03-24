@@ -1,4 +1,5 @@
-import { Component, inject, signal, OnInit, computed, OnDestroy } from '@angular/core';
+import { Component, inject, signal, OnInit, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DomSanitizer, SafeResourceUrl, SafeStyle, Title } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -15,13 +16,13 @@ import { merge, Subscription } from 'rxjs';
   templateUrl: './feedback-public.component.html',
   styleUrls: ['../book/book.component.scss', './feedback-public.component.scss'],
 })
-export class FeedbackPublicComponent implements OnInit, OnDestroy {
+export class FeedbackPublicComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private api = inject(ApiService);
   private translate = inject(TranslateService);
   private sanitizer = inject(DomSanitizer);
   private title = inject(Title);
-  private langSub?: Subscription;
+  private destroyRef = inject(DestroyRef);
   /** Avoids document title showing raw FEEDBACK.* before translations load (issue #67). */
   private titleI18nSub?: Subscription;
 
@@ -50,11 +51,13 @@ export class FeedbackPublicComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // Lang switch, default-lang init, and late JSON load all affect title (issue #67).
-    this.langSub = merge(
+    merge(
       this.translate.onLangChange,
       this.translate.onTranslationChange,
       this.translate.onDefaultLangChange,
-    ).subscribe(() => this.updateDocumentTitle());
+    )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.updateDocumentTitle());
 
     const idParam = this.route.snapshot.paramMap.get('tenantId');
     const tid = idParam ? parseInt(idParam, 10) : NaN;
@@ -84,11 +87,6 @@ export class FeedbackPublicComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(): void {
-    this.langSub?.unsubscribe();
-    this.titleI18nSub?.unsubscribe();
-  }
-
   /** Browser tab title follows selected language (issue #67). */
   private updateDocumentTitle(): void {
     const t = this.tenant();
@@ -110,13 +108,16 @@ export class FeedbackPublicComponent implements OnInit, OnDestroy {
     // stream() re-emits on onLangChange when the locale file finishes loading; get() can emit
     // once with default-lang fallback while currentLang is already the target (ngx-translate race),
     // leaving the tab title stuck on index.html on slower networks (prod #67).
-    this.titleI18nSub = this.translate.stream(key).subscribe((part) => {
-      if (name && !err) {
-        this.title.setTitle(`${name} – ${part}`);
-      } else {
-        this.title.setTitle(part);
-      }
-    });
+    this.titleI18nSub = this.translate
+      .stream(key)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((part) => {
+        if (name && !err) {
+          this.title.setTitle(`${name} – ${part}`);
+        } else {
+          this.title.setTitle(part);
+        }
+      });
   }
 
   getLogoSafeUrl(url: string | null): SafeResourceUrl | null {
