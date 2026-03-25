@@ -59,6 +59,73 @@ export interface UserUpdate {
   password?: string;
 }
 
+export type StaffContractKind = 'employee' | 'freelancer';
+export type StaffContractStatus =
+  | 'draft'
+  | 'pending_signature'
+  | 'active'
+  | 'expired'
+  | 'superseded';
+export type StaffContractPaymentStructure = 'payroll' | 'invoice';
+
+export interface StaffContract {
+  id: number;
+  tenant_id: number;
+  contract_group_id: string;
+  version: number;
+  subject_user_id: number;
+  subject_email?: string | null;
+  subject_full_name?: string | null;
+  kind: StaffContractKind;
+  status: StaffContractStatus;
+  role_title: string;
+  start_date?: string | null;
+  end_date?: string | null;
+  compensation_summary?: string | null;
+  tax_identifier_subject?: string | null;
+  payment_structure: StaffContractPaymentStructure;
+  payment_terms?: string | null;
+  jurisdiction_note?: string | null;
+  template_key?: string | null;
+  notes_internal?: string | null;
+  has_document: boolean;
+  document_uploaded_at?: string | null;
+  created_by_user_id?: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StaffContractCreate {
+  subject_user_id: number;
+  kind: StaffContractKind;
+  status?: StaffContractStatus;
+  role_title?: string;
+  start_date?: string | null;
+  end_date?: string | null;
+  compensation_summary?: string | null;
+  tax_identifier_subject?: string | null;
+  payment_structure?: StaffContractPaymentStructure | null;
+  payment_terms?: string | null;
+  jurisdiction_note?: string | null;
+  template_key?: string | null;
+  notes_internal?: string | null;
+}
+
+export interface StaffContractUpdate {
+  kind?: StaffContractKind;
+  status?: StaffContractStatus;
+  role_title?: string;
+  start_date?: string | null;
+  end_date?: string | null;
+  compensation_summary?: string | null;
+  tax_identifier_subject?: string | null;
+  payment_structure?: StaffContractPaymentStructure | null;
+  payment_terms?: string | null;
+  jurisdiction_note?: string | null;
+  template_key?: string | null;
+  notes_internal?: string | null;
+}
+
 export interface Shift {
   id: number;
   tenant_id: number;
@@ -2139,6 +2206,36 @@ export class ApiService {
 
   deleteUser(userId: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/users/${userId}`);
+  }
+
+  listStaffContracts(): Observable<StaffContract[]> {
+    return this.http.get<StaffContract[]>(`${this.apiUrl}/staff-contracts`);
+  }
+
+  getStaffContract(id: number): Observable<StaffContract> {
+    return this.http.get<StaffContract>(`${this.apiUrl}/staff-contracts/${id}`);
+  }
+
+  createStaffContract(body: StaffContractCreate): Observable<StaffContract> {
+    return this.http.post<StaffContract>(`${this.apiUrl}/staff-contracts`, body);
+  }
+
+  updateStaffContract(id: number, body: StaffContractUpdate): Observable<StaffContract> {
+    return this.http.patch<StaffContract>(`${this.apiUrl}/staff-contracts/${id}`, body);
+  }
+
+  newStaffContractVersion(id: number): Observable<StaffContract> {
+    return this.http.post<StaffContract>(`${this.apiUrl}/staff-contracts/${id}/new-version`, {});
+  }
+
+  uploadStaffContractDocument(id: number, file: File): Observable<StaffContract> {
+    const fd = new FormData();
+    fd.append('file', file, file.name);
+    return this.http.post<StaffContract>(`${this.apiUrl}/staff-contracts/${id}/document`, fd);
+  }
+
+  downloadStaffContractDocument(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/staff-contracts/${id}/document`, { responseType: 'blob' });
   }
 
   /** Owner only: ZIP with tenant-export.json (secrets redacted server-side). */

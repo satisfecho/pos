@@ -38,6 +38,7 @@ from .settings import settings
 from .inventory_routes import router as inventory_router
 from .reports_routes import router as reports_router
 from .tenant_lifecycle_routes import router as tenant_lifecycle_router
+from .staff_contract_routes import router as staff_contract_router
 from .work_session_serialization import serialize_work_session
 from .inventory_service import deduct_inventory_for_order
 from . import inventory_models
@@ -451,6 +452,7 @@ app.include_router(inventory_router, prefix="/inventory", tags=["Inventory"])
 app.include_router(reports_router, prefix="/reports", tags=["Reports"])
 # Owner-only data export & tenant purge (GitHub #96)
 app.include_router(tenant_lifecycle_router, prefix="/tenant", tags=["Tenant lifecycle"])
+app.include_router(staff_contract_router, prefix="/staff-contracts", tags=["Staff contracts"])
 
 
 # ============ IMAGE OPTIMIZATION ============

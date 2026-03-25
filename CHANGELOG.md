@@ -53,6 +53,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **Settings Security / 2FA (GitHub #83):** Spacing between OTP description hint and the enable action (and setup hint before the secret row) so the control is not flush against the copy.
 
+## [2.0.57] - 2026-03-25
+
+### Added
+
+- **Staff contracts (GitHub #99):** Tenant-scoped **employee** and **freelancer** agreements with statuses, versioning (`POST /staff-contracts/{id}/new-version`), payroll vs invoice payment structure, optional tax-id and jurisdiction notes, internal management notes, and signed **PDF** upload stored under `uploads/{tenant_id}/contracts/` (served only via authenticated `GET /staff-contracts/{id}/document`, not public `/uploads`). **RBAC:** `staff_contract:read` for all tenant staff (list filtered to own contracts unless owner/admin); `staff_contract:manage` for owner/admin (create/update/upload). Staff UI: sidebar **Contracts**, route `/contracts`. Migration `20260325180000_staff_contract.sql`. Tests: `tests/test_staff_contracts.py`.
+
 ## [2.0.56] - 2026-03-25
 
 ### Added

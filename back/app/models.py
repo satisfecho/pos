@@ -1,10 +1,10 @@
 from datetime import date, datetime, time, timezone
 from enum import Enum
 from typing import Any
-from uuid import uuid4
+from uuid import UUID, uuid4
 
-from sqlalchemy import Column, Date, DateTime, Enum as SAEnum, Time
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, Date, DateTime, Enum as SAEnum, Text, Time
+from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -1174,3 +1174,156 @@ class I18nText(SQLModel, table=True):
     lang: str = Field(index=True)  # e.g. "en", "es", "zh-CN"
 
     text: str
+
+
+# ============ STAFF CONTRACTS (HR / legal metadata; files via API only) ============
+
+
+class StaffContractKind(str, Enum):
+    employee = "employee"
+    freelancer = "freelancer"
+
+
+class StaffContractStatus(str, Enum):
+    draft = "draft"
+    pending_signature = "pending_signature"
+    active = "active"
+    expired = "expired"
+    superseded = "superseded"
+
+
+class StaffContractPaymentStructure(str, Enum):
+    """Employee payroll vs freelancer invoicing (tax handling differs by jurisdiction)."""
+
+    payroll = "payroll"
+    invoice = "invoice"
+
+
+class StaffContract(SQLModel, table=True):
+    __tablename__ = "staff_contract"
+
+    id: int | None = Field(default=None, primary_key=True)
+    tenant_id: int = Field(foreign_key="tenant.id", index=True)
+    contract_group_id: UUID = Field(sa_column=Column(PGUUID(as_uuid=True), nullable=False, index=True))
+    version: int = Field(default=1, ge=1)
+    subject_user_id: int = Field(foreign_key="user.id", index=True)
+    kind: StaffContractKind = Field(
+        sa_column=Column(
+            SAEnum(
+                StaffContractKind,
+                name="staff_contract_kind",
+                native_enum=True,
+                create_type=False,
+                values_callable=lambda cls: [m.value for m in cls],
+            ),
+            nullable=False,
+        ),
+    )
+    status: StaffContractStatus = Field(
+        default=StaffContractStatus.draft,
+        sa_column=Column(
+            SAEnum(
+                StaffContractStatus,
+                name="staff_contract_status",
+                native_enum=True,
+                create_type=False,
+                values_callable=lambda cls: [m.value for m in cls],
+            ),
+            nullable=False,
+        ),
+    )
+    role_title: str = Field(default="", max_length=256)
+    start_date: date | None = Field(default=None, sa_column=Column(Date, nullable=True))
+    end_date: date | None = Field(default=None, sa_column=Column(Date, nullable=True))
+    compensation_summary: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    tax_identifier_subject: str | None = Field(default=None, max_length=128)
+    payment_structure: StaffContractPaymentStructure = Field(
+        default=StaffContractPaymentStructure.payroll,
+        sa_column=Column(
+            SAEnum(
+                StaffContractPaymentStructure,
+                name="staff_contract_payment_structure",
+                native_enum=True,
+                create_type=False,
+                values_callable=lambda cls: [m.value for m in cls],
+            ),
+            nullable=False,
+        ),
+    )
+    payment_terms: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    jurisdiction_note: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    template_key: str | None = Field(default=None, max_length=64)
+    notes_internal: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    document_filename: str | None = Field(default=None, max_length=512)
+    document_uploaded_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    created_by_user_id: int | None = Field(default=None, foreign_key="user.id")
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+    updated_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+
+
+class StaffContractCreate(SQLModel):
+    subject_user_id: int
+    kind: StaffContractKind
+    status: StaffContractStatus = StaffContractStatus.draft
+    role_title: str = Field(default="", max_length=256)
+    start_date: date | None = None
+    end_date: date | None = None
+    compensation_summary: str | None = None
+    tax_identifier_subject: str | None = Field(default=None, max_length=128)
+    payment_structure: StaffContractPaymentStructure | None = None
+    payment_terms: str | None = None
+    jurisdiction_note: str | None = None
+    template_key: str | None = Field(default=None, max_length=64)
+    notes_internal: str | None = None
+
+
+class StaffContractUpdate(SQLModel):
+    kind: StaffContractKind | None = None
+    status: StaffContractStatus | None = None
+    role_title: str | None = Field(default=None, max_length=256)
+    start_date: date | None = None
+    end_date: date | None = None
+    compensation_summary: str | None = None
+    tax_identifier_subject: str | None = Field(default=None, max_length=128)
+    payment_structure: StaffContractPaymentStructure | None = None
+    payment_terms: str | None = None
+    jurisdiction_note: str | None = None
+    template_key: str | None = Field(default=None, max_length=64)
+    notes_internal: str | None = None
+
+
+class StaffContractRead(SQLModel):
+    """API shape; sensitive fields omitted by router when caller is not management."""
+
+    id: int
+    tenant_id: int
+    contract_group_id: str
+    version: int
+    subject_user_id: int
+    subject_email: str | None = None
+    subject_full_name: str | None = None
+    kind: StaffContractKind
+    status: StaffContractStatus
+    role_title: str
+    start_date: date | None
+    end_date: date | None
+    compensation_summary: str | None
+    tax_identifier_subject: str | None = None
+    payment_structure: StaffContractPaymentStructure
+    payment_terms: str | None
+    jurisdiction_note: str | None
+    template_key: str | None
+    notes_internal: str | None = None
+    has_document: bool = False
+    document_uploaded_at: datetime | None = None
+    created_by_user_id: int | None
+    created_at: datetime
+    updated_at: datetime

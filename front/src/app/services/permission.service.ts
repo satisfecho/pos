@@ -51,7 +51,10 @@ export type Permission =
   | 'billing_customer:write'
   // Working plan (schedule)
   | 'schedule:read'
-  | 'schedule:write';
+  | 'schedule:write'
+  // Staff contracts
+  | 'staff_contract:read'
+  | 'staff_contract:manage';
 
 /**
  * Role to permissions mapping (mirrors backend ROLE_PERMISSIONS)
@@ -74,6 +77,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'translation:read', 'translation:write',
     'report:read',
     'schedule:read', 'schedule:write',
+    'staff_contract:read', 'staff_contract:manage',
   ]),
 
   kitchen: new Set([
@@ -81,6 +85,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'catalog:read',
     'order:read', 'order:item_status',
     'schedule:read', 'schedule:write',
+    'staff_contract:read',
   ]),
 
   bartender: new Set([
@@ -88,6 +93,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'catalog:read',
     'order:read', 'order:item_status',
     'schedule:read', 'schedule:write',
+    'staff_contract:read',
   ]),
 
   waiter: new Set([
@@ -100,6 +106,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'order:mark_paid', 'order:remove_item',
     'billing_customer:read', 'billing_customer:write',
     'schedule:read', 'schedule:write',
+    'staff_contract:read',
   ]),
 
   receptionist: new Set([
@@ -111,6 +118,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'order:read',
     'billing_customer:read',
     'schedule:read', 'schedule:write',
+    'staff_contract:read',
   ]),
 
   provider: new Set([]), // Provider portal uses provider_id scoping, not tenant permissions
@@ -136,6 +144,7 @@ const ROUTE_ROLES: Record<string, UserRole[]> = {
   '/users': ['owner', 'admin'],
   '/working-plan': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
   '/my-shift': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
+  '/contracts': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
 };
 
 @Injectable({

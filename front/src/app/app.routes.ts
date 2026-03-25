@@ -4,6 +4,7 @@ import { roleGuard, adminGuard, tableAccessGuard, orderAccessGuard, scheduleGuar
 import { uiModuleGuard } from './auth/ui-module.guard';
 import { reservationAccessGuard } from './auth/reservation-access.guard';
 import { providerGuard } from './auth/provider.guard';
+import { permissionGuard } from './auth/permission.guard';
 
 export const routes: Routes = [
   // Public routes
@@ -57,6 +58,11 @@ export const routes: Routes = [
   { path: 'translations', redirectTo: 'settings', pathMatch: 'full' },
   { path: 'settings', canActivate: [authGuard, adminGuard], loadComponent: () => import('./settings/settings.component').then(m => m.SettingsComponent) },
   { path: 'users', canActivate: [authGuard, adminGuard], loadComponent: () => import('./users/users.component').then(m => m.UsersComponent) },
+  {
+    path: 'contracts',
+    canActivate: [authGuard, permissionGuard('staff_contract:read')],
+    loadComponent: () => import('./staff-contracts/staff-contracts.component').then(m => m.StaffContractsComponent),
+  },
 
   // Inventory module (lazy loaded) - admin only
   { path: 'inventory', canActivate: [authGuard, adminGuard, uiModuleGuard('inventory')], loadChildren: () => import('./inventory/inventory.routes').then(m => m.INVENTORY_ROUTES) },

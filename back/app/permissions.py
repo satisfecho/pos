@@ -74,6 +74,10 @@ class Permission(str, Enum):
     SCHEDULE_READ = "schedule:read"
     SCHEDULE_WRITE = "schedule:write"
 
+    # Staff contracts (HR): read own vs manage all (owner/admin)
+    STAFF_CONTRACT_READ = "staff_contract:read"
+    STAFF_CONTRACT_MANAGE = "staff_contract:manage"
+
 
 # Map roles to their permissions
 ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
@@ -124,6 +128,9 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         # Working plan
         Permission.SCHEDULE_READ,
         Permission.SCHEDULE_WRITE,
+        # Staff contracts
+        Permission.STAFF_CONTRACT_READ,
+        Permission.STAFF_CONTRACT_MANAGE,
     },
     
     UserRole.kitchen: {
@@ -136,6 +143,7 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         # Working plan (add/edit own shifts)
         Permission.SCHEDULE_READ,
         Permission.SCHEDULE_WRITE,
+        Permission.STAFF_CONTRACT_READ,
     },
     
     UserRole.bartender: {
@@ -148,6 +156,7 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         # Working plan (add/edit own shifts)
         Permission.SCHEDULE_READ,
         Permission.SCHEDULE_WRITE,
+        Permission.STAFF_CONTRACT_READ,
     },
     
     UserRole.waiter: {
@@ -172,6 +181,7 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         # Working plan (add/edit shifts)
         Permission.SCHEDULE_READ,
         Permission.SCHEDULE_WRITE,
+        Permission.STAFF_CONTRACT_READ,
     },
     
     UserRole.receptionist: {
@@ -191,6 +201,7 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         # Working plan (add/edit shifts)
         Permission.SCHEDULE_READ,
         Permission.SCHEDULE_WRITE,
+        Permission.STAFF_CONTRACT_READ,
     },
 }
 
