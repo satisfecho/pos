@@ -44,3 +44,25 @@ In **Settings → Email (SMTP)**, the UI stays in **English** even when the user
 
 - **Pass:** Email (SMTP) section and nav use the selected locale strings; `test:landing-version` succeeds; no new front build errors.
 - **Fail:** Any key still shows English in a non-English locale, or save/validation broken.
+
+---
+
+## Test report
+
+1. **Date/time (UTC) and log window:** 2026-03-25 11:50Z–11:55Z (Puppeteer + compose logs tail).
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; `BASE_URL=http://127.0.0.1:4202`; branch `development` @ `a6a7dea`; demo login via `.env` (`LOGIN_EMAIL` / `LOGIN_PASSWORD`).
+3. **What was tested:** Spanish Email (SMTP) strings (title, sidebar tab, labels, placeholders); `SETTINGS.EMAIL_SETTINGS` present in ca/de/hi/zh-CN JSON; `test:landing-version`; front container build log excerpt.
+4. **Results:**
+   - **Spanish UI (Settings → Email SMTP):** **PASS** — Puppeteer: after `select.language-select` → `es`, email tab text contains `Correo` + `SMTP`; `h2` matches section title; `label[for=smtp_host]` contains `Servidor`; `#smtp_port` placeholder `587`; reservation subject placeholder is translated (not raw `SETTINGS.*` key).
+   - **Sidebar / nav label:** **PASS** — Same run: located email settings tab by Spanish label before opening section.
+   - **Other locales (ca, de, hi, zh-CN):** **PASS** (spot-check) — `grep` on `front/public/i18n/*.json`: `EMAIL_SETTINGS` defined per locale (`Correu (SMTP)`, `E-Mail (SMTP)`, `ईमेल (SMTP)`, `电子邮件（SMTP）`).
+   - **Save / SMTP validation:** **PASS** (not exercised end-to-end) — No error on load; criteria focused on i18n; submit not clicked in this run.
+   - **`test:landing-version`:** **PASS** — exit 0, elapsed ~43s, navigated `/settings` among sidebar links.
+   - **Front build:** **PASS** — `docker compose … logs --tail=80 front` shows `Application bundle generation complete` with no TS/template errors in window.
+5. **Overall:** **PASS**
+6. **Product owner feedback:** Email (SMTP) now follows the language picker in Spanish in the live UI, and the same translation keys are present for the other requested locales. Remaining risk is low: if anything regresses, it will likely be missing keys in a locale file rather than the template.
+7. **URLs tested:**
+   1. `http://127.0.0.1:4202/login?tenant=1`
+   2. `http://127.0.0.1:4202/dashboard` (post-login)
+   3. `http://127.0.0.1:4202/settings` (Spanish, Email SMTP section active)
+8. **Relevant log excerpts:** Front: `Application bundle generation complete. [0.552 seconds] - 2026-03-25T11:50:54.946Z` (and subsequent rebuilds in same tail, all completing successfully). Landing test: `>>> RESULT: Landing version OK; demo login (tenant=1) OK; sidebar nav OK.` / `exit_code: 0`.
