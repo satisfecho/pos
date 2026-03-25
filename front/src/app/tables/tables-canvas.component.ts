@@ -18,6 +18,16 @@ interface TableShape {
   seats: number;
 }
 
+/** Same roles as `orderAccessGuard` — staff who may use /staff/orders */
+const STAFF_ORDERS_ROLES = new Set([
+  'owner',
+  'admin',
+  'kitchen',
+  'bartender',
+  'waiter',
+  'receptionist',
+]);
+
 @Component({
   selector: 'app-tables-canvas',
   standalone: true,
@@ -473,6 +483,27 @@ interface TableShape {
                     </div>
                   }
                 </div>
+                @if (canOpenStaffOrders() && selectedTable()?.id != null) {
+                  <div class="panel-order-link">
+                    @if (selectedTable()!.active_order_id) {
+                      <a
+                        class="btn btn-primary panel-order-btn"
+                        routerLink="/staff/orders"
+                        [queryParams]="{ focusOrder: selectedTable()!.active_order_id }"
+                        data-testid="canvas-open-order-btn">
+                        {{ 'TABLES.OPEN_STAFF_ORDER' | translate }}
+                      </a>
+                    } @else {
+                      <a
+                        class="btn btn-primary panel-order-btn"
+                        routerLink="/staff/orders"
+                        [queryParams]="{ focusTableId: selectedTable()!.id }"
+                        data-testid="canvas-table-orders-btn">
+                        {{ 'TABLES.VIEW_TABLE_ORDERS' | translate }}
+                      </a>
+                    }
+                  </div>
+                }
                 <button class="delete-btn" (click)="deleteSelectedTable()">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="3,6 5,6 21,6"/>
@@ -1008,6 +1039,16 @@ interface TableShape {
     }
     .delete-btn:hover { background: rgba(220, 38, 38, 0.15); }
 
+    .panel-order-link {
+      margin-top: var(--space-1);
+    }
+    .panel-order-btn {
+      width: 100%;
+      justify-content: center;
+      text-decoration: none;
+      box-sizing: border-box;
+    }
+
     .panel-select {
       width: 100%;
       padding: var(--space-2);
@@ -1539,6 +1580,12 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   /** Owner/admin: can change assignment via user list API (requires user:read). */
   canManageTableAssignments(): boolean {
     return this.permissions.hasPermission(this.api.getCurrentUser(), 'table:write');
+  }
+
+  /** Matches `/staff/orders` route guard — show floor-plan → orders shortcuts only when allowed. */
+  canOpenStaffOrders(): boolean {
+    const role = this.api.getCurrentUser()?.role;
+    return role != null && STAFF_ORDERS_ROLES.has(role);
   }
 
   getWaiterInitials(table: CanvasTable): string | null {

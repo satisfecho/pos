@@ -5,7 +5,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { PermissionService } from '../services/permission.service';
-import { ApiService, WorkSession } from '../services/api.service';
+import { ApiService, TenantUiModuleKey, WorkSession } from '../services/api.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -62,6 +62,7 @@ import { ApiService, WorkSession } from '../services/api.service';
             <span class="action-label">{{ 'DASHBOARD.ORDERS_TITLE' | translate }}</span>
             <span class="action-desc">{{ 'DASHBOARD.ORDERS_DESC' | translate }}</span>
           </a>
+          @if (canViewReservations() && moduleEnabled('reservations')) {
           <a routerLink="/reservations" class="action-card">
             <div class="action-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -72,6 +73,8 @@ import { ApiService, WorkSession } from '../services/api.service';
             <span class="action-label">{{ 'DASHBOARD.RESERVATIONS_TITLE' | translate }}</span>
             <span class="action-desc">{{ 'DASHBOARD.RESERVATIONS_DESC' | translate }}</span>
           </a>
+          }
+          @if (canViewTables() && moduleEnabled('tables')) {
           <a routerLink="/tables" class="action-card">
             <div class="action-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -84,6 +87,8 @@ import { ApiService, WorkSession } from '../services/api.service';
             <span class="action-label">{{ 'DASHBOARD.TABLES_TITLE' | translate }}</span>
             <span class="action-desc">{{ 'DASHBOARD.TABLES_DESC' | translate }}</span>
           </a>
+          }
+          @if (moduleEnabled('kitchen_bar')) {
           <a routerLink="/kitchen" class="action-card">
             <div class="action-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -104,6 +109,7 @@ import { ApiService, WorkSession } from '../services/api.service';
             <span class="action-label">{{ 'DASHBOARD.BEVERAGES_TITLE' | translate }}</span>
             <span class="action-desc">{{ 'DASHBOARD.BEVERAGES_DESC' | translate }}</span>
           </a>
+          }
           <a routerLink="/products" class="action-card">
             <div class="action-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -113,6 +119,7 @@ import { ApiService, WorkSession } from '../services/api.service';
             <span class="action-label">{{ 'DASHBOARD.PRODUCTS_TITLE' | translate }}</span>
             <span class="action-desc">{{ 'DASHBOARD.PRODUCTS_DESC' | translate }}</span>
           </a>
+          @if (moduleEnabled('providers')) {
           <a routerLink="/catalog" class="action-card">
             <div class="action-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -123,6 +130,7 @@ import { ApiService, WorkSession } from '../services/api.service';
             <span class="action-label">{{ 'DASHBOARD.CATALOG_TITLE' | translate }}</span>
             <span class="action-desc">{{ 'DASHBOARD.CATALOG_DESC' | translate }}</span>
           </a>
+          }
           @if (canViewCustomers()) {
           <a routerLink="/customers" class="action-card">
             <div class="action-icon">
@@ -137,15 +145,7 @@ import { ApiService, WorkSession } from '../services/api.service';
           </a>
           }
           @if (canShowAdminSections()) {
-            <a routerLink="/reports" class="action-card">
-              <div class="action-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-                </svg>
-              </div>
-              <span class="action-label">{{ 'DASHBOARD.REPORTS_TITLE' | translate }}</span>
-              <span class="action-desc">{{ 'DASHBOARD.REPORTS_DESC' | translate }}</span>
-            </a>
+            @if (moduleEnabled('working_plan')) {
             <a routerLink="/working-plan" class="action-card">
               <div class="action-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -156,6 +156,8 @@ import { ApiService, WorkSession } from '../services/api.service';
               <span class="action-label">{{ 'DASHBOARD.WORKING_PLAN_TITLE' | translate }}</span>
               <span class="action-desc">{{ 'DASHBOARD.WORKING_PLAN_DESC' | translate }}</span>
             </a>
+            }
+            @if (moduleEnabled('inventory')) {
             <a routerLink="/inventory" class="action-card">
               <div class="action-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -165,6 +167,16 @@ import { ApiService, WorkSession } from '../services/api.service';
               </div>
               <span class="action-label">{{ 'DASHBOARD.INVENTORY_TITLE' | translate }}</span>
               <span class="action-desc">{{ 'DASHBOARD.INVENTORY_DESC' | translate }}</span>
+            </a>
+            }
+            <a routerLink="/reports" class="action-card">
+              <div class="action-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+              </div>
+              <span class="action-label">{{ 'DASHBOARD.REPORTS_TITLE' | translate }}</span>
+              <span class="action-desc">{{ 'DASHBOARD.REPORTS_DESC' | translate }}</span>
             </a>
             <a routerLink="/users" class="action-card">
               <div class="action-icon">
@@ -512,6 +524,8 @@ export class DashboardComponent implements OnInit {
   canShowAdminSections = computed(() => this.permissions.isAdmin(this.user()));
   canViewCustomers = computed(() => this.permissions.canAccessRoute(this.user(), '/customers'));
   canViewMyShift = computed(() => this.permissions.canAccessRoute(this.user(), '/my-shift'));
+  canViewReservations = computed(() => this.permissions.hasPermission(this.user(), 'reservation:read'));
+  canViewTables = computed(() => this.permissions.canAccessRoute(this.user(), '/tables'));
 
   /** Open work session when clocked in; null when not; only loaded when `canViewMyShift`. */
   shiftOpen = signal<WorkSession | null>(null);
@@ -523,6 +537,7 @@ export class DashboardComponent implements OnInit {
   changelogError = signal<string | null>(null);
 
   ngOnInit() {
+    this.api.ensureTenantUiModulesLoaded().subscribe();
     const u = this.api.getCurrentUser();
     this.user.set(u);
     if (this.permissions.canAccessRoute(u, '/my-shift')) {
@@ -538,6 +553,10 @@ export class DashboardComponent implements OnInit {
         },
       });
     }
+  }
+
+  moduleEnabled(key: TenantUiModuleKey): boolean {
+    return this.api.isUiModuleEnabled(key);
   }
 
   openChangelog() {

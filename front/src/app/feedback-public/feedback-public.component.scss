@@ -1,3 +1,21 @@
+.feedback-error-shell {
+  position: relative;
+  width: 100%;
+}
+
+.feedback-error-bar {
+  position: relative;
+  min-height: 3rem;
+}
+
+.feedback-loading-text {
+  margin: 0 auto 1rem;
+  padding: 0 1rem;
+  text-align: center;
+  color: var(--color-text-muted, #6b7280);
+  font-size: 0.9375rem;
+}
+
 .star-row {
   display: flex;
   gap: 0.25rem;

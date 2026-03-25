@@ -13,86 +13,151 @@ import { environment } from '../../environments/environment';
   template: `
     <div class="landing-page">
       <app-language-picker class="landing-language-picker"></app-language-picker>
-      <div class="landing-header">
-        <h1>{{ 'LANDING.TITLE' | translate }}</h1>
-        <p class="subtitle">{{ 'LANDING.SUBTITLE' | translate }}</p>
-      </div>
 
-      <section class="table-code-section" aria-label="{{ 'LANDING.AT_TABLE_LABEL' | translate }}">
-        <p class="table-code-hint">{{ 'LANDING.AT_TABLE_HINT' | translate }}</p>
-        <div class="table-code-row">
-          <input
-            type="text"
-            [(ngModel)]="tableCode"
-            [placeholder]="'LANDING.TABLE_CODE_PLACEHOLDER' | translate"
-            class="table-code-input"
-            (ngModelChange)="onTableCodeInput()"
-            (keyup.enter)="goToTableMenu()"
-          />
-          <button
-            type="button"
-            class="btn-go"
-            [disabled]="tableLookupLoading()"
-            (click)="goToTableMenu()"
-          >
-            {{ 'LANDING.GO' | translate }}
-          </button>
-        </div>
-        @if (tableLookupError()) {
-          <p class="table-lookup-error" role="alert">{{ tableLookupError() }}</p>
-        }
-        @if (tableLookupChoices().length > 0) {
-          <p class="table-lookup-pick-title">{{ 'LANDING.TABLE_MULTIPLE_TITLE' | translate }}</p>
-          <p class="table-lookup-pick-hint">{{ 'LANDING.TABLE_MULTIPLE_HINT' | translate }}</p>
-          <ul class="table-lookup-choices">
-            @for (c of tableLookupChoices(); track c.tenant_id + '-' + c.table_token) {
-              <li>
-                <button type="button" class="table-lookup-choice-btn" (click)="selectRestaurantForTable(c)">
-                  {{ c.tenant_name }}
-                </button>
-              </li>
-            }
+      <header class="landing-hero">
+        <div class="landing-hero__inner">
+          <h1 class="landing-hero__title">{{ 'LANDING.TITLE' | translate }}</h1>
+          <p class="landing-hero__subtitle">{{ 'LANDING.SUBTITLE' | translate }}</p>
+          <ul class="landing-values" aria-label="{{ 'LANDING.VALUES_LABEL' | translate }}">
+            <li class="landing-value">
+              <span class="landing-value__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+              </span>
+              <span class="landing-value__text">{{ 'LANDING.VALUE_BOOKING' | translate }}</span>
+            </li>
+            <li class="landing-value">
+              <span class="landing-value__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+              </span>
+              <span class="landing-value__text">{{ 'LANDING.VALUE_DINE_IN' | translate }}</span>
+            </li>
+            <li class="landing-value">
+              <span class="landing-value__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </span>
+              <span class="landing-value__text">{{ 'LANDING.VALUE_STAFF' | translate }}</span>
+            </li>
           </ul>
-        }
-        <p class="takeaway-hint">
-          <a routerLink="/orders" class="link-takeaway">{{ 'LANDING.ORDER_TAKEAWAY' | translate }}</a>
-        </p>
-      </section>
+        </div>
+      </header>
 
-      @if (loading()) {
-        <p class="loading">{{ 'COMMON.LOADING' | translate }}</p>
-      } @else if (error()) {
-        <p class="error">{{ error() }}</p>
-      } @else if (tenants().length === 0) {
-        <p class="empty">{{ 'LANDING.NO_TENANTS' | translate }}</p>
-      } @else {
-        <div class="tenant-grid">
-          @for (tenant of tenants(); track tenant.id) {
-            <div class="tenant-card">
-              @if (getLogoUrl(tenant)) {
-                <img [src]="getLogoUrl(tenant)!" [alt]="tenant.name" class="tenant-logo" />
-              }
-              <h2 class="tenant-name">{{ tenant.name }}</h2>
-              <div class="tenant-actions">
-                <a [routerLink]="['/book', tenant.id]" class="btn-book">
-                  {{ 'LANDING.BOOK_TABLE' | translate }}
-                </a>
-                <a [routerLink]="['/login']" [queryParams]="{ tenant: tenant.id }" class="btn-login">
-                  {{ 'LANDING.LOGIN' | translate }}
-                </a>
+      <main class="landing-main">
+        <div class="landing-split">
+          <section
+            class="landing-panel landing-panel--guests"
+            aria-labelledby="landing-guests-heading"
+          >
+            <h2 id="landing-guests-heading" class="landing-panel__title">
+              {{ 'LANDING.SECTION_GUESTS' | translate }}
+            </h2>
+            <p class="landing-panel__lede">{{ 'LANDING.SECTION_GUESTS_LEDE' | translate }}</p>
+            <div class="table-code-section" aria-label="{{ 'LANDING.AT_TABLE_LABEL' | translate }}">
+              <p class="table-code-hint">{{ 'LANDING.AT_TABLE_HINT' | translate }}</p>
+              <div class="table-code-row">
+                <input
+                  type="text"
+                  [(ngModel)]="tableCode"
+                  [placeholder]="'LANDING.TABLE_CODE_PLACEHOLDER' | translate"
+                  class="table-code-input"
+                  (ngModelChange)="onTableCodeInput()"
+                  (keyup.enter)="goToTableMenu()"
+                />
+                <button
+                  type="button"
+                  class="btn-go"
+                  [disabled]="tableLookupLoading()"
+                  (click)="goToTableMenu()"
+                >
+                  {{ 'LANDING.GO' | translate }}
+                </button>
               </div>
+              @if (tableLookupError()) {
+                <p class="table-lookup-error" role="alert">{{ tableLookupError() }}</p>
+              }
+              @if (tableLookupChoices().length > 0) {
+                <p class="table-lookup-pick-title">{{ 'LANDING.TABLE_MULTIPLE_TITLE' | translate }}</p>
+                <p class="table-lookup-pick-hint">{{ 'LANDING.TABLE_MULTIPLE_HINT' | translate }}</p>
+                <ul class="table-lookup-choices">
+                  @for (c of tableLookupChoices(); track c.tenant_id + '-' + c.table_token) {
+                    <li>
+                      <button type="button" class="table-lookup-choice-btn" (click)="selectRestaurantForTable(c)">
+                        {{ c.tenant_name }}
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
+              <p class="takeaway-hint">
+                <a routerLink="/orders" class="link-takeaway">{{ 'LANDING.ORDER_TAKEAWAY' | translate }}</a>
+              </p>
+            </div>
+          </section>
+
+          <section class="landing-panel landing-panel--team" aria-labelledby="landing-team-heading">
+            <h2 id="landing-team-heading" class="landing-panel__title">
+              {{ 'LANDING.SECTION_TEAM' | translate }}
+            </h2>
+            <p class="landing-panel__lede">{{ 'LANDING.SECTION_TEAM_LEDE' | translate }}</p>
+            <a routerLink="/register" class="btn-team-register" data-testid="landing-staff-register">
+              {{ 'LANDING.TEAM_REGISTER' | translate }}
+            </a>
+            <p class="landing-panel__hint">{{ 'LANDING.SECTION_TEAM_HINT' | translate }}</p>
+          </section>
+        </div>
+
+        <section class="landing-restaurants" aria-labelledby="landing-restaurants-heading">
+          <h2 id="landing-restaurants-heading" class="landing-section-heading">
+            {{ 'LANDING.RESTAURANTS_HEADING' | translate }}
+          </h2>
+          @if (loading()) {
+            <p class="loading">{{ 'COMMON.LOADING' | translate }}</p>
+          } @else if (error()) {
+            <p class="error">{{ error() }}</p>
+          } @else if (tenants().length === 0) {
+            <p class="empty">{{ 'LANDING.NO_TENANTS' | translate }}</p>
+          } @else {
+            <div class="tenant-grid">
+              @for (tenant of tenants(); track tenant.id) {
+                <article class="tenant-card">
+                  @if (getLogoUrl(tenant)) {
+                    <img [src]="getLogoUrl(tenant)!" [alt]="tenant.name" class="tenant-logo" />
+                  }
+                  <h3 class="tenant-name">{{ tenant.name }}</h3>
+                  <div class="tenant-actions">
+                    <a [routerLink]="['/book', tenant.id]" class="btn-book">
+                      {{ 'LANDING.BOOK_TABLE' | translate }}
+                    </a>
+                    <a [routerLink]="['/login']" [queryParams]="{ tenant: tenant.id }" class="btn-login">
+                      {{ 'LANDING.LOGIN' | translate }}
+                    </a>
+                  </div>
+                </article>
+              }
             </div>
           }
-        </div>
-      }
+        </section>
+      </main>
 
       <div class="landing-footer">
         <span>{{ 'AUTH.DONT_HAVE_ACCOUNT' | translate }}</span>
         <a routerLink="/register">{{ 'AUTH.CREATE_ACCOUNT' | translate }}</a>
         <span class="footer-sep">·</span>
-        <a routerLink="/provider/login" data-testid="landing-provider-login">Provider login</a>
+        <a routerLink="/provider/login" data-testid="landing-provider-login">{{ 'LANDING.PROVIDER_LOGIN' | translate }}</a>
         <span class="footer-sep">·</span>
-        <a routerLink="/provider/register" data-testid="landing-provider-register">Register as provider</a>
+        <a routerLink="/provider/register" data-testid="landing-provider-register">{{ 'LANDING.REGISTER_AS_PROVIDER' | translate }}</a>
       </div>
       <div class="landing-version-bar" data-testid="landing-version">{{ version || '0.0.0' }} <span class="landing-commit">{{ commitHash || '' }}</span></div>
     </div>
@@ -100,11 +165,11 @@ import { environment } from '../../environments/environment';
   styles: [`
     .landing-page {
       min-height: 100vh;
-      padding: var(--space-8) var(--space-5) calc(var(--space-6) + 28px);
+      padding: var(--space-8) var(--space-4) calc(var(--space-8) + 36px);
       background: var(--color-bg);
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: stretch;
       position: relative;
     }
 
@@ -136,21 +201,162 @@ import { environment } from '../../environments/environment';
       z-index: 10;
     }
 
-    .landing-header {
+    .landing-hero {
+      width: 100%;
+      padding: var(--space-6) var(--space-4) var(--space-8);
+      margin-bottom: var(--space-2);
+      background: radial-gradient(
+        120% 80% at 50% 0%,
+        var(--color-primary-light) 0%,
+        transparent 65%
+      );
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .landing-hero__inner {
+      max-width: 42rem;
+      margin: 0 auto;
       text-align: center;
-      margin-bottom: var(--space-8);
+      padding-top: var(--space-2);
+    }
 
-      h1 {
-        font-size: 1.75rem;
-        font-weight: 600;
-        color: var(--color-text);
-        margin-bottom: var(--space-2);
-      }
+    .landing-hero__title {
+      font-size: clamp(1.75rem, 4vw, 2.25rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--color-text);
+      line-height: 1.2;
+      margin: 0 0 var(--space-3);
+    }
 
-      .subtitle {
-        color: var(--color-text-muted);
-        font-size: 1rem;
+    .landing-hero__subtitle {
+      color: var(--color-text-muted);
+      font-size: clamp(1rem, 2.5vw, 1.125rem);
+      line-height: 1.55;
+      margin: 0 auto var(--space-6);
+      max-width: 36rem;
+    }
+
+    .landing-values {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3) var(--space-5);
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .landing-value {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--color-text);
+      text-align: left;
+      max-width: 14rem;
+    }
+
+    .landing-value__icon {
+      flex-shrink: 0;
+      display: flex;
+      color: var(--color-primary);
+    }
+
+    .landing-value__text {
+      line-height: 1.35;
+    }
+
+    .landing-main {
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 var(--space-2);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-8);
+    }
+
+    .landing-split {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+      align-items: start;
+    }
+
+    @media (min-width: 768px) {
+      .landing-split {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-6);
       }
+    }
+
+    .landing-panel {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-sm);
+      padding: var(--space-5);
+    }
+
+    .landing-panel__title {
+      font-size: 1.0625rem;
+      font-weight: 600;
+      color: var(--color-text);
+      margin: 0 0 var(--space-2);
+    }
+
+    .landing-panel__lede {
+      font-size: 0.875rem;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+      margin: 0 0 var(--space-4);
+    }
+
+    .landing-panel--team .landing-panel__lede {
+      margin-bottom: var(--space-4);
+    }
+
+    .btn-team-register {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: var(--space-3) var(--space-5);
+      background: var(--color-primary);
+      color: #fff;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 0.9375rem;
+      text-decoration: none;
+      transition: background 0.15s ease;
+    }
+
+    .btn-team-register:hover {
+      background: var(--color-primary-hover);
+      text-decoration: none;
+    }
+
+    .landing-panel__hint {
+      margin: var(--space-4) 0 0;
+      font-size: 0.8125rem;
+      color: var(--color-text-muted);
+      line-height: 1.45;
+    }
+
+    .landing-section-heading {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--color-text);
+      margin: 0 0 var(--space-4);
+      text-align: center;
+    }
+
+    .landing-restaurants {
+      width: 100%;
     }
 
     .loading, .error, .empty {
@@ -165,8 +371,7 @@ import { environment } from '../../environments/environment';
     .tenant-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: var(--space-6);
-      max-width: 900px;
+      gap: var(--space-5);
       width: 100%;
     }
 
@@ -191,12 +396,11 @@ import { environment } from '../../environments/environment';
 
     .table-code-section {
       width: 100%;
-      max-width: 400px;
-      margin-bottom: var(--space-8);
-      padding: var(--space-5);
-      background: var(--color-surface);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--color-border);
+      margin: 0;
+      padding: var(--space-4);
+      background: var(--color-bg);
+      border-radius: var(--radius-md);
+      border: 1px dashed var(--color-border);
     }
 
     .table-code-hint {
@@ -352,7 +556,10 @@ import { environment } from '../../environments/environment';
 
     .landing-footer {
       margin-top: auto;
-      padding-top: var(--space-8);
+      padding-top: var(--space-6);
+      align-self: center;
+      max-width: 960px;
+      width: 100%;
       text-align: center;
       font-size: 0.9375rem;
       color: var(--color-text-muted);

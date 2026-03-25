@@ -4,21 +4,38 @@
   [style.--hero-header-bg]="tenant()?.public_background_color ?? null"
 >
   @if (loading()) {
-    <div class="loading-screen">
-      <div class="loading-content">
-        <div class="skeleton-header">
-          <div class="skeleton-logo"></div>
-          <div class="skeleton-text skeleton-title"></div>
+    <div class="feedback-error-shell">
+      <div class="feedback-error-bar">
+        <app-language-picker class="book-language-picker"></app-language-picker>
+      </div>
+      <div class="loading-screen">
+        <p class="feedback-loading-text">{{ 'FEEDBACK.LOADING' | translate }}</p>
+        <div class="loading-content">
+          <div class="skeleton-header">
+            <div class="skeleton-logo"></div>
+            <div class="skeleton-text skeleton-title"></div>
+          </div>
         </div>
       </div>
     </div>
-  } @else if (error()) {
-    <main class="book-content">
-      <div class="book-card" style="margin-top: 2rem">
-        <h1>{{ 'FEEDBACK.TITLE' | translate }}</h1>
-        <p class="form-error">{{ error() }}</p>
+  } @else if (errorKind()) {
+    <div class="feedback-error-shell">
+      <div class="feedback-error-bar">
+        <app-language-picker class="book-language-picker"></app-language-picker>
       </div>
-    </main>
+      <main class="book-content">
+        <div class="book-card" style="margin-top: 2rem">
+          <h1>{{ 'FEEDBACK.TITLE' | translate }}</h1>
+          <p class="form-error">
+            @if (errorKind() === 'invalid_tenant') {
+              {{ 'FEEDBACK.INVALID_TENANT' | translate }}
+            } @else if (errorKind() === 'tenant_not_found') {
+              {{ 'FEEDBACK.TENANT_NOT_FOUND' | translate }}
+            }
+          </p>
+        </div>
+      </main>
+    </div>
   } @else if (submitted()) {
     <header
       class="hero-header"
@@ -131,8 +148,12 @@
           <p class="feedback-intro">{{ 'FEEDBACK.INTRO' | translate }}</p>
 
           <div class="form-group feedback-rating-group">
-            <span class="feedback-rating-label">{{ 'FEEDBACK.RATING_LABEL' | translate }} *</span>
-            <div class="star-row" role="group" [attr.aria-label]="'FEEDBACK.RATING_LABEL' | translate">
+            <span class="feedback-rating-label">{{ 'FEEDBACK.RATING_LABEL' | translate }}{{ 'FEEDBACK.FIELD_REQUIRED_MARK' | translate }}</span>
+            <div
+              class="star-row"
+              role="group"
+              [attr.aria-label]="('FEEDBACK.RATING_LABEL' | translate) + ('FEEDBACK.FIELD_REQUIRED_MARK' | translate)"
+            >
               @for (s of stars; track s) {
                 <button
                   type="button"

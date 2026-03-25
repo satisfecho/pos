@@ -8,17 +8,78 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [2.0.56] - 2026-03-25
+
+### Added
+
+- **Tables floor plan (GitHub #75):** Selected-table panel links to **Staff orders** — `?focusOrder=` when the table has `active_order_id`, else `?focusTableId=` to jump to the right order/tab (scroll or open edit for history). Same roles as `/staff/orders`. New Puppeteer `test:tables-canvas-open-orders`.
+
+### Changed
+
+- **Reservation reminders (GitHub #74):** Reminder email HTML/text use the same manage-reservation link label as confirmation (“View or change your reservation online”); the href is HTML-escaped. URL remains `/reservation?token=…` when `PUBLIC_APP_BASE_URL` is set.
+- **Deploy (amvara9, GitHub #73):** After successful **back** and **front** image builds, `scripts/deploy-amvara9.sh` runs `docker buildx prune -f` to trim unused BuildKit cache (non-interactive). `SKIP_BUILDX_PRUNE=1` skips; prune failure logs a warning and does not abort deploy. Documented in `docs/0001-ci-cd-amvara9.md`.
+- **Agents:** Bump-version task for issue #70 moved from `UNTESTED-20260324-2131-bump-version` to `WIP-20260324-2131-bump-version` (tester notes: package/changelog at 2.0.54; refresh generated `commit-hash` / run `get-commit-hash.js` so the landing footer matches the package version).
+
+### Fixed
+
+- **Spanish register placeholders (GitHub #78):** Register page placeholders now follow the selected UI language (e.g. Spanish) instead of falling back to English.
+- **Tax of iva dropdown (GitHub #79):** Settings → Contact information “Tax of iva” dropdown no longer renders empty; backend seeds default Spanish IVA taxes for tenants without tax rows and the UI loads all taxes to avoid validity edge cases.
+
+## [2.0.55] - 2026-03-24
+
+### Added
+
+- **Tenant UI modules (GitHub #72):** Per-tenant toggles for staff areas (`tables`, `working_plan`, `providers`, `reservations`, `kitchen_bar`, `inventory`) stored in `tenant.ui_modules` (JSONB, compact), exposed on `GET`/`PUT` `/tenant/settings` as a resolved `ui_modules` map. Settings **Navigation** tab; sidebar and dashboard respect flags; direct URLs to disabled routes redirect to `/dashboard`. i18n en/es/de for new strings.
+
+## [2.0.54] - 2026-03-24
+
+### Added
+
 - **Smoke test:** `npm run test:tables-waiter-assignment` — waiter Table view has read-only assignment cells (optional `WAITER_LOGIN_EMAIL` / `WAITER_LOGIN_PASSWORD`; skips if unset).
 - **i18n (zh-CN, hi):** Kitchen prep stations UI strings (Settings, Products, KDS filter) aligned with en/de/es/ca.
 
 ### Fixed
 
+- **Public feedback (browser tab title):** Document title also refreshes when locale JSON finishes loading (`onTranslationChange`), not only on language change, reducing stale or key-like titles on slow networks (GitHub #67).
+- **Public feedback (error view):** Invalid or missing tenant now shows `FEEDBACK` strings via the translate pipe and includes the language picker so title and error lines follow the selected locale without a prior visit to `/feedback/1` (GitHub #67).
+- **i18n (de):** Repaired invalid `de.json` (missing comma in `SETTINGS` after `RESERVATION_REMINDER_2H_HINT`) so the German locale file parses and loads; public feedback and all DE strings work again (GitHub #67).
+- **Public feedback i18n:** French, Catalan, Hindi, and Simplified Chinese now include full `FEEDBACK.*` strings (form, errors, staff table columns); public language picker `aria-label` uses `SETTINGS.SELECT_LANGUAGE` (GitHub #67).
+- **Public feedback (loading):** Language picker is shown while the tenant loads; rating “required” marker uses `FEEDBACK.FIELD_REQUIRED_MARK` in all locales (GitHub #67).
+- **Public feedback (submit errors):** HTTP **429** and **422** responses map to `FEEDBACK.RATE_LIMIT` / `FEEDBACK.VALIDATION_ERROR` in all supported locales instead of English rate-limit or validation payloads (GitHub #67).
 - **Catalog menu rows:** Prevent `tenantproduct.price_cents` from being cleared to NULL (database NOT NULL): flush-time coalesce from supplier or linked product price, safer product backfill from catalog-only items, and PUT ignores explicit null price.
 - **Tables floor plan:** Selected-table panel shows read-only assigned waiter from table API for roles without `table:write`, consistent with Tiles/Table list (GitHub #65).
 
 ### Changed
 
-- **Agents:** 001-log-reviewer `time-of-last-review.txt` — GitHub/issue sweep and Docker log pass lines appended (2026-03-23, through 21:01Z UTC).
+- **Docs:** Removed the trailing “Reference paths (local)” section from `docs/agent-loop.md` (redundant mac-stats-reviewer paths; upstream context remains earlier in the doc).
+- **Landing (`/`):** Hero, value props, and a two-column guest vs staff layout (table code / register CTA) using existing design tokens; section heading for restaurant list; copy and new `LANDING.*` keys in all locales (GitHub #69).
+- **Agents:** Closed task `CLOSED-20260324-1558-feedback-page-needs-translation` moved to `agents/tasks/done/2026/03/24/`.
+- **Repository:** Ignore `time-of-last-review.txt` at repo root (001 log-reviewer output), `.factory/` (local IDE settings), and vim `*.swp` swap files.
+- **API (public tenant):** `GET /public/tenants/{tenant_id}` **404** `detail` uses the same localized catalog as other public endpoints (`Accept-Language` / `?lang=`), not a hardcoded English string (GitHub #67).
+- **Smoke test:** `test:feedback-public-i18n` checks **de**, **fr**, **es**, **ca**, **zh-CN**, **hi**, `?token=` URL, invalid **`/feedback/0`** (with **en**), missing tenant **`/feedback/999999999`** (API 404), and **first-load locale** via a fresh Chromium profile with `navigator.language` stubbed to **es-ES** before navigation (document title + visible copy, no raw `FEEDBACK.*` in the DOM) (GitHub #67).
+- **Agents:** 001-log-reviewer `time-of-last-review.txt` — GitHub/issue sweep and Docker log pass lines appended (2026-03-23, through 22:55Z UTC).
+
+## [2.0.53] - 2026-03-24
+
+### Fixed
+
+- **Public feedback (browser tab title, production):** Tab title uses synchronous `translate.instant` plus `get()` and omits `takeUntilDestroyed` on the inner subscription so `production-static` builds (e.g. satisfecho.de) update `document.title` instead of leaving the index default while the page copy is translated (GitHub #67).
+
+## [2.0.52] - 2026-03-24
+
+### Added
+
+- **Smoke test:** `npm run test:feedback-public-i18n` — public `/feedback/:tenant` resolves translations (en + de); fails if raw `FEEDBACK.*` keys appear in the DOM (GitHub #67).
+
+### Fixed
+
+- **i18n bootstrap (Accept-Language interceptor):** Inject `LanguageService` only for API requests (`environment.apiUrl`). Loading `/i18n/*.json` during bootstrap no longer hits a circular dependency, so ngx-translate loads locale files and public routes (`/feedback/*`, `/book/*`, etc.) show translated copy on first paint (GitHub #67).
+- **Public feedback (browser tab title):** Tab title uses `FEEDBACK.LOADING` / `FEEDBACK.TITLE` / `FEEDBACK.THANK_YOU` plus tenant name when available (GitHub #67).
+- **i18n (ca, fr, hi, zh-CN):** `NAV.GUEST_FEEDBACK` and `RESERVATIONS.VIEW_FEEDBACK_PAGE` translated (GitHub #67).
 
 ## [2.0.51] - 2026-03-23
 

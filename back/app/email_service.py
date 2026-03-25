@@ -4,6 +4,7 @@ Supports SMTP (Gmail, Proton Mail, etc.) and can be extended for API-based servi
 Uses per-tenant SMTP config when set; falls back to global config.env otherwise.
 """
 
+import html
 import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -217,9 +218,9 @@ async def send_reservation_reminder(
 
     view_block = ""
     if view_url:
-        view_block = f"""
-            <p>You can <a href="{view_url}">view or cancel your reservation</a> online.</p>
-        """
+        # Same wording and href escaping as reservation confirmation (reservation_email_template._link_block_html).
+        safe_href = html.escape(view_url, quote=True)
+        view_block = f'<p><a href="{safe_href}">View or change your reservation online</a></p>'
 
     html_content = f"""
     <!DOCTYPE html>
@@ -265,7 +266,7 @@ async def send_reservation_reminder(
     We look forward to seeing you. Please contact us if you need to change or cancel.
     """
     if view_url:
-        text_content += f"\nView or cancel online: {view_url}\n"
+        text_content += f"\nView or change your reservation online:\n{view_url}\n"
     text_content += f"\n---\nAutomated reminder from {tenant_name}."
 
     return await send_email(to_email, subject, html_content, text_content, tenant=tenant)

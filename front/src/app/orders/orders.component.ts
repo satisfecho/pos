@@ -1,5 +1,5 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../environments/environment';
 import {
@@ -1880,6 +1880,7 @@ ModuleRegistry.registerModules([
 export class OrdersComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private audio = inject(AudioService);
   private translate = inject(TranslateService);
   private waiterAlerts = inject(WaiterAlertService);
@@ -2224,9 +2225,104 @@ export class OrdersComponent implements OnInit, OnDestroy {
   loadOrders() {
     this.loading.set(true);
     this.api.getOrders(this.showRemovedItems).subscribe({
-      next: orders => { this.orders.set(orders); this.loading.set(false); },
+      next: orders => {
+        this.orders.set(orders);
+        this.loading.set(false);
+        this.applyStaffOrdersFocusFromQuery();
+      },
       error: () => this.loading.set(false)
     });
+  }
+
+  /**
+   * Deep-link from floor plan (and similar): ?focusOrder=123 or ?focusTableId=45
+   * Picks the right tab, scrolls to the card when possible, or opens edit for history-only orders.
+   */
+  private applyStaffOrdersFocusFromQuery() {
+    const q = this.route.snapshot.queryParamMap;
+    const focusOrderRaw = q.get('focusOrder');
+    const focusTableRaw = q.get('focusTableId');
+    if (!focusOrderRaw && !focusTableRaw) return;
+
+    const focusOrderId =
+      focusOrderRaw != null && focusOrderRaw !== ''
+        ? Number(focusOrderRaw)
+        : NaN;
+    const focusTableId =
+      focusTableRaw != null && focusTableRaw !== ''
+        ? Number(focusTableRaw)
+        : NaN;
+
+    const clearParams = () => {
+      void this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { focusOrder: null, focusTableId: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    };
+
+    let mode: 'active' | 'not_paid' | 'history' | null = null;
+    let scrollId: number | null = null;
+    let openEdit: Order | null = null;
+
+    if (Number.isFinite(focusOrderId) && focusOrderId > 0) {
+      const order = this.orders().find(o => o.id === focusOrderId);
+      if (order) {
+        if (this.activeOrders().some(o => o.id === focusOrderId)) {
+          mode = 'active';
+          scrollId = focusOrderId;
+        } else if (this.notPaidOrders().some(o => o.id === focusOrderId)) {
+          mode = 'not_paid';
+          scrollId = focusOrderId;
+        } else {
+          mode = 'history';
+          openEdit = order;
+        }
+      }
+    } else if (Number.isFinite(focusTableId) && focusTableId > 0) {
+      const forTable = this.orders().filter(o => o.table_id === focusTableId);
+      const activeStatuses = ['pending', 'preparing', 'ready', 'partially_delivered', 'paid'];
+      const activeForTable = forTable
+        .filter(o => activeStatuses.includes(o.status))
+        .sort((a, b) => (b.staff_urgent ? 1 : 0) - (a.staff_urgent ? 1 : 0) || a.id - b.id);
+      if (activeForTable.length > 0) {
+        mode = 'active';
+        scrollId = activeForTable[0].id;
+      } else {
+        const notPaid = forTable.filter(o => o.status === 'completed' && !o.paid_at);
+        if (notPaid.length > 0) {
+          mode = 'not_paid';
+          scrollId = notPaid[0].id;
+        } else {
+          const hist = forTable
+            .filter(o => ['completed', 'cancelled', 'paid'].includes(o.status))
+            .sort((a, b) => b.id - a.id);
+          if (hist.length > 0) {
+            mode = 'history';
+            openEdit = hist[0];
+          } else {
+            this.showToast(this.translate.instant('ORDERS.FOCUS_TABLE_NO_ORDERS'), 'error');
+            mode = 'active';
+          }
+        }
+      }
+    }
+
+    if (mode != null) {
+      this.viewMode.set(mode);
+      setTimeout(() => {
+        if (scrollId != null) {
+          this.scrollToOrder(scrollId);
+        }
+        if (openEdit) {
+          this.openOrderEdit(openEdit);
+        }
+        clearParams();
+      }, 150);
+    } else {
+      clearParams();
+    }
   }
 
   /** Refresh orders list and update editOrder with the latest order so the edit modal stays in sync. */

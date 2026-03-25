@@ -17,6 +17,7 @@ function isPublicRoute(url: string): boolean {
     path === '/register' ||
     path.startsWith('/menu/') ||
     path.startsWith('/book/') ||
+    path.startsWith('/feedback/') ||
     path === '/reservation'
   );
 }

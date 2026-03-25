@@ -6,7 +6,8 @@ This document captures thoughts on adding **WhatsApp reminders** for reservation
 
 ## 1. Current state
 
-- **Reminder today**: `POST /reservations/{id}/send-reminder` sends an **email** only; it requires `customer_email`. Staff triggers it from the reservations UI.
+- **Reminder today**: `POST /reservations/{id}/send-reminder` sends **email** (if `customer_email` is set) and/or **WhatsApp** when configured. Staff triggers it from the reservations UI.
+- **Email reminder link**: When the reservation has a **token** and `PUBLIC_APP_BASE_URL` is set, the message includes `…/reservation?token=…` with the same wording as the confirmation email (“View or change your reservation online”), so guests can open the public manage page (delay/notes updates and cancel).
 - **Reservation model**: `customer_phone` (required), `customer_email` (optional). So many reservations have a phone but no email – WhatsApp would reach those guests.
 
 ---

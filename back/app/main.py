@@ -53,6 +53,7 @@ from .tenant_currency import (
     normalize_tenant_currency_fields,
     sync_tenant_currency_symbol_from_code,
 )
+from .tenant_ui_modules import merge_tenant_ui_modules_patch, resolve_tenant_ui_modules
 from .line_modifiers import (
     line_modifiers_equal,
     validate_and_normalize_line_modifiers,
@@ -231,39 +232,46 @@ def _get_stripe_currency_code(currency_symbol: str | None) -> str | None:
 
 
 def _get_requested_language(
+    request: Request,
     lang: str | None = Query(None, description="Language code (e.g. en, es, zh-CN)"),
-    accept_language: str | None = Query(
-        None, alias="accept-language", description="Accept-Language header"
+    accept_language_query: str | None = Query(
+        None,
+        alias="accept-language",
+        description="Legacy: same format as Accept-Language, passed as a query param",
     ),
 ) -> str:
     """
-    Determine the requested language based on query param or Accept-Language header.
+    Determine the requested language: ?lang=, then HTTP Accept-Language, then ?accept-language=.
     Returns normalized language code or 'en' as fallback.
     """
     from .language_service import normalize_language_code
 
-    # 1. Check explicit lang query parameter
+    def _first_supported_from_accept_language(value: str) -> str | None:
+        for part in value.split(","):
+            lang_part = part.strip().split(";")[0].strip()
+            if not lang_part:
+                continue
+            normalized = normalize_language_code(lang_part)
+            if normalized:
+                return normalized
+        return None
+
     if lang:
         normalized = normalize_language_code(lang)
         if normalized:
             return normalized
 
-    # 2. Parse Accept-Language header
-    if accept_language:
-        # Simple parsing - take the first language with highest quality
-        # Format: "en-US,en;q=0.9,es;q=0.8"
-        languages = []
-        for part in accept_language.split(","):
-            lang_part = part.strip().split(";")[0].strip()
-            if lang_part:
-                normalized = normalize_language_code(lang_part)
-                if normalized:
-                    languages.append(normalized)
+    header = request.headers.get("accept-language")
+    if header:
+        parsed = _first_supported_from_accept_language(header)
+        if parsed:
+            return parsed
 
-        if languages:
-            return languages[0]  # Return highest priority
+    if accept_language_query:
+        parsed = _first_supported_from_accept_language(accept_language_query)
+        if parsed:
+            return parsed
 
-    # 3. Fallback to English
     return "en"
 
 
@@ -808,11 +816,12 @@ def list_public_tenants(session: Session = Depends(get_session)) -> list:
 def get_public_tenant(
     tenant_id: int,
     session: Session = Depends(get_session),
+    lang: str = Depends(_get_requested_language),
 ) -> JSONResponse:
     """Get one tenant's public info for book page (name, logo, phone, email, whatsapp, opening_hours). Public, no authentication."""
     tenant = session.get(models.Tenant, tenant_id)
     if not tenant:
-        raise HTTPException(status_code=404, detail="Tenant not found")
+        raise HTTPException(status_code=404, detail=get_message("tenant_not_found", lang))
     summary = _tenant_to_summary(tenant, session)
     # Return explicit JSON so whatsapp is always present (same tenant as /tenant/settings)
     body = {
@@ -909,7 +918,7 @@ def submit_public_guest_feedback(
     """Anonymous guest feedback (rating + optional comment and contact). Optional reservation_token must match this tenant."""
     tenant = session.get(models.Tenant, tenant_id)
     if not tenant:
-        raise HTTPException(status_code=404, detail="Tenant not found")
+        raise HTTPException(status_code=404, detail=get_message("tenant_not_found", lang))
 
     comment = None
     if body.comment is not None and str(body.comment).strip():
@@ -1960,6 +1969,7 @@ def get_tenant_settings(
         tenant_dict["smtp_password"] = "********"
 
     apply_tenant_currency_api_dict(tenant_dict)
+    tenant_dict["ui_modules"] = resolve_tenant_ui_modules(tenant.ui_modules)
 
     return tenant_dict
 
@@ -2257,6 +2267,13 @@ def update_tenant_settings(
     if tenant_update.kitchen_display_timer_red_minutes is not None:
         tenant.kitchen_display_timer_red_minutes = max(0, tenant_update.kitchen_display_timer_red_minutes)
 
+    if tenant_update.ui_modules is not None:
+        if not isinstance(tenant_update.ui_modules, dict):
+            raise HTTPException(status_code=400, detail="ui_modules must be an object")
+        tenant.ui_modules = merge_tenant_ui_modules_patch(
+            tenant.ui_modules, tenant_update.ui_modules
+        )
+
     session.add(tenant)
     session.commit()
     session.refresh(tenant)
@@ -2293,6 +2310,7 @@ def update_tenant_settings(
         tenant_dict["smtp_password"] = "********"
 
     apply_tenant_currency_api_dict(tenant_dict)
+    tenant_dict["ui_modules"] = resolve_tenant_ui_modules(tenant.ui_modules)
 
     return tenant_dict
 
@@ -2534,6 +2552,16 @@ def list_taxes(
     current_only: bool = Query(True, description="If true, only return taxes valid today"),
 ) -> list[dict]:
     """List taxes for the current tenant. Optionally filter to those valid today."""
+    # Auto-seed default Spanish IVA taxes when a tenant has none yet.
+    # This prevents Settings dropdowns from rendering as an empty list.
+    has_any = session.exec(
+        select(models.Tax.id).where(models.Tax.tenant_id == current_user.tenant_id).limit(1)
+    ).first()
+    if not has_any:
+        from app.seeds.seed_spanish_taxes import seed_spanish_taxes
+
+        seed_spanish_taxes(tenant_id=current_user.tenant_id, set_default=True)
+
     query = select(models.Tax).where(models.Tax.tenant_id == current_user.tenant_id)
     if current_only:
         today = date.today()

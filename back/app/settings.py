@@ -93,7 +93,7 @@ class Settings(BaseSettings):
         validation_alias="DEFAULT_PHONE_COUNTRY",
         description="ISO 3166-1 alpha-2 country code for normalizing phone numbers without + prefix",
     )
-    # Base URL of the public frontend (for links in emails, e.g. reservation view/cancel).
+    # Base URL of the public frontend (for links in emails, e.g. reservation view/change/cancel).
     # When set, reservation reminder emails include a link to /reservation?token=...
     public_app_base_url: str = Field(
         default="",

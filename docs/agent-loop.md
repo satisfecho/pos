@@ -282,10 +282,3 @@ mac-stats-reviewer’s **`agents/autoresearch/README.md`** describes **Track A**
 
 ---
 
-## Reference paths (local)
-
-- mac-stats-reviewer: **`~/projects/mac-stats-reviewer`**
-- Task workflow source: **`~/projects/mac-stats-reviewer/agents/tasks/README.md`**
-- Agent prompts: **`~/projects/mac-stats-reviewer/agents/00*-*/`** and **`007-committer/`**
-
-When those files change upstream, refresh the adapted copies under **`agents/`** in this repo.

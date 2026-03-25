@@ -53,6 +53,7 @@ You can override defaults with these repository secrets:
   - **`git remote get-url origin`** must contain **`satisfecho/pos`** unless **`SKIP_ORIGIN_CHECK=1`** (forks/mirrors).
   - Migrations run with **strict failure** (script exits if migrate or sync-idempotent fails).
   - After **`up -d`**, the script waits for **`http://127.0.0.1:8020/health`** inside the **back** container (retries) instead of a fixed long sleep.
+  - After **back** and **front** images build successfully, **`docker buildx prune -f`** runs to drop **unused** BuildKit cache and limit disk growth on the server ([issue #73](https://github.com/satisfecho/pos/issues/73)). It is non-interactive (`-f`). Override with **`SKIP_BUILDX_PRUNE=1`** on the server if you need to skip it. Failures are logged as a warning and do not abort deploy.
 - **Post-deploy smoke:** The workflow retries **landing**, **app-version** meta, and **`/api/health`** against **`SMOKE_TEST_BASE_URL`** (default **https://www.satisfecho.de**).
 
 ## First deploy

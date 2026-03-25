@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { ApiService, User } from '../services/api.service';
+import { ApiService, TenantUiModuleKey, User } from '../services/api.service';
 import { PermissionService, Permission } from '../services/permission.service';
 import { environment } from '../../environments/environment';
 import { LanguagePickerComponent } from './language-picker.component';
@@ -62,7 +62,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
              </svg>
              <span>{{ 'NAV.ORDERS' | translate }}</span>
            </a>
-           @if (canViewReservations()) {
+           @if (canViewReservations() && moduleEnabled('reservations')) {
              <a routerLink="/reservations" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
@@ -77,7 +77,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                <span>{{ 'NAV.GUEST_FEEDBACK' | translate }}</span>
              </a>
            }
-           @if (canViewTables()) {
+           @if (canViewTables() && moduleEnabled('tables')) {
              <a routerLink="/tables" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                  <rect x="3" y="3" width="7" height="7"/>
@@ -88,6 +88,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                <span>{{ 'NAV.TABLES' | translate }}</span>
              </a>
            }
+           @if (moduleEnabled('kitchen_bar')) {
            <a routerLink="/kitchen" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                <rect x="2" y="4" width="20" height="16" rx="2"/>
@@ -102,6 +103,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
              </svg>
              <span>{{ 'NAV.BEVERAGES_DISPLAY' | translate }}</span>
            </a>
+           }
            @if (canViewCustomers()) {
              <a routerLink="/customers" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -119,6 +121,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
              </svg>
              <span>{{ 'NAV.PRODUCTS' | translate }}</span>
            </a>
+           @if (moduleEnabled('providers')) {
            <a routerLink="/catalog" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
@@ -126,6 +129,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
              </svg>
              <span>{{ 'NAV.CATALOG' | translate }}</span>
            </a>
+           }
            @if (canViewReports()) {
              <a routerLink="/reports" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -134,7 +138,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                <span>{{ 'NAV.REPORTS' | translate }}</span>
              </a>
            }
-           @if (canViewWorkingPlan()) {
+           @if (canViewWorkingPlan() && moduleEnabled('working_plan')) {
              <a routerLink="/working-plan" routerLinkActive="active" class="nav-link" (click)="closeSidebar()">
                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
@@ -147,7 +151,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
              </a>
            }
            <!-- Inventory Module (Admin only) -->
-           @if (canViewInventory()) {
+           @if (canViewInventory() && moduleEnabled('inventory')) {
              <div class="nav-section">
                <button class="nav-section-header" (click)="toggleInventory()">
                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -262,6 +266,7 @@ export class SidebarComponent implements OnInit {
   });
 
   ngOnInit() {
+    this.api.ensureTenantUiModulesLoaded().subscribe();
     this.api.user$.subscribe(user => {
       this.user.set(user);
       if (user && String(user.role).toLowerCase() === 'owner') {
@@ -277,6 +282,10 @@ export class SidebarComponent implements OnInit {
     if (this.router.url.startsWith('/inventory')) {
       this.inventoryOpen.set(true);
     }
+  }
+
+  moduleEnabled(key: TenantUiModuleKey): boolean {
+    return this.api.isUiModuleEnabled(key);
   }
 
   /**

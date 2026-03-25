@@ -1,6 +1,6 @@
 {
   "name": "front",
-  "version": "2.0.51",
+  "version": "2.0.56",
   "scripts": {
     "ng": "ng",
     "prebuild": "node scripts/get-commit-hash.js",
@@ -16,6 +16,7 @@
     "test:tables-page": "node scripts/test-tables-page.mjs",
     "test:tables-waiter-assignment": "node scripts/test-tables-waiter-assignment.mjs",
     "test:tables-canvas-view-options": "node scripts/test-tables-canvas-view-options.mjs",
+    "test:tables-canvas-open-orders": "node scripts/test-tables-canvas-open-orders.mjs",
     "test:landing-version": "node scripts/test-landing-version.mjs",
     "test:landing-provider-links": "node scripts/test-landing-provider-links.mjs",
     "test:provider-register": "node scripts/test-provider-register.mjs",
@@ -37,6 +38,7 @@
     "test:rate-limit-puppeteer": "node scripts/test-rate-limit-puppeteer.mjs",
     "test:book-whatsapp": "node scripts/test-book-whatsapp-puppeteer.mjs",
     "test:reservation-create": "node scripts/test-reservation-create.mjs",
+    "test:feedback-public-i18n": "node scripts/test-feedback-public-i18n.mjs",
     "capture-screenshots": "node scripts/capture-screenshots.mjs"
   },
   "prettier": {

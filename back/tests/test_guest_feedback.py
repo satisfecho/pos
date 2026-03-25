@@ -83,6 +83,28 @@ class TestGuestFeedback(PgClientTestCase):
         )
         self.assertEqual(r.status_code, 400, r.text)
 
+    def test_invalid_reservation_token_localized_de(self):
+        r = self.client.post(
+            f"/public/tenants/{self.tenant_id}/guest-feedback",
+            json={"rating": 3, "reservation_token": "nope"},
+            headers={"Accept-Language": "de,en;q=0.5"},
+        )
+        self.assertEqual(r.status_code, 400, r.text)
+        detail = r.json().get("detail")
+        self.assertIsInstance(detail, str)
+        self.assertIn("Reservierungslink", detail)
+
+    def test_get_public_tenant_404_localized_de(self):
+        missing_id = self.tenant_id + 9_999_999
+        r = self.client.get(
+            f"/public/tenants/{missing_id}",
+            headers={"Accept-Language": "de,en;q=0.5"},
+        )
+        self.assertEqual(r.status_code, 404, r.text)
+        detail = r.json().get("detail")
+        self.assertIsInstance(detail, str)
+        self.assertIn("Mandant", detail)
+
 
 if __name__ == "__main__":
     unittest.main()

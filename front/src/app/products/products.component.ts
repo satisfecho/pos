@@ -612,7 +612,8 @@ export class ProductsComponent implements OnInit {
   ngOnInit() {
     this.loadTenantSettingsThenProducts();
     this.loadCategories();
-    this.api.getTaxes(true).subscribe({ next: (list) => this.productTaxes.set(list), error: () => this.productTaxes.set([]) });
+    // Load all taxes (not only "valid today") so dropdowns aren't empty due to validity-period edge cases.
+    this.api.getTaxes(false).subscribe({ next: (list) => this.productTaxes.set(list), error: () => this.productTaxes.set([]) });
     this.api.getKitchenStations().subscribe({
       next: (list) => this.kitchenStations.set(list),
       error: () => this.kitchenStations.set([]),

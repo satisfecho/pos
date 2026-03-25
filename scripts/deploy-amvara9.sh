@@ -14,6 +14,8 @@
 # Optional env (GitHub #49):
 #   SKIP_ORIGIN_CHECK=1  — do not require git remote origin to match satisfecho/pos.
 #   DEPLOY_FULL_DOWN=1   — use docker compose down instead of stopping app-tier only.
+# Optional env (GitHub #73):
+#   SKIP_BUILDX_PRUNE=1  — skip docker buildx prune after image builds (disk vs cache trade-off).
 
 set -e
 # Expect to be run from repo root on server, e.g. cd /development/pos && bash -s
@@ -78,6 +80,20 @@ docker compose $COMPOSE_OPTS images -q front 2>/dev/null | while read -r id; do 
 export COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo '')
 echo "Building front image (no cache) with COMMIT_HASH=$COMMIT_HASH..."
 docker compose $COMPOSE_OPTS build --no-cache front
+
+# Remove unused BuildKit/buildx cache so layers do not accumulate on the server (GitHub #73).
+# Uses -f so the script never waits for a prompt. Only prunes cache not in use; workflow
+# concurrency (deploy-amvara9) serializes CI deploys on this host.
+if [ "${SKIP_BUILDX_PRUNE:-0}" = "1" ]; then
+  echo "SKIP_BUILDX_PRUNE=1: skipping docker buildx prune."
+else
+  echo "Pruning unused BuildKit cache (docker buildx prune -f)..."
+  if docker buildx prune -f; then
+    echo "Buildx prune completed."
+  else
+    echo "Warning: docker buildx prune failed (non-fatal). Set SKIP_BUILDX_PRUNE=1 to silence or fix Docker/buildx on host."
+  fi
+fi
 
 echo "Ensure certbot dirs exist (webroot for certbot, haproxy-certs for combined PEM; see certbot/README.md)..."
 mkdir -p certbot/www certbot/haproxy-certs
