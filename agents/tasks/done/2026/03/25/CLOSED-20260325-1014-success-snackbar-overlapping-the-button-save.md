@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub #80 reported the Settings save success toast overlapping the Save control.
+- **What was done:** Settings inline success toasts were repositioned to a fixed, top-centered layout with a 60s auto-dismiss for save success (manual × still clears immediately); errors share the position without that timer.
+- **What was tested:** Tester **PASS** — toast geometry vs Save row, code paths for dismiss/timer, `test:landing-version`, clean front build in logs.
+- **Why closed:** Test report overall **PASS**; acceptance criteria met.
+- **Closed at (UTC):** 2026-03-25 10:49
+---
+
 # Success snackbar overlapping the button save
 
 ## GitHub
