@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue #83 reported that in Settings → Security the 2FA control sat flush against the explanatory text with insufficient vertical separation.
+- **What was done:** Scoped CSS added margin below the OTP hint paragraph in the security section so copy is separated from the primary **Enable two-factor authentication** button (and setup-flow hints), aligned with existing spacing patterns.
+- **What was tested:** Tester **PASS** — measured 16px margin-bottom and gap to the primary button; `test:landing-version` exit 0; front build clean in logs.
+- **Why closed:** Test report overall **PASS**; acceptance criteria met; no regressions noted on the smoke path.
+- **Closed at (UTC):** 2026-03-25 11:36
+---
+
 # Two factor authentication button decoration
 
 ## GitHub
