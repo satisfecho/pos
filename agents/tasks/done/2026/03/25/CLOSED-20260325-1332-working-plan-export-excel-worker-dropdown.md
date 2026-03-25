@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub issue #90 reported the Working plan export Excel control and worker dropdown missing for staff without `user:read`.
+- **What was done:** Added `GET /schedule/plan-users` (requires `schedule:read` only); frontend loads schedulable users from it; export row stays visible with disabled state and i18n hint when no users.
+- **What was tested:** `tests/test_schedule_export.py` (5 passed), front bundle build clean, `npm run test:working-plan` — overall PASS per test report.
+- **Why closed:** Tester marked overall PASS; scope delivered; archived per agent loop.
+- **Closed at (UTC):** 2026-03-25 13:46
+---
+
 # I can't see the button (export excel) in working plan
 
 ## GitHub

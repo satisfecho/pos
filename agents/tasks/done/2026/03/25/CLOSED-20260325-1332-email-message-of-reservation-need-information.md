@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub issue #91 asked for more actionable reservation emails (manage link and restaurant contact details in body).
+- **What was done:** Confirmation and reminder mail paths include a contact block placeholder and HTML/plain formatting; Settings hint documents `restaurant_contact_block_html` in all shipped locales.
+- **What was tested:** Backend pytest (`test_reservation_email_template`, `test_reservation_reminder_email`) — 8 passed; i18n hint strings verified in source — overall PASS per test report.
+- **Why closed:** Tester marked overall PASS; scope delivered; archived per agent loop.
+- **Closed at (UTC):** 2026-03-25 13:46
+---
+
 # Email message of reservation need information
 
 ## GitHub
