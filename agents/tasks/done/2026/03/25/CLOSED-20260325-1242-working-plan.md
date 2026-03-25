@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** The working plan flow was extended so staff can assign the same schedule to an employee for a full month at once while preserving per-day exceptions via skip semantics.
+- **What was done:** Backend `ShiftBulkCreate` and `POST /schedule/bulk` (weekday model aligned with JS `getDay()`, optional skip when shifts already exist), frontend **Apply to month** modal and `ApiService.bulkCreateShifts`, plus `test_schedule_bulk.py` and `test-working-plan.mjs`.
+- **What was tested:** Pytest schedule bulk (3 passed), Puppeteer working-plan smoke with bulk control and target-month scope, Angular build clean in compose logs — **PASS** overall per the embedded test report.
+- **Why closed:** All pass/fail criteria in the task were met with no failures recorded.
+- **Closed at (UTC):** 2026-03-25 12:58
+---
+
 # Working plan
 
 ## GitHub
