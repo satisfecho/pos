@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue #96 (“download all my data” / tenant lifecycle) was implemented and the tester handed off this task as **CLOSED** with an overall **PASS**.
+- **What was done:** Owner-only synchronous ZIP export with redacted tenant secrets, owner-only purge with name confirmation and lifecycle logic, co-owner support via **Owner** in the users edit role dropdown, and guarded demo-tenant purge script (`DEMO_PURGE_CONFIRM=1`); see coder notes and test report in this file.
+- **What was tested:** `pytest tests/test_tenant_lifecycle.py` (4 passed), ad-hoc admin `403` on purge, demo script refusal without env, clean front build logs, and `npm run test:landing-version` smoke; destructive UI purge was skipped as allowed.
+- **Why closed:** All stated pass/fail criteria satisfied; no failed checks in the test report.
+- **Closed at (UTC):** 2026-03-25 15:15
+---
+
 # Download all my data
 
 ## GitHub
