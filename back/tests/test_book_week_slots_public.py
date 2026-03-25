@@ -81,6 +81,18 @@ class TestBookWeekSlotsPublic(PgClientTestCase):
         )
         self.assertEqual(r.status_code, 404, r.text)
 
+    def test_book_week_slots_exclude_reservation_id_accepted(self):
+        r = self.client.get(
+            "/reservations/book-week-slots",
+            params={
+                "tenant_id": self.tenant.id,
+                "party_size": 2,
+                "exclude_reservation_id": 1,
+            },
+        )
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertEqual(len(r.json()["days"]), 7)
+
 
 if __name__ == "__main__":
     unittest.main()

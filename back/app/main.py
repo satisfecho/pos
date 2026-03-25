@@ -6679,6 +6679,10 @@ def get_reservation_book_week_slots(
         description="Any date YYYY-MM-DD in the target week; Mon–Sun grid (tenant calendar). Omit = week containing today",
     ),
     party_size: int = Query(2, ge=1, le=100),
+    exclude_reservation_id: int | None = Query(
+        None,
+        description="Exclude this reservation from demand (staff edit: current booking)",
+    ),
     session: Session = Depends(get_session),
 ) -> dict:
     """Public: per-slot availability for a Mon–Sun grid (party size and capacity)."""
@@ -6756,7 +6760,7 @@ def get_reservation_book_week_slots(
                 continue
 
             reserved_guests, reserved_parties = _demand_for_slot(
-                session, tenant_id, d, st, exclude_reservation_id=None
+                session, tenant_id, d, st, exclude_reservation_id=exclude_reservation_id
             )
             if reserved_guests + party_size <= total_seats and reserved_parties + 1 <= total_tables:
                 cells[key] = "available"

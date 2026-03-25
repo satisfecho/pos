@@ -1388,13 +1388,17 @@ export class ApiService {
   getReservationBookWeekSlots(
     tenantId: number,
     partySize: number,
-    weekAnchor?: string | null
+    weekAnchor?: string | null,
+    excludeReservationId?: number | null
   ): Observable<ReservationBookWeekSlotsResponse> {
     const params: Record<string, string> = {
       tenant_id: String(tenantId),
       party_size: String(partySize),
     };
     if (weekAnchor?.trim()) params['week_anchor'] = weekAnchor.trim();
+    if (excludeReservationId != null && excludeReservationId > 0) {
+      params['exclude_reservation_id'] = String(excludeReservationId);
+    }
     return this.http.get<ReservationBookWeekSlotsResponse>(`${this.apiUrl}/reservations/book-week-slots`, {
       params,
     });

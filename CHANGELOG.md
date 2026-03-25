@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Staff reservations week grid (GitHub #94):** Create/edit on `/reservations` uses the same Mon–Sun availability grid as public `/book` (`GET /reservations/book-week-slots`), tenant timezone, party size, and public lead-time rules. Shared `ReservationWeekSlotGridComponent`; optional `exclude_reservation_id` on book-week-slots excludes the edited booking from demand. Saving without changing date/time still allowed (e.g. past slots).
+
 - **Reservation emails (GitHub #91):** Default confirmation template and scheduled/staff-triggered **reminder** emails include a **Contact us** block with the tenant’s public phone and email (`tel:` / `mailto:` in HTML, plain lines in text) when those fields are set. New template placeholder `restaurant_contact_block_html`; Settings → Reservations hint text updated in all i18n files.
 
 - **Public table menu (GitHub #85):** Product cards and featured items use a light primary tint and border while the product is in the cart; adding or incrementing shows a short highlight on the card and the matching cart line. Respects reduced-motion for the pulse animation.
