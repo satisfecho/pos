@@ -1007,7 +1007,7 @@
     "RESERVATION_CONFIRMATION_SUBJECT": "E-Mail-Betreff",
     "RESERVATION_CONFIRMATION_SUBJECT_PLACEHOLDER": "z. B. Wir haben einen Tisch für Sie reserviert",
     "RESERVATION_CONFIRMATION_BODY": "E-Mail-Text",
-    "RESERVATION_CONFIRMATION_BODY_HINT": "Erlaubte Namen (jeweils in doppelte geschweifte Klammern setzen): restaurant_name, customer_name, date, time, party_size, reservation_url, reservation_link_block_html (klickbarer Link in HTML-E-Mails; leer ohne Self-Service-Link), cancellation_policy, prepayment_text, prepayment_notice, dress_code, arrival_note, restaurant_phone, restaurant_email. Mit cancellation_policy usw. Text aus dem Bereich Reservierungen übernehmen.",
+    "RESERVATION_CONFIRMATION_BODY_HINT": "Erlaubte Namen (jeweils in doppelte geschweifte Klammern setzen): restaurant_name, customer_name, date, time, party_size, reservation_url, reservation_link_block_html (klickbarer Link in HTML-E-Mails; leer ohne Self-Service-Link), cancellation_policy, prepayment_text, prepayment_notice, dress_code, arrival_note, restaurant_phone, restaurant_email, restaurant_contact_block_html (Kontaktblock Telefon/E-Mail mit tel/mailto in HTML und Klartextzeilen; leer wenn beides fehlt). Mit cancellation_policy usw. Text aus dem Bereich Reservierungen übernehmen.",
     "STRIPE_SECRET_HINT": "Ihr geheimer Stripe-Schlüssel. Leer lassen, um den aktuellen Wert beizubehalten.",
     "REVOLUT_INTEGRATION": "Revolut-Integration",
     "REVOLUT_MERCHANT_SECRET": "Revolut Merchant API Secret",

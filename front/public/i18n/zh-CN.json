@@ -943,7 +943,7 @@
     "RESERVATION_CONFIRMATION_SUBJECT": "邮件主题",
     "RESERVATION_CONFIRMATION_SUBJECT_PLACEHOLDER": "例如：我们已为您预留餐桌",
     "RESERVATION_CONFIRMATION_BODY": "邮件正文",
-    "RESERVATION_CONFIRMATION_BODY_HINT": "允许的名称（每个用双花括号包裹）：restaurant_name、customer_name、date、time、party_size、reservation_url、reservation_link_block_html（HTML 邮件中的可点击链接；无自助链接时为空）、cancellation_policy、prepayment_text、prepayment_notice、dress_code、arrival_note、restaurant_phone、restaurant_email。可使用 cancellation_policy 等从「预订」设置段落引用文案。"
+    "RESERVATION_CONFIRMATION_BODY_HINT": "允许的名称（每个用双花括号包裹）：restaurant_name、customer_name、date、time、party_size、reservation_url、reservation_link_block_html（HTML 邮件中的可点击链接；无自助链接时为空）、cancellation_policy、prepayment_text、prepayment_notice、dress_code、arrival_note、restaurant_phone、restaurant_email、restaurant_contact_block_html（电话与邮箱块：HTML 含 tel/mailto，纯文本为多行；两者皆空则为空）。可使用 cancellation_policy 等从「预订」设置段落引用文案。"
   },
   "PAYMENTS": {
     "PAYMENT": "支付",

@@ -1162,7 +1162,7 @@
     "RESERVATION_CONFIRMATION_SUBJECT": "Asunto del correo",
     "RESERVATION_CONFIRMATION_SUBJECT_PLACEHOLDER": "p. ej. Hemos reservado una mesa para usted",
     "RESERVATION_CONFIRMATION_BODY": "Cuerpo del correo",
-    "RESERVATION_CONFIRMATION_BODY_HINT": "Nombres permitidos (cada uno entre llaves dobles): restaurant_name, customer_name, date, time, party_size, reservation_url, reservation_link_block_html (enlace en HTML; vacío si no hay enlace de autogestión), cancellation_policy, prepayment_text, prepayment_notice, dress_code, arrival_note, restaurant_phone, restaurant_email. Usa cancellation_policy y similares para tomar el texto de la sección Reservas de la configuración."
+    "RESERVATION_CONFIRMATION_BODY_HINT": "Nombres permitidos (cada uno entre llaves dobles): restaurant_name, customer_name, date, time, party_size, reservation_url, reservation_link_block_html (enlace en HTML; vacío si no hay enlace de autogestión), cancellation_policy, prepayment_text, prepayment_notice, dress_code, arrival_note, restaurant_phone, restaurant_email, restaurant_contact_block_html (bloque de teléfono y correo con tel/mailto en HTML y líneas en texto; vacío si faltan ambos). Usa cancellation_policy y similares para tomar el texto de la sección Reservas de la configuración."
   },
   "PAYMENTS": {
     "PAYMENT": "Pago",

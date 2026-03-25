@@ -13,9 +13,9 @@ if _repo_root and os.path.basename(_back_dir) == "back" and _repo_root not in sy
     sys.path.insert(0, _repo_root)
 
 try:
-    from back.app import email_service
+    from back.app import email_service, models
 except ImportError:
-    from app import email_service
+    from app import email_service, models
 
 
 class TestReservationReminderEmail(unittest.TestCase):
@@ -71,6 +71,38 @@ class TestReservationReminderEmail(unittest.TestCase):
         html_content = _args[2]
         self.assertNotIn('" onerror="', html_content)
         self.assertIn("&quot;", html_content)
+
+    def test_reminder_includes_tenant_contact_when_tenant_passed(self):
+        tenant = models.Tenant(
+            name="Demo",
+            phone="+34 900 111 222",
+            email="hola@demo.test",
+        )
+
+        async def _run():
+            with patch.object(email_service, "send_email", new_callable=AsyncMock) as m:
+                m.return_value = True
+                await email_service.send_reservation_reminder(
+                    to_email="guest@test.local",
+                    customer_name="Pat",
+                    reservation_date="2026-03-25",
+                    reservation_time="20:00",
+                    party_size=2,
+                    tenant_name="Demo Bistro",
+                    view_url=None,
+                    tenant=tenant,
+                )
+            return m
+
+        m = asyncio.run(_run())
+        _args, _kwargs = m.call_args
+        html_content = _args[2]
+        text_content = _args[3]
+        self.assertIn("Contact us", html_content)
+        self.assertIn("+34 900 111 222", html_content)
+        self.assertIn("hola@demo.test", html_content)
+        self.assertIn("Contact us", text_content)
+        self.assertIn("+34 900 111 222", text_content)
 
 
 if __name__ == "__main__":

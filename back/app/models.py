@@ -140,7 +140,8 @@ class Tenant(SQLModel, table=True):
     smtp_password: str | None = Field(default=None)
     email_from: str | None = Field(default=None)
     email_from_name: str | None = Field(default=None)
-    # Reservation confirmation email (plain text with {{placeholders}}; see reservation_email_template.py)
+    # Reservation confirmation email (plain text with {{placeholders}} incl. reservation_link_block_html,
+    # restaurant_contact_block_html; see reservation_email_template.py)
     reservation_confirmation_email_subject: str | None = Field(default=None)
     reservation_confirmation_email_body: str | None = Field(default=None)
 

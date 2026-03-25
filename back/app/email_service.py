@@ -12,7 +12,12 @@ from typing import TYPE_CHECKING, Any, Optional
 
 import aiosmtplib
 
-from .reservation_email_template import render_confirmation_email, wrap_html_email
+from .reservation_email_template import (
+    contact_block_html,
+    contact_block_plain,
+    render_confirmation_email,
+    wrap_html_email,
+)
 from .settings import settings
 
 if TYPE_CHECKING:
@@ -222,6 +227,9 @@ async def send_reservation_reminder(
         safe_href = html.escape(view_url, quote=True)
         view_block = f'<p><a href="{safe_href}">View or change your reservation online</a></p>'
 
+    contact_html = contact_block_html(tenant) if tenant else ""
+    contact_plain = contact_block_plain(tenant) if tenant else ""
+
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -245,6 +253,7 @@ async def send_reservation_reminder(
             </div>
             <p>We look forward to seeing you. Please contact us if you need to change or cancel.</p>
             {view_block}
+            {contact_html}
             <hr>
             <p style="color: #666; font-size: 12px;">This is an automated reminder from {tenant_name}.</p>
         </div>
@@ -267,6 +276,8 @@ async def send_reservation_reminder(
     """
     if view_url:
         text_content += f"\nView or change your reservation online:\n{view_url}\n"
+    if contact_plain:
+        text_content += f"\n{contact_plain}\n"
     text_content += f"\n---\nAutomated reminder from {tenant_name}."
 
     return await send_email(to_email, subject, html_content, text_content, tenant=tenant)

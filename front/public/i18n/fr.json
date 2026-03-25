@@ -984,7 +984,7 @@
     "RESERVATION_CONFIRMATION_SUBJECT": "Objet de l’e-mail",
     "RESERVATION_CONFIRMATION_SUBJECT_PLACEHOLDER": "p. ex. Nous avons réservé une table pour vous",
     "RESERVATION_CONFIRMATION_BODY": "Corps de l’e-mail",
-    "RESERVATION_CONFIRMATION_BODY_HINT": "Noms autorisés (chacun entre accolades doubles) : restaurant_name, customer_name, date, time, party_size, reservation_url, reservation_link_block_html (lien cliquable en HTML ; vide s’il n’y a pas de lien libre-service), cancellation_policy, prepayment_text, prepayment_notice, dress_code, arrival_note, restaurant_phone, restaurant_email. Utilisez cancellation_policy et similaires pour reprendre le texte de la section Réservations.",
+    "RESERVATION_CONFIRMATION_BODY_HINT": "Noms autorisés (chacun entre accolades doubles) : restaurant_name, customer_name, date, time, party_size, reservation_url, reservation_link_block_html (lien cliquable en HTML ; vide s’il n’y a pas de lien libre-service), cancellation_policy, prepayment_text, prepayment_notice, dress_code, arrival_note, restaurant_phone, restaurant_email, restaurant_contact_block_html (bloc contact téléphone/e-mail avec tel/mailto en HTML et lignes en texte ; vide si les deux sont absents). Utilisez cancellation_policy et similaires pour reprendre le texte de la section Réservations.",
     "PUBLIC_GOOGLE_REVIEW_URL": "Google review link",
     "PUBLIC_GOOGLE_REVIEW_PLACEHOLDER": "https://g.page/.../review or Google Maps review URL",
     "PUBLIC_GOOGLE_REVIEW_HINT": "Shown on the thank-you page after guests submit private feedback so they can leave a public Google review.",

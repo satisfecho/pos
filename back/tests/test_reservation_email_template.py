@@ -86,6 +86,12 @@ class TestReservationEmailTemplate(unittest.TestCase):
         self.assertIn("Cancel 24h", text)
         self.assertIn("https://app.test/r?t=1", text)
         self.assertIn("View or change", inner)
+        self.assertIn("Contact us", text)
+        self.assertIn("+1 555", text)
+        self.assertIn("info@demo.test", text)
+        self.assertIn("Contact us", inner)
+        self.assertIn("tel:", inner)
+        self.assertIn("mailto:info@demo.test", inner)
 
     def test_allowlist_is_lowercase_snake(self):
         for name in ALLOWED_PLACEHOLDERS:

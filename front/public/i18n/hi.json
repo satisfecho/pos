@@ -943,7 +943,7 @@
     "RESERVATION_CONFIRMATION_SUBJECT": "ईमेल विषय",
     "RESERVATION_CONFIRMATION_SUBJECT_PLACEHOLDER": "उदा. हमने आपके लिए एक टेबल आरक्षित की है",
     "RESERVATION_CONFIRMATION_BODY": "ईमेल मुख्य भाग",
-    "RESERVATION_CONFIRMATION_BODY_HINT": "अनुमत नाम (प्रत्येक दोहरी कर्ली ब्रेस में): restaurant_name, customer_name, date, time, party_size, reservation_url, reservation_link_block_html (HTML ईमेल में क्लिक करने योग्य लिंक; यदि सेल्फ-सर्विस लिंक नहीं तो खाली), cancellation_policy, prepayment_text, prepayment_notice, dress_code, arrival_note, restaurant_phone, restaurant_email। cancellation_policy आदि से आरक्षण सेटिंग्स का टेक्स्ट लें।"
+    "RESERVATION_CONFIRMATION_BODY_HINT": "अनुमत नाम (प्रत्येक दोहरी कर्ली ब्रेस में): restaurant_name, customer_name, date, time, party_size, reservation_url, reservation_link_block_html (HTML ईमेल में क्लिक करने योग्य लिंक; यदि सेल्फ-सर्विस लिंक नहीं तो खाली), cancellation_policy, prepayment_text, prepayment_notice, dress_code, arrival_note, restaurant_phone, restaurant_email, restaurant_contact_block_html (HTML में tel/mailto के साथ फ़ोन व ईमेल ब्लॉक; टेक्स्ट में पंक्तियाँ; दोनों न हों तो खाली)। cancellation_policy आदि से आरक्षण सेटिंग्स का टेक्स्ट लें।"
   },
   "PAYMENTS": {
     "PAYMENT": "भुगतान",
