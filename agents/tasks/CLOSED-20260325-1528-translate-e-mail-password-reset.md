@@ -29,3 +29,29 @@ Password-reset emails must be available in all five supported languages. The cop
    Expect 6 passed (includes locale coverage for all `email_password_reset_*` keys).
 2. **Manual email (optional):** Configure SMTP + `PUBLIC_APP_BASE_URL`. Open forgot-password, set UI language (e.g. Deutsch), submit reset for a real user; confirm subject/body are German. Link and expiry unchanged.
 3. **Frontend build:** `docker compose ... logs --tail=40 front` — no Angular compile errors after `api.service.ts` change.
+
+---
+
+## Test report
+
+1. **Date/time (UTC):** 2026-03-25T15:33:35Z (report written). **Log window:** ~2026-03-25T15:31Z–15:33Z UTC (compose `front` tail + pytest run).
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; `BASE_URL` not used (no browser run); branch **development**, commit **8d273c7**.
+3. **What was tested:** Items 1 and 3 from **Testing instructions** (required backend pytest; front log check). Item 2 (manual SMTP + forgot-password UI) **skipped** — optional per task.
+4. **Results:**
+   - **Backend pytest `test_password_reset.py`:** **PASS** — `6 passed in 2.62s` (`docker compose … exec -T back pytest /app/tests/test_password_reset.py -q`).
+   - **Manual email (optional):** **N/A** — not executed (no SMTP/live inbox verification in this run).
+   - **Frontend build / logs:** **PASS** — last 40 lines of `pos-front` show `Application bundle generation complete` with no `error`, `TS`, or `NG` failure lines.
+5. **Overall:** **PASS** (all executed criteria passed).
+6. **Product owner feedback:** Password-reset email copy is now covered by automated tests across the supported backend locales, which reduces regression risk when strings change. The optional step—sending a real reset in Deutsch (or another locale) with SMTP enabled—is still the strongest check that the full stack matches user expectations. No browser URLs were exercised in this verification pass.
+7. **URLs tested:** **N/A — no browser** (optional manual flow not run).
+8. **Relevant log excerpts:**
+
+```text
+# pytest (back container)
+......                                                                   [100%]
+6 passed in 2.62s
+
+# docker compose logs --tail=40 front (excerpt)
+pos-front  | Application bundle generation complete. [1.249 seconds] - 2026-03-25T15:31:59.518Z
+pos-front  | Application bundle generation complete. [0.299 seconds] - 2026-03-25T15:32:04.593Z
+```
