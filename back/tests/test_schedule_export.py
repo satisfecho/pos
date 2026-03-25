@@ -121,6 +121,26 @@ class TestScheduleExport(PgClientTestCase):
         )
         self.assertEqual(r.status_code, 400, r.text)
 
+    def test_plan_users_waiter_sees_schedulable_staff_without_user_read(self) -> None:
+        """Waiter has schedule:read but not user:read; must still list plan workers for export dropdown."""
+        h_waiter = _bearer_headers(self.waiter)
+        r_users = self.client.get("/users", headers=h_waiter)
+        self.assertEqual(r_users.status_code, 403, r_users.text)
+
+        r = self.client.get("/schedule/plan-users", headers=h_waiter)
+        self.assertEqual(r.status_code, 200, r.text)
+        data = r.json()
+        self.assertIsInstance(data, list)
+        ids = {u["id"] for u in data}
+        self.assertIn(self.waiter.id, ids)
+        self.assertIn(self.admin.id, ids)
+
+    def test_plan_users_admin_ok(self) -> None:
+        h = _bearer_headers(self.admin)
+        r = self.client.get("/schedule/plan-users", headers=h)
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertGreaterEqual(len(r.json()), 2)
+
 
 if __name__ == "__main__":
     unittest.main()

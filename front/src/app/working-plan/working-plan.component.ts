@@ -180,32 +180,37 @@ function isValidView(v: string | null): v is ViewMode {
         }
         <button type="button" class="btn btn-ghost btn-sm" (click)="goToToday()">{{ 'WORKING_PLAN.TODAY' | translate }}</button>
         <button type="button" class="btn btn-ghost btn-sm" (click)="load()">{{ 'ORDERS.REFRESH' | translate }}</button>
-        @if (scheduleUsers().length) {
-          <span class="export-sep" aria-hidden="true"></span>
-          <label class="export-label" for="working-plan-export-worker">{{ 'WORKING_PLAN.EXPORT_WORKER' | translate }}</label>
-          <select
-            id="working-plan-export-worker"
-            class="export-worker-select"
-            [(ngModel)]="exportUserId"
-            data-testid="working-plan-export-worker"
-          >
+        <span class="export-sep" aria-hidden="true"></span>
+        <label class="export-label" for="working-plan-export-worker">{{ 'WORKING_PLAN.EXPORT_WORKER' | translate }}</label>
+        <select
+          id="working-plan-export-worker"
+          class="export-worker-select"
+          [(ngModel)]="exportUserId"
+          [disabled]="!scheduleUsers().length"
+          data-testid="working-plan-export-worker"
+        >
+          @if (!scheduleUsers().length) {
+            <option [ngValue]="null">{{ 'WORKING_PLAN.EXPORT_NO_STAFF_OPTION' | translate }}</option>
+          } @else {
             @for (u of scheduleUsers(); track u.id) {
               <option [ngValue]="u.id">{{ u.full_name || u.email }} ({{ getRoleLabel(u.role) }})</option>
             }
-          </select>
-          <button
-            type="button"
-            class="btn btn-ghost btn-sm"
-            (click)="exportExcel()"
-            [disabled]="exportUserId == null || exportLoading()"
-            data-testid="working-plan-export-excel"
-          >
-            {{ exportLoading() ? ('COMMON.LOADING' | translate) : ('WORKING_PLAN.EXPORT_EXCEL' | translate) }}
-          </button>
-        }
+          }
+        </select>
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm"
+          (click)="exportExcel()"
+          [disabled]="exportUserId == null || exportLoading() || !scheduleUsers().length"
+          data-testid="working-plan-export-excel"
+        >
+          {{ exportLoading() ? ('COMMON.LOADING' | translate) : ('WORKING_PLAN.EXPORT_EXCEL' | translate) }}
+        </button>
       </div>
       @if (scheduleUsers().length) {
         <p class="export-hint">{{ 'WORKING_PLAN.EXPORT_MONTH_HINT' | translate: { month: exportMonthLabel() } }}</p>
+      } @else {
+        <p class="export-hint export-hint-muted">{{ 'WORKING_PLAN.EXPORT_NO_STAFF_HINT' | translate }}</p>
       }
 
       @if (viewMode() === 'calendar') {
@@ -465,6 +470,7 @@ function isValidView(v: string | null): v is ViewMode {
     .export-label { font-size: 0.875rem; color: var(--text-muted, #666); margin: 0; }
     .export-worker-select { min-width: 10rem; max-width: 14rem; padding: 0.35rem 0.5rem; border: 1px solid var(--border-color, #ccc); border-radius: 6px; font-size: 0.875rem; }
     .export-hint { font-size: 0.75rem; color: var(--text-muted, #666); margin: 0 0 1rem 0; }
+    .export-hint-muted { font-style: italic; }
     .week-label { min-width: 12rem; font-weight: 500; }
     .empty-state { text-align: center; padding: 2rem; color: var(--text-muted, #666); }
     .empty-state .btn { margin-top: 0.5rem; }
@@ -740,13 +746,20 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
     this.api.getUsersForSchedule().subscribe({
       next: (users) => {
         this.scheduleUsers.set(users);
-        if (this.exportUserId == null && users.length) {
+        if (!users.length) {
+          this.exportUserId = null;
+          return;
+        }
+        if (this.exportUserId == null || !users.some((u) => u.id === this.exportUserId)) {
           const me = this.api.getCurrentUser()?.id;
           this.exportUserId =
             me != null && users.some((u) => u.id === me) ? me : (users[0].id ?? null);
         }
       },
-      error: () => this.scheduleUsers.set([]),
+      error: () => {
+        this.scheduleUsers.set([]);
+        this.exportUserId = null;
+      },
     });
     this.api.getTenantSettings().subscribe({
       next: (settings) => this.parseOpeningHours(settings.opening_hours),

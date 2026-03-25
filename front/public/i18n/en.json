@@ -919,6 +919,8 @@
     "DELETED": "Shift removed.",
     "DELETE_FAILED": "Failed to remove shift.",
     "EXPORT_WORKER": "Export worker",
+    "EXPORT_NO_STAFF_OPTION": "No staff on plan",
+    "EXPORT_NO_STAFF_HINT": "Add team accounts with owner, admin, kitchen, bar, waiter, or receptionist roles to choose a worker and export.",
     "EXPORT_EXCEL": "Export Excel",
     "EXPORT_MONTH_HINT": "Downloads this worker’s shifts for {{month}} (same calendar month as the grid, or the month that contains the Monday of the week in week view).",
     "BULK_MONTH": "Apply to month",

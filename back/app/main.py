@@ -5150,6 +5150,34 @@ def export_schedule_month(
     )
 
 
+@app.get("/schedule/plan-users", response_model=list[models.UserResponse])
+def list_schedule_plan_users(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SCHEDULE_READ))],
+    session: Session = Depends(get_session),
+) -> list[models.UserResponse]:
+    """Staff who may be assigned shifts (same role set as Excel export). Uses SCHEDULE_READ only so kitchen/bar/waiters can load the worker list without user:read."""
+    if current_user.tenant_id is None:
+        raise HTTPException(status_code=403, detail="Tenant required")
+    rows = session.exec(
+        select(models.User).where(models.User.tenant_id == current_user.tenant_id)
+    ).all()
+    out: list[models.UserResponse] = []
+    for u in rows:
+        if u.role in _SCHEDULE_PLAN_USER_ROLES:
+            out.append(
+                models.UserResponse(
+                    id=u.id,
+                    email=u.email,
+                    full_name=u.full_name,
+                    role=u.role,
+                    tenant_id=u.tenant_id,
+                    provider_id=getattr(u, "provider_id", None),
+                )
+            )
+    out.sort(key=lambda r: ((r.full_name or r.email or "").lower(), r.id))
+    return out
+
+
 @app.get("/schedule/{shift_id}")
 def get_shift(
     shift_id: int,

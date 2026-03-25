@@ -808,6 +808,8 @@
     "DELETE_SHIFT": "Supprimer le créneau",
     "DELETE_CONFIRM": "Retirer ce créneau du planning ?",
     "EXPORT_WORKER": "Exporter : employé",
+    "EXPORT_NO_STAFF_OPTION": "Aucun membre sur le planning",
+    "EXPORT_NO_STAFF_HINT": "Ajoutez des comptes équipe (propriétaire, admin, cuisine, bar, serveur ou réception) pour choisir un employé et exporter.",
     "EXPORT_EXCEL": "Exporter Excel",
     "EXPORT_MONTH_HINT": "Télécharge les shifts de cet employé pour {{month}} (même mois calendaire que la grille ; en vue semaine, le mois du lundi affiché).",
     "BULK_MONTH": "Appliquer au mois",

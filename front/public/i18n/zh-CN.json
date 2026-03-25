@@ -784,6 +784,8 @@
     "DELETE_SHIFT": "删除班次",
     "DELETE_CONFIRM": "从排班中移除此班次？",
     "EXPORT_WORKER": "导出员工",
+    "EXPORT_NO_STAFF_OPTION": "计划中无员工",
+    "EXPORT_NO_STAFF_HINT": "添加店主、管理员、厨房、吧台、服务员或前台角色的团队账号后即可选择员工并导出。",
     "EXPORT_EXCEL": "导出 Excel",
     "EXPORT_MONTH_HINT": "下载该员工 {{month}} 的班次（与日历网格同一自然月；周视图则为包含该周周一的月份）。",
     "BULK_MONTH": "应用到整月",

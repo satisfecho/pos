@@ -904,6 +904,8 @@
     "DELETE_SHIFT": "Eliminar turno",
     "DELETE_CONFIRM": "¿Quitar este turno del plan?",
     "EXPORT_WORKER": "Exportar trabajador",
+    "EXPORT_NO_STAFF_OPTION": "Sin personal en el plan",
+    "EXPORT_NO_STAFF_HINT": "Añada cuentas de equipo con rol propietario, administrador, cocina, bar, camarero o recepcionista para elegir trabajador y exportar.",
     "EXPORT_EXCEL": "Exportar Excel",
     "EXPORT_MONTH_HINT": "Descarga los turnos de este trabajador para {{month}} (mismo mes calendario que la cuadrícula; en vista semanal, el mes que contiene el lunes de la semana).",
     "BULK_MONTH": "Aplicar al mes",

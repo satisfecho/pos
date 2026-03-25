@@ -2145,13 +2145,9 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/schedule/export`, { params, responseType: 'blob' });
   }
 
+  /** Users who may appear on the working plan (backend filters by schedulable roles; SCHEDULE_READ only). */
   getUsersForSchedule(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/users`).pipe(
-      map((users: User[]) => users.filter(u => {
-        const r = (u.role ?? '').toLowerCase();
-        return r === 'owner' || r === 'admin' || r === 'kitchen' || r === 'bartender' || r === 'waiter' || r === 'receptionist';
-      }))
-    );
+    return this.http.get<User[]>(`${this.apiUrl}/schedule/plan-users`);
   }
 
   /** Current open work session, or null. */

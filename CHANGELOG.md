@@ -28,6 +28,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **Working plan Excel export hidden for non-admin staff (GitHub #90):** The worker dropdown and export button were omitted when `GET /users` failed (403 for roles with `schedule:read` but not `user:read`). The app now loads schedulable staff via `GET /schedule/plan-users`; export controls stay visible with a disabled state and hint when no plan users exist.
+
 - **Tables → Open menu / table PIN (GitHub #86):** Staff “Open menu” from the tables list and tile view now uses the same short-lived `staff_access` link as staff orders, so placing an order no longer forces the public table PIN modal. QR codes and “Copy” still use the customer URL. The PIN modal still shows **which table** (`Table: …`) when a PIN is required (e.g. wrong PIN retry).
 
 - **Settings → Email (SMTP) (GitHub #81):** Added missing `SETTINGS.*` translation keys for SMTP and reservation confirmation copy in Catalan, Spanish, German, French, Hindi, and Chinese (`public/i18n`). SMTP port and username placeholders use i18n like other fields.

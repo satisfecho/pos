@@ -831,6 +831,8 @@
     "DELETED": "Schicht entfernt.",
     "DELETE_FAILED": "Schicht konnte nicht entfernt werden.",
     "EXPORT_WORKER": "Export: Mitarbeiter",
+    "EXPORT_NO_STAFF_OPTION": "Kein Personal im Plan",
+    "EXPORT_NO_STAFF_HINT": "Legen Sie Teamkonten mit Rolle Inhaber, Admin, Küche, Bar, Service oder Empfang an, um einen Mitarbeiter zu wählen und zu exportieren.",
     "EXPORT_EXCEL": "Excel exportieren",
     "EXPORT_MONTH_HINT": "Lädt die Schichten des gewählten Mitarbeiters für {{month}} (Kalendermonat wie in der Ansicht; in der Wochenansicht der Monat, der den Montag der Woche enthält).",
     "BULK_MONTH": "Monat zuweisen",

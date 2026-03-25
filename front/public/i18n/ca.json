@@ -781,6 +781,8 @@
     "DELETE_SHIFT": "Eliminar torn",
     "DELETE_CONFIRM": "Treure aquest torn del pla?",
     "EXPORT_WORKER": "Exportar treballador",
+    "EXPORT_NO_STAFF_OPTION": "Sense personal al pla",
+    "EXPORT_NO_STAFF_HINT": "Afegiu comptes d’equip amb rol propietari, administrador, cuina, bar, cambrer o recepció per triar treballador i exportar.",
     "EXPORT_EXCEL": "Exportar Excel",
     "EXPORT_MONTH_HINT": "Baixa els torns d’aquest treballador per a {{month}} (mateix mes natural que la graella; en vista setmanal, el mes que conté el dilluns de la setmana).",
     "BULK_MONTH": "Aplicar al mes",
