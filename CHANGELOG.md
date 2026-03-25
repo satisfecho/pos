@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Working plan Excel export (GitHub #89):** Staff with schedule access can choose a worker and download that person’s shifts for the visible calendar month (calendar view) or the month containing the Monday of the displayed week (week view) as `.xlsx`. New `GET /schedule/export` (`user_id`, `year`, `month`, optional `lang`) uses openpyxl; tenant- and role-scoped like the schedule API. Puppeteer `test:working-plan` checks export UI; backend `tests/test_schedule_export.py` covers the endpoint.
+
 - **My shift overtime alert (GitHub #87):** Open clock-in sessions expose `open_duration_minutes`, `contract_threshold_minutes` (default 8h), and `over_contract` on work-session APIs and reports. **My shift** shows a warning banner and elapsed time while clocked in past the threshold; dashboard **My shift** card shows a short notice. Backend tests cover threshold logic.
 
 - **Tenant `reservation_slot_minutes`:** Migration adds nullable column; staff Settings → Reservations can set the interval between public booking start times (5–120 minutes, or empty/0 for legacy 15-minute steps). Public `book-week-slots`, `next-available`, and staff overbooking default grid use this value.

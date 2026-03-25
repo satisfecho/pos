@@ -829,7 +829,11 @@
     "UPDATED": "Schicht aktualisiert.",
     "SAVE_FAILED": "Schicht konnte nicht gespeichert werden.",
     "DELETED": "Schicht entfernt.",
-    "DELETE_FAILED": "Schicht konnte nicht entfernt werden."
+    "DELETE_FAILED": "Schicht konnte nicht entfernt werden.",
+    "EXPORT_WORKER": "Export: Mitarbeiter",
+    "EXPORT_EXCEL": "Excel exportieren",
+    "EXPORT_MONTH_HINT": "Lädt die Schichten des gewählten Mitarbeiters für {{month}} (Kalendermonat wie in der Ansicht; in der Wochenansicht der Monat, der den Montag der Woche enthält).",
+    "EXPORT_FAILED": "Export des Plans fehlgeschlagen."
   },
   "SETTINGS": {
     "TITLE": "Einstellungen",

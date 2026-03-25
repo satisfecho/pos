@@ -782,7 +782,11 @@
     "LABEL": "标签",
     "LABEL_PLACEHOLDER": "如：上午、下午",
     "DELETE_SHIFT": "删除班次",
-    "DELETE_CONFIRM": "从排班中移除此班次？"
+    "DELETE_CONFIRM": "从排班中移除此班次？",
+    "EXPORT_WORKER": "导出员工",
+    "EXPORT_EXCEL": "导出 Excel",
+    "EXPORT_MONTH_HINT": "下载该员工 {{month}} 的班次（与日历网格同一自然月；周视图则为包含该周周一的月份）。",
+    "EXPORT_FAILED": "无法导出排班。"
   },
   "SETTINGS": {
     "TITLE": "设置",

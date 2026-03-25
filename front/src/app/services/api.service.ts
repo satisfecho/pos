@@ -2112,6 +2112,18 @@ export class ApiService {
     return this.http.delete<{ deleted: boolean; id: number }>(`${this.apiUrl}/schedule/${shiftId}`);
   }
 
+  /** One worker's shifts for a calendar month as Excel (.xlsx). */
+  getScheduleExport(userId: number, year: number, month: number, lang: string): Observable<Blob> {
+    let params = new HttpParams()
+      .set('user_id', String(userId))
+      .set('year', String(year))
+      .set('month', String(month));
+    if (lang?.trim()) {
+      params = params.set('lang', lang.trim());
+    }
+    return this.http.get(`${this.apiUrl}/schedule/export`, { params, responseType: 'blob' });
+  }
+
   getUsersForSchedule(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/users`).pipe(
       map((users: User[]) => users.filter(u => {

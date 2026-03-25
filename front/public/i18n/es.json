@@ -902,7 +902,11 @@
     "LABEL": "Etiqueta",
     "LABEL_PLACEHOLDER": "ej. Mañana, Tarde",
     "DELETE_SHIFT": "Eliminar turno",
-    "DELETE_CONFIRM": "¿Quitar este turno del plan?"
+    "DELETE_CONFIRM": "¿Quitar este turno del plan?",
+    "EXPORT_WORKER": "Exportar trabajador",
+    "EXPORT_EXCEL": "Exportar Excel",
+    "EXPORT_MONTH_HINT": "Descarga los turnos de este trabajador para {{month}} (mismo mes calendario que la cuadrícula; en vista semanal, el mes que contiene el lunes de la semana).",
+    "EXPORT_FAILED": "No se pudo exportar el plan."
   },
   "SETTINGS": {
     "TITLE": "Configuración",

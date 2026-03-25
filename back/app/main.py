@@ -22,7 +22,7 @@ import redis
 import stripe
 from fastapi import BackgroundTasks, Body, Depends, FastAPI, HTTPException, UploadFile, File, status, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response, StreamingResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel as _BaseModel
@@ -69,6 +69,7 @@ from .kitchen_stations_util import (
     resolve_order_item_kds,
     validate_kitchen_station_belongs,
 )
+from .schedule_export_i18n import schedule_export_labels
 
 # Rate limiting (slowapi)
 try:
@@ -5060,6 +5061,93 @@ def list_schedule(
         _mark_working_plan_seen_by_owner(session, current_user.tenant_id)
         session.commit()
     return [_shift_to_dict(s, user_map.get(s.user_id, ("", ""))[0], user_map.get(s.user_id, ("", ""))[1]) for s in shifts]
+
+
+_SCHEDULE_PLAN_USER_ROLES = frozenset(
+    {
+        models.UserRole.owner,
+        models.UserRole.admin,
+        models.UserRole.kitchen,
+        models.UserRole.bartender,
+        models.UserRole.waiter,
+        models.UserRole.receptionist,
+    }
+)
+
+
+@app.get("/schedule/export")
+def export_schedule_month(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SCHEDULE_READ))],
+    session: Session = Depends(get_session),
+    user_id: int = Query(..., description="Scheduled worker (must belong to tenant)"),
+    year: int = Query(..., ge=2000, le=2100),
+    month: int = Query(..., ge=1, le=12),
+    lang: str | None = Query(None, description="UI language for column headers (e.g. en, de, es)"),
+) -> StreamingResponse:
+    """Export one worker's shifts for a calendar month as Excel. Dates/times match the schedule API (tenant calendar day + local times)."""
+    if current_user.tenant_id is None:
+        raise HTTPException(status_code=403, detail="Tenant required")
+    target = session.exec(
+        select(models.User).where(
+            models.User.id == user_id,
+            models.User.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not target:
+        raise HTTPException(status_code=400, detail="User not found")
+    if target.role not in _SCHEDULE_PLAN_USER_ROLES:
+        raise HTTPException(status_code=400, detail="User cannot be scheduled on the working plan")
+    fd = date(year, month, 1)
+    ld = date(year, month, monthrange(year, month)[1])
+    shifts = session.exec(
+        select(models.Shift)
+        .where(models.Shift.tenant_id == current_user.tenant_id)
+        .where(models.Shift.user_id == user_id)
+        .where(models.Shift.shift_date >= fd)
+        .where(models.Shift.shift_date <= ld)
+        .order_by(models.Shift.shift_date.asc(), models.Shift.start_time.asc())
+    ).all()
+    L = schedule_export_labels(lang)
+    try:
+        from openpyxl import Workbook
+    except ImportError:
+        raise HTTPException(status_code=500, detail="Excel export requires openpyxl")
+    wb = Workbook()
+    ws = wb.active
+    title_base = f"{L['sheet']} {year}-{month:02d}"
+    ws.title = title_base[:31]
+    worker_name = target.full_name or target.email or str(user_id)
+    user_role = target.role.value if target.role else ""
+    ws.append(
+        [
+            L["date"],
+            L["start_time"],
+            L["end_time"],
+            L["label"],
+            L["employee"],
+            L["role"],
+        ]
+    )
+    for s in shifts:
+        ws.append(
+            [
+                s.shift_date.isoformat(),
+                s.start_time.strftime("%H:%M") if s.start_time else "",
+                s.end_time.strftime("%H:%M") if s.end_time else "",
+                (s.label or ""),
+                worker_name,
+                user_role,
+            ]
+        )
+    buf = BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    fn = f"working-plan-{user_id}-{year}-{month:02d}.xlsx"
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{fn}"'},
+    )
 
 
 @app.get("/schedule/{shift_id}")

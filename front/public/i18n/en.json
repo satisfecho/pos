@@ -917,7 +917,11 @@
     "UPDATED": "Shift updated.",
     "SAVE_FAILED": "Failed to save shift.",
     "DELETED": "Shift removed.",
-    "DELETE_FAILED": "Failed to remove shift."
+    "DELETE_FAILED": "Failed to remove shift.",
+    "EXPORT_WORKER": "Export worker",
+    "EXPORT_EXCEL": "Export Excel",
+    "EXPORT_MONTH_HINT": "Downloads this worker’s shifts for {{month}} (same calendar month as the grid, or the month that contains the Monday of the week in week view).",
+    "EXPORT_FAILED": "Could not export schedule."
   },
   "SETTINGS": {
     "TITLE": "Settings",

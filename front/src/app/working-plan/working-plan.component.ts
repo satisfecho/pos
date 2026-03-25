@@ -12,6 +12,7 @@ import { SidebarComponent } from '../shared/sidebar.component';
 import { ConfirmationModalComponent } from '../shared/confirmation-modal.component';
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { LanguageService } from '../services/language.service';
 
 function getWeekRange(weekStart: Date): { from: string; to: string } {
   const d = new Date(weekStart);
@@ -162,7 +163,33 @@ function isValidView(v: string | null): v is ViewMode {
         }
         <button type="button" class="btn btn-ghost btn-sm" (click)="goToToday()">{{ 'WORKING_PLAN.TODAY' | translate }}</button>
         <button type="button" class="btn btn-ghost btn-sm" (click)="load()">{{ 'ORDERS.REFRESH' | translate }}</button>
+        @if (scheduleUsers().length) {
+          <span class="export-sep" aria-hidden="true"></span>
+          <label class="export-label" for="working-plan-export-worker">{{ 'WORKING_PLAN.EXPORT_WORKER' | translate }}</label>
+          <select
+            id="working-plan-export-worker"
+            class="export-worker-select"
+            [(ngModel)]="exportUserId"
+            data-testid="working-plan-export-worker"
+          >
+            @for (u of scheduleUsers(); track u.id) {
+              <option [ngValue]="u.id">{{ u.full_name || u.email }} ({{ getRoleLabel(u.role) }})</option>
+            }
+          </select>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            (click)="exportExcel()"
+            [disabled]="exportUserId == null || exportLoading()"
+            data-testid="working-plan-export-excel"
+          >
+            {{ exportLoading() ? ('COMMON.LOADING' | translate) : ('WORKING_PLAN.EXPORT_EXCEL' | translate) }}
+          </button>
+        }
       </div>
+      @if (scheduleUsers().length) {
+        <p class="export-hint">{{ 'WORKING_PLAN.EXPORT_MONTH_HINT' | translate: { month: exportMonthLabel() } }}</p>
+      }
 
       @if (viewMode() === 'calendar') {
         <div class="calendar-section" data-testid="working-plan-calendar-section">
@@ -332,7 +359,11 @@ function isValidView(v: string | null): v is ViewMode {
   `,
   styles: [`
     .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-    .filters { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+    .filters { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.35rem; }
+    .export-sep { width: 1px; height: 1.25rem; background: var(--border-color, #ddd); margin: 0 0.25rem; }
+    .export-label { font-size: 0.875rem; color: var(--text-muted, #666); margin: 0; }
+    .export-worker-select { min-width: 10rem; max-width: 14rem; padding: 0.35rem 0.5rem; border: 1px solid var(--border-color, #ccc); border-radius: 6px; font-size: 0.875rem; }
+    .export-hint { font-size: 0.75rem; color: var(--text-muted, #666); margin: 0 0 1rem 0; }
     .week-label { min-width: 12rem; font-weight: 500; }
     .empty-state { text-align: center; padding: 2rem; color: var(--text-muted, #666); }
     .empty-state .btn { margin-top: 0.5rem; }
@@ -396,6 +427,7 @@ function isValidView(v: string | null): v is ViewMode {
 export class WorkingPlanComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private translate = inject(TranslateService);
+  private languageService = inject(LanguageService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private routeParamSub?: { unsubscribe: () => void };
@@ -409,6 +441,9 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
   calendarMonth = signal<Date>(new Date());
   shifts = signal<Shift[]>([]);
   scheduleUsers = signal<User[]>([]);
+  /** Worker selected for Excel export (month scoped by current view). */
+  exportUserId: number | null = null;
+  exportLoading = signal(false);
   loading = signal(true);
   showModal = signal(false);
   editingShift = signal<Shift | null>(null);
@@ -463,6 +498,12 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
   calendarMonthLabel = computed(() => {
     const d = this.calendarMonth();
     return `${this.monthShort(d.getMonth())} ${d.getFullYear()}`;
+  });
+
+  /** Month label for export hint (calendar month or month of week range start). */
+  exportMonthLabel = computed(() => {
+    const { year, month } = this.exportYearMonth();
+    return `${this.monthShort(month - 1)} ${year}`;
   });
 
   /** Short weekday names for calendar header (Mon–Sun). */
@@ -554,7 +595,14 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
       }
     });
     this.api.getUsersForSchedule().subscribe({
-      next: (users) => this.scheduleUsers.set(users),
+      next: (users) => {
+        this.scheduleUsers.set(users);
+        if (this.exportUserId == null && users.length) {
+          const me = this.api.getCurrentUser()?.id;
+          this.exportUserId =
+            me != null && users.some((u) => u.id === me) ? me : (users[0].id ?? null);
+        }
+      },
       error: () => this.scheduleUsers.set([]),
     });
     this.api.getTenantSettings().subscribe({
@@ -726,6 +774,43 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
   private monthShort(m: number): string {
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return months[m] ?? '';
+  }
+
+  /** Calendar year/month (1–12) used for Excel export. */
+  private exportYearMonth(): { year: number; month: number } {
+    if (this.viewMode() === 'calendar') {
+      const d = this.calendarMonth();
+      return { year: d.getFullYear(), month: d.getMonth() + 1 };
+    }
+    const from = this.weekRange().from;
+    const parts = from.split('-').map((x) => parseInt(x, 10));
+    return { year: parts[0], month: parts[1] };
+  }
+
+  exportExcel(): void {
+    const uid = this.exportUserId;
+    if (uid == null) return;
+    const { year, month } = this.exportYearMonth();
+    this.exportLoading.set(true);
+    this.api.getScheduleExport(uid, year, month, this.languageService.getLanguage()).subscribe({
+      next: (blob) => {
+        this.exportLoading.set(false);
+        if (!blob || blob.size === 0) {
+          this.showToast(this.translate.instant('WORKING_PLAN.EXPORT_FAILED'), 'error');
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `working-plan-${uid}-${year}-${String(month).padStart(2, '0')}.xlsx`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => {
+        this.exportLoading.set(false);
+        this.showToast(this.translate.instant('WORKING_PLAN.EXPORT_FAILED'), 'error');
+      },
+    });
   }
 
   load(): void {

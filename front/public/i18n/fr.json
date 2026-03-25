@@ -806,7 +806,11 @@
     "LABEL": "Libellé",
     "LABEL_PLACEHOLDER": "ex. Matin, Soir",
     "DELETE_SHIFT": "Supprimer le créneau",
-    "DELETE_CONFIRM": "Retirer ce créneau du planning ?"
+    "DELETE_CONFIRM": "Retirer ce créneau du planning ?",
+    "EXPORT_WORKER": "Exporter : employé",
+    "EXPORT_EXCEL": "Exporter Excel",
+    "EXPORT_MONTH_HINT": "Télécharge les shifts de cet employé pour {{month}} (même mois calendaire que la grille ; en vue semaine, le mois du lundi affiché).",
+    "EXPORT_FAILED": "Impossible d’exporter le planning."
   },
   "SETTINGS": {
     "TITLE": "Paramètres",
