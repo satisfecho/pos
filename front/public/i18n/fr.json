@@ -170,6 +170,7 @@
     "EMAIL_PLACEHOLDER": "vous@votremail.com",
     "PASSWORD_PLACEHOLDER": "Entrez votre mot de passe",
     "CONFIRM_PASSWORD": "Confirmer le mot de passe",
+    "CONFIRM_PASSWORD_PLACEHOLDER": "Répétez votre mot de passe",
     "PASSWORDS_DO_NOT_MATCH": "Les mots de passe ne correspondent pas",
     "SHOW_PASSWORD": "Afficher le mot de passe",
     "HIDE_PASSWORD": "Masquer le mot de passe",

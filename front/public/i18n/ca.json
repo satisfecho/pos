@@ -170,6 +170,7 @@
     "EMAIL_PLACEHOLDER": "tu@elteucorreu.com",
     "PASSWORD_PLACEHOLDER": "Introdueix la teva contrasenya",
     "CONFIRM_PASSWORD": "Confirma la contrasenya",
+    "CONFIRM_PASSWORD_PLACEHOLDER": "Repiteix la teva contrasenya",
     "PASSWORDS_DO_NOT_MATCH": "Les contrasenyes no coincideixen",
     "SHOW_PASSWORD": "Mostra la contrasenya",
     "HIDE_PASSWORD": "Amaga la contrasenya",

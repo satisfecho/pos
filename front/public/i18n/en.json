@@ -170,6 +170,7 @@
     "EMAIL_PLACEHOLDER": "you@yourmail.com",
     "PASSWORD_PLACEHOLDER": "Enter your password",
     "CONFIRM_PASSWORD": "Confirm password",
+    "CONFIRM_PASSWORD_PLACEHOLDER": "Repeat password",
     "PASSWORDS_DO_NOT_MATCH": "Passwords do not match",
     "INVALID_EMAIL": "Enter a valid email address.",
     "SHOW_PASSWORD": "Show password",

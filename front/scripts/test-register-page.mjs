@@ -98,11 +98,55 @@ async function main() {
       return { found: body.length > 0, byClass: false, title: '', providers: '', guests: '', body };
     });
 
-    await browser.close();
-
     const title = explanation.title || explanation.body;
     const providers = explanation.providers || explanation.body;
     const guests = explanation.guests || explanation.body;
+
+    console.log('3. Checking placeholders in Spanish (es)...');
+    // Force Spanish deterministically by setting the same localStorage key the LanguageService reads.
+    const esPage = await browser.newPage();
+    await esPage.setExtraHTTPHeaders({ 'Accept-Language': 'es' });
+    await esPage.evaluateOnNewDocument(() => {
+      try {
+        localStorage.setItem('pos_language', 'es');
+      } catch (_) {}
+    });
+    await esPage.goto(new URL('/register', baseUrl).href, { waitUntil: 'networkidle2', timeout: 15000 });
+    await esPage.waitForSelector('app-register input#tenant', { timeout: 15000 });
+
+    const placeholders = await esPage.evaluate(() => {
+      const getPh = (sel) => {
+        const el = document.querySelector(sel);
+        if (!el) return '';
+        // Angular binding sets the attribute; keep both for robustness.
+        return el.getAttribute('placeholder') || el.placeholder || '';
+      };
+      return {
+        tenant: getPh('input#tenant'),
+        password: getPh('input#password'),
+        confirm: getPh('input#password_confirm'),
+      };
+    });
+
+    await esPage.close();
+
+    const englishPlaceholders = ['Acme Restaurant', 'At least 6 characters', 'Repeat password'];
+    const placeholdersAsString = `${placeholders.tenant} ${placeholders.password} ${placeholders.confirm}`;
+    const hasAnyEnglish = englishPlaceholders.some((s) => placeholdersAsString.includes(s));
+
+    const tenantOk = /nombre/i.test(placeholders.tenant) && /restaurante/i.test(placeholders.tenant);
+    const passwordOk = /contrase/i.test(placeholders.password);
+    const confirmOk = /repite/i.test(placeholders.confirm) && /contrase/i.test(placeholders.confirm);
+
+    console.log('   Placeholders (es):', placeholders);
+    if (hasAnyEnglish) {
+      console.log('   FAIL: Spanish register placeholders still contain hardcoded English values.');
+      process.exit(1);
+    }
+    if (!tenantOk || !passwordOk || !confirmOk) {
+      console.log('   FAIL: Spanish register placeholders do not match expected translated content.');
+      process.exit(1);
+    }
 
     if (!explanation.found && !explanation.body) {
       console.log('   FAIL: Register page has no visible content.');
@@ -133,6 +177,7 @@ async function main() {
     }
 
     console.log('\n>>> RESULT: Register page shows provider/guest explanation.');
+    await browser.close();
     process.exit(0);
   } catch (err) {
     console.error('Error:', err.message);

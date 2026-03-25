@@ -163,6 +163,7 @@
     "EMAIL_PLACEHOLDER": "you@yourmail.com",
     "PASSWORD_PLACEHOLDER": "अपना पासवर्ड दर्ज करें",
     "CONFIRM_PASSWORD": "पासवर्ड की पुष्टि करें",
+    "CONFIRM_PASSWORD_PLACEHOLDER": "पासवर्ड फिर से दर्ज करें",
     "PASSWORDS_DO_NOT_MATCH": "पासवर्ड मेल नहीं खाते",
     "SHOW_PASSWORD": "पासवर्ड दिखाएं",
     "HIDE_PASSWORD": "पासवर्ड छुपाएं",

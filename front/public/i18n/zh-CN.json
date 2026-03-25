@@ -163,6 +163,7 @@
     "EMAIL_PLACEHOLDER": "name@company.com",
     "PASSWORD_PLACEHOLDER": "请输入密码",
     "CONFIRM_PASSWORD": "确认密码",
+    "CONFIRM_PASSWORD_PLACEHOLDER": "请再次输入密码",
     "PASSWORDS_DO_NOT_MATCH": "两次输入的密码不一致",
     "SHOW_PASSWORD": "显示密码",
     "HIDE_PASSWORD": "隐藏密码",

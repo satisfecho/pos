@@ -36,7 +36,7 @@ import { LanguagePickerComponent } from '../shared/language-picker.component';
               id="tenant" 
               type="text" 
               formControlName="tenant_name" 
-              placeholder="Acme Restaurant"
+              [placeholder]="translate.instant('AUTH.ORGANIZATION_PLACEHOLDER')"
             >
           </div>
           
@@ -68,7 +68,7 @@ import { LanguagePickerComponent } from '../shared/language-picker.component';
                 id="password" 
                 [type]="showPassword() ? 'text' : 'password'" 
                 formControlName="password" 
-                placeholder="At least 6 characters"
+                [placeholder]="translate.instant('AUTH.PASSWORD_PLACEHOLDER')"
                 autocomplete="new-password"
               >
               <button type="button" class="pw-toggle" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? ('AUTH.HIDE_PASSWORD' | translate) : ('AUTH.SHOW_PASSWORD' | translate)" tabindex="-1">
@@ -87,7 +87,7 @@ import { LanguagePickerComponent } from '../shared/language-picker.component';
                 id="password_confirm" 
                 [type]="showPasswordConfirm() ? 'text' : 'password'" 
                 formControlName="password_confirm" 
-                placeholder="Repeat password"
+                [placeholder]="translate.instant('AUTH.CONFIRM_PASSWORD_PLACEHOLDER')"
                 autocomplete="new-password"
               >
               <button type="button" class="pw-toggle" (click)="showPasswordConfirm.set(!showPasswordConfirm())" [attr.aria-label]="showPasswordConfirm() ? ('AUTH.HIDE_PASSWORD' | translate) : ('AUTH.SHOW_PASSWORD' | translate)" tabindex="-1">

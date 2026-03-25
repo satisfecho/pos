@@ -170,6 +170,7 @@
     "EMAIL_PLACEHOLDER": "du@deine-mail.de",
     "PASSWORD_PLACEHOLDER": "Geben Sie Ihr Passwort ein",
     "CONFIRM_PASSWORD": "Passwort bestätigen",
+    "CONFIRM_PASSWORD_PLACEHOLDER": "Passwort erneut eingeben",
     "PASSWORDS_DO_NOT_MATCH": "Passwörter stimmen nicht überein",
     "SHOW_PASSWORD": "Passwort anzeigen",
     "HIDE_PASSWORD": "Passwort verbergen",
