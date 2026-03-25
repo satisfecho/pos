@@ -2552,6 +2552,16 @@ def list_taxes(
     current_only: bool = Query(True, description="If true, only return taxes valid today"),
 ) -> list[dict]:
     """List taxes for the current tenant. Optionally filter to those valid today."""
+    # Auto-seed default Spanish IVA taxes when a tenant has none yet.
+    # This prevents Settings dropdowns from rendering as an empty list.
+    has_any = session.exec(
+        select(models.Tax.id).where(models.Tax.tenant_id == current_user.tenant_id).limit(1)
+    ).first()
+    if not has_any:
+        from app.seeds.seed_spanish_taxes import seed_spanish_taxes
+
+        seed_spanish_taxes(tenant_id=current_user.tenant_id, set_default=True)
+
     query = select(models.Tax).where(models.Tax.tenant_id == current_user.tenant_id)
     if current_only:
         today = date.today()

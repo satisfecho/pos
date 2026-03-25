@@ -71,6 +71,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           <button 
             type="button" 
             class="tab" 
+            data-testid="settings-contact-tab"
             [class.active]="activeSection() === 'contact'"
             (click)="activeSection.set('contact')">
             <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -746,7 +747,12 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                   </div>
                   <div class="form-group">
                     <label for="default_tax_id">{{ 'SETTINGS.DEFAULT_TAX' | translate }}</label>
-                    <select id="default_tax_id" [(ngModel)]="formData.default_tax_id" name="default_tax_id">
+                    <select
+                      id="default_tax_id"
+                      data-testid="settings-default-tax-select"
+                      [(ngModel)]="formData.default_tax_id"
+                      name="default_tax_id"
+                    >
                       <option [ngValue]="null">{{ 'SETTINGS.NO_DEFAULT_TAX' | translate }}</option>
                       @for (t of taxes(); track t.id) {
                         <option [ngValue]="t.id">{{ t.name }} ({{ t.rate_percent }}%)</option>
@@ -2509,7 +2515,9 @@ export class SettingsComponent implements OnInit {
   }
 
   loadTaxes() {
-    this.api.getTaxes(true).subscribe({
+    // Load all taxes (not only "valid today") so the dropdown never ends up empty
+    // because of validity-period edge cases (timezones, future valid_from).
+    this.api.getTaxes(false).subscribe({
       next: (list) => this.taxes.set(list),
       error: () => this.taxes.set([]),
     });

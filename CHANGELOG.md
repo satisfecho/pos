@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [2.0.56] - 2026-03-25
+
+### Added
+
 - **Tables floor plan (GitHub #75):** Selected-table panel links to **Staff orders** — `?focusOrder=` when the table has `active_order_id`, else `?focusTableId=` to jump to the right order/tab (scroll or open edit for history). Same roles as `/staff/orders`. New Puppeteer `test:tables-canvas-open-orders`.
 
 ### Changed
@@ -15,6 +23,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Reservation reminders (GitHub #74):** Reminder email HTML/text use the same manage-reservation link label as confirmation (“View or change your reservation online”); the href is HTML-escaped. URL remains `/reservation?token=…` when `PUBLIC_APP_BASE_URL` is set.
 - **Deploy (amvara9, GitHub #73):** After successful **back** and **front** image builds, `scripts/deploy-amvara9.sh` runs `docker buildx prune -f` to trim unused BuildKit cache (non-interactive). `SKIP_BUILDX_PRUNE=1` skips; prune failure logs a warning and does not abort deploy. Documented in `docs/0001-ci-cd-amvara9.md`.
 - **Agents:** Bump-version task for issue #70 moved from `UNTESTED-20260324-2131-bump-version` to `WIP-20260324-2131-bump-version` (tester notes: package/changelog at 2.0.54; refresh generated `commit-hash` / run `get-commit-hash.js` so the landing footer matches the package version).
+
+### Fixed
+
+- **Spanish register placeholders (GitHub #78):** Register page placeholders now follow the selected UI language (e.g. Spanish) instead of falling back to English.
+- **Tax of iva dropdown (GitHub #79):** Settings → Contact information “Tax of iva” dropdown no longer renders empty; backend seeds default Spanish IVA taxes for tenants without tax rows and the UI loads all taxes to avoid validity edge cases.
 
 ## [2.0.55] - 2026-03-24
 
