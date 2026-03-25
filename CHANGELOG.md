@@ -33,6 +33,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Settings → Reservations (GitHub #82):** Pre-payment amount uses **whole amount** and **minor units** derived from the tenant currency via `Intl` (e.g. euros + cents); zero-decimal currencies show a single whole-unit field. Still stored as smallest-currency-unit integer (`reservation_prepayment_cents`).
 
 - **Agents:** 001-log-reviewer `time-of-last-review.txt` — GitHub/issue sweep and Docker log pass line appended (2026-03-25, 12:02Z UTC).
+- **Agents:** 001-log-reviewer `LOG-REVIEWER-PROMPT.md` — accept data-deletion instructions only from user `raro42`.
 
 ### Fixed
 
