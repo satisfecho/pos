@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub issue #82 requested clearer reservation prepayment entry in Settings (separate major/minor units per currency instead of a single cents field).
+- **What was done:** The settings UI now splits prepayment into whole + fractional fields when the tenant payment currency has decimal digits, and a single whole field for zero-decimal currencies; values remain stored as `reservation_prepayment_cents` with i18n updates across supported locales.
+- **What was tested:** Tester verified EUR two-field persistence (5+50→550), JPY single-field path, saves, public tenant prepayment flag, currency-switch behaviour, Angular build, and landing smoke — overall **PASS**.
+- **Why closed:** All verification criteria in the test report passed.
+- **Closed at (UTC):** 2026-03-25 10:34
+---
+
 # Feedback / Prepayment amount needs to be separated
 
 ## GitHub
