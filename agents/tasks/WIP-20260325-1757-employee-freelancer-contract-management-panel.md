@@ -50,3 +50,72 @@ There is no structured way in the staff area to create, store, and manage **empl
 
 - **Pass:** All steps in §2 succeed; RBAC matches tests; no regression in `pytest tests/test_staff_contracts.py`.
 - **Fail:** Migration errors, 500 on contract routes, wrong tenant or cross-user data leakage, or PDF served without auth.
+
+---
+
+## Test report
+
+1. **Date/time (UTC)** and log window  
+   - Started: **2026-03-25 18:09:50 UTC**  
+   - Finished: **2026-03-25 18:14:00 UTC** (approx.)  
+   - Log window reviewed: `front` / `back` compose logs around **18:06–18:14 UTC**; Puppeteer against `BASE_URL` below.
+
+2. **Environment**  
+   - Compose: `docker-compose.yml` + `docker-compose.dev.yml`  
+   - **`BASE_URL`:** `http://127.0.0.1:4202` (HAProxy → front)  
+   - Branch: **`development`** @ **`73b84e0`**
+
+3. **What was tested** (from “What to verify”)  
+   - Migration / schema for staff contracts  
+   - API RBAC, versioning, PDF upload/download (`tests/test_staff_contracts.py`)  
+   - Frontend build health (Docker `front` logs)  
+   - Manual browser login → `/contracts` (owner and waiter flows)  
+   - Optional landing smoke (`curl` HTTP code)
+
+4. **Results**
+
+   | Criterion | Result | Evidence |
+   |-----------|--------|----------|
+   | Migration applies (`20260325180000` / `staff_contract`) | **PASS** | `app.migrate`: “Database is up to date (version **20260325180000**)”; `20260325180000_staff_contract.sql` **applied**. |
+   | API 403/404, RBAC, no cross-user leakage, PDF path | **PASS** | `pytest tests/test_staff_contracts.py -v`: **4 passed** (`test_admin_creates_waiter_sees_only_own`, `test_new_version_and_pdf`, `test_waiter_cannot_create`, `test_waiter_no_tax_id_for_other_contract`). |
+   | UI loads for owner/admin and staff; manual create/upload/download | **FAIL** | Headless Chromium (`puppeteer-core`): after `GET /login?tenant=1`, **`app-root` inner HTML ~47 chars** (no outlet); **`#email` absent**; final URL **`/`**. Browser console: **`Circular dependency detected for _ApiService`** (`ngErrorCode` -200). Same failure reproduced with existing `node scripts/test-working-plan.mjs` (cannot select `input[type="email"]`). Contracts UI not reachable in browser until DI cycle is fixed. |
+   | Frontend build (Docker logs, no TS/Angular compile errors) | **PASS** | `docker compose … logs --tail=80 front`: **Application bundle generation complete**; lazy chunk **`staff-contracts-component`** listed; **no** `TS` / `NG` error lines in tail. |
+   | Smoke `curl /` | **PASS** | `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:4202/` → **`200`**. |
+
+5. **Overall:** **FAIL** — Failed criterion: **manual UI / in-browser staff app** (blocked by **`ApiService` circular dependency** at runtime; not specific to contract routes alone).
+
+6. **Product owner feedback**  
+   Backend contract APIs and automated RBAC tests look solid, but the staff SPA does not bootstrap far enough to log in or open **Contracts** in a real browser on the current `development` build. Fixing the **`ApiService` circular dependency** should be the top priority so QA can complete the PDF and two-user UI checks.
+
+7. **URLs tested**  
+   1. `http://127.0.0.1:4202/` (smoke, and unintended post-navigation URL in broken SPA)  
+   2. `http://127.0.0.1:4202/login?tenant=1` (intended entry; Angular did not render login form)
+
+8. **Relevant log excerpts**
+
+   **Migrate (back):**
+   ```text
+   INFO: Database schema version: 20260325180000
+   …
+   INFO: Database is up to date (version 20260325180000)
+   ```
+
+   **Pytest (back):**
+   ```text
+   tests/test_staff_contracts.py::TestStaffContracts::test_admin_creates_waiter_sees_only_own PASSED
+   tests/test_staff_contracts.py::TestStaffContracts::test_new_version_and_pdf PASSED
+   tests/test_staff_contracts.py::TestStaffContracts::test_waiter_cannot_create PASSED
+   tests/test_staff_contracts.py::TestStaffContracts::test_waiter_no_tax_id_for_other_contract PASSED
+   ============================== 4 passed in 2.95s ===============================
+   ```
+
+   **Front (compose, tail):**
+   ```text
+   Application bundle generation complete. [0.713 seconds] - 2026-03-25T18:08:55.784Z
+   ```
+
+   **Browser console (Puppeteer, `/login?tenant=1`):**
+   ```text
+   ngErrorMessage: 'Circular dependency detected for `_ApiService`.',
+   ngTokenPath: [ '_ApiService' ]
+   ```
