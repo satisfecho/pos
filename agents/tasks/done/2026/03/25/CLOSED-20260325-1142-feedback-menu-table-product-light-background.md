@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Tester verified the table menu add-to-cart UI now shows clear in-cart / just-added styling (tint, border, cart row flash) including reduced-motion behaviour.
+- **What was done:** Coder updated `MenuComponent` (TS/HTML/SCSS) with `productIdsInCart`, flash helpers, and classes on grid cards and cart lines per the task implementation notes.
+- **What was tested:** Docker dev stack on port 4202; Puppeteer on `/menu/<token>` for grid add, cart highlight, `prefers-reduced-motion`, and `npm run test:landing-version` — all **PASS** (staff `?staff_access=` not re-opened in browser; same component applies).
+- **Why closed:** All automated verification criteria met; test report overall **PASS**.
+- **Closed at (UTC):** 2026-03-25 12:06
+---
+
 # Feedback: light background when product added in menu table
 
 ## GitHub
