@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Public table menu (GitHub #85):** Product cards and featured items use a light primary tint and border while the product is in the cart; adding or incrementing shows a short highlight on the card and the matching cart line. Respects reduced-motion for the pulse animation.
+
 - **Staff reservations modal (GitHub #84):** Create/edit dialog field order and labels match the public `/book` flow (date, time, party size, then name, phone, email, reservation notes, customer notes); staff-only notes remain at the end. Uses global form styling, optional email placeholder like the book page, and the same phone/email validation rules as the book form. Short hint explains calendar/time inputs vs. the public week grid.
 
 - **Settings → Reservations (GitHub #82):** Pre-payment amount uses **whole amount** and **minor units** derived from the tenant currency via `Intl` (e.g. euros + cents); zero-decimal currencies show a single whole-unit field. Still stored as smallest-currency-unit integer (`reservation_prepayment_cents`).

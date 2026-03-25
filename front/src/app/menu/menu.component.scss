@@ -1039,8 +1039,22 @@ $cart-expanded-max: 60vh;
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-md);
+  border: 1px solid transparent;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+
+  &.in-cart {
+    background: var(--color-primary-light);
+    border-color: var(--color-primary);
+  }
+
+  &.just-added {
+    animation: menu-product-added-pulse 1.1s ease;
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
+  }
 
   &:hover {
     transform: translateY(-4px);
@@ -1191,6 +1205,20 @@ $cart-expanded-max: 60vh;
   }
 }
 
+@keyframes menu-product-added-pulse {
+  0% {
+    box-shadow: var(--shadow-sm);
+  }
+
+  35% {
+    box-shadow: 0 0 0 3px var(--color-primary-light), var(--shadow-md);
+  }
+
+  100% {
+    box-shadow: var(--shadow-sm);
+  }
+}
+
 .product-card {
   position: relative;
   background: var(--color-surface);
@@ -1199,7 +1227,20 @@ $cart-expanded-max: 60vh;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--color-border);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+
+  &.in-cart {
+    background: var(--color-primary-light);
+    border-color: var(--color-primary);
+  }
+
+  &.just-added {
+    animation: menu-product-added-pulse 1.1s ease;
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
+  }
 
   &:hover {
     transform: translateY(-2px);
@@ -1560,6 +1601,16 @@ $cart-expanded-max: 60vh;
   align-items: center;
   padding: var(--space-3) 0;
   border-bottom: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  margin-left: calc(-1 * var(--space-1));
+  margin-right: calc(-1 * var(--space-1));
+  padding-left: var(--space-1);
+  padding-right: var(--space-1);
+  transition: background 0.2s ease;
+
+  &.just-added {
+    background: var(--color-primary-light);
+  }
 
   &:last-child {
     border-bottom: none;

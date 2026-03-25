@@ -298,7 +298,8 @@
       </div>
       <div class="featured-scroll">
         @for (product of featuredProducts(); track getProductKey(product)) {
-        <div class="featured-card" (click)="openProductDetail(product)">
+        <div class="featured-card" (click)="openProductDetail(product)"
+          [class.in-cart]="isProductInMenuCart(product)" [class.just-added]="isProductJustAdded(product)">
           <div class="featured-image-container">
             @if (product.image_filename) {
             <img [src]="getProductImageUrl(product)" class="featured-image" alt="{{ product.name }}">
@@ -340,7 +341,8 @@
 
       <div class="products-grid">
         @for (product of filteredProducts(); track getProductKey(product)) {
-        <article class="product-card" (click)="openProductDetail(product)">
+        <article class="product-card" (click)="openProductDetail(product)"
+          [class.in-cart]="isProductInMenuCart(product)" [class.just-added]="isProductJustAdded(product)">
           <!-- Product Image -->
           <div class="product-image-container">
             @if (product.image_filename) {
@@ -485,7 +487,7 @@
     <div class="cart-expanded-content">
       <div class="cart-items-list">
         @for (item of cart(); track getProductKey(item.product, item.customization_answers)) {
-        <div class="cart-item-card">
+        <div class="cart-item-card" [class.just-added]="isCartLineJustAdded(item)">
           <div class="cart-item-info">
             <span class="cart-item-name">{{ item.product.name }}</span>
             @if (formatCustomizationSummary(item.customization_answers, item.customization_summary)) {

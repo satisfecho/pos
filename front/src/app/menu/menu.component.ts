@@ -93,6 +93,19 @@ export class MenuComponent implements OnInit, OnDestroy {
   // New UI state
   isScrolled = signal(false);
   cartExpanded = signal(false);
+  /** Product ids in cart — grid/featured cards get a light “in cart” background. */
+  productIdsInCart = computed(() => {
+    const ids = new Set<number>();
+    for (const line of this.cart()) {
+      const id = line.product.id;
+      if (id != null) ids.add(id);
+    }
+    return ids;
+  });
+  /** Brief highlight on the menu card after add (same pattern as cart line flash). */
+  justAddedProductIds = signal<Set<number>>(new Set());
+  /** Brief highlight for a specific cart line (product + customization key). */
+  justAddedCartKeys = signal<Set<string>>(new Set());
   selectedProduct = signal<Product | null>(null);
   /** When set, show modal to collect product question answers before adding to cart */
   productToAddWithQuestions = signal<Product | null>(null);
@@ -749,6 +762,7 @@ export class MenuComponent implements OnInit, OnDestroy {
       }
       return [...items, { product, quantity: 1, notes: '', customization_answers: customizationAnswers }];
     });
+    this.flashProductAdded(product, productKey);
     // Auto-expand cart when adding first item
     if (this.cart().length === 1) {
       this.cartExpanded.set(true);
@@ -851,6 +865,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   incrementItem(item: CartItem) {
     const productKey = this.getProductKey(item.product, item.customization_answers);
     this.cart.update(items => items.map(i => this.getProductKey(i.product, i.customization_answers) === productKey ? { ...i, quantity: i.quantity + 1 } : i));
+    this.flashProductAdded(item.product, productKey);
   }
 
   decrementItem(item: CartItem) {
@@ -860,6 +875,45 @@ export class MenuComponent implements OnInit, OnDestroy {
     } else {
       this.cart.update(items => items.map(i => this.getProductKey(i.product, i.customization_answers) === productKey ? { ...i, quantity: i.quantity - 1 } : i));
     }
+  }
+
+  isProductInMenuCart(product: Product): boolean {
+    const id = product.id;
+    if (id == null) return false;
+    return this.productIdsInCart().has(id);
+  }
+
+  isProductJustAdded(product: Product): boolean {
+    const id = product.id;
+    if (id == null) return false;
+    return this.justAddedProductIds().has(id);
+  }
+
+  isCartLineJustAdded(item: CartItem): boolean {
+    return this.justAddedCartKeys().has(this.getProductKey(item.product, item.customization_answers));
+  }
+
+  /** Subtle tint while in cart + short pulse when quantity changes from the menu. */
+  private flashProductAdded(product: Product, cartLineKey: string): void {
+    const pid = product.id;
+    if (pid != null) {
+      this.justAddedProductIds.update(s => new Set(s).add(pid));
+      setTimeout(() => {
+        this.justAddedProductIds.update(s => {
+          const next = new Set(s);
+          next.delete(pid);
+          return next;
+        });
+      }, 1200);
+    }
+    this.justAddedCartKeys.update(s => new Set(s).add(cartLineKey));
+    setTimeout(() => {
+      this.justAddedCartKeys.update(s => {
+        const next = new Set(s);
+        next.delete(cartLineKey);
+        return next;
+      });
+    }, 1200);
   }
 
   getTotalItems(): number {
