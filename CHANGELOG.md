@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Password reset email i18n (GitHub #97):** Reset email subject/body use `messages.py` translations for all backend-supported locales; language matches `POST /password-reset/request` (`?lang` / `Accept-Language`, same as API message). Forgot/reset flows send `lang` from the in-app language picker (`ApiService`). Tests: `tests/test_password_reset.py`.
+
 ### Added
 
 - **Tenant data export & purge (GitHub #96):** Owner-only `GET /tenant/data-export` returns a ZIP with `tenant-export.json` (tenant settings with payment/SMTP secrets redacted, staff without password hashes, products, orders, reservations, i18n, inventory, etc.). Owner-only `POST /tenant/purge` with `confirm_tenant_name` matching the tenant name irreversibly deletes tenant data and schedules upload cleanup; logs a warning with operator id/email. Settings → **Data & privacy** (owners): download export and danger-zone delete. **Users:** owners editing another user can assign the **Owner** role (co-owner). Script `python -m app.seeds.purge_demo_tenants` removes tenants **2–7** when `DEMO_PURGE_CONFIRM=1`. Tests: `tests/test_tenant_lifecycle.py`.

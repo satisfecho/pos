@@ -13,6 +13,7 @@ import {
   take,
 } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { LanguageService } from './language.service';
 
 // Interfaces
 export type UserRole = 'owner' | 'admin' | 'kitchen' | 'bartender' | 'waiter' | 'receptionist' | 'provider';
@@ -960,6 +961,7 @@ export interface TenantProduct {
 })
 export class ApiService {
   private http = inject(HttpClient);
+  private language = inject(LanguageService);
   private apiUrl = environment.apiUrl;
   private wsUrl = environment.wsUrl;
 
@@ -1063,6 +1065,7 @@ export class ApiService {
     tenantId?: number,
     scope?: 'provider',
   ): Observable<{ status: string; message: string }> {
+    const params = new HttpParams().set('lang', this.language.getLanguage());
     return this.http.post<{ status: string; message: string }>(
       `${this.apiUrl}/password-reset/request`,
       {
@@ -1070,14 +1073,20 @@ export class ApiService {
         tenant_id: tenantId ?? null,
         scope: scope ?? null,
       },
+      { params },
     );
   }
 
   confirmPasswordReset(token: string, newPassword: string): Observable<{ status: string }> {
-    return this.http.post<{ status: string }>(`${this.apiUrl}/password-reset/confirm`, {
-      token,
-      new_password: newPassword,
-    });
+    const params = new HttpParams().set('lang', this.language.getLanguage());
+    return this.http.post<{ status: string }>(
+      `${this.apiUrl}/password-reset/confirm`,
+      {
+        token,
+        new_password: newPassword,
+      },
+      { params },
+    );
   }
 
   getOtpStatus(): Observable<{ otp_enabled: boolean }> {

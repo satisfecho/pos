@@ -1398,7 +1398,7 @@ async def password_reset_request(
     if user.tenant_id is not None:
         tenant_for_smtp = session.get(models.Tenant, user.tenant_id)
     sent = await email_svc.send_password_reset_email(
-        user.email, reset_url, tenant=tenant_for_smtp
+        user.email, reset_url, tenant=tenant_for_smtp, lang=lang
     )
     if not sent:
         session.delete(prt)

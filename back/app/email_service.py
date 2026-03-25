@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any, Optional
 
 import aiosmtplib
 
+from .messages import get_message
 from .reservation_email_template import (
     contact_block_html,
     contact_block_plain,
@@ -183,9 +184,21 @@ async def send_password_reset_email(
     to_email: str,
     reset_url: str,
     tenant: Optional["Tenant"] = None,
+    lang: str = "en",
 ) -> bool:
-    """Send password reset link. Uses tenant SMTP when configured; else global."""
-    subject = "Reset your password"
+    """
+    Send password reset link. Uses tenant SMTP when configured; else global.
+
+    `lang` should match the language the user had when requesting reset (same source as
+    `get_message` for the API), so the email matches the on-screen confirmation.
+    """
+    subject = get_message("email_password_reset_subject", lang)
+    heading = get_message("email_password_reset_heading", lang)
+    intro = get_message("email_password_reset_intro", lang)
+    button = get_message("email_password_reset_button", lang)
+    copy_link = get_message("email_password_reset_copy_link", lang)
+    disclaimer = get_message("email_password_reset_disclaimer", lang)
+    automated = get_message("email_password_reset_automated_footer", lang)
     safe_url = html.escape(reset_url, quote=True)
     html_content = f"""
     <!DOCTYPE html>
@@ -200,29 +213,28 @@ async def send_password_reset_email(
     </head>
     <body>
         <div class="container">
-            <h1>Reset your password</h1>
-            <p>We received a request to reset the password for your account. Click the button below to choose a new password:</p>
+            <h1>{html.escape(heading)}</h1>
+            <p>{html.escape(intro)}</p>
             <p style="text-align: center;">
-                <a href="{safe_url}" class="button">Reset password</a>
+                <a href="{safe_url}" class="button">{html.escape(button)}</a>
             </p>
-            <p>Or copy and paste this link into your browser:</p>
+            <p>{html.escape(copy_link)}</p>
             <p style="word-break: break-all; color: #666;">{safe_url}</p>
-            <p>If you did not request this, you can ignore this email. Your password will not change.</p>
+            <p>{html.escape(disclaimer)}</p>
             <hr>
-            <p style="color: #666; font-size: 12px;">This is an automated message, please do not reply.</p>
+            <p style="color: #666; font-size: 12px;">{html.escape(automated)}</p>
         </div>
     </body>
     </html>
     """
-    text_content = f"""
-    Reset your password
+    text_content = f"""{heading}
 
-    We received a request to reset your password. Open this link to choose a new password:
+{intro}
 
-    {reset_url}
+{reset_url}
 
-    If you did not request this, you can ignore this email.
-    """
+{disclaimer}
+"""
     return await send_email(to_email, subject, html_content, text_content, tenant=tenant)
 
 
