@@ -41,3 +41,32 @@ In **Settings → Reservations**, prepayment amount entry is awkward: users must
 
 - **Pass:** Build succeeds (`docker compose … logs --tail=80 front` without TS/Angular errors); manual checks above behave as expected; landing smoke test exits **0**.
 - **Fail:** Compile errors, wrong persisted total vs entered whole+minor, or JPY path showing two fraction fields.
+
+---
+
+## Test report
+
+1. **Date/time (UTC):** 2026-03-25T10:25Z–10:33Z (approximate window for this run).
+2. **Log window:** Same window for `docker compose … logs` sampling.
+3. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; **`BASE_URL`** `http://127.0.0.1:4202`; branch **`development`** @ `328b0f0`.
+4. **What was tested:** Items under “What to verify” in Testing instructions above.
+5. **Results:**
+   - **Two fields for decimal currency (EUR path):** **PASS** — After login, `/settings?section=reservations` showed `#reservation_prepayment_major` and `#reservation_prepayment_minor` (Puppeteer one-off `/tmp/pos-prepayment-verify.mjs`).
+   - **5 + 50 → 550 smallest units persisted:** **PASS** — Save + full page reload showed major `5`, minor `50`; after switching currency to JPY the single whole field showed `550` (same stored total).
+   - **Save still works:** **PASS** — `PUT /tenant/settings` returned **200** in `pos-back` logs during saves.
+   - **Booking / prepayment > 0:** **PASS** — `GET /api/public/tenants/1` returned `"reservation_prepayment_cents":550`; `book.component.html` still gates prepayment copy on `(reservation_prepayment_cents ?? 0) > 0`.
+   - **Currency change updates layout without corrupting stored total:** **PASS** — JPY hid minor field and displayed `550` until currency restored to original via Payment tab; original currency re-selected and saved.
+   - **Angular build:** **PASS** — `docker compose … logs --tail=80 front` ended with `Application bundle generation complete` (no TS/Angular errors in tail).
+   - **Landing smoke:** **PASS** — `cd front && BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:landing-version` exited **0**.
+6. **Overall:** **PASS**
+7. **Product owner feedback:** Reservation prepayment can now be entered as major and minor units for decimal currencies, and collapses to a single whole amount for zero-decimal currencies, while the backend still stores a single integer in smallest units. Switching currency re-interprets the same stored value correctly, so operators are less likely to mis-key amounts.
+8. **URLs tested:**
+   1. `http://127.0.0.1:4202/`
+   2. `http://127.0.0.1:4202/login?tenant=1`
+   3. `http://127.0.0.1:4202/dashboard` (post-login)
+   4. `http://127.0.0.1:4202/settings?section=reservations`
+   5. `http://127.0.0.1:4202/settings` (Payment tab via in-page tab index)
+   6. `http://127.0.0.1:4202/api/public/tenants/1` (JSON, prepayment field)
+9. **Relevant log excerpts:**
+   - `pos-front` (tail): `Application bundle generation complete.` (no error lines in sampled tail).
+   - `pos-back` (recent): `PUT /tenant/settings HTTP/1.1" 200 OK` and `GET /tenant/settings HTTP/1.1" 200 OK` during the session.
