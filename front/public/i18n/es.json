@@ -219,6 +219,7 @@
     "NAME_OPTIONAL": "(opcional - puedes omitirlo)",
     "ENTER_NAME": "Introduce tu nombre",
     "ENTER_PIN": "Introduce el PIN de la mesa",
+    "PIN_TABLE_CONTEXT": "Mesa: {{name}}",
     "PIN_HINT": "Pide el PIN de 4 dígitos a tu camarero",
     "TABLE_CLOSED_TITLE": "Mesa cerrada",
     "TABLE_CLOSED_MESSAGE": "Esta mesa no acepta pedidos en este momento. Por favor, pide ayuda al personal."

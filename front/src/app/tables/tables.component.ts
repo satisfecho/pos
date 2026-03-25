@@ -209,7 +209,9 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
                           } @else {
                             <button type="button" class="btn btn-sm btn-success" (click)="activateTableSession(table)" [disabled]="activatingTableId() === table.id" [title]="'TABLES.ACTIVATE' | translate">▶</button>
                           }
-                          <a [href]="getMenuUrl(table)" target="_blank" class="btn btn-secondary btn-sm" [title]="'TABLES.OPEN_MENU' | translate">↗</a>
+                          <button type="button" class="btn btn-secondary btn-sm" (click)="openStaffMenu(table)"
+                            [disabled]="staffMenuOpeningTableId() === table.id"
+                            [title]="'TABLES.OPEN_MENU' | translate">↗</button>
                           <button type="button" class="icon-btn" (click)="copyLink(table)" [title]="'COMMON.COPY' | translate">⎘</button>
                           <button type="button" class="icon-btn icon-btn-danger" (click)="deleteTable(table)" [title]="'COMMON.DELETE' | translate">🗑</button>
                         }
@@ -436,7 +438,8 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
                         </div>
 
                         <div class="table-actions">
-                          <a [href]="getMenuUrl(table)" target="_blank" class="btn btn-secondary btn-sm">Open Menu</a>
+                          <button type="button" class="btn btn-secondary btn-sm" (click)="openStaffMenu(table)"
+                            [disabled]="staffMenuOpeningTableId() === table.id">{{ 'TABLES.OPEN_MENU' | translate }}</button>
                           <button 
                             class="btn btn-sm" 
                             [class.btn-ghost]="copiedTableId() !== table.id"
@@ -828,6 +831,8 @@ export class TablesComponent implements OnInit {
   editingSeatCount: number | null = null;
   copiedTableId = signal<number | null>(null);
   activatingTableId = signal<number | null>(null);
+  /** While fetching staff menu token for open-in-new-tab. */
+  staffMenuOpeningTableId = signal<number | null>(null);
   waiters = signal<User[]>([]);
 
   // Confirmation Modal State
@@ -1097,8 +1102,25 @@ export class TablesComponent implements OnInit {
     this.toast.set(null);
   }
 
+  /** Public customer URL (QR code, copy link). Staff should use {@link openStaffMenu} to skip the table PIN. */
   getMenuUrl(table: Table): string {
     return `${window.location.origin}/menu/${table.token}`;
+  }
+
+  openStaffMenu(table: Table) {
+    if (!table.id) return;
+    this.staffMenuOpeningTableId.set(table.id);
+    this.api.getStaffMenuToken(table.id).subscribe({
+      next: (res) => {
+        this.staffMenuOpeningTableId.set(null);
+        const url = `${window.location.origin}/menu/${res.table_token}?staff_access=${encodeURIComponent(res.token)}`;
+        window.open(url, '_blank');
+      },
+      error: () => {
+        this.staffMenuOpeningTableId.set(null);
+        this.showToast('ORDERS.OPEN_MENU_ERROR', 'error');
+      },
+    });
   }
 
   copyLink(table: Table) {

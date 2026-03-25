@@ -2169,6 +2169,14 @@ $cart-expanded-max: 60vh;
 }
 
 // PIN Modal Styles
+.pin-table-context {
+  margin: 0 0 var(--space-2);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: center;
+}
+
 .pin-icon {
   color: var(--color-primary);
 }

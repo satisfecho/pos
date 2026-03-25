@@ -220,6 +220,7 @@
     "NAME_OPTIONAL": "(optional - you can skip this)",
     "ENTER_NAME": "Enter your name",
     "ENTER_PIN": "Enter Table PIN",
+    "PIN_TABLE_CONTEXT": "Table: {{name}}",
     "PIN_HINT": "Ask your server for the 4-digit PIN",
     "TABLE_CLOSED_TITLE": "Table Closed",
     "TABLE_CLOSED_MESSAGE": "This table is not currently accepting orders. Please ask a member of staff for assistance.",

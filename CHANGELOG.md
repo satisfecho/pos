@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **Tables → Open menu / table PIN (GitHub #86):** Staff “Open menu” from the tables list and tile view now uses the same short-lived `staff_access` link as staff orders, so placing an order no longer forces the public table PIN modal. QR codes and “Copy” still use the customer URL. The PIN modal still shows **which table** (`Table: …`) when a PIN is required (e.g. wrong PIN retry).
+
 - **Settings → Email (SMTP) (GitHub #81):** Added missing `SETTINGS.*` translation keys for SMTP and reservation confirmation copy in Catalan, Spanish, German, French, Hindi, and Chinese (`public/i18n`). SMTP port and username placeholders use i18n like other fields.
 
 - **Settings Security / 2FA (GitHub #83):** Spacing between OTP description hint and the enable action (and setup hint before the secret row) so the control is not flush against the copy.

@@ -213,6 +213,7 @@
     "NAME_OPTIONAL": "(optionnel)",
     "ENTER_NAME": "Entrez votre nom",
     "ENTER_PIN": "Code PIN de la table",
+    "PIN_TABLE_CONTEXT": "Table : {{name}}",
     "PIN_HINT": "Demandez le code à 4 chiffres au serveur",
     "TABLE_CLOSED_TITLE": "Table fermée",
     "TABLE_CLOSED_MESSAGE": "Cette table n'accepte pas de commandes pour le moment. Demandez à un membre du personnel."

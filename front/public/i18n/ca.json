@@ -213,6 +213,7 @@
     "NAME_OPTIONAL": "(opcional - pots ometre-ho)",
     "ENTER_NAME": "Introdueix el teu nom",
     "ENTER_PIN": "Introdueix el PIN de la taula",
+    "PIN_TABLE_CONTEXT": "Taula: {{name}}",
     "PIN_HINT": "Demana el PIN de 4 dígits al teu cambrer",
     "TABLE_CLOSED_TITLE": "Taula tancada",
     "TABLE_CLOSED_MESSAGE": "Aquesta taula no accepta comandes en aquest moment. Si us plau, demaneu ajuda al personal."

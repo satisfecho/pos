@@ -213,6 +213,7 @@
     "NAME_OPTIONAL": "(optional - Sie können dies überspringen)",
     "ENTER_NAME": "Geben Sie Ihren Namen ein",
     "ENTER_PIN": "Tisch-PIN eingeben",
+    "PIN_TABLE_CONTEXT": "Tisch: {{name}}",
     "PIN_HINT": "Fragen Sie Ihren Kellner nach der 4-stelligen PIN",
     "TABLE_CLOSED_TITLE": "Tisch geschlossen",
     "TABLE_CLOSED_MESSAGE": "Dieser Tisch nimmt derzeit keine Bestellungen an. Bitte wenden Sie sich an das Personal."

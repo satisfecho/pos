@@ -781,6 +781,9 @@
             <path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
         </div>
+        @if (tableName()) {
+        <p class="pin-table-context">{{ 'MENU.PIN_TABLE_CONTEXT' | translate: { name: tableName() } }}</p>
+        }
         <h3 class="modal-title">{{ 'MENU.ENTER_PIN' | translate }}</h3>
         <p class="modal-subtitle">{{ 'MENU.PIN_HINT' | translate }}</p>
         @if (pinError()) {
