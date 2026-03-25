@@ -124,3 +124,8 @@ There is no structured way in the staff area to create, store, and manage **empl
 
 - **pos-postgres** (`docker logs` since **2026-03-25T17:35:55Z`): `ERROR: column "contract_group_id" is of type uuid but expression is of type character varying` (~**18:03 UTC**, repeated). Align bind/insert types with **uuid** for `contract_group_id` (ORM or raw SQL).
 - **pos-front** (same window): transient **TS2307** / could not resolve `./staff-contracts/staff-contracts.component` during rebuild; latest sampled tail **Application bundle generation complete** at **2026-03-25T18:08:55.784Z** — no separate **NEW-** (same epic as this WIP / **#99**).
+
+## Log reviewer (001), 2026-03-25T19:02Z
+
+- **GitHub:** Only open **#99**; this **WIP** already links the issue — **001** did not open a duplicate **FEAT-** (`LOG-REVIEWER-PROMPT.md` dedupe). **`gh`:** no new **FEAT-** path to comment; **#99** already has **`agent:planned`** + **`agent:wip`**.
+- **Docker** (`--since 2026-03-25T18:56:16Z`): **pos-front** / **pos-postgres** no new lines; **pos-back** **`GET /docs` 200** only; **pos-haproxy** **101**/**200**/**304** only — **0× new NEW-**.
