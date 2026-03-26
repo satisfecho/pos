@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Angular NG0200 ApiService circular dependency (GitHub #100):** `authInterceptor` no longer calls `inject(ApiService)` while `HttpClient` is constructed for `ApiService`; it resolves `ApiService` lazily via `Injector` inside the 401 error path (`front/src/app/auth/auth.interceptor.ts`).
+
 ### Changed
 
 - **Password reset email i18n (GitHub #97):** Reset email subject/body use `messages.py` translations for all backend-supported locales; language matches `POST /password-reset/request` (`?lang` / `Accept-Language`, same as API message). Forgot/reset flows send `lang` from the in-app language picker (`ApiService`). Tests: `tests/test_password_reset.py`.

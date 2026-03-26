@@ -1,5 +1,5 @@
-import { HttpInterceptorFn, HttpErrorResponse, HttpRequest, HttpHandlerFn } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError, switchMap, Observable, Subject, filter, take } from 'rxjs';
 import { ApiService } from '../services/api.service';
@@ -32,7 +32,9 @@ function getCurrentPath(routerUrl: string): string {
 }
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const apiService = inject(ApiService);
+  // Do not inject ApiService here: HttpClient creation runs interceptors while ApiService is still
+  // constructing (NG0200). Resolve ApiService lazily inside error handling via Injector.
+  const injector = inject(Injector);
   const router = inject(Router);
 
   // Ensure cookies are sent with requests
@@ -42,6 +44,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+      const apiService = injector.get(ApiService);
       // Handle 401 Unauthorized errors
       if (error.status === 401) {
         // On public routes, do not redirect or refresh; let the request fail
