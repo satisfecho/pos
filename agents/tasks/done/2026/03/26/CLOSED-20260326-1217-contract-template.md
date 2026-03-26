@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** The team delivered database-backed contract templates with locale, tenant country, and seeded presets ranked by geography and language (GitHub #106).
+- **What was done:** Migration `20260326133000`, preset APIs (`GET` presets, `POST` import-preset), template CRUD locale, tenant `country_code` in settings, and Settings UI for Business country plus Contract templates catalog with import.
+- **What was tested:** Migrations, `tests/test_staff_contract_templates.py` (4 passed), Docker front build clean, `npm run test:landing-version`, and manual Settings → Contract templates spot-check — all **PASS** per tester report.
+- **Why closed:** All automated verification criteria passed and manual UI checks aligned with pytest coverage for import and preset ordering.
+- **Closed at (UTC):** 2026-03-26 12:32
+---
+
 # Contract Template
 
 ## GitHub
