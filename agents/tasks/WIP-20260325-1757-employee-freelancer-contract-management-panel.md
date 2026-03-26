@@ -129,3 +129,8 @@ There is no structured way in the staff area to create, store, and manage **empl
 
 - **GitHub:** Only open **#99**; this **WIP** already links the issue — **001** did not open a duplicate **FEAT-** (`LOG-REVIEWER-PROMPT.md` dedupe). **`gh`:** no new **FEAT-** path to comment; **#99** already has **`agent:planned`** + **`agent:wip`**.
 - **Docker** (`--since 2026-03-25T18:56:16Z`): **pos-front** / **pos-postgres** no new lines; **pos-back** **`GET /docs` 200** only; **pos-haproxy** **101**/**200**/**304** only — **0× new NEW-**.
+
+## Log reviewer (001), 2026-03-26T09:13Z
+
+- **GitHub:** Open **#99** only; **WIP** dedupe — **0× new FEAT-**. **`gh issue comment 99`** + **`agent:planned`** (idempotent).
+- **Docker** (`--since 2026-03-26T09:00:45Z`): **pos-front** ~1s **TS2552** (`apiService` in **`auth.interceptor.ts`**) then immediate **Application bundle generation complete** — transient rebuild; **0× new NEW-** (same file family as closed **#100** circular-dependency task). **pos-back** / **pos-haproxy** / **pos-postgres:** no standing incidents in grep window.
