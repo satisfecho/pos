@@ -89,7 +89,8 @@
     "BOOK_TABLE": "预订桌位",
     "ORDER_TAKEAWAY": "外带 / 居家点餐",
     "PROVIDER_LOGIN": "供应商登录",
-    "REGISTER_AS_PROVIDER": "注册为供应商"
+    "REGISTER_AS_PROVIDER": "注册为供应商",
+    "CONTACT_US": "联系我们"
   },
   "DASHBOARD": {
     "TITLE": "仪表板",

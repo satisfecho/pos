@@ -89,7 +89,8 @@
     "BOOK_TABLE": "Réserver une table",
     "ORDER_TAKEAWAY": "À emporter / Commande à domicile",
     "PROVIDER_LOGIN": "Connexion fournisseur",
-    "REGISTER_AS_PROVIDER": "S'inscrire comme fournisseur"
+    "REGISTER_AS_PROVIDER": "S'inscrire comme fournisseur",
+    "CONTACT_US": "Nous contacter"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "À emporter et livraison",

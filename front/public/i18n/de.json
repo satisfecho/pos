@@ -89,7 +89,8 @@
     "BOOK_TABLE": "Tisch reservieren",
     "ORDER_TAKEAWAY": "Mitnahme / Bestellung nach Hause",
     "PROVIDER_LOGIN": "Anbieter-Login",
-    "REGISTER_AS_PROVIDER": "Als Anbieter registrieren"
+    "REGISTER_AS_PROVIDER": "Als Anbieter registrieren",
+    "CONTACT_US": "Kontakt"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Mitnahme & Lieferservice",

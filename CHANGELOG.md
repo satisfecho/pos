@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Landing footer Contact us (GitHub #104):** Mailto **sales@satisfecho.de** with i18n label `LANDING.CONTACT_US` in all `public/i18n` locales; `test-landing-provider-links` asserts the mailto href.
+
 - **User management password re-auth (GitHub #105):** `PUT /users/{id}` with a new `password` requires `actor_current_password` (verified against the signed-in user). `/users` edit modal collects **Your current password** above new/confirm when changing a password. API messages in `messages.py`; UI strings in all `public/i18n` locales. Tests: `tests/test_user_password_update.py`.
 
 - **OpenStreetMap link for tenants (GitHub #102):** Optional `public_openstreetmap_url` in contact settings (same validation as other public http(s) links). Shown on public book (including post-submit), reservation-by-token view, and feedback pages alongside Google Maps when configured. Reservation confirmation and reminder emails include `google_maps_link_block_html` and `openstreetmap_link_block_html` placeholders (default template updated). Migration `20260326104500_tenant_public_openstreetmap_url.sql`. Tests: `tests/test_reservation_email_template.py`, `tests/test_reservation_reminder_email.py`, `tests/test_guest_feedback.py`.

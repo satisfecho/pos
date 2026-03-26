@@ -89,7 +89,8 @@
     "BOOK_TABLE": "Reservar taula",
     "ORDER_TAKEAWAY": "Emportar / Comanda a domicili",
     "PROVIDER_LOGIN": "Inici de sessió de proveïdor",
-    "REGISTER_AS_PROVIDER": "Registrar-se com a proveïdor"
+    "REGISTER_AS_PROVIDER": "Registrar-se com a proveïdor",
+    "CONTACT_US": "Contacteu-nos"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Emportar i comanda a domicili",

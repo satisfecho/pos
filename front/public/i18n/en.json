@@ -89,7 +89,8 @@
     "BOOK_TABLE": "Book a table",
     "ORDER_TAKEAWAY": "Take away / Home ordering",
     "PROVIDER_LOGIN": "Provider login",
-    "REGISTER_AS_PROVIDER": "Register as provider"
+    "REGISTER_AS_PROVIDER": "Register as provider",
+    "CONTACT_US": "Contact us"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Take away & Home ordering",

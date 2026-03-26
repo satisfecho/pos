@@ -158,6 +158,8 @@ import { environment } from '../../environments/environment';
         <a routerLink="/provider/login" data-testid="landing-provider-login">{{ 'LANDING.PROVIDER_LOGIN' | translate }}</a>
         <span class="footer-sep">·</span>
         <a routerLink="/provider/register" data-testid="landing-provider-register">{{ 'LANDING.REGISTER_AS_PROVIDER' | translate }}</a>
+        <span class="footer-sep">·</span>
+        <a href="mailto:sales@satisfecho.de" data-testid="landing-contact-us">{{ 'LANDING.CONTACT_US' | translate }}</a>
       </div>
       <div class="landing-version-bar" data-testid="landing-version">{{ version || '0.0.0' }} <span class="landing-commit">{{ commitHash || '' }}</span></div>
     </div>

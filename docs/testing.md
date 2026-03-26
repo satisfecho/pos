@@ -214,7 +214,7 @@ npm run test:landing-provider-links --prefix front
 # Or: node front/scripts/test-landing-provider-links.mjs
 ```
 
-- Asserts footer has provider login and “Register as provider” links; clicks register and checks navigation to `/provider/register` and presence of registration form.
+- Asserts footer has provider login and “Register as provider” links, a **Contact us** link with `mailto:sales@satisfecho.de`, and `data-testid="landing-contact-us"`; clicks register and checks navigation to `/provider/register` and presence of registration form.
 
 ---
 
@@ -222,7 +222,7 @@ npm run test:landing-provider-links --prefix front
 
 Tests for the provider portal: landing links, registration, login, and dashboard (add product).
 
-**Landing → provider links** (see §4): `test-landing-provider-links` checks footer links to `/provider/login` and `/provider/register` and that the register link opens the provider registration form.
+**Landing → provider links** (see §4): `test-landing-provider-links` checks footer links to `/provider/login` and `/provider/register`, the **Contact us** `mailto:sales@satisfecho.de` link, and that the register link opens the provider registration form.
 
 **Provider registration** (creates a new provider account; no cleanup — leaves DB entry):
 
@@ -246,7 +246,7 @@ PROVIDER_TEST_EMAIL=pos-provider@amvara.de PROVIDER_TEST_PASSWORD=secret npm run
 
 | Script | Purpose |
 |--------|---------|
-| `front/scripts/test-landing-provider-links.mjs` | Landing footer provider login/register links and register page load. |
+| `front/scripts/test-landing-provider-links.mjs` | Landing footer provider login/register links, contact mailto link, and register page load. |
 | `front/scripts/test-provider-register.mjs` | Full provider registration flow. |
 | `front/scripts/test-provider-add-product.mjs` | Provider login and add product on dashboard. |
 

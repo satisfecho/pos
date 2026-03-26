@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Puppeteer test: landing page shows provider login and provider registration links in the footer.
+ * Puppeteer test: landing page shows provider login, provider registration, and contact (mailto) links in the footer.
  *
  * Usage (from repo root):
  *   node front/scripts/test-landing-provider-links.mjs
@@ -102,6 +102,24 @@ async function main() {
     console.log('   Provider login link: OK');
     console.log('   Register as provider link: OK');
 
+    const contactEl = await page.$('[data-testid="landing-contact-us"]');
+    if (!contactEl) {
+      console.log('   FAIL: "Contact us" link not found ([data-testid="landing-contact-us"]).');
+      await browser.close();
+      process.exit(1);
+    }
+    const contactHref = await page.evaluate(() => {
+      const el = document.querySelector('[data-testid="landing-contact-us"]');
+      return el ? el.getAttribute('href') || '' : '';
+    });
+    const expectedMailto = 'mailto:sales@satisfecho.de';
+    if (contactHref !== expectedMailto) {
+      console.log('   FAIL: Contact link href expected', expectedMailto, 'got:', contactHref);
+      await browser.close();
+      process.exit(1);
+    }
+    console.log('   Contact us (mailto) link: OK');
+
     const registerHref = await page.evaluate(() => {
       const el = document.querySelector('[data-testid="landing-provider-register"]');
       return el ? (el.getAttribute('href') || el.getAttribute('ng-reflect-router-link')) : null;
@@ -128,7 +146,7 @@ async function main() {
 
     console.log('   Provider register page loaded: OK');
     await browser.close();
-    console.log('\n>>> RESULT: Landing shows provider login and register links; register link works.');
+    console.log('\n>>> RESULT: Landing shows provider login, register, and contact links; register link works.');
     process.exit(0);
   } catch (err) {
     console.error('Error:', err.message);

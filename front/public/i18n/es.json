@@ -89,7 +89,8 @@
     "BOOK_TABLE": "Reservar mesa",
     "ORDER_TAKEAWAY": "Para llevar / Pedido a domicilio",
     "PROVIDER_LOGIN": "Inicio de sesión de proveedor",
-    "REGISTER_AS_PROVIDER": "Registrarse como proveedor"
+    "REGISTER_AS_PROVIDER": "Registrarse como proveedor",
+    "CONTACT_US": "Contáctenos"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Para llevar y pedido a domicilio",
