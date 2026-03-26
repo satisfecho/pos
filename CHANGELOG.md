@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Security
+
+- **Staff contract PDFs:** `GET /uploads/{tenant_id}/contracts/{filename}` now returns **403** so signed contract files are not served by the public `StaticFiles` mount; use authenticated `GET /staff-contracts/{id}/document` only. Regression test: `tests/test_uploads_security.py`. Security review notes: `docs/SECURITY-REVIEW.md`.
+
+- **Tenant IDOR sample:** `tests/test_security_tenant_idor_orders.py` asserts another tenant’s order cannot be soft-deleted by ID.
+
 ## [2.0.62] - 2026-03-26
 
 ### Added

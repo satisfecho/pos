@@ -444,6 +444,20 @@ def serve_tenant_product_image(tenant_id: int, filename: str):
     return FileResponse(path)
 
 
+@app.get("/uploads/{tenant_id}/contracts/{filename}", include_in_schema=False)
+def deny_public_staff_contract_uploads(tenant_id: int, filename: str):
+    """
+    Staff contract PDFs must only be served via authenticated GET /staff-contracts/{id}/document.
+    Without this route, the /uploads StaticFiles mount would expose uploads/{tenant_id}/contracts/*.
+    """
+    if "/" in filename or "\\" in filename or filename.startswith("."):
+        raise HTTPException(status_code=404, detail="Invalid filename")
+    raise HTTPException(
+        status_code=403,
+        detail="Staff contract files are not available at this URL",
+    )
+
+
 # Mount static files for serving images (fallback for any other uploads paths)
 app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
