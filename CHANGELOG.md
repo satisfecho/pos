@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **Settings → Data & privacy i18n (GitHub #108):** Added missing `SETTINGS.*` export/purge strings for **es**, **fr**, **ca**, **zh-CN**, and **hi**; corrected leftover English `PURGE_CONFIRM_LABEL` in **bg**. UI already used `translate` pipes; missing keys fell back to English.
+
 - **Bulgarian staff dashboard subtitle (GitHub #107):** `DASHBOARD.WELCOME_TEXT` in `front/public/i18n/bg.json` was still English; translated to match the rest of the Bulgarian staff UI.
 
 ## [2.0.63] - 2026-03-26
