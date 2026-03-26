@@ -744,6 +744,7 @@
     "VIEW_LINK_UNAVAILABLE": "Open the link from your confirmation email to view or cancel this reservation.",
     "ADDRESS": "Address",
     "OPEN_IN_GOOGLE_MAPS": "Open in Google Maps",
+    "OPEN_IN_OPENSTREETMAP": "Open in OpenStreetMap",
     "CALENDAR_LABEL": "Choose date",
     "CAL_PREV_MONTH": "Previous month",
     "CAL_NEXT_MONTH": "Next month",
@@ -1016,6 +1017,9 @@
     "PUBLIC_GOOGLE_MAPS_URL": "Google Maps link (place or directions)",
     "PUBLIC_GOOGLE_MAPS_PLACEHOLDER": "https://maps.app.goo.gl/... or Share link from Google Maps",
     "PUBLIC_GOOGLE_MAPS_HINT": "Optional. Shown on the booking page, reservation view, and feedback page so guests can open your location in Google Maps. Use Share → Copy link from your Business Profile or Maps listing (not the same as the review link).",
+    "PUBLIC_OPENSTREETMAP_URL": "OpenStreetMap link",
+    "PUBLIC_OPENSTREETMAP_PLACEHOLDER": "https://www.openstreetmap.org/... (share link from OpenStreetMap)",
+    "PUBLIC_OPENSTREETMAP_HINT": "Optional. Same places as the Google Maps link, for guests who prefer OpenStreetMap. Paste the URL from the Share button on openstreetmap.org.",
     "TAX_ID": "Tax ID / VAT",
     "TAX_ID_PLACEHOLDER": "e.g. DE123456789",
     "CIF": "CIF / NIF",
@@ -1220,7 +1224,7 @@
     "RESERVATION_CONFIRMATION_SUBJECT": "Email subject",
     "RESERVATION_CONFIRMATION_SUBJECT_PLACEHOLDER": "e.g. We have reserved a table for you",
     "RESERVATION_CONFIRMATION_BODY": "Email body",
-    "RESERVATION_CONFIRMATION_BODY_HINT": "Allowed names (wrap each in double curly braces): restaurant_name, customer_name, date, time, party_size, reservation_url, reservation_link_block_html (clickable link in HTML emails; empty if there is no self-service link), cancellation_policy, prepayment_text, prepayment_notice, dress_code, arrival_note, restaurant_phone, restaurant_email, restaurant_contact_block_html (phone and email block with tel/mailto in HTML and plain lines in text; empty if both phone and email are unset). Use cancellation_policy and similar to pull text from the Reservations settings section."
+    "RESERVATION_CONFIRMATION_BODY_HINT": "Allowed names (wrap each in double curly braces): restaurant_name, customer_name, date, time, party_size, reservation_url, reservation_link_block_html (clickable link in HTML emails; empty if there is no self-service link), cancellation_policy, prepayment_text, prepayment_notice, dress_code, arrival_note, restaurant_phone, restaurant_email, restaurant_contact_block_html (phone and email block with tel/mailto in HTML and plain lines in text; empty if both phone and email are unset), google_maps_link_block_html, openstreetmap_link_block_html (map links when those URLs are set in Contact info; empty otherwise). Use cancellation_policy and similar to pull text from the Reservations settings section."
   },
   "PAYMENTS": {
     "PAYMENT": "Payment",

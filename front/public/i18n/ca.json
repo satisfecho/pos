@@ -611,6 +611,7 @@
     "DRESS_CODE": "Codi de vestir",
     "ADDRESS": "Adreça",
     "OPEN_IN_GOOGLE_MAPS": "Obrir a Google Maps",
+    "OPEN_IN_OPENSTREETMAP": "Obrir a OpenStreetMap",
     "CALENDAR_LABEL": "Trieu la data",
     "CAL_PREV_MONTH": "Mes anterior",
     "CAL_NEXT_MONTH": "Mes següent",
@@ -951,7 +952,7 @@
     "RESERVATION_CONFIRMATION_SUBJECT": "Assumpte del correu",
     "RESERVATION_CONFIRMATION_SUBJECT_PLACEHOLDER": "p. ex. Hem reservat una taula per a vostè",
     "RESERVATION_CONFIRMATION_BODY": "Cos del correu",
-    "RESERVATION_CONFIRMATION_BODY_HINT": "Noms permesos (cadascun entre claus dobles): restaurant_name, customer_name, date, time, party_size, reservation_url, reservation_link_block_html (enllaç en HTML; buit si no hi ha enllaç d’autogestió), cancellation_policy, prepayment_text, prepayment_notice, dress_code, arrival_note, restaurant_phone, restaurant_email, restaurant_contact_block_html (bloc de telèfon i correu amb tel/mailto en HTML i línies en text; buit si falten tots dos). Usa cancellation_policy i similars per agafar el text de la secció Reserves de la configuració.",
+    "RESERVATION_CONFIRMATION_BODY_HINT": "Noms permesos (cadascun entre claus dobles): restaurant_name, customer_name, date, time, party_size, reservation_url, reservation_link_block_html (enllaç en HTML; buit si no hi ha enllaç d’autogestió), cancellation_policy, prepayment_text, prepayment_notice, dress_code, arrival_note, restaurant_phone, restaurant_email, restaurant_contact_block_html (bloc de telèfon i correu amb tel/mailto en HTML i línies en text; buit si falten tots dos), google_maps_link_block_html, openstreetmap_link_block_html (enllaços de mapa en HTML si aquestes URL són a la informació de contacte; buit si no). Usa cancellation_policy i similars per agafar el text de la secció Reserves de la configuració.",
     "STRIPE_SECRET_HINT": "La teva clau secreta de Stripe. Deixar en blanc per mantenir el valor actual.",
     "REVOLUT_INTEGRATION": "Integració Revolut",
     "REVOLUT_MERCHANT_SECRET": "Revolut Merchant API Secret",
@@ -1004,7 +1005,10 @@
     "PUBLIC_GOOGLE_REVIEW_HINT": "Shown on the thank-you page after guests submit private feedback so they can leave a public Google review.",
     "PUBLIC_GOOGLE_MAPS_URL": "Enllaç de Google Maps (lloc o com arribar)",
     "PUBLIC_GOOGLE_MAPS_PLACEHOLDER": "https://maps.app.goo.gl/... o enllaç Compartir de Google Maps",
-    "PUBLIC_GOOGLE_MAPS_HINT": "Opcional. Es mostra a reserves i feedback per obrir la ubicació a Google Maps. Utilitza Compartir → Copiar enllaç (no és el mateix que l’enllaç de ressenya)."
+    "PUBLIC_GOOGLE_MAPS_HINT": "Opcional. Es mostra a reserves i feedback per obrir la ubicació a Google Maps. Utilitza Compartir → Copiar enllaç (no és el mateix que l’enllaç de ressenya).",
+    "PUBLIC_OPENSTREETMAP_URL": "Enllaç d’OpenStreetMap",
+    "PUBLIC_OPENSTREETMAP_PLACEHOLDER": "https://www.openstreetmap.org/... (enllaç Compartir d’OpenStreetMap)",
+    "PUBLIC_OPENSTREETMAP_HINT": "Opcional. Mateixes pantalles que l’enllaç de Google Maps, per a qui prefereix OpenStreetMap. Enganxa l’URL del botó Compartir a openstreetmap.org."
   },
   "PAYMENTS": {
     "PAYMENT": "Pagament",

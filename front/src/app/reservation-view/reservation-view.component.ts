@@ -33,6 +33,7 @@ export class ReservationViewComponent implements OnInit {
   delayRateLimited = signal(false);
 
   googleMapsUrl = computed(() => this.tenant()?.public_google_maps_url?.trim() || null);
+  openstreetmapUrl = computed(() => this.tenant()?.public_openstreetmap_url?.trim() || null);
 
   getStatusKey(): string {
     const s = this.reservation()?.status;

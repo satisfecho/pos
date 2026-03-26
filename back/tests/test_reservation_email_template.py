@@ -93,6 +93,21 @@ class TestReservationEmailTemplate(unittest.TestCase):
         self.assertIn("tel:", inner)
         self.assertIn("mailto:info@demo.test", inner)
 
+    def test_confirmation_includes_map_links_when_configured(self):
+        tenant = _tenant(
+            public_google_maps_url="https://maps.app.goo.gl/abc",
+            public_openstreetmap_url="https://www.openstreetmap.org/#map=18/1/2",
+        )
+        _sub, text, inner = render_confirmation_email(
+            tenant, "Ann", "2026-03-22", "19:00", 2, None
+        )
+        self.assertIn("maps.app.goo.gl", text)
+        self.assertIn("Open in Google Maps", text)
+        self.assertIn("openstreetmap.org", text)
+        self.assertIn("Open in OpenStreetMap", text)
+        self.assertIn("maps.app.goo.gl", inner)
+        self.assertIn("openstreetmap.org", inner)
+
     def test_allowlist_is_lowercase_snake(self):
         for name in ALLOWED_PLACEHOLDERS:
             self.assertRegex(name, r"^[a-z][a-z0-9_]*$")

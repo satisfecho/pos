@@ -42,6 +42,7 @@ class TestGuestFeedback(PgClientTestCase):
         data = r.json()
         self.assertEqual(data.get("public_google_review_url"), "https://g.page/r/test-place/review")
         self.assertEqual(data.get("public_google_maps_url"), "https://maps.google.com/?q=Test")
+        self.assertIsNone(data.get("public_openstreetmap_url"))
         self.assertEqual(data.get("address"), "123 Main St")
 
     def test_submit_guest_feedback_minimal(self):

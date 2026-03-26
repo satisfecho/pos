@@ -168,6 +168,8 @@ class Tenant(SQLModel, table=True):
     public_google_review_url: str | None = Field(default=None, max_length=2048)
     # Public pages: optional Google Maps place or directions URL (Share link from Maps)
     public_google_maps_url: str | None = Field(default=None, max_length=2048)
+    # Public pages: optional OpenStreetMap URL (share link from openstreetmap.org)
+    public_openstreetmap_url: str | None = Field(default=None, max_length=2048)
 
     # Kitchen/Bar display: wait-time thresholds (minutes) for card color (green -> yellow -> orange -> red)
     kitchen_display_timer_yellow_minutes: int | None = Field(default=5)
@@ -1025,6 +1027,7 @@ class TenantUpdate(SQLModel):
     public_google_review_url: str | None = None
     # Google Maps place or directions URL (book, reservation view, feedback)
     public_google_maps_url: str | None = None
+    public_openstreetmap_url: str | None = None
 
     # Kitchen/Bar display timer thresholds (minutes)
     kitchen_display_timer_yellow_minutes: int | None = None

@@ -709,6 +709,7 @@ class TenantSummary(_BaseModel):
     reservation_dress_code: str | None = None
     public_google_review_url: str | None = None
     public_google_maps_url: str | None = None
+    public_openstreetmap_url: str | None = None
     # IANA timezone (e.g. Europe/Madrid) for public book page date/time UX
     timezone: str | None = None
 
@@ -799,6 +800,7 @@ def _tenant_to_summary(t: models.Tenant, session: Session) -> TenantSummary:
         reservation_dress_code=t.reservation_dress_code,
         public_google_review_url=t.public_google_review_url,
         public_google_maps_url=t.public_google_maps_url,
+        public_openstreetmap_url=t.public_openstreetmap_url,
         timezone=t.timezone,
     )
 
@@ -859,6 +861,7 @@ def get_public_tenant(
         "reservation_dress_code": summary.reservation_dress_code,
         "public_google_review_url": summary.public_google_review_url,
         "public_google_maps_url": summary.public_google_maps_url,
+        "public_openstreetmap_url": summary.public_openstreetmap_url,
         "timezone": summary.timezone,
     }
     return JSONResponse(content=body)
@@ -2323,6 +2326,10 @@ def update_tenant_settings(
     if tenant_update.public_google_maps_url is not None:
         tenant.public_google_maps_url = _normalize_public_http_url(
             tenant_update.public_google_maps_url
+        )
+    if tenant_update.public_openstreetmap_url is not None:
+        tenant.public_openstreetmap_url = _normalize_public_http_url(
+            tenant_update.public_openstreetmap_url
         )
 
     # Reservation options (pre-payment, policies, reminders)

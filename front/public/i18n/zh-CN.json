@@ -629,6 +629,7 @@
     "ERROR_FAILED": "预订失败。请重试。",
     "ADDRESS": "地址",
     "OPEN_IN_GOOGLE_MAPS": "在 Google 地图中打开",
+    "OPEN_IN_OPENSTREETMAP": "在 OpenStreetMap 中打开",
     "CALENDAR_LABEL": "选择日期",
     "CAL_PREV_MONTH": "上一月",
     "CAL_NEXT_MONTH": "下一月",
@@ -954,6 +955,9 @@
     "PUBLIC_GOOGLE_MAPS_URL": "Google 地图链接（地点或路线）",
     "PUBLIC_GOOGLE_MAPS_PLACEHOLDER": "https://maps.app.goo.gl/... 或从 Google 地图复制的分享链接",
     "PUBLIC_GOOGLE_MAPS_HINT": "可选。显示在预订、订单与反馈页，便于在 Google 地图中打开位置。请使用地图中的「分享 → 复制链接」（与评价链接不同）。",
+    "PUBLIC_OPENSTREETMAP_URL": "OpenStreetMap 链接",
+    "PUBLIC_OPENSTREETMAP_PLACEHOLDER": "https://www.openstreetmap.org/...（从 OpenStreetMap 复制的分享链接）",
+    "PUBLIC_OPENSTREETMAP_HINT": "可选。与 Google 地图链接显示位置相同，供偏好 OpenStreetMap 的客人使用。粘贴 openstreetmap.org 上「分享」生成的链接。",
     "EMAIL_SETTINGS": "电子邮件（SMTP）",
     "EMAIL_SETTINGS_SUBTITLE": "配置用于事务性邮件的 SMTP（例如预订确认）。留空则使用全局服务器配置。",
     "SMTP_HOST": "SMTP 主机",
@@ -973,7 +977,7 @@
     "RESERVATION_CONFIRMATION_SUBJECT": "邮件主题",
     "RESERVATION_CONFIRMATION_SUBJECT_PLACEHOLDER": "例如：我们已为您预留餐桌",
     "RESERVATION_CONFIRMATION_BODY": "邮件正文",
-    "RESERVATION_CONFIRMATION_BODY_HINT": "允许的名称（每个用双花括号包裹）：restaurant_name、customer_name、date、time、party_size、reservation_url、reservation_link_block_html（HTML 邮件中的可点击链接；无自助链接时为空）、cancellation_policy、prepayment_text、prepayment_notice、dress_code、arrival_note、restaurant_phone、restaurant_email、restaurant_contact_block_html（电话与邮箱块：HTML 含 tel/mailto，纯文本为多行；两者皆空则为空）。可使用 cancellation_policy 等从「预订」设置段落引用文案。"
+    "RESERVATION_CONFIRMATION_BODY_HINT": "允许的名称（每个用双花括号包裹）：restaurant_name、customer_name、date、time、party_size、reservation_url、reservation_link_block_html（HTML 邮件中的可点击链接；无自助链接时为空）、cancellation_policy、prepayment_text、prepayment_notice、dress_code、arrival_note、restaurant_phone、restaurant_email、restaurant_contact_block_html（电话与邮箱块：HTML 含 tel/mailto，纯文本为多行；两者皆空则为空）、google_maps_link_block_html、openstreetmap_link_block_html（在联系信息中配置了对应地图链接时输出 HTML 链接；否则为空）。可使用 cancellation_policy 等从「预订」设置段落引用文案。"
   },
   "PAYMENTS": {
     "PAYMENT": "支付",

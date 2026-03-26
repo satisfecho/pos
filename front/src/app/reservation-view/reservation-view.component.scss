@@ -230,8 +230,16 @@
     }
   }
 
-  .book-maps-btn {
+  .book-maps-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: center;
     margin-top: var(--space-2);
+  }
+
+  .book-maps-btn {
+    margin-top: 0;
   }
 }
 

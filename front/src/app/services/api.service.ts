@@ -395,6 +395,8 @@ export interface TenantSummary {
   public_google_review_url?: string | null;
   /** Google Maps place or directions URL (Share link). */
   public_google_maps_url?: string | null;
+  /** OpenStreetMap share URL (openstreetmap.org). */
+  public_openstreetmap_url?: string | null;
   /** IANA timezone for reservation date/time UX (e.g. Europe/Madrid). */
   timezone?: string | null;
 }
@@ -879,6 +881,7 @@ export interface TenantSettings {
   reservation_reminder_2h_enabled?: boolean | null;
   public_google_review_url?: string | null;
   public_google_maps_url?: string | null;
+  public_openstreetmap_url?: string | null;
   /** Up to 4 tip percentages for POS checkout; empty array disables tips; omit/null = default 5/10/15/20 */
   tip_preset_percents?: number[] | null;
   /** VAT rate 0–100 on tip for invoice breakdown (tax-inclusive tip) */

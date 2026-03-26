@@ -12,6 +12,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **OpenStreetMap link for tenants (GitHub #102):** Optional `public_openstreetmap_url` in contact settings (same validation as other public http(s) links). Shown on public book (including post-submit), reservation-by-token view, and feedback pages alongside Google Maps when configured. Reservation confirmation and reminder emails include `google_maps_link_block_html` and `openstreetmap_link_block_html` placeholders (default template updated). Migration `20260326104500_tenant_public_openstreetmap_url.sql`. Tests: `tests/test_reservation_email_template.py`, `tests/test_reservation_reminder_email.py`, `tests/test_guest_feedback.py`.
+
 ### Fixed
 
 - **Angular NG0200 ApiService circular dependency (GitHub #100):** `authInterceptor` no longer calls `inject(ApiService)` while `HttpClient` is constructed for `ApiService`; it resolves `ApiService` lazily via `Injector` inside the 401 error path (`front/src/app/auth/auth.interceptor.ts`).

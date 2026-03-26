@@ -48,6 +48,7 @@ export class FeedbackPublicComponent implements OnInit, OnDestroy {
 
   googleReviewUrl = computed(() => this.tenant()?.public_google_review_url?.trim() || null);
   googleMapsUrl = computed(() => this.tenant()?.public_google_maps_url?.trim() || null);
+  openstreetmapUrl = computed(() => this.tenant()?.public_openstreetmap_url?.trim() || null);
 
   ngOnInit() {
     // Lang switch, default-lang init, and late JSON load all affect title (issue #67).

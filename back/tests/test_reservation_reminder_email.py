@@ -104,6 +104,38 @@ class TestReservationReminderEmail(unittest.TestCase):
         self.assertIn("Contact us", text_content)
         self.assertIn("+34 900 111 222", text_content)
 
+    def test_reminder_includes_map_links_when_urls_set(self):
+        tenant = models.Tenant(
+            name="Demo",
+            phone="+1",
+            email="a@b.test",
+            public_google_maps_url="https://maps.example/x",
+            public_openstreetmap_url="https://www.openstreetmap.org/go/abc",
+        )
+
+        async def _run():
+            with patch.object(email_service, "send_email", new_callable=AsyncMock) as m:
+                m.return_value = True
+                await email_service.send_reservation_reminder(
+                    to_email="guest@test.local",
+                    customer_name="Pat",
+                    reservation_date="2026-03-25",
+                    reservation_time="20:00",
+                    party_size=2,
+                    tenant_name="Demo Bistro",
+                    view_url=None,
+                    tenant=tenant,
+                )
+            return m
+
+        m = asyncio.run(_run())
+        html_content = m.call_args[0][2]
+        text_content = m.call_args[0][3]
+        self.assertIn("maps.example", html_content)
+        self.assertIn("openstreetmap.org", html_content)
+        self.assertIn("maps.example", text_content)
+        self.assertIn("openstreetmap.org", text_content)
+
 
 if __name__ == "__main__":
     unittest.main()

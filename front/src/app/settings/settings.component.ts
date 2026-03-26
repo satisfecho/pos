@@ -811,6 +811,18 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                     <small class="field-hint">{{ 'SETTINGS.PUBLIC_GOOGLE_MAPS_HINT' | translate }}</small>
                   </div>
 
+                  <div class="form-group">
+                    <label for="public_openstreetmap_url">{{ 'SETTINGS.PUBLIC_OPENSTREETMAP_URL' | translate }}</label>
+                    <input
+                      type="url"
+                      id="public_openstreetmap_url"
+                      [(ngModel)]="formData.public_openstreetmap_url"
+                      name="public_openstreetmap_url"
+                      [placeholder]="'SETTINGS.PUBLIC_OPENSTREETMAP_PLACEHOLDER' | translate"
+                    />
+                    <small class="field-hint">{{ 'SETTINGS.PUBLIC_OPENSTREETMAP_HINT' | translate }}</small>
+                  </div>
+
                   <div class="form-row">
                     <div class="form-group">
                       <label for="tax_id">{{ 'SETTINGS.TAX_ID' | translate }}</label>
@@ -2673,6 +2685,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     reservation_reminder_2h_enabled: false,
     public_google_review_url: null,
     public_google_maps_url: null,
+    public_openstreetmap_url: null,
     tip_tax_rate_percent: 0,
     ui_modules: { ...DEFAULT_TENANT_UI_MODULES },
   };
@@ -2766,6 +2779,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           reservation_reminder_2h_enabled: settings.reservation_reminder_2h_enabled ?? false,
           public_google_review_url: settings.public_google_review_url ?? null,
           public_google_maps_url: settings.public_google_maps_url ?? null,
+          public_openstreetmap_url: settings.public_openstreetmap_url ?? null,
           tip_tax_rate_percent: settings.tip_tax_rate_percent ?? 0,
           ui_modules: {
             ...DEFAULT_TENANT_UI_MODULES,

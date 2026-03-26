@@ -629,6 +629,7 @@
     "ERROR_FAILED": "बुकिंग विफल। कृपया पुनः प्रयास करें।",
     "ADDRESS": "पता",
     "OPEN_IN_GOOGLE_MAPS": "Google Maps में खोलें",
+    "OPEN_IN_OPENSTREETMAP": "OpenStreetMap में खोलें",
     "CALENDAR_LABEL": "तारीख चुनें",
     "CAL_PREV_MONTH": "पिछला महीना",
     "CAL_NEXT_MONTH": "अगला महीना",
@@ -954,6 +955,9 @@
     "PUBLIC_GOOGLE_MAPS_URL": "Google Maps लिंक (स्थान या दिशा)",
     "PUBLIC_GOOGLE_MAPS_PLACEHOLDER": "https://maps.app.goo.gl/... या Google Maps से साझा लिंक",
     "PUBLIC_GOOGLE_MAPS_HINT": "वैकल्पिक। बुकिंग, आरक्षण और फ़ीडबैक पृष्ठ पर दिखता है। Maps में साझा करें → लिंक कॉपि करें (समीक्षा लिंक नहीं)।",
+    "PUBLIC_OPENSTREETMAP_URL": "OpenStreetMap लिंक",
+    "PUBLIC_OPENSTREETMAP_PLACEHOLDER": "https://www.openstreetmap.org/... (OpenStreetMap से साझा लिंक)",
+    "PUBLIC_OPENSTREETMAP_HINT": "वैकल्पिक। Google Maps लिंक जैसी ही जगहों पर दिखता है। openstreetmap.org पर साझा करें से कॉपि किया गया URL चिपकाएँ।",
     "EMAIL_SETTINGS": "ईमेल (SMTP)",
     "EMAIL_SETTINGS_SUBTITLE": "लेनदेन ईमेल (जैसे आरक्षण पुष्टि) के लिए SMTP कॉन्फ़िगर करें। वैश्विक सर्वर कॉन्फ़िगरेशन उपयोग करने के लिए खाली छोड़ें।",
     "SMTP_HOST": "SMTP होस्ट",
@@ -973,7 +977,7 @@
     "RESERVATION_CONFIRMATION_SUBJECT": "ईमेल विषय",
     "RESERVATION_CONFIRMATION_SUBJECT_PLACEHOLDER": "उदा. हमने आपके लिए एक टेबल आरक्षित की है",
     "RESERVATION_CONFIRMATION_BODY": "ईमेल मुख्य भाग",
-    "RESERVATION_CONFIRMATION_BODY_HINT": "अनुमत नाम (प्रत्येक दोहरी कर्ली ब्रेस में): restaurant_name, customer_name, date, time, party_size, reservation_url, reservation_link_block_html (HTML ईमेल में क्लिक करने योग्य लिंक; यदि सेल्फ-सर्विस लिंक नहीं तो खाली), cancellation_policy, prepayment_text, prepayment_notice, dress_code, arrival_note, restaurant_phone, restaurant_email, restaurant_contact_block_html (HTML में tel/mailto के साथ फ़ोन व ईमेल ब्लॉक; टेक्स्ट में पंक्तियाँ; दोनों न हों तो खाली)। cancellation_policy आदि से आरक्षण सेटिंग्स का टेक्स्ट लें।"
+    "RESERVATION_CONFIRMATION_BODY_HINT": "अनुमत नाम (प्रत्येक दोहरी कर्ली ब्रेस में): restaurant_name, customer_name, date, time, party_size, reservation_url, reservation_link_block_html (HTML ईमेल में क्लिक करने योग्य लिंक; यदि सेल्फ-सर्विस लिंक नहीं तो खाली), cancellation_policy, prepayment_text, prepayment_notice, dress_code, arrival_note, restaurant_phone, restaurant_email, restaurant_contact_block_html (HTML में tel/mailto के साथ फ़ोन व ईमेल ब्लॉक; टेक्स्ट में पंक्तियाँ; दोनों न हों तो खाली), google_maps_link_block_html, openstreetmap_link_block_html (संपर्क जानकारी में मानचित्र URL सेट होने पर HTML लिंक; अन्यथा खाली)। cancellation_policy आदि से आरक्षण सेटिंग्स का टेक्स्ट लें।"
   },
   "PAYMENTS": {
     "PAYMENT": "भुगतान",

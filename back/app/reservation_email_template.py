@@ -28,6 +28,8 @@ ALLOWED_PLACEHOLDERS: frozenset[str] = frozenset(
         "party_size",
         "reservation_url",
         "reservation_link_block_html",
+        "google_maps_link_block_html",
+        "openstreetmap_link_block_html",
         "cancellation_policy",
         "prepayment_text",
         "prepayment_notice",
@@ -41,7 +43,12 @@ ALLOWED_PLACEHOLDERS: frozenset[str] = frozenset(
 
 # Injected as raw HTML (built only from server-side URL); never from user-controlled template text alone.
 _TRUSTED_HTML_PLACEHOLDERS: frozenset[str] = frozenset(
-    {"reservation_link_block_html", "restaurant_contact_block_html"}
+    {
+        "reservation_link_block_html",
+        "restaurant_contact_block_html",
+        "google_maps_link_block_html",
+        "openstreetmap_link_block_html",
+    }
 )
 
 MAX_SUBJECT_LEN = 200
@@ -66,6 +73,9 @@ Party size: {{party_size}}
 {{arrival_note}}
 
 {{reservation_link_block_html}}
+
+{{google_maps_link_block_html}}
+{{openstreetmap_link_block_html}}
 
 {{restaurant_contact_block_html}}
 
@@ -115,6 +125,36 @@ def _link_block_html(view_url: str | None) -> str:
     return (
         f'<p><a href="{safe_href}">View or change your reservation online</a></p>'
     )
+
+
+def _map_link_plain(link_label: str, url: str | None) -> str:
+    if not url or not str(url).strip():
+        return ""
+    return f"{link_label}\n{str(url).strip()}"
+
+
+def _map_link_html(link_label: str, url: str | None) -> str:
+    if not url or not str(url).strip():
+        return ""
+    u = str(url).strip()
+    safe_href = html.escape(u, quote=True)
+    return f'<p><a href="{safe_href}">{html.escape(link_label, quote=False)}</a></p>'
+
+
+def google_maps_link_block_plain(tenant: Tenant) -> str:
+    return _map_link_plain("Open in Google Maps", getattr(tenant, "public_google_maps_url", None))
+
+
+def google_maps_link_block_html(tenant: Tenant) -> str:
+    return _map_link_html("Open in Google Maps", getattr(tenant, "public_google_maps_url", None))
+
+
+def openstreetmap_link_block_plain(tenant: Tenant) -> str:
+    return _map_link_plain("Open in OpenStreetMap", getattr(tenant, "public_openstreetmap_url", None))
+
+
+def openstreetmap_link_block_html(tenant: Tenant) -> str:
+    return _map_link_html("Open in OpenStreetMap", getattr(tenant, "public_openstreetmap_url", None))
 
 
 def _tel_uri(display_phone: str) -> str | None:
@@ -180,6 +220,8 @@ def build_value_maps(
         "party_size": str(party_size),
         "reservation_url": view_url or "",
         "reservation_link_block_html": _link_block_plain(view_url),
+        "google_maps_link_block_html": google_maps_link_block_plain(tenant),
+        "openstreetmap_link_block_html": openstreetmap_link_block_plain(tenant),
         "cancellation_policy": (tenant.reservation_cancellation_policy or "").strip(),
         "prepayment_text": (tenant.reservation_prepayment_text or "").strip(),
         "prepayment_notice": _prepayment_notice(tenant),
@@ -195,6 +237,8 @@ def build_value_maps(
             continue
         html_map[k] = html.escape(v, quote=False)
     html_map["reservation_link_block_html"] = _link_block_html(view_url)
+    html_map["google_maps_link_block_html"] = google_maps_link_block_html(tenant)
+    html_map["openstreetmap_link_block_html"] = openstreetmap_link_block_html(tenant)
     html_map["restaurant_contact_block_html"] = contact_block_html(tenant)
     return plain, html_map
 

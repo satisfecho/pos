@@ -16,6 +16,10 @@ from .messages import get_message
 from .reservation_email_template import (
     contact_block_html,
     contact_block_plain,
+    google_maps_link_block_html,
+    openstreetmap_link_block_html,
+    google_maps_link_block_plain,
+    openstreetmap_link_block_plain,
     render_confirmation_email,
     wrap_html_email,
 )
@@ -286,6 +290,17 @@ async def send_reservation_reminder(
         safe_href = html.escape(view_url, quote=True)
         view_block = f'<p><a href="{safe_href}">View or change your reservation online</a></p>'
 
+    maps_html = ""
+    maps_plain = ""
+    if tenant:
+        maps_html = google_maps_link_block_html(tenant) + openstreetmap_link_block_html(tenant)
+        gp = google_maps_link_block_plain(tenant)
+        op = openstreetmap_link_block_plain(tenant)
+        if gp:
+            maps_plain += f"\n{gp}\n"
+        if op:
+            maps_plain += f"\n{op}\n"
+
     contact_html = contact_block_html(tenant) if tenant else ""
     contact_plain = contact_block_plain(tenant) if tenant else ""
 
@@ -312,6 +327,7 @@ async def send_reservation_reminder(
             </div>
             <p>We look forward to seeing you. Please contact us if you need to change or cancel.</p>
             {view_block}
+            {maps_html}
             {contact_html}
             <hr>
             <p style="color: #666; font-size: 12px;">This is an automated reminder from {tenant_name}.</p>
@@ -335,6 +351,8 @@ async def send_reservation_reminder(
     """
     if view_url:
         text_content += f"\nView or change your reservation online:\n{view_url}\n"
+    if maps_plain.strip():
+        text_content += maps_plain
     if contact_plain:
         text_content += f"\n{contact_plain}\n"
     text_content += f"\n---\nAutomated reminder from {tenant_name}."
