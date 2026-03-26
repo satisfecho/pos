@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.60] - 2026-03-26
+
+### Added
+
+- **Staff contract templates & print view (GitHub #101):** Per-tenant contract document templates (`staff_contract_template` migration `20260326103000`), CRUD API `/staff-contract-templates` (`STAFF_CONTRACT_MANAGE`), safe delete when no `staff_contract` references the template key. `GET /staff-contracts/{id}/print` returns print-styled HTML with `{{placeholder}}` merge (employer/worker/role/dates/etc.) and signature block; falls back to a field summary when no template matches. Settings → **Contract templates**; **Contracts** links templates when creating a contract and adds **Print view**. Tests: `tests/test_staff_contract_templates.py`.
+
 ## [Unreleased]
 
 ### Fixed

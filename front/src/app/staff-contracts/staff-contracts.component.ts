@@ -9,6 +9,7 @@ import {
   StaffContractKind,
   StaffContractPaymentStructure,
   StaffContractStatus,
+  StaffContractTemplate,
   StaffContractUpdate,
   User,
 } from '../services/api.service';
@@ -68,6 +69,7 @@ import { FocusFirstInputDirective } from '../shared/focus-first-input.directive'
                     <td>{{ c.role_title || '—' }}</td>
                     <td>{{ c.updated_at | date: 'short' }}</td>
                     <td class="actions">
+                      <button type="button" class="btn-link" (click)="openPrint(c)">{{ 'CONTRACTS.PRINT_VIEW' | translate }}</button>
                       @if (c.has_document) {
                         <button type="button" class="btn-link" (click)="download(c)">{{ 'CONTRACTS.DOWNLOAD' | translate }}</button>
                       }
@@ -110,10 +112,13 @@ import { FocusFirstInputDirective } from '../shared/focus-first-input.directive'
                   </div>
                   <div class="form-group">
                     <label for="tpl">{{ 'CONTRACTS.TEMPLATE_KEY' | translate }}</label>
-                    <select id="tpl" name="tpl" [(ngModel)]="formTemplateChoice" (ngModelChange)="applyTemplate($event)">
+                    <select id="tpl" name="tpl" [(ngModel)]="formTemplateChoice" (ngModelChange)="applyTemplateChoice($event)">
                       <option value="">{{ 'COMMON.NONE' | translate }}</option>
-                      <option value="employee">{{ 'CONTRACTS.TEMPLATE_EMPLOYEE' | translate }}</option>
-                      <option value="freelancer">{{ 'CONTRACTS.TEMPLATE_FREELANCER' | translate }}</option>
+                      @for (t of contractTemplates(); track t.id) {
+                        <option [ngValue]="t.template_key">{{ t.name }} ({{ t.template_key }})</option>
+                      }
+                      <option ngValue="__builtin_employee">{{ 'CONTRACTS.TEMPLATE_EMPLOYEE' | translate }}</option>
+                      <option ngValue="__builtin_freelancer">{{ 'CONTRACTS.TEMPLATE_FREELANCER' | translate }}</option>
                     </select>
                   </div>
                 }
@@ -381,6 +386,7 @@ export class StaffContractsComponent implements OnInit {
   error = signal<string | null>(null);
   contracts = signal<StaffContract[]>([]);
   tenantUsers = signal<User[]>([]);
+  contractTemplates = signal<StaffContractTemplate[]>([]);
 
   showModal = signal(false);
   editing = signal(false);
@@ -413,6 +419,10 @@ export class StaffContractsComponent implements OnInit {
       this.api.getUsers().subscribe({
         next: (users) => this.tenantUsers.set(users.filter((x) => String(x.role).toLowerCase() !== 'provider')),
         error: () => this.tenantUsers.set([]),
+      });
+      this.api.listStaffContractTemplates().subscribe({
+        next: (rows) => this.contractTemplates.set(rows),
+        error: () => this.contractTemplates.set([]),
       });
     }
   }
@@ -468,14 +478,31 @@ export class StaffContractsComponent implements OnInit {
     this.showModal.set(true);
   }
 
-  applyTemplate(choice: string): void {
-    if (choice === 'employee') {
+  applyTemplateChoice(choice: string): void {
+    if (!choice) return;
+    if (choice === '__builtin_employee') {
       this.formKind = 'employee';
       this.formPaymentStructure = 'payroll';
-    } else if (choice === 'freelancer') {
+      return;
+    }
+    if (choice === '__builtin_freelancer') {
       this.formKind = 'freelancer';
       this.formPaymentStructure = 'invoice';
+      return;
     }
+    const tpl = this.contractTemplates().find((x) => x.template_key === choice);
+    if (tpl?.kind) {
+      this.formKind = tpl.kind;
+      this.onKindChange();
+    }
+  }
+
+  templateKeyForCreate(): string | null {
+    const c = this.formTemplateChoice;
+    if (!c) return null;
+    if (c === '__builtin_employee') return 'employee_default';
+    if (c === '__builtin_freelancer') return 'freelancer_default';
+    return c;
   }
 
   onKindChange(): void {
@@ -566,7 +593,7 @@ export class StaffContractsComponent implements OnInit {
       payment_structure: this.formPaymentStructure,
       payment_terms: this.emptyToNull(this.formPaymentTerms),
       jurisdiction_note: this.emptyToNull(this.formJurisdiction),
-      template_key: this.formTemplateChoice ? `${this.formTemplateChoice}_default` : null,
+      template_key: this.templateKeyForCreate(),
       notes_internal: this.emptyToNull(this.formNotesInternal),
     };
 
@@ -602,6 +629,20 @@ export class StaffContractsComponent implements OnInit {
       error: () => {
         input.value = '';
       },
+    });
+  }
+
+  openPrint(c: StaffContract): void {
+    this.api.getStaffContractPrintHtml(c.id).subscribe({
+      next: (html) => {
+        const w = window.open('', '_blank');
+        if (w) {
+          w.document.open();
+          w.document.write(html);
+          w.document.close();
+        }
+      },
+      error: () => {},
     });
   }
 

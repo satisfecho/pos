@@ -9,13 +9,19 @@ from typing import Annotated
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from sqlalchemy import desc, func
 from sqlmodel import Session, col, select
 
 from . import models
 from .db import get_session
 from .permissions import Permission, has_permission, require_permission
+from .staff_contract_template_merge import (
+    fallback_contract_html,
+    merge_placeholders,
+    placeholder_values_for_contract,
+    wrap_print_html,
+)
 logger = logging.getLogger(__name__)
 
 UPLOADS_DIR = Path(__file__).resolve().parent.parent / "uploads"
@@ -206,6 +212,47 @@ def get_staff_contract(
         include_internal=manage,
         include_tax_for_others=manage,
     )
+
+
+@router.get("/{contract_id}/print", response_class=HTMLResponse)
+def print_staff_contract_html(
+    contract_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.STAFF_CONTRACT_READ))],
+    session: Session = Depends(get_session),
+):
+    """Print-ready HTML: merges tenant template (if template_key matches) with contract fields."""
+    _require_tenant_user(current_user)
+    tid = current_user.tenant_id
+    assert tid is not None
+    c = _get_contract(session, contract_id, tid)
+    if not c or not _can_access_contract(current_user, c):
+        raise HTTPException(status_code=404, detail="Contract not found")
+
+    subj = session.get(models.User, c.subject_user_id)
+    if not subj:
+        raise HTTPException(status_code=404, detail="Subject user not found")
+
+    tenant = session.get(models.Tenant, tid)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    values = placeholder_values_for_contract(tenant, c, subj)
+    inner: str
+    if c.template_key:
+        tpl = session.exec(
+            select(models.StaffContractTemplate).where(
+                models.StaffContractTemplate.tenant_id == tid,
+                models.StaffContractTemplate.template_key == c.template_key,
+            )
+        ).first()
+        if tpl:
+            inner = merge_placeholders(tpl.body, values)
+        else:
+            inner = fallback_contract_html(values)
+    else:
+        inner = fallback_contract_html(values)
+
+    return HTMLResponse(content=wrap_print_html(inner, values))
 
 
 @router.patch("/{contract_id}", response_model=models.StaffContractRead)

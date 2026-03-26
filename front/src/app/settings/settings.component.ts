@@ -19,6 +19,8 @@ import { SidebarComponent } from '../shared/sidebar.component';
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { TranslationsComponent } from '../translations/translations.component';
 import { KitchenStationsSettingsComponent } from './kitchen-stations-settings.component';
+import { ContractTemplatesSettingsComponent } from './contract-templates-settings.component';
+import { PermissionService } from '../services/permission.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
@@ -32,6 +34,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     TranslateModule,
     TranslationsComponent,
     KitchenStationsSettingsComponent,
+    ContractTemplatesSettingsComponent,
   ],
   template: `
     <app-sidebar>
@@ -126,6 +129,20 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
             </svg>
             <span>{{ 'SETTINGS.RESERVATIONS' | translate }}</span>
           </button>
+          @if (contractTemplatesTabVisible()) {
+          <button
+            type="button"
+            class="tab"
+            data-testid="settings-contract-templates-tab"
+            [class.active]="activeSection() === 'contract-templates'"
+            (click)="activeSection.set('contract-templates')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            <span>{{ 'SETTINGS.CONTRACT_TEMPLATES_TAB' | translate }}</span>
+          </button>
+          }
           
           <button 
             type="button" 
@@ -478,6 +495,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           }
         } @else if (activeSection() === 'kitchen-stations') {
           <app-kitchen-stations-settings />
+        } @else if (activeSection() === 'contract-templates') {
+          <app-contract-templates-settings />
         } @else if (activeSection() === 'translations') {
           <!-- Translations Section (Independent) -->
             <div class="section">
@@ -2353,6 +2372,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private translate = inject(TranslateService);
   private sanitizer = inject(DomSanitizer);
+  private permissions = inject(PermissionService);
 
   /** ISO 4217 codes for per-tenant prices (GitHub #41). */
   readonly tenantCurrencyCodes: string[] = [
@@ -2483,6 +2503,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     | 'reservations'
     | 'taxes'
     | 'kitchen-stations'
+    | 'contract-templates'
     | 'providers'
     | 'translations'
     | 'security'
@@ -2672,10 +2693,16 @@ export class SettingsComponent implements OnInit, OnDestroy {
     if (section === 'reservations') {
       this.activeSection.set('reservations');
     }
+    if (section === 'contract-templates') {
+      this.activeSection.set('contract-templates');
+    }
     this.route.queryParams.subscribe((params) => {
       const s = params['section'];
       if (s === 'reservations') {
         this.activeSection.set('reservations');
+      }
+      if (s === 'contract-templates') {
+        this.activeSection.set('contract-templates');
       }
     });
     this.loadSettings();
@@ -2685,6 +2712,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const s = this.settings();
     if (!s?.ui_modules) return true;
     return s.ui_modules[key] !== false;
+  }
+
+  contractTemplatesTabVisible(): boolean {
+    const u = this.api.getCurrentUser();
+    if (!u) return false;
+    return this.permissions.hasPermission(u, 'staff_contract:manage');
   }
 
   loadSettings() {

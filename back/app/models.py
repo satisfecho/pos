@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import Column, Date, DateTime, Enum as SAEnum, Text, Time
+from sqlalchemy import Column, Date, DateTime, Enum as SAEnum, Text, Time, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -1325,5 +1325,63 @@ class StaffContractRead(SQLModel):
     has_document: bool = False
     document_uploaded_at: datetime | None = None
     created_by_user_id: int | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class StaffContractTemplate(SQLModel, table=True):
+    """Per-tenant contract document body with {{placeholders}}; key matches staff_contract.template_key."""
+
+    __tablename__ = "staff_contract_template"
+    __table_args__ = (UniqueConstraint("tenant_id", "template_key", name="uq_staff_contract_template_tenant_key"),)
+
+    id: int | None = Field(default=None, primary_key=True)
+    tenant_id: int = Field(foreign_key="tenant.id", index=True)
+    template_key: str = Field(max_length=64)
+    name: str = Field(max_length=256)
+    body: str = Field(default="", sa_column=Column(Text, nullable=False))
+    kind: StaffContractKind | None = Field(
+        default=None,
+        sa_column=Column(
+            SAEnum(
+                StaffContractKind,
+                name="staff_contract_kind",
+                native_enum=True,
+                create_type=False,
+                values_callable=lambda cls: [m.value for m in cls],
+            ),
+            nullable=True,
+        ),
+    )
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+    updated_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+
+
+class StaffContractTemplateCreate(SQLModel):
+    template_key: str = Field(max_length=64, min_length=1)
+    name: str = Field(max_length=256, min_length=1)
+    body: str = ""
+    kind: StaffContractKind | None = None
+
+
+class StaffContractTemplateUpdate(SQLModel):
+    name: str | None = Field(default=None, max_length=256)
+    body: str | None = None
+    kind: StaffContractKind | None = None
+
+
+class StaffContractTemplateRead(SQLModel):
+    id: int
+    tenant_id: int
+    template_key: str
+    name: str
+    body: str
+    kind: StaffContractKind | None = None
     created_at: datetime
     updated_at: datetime

@@ -126,6 +126,30 @@ export interface StaffContractUpdate {
   notes_internal?: string | null;
 }
 
+export interface StaffContractTemplate {
+  id: number;
+  tenant_id: number;
+  template_key: string;
+  name: string;
+  body: string;
+  kind?: StaffContractKind | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StaffContractTemplateCreate {
+  template_key: string;
+  name: string;
+  body?: string;
+  kind?: StaffContractKind | null;
+}
+
+export interface StaffContractTemplateUpdate {
+  name?: string;
+  body?: string;
+  kind?: StaffContractKind | null;
+}
+
 export interface Shift {
   id: number;
   tenant_id: number;
@@ -2236,6 +2260,29 @@ export class ApiService {
 
   downloadStaffContractDocument(id: number): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/staff-contracts/${id}/document`, { responseType: 'blob' });
+  }
+
+  getStaffContractPrintHtml(id: number): Observable<string> {
+    return this.http.get(`${this.apiUrl}/staff-contracts/${id}/print`, { responseType: 'text' });
+  }
+
+  listStaffContractTemplates(): Observable<StaffContractTemplate[]> {
+    return this.http.get<StaffContractTemplate[]>(`${this.apiUrl}/staff-contract-templates`);
+  }
+
+  createStaffContractTemplate(body: StaffContractTemplateCreate): Observable<StaffContractTemplate> {
+    return this.http.post<StaffContractTemplate>(`${this.apiUrl}/staff-contract-templates`, body);
+  }
+
+  updateStaffContractTemplate(
+    id: number,
+    body: StaffContractTemplateUpdate,
+  ): Observable<StaffContractTemplate> {
+    return this.http.patch<StaffContractTemplate>(`${this.apiUrl}/staff-contract-templates/${id}`, body);
+  }
+
+  deleteStaffContractTemplate(id: number): Observable<{ ok: boolean }> {
+    return this.http.delete<{ ok: boolean }>(`${this.apiUrl}/staff-contract-templates/${id}`);
   }
 
   /** Owner only: ZIP with tenant-export.json (secrets redacted server-side). */
