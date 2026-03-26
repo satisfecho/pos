@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue #103 (Bulgarian locale) was implemented and verified end-to-end for i18n, language selection, backend locales, and export/email message coverage.
+- **What was done:** Added `front/public/i18n/bg.json` with key parity to English, registered `bg` in Angular language services and backend (`language_service`, `messages`, report/schedule export i18n), with coder notes and pytest coverage for exports and password-reset locale strings.
+- **What was tested:** Backend pytest (password-reset locales + report export i18n) passed; front bundle built cleanly; `npm run test:landing-version` passed; `bg.json` served with HTTP 200; landing and `/book/1` showed Cyrillic without missing-key console errors; `/feedback/public/...` was N/A (no stable token). Overall **PASS** per test report.
+- **Why closed:** All exercised acceptance criteria passed; remaining gap is optional human spot-check on feedback-public with a real token.
+- **Closed at (UTC):** 2026-03-26 11:26
+---
+
 # New language: Bulgarian
 
 ## GitHub
