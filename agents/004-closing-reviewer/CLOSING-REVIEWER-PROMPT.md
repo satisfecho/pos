@@ -49,12 +49,14 @@ Leave the rest of the file unchanged below this block.
 
 ### Always
 
+- **Git — before you change anything:** From repo root run **`./scripts/git-sync-development.sh`** before editing **`CLOSED-*.md`** or running **`move-agent-task-to-done.sh`**. See **`.cursor/rules/git-development-branch-workflow.mdc`**.
 - Do not edit **`back/`** or **`front/`**.
 - Do not create new tasks.
 - **GitHub:** final comment on **#NN**, remove **`agent:testing`** / **`agent:wip`**, close issue if fully delivered (see **`docs/agent-loop.md`**).
 
 ### Instructions
 
-1. Read **`agents/tasks/README.md`**.
-2. List **`agents/tasks/CLOSED-*.md`** (not in **`done/`**).
-3. Prepend **Closing summary**; run **`./scripts/move-agent-task-to-done.sh`**.
+1. **`./scripts/git-sync-development.sh`** at repo root (if not already synced this step).
+2. Read **`agents/tasks/README.md`**.
+3. List **`agents/tasks/CLOSED-*.md`** (not in **`done/`**).
+4. Prepend **Closing summary**; run **`./scripts/move-agent-task-to-done.sh`**.

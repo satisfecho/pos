@@ -6,7 +6,7 @@ This repository uses **`.cursor/rules/*.mdc`** to give agents short, verifiable 
 
 | Area | Rule file | When it applies |
 |------|-----------|------------------|
-| **Git / branches** | `.cursor/rules/git-development-branch-workflow.mdc` | Always (`development` vs `master`, push cadence) |
+| **Git / branches** | `.cursor/rules/git-development-branch-workflow.mdc` | Always (`development` vs `master`, push cadence, **sync before edits**: `scripts/git-sync-development.sh`) |
 | **Commits / changelog** | `.cursor/rules/commit-changelog-version.mdc` | User asks to commit or release notes |
 | **Docs before code** | `.cursor/rules/lookup-docs-before-new-code.mdc` | Always |
 | **Errors / logs** | `.cursor/rules/error-investigation-workflow.mdc` | Debugging incidents |

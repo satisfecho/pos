@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Agent / git workflow:** Documented and automated **sync before edits** for multi-agent work on **`development`**: new **`scripts/git-sync-development.sh`**, **`agents/pos-agent-loop.sh`** runs it at each step (disable with **`AGENT_GIT_SYNC=0`**), updates to **`.cursor/rules/git-development-branch-workflow.mdc`**, **`AGENTS.md`**, **`docs/agent-loop.md`**, and agent prompts under **`agents/`**.
+
 ### Security
 
 - **Staff contract PDFs:** `GET /uploads/{tenant_id}/contracts/{filename}` now returns **403** so signed contract files are not served by the public `StaticFiles` mount; use authenticated `GET /staff-contracts/{id}/document` only. Regression test: `tests/test_uploads_security.py`. Security review notes: `docs/SECURITY-REVIEW.md`.

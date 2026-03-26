@@ -1,6 +1,6 @@
 # Task workflow (POS)
 
-Tasks move through a single pipeline from creation to closure. See **`docs/agent-loop.md`** for roles, POS-specific rules, and **optional GitHub Issues** updates (labels + comments per agent role).
+Tasks move through a single pipeline from creation to closure. See **`docs/agent-loop.md`** for roles, POS-specific rules, and **optional GitHub Issues** updates (labels + comments per agent role). **Before renaming or editing task files**, sync **`development`** with **`./scripts/git-sync-development.sh`** (multi-agent workflow; **`pos-agent-loop.sh`** does this each step).
 
 ## Filename pattern
 

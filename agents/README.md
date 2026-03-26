@@ -12,3 +12,5 @@ Markdown prompts for **`cursor-agent`** (see **`pos-agent-loop.sh`**). Paths are
 | 007 | [007-committer/COMMITTER.md](007-committer/COMMITTER.md) | Changelog + version + git on **`development`** |
 
 Workflow: **`docs/agent-loop.md`**. Task rules: **`tasks/README.md`**.
+
+**Git:** Before editing the repo, sync **`development`** with **`./scripts/git-sync-development.sh`** (see **`.cursor/rules/git-development-branch-workflow.mdc`**). **`pos-agent-loop.sh`** runs it at the start of each step unless **`AGENT_GIT_SYNC=0`**.

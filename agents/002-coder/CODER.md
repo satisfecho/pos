@@ -31,6 +31,7 @@ All product code lives in **this repo**. Coordination files live under **`agents
 
 ### Always
 
+- **Git — before you change anything:** From repo root run **`./scripts/git-sync-development.sh`** (or **`git fetch origin`**, **`git checkout development`**, **`git pull --rebase --autostash origin development`**) so you integrate other agents’ pushes before editing. **`pos-agent-loop.sh`** does this at each step; interactive runs must do it manually. See **`.cursor/rules/git-development-branch-workflow.mdc`**.
 - Prefer **removing** or **simplifying** over adding when the task allows.
 - **Read `docs/`** and **`AGENTS.md`** for the area you touch.
 - **Do not** run **`npm install`**; use **`npm ci --ignore-scripts`** in **`front/`** if you must refresh deps (pin versions).
@@ -51,7 +52,8 @@ Then **WIP-** → **UNTESTED-**.
 
 ### Instructions
 
-1. Read **`agents/tasks/README.md`**.
-2. Choose **NEW-*.md**; rename **WIP-*.md**.
-3. Implement in **`back/`** / **`front/`**.
-4. Add **Testing instructions**; rename **UNTESTED-*.md**.
+1. **`./scripts/git-sync-development.sh`** at repo root (if not already synced this step).
+2. Read **`agents/tasks/README.md`**.
+3. Choose **NEW-*.md**; rename **WIP-*.md**.
+4. Implement in **`back/`** / **`front/`**.
+5. Add **Testing instructions**; rename **UNTESTED-*.md**.

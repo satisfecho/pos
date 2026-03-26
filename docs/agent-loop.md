@@ -37,6 +37,16 @@ If **none** of the above applies: **push `development` only**; do **not** merge 
 
 **Committer agent:** Changelog and version bumps happen on **`development`**; merging to **`master`** is a **separate** step that follows the table above.
 
+### Sync before edits (multi-agent)
+
+Multiple agents push to **`development`**. **Before any step that edits the repo** (application code, **`agents/tasks/*.md`**, **`CHANGELOG.md`**, etc.), integrate the latest remote state:
+
+- **Humans / Cursor without the shell loop:** run **`./scripts/git-sync-development.sh`** from the repo root (or the equivalent **`git fetch`** + **`git pull --rebase --autostash origin development`** on **`development`**).
+- **`pos-agent-loop.sh`:** runs that script **at the start of each agent step** (001, 006×5, 002, 003, 004, 007). Set **`AGENT_GIT_SYNC=0`** only to skip (offline debugging).
+- **Before push:** pull/rebase again after your commit so **`git push origin development`** does not regress or race another agent.
+
+This is **remote integration** (fetch/pull/rebase), not “open a GitHub PR before every edit.” Use normal PRs when your team wants human review before merging a branch; day-to-day **`development`** still needs **pull/rebase** so agents do not overwrite each other’s work.
+
 ---
 
 ## Roles (mapping from mac-stats-reviewer)
@@ -108,6 +118,8 @@ Same idea as **mac-stats-reviewer** `agents/run.sh`, but named for clarity: one 
 | **`./agents/pos-agent-loop.sh closing-review`** | Run closer if **`CLOSED-*.md`** still in **`agents/tasks/`**. |
 | **`./agents/pos-agent-loop.sh committer`** | Run committer if POS repo has unstaged/staged changes. |
 | **`./agents/pos-agent-loop.sh help`** | Usage. |
+
+**Git:** each step begins with **`scripts/git-sync-development.sh`** (unless **`AGENT_GIT_SYNC=0`**). See **Sync before edits (multi-agent)** above.
 
 **Docker / stack:** still start with repo-root **`./run.sh`** or **`./run.sh -dev`** — this script does **not** replace the POS application runner.
 

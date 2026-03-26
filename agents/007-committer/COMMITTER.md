@@ -29,14 +29,17 @@ Bump **`front/package.json`** + lockfile + new **`## [X.Y.Z] - date`** section w
 
 ### Always
 
+- **Git — before you change anything:** From repo root run **`./scripts/git-sync-development.sh`** before **`git status`** / commit so **`CHANGELOG.md`** and the tree match **`origin/development`**. See **`.cursor/rules/git-development-branch-workflow.mdc`**.
 - **`git status`** at repo root first.
 - Never modify **`back/app/*.py`**, **`front/src/**`**, etc., in this role.
 - **Push:** **`development`** routinely; **`master`** only per workflow rule. **AGENTS.md**: when user says “push” without production, push **`development`**.
 
 ### Instructions
 
-1. `git status` — if clean, stop.
-2. Review diff; edit **`CHANGELOG.md`**.
-3. Version bump if warranted; update **`last-version-bump.txt`** if you use it.
-4. `git add` / `git commit` on **`development`**.
-5. `git push origin development`.
+1. **`./scripts/git-sync-development.sh`** at repo root (if not already synced this step).
+2. `git status` — if clean, stop.
+3. Review diff; edit **`CHANGELOG.md`**.
+4. Version bump if warranted; update **`last-version-bump.txt`** if you use it.
+5. `git pull --rebase --autostash origin development` if others may have pushed since step 1; resolve conflicts if any.
+6. `git add` / `git commit` on **`development`**.
+7. `git pull --rebase --autostash origin development` again if needed, then `git push origin development`.
