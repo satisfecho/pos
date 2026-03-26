@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Bulgarian staff dashboard subtitle (GitHub #107):** `DASHBOARD.WELCOME_TEXT` in `front/public/i18n/bg.json` was still English; translated to match the rest of the Bulgarian staff UI.
+
 ## [2.0.63] - 2026-03-26
 
 ### Added

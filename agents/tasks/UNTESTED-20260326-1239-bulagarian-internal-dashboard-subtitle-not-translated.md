@@ -11,3 +11,12 @@ With Bulgarian selected and after login, the internal dashboard still shows the 
 - Add or fix the Bulgarian (`bg`) entry in the appropriate `front` i18n file(s); keep key parity with other locales.
 - Manually verify: set locale to Bulgarian, log in as staff, confirm the subtitle is no longer English and matches tone of neighboring UI copy.
 - Run the usual front build check (`docker compose … logs front` or equivalent) so no TS/i18n regressions.
+
+## Implementation
+- **Key:** `DASHBOARD.WELCOME_TEXT` in `front/public/i18n/bg.json` was still the English source string.
+- **Change:** Set to **"Управлявайте бизнес операциите си оттук"** (imperative, aligned with neighboring dashboard card copy).
+
+## Testing instructions
+1. **Manual:** Open the app, use the header **language** dropdown and choose **Български** (`bg`). Log in as staff and open `/dashboard`. The line under **„Добре дошли отново“** must show the Bulgarian sentence above, not **"Manage your business operations from here"**.
+2. **Build:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=80 front` — no Angular/TS errors after reload.
+3. **Smoke:** With stack up, `BASE_URL=http://127.0.0.1:4202 npm run test:landing-version --prefix front` (exit 0).
