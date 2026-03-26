@@ -723,6 +723,8 @@ class UserUpdate(SQLModel):
     full_name: str | None = None
     role: UserRole | None = None
     password: str | None = None  # Optional: only update if provided
+    # Required (non-empty) when password is set: authenticates the caller before changing a password.
+    actor_current_password: str | None = None
 
 
 class UserResponse(SQLModel):

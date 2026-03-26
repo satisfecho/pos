@@ -57,6 +57,8 @@ export interface UserUpdate {
   full_name?: string;
   role?: UserRole;
   password?: string;
+  /** Required when setting password: caller's current password (re-auth). */
+  actor_current_password?: string;
 }
 
 export type StaffContractKind = 'employee' | 'freelancer';

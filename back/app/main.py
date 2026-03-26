@@ -1807,6 +1807,7 @@ def update_user(
     user_data: models.UserUpdate,
     current_user: Annotated[models.User, Depends(require_permission(Permission.USER_UPDATE))],
     session: Session = Depends(get_session),
+    lang: str = Depends(_get_requested_language),
 ) -> models.UserResponse:
     """Update a user's details."""
     from .permissions import can_modify_user, can_manage_user
@@ -1872,9 +1873,27 @@ def update_user(
     
     if user_data.full_name is not None:
         target_user.full_name = user_data.full_name
-    
-    if user_data.password is not None:
-        target_user.hashed_password = security.get_password_hash(user_data.password)
+
+    new_password = (
+        user_data.password.strip() if user_data.password is not None else None
+    )
+    if new_password:
+        actor_pw = (
+            (user_data.actor_current_password or "").strip()
+            if user_data.actor_current_password is not None
+            else ""
+        )
+        if not actor_pw:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=get_message("actor_current_password_required", lang),
+            )
+        if not security.verify_password(actor_pw, current_user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=get_message("incorrect_actor_password", lang),
+            )
+        target_user.hashed_password = security.get_password_hash(new_password)
         # Increment token version to invalidate existing tokens
         target_user.token_version += 1
     
