@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** The landing route triggered Angular **NG0200** because **`authInterceptor`** synchronously injected **`ApiService`** while **`HttpClient`** was still wiring interceptors, creating a DI cycle often attributed to **`Standalone[_LandingComponent]`**.
+- **What was done:** The interceptor now injects only **`Injector`** at setup and resolves **`ApiService`** inside the **401** handling path via **`injector.get(ApiService)`**, matching the deferred pattern used elsewhere (e.g. accept-language flow). Change is in **`front/src/app/auth/auth.interceptor.ts`** (coder notes retained below).
+- **What was tested:** Landing **`/`** and **`/login`** consoles showed **no NG0200**; **`npm run test:landing-version`** (Puppeteer: landing, demo login, sidebar/inventory nav) exited **0** — **overall PASS** per test report.
+- **Why closed:** All pass/fail criteria met; tester signed off **PASS** with documented evidence.
+- **Closed at (UTC):** 2026-03-26 09:07
+---
+
 # Circular dependency (NG0200 / ApiService)
 
 ## GitHub
