@@ -26,3 +26,36 @@ El producto necesita URLs accesibles (y enlazables desde la app) para **Término
 4. **Tenant:** en Settings → Datos y privacidad rellenar URLs propias; guardar; abrir `/book/1` (o tenant de prueba) y comprobar pie con enlaces; comprobar que prevalecen sobre el global si ambos están definidos.
 5. **Front:** `docker compose … logs --tail=80 front` sin errores de compilación; humo: `cd front && BASE_URL=http://127.0.0.1:4202 npm run test:landing-version`.
 6. **API manual:** `curl -s http://127.0.0.1:4202/api/public/legal-urls` (vía HAProxy) debe devolver JSON con `terms_of_service_url` y `privacy_policy_url` (null o strings).
+
+---
+
+## Test report
+
+1. **Date/time (UTC):** 2026-03-27T09:32:55Z — **Log window:** ~09:30Z–09:34Z (migración, pytest, curl, front logs, humo landing).
+
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; **BASE_URL** `http://127.0.0.1:4202` (HAProxy); branch **development** @ `2c4f77c`.
+
+3. **What was tested:** puntos 1, 2, 5, 6 de *Testing instructions* al pie de la letra; punto 3 omitido (opcional); punto 4: precedencia tenant/global y campos en respuesta pública vía tests automatizados y `GET /public/tenants/1` — no se recorrió el flujo manual completo «Settings → Datos y privacidad → guardar → pie en `/book/1` con URLs no nulas».
+
+4. **Results:**
+   - **Migración incluye `20260327100000`:** **PASS** — `app.migrate` informa `Database schema version: 20260327100000` y migración `20260327100000_public_terms_privacy_urls.sql` aplicada.
+   - **`pytest tests/test_guest_feedback.py`:** **PASS** — `8 passed in 0.74s` (incluye `/public/legal-urls` y override tenant vs global).
+   - **Variables globales en `config.env` + reinicio `back` (opcional):** **N/A** — no aplicado en esta corrida.
+   - **Tenant: Settings + pie `/book/1` y precedencia sobre global:** **PASS (contrato API / tests)** — `test_public_tenant_legal_urls_tenant_overrides_global` cubre precedencia; `GET /api/public/tenants/1` incluye `terms_of_service_url` y `privacy_policy_url` (ambos `null` en este entorno). **Limitación:** no hay evidencia de guardado vía UI ni de enlaces visibles en el pie de `/book/1` con URLs rellenadas (recomendación PO: comprobación rápida manual).
+   - **Logs front + `npm run test:landing-version`:** **PASS** — últimas líneas del servicio `front`: `Application bundle generation complete` sin errores TS/NG en el tail; humo `exit_code: 0`, mensaje `Landing version OK; demo login (tenant=1) OK; sidebar nav OK` (incluye visita a `/settings`).
+   - **`curl /api/public/legal-urls`:** **PASS** — respuesta `{"terms_of_service_url":null,"privacy_policy_url":null}`.
+
+5. **Overall:** **PASS** (criterios obligatorios satisfechos; limitación explícita en la parte visual del punto 4).
+
+6. **Product owner feedback:** La API y la migración están alineadas con lo descrito en la tarea; los tests de feedback invitado cubren el endpoint global y la resolución efectiva por tenant. Conviene una pasada manual corta en Settings → Datos y privacidad y en el pie de reserva pública con dos URLs de prueba para cerrar la verificación visual.
+
+7. **URLs tested:**
+   1. `http://127.0.0.1:4202/` (humo landing)
+   2. `http://127.0.0.1:4202/login?tenant=1` y rutas internas post-login del humo (`/dashboard` … `/settings`, etc.)
+   3. `http://127.0.0.1:4202/api/public/legal-urls`
+   4. `http://127.0.0.1:4202/api/public/tenants/1`
+
+8. **Relevant log excerpts:**
+   - **back (migrate):** `INFO: Database schema version: 20260327100000` … `20260327100000_public_terms_privacy_urls.sql (version: 20260327100000, type: timestamp, status: applied)` … `✅ Database schema version: 20260327100000`
+   - **pytest:** `8 passed in 0.74s`
+   - **front (tail):** `Application bundle generation complete. [0.208 seconds] - 2026-03-27T09:31:38.377Z`
