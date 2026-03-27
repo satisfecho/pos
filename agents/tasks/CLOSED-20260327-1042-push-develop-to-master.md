@@ -27,3 +27,25 @@ Contexto de política de ramas: **`.cursor/rules/git-development-branch-workflow
 2. **amvara9:** Tras pull de **`master`**, `… run --rm back python -m app.migrate` y `… run --rm back python -m app.migrate --sync-idempotent` → OK; `… ps` → **haproxy**, **front**, **back**, **ws-bridge**, **db**, **redis** en **Up** (no solo db/redis).
 3. **Humo público:** Desde una red que alcance el servidor, `curl -sS -o /dev/null -w "%{http_code}\n" https://satisfecho.de/` → **200**.
 4. **Esquema:** En PostgreSQL, `\d tenant` incluye **`country_code`**; `\d staff_contract_template_preset` lista la restricción **`uq_staff_contract_template_preset_region_locale_key`** (o equivalente UNIQUE en esas columnas).
+
+---
+
+## Test report
+
+1. **Date/time (UTC):** 2026-03-27 11:20–11:32 UTC (inicio verificación tras renombrar a TESTING; fin al cerrar informe). Ventana de logs revisada: salida estándar de `app.migrate` / `migrate --sync-idempotent` en contenedores **back** (local y amvara9) en esa ventana; sin errores.
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml` (local); amvara9: `docker-compose.yml` + `docker-compose.prod.yml` vía SSH **`amvara9`**. **`BASE_URL`:** N/A (no flujo Puppeteer). Rama repo: **`development`**, HEAD **`683185d`**.
+3. **What was tested:** Puntos 1–4 de *Testing instructions* (migración local, migración + sync idempotente y `ps` en amvara9, humo HTTPS producción, esquema PostgreSQL en amvara9).
+4. **Results:**
+   - Criterio 1 (migrate local): **PASS** — `exec -T back python -m app.migrate` exit 0; `Database is up to date (version 20260327100000)`.
+   - Criterio 2 (amvara9 migrate + sync + ps): **PASS** — `run --rm back python -m app.migrate` y `… --sync-idempotent` exit 0; `docker compose … ps` muestra **haproxy**, **front**, **back**, **ws-bridge**, **db**, **redis** en **Up**.
+   - Criterio 3 (curl producción): **PASS** — `curl -sS -o /dev/null -w "%{http_code}\n" https://satisfecho.de/` → **200**.
+   - Criterio 4 (esquema): **PASS** — En amvara9, `\d tenant` incluye columna **`country_code`**; `\d staff_contract_template_preset` incluye **`uq_staff_contract_template_preset_region_locale_key` UNIQUE (region_code, locale, template_key)**.
+5. **Overall:** **PASS** (ningún criterio en FAIL).
+6. **Product owner feedback:** La migración idempotente para el UNIQUE de plantillas y el estado de la BD en producción quedan alineados con el código desplegado; el sitio público responde 200 y la pila en amvara9 está completa (no solo db/redis). El incidente descrito en la implementación (migrate bloqueando el `up` tras el deploy) queda cubierto por las comprobaciones ejecutadas hoy.
+7. **URLs tested:**
+   1. `https://satisfecho.de/` (humo HTTP; solo código de estado).
+8. **Relevant log excerpts:**
+   - Local migrate (tail): `INFO: Database is up to date (version 20260327100000)` / `✅ Database schema version: 20260327100000`
+   - amvara9 migrate (tail): mismas líneas `20260327100000` y ✅.
+   - amvara9 sync-idempotent (tail): `INFO: Sync-idempotent finished (missing columns/tables may now be present)`
+   - amvara9 `ps` (servicios): **pos-back**, **pos-front**, **pos-haproxy**, **pos-ws-bridge**, **pos-postgres**, **pos-redis** — Status **Up**.
