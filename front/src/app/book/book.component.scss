@@ -79,6 +79,12 @@
 // ============================================
 // PAGE LAYOUT (same as menu)
 // ============================================
+.book-legal-footer {
+  padding: var(--space-4) var(--space-4) var(--space-6);
+  max-width: 42rem;
+  margin: 0 auto;
+}
+
 .book-page {
   min-height: 100vh;
   background: var(--color-bg);

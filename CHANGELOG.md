@@ -6,6 +6,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Working plan — per-user colors (GitHub #109):** Calendar shift lines use a stable hue from `user_id` (HSL chips + `@media (prefers-color-scheme: dark)`). Week list shift cards get a matching left border. Legend text updated in all shipped i18n files. Color hash helper: `front/src/app/working-plan/working-plan-shift-colors.ts` (+ `working-plan-shift-colors.spec.ts`).
+
+### Changed
+
+- **Agent loop:** Main **coder** step runs when **`WIP-*.md`** exists as well as **`NEW-*.md`**, so tasks are not stuck after **NEW → WIP** (`agents/pos-agent-loop.sh`, `agents/002-coder/CODER.md`, `docs/agent-loop.md`).
+
+### Fixed
+
+- **Settings → Data & privacy i18n (GitHub #108):** Added missing `SETTINGS.*` export/purge strings for **es**, **fr**, **ca**, **zh-CN**, and **hi**; corrected leftover English `PURGE_CONFIRM_LABEL` in **bg**. UI already used `translate` pipes; missing keys fell back to English.
+
+- **Bulgarian staff dashboard subtitle (GitHub #107):** `DASHBOARD.WELCOME_TEXT` in `front/public/i18n/bg.json` was still English; translated to match the rest of the Bulgarian staff UI.
+
+## [2.0.64] - 2026-03-27
+
+### Added
+
+- **Terms of service & privacy URLs (GitHub #110):** Optional per-tenant URLs in settings; global fallbacks in `config.env`; **`GET /public/legal-urls`**; links on landing, auth, book, and public feedback. Migration `20260327100000_public_terms_privacy_urls.sql`.
+
+## [2.0.63] - 2026-03-26
+
+### Added
+
+- **Docs — working plan:** `docs/0021-working-plan-implementation-plan.md` describes goals, scope, BetterShift evaluation, and an in-house direction for kitchen/bar/waiter shift scheduling.
+
+### Changed
+
+- **Agent / git workflow:** Documented and automated **sync before edits** for multi-agent work on **`development`**: new **`scripts/git-sync-development.sh`**, **`agents/pos-agent-loop.sh`** runs it at each step (disable with **`AGENT_GIT_SYNC=0`**), updates to **`.cursor/rules/git-development-branch-workflow.mdc`**, **`AGENTS.md`**, **`docs/agent-loop.md`**, **`docs/agent-cursor-rules.md`**, and agent prompts under **`agents/`**.
+
+### Security
+
+- **Staff contract PDFs:** `GET /uploads/{tenant_id}/contracts/{filename}` now returns **403** so signed contract files are not served by the public `StaticFiles` mount; use authenticated `GET /staff-contracts/{id}/document` only. Regression test: `tests/test_uploads_security.py`. Security review notes: `docs/SECURITY-REVIEW.md`.
+
+- **Tenant IDOR sample:** `tests/test_security_tenant_idor_orders.py` asserts another tenant’s order cannot be soft-deleted by ID.
+
+## [2.0.62] - 2026-03-26
+
+### Added
+
+- **Contract template catalog & locale (GitHub #106):** Per-tenant templates gain optional **locale** (BCP 47). New table **`staff_contract_template_preset`** seeded by migration with regional outlines (ES/es, IN/en, global en). **`GET /staff-contract-templates/presets`** returns presets ranked by tenant **`country_code`**, **`default_language`**, and fallbacks (currency CIF/timezone heuristics when country unset). **`POST /staff-contract-templates/import-preset`** copies a preset into the tenant (same RBAC as template CRUD). Tenant **`country_code`** (ISO 3166-1 alpha-2) in Business settings. Settings → Contract templates: catalog table with **Import** / preview; i18n in all shipped locales. Migration `20260326133000_contract_template_locale_presets.sql`. Tests: `tests/test_staff_contract_templates.py`.
+
 ## [2.0.61] - 2026-03-26
 
 ### Added

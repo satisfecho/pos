@@ -37,6 +37,16 @@ If **none** of the above applies: **push `development` only**; do **not** merge 
 
 **Committer agent:** Changelog and version bumps happen on **`development`**; merging to **`master`** is a **separate** step that follows the table above.
 
+### Sync before edits (multi-agent)
+
+Multiple agents push to **`development`**. **Before any step that edits the repo** (application code, **`agents/tasks/*.md`**, **`CHANGELOG.md`**, etc.), integrate the latest remote state:
+
+- **Humans / Cursor without the shell loop:** run **`./scripts/git-sync-development.sh`** from the repo root (or the equivalent **`git fetch`** + **`git pull --rebase --autostash origin development`** on **`development`**).
+- **`pos-agent-loop.sh`:** runs that script **at the start of each agent step** (001, 006×5, 002, 003, 004, 007). Set **`AGENT_GIT_SYNC=0`** only to skip (offline debugging).
+- **Before push:** pull/rebase again after your commit so **`git push origin development`** does not regress or race another agent.
+
+This is **remote integration** (fetch/pull/rebase), not “open a GitHub PR before every edit.” Use normal PRs when your team wants human review before merging a branch; day-to-day **`development`** still needs **pull/rebase** so agents do not overwrite each other’s work.
+
 ---
 
 ## Roles (mapping from mac-stats-reviewer)
@@ -44,7 +54,7 @@ If **none** of the above applies: **push `development` only**; do **not** merge 
 | mac-stats-reviewer agent | POS role | Typical inputs | Writes / edits |
 |--------------------------|----------|----------------|----------------|
 | **001 Log reviewer** (`LOG-REVIEWER-PROMPT.md`) | **GitHub → FEAT; logs → NEW** | **Issues:** up to **3 × `FEAT-…`** / run for **feature coders** (×5 in loop). **Logs:** **`NEW-…`** only for concrete Docker log incidents | **`agents/tasks/`** only. **`gh`** on issues. See **001** prompt — never use **`NEW-`** for GitHub-sourced work. |
-| **002 Coder** (`002-coder-backend/CODER.md`) | **Implementer (main)** | Tasks in status **new** → **wip** | **`back/`**, **`front/`**, tests; task file status + **Testing instructions**; then **untested**. |
+| **002 Coder** (`002-coder-backend/CODER.md`) | **Implementer (main)** | **NEW** → **wip**; also continues **wip** when no **NEW** (orchestrator runs this step if **`NEW-*.md`** or **`WIP-*.md`** exists) | **`back/`**, **`front/`**, tests; task file status + **Testing instructions**; then **untested**. |
 | **006 Feature coder** (`FEATURE-CODER.md`) | **Implementer (FEAT queue)** | Tasks **feat** → **wip** | Same as coder, but only **FEAT-** tasks (if you use that track). |
 | **003 Tester** (`TESTER.md`) | **Verifier** | **untested** → **testing** | Appends **Test report**; **closed** or back to **wip** on failure. Uses **`pytest`** (Docker), **`node front/scripts/…`**, **`npm run test:*`** per task. |
 | **004 Closing reviewer** (`CLOSING-REVIEWER-PROMPT.md`) | **Archivist** | **closed** tasks | Prepends **Closing summary**; moves file to **`agents/tasks/done/YYYY/MM/DD/`** (date from `CLOSED-YYYYMMDD-…`; use **`scripts/move-agent-task-to-done.sh`**). |
@@ -102,12 +112,14 @@ Same idea as **mac-stats-reviewer** `agents/run.sh`, but named for clarity: one 
 |------------|-----------|
 | **`./agents/pos-agent-loop.sh`** | Full cycle every **`AGENT_LOOP_SLEEP_MINUTES`** (default **5**); requires **`cursor-agent`** on `PATH`. |
 | **`./agents/pos-agent-loop.sh log`** (or **`log-reviewer`**, **`001`**) | Run **001** log / incident reviewer (always invoked when prompt exists; first step in full cycle). |
-| **`./agents/pos-agent-loop.sh coder`** | Run coder step only if **`NEW-*.md`** exists (and prompt file present). |
+| **`./agents/pos-agent-loop.sh coder`** | Run coder step if **`NEW-*.md`** or **`WIP-*.md`** exists (and prompt file present). Prefer finishing **NEW** first; **WIP** continues in-progress work. |
 | **`./agents/pos-agent-loop.sh tester`** | Run tester if **`UNTESTED-*.md`** exists. |
 | **`./agents/pos-agent-loop.sh feat`** | Run feature coder if **`FEAT-*.md`** exists. |
 | **`./agents/pos-agent-loop.sh closing-review`** | Run closer if **`CLOSED-*.md`** still in **`agents/tasks/`**. |
 | **`./agents/pos-agent-loop.sh committer`** | Run committer if POS repo has unstaged/staged changes. |
 | **`./agents/pos-agent-loop.sh help`** | Usage. |
+
+**Git:** each step begins with **`scripts/git-sync-development.sh`** (unless **`AGENT_GIT_SYNC=0`**). See **Sync before edits (multi-agent)** above.
 
 **Docker / stack:** still start with repo-root **`./run.sh`** or **`./run.sh -dev`** — this script does **not** replace the POS application runner.
 

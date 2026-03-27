@@ -5,13 +5,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService, Reservation, ReservationCreate, TenantSummary } from '../services/api.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguagePickerComponent } from '../shared/language-picker.component';
+import { LegalLinksComponent } from '../shared/legal-links.component';
 import { ReservationWeekSlotGridComponent } from '../shared/reservation-week-slot-grid.component';
 import { contactEmailValid, contactPhoneValid } from '../shared/contact-validators';
 
 @Component({
   selector: 'app-book',
   standalone: true,
-  imports: [FormsModule, TranslateModule, LanguagePickerComponent, ReservationWeekSlotGridComponent],
+  imports: [FormsModule, TranslateModule, LanguagePickerComponent, ReservationWeekSlotGridComponent, LegalLinksComponent],
   templateUrl: './book.component.html',
   styleUrl: './book.component.scss',
 })
@@ -61,6 +62,8 @@ export class BookComponent implements OnInit {
 
   googleMapsUrl = computed(() => this.tenant()?.public_google_maps_url?.trim() || null);
   openstreetmapUrl = computed(() => this.tenant()?.public_openstreetmap_url?.trim() || null);
+  termsOfServiceUrl = computed(() => this.tenant()?.terms_of_service_url?.trim() || null);
+  privacyPolicyUrl = computed(() => this.tenant()?.privacy_policy_url?.trim() || null);
 
   constructor() {
     const id = this.route.snapshot.paramMap.get('tenantId');

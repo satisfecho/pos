@@ -1,15 +1,16 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { contactEmailValidator } from '../shared/contact-validators';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../services/api.service';
 import { LanguagePickerComponent } from '../shared/language-picker.component';
+import { LegalLinksComponent } from '../shared/legal-links.component';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, TranslateModule, LanguagePickerComponent],
+  imports: [ReactiveFormsModule, RouterLink, TranslateModule, LanguagePickerComponent, LegalLinksComponent],
   template: `
     <div class="auth-page">
       <div class="auth-card">
@@ -129,6 +130,7 @@ import { LanguagePickerComponent } from '../shared/language-picker.component';
           <span>{{ 'AUTH.ALREADY_HAVE_ACCOUNT' | translate }}</span>
           <a routerLink="/login">{{ 'AUTH.SIGN_IN_LINK' | translate }}</a>
         </div>
+        <app-legal-links [termsUrl]="legalTermsUrl()" [privacyUrl]="legalPrivacyUrl()" />
       </div>
     </div>
   `,
@@ -297,11 +299,24 @@ import { LanguagePickerComponent } from '../shared/language-picker.component';
     }
   `]
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   private fb = inject(FormBuilder);
   private api = inject(ApiService);
   private router = inject(Router);
   translate = inject(TranslateService);
+
+  legalTermsUrl = signal<string | null>(null);
+  legalPrivacyUrl = signal<string | null>(null);
+
+  ngOnInit(): void {
+    this.api.getPublicLegalUrls().subscribe({
+      next: (u) => {
+        this.legalTermsUrl.set(u.terms_of_service_url ?? null);
+        this.legalPrivacyUrl.set(u.privacy_policy_url ?? null);
+      },
+      error: () => {},
+    });
+  }
 
   error = signal<string>('');
   success = signal<string>('');

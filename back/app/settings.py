@@ -101,6 +101,18 @@ class Settings(BaseSettings):
         description="e.g. https://satisfecho.de or http://localhost:4202",
     )
 
+    # Product-wide legal URLs when a tenant has not set its own (landing, auth pages).
+    public_terms_of_service_url: str = Field(
+        default="",
+        validation_alias="PUBLIC_TERMS_OF_SERVICE_URL",
+        description="https://… terms of service; optional",
+    )
+    public_privacy_policy_url: str = Field(
+        default="",
+        validation_alias="PUBLIC_PRIVACY_POLICY_URL",
+        description="https://… privacy policy; optional",
+    )
+
     # Password reset links in email point to {PUBLIC_APP_BASE_URL}/reset-password?token=...
     password_reset_token_expire_minutes: int = Field(
         default=60,

@@ -24,6 +24,19 @@ have_cursor_agent() {
   command -v cursor-agent >/dev/null 2>&1
 }
 
+# Integrate latest origin/development before any step that may edit the repo.
+sync_repo() {
+  if [[ "${AGENT_GIT_SYNC:-1}" == "0" ]]; then
+    echo "----- git sync (skip: AGENT_GIT_SYNC=0)"
+    return 0
+  fi
+  echo "-----> git sync development $(date "+%Y-%m-%d %H:%M:%S") <----"
+  if ! bash "${REPO_ROOT}/scripts/git-sync-development.sh"; then
+    echo "ERROR: git sync failed (conflicts, network, or missing origin/development). Resolve and retry." >&2
+    exit 1
+  fi
+}
+
 # Only invoke agent if condition is true and prompt file exists.
 # Usage: run_agent "description" "condition_cmd" "prompt_relative_path" "message"
 run_agent() {
@@ -49,6 +62,7 @@ run_agent() {
 }
 
 step_log_reviewer() {
+  sync_repo
   echo "-----> log reviewer (001) <----"
   run_agent "log reviewer (001)" \
     "true" \
@@ -57,6 +71,7 @@ step_log_reviewer() {
 }
 
 step_feat() {
+  sync_repo
   echo "-----> feature coding (FEAT) <----"
   run_agent "feature coding (FEAT)" \
     "test -n \"\$(find \"$TASKDIR\" -maxdepth 1 -name 'FEAT-*.md' 2>/dev/null)\"" \
@@ -65,14 +80,16 @@ step_feat() {
 }
 
 step_coder() {
-  echo "-----> coding (NEW) <----"
+  sync_repo
+  echo "-----> coding (NEW / WIP) <----"
   run_agent "coding" \
-    "test -n \"\$(find \"$TASKDIR\" -maxdepth 1 -name 'NEW-*.md' 2>/dev/null)\"" \
+    "test -n \"\$(find \"$TASKDIR\" -maxdepth 1 \\( -name 'NEW-*.md' -o -name 'WIP-*.md' \\) 2>/dev/null)\"" \
     "002-coder/CODER.md" \
-    "Start coding now. Pick up a NEW task if any. Implement in this repo (back/, front/). Do your job."
+    "Start coding now. Prefer a NEW task if any (rename to WIP on start); otherwise continue an existing WIP to UNTESTED. Implement in this repo (back/, front/). Do your job."
 }
 
 step_tester() {
+  sync_repo
   echo "-----> testing <----"
   run_agent "testing" \
     "test -n \"\$(find \"$TASKDIR\" -maxdepth 1 -name 'UNTESTED-*.md' 2>/dev/null)\"" \
@@ -81,6 +98,7 @@ step_tester() {
 }
 
 step_closing_review() {
+  sync_repo
   echo "-----> closing reviewer (CLOSED in tasks/) <----"
   run_agent "closing" \
     "test -n \"\$(find \"$TASKDIR\" -maxdepth 1 -name 'CLOSED-*.md' 2>/dev/null)\"" \
@@ -89,6 +107,7 @@ step_closing_review() {
 }
 
 step_committer() {
+  sync_repo
   echo "-----> committer (changelog + commit, POS repo) <----"
   run_agent "committer (changelog + commit)" \
     "cd \"$REPO_ROOT\" && { ! git diff --quiet 2>/dev/null || ! git diff --staged --quiet 2>/dev/null; }" \
@@ -118,7 +137,7 @@ Usage: $(basename "$0") [COMMAND]
   Single run:
     log, log-reviewer, 001   Log / incident reviewer (001; runs first in full cycle)
     feat, feature   Feature coder (FEAT-*.md in agents/tasks/)
-    coder           Coder (NEW-*.md)
+    coder           Coder (NEW-*.md or WIP-*.md)
     tester          Tester (UNTESTED-*.md)
     closing-review  Closing reviewer (CLOSED-*.md still in agents/tasks/)
     committer       Changelog + commit when POS repo has local changes
@@ -127,8 +146,11 @@ Usage: $(basename "$0") [COMMAND]
 
 Environment:
   AGENT_LOOP_SLEEP_MINUTES   Sleep between full cycles when looping (default: 5).
+  AGENT_GIT_SYNC             If 0, skip git fetch/pull before each step (default: 1).
 
 Docker / app stack: start separately from repo root with ./run.sh -dev
+
+Git: each step runs scripts/git-sync-development.sh first (development + pull --rebase --autostash).
 
 Prompt files live under agents/ (e.g. 002-coder/CODER.md). See docs/agent-loop.md.
 EOF

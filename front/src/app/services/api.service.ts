@@ -134,21 +134,35 @@ export interface StaffContractTemplate {
   template_key: string;
   name: string;
   body: string;
+  locale?: string | null;
   kind?: StaffContractKind | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface StaffContractTemplatePreset {
+  id: number;
+  region_code: string;
+  locale: string;
+  template_key: string;
+  name: string;
+  body: string;
+  kind?: StaffContractKind | null;
+  relevance: string;
 }
 
 export interface StaffContractTemplateCreate {
   template_key: string;
   name: string;
   body?: string;
+  locale?: string | null;
   kind?: StaffContractKind | null;
 }
 
 export interface StaffContractTemplateUpdate {
   name?: string;
   body?: string;
+  locale?: string | null;
   kind?: StaffContractKind | null;
 }
 
@@ -399,8 +413,17 @@ export interface TenantSummary {
   public_google_maps_url?: string | null;
   /** OpenStreetMap share URL (openstreetmap.org). */
   public_openstreetmap_url?: string | null;
+  /** Effective legal URLs (tenant-specific or server default). */
+  terms_of_service_url?: string | null;
+  privacy_policy_url?: string | null;
   /** IANA timezone for reservation date/time UX (e.g. Europe/Madrid). */
   timezone?: string | null;
+}
+
+/** GET /public/legal-urls — product-wide defaults from server config. */
+export interface PublicLegalUrls {
+  terms_of_service_url: string | null;
+  privacy_policy_url: string | null;
 }
 
 /** GET /reservations/book-calendar — one month of open/closed days from opening hours. */
@@ -844,6 +867,8 @@ export interface TenantSettings {
   currency_code?: string | null;
   default_language?: string | null;
   timezone?: string | null;
+  /** ISO 3166-1 alpha-2 (e.g. ES, IN); optional, improves contract template suggestions */
+  country_code?: string | null;
   stripe_secret_key?: string | null;
   stripe_publishable_key?: string | null;
   revolut_merchant_secret?: string | null;
@@ -884,6 +909,8 @@ export interface TenantSettings {
   public_google_review_url?: string | null;
   public_google_maps_url?: string | null;
   public_openstreetmap_url?: string | null;
+  public_terms_of_service_url?: string | null;
+  public_privacy_policy_url?: string | null;
   /** Up to 4 tip percentages for POS checkout; empty array disables tips; omit/null = default 5/10/15/20 */
   tip_preset_percents?: number[] | null;
   /** VAT rate 0–100 on tip for invoice breakdown (tax-inclusive tip) */
@@ -1986,6 +2013,11 @@ export class ApiService {
     return this.http.get<TenantSummary[]>(`${this.apiUrl}/public/tenants`);
   }
 
+  /** Product-wide legal URLs from server config (landing, auth). Public, no auth. */
+  getPublicLegalUrls(): Observable<PublicLegalUrls> {
+    return this.http.get<PublicLegalUrls>(`${this.apiUrl}/public/legal-urls`);
+  }
+
   /** Resolve QR/menu token or printed table name (e.g. T01) to menu token. Public, no auth. */
   lookupPublicTable(q: string): Observable<PublicTableLookupResponse> {
     return this.http.get<PublicTableLookupResponse>(`${this.apiUrl}/public/table-lookup`, {
@@ -2273,6 +2305,20 @@ export class ApiService {
 
   listStaffContractTemplates(): Observable<StaffContractTemplate[]> {
     return this.http.get<StaffContractTemplate[]>(`${this.apiUrl}/staff-contract-templates`);
+  }
+
+  listStaffContractTemplatePresets(): Observable<StaffContractTemplatePreset[]> {
+    return this.http.get<StaffContractTemplatePreset[]>(`${this.apiUrl}/staff-contract-templates/presets`);
+  }
+
+  importStaffContractTemplateFromPreset(body: {
+    preset_id: number;
+    template_key?: string | null;
+  }): Observable<StaffContractTemplate> {
+    return this.http.post<StaffContractTemplate>(
+      `${this.apiUrl}/staff-contract-templates/import-preset`,
+      body,
+    );
   }
 
   createStaffContractTemplate(body: StaffContractTemplateCreate): Observable<StaffContractTemplate> {

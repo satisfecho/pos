@@ -234,6 +234,8 @@
             <p class="form-error">{{ submitError() }}</p>
           }
 
+          <app-legal-links class="feedback-legal-links" [termsUrl]="termsOfServiceUrl()" [privacyUrl]="privacyPolicyUrl()" />
+
           <button
             type="button"
             class="btn btn-primary btn-submit-feedback"

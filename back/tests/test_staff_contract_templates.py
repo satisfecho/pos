@@ -115,6 +115,70 @@ class TestStaffContractTemplates(PgClientTestCase):
         )
         self.assertEqual(r.status_code, 400, r.text)
 
+    def test_presets_list_import_and_locale(self) -> None:
+        ha = _bearer_headers(self.admin)
+        pr = self.client.get("/staff-contract-templates/presets", headers=ha)
+        self.assertEqual(pr.status_code, 200, pr.text)
+        presets = pr.json()
+        self.assertGreaterEqual(len(presets), 1, "run migrations to seed staff_contract_template_preset")
+        pid = presets[0]["id"]
+
+        im = self.client.post(
+            "/staff-contract-templates/import-preset",
+            headers=ha,
+            json={"preset_id": pid},
+        )
+        self.assertEqual(im.status_code, 200, im.text)
+        imported_key = im.json()["template_key"]
+
+        im2 = self.client.post(
+            "/staff-contract-templates/import-preset",
+            headers=ha,
+            json={"preset_id": pid},
+        )
+        self.assertEqual(im2.status_code, 409, im2.text)
+
+        rloc = self.client.post(
+            "/staff-contract-templates",
+            headers=ha,
+            json={
+                "template_key": "with_locale",
+                "name": "L",
+                "body": "<p>x</p>",
+                "kind": "employee",
+                "locale": "es",
+            },
+        )
+        self.assertEqual(rloc.status_code, 200, rloc.text)
+        self.assertEqual(rloc.json()["locale"], "es")
+
+        bad_loc = self.client.post(
+            "/staff-contract-templates",
+            headers=ha,
+            json={
+                "template_key": "bad_loc",
+                "name": "B",
+                "body": "<p>x</p>",
+                "locale": "not a locale",
+            },
+        )
+        self.assertEqual(bad_loc.status_code, 400, bad_loc.text)
+
+        tenant = self.session.get(models.Tenant, self.tenant_id)
+        assert tenant is not None
+        tenant.country_code = "ES"
+        tenant.default_language = "es"
+        self.session.add(tenant)
+        self.session.commit()
+
+        pr2 = self.client.get("/staff-contract-templates/presets", headers=ha)
+        self.assertEqual(pr2.status_code, 200)
+        ordered = pr2.json()
+        keys = [p["template_key"] for p in ordered]
+        self.assertIn("es_empleado_temporal", keys)
+        self.assertEqual(ordered[0]["template_key"], "es_empleado_temporal")
+        self.assertEqual(ordered[0]["relevance"], "region_language")
+
 
 if __name__ == "__main__":
     unittest.main()

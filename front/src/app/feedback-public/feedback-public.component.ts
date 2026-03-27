@@ -6,13 +6,14 @@ import { ActivatedRoute } from '@angular/router';
 import { ApiService, TenantSummary } from '../services/api.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguagePickerComponent } from '../shared/language-picker.component';
+import { LegalLinksComponent } from '../shared/legal-links.component';
 import { contactEmailValid, contactPhoneValid } from '../shared/contact-validators';
 import { merge, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-feedback-public',
   standalone: true,
-  imports: [FormsModule, TranslateModule, LanguagePickerComponent],
+  imports: [FormsModule, TranslateModule, LanguagePickerComponent, LegalLinksComponent],
   templateUrl: './feedback-public.component.html',
   styleUrls: ['../book/book.component.scss', './feedback-public.component.scss'],
 })
@@ -49,6 +50,8 @@ export class FeedbackPublicComponent implements OnInit, OnDestroy {
   googleReviewUrl = computed(() => this.tenant()?.public_google_review_url?.trim() || null);
   googleMapsUrl = computed(() => this.tenant()?.public_google_maps_url?.trim() || null);
   openstreetmapUrl = computed(() => this.tenant()?.public_openstreetmap_url?.trim() || null);
+  termsOfServiceUrl = computed(() => this.tenant()?.terms_of_service_url?.trim() || null);
+  privacyPolicyUrl = computed(() => this.tenant()?.privacy_policy_url?.trim() || null);
 
   ngOnInit() {
     // Lang switch, default-lang init, and late JSON load all affect title (issue #67).

@@ -7,6 +7,18 @@ alwaysApply: true
 
 Routine work targets **`development`**, not **`master`**. **`master`** tracks what is ready for **production** (e.g. deploy to amvara9 from `master`).
 
+## Sync before you change anything (multi-agent)
+
+Several agents (and humans) push to **`development`**. Treat **“get latest”** as **`git fetch` + `git pull --rebase`** on **`development`**, not as opening a GitHub pull request for every sync.
+
+| When | Action |
+|------|--------|
+| **Before the first edit** in a session or agent step (code, task files, changelog) | Run **`./scripts/git-sync-development.sh`** from repo root (or equivalent: `git fetch origin`, checkout **`development`**, `git pull --rebase --autostash origin development`). |
+| **Before `git push`** | Pull/rebase again on **`development`** so your push is based on the current remote tip. |
+| **Orchestrator** | **`agents/pos-agent-loop.sh`** runs the sync script **at the start of each step** (log reviewer, feature coder, coder, tester, closer, committer). Disable with **`AGENT_GIT_SYNC=0`** only for offline or special cases. |
+
+If sync fails (merge conflict after rebase, no network), **stop** and resolve; do not layer new commits on a stale tree.
+
 ## Where to commit and push
 
 1. **Branch:** Check out **`development`** before starting work. If it does not exist locally:  

@@ -7,6 +7,7 @@ import {
   StaffContractKind,
   StaffContractTemplate,
   StaffContractTemplateCreate,
+  StaffContractTemplatePreset,
 } from '../services/api.service';
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 
@@ -21,6 +22,45 @@ import { FocusFirstInputDirective } from '../shared/focus-first-input.directive'
         <p>{{ 'SETTINGS.CONTRACT_TEMPLATES_SUBTITLE' | translate }}</p>
         <p class="hint">{{ 'SETTINGS.CONTRACT_TEMPLATES_PLACEHOLDERS' | translate }}</p>
       </div>
+      <div class="presets-block">
+        <h3>{{ 'SETTINGS.CONTRACT_TEMPLATES_PRESETS_TITLE' | translate }}</h3>
+        <p class="hint">{{ 'SETTINGS.CONTRACT_TEMPLATES_PRESETS_SUBTITLE' | translate }}</p>
+        @if (presetsLoading()) {
+          <p class="hint">{{ 'COMMON.LOADING' | translate }}</p>
+        } @else if (presetsError()) {
+          <p class="error">{{ presetsError() }}</p>
+        } @else if (presets().length === 0) {
+          <p class="hint">{{ 'SETTINGS.CONTRACT_TEMPLATES_PRESETS_EMPTY' | translate }}</p>
+        } @else {
+          <table class="data-table presets-table">
+            <thead>
+              <tr>
+                <th>{{ 'SETTINGS.CONTRACT_TEMPLATES_COL_NAME' | translate }}</th>
+                <th>{{ 'SETTINGS.CONTRACT_TEMPLATES_COL_REGION' | translate }}</th>
+                <th>{{ 'SETTINGS.CONTRACT_TEMPLATES_COL_LOCALE' | translate }}</th>
+                <th>{{ 'SETTINGS.CONTRACT_TEMPLATES_COL_KEY' | translate }}</th>
+                <th>{{ 'SETTINGS.CONTRACT_TEMPLATES_COL_RELEVANCE' | translate }}</th>
+                <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of presets(); track p.id) {
+                <tr>
+                  <td>{{ p.name }}</td>
+                  <td><code>{{ p.region_code }}</code></td>
+                  <td><code>{{ p.locale }}</code></td>
+                  <td><code>{{ p.template_key }}</code></td>
+                  <td>{{ relevanceLabel(p.relevance) | translate }}</td>
+                  <td class="actions">
+                    <button type="button" class="btn-link" (click)="previewPreset(p)">{{ 'SETTINGS.CONTRACT_TEMPLATES_PREVIEW' | translate }}</button>
+                    <button type="button" class="btn-link" (click)="importPreset(p)">{{ 'SETTINGS.CONTRACT_TEMPLATES_IMPORT_PRESET' | translate }}</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
       @if (loading()) {
         <p class="hint">{{ 'COMMON.LOADING' | translate }}</p>
       } @else if (error()) {
@@ -31,6 +71,7 @@ import { FocusFirstInputDirective } from '../shared/focus-first-input.directive'
             <tr>
               <th>{{ 'SETTINGS.CONTRACT_TEMPLATES_COL_NAME' | translate }}</th>
               <th>{{ 'SETTINGS.CONTRACT_TEMPLATES_COL_KEY' | translate }}</th>
+              <th>{{ 'SETTINGS.CONTRACT_TEMPLATES_COL_LOCALE' | translate }}</th>
               <th>{{ 'CONTRACTS.KIND' | translate }}</th>
               <th>{{ 'COMMON.ACTIONS' | translate }}</th>
             </tr>
@@ -40,6 +81,7 @@ import { FocusFirstInputDirective } from '../shared/focus-first-input.directive'
               <tr>
                 <td>{{ t.name }}</td>
                 <td><code>{{ t.template_key }}</code></td>
+                <td>{{ t.locale || '—' }}</td>
                 <td>{{ kindLabel(t.kind) | translate }}</td>
                 <td class="actions">
                   <button type="button" class="btn-link" (click)="startEdit(t)">{{ 'COMMON.EDIT' | translate }}</button>
@@ -82,6 +124,11 @@ import { FocusFirstInputDirective } from '../shared/focus-first-input.directive'
                   <option value="employee">{{ 'CONTRACTS.KIND_EMPLOYEE' | translate }}</option>
                   <option value="freelancer">{{ 'CONTRACTS.KIND_FREELANCER' | translate }}</option>
                 </select>
+              </div>
+              <div class="form-group">
+                <label for="ct-locale">{{ 'SETTINGS.CONTRACT_TEMPLATES_COL_LOCALE' | translate }}</label>
+                <input id="ct-locale" name="ct-locale" [(ngModel)]="formLocale" [placeholder]="'es'" autocomplete="off" />
+                <span class="field-hint">{{ 'SETTINGS.CONTRACT_TEMPLATES_LOCALE_HINT' | translate }}</span>
               </div>
               <div class="form-group">
                 <label for="ct-body">{{ 'SETTINGS.CONTRACT_TEMPLATES_BODY' | translate }}</label>
@@ -160,6 +207,18 @@ import { FocusFirstInputDirective } from '../shared/focus-first-input.directive'
       }
       .add-block {
         margin-top: var(--space-4);
+      }
+      .presets-block {
+        margin-bottom: var(--space-6);
+        padding-bottom: var(--space-4);
+        border-bottom: 1px solid var(--color-border);
+      }
+      .presets-block h3 {
+        margin-top: 0;
+        font-size: 1rem;
+      }
+      .presets-table {
+        margin-bottom: 0;
       }
       code {
         font-size: 0.8rem;
@@ -251,6 +310,9 @@ export class ContractTemplatesSettingsComponent implements OnInit {
   loading = signal(false);
   error = signal<string | null>(null);
   templates = signal<StaffContractTemplate[]>([]);
+  presets = signal<StaffContractTemplatePreset[]>([]);
+  presetsLoading = signal(false);
+  presetsError = signal<string | null>(null);
 
   showModal = signal(false);
   editingId = signal<number | null>(null);
@@ -260,9 +322,22 @@ export class ContractTemplatesSettingsComponent implements OnInit {
   formName = '';
   formBody = '';
   formKind: StaffContractKind | null = null;
+  formLocale = '';
 
   ngOnInit(): void {
     this.load();
+    this.loadPresets();
+  }
+
+  relevanceLabel(rel: string): string {
+    const map: Record<string, string> = {
+      region_language: 'SETTINGS.CONTRACT_TEMPLATES_REL_REGION_LANG',
+      region: 'SETTINGS.CONTRACT_TEMPLATES_REL_REGION',
+      global_language: 'SETTINGS.CONTRACT_TEMPLATES_REL_GLOBAL_LANG',
+      global: 'SETTINGS.CONTRACT_TEMPLATES_REL_GLOBAL',
+      other_region: 'SETTINGS.CONTRACT_TEMPLATES_REL_OTHER_REGION',
+    };
+    return map[rel] || 'SETTINGS.CONTRACT_TEMPLATES_REL_UNKNOWN';
   }
 
   kindLabel(k: StaffContractKind | null | undefined): string {
@@ -286,12 +361,28 @@ export class ContractTemplatesSettingsComponent implements OnInit {
     });
   }
 
+  loadPresets(): void {
+    this.presetsLoading.set(true);
+    this.presetsError.set(null);
+    this.api.listStaffContractTemplatePresets().subscribe({
+      next: (rows) => {
+        this.presets.set(rows);
+        this.presetsLoading.set(false);
+      },
+      error: (e) => {
+        this.presetsError.set(e?.error?.detail || 'Error');
+        this.presetsLoading.set(false);
+      },
+    });
+  }
+
   openCreate(): void {
     this.editingId.set(null);
     this.formKey = '';
     this.formName = '';
     this.formBody = '<p>{{employer_name}} — {{worker_name}}</p>\n<p>{{role_title}} · {{start_date}} — {{end_date}}</p>';
     this.formKind = null;
+    this.formLocale = '';
     this.formError.set(null);
     this.showModal.set(true);
   }
@@ -302,6 +393,7 @@ export class ContractTemplatesSettingsComponent implements OnInit {
     this.formName = t.name;
     this.formBody = t.body;
     this.formKind = t.kind ?? null;
+    this.formLocale = t.locale?.trim() ?? '';
     this.formError.set(null);
     this.showModal.set(true);
   }
@@ -310,7 +402,15 @@ export class ContractTemplatesSettingsComponent implements OnInit {
     this.showModal.set(false);
   }
 
+  previewPreset(p: StaffContractTemplatePreset): void {
+    this.previewBody(p.body);
+  }
+
   preview(t: StaffContractTemplate): void {
+    this.previewBody(t.body);
+  }
+
+  private previewBody(body: string): void {
     const sample: Record<string, string> = {
       employer_name: 'Demo Restaurant S.L.',
       employer_address: 'Calle Demo 1',
@@ -329,7 +429,7 @@ export class ContractTemplatesSettingsComponent implements OnInit {
       contract_version: '1',
       contract_status: 'draft',
     };
-    let html = t.body;
+    let html = body;
     for (const [k, v] of Object.entries(sample)) {
       html = html.split('{{' + k + '}}').join(this.escapeHtml(v));
     }
@@ -343,6 +443,23 @@ export class ContractTemplatesSettingsComponent implements OnInit {
       w.document.write(doc);
       w.document.close();
     }
+  }
+
+  importPreset(p: StaffContractTemplatePreset): void {
+    this.api.importStaffContractTemplateFromPreset({ preset_id: p.id }).subscribe({
+      next: () => {
+        this.load();
+        this.loadPresets();
+      },
+      error: (e) => {
+        const detail = e?.error?.detail;
+        alert(
+          detail
+            ? this.translate.instant('SETTINGS.CONTRACT_TEMPLATES_IMPORT_FAILED_DETAIL', { detail })
+            : this.translate.instant('SETTINGS.CONTRACT_TEMPLATES_IMPORT_FAILED'),
+        );
+      },
+    });
   }
 
   private escapeHtml(s: string): string {
@@ -363,6 +480,7 @@ export class ContractTemplatesSettingsComponent implements OnInit {
           name: this.formName.trim(),
           body: this.formBody,
           kind: this.formKind,
+          locale: this.formLocale.trim() ? this.formLocale.trim() : null,
         })
         .subscribe({
           next: () => {
@@ -382,6 +500,7 @@ export class ContractTemplatesSettingsComponent implements OnInit {
       name: this.formName.trim(),
       body: this.formBody,
       kind: this.formKind,
+      locale: this.formLocale.trim() ? this.formLocale.trim() : undefined,
     };
     this.api.createStaffContractTemplate(body).subscribe({
       next: () => {

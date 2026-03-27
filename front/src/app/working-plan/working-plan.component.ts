@@ -14,6 +14,7 @@ import { ConfirmationModalComponent } from '../shared/confirmation-modal.compone
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../services/language.service';
+import { hueFromUserId, weekShiftCardBorderLeft } from './working-plan-shift-colors';
 
 function getWeekRange(weekStart: Date): { from: string; to: string } {
   const d = new Date(weekStart);
@@ -243,7 +244,19 @@ function isValidView(v: string | null): v is ViewMode {
                       @if (cell.shiftLines?.length) {
                         <ul class="calendar-shift-lines">
                           @for (line of cell.shiftLines; track $index) {
-                            <li>{{ line }}</li>
+                            @if (line.userId !== null) {
+                              <li
+                                class="calendar-shift-line"
+                                [style.--wp-shift-h]="shiftHue(line.userId)"
+                                data-testid="working-plan-calendar-shift-line"
+                              >
+                                {{ line.text }}
+                              </li>
+                            } @else {
+                              <li class="calendar-shift-line-overflow" data-testid="working-plan-calendar-shift-overflow">
+                                {{ line.text }}
+                              </li>
+                            }
                           }
                         </ul>
                       }
@@ -268,7 +281,7 @@ function isValidView(v: string | null): v is ViewMode {
         } @else {
           <div class="shift-list">
             @for (s of shiftsByDate(); track s.id) {
-              <div class="shift-card">
+              <div class="shift-card" [style.border-left]="weekShiftBorder(s.user_id)">
                 <div class="shift-date">{{ s.date }}</div>
                 <div class="shift-details">
                   <span class="shift-time">{{ s.start_time }} – {{ s.end_time }}</span>
@@ -533,11 +546,49 @@ function isValidView(v: string | null): v is ViewMode {
     .calendar-day-ok { background: rgba(22, 163, 74, 0.2); border-color: var(--color-success, #16a34a); }
     .calendar-day-num { font-weight: 600; flex-shrink: 0; }
     .calendar-closed-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.02em; opacity: 0.85; }
-    .calendar-shift-lines { list-style: none; margin: 0; padding: 0; font-size: 0.65rem; line-height: 1.25; color: var(--text, #222); overflow: hidden; }
-    .calendar-shift-lines li { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .calendar-shift-lines { list-style: none; margin: 0; padding: 0; font-size: 0.65rem; line-height: 1.3; overflow: hidden; display: flex; flex-direction: column; gap: 0.12rem; }
+    .calendar-shift-line {
+      --shift-sat: 50%;
+      --shift-soft: 40%;
+      --shift-soft-a: 0.14;
+      --shift-border-sat: 48%;
+      --shift-border-light: 36%;
+      --shift-text-sat: 34%;
+      --shift-text-light: 17%;
+      border-radius: 4px;
+      padding: 0.1em 0.28em 0.1em 0.32em;
+      margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      background: hsla(var(--wp-shift-h), var(--shift-sat), var(--shift-soft), var(--shift-soft-a));
+      color: hsl(var(--wp-shift-h), var(--shift-text-sat), var(--shift-text-light));
+      border-left: 3px solid hsl(var(--wp-shift-h), var(--shift-border-sat), var(--shift-border-light));
+    }
+    @media (prefers-color-scheme: dark) {
+      .calendar-shift-line {
+        --shift-soft: 52%;
+        --shift-soft-a: 0.3;
+        --shift-border-light: 64%;
+        --shift-text-sat: 26%;
+        --shift-text-light: 93%;
+      }
+    }
+    .calendar-shift-line-overflow {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin: 0;
+      padding: 0;
+      color: var(--text-muted, #666);
+      font-style: italic;
+    }
   `],
 })
 export class WorkingPlanComponent implements OnInit, OnDestroy {
+  /** Bound for template: stable left accent on week list cards. */
+  readonly weekShiftBorder = weekShiftCardBorderLeft;
+
   private api = inject(ApiService);
   private translate = inject(TranslateService);
   private languageService = inject(LanguageService);
@@ -680,7 +731,7 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
       hasIssue?: boolean;
       isClosed?: boolean;
       showOk?: boolean;
-      shiftLines?: string[];
+      shiftLines?: { text: string; userId: number | null }[];
     };
     const cells: Cell[] = [];
     let idx = 0;
@@ -695,13 +746,21 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
       const dayShifts = this.shifts()
         .filter((s) => s.date === dateStr)
         .sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''));
-      const lines = dayShifts.map((s) => this.formatShiftLine(s));
+      const lines = dayShifts.map((s) => ({
+        text: this.formatShiftLine(s),
+        userId: s.user_id,
+      }));
       const maxLines = 5;
       const shiftLines =
         lines.length > maxLines
           ? [
               ...lines.slice(0, maxLines),
-              this.translate.instant('WORKING_PLAN.CALENDAR_MORE_SHIFTS', { count: lines.length - maxLines }),
+              {
+                text: this.translate.instant('WORKING_PLAN.CALENDAR_MORE_SHIFTS', {
+                  count: lines.length - maxLines,
+                }),
+                userId: null,
+              },
             ]
           : lines;
       cells.push({
@@ -1135,6 +1194,11 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
     const key = `USERS.ROLES.${role.toUpperCase()}`;
     const t = this.translate.instant(key);
     return t !== key ? t : role;
+  }
+
+  /** Hue 0–360 for calendar chip CSS variable --wp-shift-h. */
+  shiftHue(userId: number): number {
+    return hueFromUserId(userId);
   }
 
   /** One line per shift for the calendar cell (name, role, time). */

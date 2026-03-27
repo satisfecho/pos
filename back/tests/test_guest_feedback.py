@@ -44,6 +44,49 @@ class TestGuestFeedback(PgClientTestCase):
         self.assertEqual(data.get("public_google_maps_url"), "https://maps.google.com/?q=Test")
         self.assertIsNone(data.get("public_openstreetmap_url"))
         self.assertEqual(data.get("address"), "123 Main St")
+        self.assertIsNone(data.get("terms_of_service_url"))
+        self.assertIsNone(data.get("privacy_policy_url"))
+
+    def test_public_legal_urls_endpoint(self):
+        from app.settings import settings
+
+        prev_t = settings.public_terms_of_service_url
+        prev_p = settings.public_privacy_policy_url
+        settings.public_terms_of_service_url = "https://legal.example/tos"
+        settings.public_privacy_policy_url = "https://legal.example/privacy"
+        try:
+            r = self.client.get("/public/legal-urls")
+            self.assertEqual(r.status_code, 200, r.text)
+            d = r.json()
+            self.assertEqual(d.get("terms_of_service_url"), "https://legal.example/tos")
+            self.assertEqual(d.get("privacy_policy_url"), "https://legal.example/privacy")
+        finally:
+            settings.public_terms_of_service_url = prev_t
+            settings.public_privacy_policy_url = prev_p
+
+    def test_public_tenant_legal_urls_tenant_overrides_global(self):
+        from app.settings import settings
+
+        tenant = self.session.get(models.Tenant, self.tenant_id)
+        assert tenant is not None
+        tenant.public_terms_of_service_url = "https://tenant.example/terms"
+        tenant.public_privacy_policy_url = None
+        self.session.add(tenant)
+        self.session.commit()
+
+        prev_t = settings.public_terms_of_service_url
+        prev_p = settings.public_privacy_policy_url
+        settings.public_terms_of_service_url = "https://global.example/tos"
+        settings.public_privacy_policy_url = "https://global.example/privacy"
+        try:
+            r = self.client.get(f"/public/tenants/{self.tenant_id}")
+            self.assertEqual(r.status_code, 200, r.text)
+            d = r.json()
+            self.assertEqual(d.get("terms_of_service_url"), "https://tenant.example/terms")
+            self.assertEqual(d.get("privacy_policy_url"), "https://global.example/privacy")
+        finally:
+            settings.public_terms_of_service_url = prev_t
+            settings.public_privacy_policy_url = prev_p
 
     def test_submit_guest_feedback_minimal(self):
         r = self.client.post(

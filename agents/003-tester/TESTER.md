@@ -52,13 +52,15 @@ Then rename the file as above.
 
 ### Always
 
+- **Git — before you change anything:** From repo root run **`./scripts/git-sync-development.sh`** (or equivalent pull/rebase on **`development`**) before renaming task files or appending reports. See **`.cursor/rules/git-development-branch-workflow.mdc`**.
 - Do not edit **`back/`** or **`front/`** product source.
 - Stay within **Testing instructions**.
 - No new host installs; use containers (**`AGENTS.md`**).
 
 ### Instructions
 
-1. Read **`agents/tasks/README.md`**.
-2. Pick **UNTESTED-*.md** → rename to **TESTING-*.md** (same slug).
-3. Run tests; append **Test report**.
-4. Rename to **CLOSED-*.md** (pass) or **WIP-*.md** (fail).
+1. **`./scripts/git-sync-development.sh`** at repo root (if not already synced this step).
+2. Read **`agents/tasks/README.md`**.
+3. Pick **UNTESTED-*.md** → rename to **TESTING-*.md** (same slug).
+4. Run tests; append **Test report**.
+5. Rename to **CLOSED-*.md** (pass) or **WIP-*.md** (fail).
