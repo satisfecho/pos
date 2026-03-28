@@ -99,3 +99,40 @@ Prior work was verified in archive `agents/tasks/done/2026/03/23/CLOSED-20260323
 - **Fail:** Redirect to `/dashboard` from canvas, or waiter sees assignment dropdown on floor plan.
 
 **Coder smoke (2026-03-28):** `test:landing-version` exit 0 against `http://127.0.0.1:4202`; front container rebuild OK after route change.
+
+---
+
+## Test report (tester, 2026-03-28 — handoff verification)
+
+1. **Date/time (UTC) and log window:** 2026-03-28 09:43–09:44 UTC; `pos-front` / `pos-haproxy` activity aligned with Puppeteer runs; `pos-back` routine 200s during login and `/tables*` loads.
+
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; **`BASE_URL`** `http://127.0.0.1:4202`; branch **`development`** @ **`c76c1f3`**; **`HEADLESS=1`**.
+
+3. **What was tested:** Items under **Testing instructions (handoff 2026-03-28)** — waiter reaches floor plan, assignment UI read-only on canvas; optional automated script with `WAITER_*`; regression landing script.
+
+4. **Results**
+   - **Waiter stays on `/tables/canvas` (no `/dashboard` redirect):** **PASS** — Puppeteer step 3 completed; final URL path includes `/tables/canvas`.
+   - **No assignment `select.panel-select` for waiter on floor plan after table select:** **PASS** — script asserted no assign `<select>`; `.panel-waiter-readonly` present after clicking `g.table-group`.
+   - **Table view / tiles regression (no `select.waiter-select-inline`, readonly cells):** **PASS** — `13` rows, `13` `.waiter-readonly-inline`, `0` inline selects (per script stdout).
+   - **`npm run test:tables-waiter-assignment` with `WAITER_*` set:** **PASS** — exit **0**; `>>> RESULT: Waiter tables assignment visibility test passed.`
+   - **`npm run test:landing-version`:** **PASS** — exit **0**; `>>> RESULT: Landing version OK...`
+   - **Receptionist role on canvas:** **N/A** — no `receptionist` user in tenant **1** DB snapshot (`select` returned none); not exercised.
+   - **`docker compose … logs --tail=80 front`:** **PASS** — sampled tail shows successful bundle generations; **no** `Application bundle generation failed` / `error TS` lines in that window.
+
+5. **Overall:** **PASS** (all applicable handoff criteria).
+
+6. **Product owner feedback:** El cambio de rutas cumple el objetivo: un camarero puede abrir el plano de mesas y ver la asignación en modo solo lectura, sin desplegable vacío. Conviene confirmar en un entorno con usuario **recepcionista** si aplica a vuestra operativa. **Nota operativa:** para ejecutar el Puppeteer con login real se usó `python -m app.seeds.set_user_password` en el contenedor **back** sobre la cuenta camarero existente en BD local (email de usuario id 2 en tenant 1); **restableced la contraseña** de esa cuenta en vuestro entorno si este equipo de pruebas la sobrescribió.
+
+7. **URLs tested**
+   1. `http://127.0.0.1:4202/login?tenant=1` (waiter login)
+   2. `http://127.0.0.1:4202/tables` (Table view)
+   3. `http://127.0.0.1:4202/tables/canvas` (floor plan + table click / panel probe)
+   4. `http://127.0.0.1:4202/` and staff routes exercised inside `test:landing-version` (demo owner login from `.env`)
+
+8. **Relevant log excerpts**
+   - **Puppeteer (`test:tables-waiter-assignment`):** `OK: Logged in`; `OK: Table view — 13 rows, 13 read-only waiter cells, 0 assignment selects`; `OK: Floor plan reachable; properties panel uses read-only waiter block (no assign <select>).`
+   - **`pos-front` (tail):** `Application bundle generation complete` (multiple rebuilds); no error-level build failures in the captured **80** lines.
+
+**Loop protection:** N/A (this run follows the **2026-03-28** routing handoff; prior FAIL was pre-fix).
+
+**GitHub:** Comment posted on **#65** (tester summary). Labels not updated via CLI in this step.
