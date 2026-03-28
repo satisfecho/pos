@@ -54,7 +54,7 @@ last_review_iso_utc() {
 }
 
 # Write GitHub + Docker log digest for 001; set G001_* variables for gating.
-# G001_GH_OK: 1 if gh listed issues successfully; 0 if gh missing or failed.
+# G001_GH_OK: 1 if gh produced an open-issues list (issue list or api fallback); 0 if gh missing or both failed.
 # G001_UNTRACKED_ISSUES: count of open issues with no #NN / issues/NN link in root tasks (0 if gh failed).
 # G001_LOG_SIGNALS: 1 if heuristic incident lines found in recent container logs.
 prepare_001_preflight_context() {
@@ -85,7 +85,26 @@ prepare_001_preflight_context() {
       done < <(gh issue list --repo "$GH_REPO" --state open -L 40 --json number -q '.[].number' 2>/dev/null || true)
       G001_UNTRACKED_ISSUES=$untracked
     else
-      echo "(gh issue list failed — auth/network?)" >>"$ctx"
+      echo "(gh issue list failed — auth/network/CLI bug — trying REST fallback)" >>"$ctx"
+      {
+        echo ""
+        echo "=== gh api fallback: repos/${GH_REPO}/issues?state=open&per_page=40 (no PRs) ==="
+      } >>"$ctx"
+      if gh api "repos/${GH_REPO}/issues?state=open&per_page=40" \
+        --jq '.[] | select(.pull_request == null) | {number,title,labels:[.labels[].name],updatedAt,url}' >>"$ctx" 2>/dev/null; then
+        G001_GH_OK=1
+        local num2 untracked2=0
+        while IFS= read -r num2; do
+          [[ -z "${num2:-}" ]] && continue
+          if ! issue_linked_in_root_tasks "$num2"; then
+            untracked2=$((untracked2 + 1))
+            echo "UNTRACKED_IN_TASKS issue #$num2" >>"$ctx"
+          fi
+        done < <(gh api "repos/${GH_REPO}/issues?state=open&per_page=40" --jq '.[] | select(.pull_request == null) | .number' 2>/dev/null || true)
+        G001_UNTRACKED_ISSUES=$untracked2
+      else
+        echo "(gh api fallback also failed — fix gh auth: gh auth login or GH_TOKEN with repo scope)" >>"$ctx"
+      fi
     fi
   else
     echo "(gh not on PATH — cannot list issues)" >>"$ctx"

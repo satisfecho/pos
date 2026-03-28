@@ -22,6 +22,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **Agent loop:** Main **coder** step runs when **`WIP-*.md`** exists as well as **`NEW-*.md`**, so tasks are not stuck after **NEW → WIP** (`agents/pos-agent-loop.sh`, `agents/002-coder/CODER.md`, `docs/agent-loop.md`).
 
+- **Agent loop — 001 GitHub:** When **`gh issue list` fails**, **001** preflight uses **`gh api repos/…/issues`** (open issues, PRs excluded) to build the digest and **`G001_UNTRACKED_ISSUES`**, so the gate can still open for new issues (`agents/pos-agent-loop.sh`, `docs/agent-loop.md`).
+
 - **Agent loop — tester:** **`pos-agent-loop.sh tester`** treats in-progress **`TESTING-*.md`** like **`UNTESTED-*.md`** for gating and **`cursor-agent`**, so tasks renamed to **TESTING-** but not yet **CLOSED-**/ **WIP-** are not skipped by the loop (`agents/pos-agent-loop.sh`, `agents/003-tester/TESTER.md`, `docs/agent-loop.md`).
 
 - **Agent loop — token use:** **001** builds a shell preflight digest (GitHub open issues + Docker log heuristics) under **`$AGENT_LOOP_TMP/001-latest-context.txt`** and calls **`cursor-agent`** only when there is likely work (open issue not yet linked from **`agents/tasks/*.md`**, or log incident signals). **FEAT** batch stops early when no **`FEAT-*.md`**. **002–004 / 006–007** skip **`git-sync-development`** as well as **`cursor-agent`** when their queue is empty (or no git diff for **007**). Env: **`AGENT_LOG_REVIEWER_ALWAYS`**, **`AGENT_001_SKIP_PREFLIGHT`**, **`AGENT_001_RUN_WHEN_GH_UNKNOWN`**, **`AGENT_GH_REPO`**, **`AGENT_LOOP_TMP`** (`docs/agent-loop.md`).
