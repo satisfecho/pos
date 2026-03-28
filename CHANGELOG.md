@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Smoke tests:** `front/scripts/test-landing-version.mjs` accepts **`LANDING_VERSION_ONLY=1`** to run only the landing/version assertion when **`.env`** contains local demo login vars but **`BASE_URL`** points at a remote host (avoids spurious **401** on production smoke).
+
 ### Added
 
 - **Public terms & privacy pages (GitHub #113):** SPA routes `/terms` and `/privacy` (`LegalDocumentComponent`, i18n `LEGAL.DOC.*` in all shipped locales). `GET /public/legal-urls` and tenant effective URLs fall back to `{PUBLIC_APP_BASE_URL}/terms` and `/privacy` when `PUBLIC_TERMS_OF_SERVICE_URL` / `PUBLIC_PRIVACY_POLICY_URL` are unset. `config.env.example` documents the fallback.

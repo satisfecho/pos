@@ -12,6 +12,9 @@
  *   TENANT_ID  Login tenant (default 1). Used with DEMO_LOGIN_* / LOGIN_*.
  *   SKIP_LANDING_PACKAGE_VERSION_CHECK  Set to 1 to skip comparing footer semver to front/package.json
  *              (useful when BASE_URL points at a remote host whose deploy differs from this checkout).
+ *   LANDING_VERSION_ONLY  Set to 1 or true to run only the landing/version check (no login/sidebar),
+ *              even if `.env` defines DEMO_LOGIN_* / LOGIN_* (useful for production smoke when local
+ *              demo credentials would 401 on the remote host).
  *
  * When LOGIN_EMAIL + LOGIN_PASSWORD or DEMO_LOGIN_EMAIL + DEMO_LOGIN_PASSWORD are set
  * (e.g. from repo root `.env`), after the landing check the script logs in at
@@ -184,12 +187,16 @@ async function main() {
     process.env.LOGIN_EMAIL || process.env.ADMIN_EMAIL || process.env.DEMO_LOGIN_EMAIL;
   const loginPassword =
     process.env.LOGIN_PASSWORD || process.env.ADMIN_PASSWORD || process.env.DEMO_LOGIN_PASSWORD;
-  const hasLoginCreds = !!(loginEmail && loginPassword);
+  const landingVersionOnly =
+    process.env.LANDING_VERSION_ONLY === '1' || process.env.LANDING_VERSION_ONLY === 'true';
+  const hasLoginCreds = !landingVersionOnly && !!(loginEmail && loginPassword);
 
   const headless = isHeadless();
   console.log('BASE_URL:', baseUrl);
   console.log('Headless:', headless);
-  if (hasLoginCreds) {
+  if (landingVersionOnly) {
+    console.log('Login + sidebar: skip (LANDING_VERSION_ONLY)');
+  } else if (hasLoginCreds) {
     console.log('Login + sidebar: yes (tenant=' + tenantId + ')');
   } else {
     console.log('Login + sidebar: skip (set DEMO_LOGIN_EMAIL/DEMO_LOGIN_PASSWORD or LOGIN_* in .env)');
