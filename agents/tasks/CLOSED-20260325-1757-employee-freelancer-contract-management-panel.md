@@ -149,3 +149,73 @@ There is no structured way in the staff area to create, store, and manage **empl
 
 - **GitHub:** **`gh issue list --state open`** → **0** open (no **FEAT-** candidates; **`gh` comment/label** **n/a**).
 - **Docker** (`--since 2026-03-26T08:55:48Z`): same **pos-front** transient **TS2552** / **`Application bundle generation failed`** then **complete** ~**09:02:17–09:02:18Z** — **0× new NEW-**. **pos-haproxy** no **5xx** in window.
+
+---
+
+## Test report (re-verification, tester 003)
+
+1. **Date/time (UTC)** and log window  
+   - Started: **2026-03-28 09:25:30 UTC** (approx.)  
+   - Finished: **2026-03-28 09:28:00 UTC** (approx.)  
+   - Log window: **`docker compose … logs --tail=80 front`** sampled **2026-03-28T09:24Z**; Puppeteer **`test:landing-version`** ended **2026-03-28T09:27:09Z**.
+
+2. **Environment**  
+   - Compose: **`docker-compose.yml`** + **`docker-compose.dev.yml`**  
+   - **`BASE_URL`:** `http://127.0.0.1:4202`  
+   - Branch: **`development`** @ **`7287529`**
+
+3. **What was tested** (from “What to verify”)  
+   - Migration / schema; API RBAC + PDF + versioning (`tests/test_staff_contracts.py`); Docker `front` build health; staff SPA login without **NG0200** / circular **ApiService**; optional **`test:landing-version`** (includes **`/contracts`**); **`curl /`** smoke; attempted waiter-only browser spot-check.
+
+4. **Results**
+
+   | Criterion | Result | Evidence |
+   |-----------|--------|----------|
+   | Migration applies (incl. `staff_contract` chain) | **PASS** | `app.migrate`: **Database is up to date (version 20260327100000)**; **`20260325180000_staff_contract.sql`** listed **applied**. |
+   | API 403/404, RBAC, PDF, versioning, no leakage | **PASS** | `pytest tests/test_staff_contracts.py -v`: **4 passed** (same four tests as prior run). |
+   | Frontend build (Docker `front` tail) | **PASS** | **`Application bundle generation complete`** at **2026-03-28T09:24:03.878Z**; lazy chunk **`staff-contracts-component`** present; **no** `TS` / `NG` error lines in tail. |
+   | Staff SPA bootstrap (login form, no **Circular dependency** / **NG0200**) | **PASS** | Puppeteer: **`input[type="email"]`** filled on `/login?tenant=1`; landed **`/dashboard`**; browser console stream had **no** `Circular dependency` / **NG0200** lines (vite + “Angular is running in development mode” only aside from unrelated WS **1008** messages on some routes). |
+   | Optional **`test:landing-version`** | **PASS** | Exit code **0**; step **[15/16] -> /contracts** navigated successfully. |
+   | Optional **`curl /`** | **PASS** | **`200`**. |
+   | Manual UI (admin PDF + second-user waiter in browser) | **PARTIAL** | Admin/owner path covered by sidebar automation incl. **`/contracts`**. Full **two-account** manual PDF flow not re-run. Separate one-off Puppeteer login **`pos-staff-demo@amvara.de` / `secret`** stayed on **`/login`** on this DB — **waiter UI not confirmed in browser**; waiter rules still covered by **`test_waiter_cannot_create`** / **`test_waiter_no_tax_id_for_other_contract`**. |
+
+5. **Overall:** **PASS** — Required steps **1–4** and optional **5–7** from task instructions succeed; prior **FAIL** (circular **ApiService**) is **not** reproduced. Residual gap: **waiter browser session** not validated locally (credentials/seed mismatch); API tests provide waiter RBAC evidence.
+
+6. **Product owner feedback**  
+   El panel **Contracts** entra en la navegación staff y el login vuelve a funcionar en headless con la cuenta demo de propietario. Los cuatro tests de contratos en backend siguen en verde. Conviene validar una vez con un usuario camarero real en este entorno (o alinear seed/contraseña demo) para cerrar la capa UI del rol limitado.
+
+7. **URLs tested**  
+   1. `http://127.0.0.1:4202/`  
+   2. `http://127.0.0.1:4202/login?tenant=1`  
+   3. `http://127.0.0.1:4202/dashboard`  
+   4. `http://127.0.0.1:4202/contracts` (vía sidebar tras login owner)  
+   5. Otras rutas staff tocadas por **`test:landing-version`** (16 enlaces + submenú inventario).
+
+8. **Relevant log excerpts**
+
+   **Migrate (back):**
+   ```text
+   INFO: Database is up to date (version 20260327100000)
+   ```
+
+   **Pytest (back):**
+   ```text
+   tests/test_staff_contracts.py::TestStaffContracts::test_admin_creates_waiter_sees_only_own PASSED
+   tests/test_staff_contracts.py::TestStaffContracts::test_new_version_and_pdf PASSED
+   tests/test_staff_contracts.py::TestStaffContracts::test_waiter_cannot_create PASSED
+   tests/test_staff_contracts.py::TestStaffContracts::test_waiter_no_tax_id_for_other_contract PASSED
+   ============================== 4 passed in 2.95s ===============================
+   ```
+
+   **Front (compose, tail):**
+   ```text
+   chunk-VS5XFMQ7.js   | staff-contracts-component |  65.86 kB |
+   Application bundle generation complete. [0.638 seconds] - 2026-03-28T09:24:03.878Z
+   ```
+
+   **Puppeteer (login + `/contracts`):**
+   ```text
+   OK: Logged in, URL: http://127.0.0.1:4202/dashboard
+   [15/16] -> /contracts
+   >>> RESULT: Landing version OK; demo login (tenant=1) OK; sidebar nav OK.
+   ```
