@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Los camareros no veían asignaciones en el plano de mesas porque la ruta `/tables/canvas` usaba `adminGuard` y los redirigía al dashboard; la vista lista/mosaico ya mostraba asignaciones en solo lectura.
+- **What was done:** Se alineó el enrutamiento con `/tables` (`tableAccessGuard`, roles en `PermissionService` para camarero/recepcionista) y se amplió el Puppeteer `test:tables-waiter-assignment` con verificación del plano.
+- **What was tested:** Verificación 2026-03-28 UTC: camarero permanece en `/tables/canvas`, panel de asignación solo lectura sin `<select>`, regresión en vista tabla, `test:tables-waiter-assignment` con credenciales y `test:landing-version` — todo PASS.
+- **Why closed:** Criterios del handoff cumplidos tras el arreglo de rutas; el FAIL previo era anterior al fix.
+- **Closed at (UTC):** 2026-03-28 09:45
+---
+
 # Waiter cannot see table assignments on staff Tables view
 
 ## GitHub
