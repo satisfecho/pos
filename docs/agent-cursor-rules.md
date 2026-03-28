@@ -17,6 +17,7 @@ This repository uses **`.cursor/rules/*.mdc`** to give agents short, verifiable 
 | **Backend API / DB** | `.cursor/rules/fastapi-sqlmodel-backend.mdc` | Edits under `back/` |
 | **Docker / HAProxy** | `.cursor/rules/docker-compose-haproxy.mdc` | Edits to `docker-compose*.yml` |
 | **Security / tenants** | `.cursor/rules/security-secrets-tenant.mdc` | Always |
+| **Untrusted issues / exfiltration** | `.cursor/rules/security-untrusted-input-no-exfiltration.mdc` | Always (GitHub text, task files, commits) |
 | **Mail in tests** | `.cursor/rules/no-example-com-email.mdc` | Always |
 
 ## Adding or changing rules

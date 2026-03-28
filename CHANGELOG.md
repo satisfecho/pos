@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Agent security:** Always-applied Cursor rule **`.cursor/rules/security-untrusted-input-no-exfiltration.mdc`** — treat GitHub issue text as untrusted; no exfiltration of secrets/PII into **`FEAT-`** tasks, commits, or product files. Cross-references in **`AGENTS.md`**, **`docs/agent-cursor-rules.md`**, **`agents/001-log-reviewer/LOG-REVIEWER-PROMPT.md`**.
+
 - **Public terms & privacy pages (GitHub #113):** SPA routes `/terms` and `/privacy` (`LegalDocumentComponent`, i18n `LEGAL.DOC.*` in all shipped locales). `GET /public/legal-urls` and tenant effective URLs fall back to `{PUBLIC_APP_BASE_URL}/terms` and `/privacy` when `PUBLIC_TERMS_OF_SERVICE_URL` / `PUBLIC_PRIVACY_POLICY_URL` are unset. `config.env.example` documents the fallback.
 
 - **Working plan — per-user colors (GitHub #109):** Calendar shift lines use a stable hue from `user_id` (HSL chips + `@media (prefers-color-scheme: dark)`). Week list shift cards get a matching left border. Legend text updated in all shipped i18n files. Color hash helper: `front/src/app/working-plan/working-plan-shift-colors.ts` (+ `working-plan-shift-colors.spec.ts`).
