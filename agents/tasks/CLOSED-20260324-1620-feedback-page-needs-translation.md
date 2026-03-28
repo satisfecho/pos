@@ -90,3 +90,35 @@ Public guest feedback (`/feedback/{tenant}`, e.g. with `?token=…` on productio
 - **What to verify:** `/feedback/{tenant}` with fresh profile and Spanish browser language: visible copy and **`document.title`** contain no raw `FEEDBACK.*`; title includes **`Cómo`** (ES) on first load (navigator stub scenario).
 - **How to test:** With stack on HAProxy (e.g. **4202**): `BASE_URL=http://127.0.0.1:4202 node front/scripts/test-feedback-public-i18n.mjs`. After deploy: `BASE_URL=https://satisfecho.de node front/scripts/test-feedback-public-i18n.mjs`. Compose: `docker-compose.yml` + `docker-compose.dev.yml` locally.
 - **Pass / fail:** Exit code **0**; all `>>> RESULT:` lines printed; no assertion errors (see script for #67).
+
+---
+
+## Test report (tester, 2026-03-28)
+
+1. **Date/time (UTC) and log window:** 2026-03-28 **10:02:54Z** start; local script ~**10:02:54–10:03:12Z**; production script immediately after (~**10:03:12–10:03:30Z**). Docker **`pos-haproxy`** tail **`--since 2026-03-28T10:02:40Z`** shows **`GET /feedback/999999999` 200** and **`GET /api/public/tenants/999999999` 404** in that window.
+
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; **`BASE_URL=http://127.0.0.1:4202`** (local) and **`BASE_URL=https://satisfecho.de`** (production); branch **`development`**, commit **`3bb46ba`**; **`HEADLESS=1`**.
+
+3. **What was tested:** Public `/feedback/{tenant}` — no raw `FEEDBACK.*` in visible copy or document title; ES auto-detect first load (navigator stub); multi-locale sweep; token path; invalid token DE error; thank-you de; `/feedback/0`; missing tenant 404 — per **`front/scripts/test-feedback-public-i18n.mjs`**.
+
+4. **Results**
+   - **Local — script exit 0, all RESULT lines:** **PASS** — `BASE_URL=http://127.0.0.1:4202 node front/scripts/test-feedback-public-i18n.mjs` exited **0**; seven `>>> RESULT:` lines printed.
+   - **Local — no raw FEEDBACK.* / localized title:** **PASS** — assertions embedded in script (incl. ES title **`Cómo`**) passed.
+   - **Production — script exit 0:** **PASS** — `BASE_URL=https://satisfecho.de node front/scripts/test-feedback-public-i18n.mjs` exited **0**; same seven result lines.
+   - **Production — document title on first-load ES auto-detect:** **PASS** — no longer stuck on default **`POS - Point of Sale`** (regression from 2026-03-24 retest cleared).
+
+5. **Overall:** **PASS**.
+
+6. **Product owner feedback:** La página pública de feedback queda alineada con la barra de aceptación automatizada tanto en Docker local como en **satisfecho.de**: títulos y textos traducidos sin fugas de claves `FEEDBACK.*`, incluso en la primera carga con idioma del navegador en español. El cambio del coder (`afterNextRender` + `translate.stream` para el título) se comporta bien en producción desplegada.
+
+7. **URLs tested**
+   1. `http://127.0.0.1:4202/feedback/1` (y flujos del script: token en query, envío, `/feedback/0`, `/feedback/999999999`)
+   2. `https://satisfecho.de/feedback/1` (mismos escenarios vía script)
+
+8. **Relevant log excerpts**
+   - **Commands:** ambos runs **`exit code 0`**; stdout con las siete líneas **`>>> RESULT:`** indicadas arriba.
+   - **`pos-haproxy` (muestra, ventana local):** `GET /feedback/999999999` **200**; `GET /api/public/tenants/999999999` **404**; peticiones a **`/i18n/*.json`** y **`FeedbackPublicComponent`** vía dev/HMR coherentes con la ejecución del script.
+
+**Loop protection:** N/A (segunda verificación formal en este archivo; primera **PASS** end-to-end incl. producción).
+
+**GitHub:** **`gh issue comment 67`** publicado (2026-03-28) con resumen de verificación. **`gh issue edit … --remove-label agent:testing`** falló: etiqueta **`agent:testing`** no presente en el issue; ajustar etiquetas manualmente si aplica (**`docs/agent-loop.md`**).
