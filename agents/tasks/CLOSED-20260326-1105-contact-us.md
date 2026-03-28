@@ -45,7 +45,7 @@ Add a **Contact us** link in the **app landing** footer. Copy must respect **i18
 
 5. **Overall:** **PASS** (all criteria above).
 
-6. **Product owner feedback:** El enlace **Contact us** en el pie de la landing cumple i18n (probado EN/DE) y apunta a **sales@satisfecho.de**, alineado con el dominio del producto frente al typo del issue. El flujo queda cubierto por el script Puppeteer dedicado para regresiones futuras.
+6. **Product owner feedback:** The landing footer **Contact us** link meets i18n (verified EN/DE) and targets **sales@satisfecho.de**, matching the product domain instead of the issue typo. The dedicated Puppeteer script guards against future regressions.
 
 7. **URLs tested:**
    1. `http://127.0.0.1:4202/` (English, footer contact mailto)
