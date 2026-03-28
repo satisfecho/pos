@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Tester prompt (`agents/003-tester/TESTER.md`):** Guidelines for tasks that include **amvara9 / production** deploy — wait for deploy success (CI, health/version polling, explicit handoff) instead of a fixed sleep before testing.
+
 - **Smoke tests:** `front/scripts/test-landing-version.mjs` accepts **`LANDING_VERSION_ONLY=1`** to run only the landing/version assertion when **`.env`** contains local demo login vars but **`BASE_URL`** points at a remote host (avoids spurious **401** on production smoke). For non-local **`BASE_URL`**, it runs a short HTTP reachability probe before Puppeteer (clear message on connection failure; **`LANDING_SMOKE_NO_REACHABILITY_PROBE=1`** to skip). Documented in **`docs/testing.md`**.
 
 ### Added

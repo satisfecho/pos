@@ -35,6 +35,20 @@ If verification fails **more than three** times for the same change, stop cyclin
 5. Browser flows: record **every full URL** visited.
 6. Collect evidence from **`docker logs`** (`pos-front`, `pos-back`, …) for the UTC window.
 
+### Production / amvara9 — wait for deploy, do not “sleep and hope”
+
+When **Testing instructions** (or the task scope) include **deployment to amvara9** / **production** / verification on **`satisfecho.de`** (or another URL that only updates after CI/CD):
+
+1. **Do not** rely on a **fixed sleep** (e.g. “wait 3 minutes”) as the main way to know the new build is live. That wastes time when deploy is fast and is **unsafe** when deploy is slow or fails — you may test the **old** stack and report a false **PASS** or **FAIL**.
+2. **Wait for success signals** instead (use what the task or human specifies; otherwise pick sensible defaults):
+   - **GitHub Actions:** confirm the **`deploy-amvara9`** workflow run for the relevant push is **green** (see **`docs/0001-ci-cd-amvara9.md`**). Note the run URL in the **Test report**.
+   - **HTTP / app signals:** poll until **`/api/health`** (and, if the change is user-visible, **`/`** or the feature URL) returns **200** and, where applicable, **`BASE_URL`** matches **`docs/testing.md`** / production conventions. If the task ties verification to a **git short hash** or **app version** in the UI/footer, **poll until that value matches the expected commit** (or until a clear timeout — then **FAIL** with “deploy never became ready”).
+   - **Human handoff:** if a maintainer must deploy manually or CI is skipped, wait for **explicit confirmation** in the issue or chat before running production checks; record that in the **Test report**.
+3. **Polling pattern:** short interval at first (e.g. 10–20s), then back off (e.g. 30–60s), up to a **stated timeout** in the **Test report** (e.g. 15–20 minutes for a full image rebuild). Prefer `curl` / scripted checks over arbitrary sleep loops.
+4. **Evidence:** In the **Test report**, state **how** you knew deploy was done (workflow run, health responses, version/hash observed, timestamps UTC), not “waited 3 minutes”.
+
+Local **Docker** testing is unchanged; this section applies when the **target environment is production post-deploy**.
+
 ### Test report (append to task file)
 
 1. **Date/time (UTC)** and log window.
