@@ -207,6 +207,25 @@ sync_repo() {
   fi
 }
 
+# True if agents/tasks/ root has ≥1 file matching any glob (e.g. NEW-*.md WIP-*.md).
+any_root_task_glob() {
+  shopt -s nullglob
+  local g matches
+  for g in "$@"; do
+    matches=("$TASKDIR"/$g)
+    if (( ${#matches[@]} > 0 )); then
+      shopt -u nullglob
+      return 0
+    fi
+  done
+  shopt -u nullglob
+  return 1
+}
+
+has_pos_repo_uncommitted_changes() {
+  ( cd "$REPO_ROOT" && { ! git diff --quiet 2>/dev/null || ! git diff --staged --quiet 2>/dev/null; } )
+}
+
 # Only invoke agent if condition is true and prompt file exists.
 # Usage: run_agent "description" "condition_cmd" "prompt_relative_path" "message"
 run_agent() {
@@ -264,46 +283,70 @@ Then follow 001-log-reviewer/LOG-REVIEWER-PROMPT.md — (A) GitHub → up to 3 �
 }
 
 step_feat() {
+  if ! any_root_task_glob 'FEAT-*.md'; then
+    echo "----- feature coding (FEAT) (skip: no FEAT-*.md — no sync, no agent)"
+    return 0
+  fi
   sync_repo
   echo "-----> feature coding (FEAT) <----"
   run_agent "feature coding (FEAT)" \
-    "test -n \"\$(find \"$TASKDIR\" -maxdepth 1 -name 'FEAT-*.md' 2>/dev/null)\"" \
+    "any_root_task_glob 'FEAT-*.md'" \
     "006-feature-coder/FEATURE-CODER.md" \
     "Start feature coding now. Pick up a FEAT task if any. Do your job."
 }
 
 step_coder() {
+  if ! any_root_task_glob 'NEW-*.md' 'WIP-*.md'; then
+    echo "----- coding (skip: no NEW-*.md or WIP-*.md — no sync, no agent)"
+    return 0
+  fi
   sync_repo
   echo "-----> coding (NEW / WIP) <----"
   run_agent "coding" \
-    "test -n \"\$(find \"$TASKDIR\" -maxdepth 1 \\( -name 'NEW-*.md' -o -name 'WIP-*.md' \\) 2>/dev/null)\"" \
+    "any_root_task_glob 'NEW-*.md' 'WIP-*.md'" \
     "002-coder/CODER.md" \
     "Start coding now. Prefer a NEW task if any (rename to WIP on start); otherwise continue an existing WIP to UNTESTED. Implement in this repo (back/, front/). Do your job."
 }
 
 step_tester() {
+  if ! any_root_task_glob 'UNTESTED-*.md'; then
+    echo "----- testing (skip: no UNTESTED-*.md — no sync, no agent)"
+    return 0
+  fi
   sync_repo
   echo "-----> testing <----"
   run_agent "testing" \
-    "test -n \"\$(find \"$TASKDIR\" -maxdepth 1 -name 'UNTESTED-*.md' 2>/dev/null)\"" \
+    "any_root_task_glob 'UNTESTED-*.md'" \
     "003-tester/TESTER.md" \
     "Start testing now. Pick up an UNTESTED task if any. Do your job."
 }
 
 step_closing_review() {
+  if ! any_root_task_glob 'CLOSED-*.md'; then
+    echo "----- closing reviewer (skip: no CLOSED-*.md in tasks/ — no sync, no agent)"
+    return 0
+  fi
   sync_repo
   echo "-----> closing reviewer (CLOSED in tasks/) <----"
   run_agent "closing" \
-    "test -n \"\$(find \"$TASKDIR\" -maxdepth 1 -name 'CLOSED-*.md' 2>/dev/null)\"" \
+    "any_root_task_glob 'CLOSED-*.md'" \
     "004-closing-reviewer/CLOSING-REVIEWER-PROMPT.md" \
     "Start closing review now. Process CLOSED-*.md in agents/tasks/; prepend summary; move to done/YYYY/MM/DD with scripts/move-agent-task-to-done.sh when done. Do your job."
 }
 
 step_committer() {
+  if ! has_pos_repo_uncommitted_changes; then
+    echo "----- committer (changelog + commit) (skip: no uncommitted changes — no sync, no agent)"
+    return 0
+  fi
   sync_repo
+  if ! has_pos_repo_uncommitted_changes; then
+    echo "----- committer (skip after sync: working tree clean)"
+    return 0
+  fi
   echo "-----> committer (changelog + commit, POS repo) <----"
   run_agent "committer (changelog + commit)" \
-    "cd \"$REPO_ROOT\" && { ! git diff --quiet 2>/dev/null || ! git diff --staged --quiet 2>/dev/null; }" \
+    "has_pos_repo_uncommitted_changes" \
     "007-committer/COMMITTER.md" \
     "Check this POS repo for uncommitted changes on branch development. Update CHANGELOG.md and front/package.json per project rules; commit. Push origin development. Merge development to master only per .cursor/rules/git-development-branch-workflow.mdc (2h batch, big prod change, or production-urgent issue / explicit user ask)."
 }
@@ -359,7 +402,7 @@ Environment:
 
 Docker / app stack: start separately from repo root with ./run.sh -dev
 
-Git: each step runs scripts/git-sync-development.sh first (development + pull --rebase --autostash).
+Git: FEAT/NEW-WIP/tester/closing/committer run scripts/git-sync-development.sh only when that step has work (queue or uncommitted changes). 001 syncs when its gate opens.
 
 Prompt files live under agents/ (e.g. 002-coder/CODER.md). See docs/agent-loop.md.
 EOF

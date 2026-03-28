@@ -119,9 +119,9 @@ Same idea as **mac-stats-reviewer** `agents/run.sh`, but named for clarity: one 
 | **`./agents/pos-agent-loop.sh committer`** | Run committer if POS repo has unstaged/staged changes. |
 | **`./agents/pos-agent-loop.sh help`** | Usage. |
 
-**Git:** each step that may edit the repo begins with **`scripts/git-sync-development.sh`** (unless **`AGENT_GIT_SYNC=0`**). **001** skips sync when it skips **`cursor-agent`** (nothing to do). See **Sync before edits (multi-agent)** above.
+**Git:** **`scripts/git-sync-development.sh`** runs only when a step actually has work (unless **`AGENT_GIT_SYNC=0`**): **001** syncs only when its preflight gate opens; **002–004 / 006–007** sync only when their queue (or, for **007**, uncommitted changes) is non-empty. See **Sync before edits (multi-agent)** above.
 
-**Token-saving gates:** **002 / 003 / 004 / 007** already skip **`cursor-agent`** when there is no matching task file or (committer) no git diff. **006** runs at most five times per cycle but **stops the FEAT batch early** when no **`FEAT-*.md`** remains (avoids redundant syncs). **001** adds a **preflight digest** (issues + log heuristics) and only then invokes the agent.
+**Token-saving gates:** **002 / 003 / 004 / 006 / 007** skip **`cursor-agent`** and **skip git sync** when there is no matching task file at **`agents/tasks/`** root or (committer) no unstaged/staged diff. **006** runs at most five times per cycle and **stops the FEAT batch early** when no **`FEAT-*.md`** remains. **001** adds a **preflight digest** (issues + log heuristics) and only then invokes the agent.
 
 **Further token / cost ideas (not all implemented):**
 
