@@ -34,3 +34,38 @@ Contexto de ramas y cuándo promover a **`master`**: **`.cursor/rules/git-develo
    `LANDING_VERSION_ONLY=1 BASE_URL=https://satisfecho.de npm run test:landing-version`  
    Esperado: mensaje **`>>> RESULT: Landing page shows version.`** y código de salida **0**.
 4. **Opcional (staff en producción):** con **`LOGIN_EMAIL` / `LOGIN_PASSWORD`** válidos para el tenant de prueba, ejecutar el mismo script **sin** **`LANDING_VERSION_ONLY`** para recorrer sidebar (si la política de cuentas lo permite).
+
+---
+
+## Test report (tester 003, 2026-03-28)
+
+1. **Date/time (UTC)** and log window: **2026-03-28 14:31:07 UTC** (approx. **14:28–14:32 UTC** for commands below).
+
+2. **Environment:** Host runner (no Docker compose required for these checks). **`BASE_URL`:** `https://satisfecho.de`. **Branch:** `development` synced with `origin` (**`./scripts/git-sync-development.sh`**). **`origin/master`** and **`origin/development`** both at **`00e806f`** at fetch time (repo state during this run).
+
+3. **What was tested:** Items 1–3 from **Testing instructions** (post-deploy footer / 5xx, HTTP smoke, Puppeteer landing-only). Item 4 skipped (optional).
+
+4. **Results:**
+   - **(1) Landing footer vs `master` + no 5xx on common routes:** **FAIL** — No page load; cannot compare footer hash or scan routes (`ERR_CONNECTION_REFUSED`).
+   - **(2) HTTP `GET /` and `GET /api/health` → 200:** **FAIL** — `curl: (7) Failed to connect to satisfecho.de port 443 after ~50ms: Couldn't connect to server` (no HTTP status from server).
+   - **(3) Puppeteer `LANDING_VERSION_ONLY=1` landing test:** **FAIL** — `Error: net::ERR_CONNECTION_REFUSED at https://satisfecho.de/`; **`npm run test:landing-version`** exit code **1** (no `>>> RESULT: Landing page shows version.`).
+   - **(4) Optional staff sidebar:** **N/A — skipped**.
+
+5. **Overall:** **FAIL** — Failed criteria: (1), (2), (3). Blocker: **HTTPS to `satisfecho.de` unreachable from this verification environment** (connection refused). Not evidence that production is down; re-run tests from a host with outbound access to production (e.g. operator laptop, CI with egress, or post-deploy check on amvara9).
+
+6. **Product owner feedback:** No se pudo validar producción desde el entorno del tester: la conexión a **https://satisfecho.de** devolvió **connection refused**, así que no hay evidencia nueva sobre el pie de página ni los smoke HTTP/Puppeteer. Conviene repetir estas comprobaciones desde una red que alcance el sitio o tras despliegue desde el propio operador.
+
+7. **URLs tested:**  
+   1. `https://satisfecho.de/` (attempted; connection refused)  
+   2. `https://satisfecho.de/api/health` (attempted; connection refused)  
+   3. `https://satisfecho.de/api/docs` (attempted once in an earlier batch; subsequent attempts refused)
+
+8. **Relevant log excerpts (last section):**
+
+```text
+$ curl -sS -I --connect-timeout 20 https://satisfecho.de/
+curl: (7) Failed to connect to satisfecho.de port 443 after 53 ms: Couldn't connect to server
+
+$ cd front && LANDING_VERSION_ONLY=1 BASE_URL=https://satisfecho.de npm run test:landing-version
+Error: net::ERR_CONNECTION_REFUSED at https://satisfecho.de/
+```
