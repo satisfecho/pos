@@ -32,3 +32,17 @@ See also: `.cursor/rules/security-untrusted-input-no-exfiltration.mdc` — do no
 1. Open **`.cursor/rules/agent-response-language.mdc`**, **`AGENTS.md`** (assistant reply language bullet), and **`docs/agent-cursor-rules.md`** (Reply language row) and confirm wording is consistent and English.
 2. Confirm **`.cursor/rules/front-smoke-test.mdc`** still reads clearly (steps 1–4 + closing sentence).
 3. No `front/` or `back/` product code changed; **no** Docker / Puppeteer smoke required for this task.
+
+## Test report
+
+1. **Date/time (UTC) and log window:** 2026-03-30T07:24:49Z; verification ~07:22–07:25Z (no container log window — docs-only scope).
+2. **Environment:** Host read of repo files; branch `development` @ `7477de5`; compose / `BASE_URL` **N/A** (smoke explicitly out of scope).
+3. **What was tested:** Items 1–3 under **Testing instructions** (rule file + `AGENTS.md` + catalog + `front-smoke-test.mdc`; no Docker/Puppeteer).
+4. **Results:**
+   - **Criterion 1 (agent-response-language + AGENTS + agent-cursor-rules):** **PASS** — `.cursor/rules/agent-response-language.mdc` is English, imperative, aligned with one-language-per-reply; `AGENTS.md` assistant-reply bullet matches and links the rule; `docs/agent-cursor-rules.md` **Reply language** row points to the same file with consistent summary.
+   - **Criterion 2 (front-smoke-test.mdc clarity):** **PASS** — Numbered steps 1–4 and closing sentence “This keeps regressions from frontend edits from going unnoticed.” read clearly.
+   - **Criterion 3 (no front/back product change → no Docker smoke):** **PASS** — Task states product code unchanged; verification limited to stated doc checks.
+5. **Overall:** **PASS**
+6. **Product owner feedback:** Agent-facing language rules and the main operator doc now point to a single, English “reply language” rule, which should reduce mixed EN/ES assistant output when users write in English. The Cursor rules catalog stays easy to scan. No runtime risk was introduced because the scope stayed in documentation and `.cursor` rules.
+7. **URLs tested:** **N/A — no browser**
+8. **Relevant log excerpts:** **N/A — no containers exercised for this task**
