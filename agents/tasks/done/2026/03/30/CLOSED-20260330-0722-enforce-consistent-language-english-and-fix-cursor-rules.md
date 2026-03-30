@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** The tester finished verification for GitHub issue #116 on one-language-per-reply behavior and English-only agent/Cursor rule text.
+- **What was done:** A new always-applied `.cursor/rules/agent-response-language.mdc` was added; `AGENTS.md` and `docs/agent-cursor-rules.md` were updated to reference it; `.cursor/rules/*.mdc` were audited; `front-smoke-test.mdc` wording was clarified—scope stayed documentation and rules only (no `front/` or `back/` product code).
+- **What was tested:** Manual review of those files per the task’s testing instructions; overall **PASS** with no browser or Docker smoke (explicitly out of scope).
+- **Why closed:** All listed criteria passed and the test report concluded **PASS**.
+- **Closed at (UTC):** 2026-03-30 07:25
+---
+
 # Enforce consistent language usage (English) and fix Cursor rules
 
 ## GitHub
