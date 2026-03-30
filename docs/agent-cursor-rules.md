@@ -11,6 +11,7 @@ This repository uses **`.cursor/rules/*.mdc`** to give agents short, verifiable 
 | **Docs before code** | `.cursor/rules/lookup-docs-before-new-code.mdc` | Always |
 | **Errors / logs** | `.cursor/rules/error-investigation-workflow.mdc` | Debugging incidents |
 | **Execution bias** | `.cursor/rules/prefer-do-dont-ask.mdc` | Always |
+| **Reply language** | `.cursor/rules/agent-response-language.mdc` | Always (one language per reply; match user; no mixed EN/ES in agent text) |
 | **Angular build** | `.cursor/rules/angular-frontend-docker-logs.mdc` | Edits under `front/` |
 | **Angular i18n** | `.cursor/rules/angular-ngx-translate.mdc` | Edits under `front/` (UI copy) |
 | **Frontend smoke** | `.cursor/rules/front-smoke-test.mdc` | Edits under `front/` |

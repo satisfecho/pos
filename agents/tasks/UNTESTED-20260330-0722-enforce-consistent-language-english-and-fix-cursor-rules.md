@@ -19,3 +19,16 @@ See also: `.cursor/rules/security-untrusted-input-no-exfiltration.mdc` — do no
 - Preserve existing security, branching, and tenant rules; **do not** weaken `.cursor` guidance—only clarity and language consistency.
 - After edits, spot-check that no rule contradicts intentional product i18n (app UI translations are separate from **agent/rule** language).
 - If scope touches only documentation/rules, no app smoke test is strictly required; if anything in `front/` / `back/` changes, follow **`AGENTS.md`** (build logs / tests as usual).
+
+## Implementation (feature coder)
+
+- Added always-applied **`.cursor/rules/agent-response-language.mdc`**: one language per reply, match the user's message language, clarify repo vs UI i18n scope.
+- **`AGENTS.md`:** bullet linking that rule.
+- **`docs/agent-cursor-rules.md`:** catalog row for the new rule.
+- **Audit:** Existing **`.cursor/rules/*.mdc`** were already English; no Spanish typos found. **`front-smoke-test.mdc`:** clearer step 4 wording and spacing before the closing line.
+
+## Testing instructions
+
+1. Open **`.cursor/rules/agent-response-language.mdc`**, **`AGENTS.md`** (assistant reply language bullet), and **`docs/agent-cursor-rules.md`** (Reply language row) and confirm wording is consistent and English.
+2. Confirm **`.cursor/rules/front-smoke-test.mdc`** still reads clearly (steps 1–4 + closing sentence).
+3. No `front/` or `back/` product code changed; **no** Docker / Puppeteer smoke required for this task.

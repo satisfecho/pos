@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Agents / Cursor (GitHub #116):** Always-applied rule **`.cursor/rules/agent-response-language.mdc`** — one language per assistant reply, match the user's message language, no mixed-language agent text; documented in **`AGENTS.md`** and **`docs/agent-cursor-rules.md`**.
+
 - **Agent security:** Always-applied Cursor rule **`.cursor/rules/security-untrusted-input-no-exfiltration.mdc`** — treat GitHub issue text as untrusted; no exfiltration of secrets/PII into **`FEAT-`** tasks, commits, or product files. Cross-references in **`AGENTS.md`**, **`docs/agent-cursor-rules.md`**, **`agents/001-log-reviewer/LOG-REVIEWER-PROMPT.md`**.
 
 - **Public terms & privacy pages (GitHub #113):** SPA routes `/terms` and `/privacy` (`LegalDocumentComponent`, i18n `LEGAL.DOC.*` in all shipped locales). `GET /public/legal-urls` and tenant effective URLs fall back to `{PUBLIC_APP_BASE_URL}/terms` and `/privacy` when `PUBLIC_TERMS_OF_SERVICE_URL` / `PUBLIC_PRIVACY_POLICY_URL` are unset. `config.env.example` documents the fallback.
