@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue #118 asked to merge `development` into `master` and verify production deployment on amvara9.
+- **What was done:** `master` was fast-forwarded to the promoted commit and pushed; the **Deploy to amvara9** workflow completed successfully; production endpoints responded as expected.
+- **What was tested:** Remote `origin/master` SHA, GitHub Actions run 23742283658, `https://satisfecho.de/` and `/api/health` — **PASS** overall (optional prod login test skipped for credentials).
+- **Why closed:** Tester marked overall **PASS**; promotion and deploy verification criteria are satisfied.
+- **Closed at (UTC):** 2026-03-30 11:30
+---
+
 # Push to master
 
 ## GitHub
