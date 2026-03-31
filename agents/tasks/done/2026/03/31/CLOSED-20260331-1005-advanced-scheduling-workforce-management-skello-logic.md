@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** The tester handed off issue #122 after the Skello-style scheduling iteration (copy week, planned vs clocked, compliance summary) was implemented and verified on the local stack.
+- **What was done:** Backend added `POST /schedule/copy-week`, `GET /schedule/planned-vs-actual`, and `GET /schedule/compliance-summary` with supporting helpers and tests; frontend extended the working plan with copy-week, compliance messaging, and planned vs clocked UI; `docs/0021-working-plan.md` documents the extensions.
+- **What was tested:** Backend `pytest tests/test_schedule_copy_week.py` (2 passed) and frontend `npm run test:working-plan` against `http://127.0.0.1:4202` — both passed; optional manual checks were not required for closure.
+- **Why closed:** All required test criteria in the task’s test report passed (overall PASS).
+- **Closed at (UTC):** 2026-03-31 10:59
+---
+
 # Advanced scheduling and workforce management (Skello-style)
 
 ## GitHub
