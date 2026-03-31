@@ -7482,6 +7482,84 @@ def get_reservation_book_calendar(
     return {"year": year, "month": month, "days": days}
 
 
+def _public_book_slot_cells_for_single_date(
+    session: Session,
+    tenant_id: int,
+    tenant: models.Tenant,
+    d: date,
+    party_size: int,
+    exclude_reservation_id: int | None,
+    svc: str | None,
+    tz: ZoneInfo,
+    now_local: datetime,
+    today_local: date,
+    min_dt: datetime,
+    max_book: date,
+) -> dict[str, str]:
+    """Per time-slot state for one calendar day (same rules as book-week-slots)."""
+    slot_step = _effective_reservation_slot_minutes(tenant)
+    windows = _opening_service_windows_for_date(tenant, d)
+    if windows is None:
+        windows = [(time(8, 0), time(23, 0))]
+    windows_f = _filter_windows_by_service(windows, svc)
+    day_closed = len(windows) == 0 or len(windows_f) == 0
+    allowed_times: set[time] = set()
+    if not day_closed:
+        allowed_times = set(_grid_slot_times_for_windows(windows_f, slot_step))
+    times_sorted = sorted(allowed_times, key=lambda x: x.hour * 60 + x.minute)
+    cells: dict[str, str] = {}
+    for st in times_sorted:
+        key = st.strftime("%H:%M")
+        if d > max_book:
+            cells[key] = "out_of_range"
+            continue
+        if day_closed:
+            cells[key] = "closed_day"
+            continue
+        if st not in allowed_times:
+            cells[key] = "out_of_hours"
+            continue
+        if d < today_local:
+            cells[key] = "past"
+            continue
+        slot_dt = datetime.combine(d, st, tzinfo=tz)
+        if slot_dt < min_dt:
+            cells[key] = "past"
+            continue
+        total_seats, total_tables = _reservable_capacity_for_tenant(session, tenant_id, d, tenant, st)
+        if total_tables < 1 or total_seats < party_size:
+            cells[key] = "full"
+            continue
+        reserved_guests, reserved_parties = _demand_for_slot(
+            session, tenant_id, d, st, exclude_reservation_id=exclude_reservation_id
+        )
+        if reserved_guests + party_size <= total_seats and reserved_parties + 1 <= total_tables:
+            cells[key] = "available"
+        else:
+            cells[key] = "full"
+    return cells
+
+
+def _aggregate_public_day_slot_state(cells: dict[str, str]) -> str:
+    """Single UI state for a day cell from per-slot states."""
+    if not cells:
+        return "closed_day"
+    vals = set(cells.values())
+    if "available" in vals:
+        return "available"
+    if vals == {"closed_day"}:
+        return "closed_day"
+    if vals == {"out_of_range"}:
+        return "out_of_range"
+    if "full" in vals:
+        return "full"
+    if vals <= {"past"}:
+        return "past"
+    if "past" in vals:
+        return "past"
+    return "out_of_hours"
+
+
 def _monday_on_or_before(d: date) -> date:
     """ISO weekday: Monday=0 … Sunday=6."""
     return d - timedelta(days=d.weekday())
@@ -7606,6 +7684,113 @@ def get_reservation_book_week_slots(
         "times": time_strings,
         "days": days_out,
     }
+
+
+@app.get("/reservations/book-month-day-states")
+def get_reservation_book_month_day_states(
+    tenant_id: int = Query(...),
+    year: int = Query(..., ge=2000, le=2100),
+    month: int = Query(..., ge=1, le=12),
+    party_size: int = Query(2, ge=1, le=100),
+    exclude_reservation_id: int | None = Query(
+        None,
+        description="Exclude this reservation from demand (staff edit: current booking)",
+    ),
+    service: str | None = Query(
+        None,
+        description="Optional lunch|dinner when opening hours have a break",
+    ),
+    session: Session = Depends(get_session),
+) -> dict:
+    """Public: per-day aggregate slot state for a month (month calendar cells)."""
+    tenant = session.get(models.Tenant, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    svc: str | None = None
+    if service and str(service).strip():
+        svc = _normalize_reservation_service_type(str(service).strip())
+
+    tz = ZoneInfo(tenant.timezone) if tenant.timezone else timezone.utc
+    now_local = datetime.now(tz)
+    today_local = now_local.date()
+    min_dt = now_local + timedelta(minutes=RESERVATION_PUBLIC_MIN_LEAD_MINUTES)
+    max_book = today_local + timedelta(days=366)
+
+    _, last_day = monthrange(year, month)
+    days_out: list[dict] = []
+    for dom in range(1, last_day + 1):
+        d = date(year, month, dom)
+        cells = _public_book_slot_cells_for_single_date(
+            session,
+            tenant_id,
+            tenant,
+            d,
+            party_size,
+            exclude_reservation_id,
+            svc,
+            tz,
+            now_local,
+            today_local,
+            min_dt,
+            max_book,
+        )
+        days_out.append({"date": d.isoformat(), "state": _aggregate_public_day_slot_state(cells)})
+
+    return {"year": year, "month": month, "days": days_out}
+
+
+@app.get("/reservations/book-day-slots")
+def get_reservation_book_day_slots(
+    tenant_id: int = Query(...),
+    date_str: str = Query(..., alias="date", description="Reservation date YYYY-MM-DD"),
+    party_size: int = Query(2, ge=1, le=100),
+    exclude_reservation_id: int | None = Query(
+        None,
+        description="Exclude this reservation from demand (staff edit: current booking)",
+    ),
+    service: str | None = Query(
+        None,
+        description="Optional lunch|dinner when opening hours have a break",
+    ),
+    session: Session = Depends(get_session),
+) -> dict:
+    """Public: time rows for one day (dropdown after date pick on book page)."""
+    tenant = session.get(models.Tenant, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    svc: str | None = None
+    if service and str(service).strip():
+        svc = _normalize_reservation_service_type(str(service).strip())
+
+    try:
+        d = _parse_reservation_date(str(date_str).strip())
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    tz = ZoneInfo(tenant.timezone) if tenant.timezone else timezone.utc
+    now_local = datetime.now(tz)
+    today_local = now_local.date()
+    min_dt = now_local + timedelta(minutes=RESERVATION_PUBLIC_MIN_LEAD_MINUTES)
+    max_book = today_local + timedelta(days=366)
+
+    cells = _public_book_slot_cells_for_single_date(
+        session,
+        tenant_id,
+        tenant,
+        d,
+        party_size,
+        exclude_reservation_id,
+        svc,
+        tz,
+        now_local,
+        today_local,
+        min_dt,
+        max_book,
+    )
+    times_sorted = sorted(cells.keys(), key=lambda k: int(k[:2]) * 60 + int(k[3:5]))
+    return {"date": d.isoformat(), "times": times_sorted, "cells": cells}
 
 
 @app.get("/reservations/next-available")

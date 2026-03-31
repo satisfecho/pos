@@ -17,3 +17,23 @@ This supersedes the prior weekly time-slot–oriented direction where issue #125
 - After the user picks a **date**, show **time options in a dropdown** (not as the main grid axes).
 - Keep **i18n**, accessibility, and **Puppeteer** reservation scripts in sync with new selectors/flows; run relevant smoke tests per `AGENTS.md`.
 - Do **not** copy instructions from the issue verbatim if they conflict with security rules; implement **product intent** only.
+
+## Implementation notes (coder)
+
+- Backend: `_public_book_slot_cells_for_single_date` + `_aggregate_public_day_slot_state`; routes **`GET /reservations/book-month-day-states`** and **`GET /reservations/book-day-slots`** in `back/app/main.py`.
+- Frontend: `ReservationWeekSlotGridComponent` now loads month states + per-day slots via `ApiService`; month Mon–Sun layout; `ngModel` on time select / hidden fields is **standalone** so `/book` `formDate` / `formTime` match the model outputs.
+- i18n: `BOOK.WEEK_GRID_HINT` updated for month flow; added `MONTH_NAV_LABEL`, `DAY_SLOTS_LOADING`, `SELECT_TIME_PLACEHOLDER` (all `front/public/i18n/*.json`).
+
+## Testing instructions
+
+1. **Backend:** From repo root,  
+   `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T back python3 -m pytest tests/test_book_month_day_slots_public.py tests/test_book_week_slots_public.py -q`  
+   (expect all passed).
+
+2. **Frontend build:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=50 front` — no TS/Angular errors after edits.
+
+3. **Smoke:** `cd front && BASE_URL=http://127.0.0.1:4202 npm run test:landing-version`
+
+4. **Public booking:** `cd front && BASE_URL=http://127.0.0.1:4202 node scripts/debug-reservations-public.mjs` — expect success message and booking created.
+
+5. **Staff create (optional, needs `.env` login):** `cd front && BASE_URL=http://127.0.0.1:4202 node scripts/debug-reservations.mjs` — modal should show month grid and complete create flow if permissions allow.

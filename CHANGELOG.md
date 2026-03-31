@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **Reservations / public booking week grid (GitHub #125):** Shared `ReservationWeekSlotGridComponent` — Mon–Sun column borders, single-letter weekday headers, state styling (available / full / closed / selected), dot legend, summary row (guests, service, date, time-slot dropdown); i18n updates across locales. Task: `agents/tasks/UNTESTED-20260331-1105-improve-reservations-ui-weekly-calendar.md`.
 
+- **Reservations / month calendar booking (GitHub #126):** Public `/book` and staff reservation modal use a **month day grid** (weekday header row + day cells with available/full/closed styling) and a **time dropdown** after date selection — no time-slot table as the main surface. New APIs **`GET /reservations/book-month-day-states`** and **`GET /reservations/book-day-slots`** (capacity rules aligned with `book-week-slots`). Puppeteer scripts **`front/scripts/debug-reservations-public.mjs`** and **`front/scripts/debug-reservations.mjs`** updated; backend tests **`back/tests/test_book_month_day_slots_public.py`**. Child booking controls use **`ngModelOptions: { standalone: true }`** so parent `formDate` / `formTime` stay in sync with the shared component.
+
 - **Version metadata:** Bumped frontend package/version metadata to `2.0.65` (`front/package.json`, `front/package-lock.json`, regenerated `front/src/environments/commit-hash.ts`) to keep landing version checks aligned.
 
 - **Agents task flow:** Dynamic booking issue #119 handoff task moved from `TESTING-20260331-0921-...` to `WIP-20260331-0921-...` after re-verify notes were appended, so the coder queue can continue follow-up work.

@@ -106,22 +106,35 @@ async function main() {
       { partySize }
     );
     await sleep(800);
-    await page.waitForSelector('.book-week-grid .week-slot.ws-available:not([disabled])', {
+    await page.waitForFunction(
+      () => {
+        const busy = document.querySelector('.book-week-loading');
+        return !busy || busy.textContent === '';
+      },
+      { timeout: 15000 }
+    );
+    await page.waitForSelector('.book-month-grid .book-month-day.dm-available:not([disabled])', {
       timeout: 15000,
     });
 
-    const firstSlot = await page.$('.book-week-grid .week-slot.ws-available:not([disabled])');
-    if (!firstSlot) {
-      console.log('\n>>> RESULT: No available week slot found (grid empty or all full).');
+    const firstDay = await page.$('.book-month-grid .book-month-day.dm-available:not([disabled])');
+    if (!firstDay) {
+      console.log('\n>>> RESULT: No available day found (calendar empty or all full).');
       await browser.close();
       process.exit(1);
     }
-    await firstSlot.click();
-    await sleep(300);
+    await firstDay.click();
+    await page.waitForFunction(
+      () => {
+        const t = document.querySelector('#week-grid-hidden-time');
+        return t && t.value && String(t.value).trim().length > 0;
+      },
+      { timeout: 20000 }
+    );
 
     const picked = await page.evaluate(() => {
-      const d = document.querySelector('.book-form input[name="date"]');
-      const t = document.querySelector('.book-form input[name="time"]');
+      const d = document.querySelector('#week-grid-hidden-date');
+      const t = document.querySelector('#week-grid-hidden-time');
       return { date: d?.value || '', time: t?.value || '' };
     });
     console.log('2. Picked slot:', picked.date, picked.time, 'party:', partySize, testName);

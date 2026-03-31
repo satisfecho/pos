@@ -525,6 +525,25 @@ export interface ReservationBookWeekSlotsResponse {
   days: ReservationBookWeekDay[];
 }
 
+/** GET /reservations/book-month-day-states — one month of aggregate day states for the public month grid. */
+export interface ReservationBookMonthDayState {
+  date: string;
+  state: ReservationBookWeekSlotState;
+}
+
+export interface ReservationBookMonthDayStatesResponse {
+  year: number;
+  month: number;
+  days: ReservationBookMonthDayState[];
+}
+
+/** GET /reservations/book-day-slots — times + cells for one day (dropdown after date pick). */
+export interface ReservationBookDaySlotsResponse {
+  date: string;
+  times: string[];
+  cells: Record<string, ReservationBookWeekSlotState>;
+}
+
 /** One restaurant when several share the same printed table name. */
 export interface PublicTableLookupChoice {
   table_token: string;
@@ -1648,6 +1667,51 @@ export class ApiService {
     }
     if (service === 'lunch' || service === 'dinner') params['service'] = service;
     return this.http.get<ReservationBookWeekSlotsResponse>(`${this.apiUrl}/reservations/book-week-slots`, {
+      params,
+    });
+  }
+
+  getReservationBookMonthDayStates(
+    tenantId: number,
+    year: number,
+    month: number,
+    partySize: number,
+    excludeReservationId?: number | null,
+    service?: 'lunch' | 'dinner' | null
+  ): Observable<ReservationBookMonthDayStatesResponse> {
+    const params: Record<string, string> = {
+      tenant_id: String(tenantId),
+      year: String(year),
+      month: String(month),
+      party_size: String(partySize),
+    };
+    if (excludeReservationId != null && excludeReservationId > 0) {
+      params['exclude_reservation_id'] = String(excludeReservationId);
+    }
+    if (service === 'lunch' || service === 'dinner') params['service'] = service;
+    return this.http.get<ReservationBookMonthDayStatesResponse>(
+      `${this.apiUrl}/reservations/book-month-day-states`,
+      { params }
+    );
+  }
+
+  getReservationBookDaySlots(
+    tenantId: number,
+    date: string,
+    partySize: number,
+    excludeReservationId?: number | null,
+    service?: 'lunch' | 'dinner' | null
+  ): Observable<ReservationBookDaySlotsResponse> {
+    const params: Record<string, string> = {
+      tenant_id: String(tenantId),
+      date: date.trim(),
+      party_size: String(partySize),
+    };
+    if (excludeReservationId != null && excludeReservationId > 0) {
+      params['exclude_reservation_id'] = String(excludeReservationId);
+    }
+    if (service === 'lunch' || service === 'dinner') params['service'] = service;
+    return this.http.get<ReservationBookDaySlotsResponse>(`${this.apiUrl}/reservations/book-day-slots`, {
       params,
     });
   }

@@ -168,24 +168,33 @@ async function main() {
           await page.waitForFunction(
             () => {
               const busy = document.querySelector('.book-week-loading');
-              const slot = document.querySelector('button.week-slot.ws-available');
-              return !busy && slot && !slot.disabled;
+              const day = document.querySelector('.book-month-grid .book-month-day.dm-available');
+              return !busy && day && !day.disabled;
             },
             { timeout: 20000 }
           );
         } catch (_) {
-          console.log('   Create: week grid did not become ready (timeout)');
+          console.log('   Create: month calendar did not become ready (timeout)');
         }
         const picked = await page.evaluate(() => {
-          const slot = document.querySelector('button.week-slot.ws-available:not([disabled])');
-          if (!slot) return { ok: false };
-          slot.click();
+          const day = document.querySelector('.book-month-grid .book-month-day.dm-available:not([disabled])');
+          if (!day) return { ok: false };
+          day.click();
           return { ok: true };
         });
         if (!picked.ok) {
-          console.log('   Create: no available week slot (grid empty or still loading)');
+          console.log('   Create: no available calendar day (empty or still loading)');
         }
-        await sleep(500);
+        await sleep(600);
+        await page
+          .waitForFunction(
+            () => {
+              const t = document.querySelector('#week-grid-hidden-time');
+              return t && t.value && String(t.value).trim().length > 0;
+            },
+            { timeout: 15000 }
+          )
+          .catch(() => null);
         await page.waitForSelector('#res-modal-name', { timeout: 5000 }).catch(() => null);
         const pickedDate =
           (await page

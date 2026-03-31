@@ -1,63 +1,53 @@
 <div class="form-group book-week-block">
-  <span class="book-week-label" id="week-grid-heading">{{ 'BOOK.WEEK_GRID_LABEL' | translate }}</span>
+  <span class="book-week-label" id="month-grid-heading">{{ 'BOOK.WEEK_GRID_LABEL' | translate }}</span>
   <p class="book-week-hint">{{ 'BOOK.WEEK_GRID_HINT' | translate }}</p>
-  <div class="book-week-toolbar" role="group" [attr.aria-label]="'BOOK.WEEK_NAV_LABEL' | translate">
+  <div class="book-week-toolbar" role="group" [attr.aria-label]="'BOOK.MONTH_NAV_LABEL' | translate">
     <button
       type="button"
       class="btn-cal-nav"
-      (click)="weekPrev()"
-      [disabled]="!canWeekPrev() || weekSlotsLoading()"
-      [attr.aria-label]="'BOOK.WEEK_PREV' | translate"
+      (click)="monthPrev()"
+      [disabled]="!canMonthPrev() || monthLoading()"
+      [attr.aria-label]="'BOOK.CAL_PREV_MONTH' | translate"
     >
       ‹
     </button>
-    <span class="book-week-title" aria-live="polite">{{ weekRangeTitle() }}</span>
+    <span class="book-week-title" aria-live="polite">{{ monthTitle() }}</span>
     <button
       type="button"
       class="btn-cal-nav"
-      (click)="weekNext()"
-      [disabled]="!canWeekNext() || weekSlotsLoading()"
-      [attr.aria-label]="'BOOK.WEEK_NEXT' | translate"
+      (click)="monthNext()"
+      [disabled]="!canMonthNext() || monthLoading()"
+      [attr.aria-label]="'BOOK.CAL_NEXT_MONTH' | translate"
     >
       ›
     </button>
   </div>
-  @if (weekSlotsLoading()) {
+  @if (monthLoading()) {
     <p class="book-week-loading">{{ 'BOOK.WEEK_LOADING' | translate }}</p>
   }
-  <div class="book-week-scroll" role="region" [attr.aria-labelledby]="'week-grid-heading'" tabindex="0">
-    <div
-      class="book-week-grid"
-      role="grid"
-      [attr.aria-rowcount]="weekTimes().length + 1"
-      [attr.aria-colcount]="weekDays().length + 1"
-    >
-      <div class="week-corner" role="presentation"></div>
-      @for (col of weekDays(); track col.date; let ci = $index) {
-        <div
-          class="week-col-head"
-          [class.week-col-bordered]="ci > 0"
-          role="columnheader"
-        >
-          <span class="week-col-letter">{{ weekDayLetter(col.date) }}</span>
-          <span class="week-col-daynum">{{ weekDayMonthDay(col.date) }}</span>
-        </div>
+  <div class="book-month-scroll" role="region" [attr.aria-labelledby]="'month-grid-heading'" tabindex="0">
+    <div class="book-month-weekdays" role="row">
+      @for (w of weekdayHeaders(); track $index) {
+        <div class="book-month-weekday" role="columnheader">{{ w }}</div>
       }
-      @for (timeStr of weekTimes(); track timeStr; let ri = $index) {
-        <div class="week-row-label" role="rowheader" [attr.aria-rowindex]="ri + 2">{{ timeStr }}</div>
-        @for (col of weekDays(); track col.date; let ci = $index) {
+    </div>
+    <div class="book-month-grid" role="grid" [attr.aria-rowcount]="6" [attr.aria-colcount]="7">
+      @for (cell of calendarCells(); track $index) {
+        @if (cell.kind === 'blank') {
+          <div class="book-month-pad" role="presentation"></div>
+        } @else {
           <button
             type="button"
-            class="week-slot"
+            class="book-month-day"
             role="gridcell"
-            [class.week-col-bordered]="ci > 0"
-            [attr.aria-rowindex]="ri + 2"
-            [attr.aria-colindex]="ci + 2"
-            [attr.aria-label]="slotAriaLabel(col.date, timeStr)"
-            [ngClass]="weekSlotButtonClass(col.date, timeStr)"
-            [disabled]="!weekSlotSelectable(col.date, timeStr) || weekSlotsLoading()"
-            (click)="selectWeekSlot(col.date, timeStr)"
-          ></button>
+            [attr.aria-label]="monthDayAriaLabel(cell.date)"
+            [attr.aria-selected]="selectedDate().trim() === cell.date"
+            [ngClass]="monthDayButtonClass(cell.date)"
+            [disabled]="!monthDaySelectable(cell.date) || monthLoading()"
+            (click)="selectMonthDay(cell.date)"
+          >
+            {{ cell.day }}
+          </button>
         }
       }
     </div>
@@ -87,7 +77,7 @@
         {{ serviceLabel() }}</span
       >
     </div>
-    @if (selectedDate() && selectedTime()) {
+    @if (selectedDate().trim()) {
       <div class="book-week-summary-row book-week-summary-main">
         <div class="summary-datetime">
           <span class="summary-kv"
@@ -96,26 +86,51 @@
           >
         </div>
         <div class="summary-time-control">
-          <label class="summary-time-label" for="week-slot-time-select">{{ 'BOOK.TIME_SLOT' | translate }}</label>
-          <select
-            id="week-slot-time-select"
-            class="book-week-time-select"
-            [value]="selectedTime()"
-            (change)="onTimeSlotSelectChange($event)"
-            [disabled]="weekSlotsLoading()"
-          >
-            @for (t of weekTimes(); track t) {
-              <option [value]="t" [disabled]="!weekSlotSelectable(selectedDate(), t)">{{ t }}</option>
-            }
-          </select>
+          <label class="summary-time-label" for="book-slot-time-select">{{ 'BOOK.TIME_SLOT' | translate }}</label>
+          @if (daySlotsLoading()) {
+            <span class="book-day-slots-loading">{{ 'BOOK.DAY_SLOTS_LOADING' | translate }}</span>
+          } @else {
+            <select
+              id="book-slot-time-select"
+              name="bookSlotTime"
+              class="book-week-time-select"
+              [ngModel]="selectedTime()"
+              (ngModelChange)="onTimeModelChange($event)"
+              [ngModelOptions]="{ standalone: true }"
+              [disabled]="monthLoading() || !dayTimes().length"
+            >
+              <option value="">{{ 'BOOK.SELECT_TIME_PLACEHOLDER' | translate }}</option>
+              @for (t of dayTimes(); track t) {
+                <option [value]="t" [disabled]="!daySlotSelectable(t)">{{ t }}</option>
+              }
+            </select>
+          }
         </div>
       </div>
     }
   </div>
   <p class="visually-hidden">
     <label for="week-grid-hidden-date">{{ 'RESERVATIONS.DATE' | translate }}</label>
-    <input id="week-grid-hidden-date" type="text" [ngModel]="selectedDate()" (ngModelChange)="selectedDate.set($event)" name="gridDate" readonly tabindex="-1" />
+    <input
+      id="week-grid-hidden-date"
+      type="text"
+      [ngModel]="selectedDate()"
+      (ngModelChange)="selectedDate.set($event)"
+      [ngModelOptions]="{ standalone: true }"
+      name="gridDate"
+      readonly
+      tabindex="-1"
+    />
     <label for="week-grid-hidden-time">{{ 'RESERVATIONS.TIME' | translate }}</label>
-    <input id="week-grid-hidden-time" type="text" [ngModel]="selectedTime()" (ngModelChange)="selectedTime.set($event)" name="gridTime" readonly tabindex="-1" />
+    <input
+      id="week-grid-hidden-time"
+      type="text"
+      [ngModel]="selectedTime()"
+      (ngModelChange)="selectedTime.set($event)"
+      [ngModelOptions]="{ standalone: true }"
+      name="gridTime"
+      readonly
+      tabindex="-1"
+    />
   </p>
 </div>
