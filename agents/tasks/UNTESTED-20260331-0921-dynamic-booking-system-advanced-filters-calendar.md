@@ -150,3 +150,29 @@ Align with existing reservation models, public book flow, and `docs/` where the 
    - **pos-back:** `GET /reservations/slot-capacity?date_str=2026-03-31&time_str=14:15 HTTP/1.1" 200 OK`  
    - **pos-back:** `POST /reservations HTTP/1.1" 400 Bad Request`  
    - **pos-front:** landing smoke completed with `>>> RESULT: Landing version OK; demo login (tenant=1) OK; sidebar nav OK.`
+
+---
+
+## Coder follow-up: staff `POST /reservations` 400 (2026-03-31 UTC)
+
+- **Root cause:** `debug-reservations.mjs` typed **`+1555123456`**, which **`phonenumbers.is_valid_number` rejects** (backend `normalize_phone_e164` → 400 `invalid_phone`).
+- **Fix:** Use a valid E.164 test number aligned with `back/tests/test_contact_validation.py`: **`+14155550100`**.
+
+---
+
+## Testing instructions (handoff — UNTESTED)
+
+- **What to verify**
+  - Staff Puppeteer path completes create: **`Create: card visible after save: true`** when `LOGIN_EMAIL` / `LOGIN_PASSWORD` are set for a user with reservation write access.
+  - No regression: pytest booking/public-tenant tests; landing smoke; `reservation_max_guests_per_slot` on `GET /api/public/tenants/{id}`.
+
+- **How to test**
+  1. **Migrate:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back python -m app.migrate`
+  2. **Backend:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back python -m pytest tests/test_book_week_slots_public.py tests/test_public_tenant_whatsapp.py -q`
+  3. **Frontend smoke:** `cd front && BASE_URL=http://127.0.0.1:4202 npm run test:landing-version`
+  4. **API:** `curl -sS "http://127.0.0.1:4202/api/public/tenants/1" | jq 'has("reservation_max_guests_per_slot")'` → `true`
+  5. **Staff script:** `cd front && BASE_URL=http://127.0.0.1:4202 LOGIN_EMAIL=… LOGIN_PASSWORD=… node scripts/debug-reservations.mjs` — expect **`POST /reservations` 201** in `pos-back` logs (not 400) and **`Create: card visible after save: true`** if the user can create reservations.
+
+- **Pass/fail criteria**
+  - **PASS:** Pytest and landing smoke green; staff script shows card after save and no `400` on `POST /reservations` when credentials allow writes.
+  - **FAIL:** `400` on create with valid login; `party_size=null` on `book-week-slots`; missing `reservation_max_guests_per_slot` on single-tenant public JSON.

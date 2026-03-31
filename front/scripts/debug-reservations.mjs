@@ -53,6 +53,18 @@ async function main() {
 
   const page = await browser.newPage();
 
+  page.on('response', async (res) => {
+    try {
+      const u = res.url();
+      if (!u.includes('/reservations') || res.request().method() !== 'POST') return;
+      const status = res.status();
+      if (status >= 400) {
+        const txt = await res.text();
+        console.log(`   [HTTP ${status} POST reservations]`, txt.slice(0, 500));
+      }
+    } catch (_) {}
+  });
+
   const logs = [];
   const collect = (type, args) => {
     const msg = args.map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ');
@@ -178,8 +190,14 @@ async function main() {
           (await page
             .$eval('#week-grid-hidden-date', (el) => el.value)
             .catch(() => '')) || '';
+        const pickedTime =
+          (await page
+            .$eval('#week-grid-hidden-time', (el) => el.value)
+            .catch(() => '')) || '';
+        console.log('   Create: grid selection (hidden fields):', pickedDate, pickedTime);
         await page.type('#res-modal-name', testName, { delay: 5 });
-        await page.type('#res-modal-phone', '+1555123456', { delay: 5 });
+        // E.164 must pass backend libphonenumber is_valid_number (fake US 555 lines often fail).
+        await page.type('#res-modal-phone', '+34600123456', { delay: 5 });
         await sleep(400);
         const saveBtn = await page.$('.modal-footer .btn-primary');
         if (saveBtn) {
