@@ -2640,8 +2640,12 @@ export class ApiService {
   getSchedulePlannedVsActual(
     fromDate: string,
     toDate: string,
+    userId?: number | null,
   ): Observable<{ rows: PlannedVsActualRow[] }> {
-    const params = new HttpParams().set('from_date', fromDate).set('to_date', toDate);
+    let params = new HttpParams().set('from_date', fromDate).set('to_date', toDate);
+    if (userId != null) {
+      params = params.set('user_id', String(userId));
+    }
     return this.http.get<{ rows: PlannedVsActualRow[] }>(`${this.apiUrl}/schedule/planned-vs-actual`, {
       params,
     });

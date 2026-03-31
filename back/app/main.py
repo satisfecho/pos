@@ -5974,6 +5974,7 @@ def schedule_planned_vs_actual(
     session: Session = Depends(get_session),
     from_date: str = Query(..., description="Start date YYYY-MM-DD"),
     to_date: str = Query(..., description="End date YYYY-MM-DD (inclusive)"),
+    user_id: int | None = Query(None, description="If set, only this tenant user’s rows (same tenant)"),
 ) -> dict:
     """Compare planned shift minutes (working plan) to clocked net minutes (UTC day by started_at)."""
     try:
@@ -5985,11 +5986,20 @@ def schedule_planned_vs_actual(
         raise HTTPException(status_code=400, detail="from_date must be <= to_date")
     if current_user.tenant_id is None:
         raise HTTPException(status_code=403, detail="Tenant required")
+    if user_id is not None:
+        target = session.exec(
+            select(models.User).where(
+                models.User.id == user_id,
+                models.User.tenant_id == current_user.tenant_id,
+            )
+        ).first()
+        if not target:
+            raise HTTPException(status_code=400, detail="User not found")
     if current_user.role == models.UserRole.owner and current_user.tenant_id:
         _mark_working_plan_seen_by_owner(session, current_user.tenant_id)
         session.commit()
 
-    out_rows = _schedule_planned_vs_actual_row_dicts(session, current_user.tenant_id, fd, td, None)
+    out_rows = _schedule_planned_vs_actual_row_dicts(session, current_user.tenant_id, fd, td, user_id)
     return {"rows": out_rows}
 
 

@@ -202,6 +202,7 @@ function isValidView(v: string | null): v is ViewMode {
           id="working-plan-staff-scope"
           class="export-worker-select"
           [(ngModel)]="exportUserId"
+          (ngModelChange)="onExportUserIdChange()"
           [disabled]="!scheduleUsers().length"
           data-testid="working-plan-export-worker"
         >
@@ -766,6 +767,8 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
   formError = signal<string | null>(null);
   toast = signal<{ message: string; type: 'success' | 'error' } | null>(null);
   private toastTimeout?: ReturnType<typeof setTimeout>;
+  /** Bumps when a new planned-vs-actual HTTP request starts; stale responses are ignored. */
+  private plannedVsActualFetchGen = 0;
 
   formUserId: number | null = null;
   formDate = '';
@@ -1389,9 +1392,34 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
     });
   }
 
+  private planDateRange(): { from: string; to: string } {
+    return this.viewMode() === 'calendar' ? getMonthRange(this.calendarMonth()) : this.weekRange();
+  }
+
+  /** Loads planned-vs-clocked via HTTP for the current view range and staff dropdown (no polling). */
+  private fetchPlannedVsActual(): void {
+    const range = this.planDateRange();
+    const gen = ++this.plannedVsActualFetchGen;
+    const uid = this.exportUserId;
+    this.api.getSchedulePlannedVsActual(range.from, range.to, uid).subscribe({
+      next: (res) => {
+        if (gen !== this.plannedVsActualFetchGen) return;
+        this.plannedVsActualRows.set(res.rows);
+      },
+      error: () => {
+        if (gen !== this.plannedVsActualFetchGen) return;
+        this.plannedVsActualRows.set([]);
+      },
+    });
+  }
+
+  onExportUserIdChange(): void {
+    this.fetchPlannedVsActual();
+  }
+
   load(): void {
     this.loading.set(true);
-    const range = this.viewMode() === 'calendar' ? getMonthRange(this.calendarMonth()) : this.weekRange();
+    const range = this.planDateRange();
     this.api.getSchedule(range.from, range.to).subscribe({
       next: (data) => {
         this.shifts.set(data);
@@ -1402,16 +1430,14 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
             next: (n) => this.api.workingPlanHasUpdates.set(n.has_updates),
           });
         }
-        this.api.getSchedulePlannedVsActual(range.from, range.to).subscribe({
-          next: (res) => this.plannedVsActualRows.set(res.rows),
-          error: () => this.plannedVsActualRows.set([]),
-        });
+        this.fetchPlannedVsActual();
         this.api.getScheduleComplianceSummary(range.from, range.to).subscribe({
           next: (res) => this.complianceWarnings.set(res.warnings),
           error: () => this.complianceWarnings.set([]),
         });
       },
       error: () => {
+        this.plannedVsActualFetchGen++;
         this.shifts.set([]);
         this.plannedVsActualRows.set([]);
         this.complianceWarnings.set([]);

@@ -29,3 +29,15 @@ Coordinate with related Working plan work (e.g. **#130**) so behaviour stays con
 - Avoid polling: no timers; debounce is unnecessary if the rule is strictly “one request per meaningful change.”
 - If week/month navigation already reloads plan data, decide whether the planned-vs-clocked block follows that same reload or only updates on dropdown change—match product expectation in the issue.
 - Add or adjust tests/smoke steps for Working plan if the repo has a script for this route.
+
+## Implementation (feature coder)
+
+- **Backend:** `GET /schedule/planned-vs-actual` accepts optional `user_id` (same tenant validation as export). Reuses `_schedule_planned_vs_actual_row_dicts(..., user_id)`.
+- **Frontend:** `ApiService.getSchedulePlannedVsActual` passes optional `user_id`. Working plan calls `fetchPlannedVsActual()` after schedule load (week/month navigation, Refresh) and on `(ngModelChange)` of the staff filter select. A monotonic generation counter drops stale HTTP responses when requests overlap.
+
+## Testing instructions
+
+1. **Build:** With Docker dev stack, `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=80 front` — no Angular/TS errors after the change.
+2. **Smoke:** From `front/`, `BASE_URL=http://127.0.0.1:4202 npm run test:landing-version` (or repo root with `--prefix front`).
+3. **Manual (owner, schedule:read):** Open **Working plan**; open the planned-vs-clocked section if needed. Note network calls to `/api/schedule/planned-vs-actual` (or proxied path). Change the **staff** dropdown between “All staff” and a specific user — each change should issue **one** new GET (with `user_id` when a user is selected). No repeated timer/polling calls. Week/month navigation or **Refresh** should still reload shifts and planned-vs-clocked for the current range and dropdown selection.
+4. **Optional:** `npm run test:working-plan --prefix front` with `LOGIN_EMAIL` / `LOGIN_PASSWORD` for a user that can access Working plan (validates page still loads).
