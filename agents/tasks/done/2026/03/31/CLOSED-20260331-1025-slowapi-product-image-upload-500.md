@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Authenticated product image uploads failed with HTTP 500 because SlowAPI’s rate limiter expected a Starlette `Response` from wrapped routes that returned plain dicts.
+- **What was done:** `upload_product_image` and `provider_upload_product_image` were aligned with other limited routes by returning `JSONResponse` with JSON-safe product payload (e.g. `model_dump(mode="json")`).
+- **What was tested:** Staff multipart `POST` to `/api/products/{id}/image` returned **200** with size fields; back logs showed **200** for verified uploads; `npm run test:landing-version` **PASS** (provider path optional, not exercised).
+- **Why closed:** Pass criteria met; overall **PASS** per tester report.
+- **Closed at (UTC):** 2026-03-31 10:40
+---
+
 # Product image upload POST returns 500 (slowapi `response` type)
 
 ## Source

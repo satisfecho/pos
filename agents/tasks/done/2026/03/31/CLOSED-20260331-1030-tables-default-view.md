@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Staff Tables and Orders navigation was improved so context is preserved, double-click scopes orders to a table, and tablet-style layout controls (sidebar hide, fullscreen) are available.
+- **What was done:** Implementation used `TablesAreaPreferenceService` for last sub-view, `StaffPosToolbarComponent` Orders|Tables segment, order table scoping and focus handling, canvas/tiles double-click to `/staff/orders`, and sidebar collapse plus fullscreen toggle with i18n.
+- **What was tested:** Tester executed all Testing instructions plus `test:landing-version`, `test:tables-canvas-view-options`, `test:tables-canvas-open-orders`, and `test:tables-page`; overall **PASS**.
+- **Why closed:** All criteria in the test report passed; no regressions called out for this scope.
+- **Closed at (UTC):** 2026-03-31 10:40
+---
+
 # Tables default view
 
 ## GitHub
