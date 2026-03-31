@@ -33,6 +33,13 @@ Restaurants need to plan who works when. Staff (kitchen, bar, waiters, reception
 - Conflict checks (overlapping shifts for same user) – not enforced.
 - Filter orders or reports “by on-shift staff” – would use schedule data as reference.
 
+### Skello-style extensions (partial, issue #122)
+
+- **Copy week:** `POST /schedule/copy-week` copies all shifts from one Mon–Sun week to another (both week starts must be Mondays). Optional skip when the worker already has any shift on the target day (same behaviour as bulk month).
+- **Planned vs actual:** `GET /schedule/planned-vs-actual?from_date=&to_date=` compares planned minutes from shifts to net clocked minutes from closed work sessions (UTC calendar day by `started_at`; planned uses `shift_date`).
+- **Compliance (heuristic):** `GET /schedule/compliance-summary` with optional `max_weekly_minutes`, `min_rest_minutes`, `yearly_warn_minutes` returns warnings for weekly planned load, short gaps between consecutive shifts, and yearly planned totals (full calendar years overlapping the query range). Not legal advice.
+- **UI:** Working plan page shows “Copy week → next week” (week view), a compliance banner when warnings exist, and a “Planned vs clocked” table when there is data.
+
 ---
 
 ## 2. What was implemented (summary)

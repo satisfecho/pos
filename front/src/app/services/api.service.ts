@@ -213,6 +213,42 @@ export interface ShiftBulkResult {
   skipped_existing_count: number;
 }
 
+/** Copy one Mon–Sun week of shifts to another week (both starts must be Mondays). */
+export interface ShiftWeekCopy {
+  source_week_start: string;
+  target_week_start: string;
+  skip_days_with_existing_shift?: boolean;
+}
+
+export interface ShiftWeekCopyResult {
+  created_count: number;
+  skipped_existing_count: number;
+}
+
+export interface PlannedVsActualRow {
+  user_id: number;
+  user_name: string;
+  date: string;
+  planned_minutes: number;
+  actual_minutes: number;
+  variance_minutes: number;
+}
+
+export interface ScheduleComplianceWarning {
+  code: string;
+  user_id?: number;
+  user_name?: string;
+  week_start?: string;
+  planned_minutes?: number;
+  limit_minutes?: number;
+  after_shift_id?: number;
+  before_shift_id?: number;
+  gap_minutes?: number;
+  required_min_rest_minutes?: number;
+  year?: number;
+  warn_at_minutes?: number;
+}
+
 /** Recorded clock-in/out (attendance), not the planned working plan shift. */
 export interface WorkSession {
   id: number;
@@ -854,6 +890,7 @@ export interface Order {
   subtotal_cents?: number;
   tip_percent_applied?: number | null;
   tip_amount_cents?: number | null;
+  tip_attributed_user_id?: number | null;
   removed_items_count?: number;
   paid_at?: string | null;
   payment_method?: string | null;
@@ -972,6 +1009,8 @@ export interface TenantSettings {
   tip_preset_percents?: number[] | null;
   /** VAT rate 0–100 on tip for invoice breakdown (tax-inclusive tip) */
   tip_tax_rate_percent?: number | null;
+  /** POS checkout: preset % buttons vs card overpayment difference */
+  tip_entry_mode?: 'preset' | 'overpayment' | string | null;
   /** Resolved flags for staff UI modules (GET always expands defaults). */
   ui_modules?: Partial<Record<TenantUiModuleKey, boolean>> | null;
 }
@@ -1014,14 +1053,29 @@ export interface SalesReport {
     total_revenue_cents: number;
     total_cost_cents?: number;
     total_profit_cents?: number;
+    total_tips_cents?: number;
     total_orders: number;
     average_revenue_per_order_cents: number;
-    daily: { date: string; revenue_cents: number; cost_cents?: number; profit_cents?: number; order_count: number }[];
+    daily: {
+      date: string;
+      revenue_cents: number;
+      cost_cents?: number;
+      profit_cents?: number;
+      tips_cents?: number;
+      order_count: number;
+    }[];
   };
   by_product: { product_id: number; product_name: string; category?: string; quantity: number; revenue_cents: number; cost_cents?: number; profit_cents?: number }[];
   by_category: { category: string; quantity: number; revenue_cents: number; cost_cents?: number; profit_cents?: number }[];
   by_table: { table_name: string; revenue_cents: number; cost_cents?: number; profit_cents?: number; order_count: number }[];
-  by_waiter: { waiter_name: string; revenue_cents: number; cost_cents?: number; profit_cents?: number; order_count: number }[];
+  by_waiter: {
+    waiter_name: string;
+    revenue_cents: number;
+    cost_cents?: number;
+    profit_cents?: number;
+    tips_cents?: number;
+    order_count: number;
+  }[];
   reservations?: {
     total: number;
     by_source: { source: string; count: number }[];
@@ -1708,19 +1762,61 @@ export class ApiService {
   }
 
   // Restaurant staff endpoints
-  markOrderPaid(orderId: number, paymentMethod: string, tipPercent?: number | null): Observable<any> {
-    const body: { payment_method: string; tip_percent?: number } = { payment_method: paymentMethod };
-    if (tipPercent != null && tipPercent > 0) {
-      body.tip_percent = tipPercent;
+  markOrderPaid(
+    orderId: number,
+    paymentMethod: string,
+    opts?: {
+      tipPercent?: number | null;
+      tipAmountCents?: number | null;
+      amountPaidCents?: number | null;
+      tipEntryMode?: 'preset' | 'overpayment';
+    }
+  ): Observable<any> {
+    const body: {
+      payment_method: string;
+      tip_percent?: number;
+      tip_amount_cents?: number;
+      amount_paid_cents?: number;
+    } = { payment_method: paymentMethod };
+    const mode = opts?.tipEntryMode ?? 'preset';
+    if (mode === 'overpayment') {
+      const t = opts?.tipAmountCents != null ? Math.max(0, Math.floor(opts.tipAmountCents)) : 0;
+      body.tip_amount_cents = t;
+      if (opts?.amountPaidCents != null && opts.amountPaidCents >= 0) {
+        body.amount_paid_cents = Math.floor(opts.amountPaidCents);
+      }
+    } else if (opts?.tipPercent != null && opts.tipPercent > 0) {
+      body.tip_percent = opts.tipPercent;
     }
     return this.http.put(`${this.apiUrl}/orders/${orderId}/mark-paid`, body);
   }
 
   /** Deliver all active items and mark order paid in one request (staff fast checkout). */
-  finishOrder(orderId: number, paymentMethod: string, tipPercent?: number | null): Observable<any> {
-    const body: { payment_method: string; tip_percent?: number } = { payment_method: paymentMethod };
-    if (tipPercent != null && tipPercent > 0) {
-      body.tip_percent = tipPercent;
+  finishOrder(
+    orderId: number,
+    paymentMethod: string,
+    opts?: {
+      tipPercent?: number | null;
+      tipAmountCents?: number | null;
+      amountPaidCents?: number | null;
+      tipEntryMode?: 'preset' | 'overpayment';
+    }
+  ): Observable<any> {
+    const body: {
+      payment_method: string;
+      tip_percent?: number;
+      tip_amount_cents?: number;
+      amount_paid_cents?: number;
+    } = { payment_method: paymentMethod };
+    const mode = opts?.tipEntryMode ?? 'preset';
+    if (mode === 'overpayment') {
+      const t = opts?.tipAmountCents != null ? Math.max(0, Math.floor(opts.tipAmountCents)) : 0;
+      body.tip_amount_cents = t;
+      if (opts?.amountPaidCents != null && opts.amountPaidCents >= 0) {
+        body.amount_paid_cents = Math.floor(opts.amountPaidCents);
+      }
+    } else if (opts?.tipPercent != null && opts.tipPercent > 0) {
+      body.tip_percent = opts.tipPercent;
     }
     return this.http.put(`${this.apiUrl}/orders/${orderId}/finish`, body);
   }
@@ -2431,6 +2527,34 @@ export class ApiService {
 
   bulkCreateShifts(data: ShiftBulkCreate): Observable<ShiftBulkResult> {
     return this.http.post<ShiftBulkResult>(`${this.apiUrl}/schedule/bulk`, data);
+  }
+
+  /** Copy all shifts from source week (Mon start) to target week (Mon start). */
+  copyScheduleWeek(body: ShiftWeekCopy): Observable<ShiftWeekCopyResult> {
+    return this.http.post<ShiftWeekCopyResult>(`${this.apiUrl}/schedule/copy-week`, body);
+  }
+
+  /** Planned shift minutes vs clocked net minutes per staff per day (UTC day for actual). */
+  getSchedulePlannedVsActual(
+    fromDate: string,
+    toDate: string,
+  ): Observable<{ rows: PlannedVsActualRow[] }> {
+    const params = new HttpParams().set('from_date', fromDate).set('to_date', toDate);
+    return this.http.get<{ rows: PlannedVsActualRow[] }>(`${this.apiUrl}/schedule/planned-vs-actual`, {
+      params,
+    });
+  }
+
+  /** Heuristic compliance checks (weekly hours, rest between shifts, yearly planned threshold). */
+  getScheduleComplianceSummary(
+    fromDate: string,
+    toDate: string,
+  ): Observable<{ warnings: ScheduleComplianceWarning[]; params: Record<string, number> }> {
+    const params = new HttpParams().set('from_date', fromDate).set('to_date', toDate);
+    return this.http.get<{ warnings: ScheduleComplianceWarning[]; params: Record<string, number> }>(
+      `${this.apiUrl}/schedule/compliance-summary`,
+      { params },
+    );
   }
 
   updateShift(shiftId: number, data: ShiftUpdate): Observable<Shift> {

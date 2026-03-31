@@ -40,7 +40,7 @@ from .reports_routes import router as reports_router
 from .tenant_lifecycle_routes import router as tenant_lifecycle_router
 from .staff_contract_routes import router as staff_contract_router
 from .staff_contract_template_routes import router as staff_contract_template_router
-from .work_session_serialization import serialize_work_session
+from .work_session_serialization import serialize_work_session, work_session_net_duration_minutes
 from .clock_qr_util import clock_qr_tokens_equal, generate_clock_qr_token, hash_clock_qr_token
 from .inventory_service import deduct_inventory_for_order
 from . import inventory_models
@@ -2735,6 +2735,14 @@ def update_tenant_settings(
         tenant.tip_tax_rate_percent = max(
             0, min(100, int(tenant_update.tip_tax_rate_percent))
         )
+    if tenant_update.tip_entry_mode is not None:
+        m = (tenant_update.tip_entry_mode or "preset").strip().lower()
+        if m not in ("preset", "overpayment"):
+            raise HTTPException(
+                status_code=400,
+                detail="tip_entry_mode must be preset or overpayment",
+            )
+        tenant.tip_entry_mode = m
 
     # Kitchen/Bar display timer thresholds (minutes)
     if tenant_update.kitchen_display_timer_yellow_minutes is not None:
@@ -5709,6 +5717,29 @@ def export_schedule_month(
                 user_role,
             ]
         )
+    start_dt = datetime.combine(fd, time.min, tzinfo=timezone.utc)
+    end_dt = datetime.combine(ld, time.max, tzinfo=timezone.utc)
+    tip_orders = session.exec(
+        select(models.Order)
+        .where(models.Order.tenant_id == current_user.tenant_id)
+        .where(models.Order.tip_attributed_user_id == user_id)
+        .where(models.Order.status == models.OrderStatus.paid)
+        .where(models.Order.deleted_at.is_(None))
+        .where(models.Order.paid_at >= start_dt)
+        .where(models.Order.paid_at <= end_dt)
+    ).all()
+    tip_total = sum(int(o.tip_amount_cents or 0) for o in tip_orders)
+    ws.append([])
+    ws.append(
+        [
+            L["tips_month"],
+            "",
+            "",
+            "",
+            "",
+            str(tip_total),
+        ]
+    )
     buf = BytesIO()
     wb.save(buf)
     buf.seek(0)
@@ -5746,6 +5777,297 @@ def list_schedule_plan_users(
             )
     out.sort(key=lambda r: ((r.full_name or r.email or "").lower(), r.id))
     return out
+
+
+def _shift_duration_minutes(start_t: time, end_t: time) -> int:
+    sm = start_t.hour * 60 + start_t.minute
+    em = end_t.hour * 60 + end_t.minute
+    return max(0, em - sm)
+
+
+def _week_start_monday(d: date) -> date:
+    """Monday as first day of week (Python Monday=0)."""
+    return d - timedelta(days=d.weekday())
+
+
+@app.post("/schedule/copy-week")
+def copy_schedule_week(
+    body: models.ShiftWeekCopy,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SCHEDULE_WRITE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Copy all planned shifts from one Mon–Sun week to another (e.g. repeat rota). Both week starts must be Mondays."""
+    from datetime import datetime as dt_parse
+
+    if current_user.tenant_id is None:
+        raise HTTPException(status_code=403, detail="Tenant required")
+    try:
+        src = dt_parse.strptime(body.source_week_start, "%Y-%m-%d").date()
+        tgt = dt_parse.strptime(body.target_week_start, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format; use YYYY-MM-DD")
+    if src.weekday() != 0 or tgt.weekday() != 0:
+        raise HTTPException(status_code=400, detail="source_week_start and target_week_start must be Mondays")
+    if src == tgt:
+        raise HTTPException(status_code=400, detail="Source and target week must differ")
+    delta_days = (tgt - src).days
+    src_end = src + timedelta(days=6)
+    shifts = session.exec(
+        select(models.Shift)
+        .where(models.Shift.tenant_id == current_user.tenant_id)
+        .where(models.Shift.shift_date >= src)
+        .where(models.Shift.shift_date <= src_end)
+    ).all()
+    created_count = 0
+    skipped_existing_count = 0
+    for s in shifts:
+        new_date = s.shift_date + timedelta(days=delta_days)
+        if body.skip_days_with_existing_shift:
+            existing = session.exec(
+                select(models.Shift)
+                .where(models.Shift.tenant_id == current_user.tenant_id)
+                .where(models.Shift.user_id == s.user_id)
+                .where(models.Shift.shift_date == new_date)
+                .limit(1)
+            ).first()
+            if existing is not None:
+                skipped_existing_count += 1
+                continue
+        new_shift = models.Shift(
+            tenant_id=current_user.tenant_id,
+            user_id=s.user_id,
+            shift_date=new_date,
+            start_time=s.start_time,
+            end_time=s.end_time,
+            label=s.label,
+        )
+        session.add(new_shift)
+        created_count += 1
+    if created_count:
+        _mark_working_plan_updated(session, current_user.tenant_id)
+    session.commit()
+    return {"created_count": created_count, "skipped_existing_count": skipped_existing_count}
+
+
+@app.get("/schedule/planned-vs-actual")
+def schedule_planned_vs_actual(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SCHEDULE_READ))],
+    session: Session = Depends(get_session),
+    from_date: str = Query(..., description="Start date YYYY-MM-DD"),
+    to_date: str = Query(..., description="End date YYYY-MM-DD (inclusive)"),
+) -> dict:
+    """Compare planned shift minutes (working plan) to clocked net minutes (UTC day by started_at)."""
+    try:
+        fd = datetime.strptime(from_date, "%Y-%m-%d").date()
+        td = datetime.strptime(to_date, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format; use YYYY-MM-DD")
+    if fd > td:
+        raise HTTPException(status_code=400, detail="from_date must be <= to_date")
+    if current_user.tenant_id is None:
+        raise HTTPException(status_code=403, detail="Tenant required")
+    if current_user.role == models.UserRole.owner and current_user.tenant_id:
+        _mark_working_plan_seen_by_owner(session, current_user.tenant_id)
+        session.commit()
+
+    shifts = session.exec(
+        select(models.Shift)
+        .where(models.Shift.tenant_id == current_user.tenant_id)
+        .where(models.Shift.shift_date >= fd)
+        .where(models.Shift.shift_date <= td)
+    ).all()
+    start_utc = datetime.combine(fd, time.min, tzinfo=timezone.utc)
+    end_exclusive = datetime.combine(td + timedelta(days=1), time.min, tzinfo=timezone.utc)
+    q = (
+        select(models.WorkSession)
+        .where(models.WorkSession.tenant_id == current_user.tenant_id)
+        .where(models.WorkSession.started_at >= start_utc)
+        .where(models.WorkSession.started_at < end_exclusive)
+    )
+    rows_ws = session.exec(q).all()
+
+    planned: dict[tuple[int, date], int] = {}
+    actual: dict[tuple[int, date], int] = {}
+    user_ids: set[int] = set()
+
+    for s in shifts:
+        key = (s.user_id, s.shift_date)
+        planned[key] = planned.get(key, 0) + _shift_duration_minutes(s.start_time, s.end_time)
+        user_ids.add(s.user_id)
+
+    for ws in rows_ws:
+        if ws.ended_at is None:
+            continue
+        nm = work_session_net_duration_minutes(ws, session)
+        if nm is None:
+            continue
+        d = ws.started_at.date()
+        key = (ws.user_id, d)
+        actual[key] = actual.get(key, 0) + nm
+        user_ids.add(ws.user_id)
+
+    all_keys = set(planned.keys()) | set(actual.keys())
+    names: dict[int, str] = {}
+    if user_ids:
+        users = session.exec(select(models.User).where(models.User.id.in_(user_ids))).all()
+        for u in users:
+            names[u.id] = u.full_name or u.email or ""
+
+    out_rows: list[dict] = []
+    for user_id, day in sorted(all_keys, key=lambda x: (x[1], x[0])):
+        p = planned.get((user_id, day), 0)
+        a = actual.get((user_id, day), 0)
+        out_rows.append(
+            {
+                "user_id": user_id,
+                "user_name": names.get(user_id, ""),
+                "date": day.isoformat(),
+                "planned_minutes": p,
+                "actual_minutes": a,
+                "variance_minutes": a - p,
+            }
+        )
+    return {"rows": out_rows}
+
+
+@app.get("/schedule/compliance-summary")
+def schedule_compliance_summary(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SCHEDULE_READ))],
+    session: Session = Depends(get_session),
+    from_date: str = Query(..., description="Start date YYYY-MM-DD"),
+    to_date: str = Query(..., description="End date YYYY-MM-DD (inclusive)"),
+    max_weekly_minutes: int = Query(
+        2400,
+        ge=60,
+        le=10080,
+        description="Flag weekly planned total above this (default 40h)",
+    ),
+    min_rest_minutes: int = Query(
+        660,
+        ge=0,
+        le=1440,
+        description="Minimum gap between end of one shift and start of next (default 11h)",
+    ),
+    yearly_warn_minutes: int = Query(
+        108000,
+        ge=60,
+        description="Warn when yearly planned minutes exceed this (default 1800h)",
+    ),
+) -> dict:
+    """Heuristic compliance checks on planned shifts: weekly load, rest between shifts, yearly threshold."""
+    try:
+        fd = datetime.strptime(from_date, "%Y-%m-%d").date()
+        td = datetime.strptime(to_date, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format; use YYYY-MM-DD")
+    if fd > td:
+        raise HTTPException(status_code=400, detail="from_date must be <= to_date")
+    if current_user.tenant_id is None:
+        raise HTTPException(status_code=403, detail="Tenant required")
+    if current_user.role == models.UserRole.owner and current_user.tenant_id:
+        _mark_working_plan_seen_by_owner(session, current_user.tenant_id)
+        session.commit()
+
+    shifts = session.exec(
+        select(models.Shift)
+        .where(models.Shift.tenant_id == current_user.tenant_id)
+        .where(models.Shift.shift_date >= fd)
+        .where(models.Shift.shift_date <= td)
+    ).all()
+    warnings: list[dict] = []
+
+    # Weekly planned totals per user per ISO week (Monday start)
+    weekly: dict[tuple[int, date], int] = {}
+    for s in shifts:
+        wk = _week_start_monday(s.shift_date)
+        key = (s.user_id, wk)
+        weekly[key] = weekly.get(key, 0) + _shift_duration_minutes(s.start_time, s.end_time)
+
+    user_ids = {s.user_id for s in shifts}
+    names: dict[int, str] = {}
+    if user_ids:
+        users = session.exec(select(models.User).where(models.User.id.in_(user_ids))).all()
+        for u in users:
+            names[u.id] = u.full_name or u.email or ""
+
+    for (uid, wk), minutes in weekly.items():
+        if minutes > max_weekly_minutes:
+            warnings.append(
+                {
+                    "code": "weekly_planned_over_limit",
+                    "user_id": uid,
+                    "user_name": names.get(uid, ""),
+                    "week_start": wk.isoformat(),
+                    "planned_minutes": minutes,
+                    "limit_minutes": max_weekly_minutes,
+                }
+            )
+
+    # Rest between consecutive shifts (per user, chronological)
+    by_user: dict[int, list[models.Shift]] = {}
+    for s in shifts:
+        by_user.setdefault(s.user_id, []).append(s)
+    for uid, lst in by_user.items():
+        lst.sort(key=lambda x: (x.shift_date, x.start_time))
+        for i in range(len(lst) - 1):
+            a, b = lst[i], lst[i + 1]
+            end_a = datetime.combine(a.shift_date, a.end_time)
+            start_b = datetime.combine(b.shift_date, b.start_time)
+            gap_min = (start_b - end_a).total_seconds() / 60.0
+            if gap_min >= 0 and gap_min < min_rest_minutes:
+                warnings.append(
+                    {
+                        "code": "rest_between_shifts",
+                        "user_id": uid,
+                        "user_name": names.get(uid, ""),
+                        "after_shift_id": a.id,
+                        "before_shift_id": b.id,
+                        "gap_minutes": int(gap_min),
+                        "required_min_rest_minutes": min_rest_minutes,
+                    }
+                )
+
+    # Calendar-year planned totals (full year per calendar year overlapping the query range)
+    years = list(range(fd.year, td.year + 1))
+    yearly: dict[tuple[int, int], int] = {}
+    for y in years:
+        y_shifts = session.exec(
+            select(models.Shift)
+            .where(models.Shift.tenant_id == current_user.tenant_id)
+            .where(models.Shift.shift_date >= date(y, 1, 1))
+            .where(models.Shift.shift_date <= date(y, 12, 31))
+        ).all()
+        for s in y_shifts:
+            key = (s.user_id, y)
+            yearly[key] = yearly.get(key, 0) + _shift_duration_minutes(s.start_time, s.end_time)
+            user_ids.add(s.user_id)
+
+    if user_ids:
+        users = session.exec(select(models.User).where(models.User.id.in_(user_ids))).all()
+        for u in users:
+            names[u.id] = u.full_name or u.email or ""
+
+    for (uid, year), minutes in yearly.items():
+        if minutes >= yearly_warn_minutes:
+            warnings.append(
+                {
+                    "code": "yearly_planned_hours_threshold",
+                    "user_id": uid,
+                    "user_name": names.get(uid, ""),
+                    "year": year,
+                    "planned_minutes": minutes,
+                    "warn_at_minutes": yearly_warn_minutes,
+                }
+            )
+
+    return {
+        "warnings": warnings,
+        "params": {
+            "max_weekly_minutes": max_weekly_minutes,
+            "min_rest_minutes": min_rest_minutes,
+            "yearly_warn_minutes": yearly_warn_minutes,
+        },
+    }
 
 
 @app.get("/schedule/{shift_id}")
@@ -9472,6 +9794,71 @@ def _active_order_subtotal_cents(session: Session, order_id: int) -> int:
     return sum(i.price_cents * i.quantity for i in active)
 
 
+def _tenant_tip_entry_mode(tenant: models.Tenant) -> str:
+    raw = getattr(tenant, "tip_entry_mode", None) or "preset"
+    if raw not in ("preset", "overpayment"):
+        return "preset"
+    return raw
+
+
+def _effective_waiter_for_tip(session: Session, order: models.Order) -> int | None:
+    table = session.get(models.Table, order.table_id)
+    if not table:
+        return None
+    if table.assigned_waiter_id:
+        return table.assigned_waiter_id
+    if table.floor_id:
+        floor = session.get(models.Floor, table.floor_id)
+        if floor and floor.default_waiter_id:
+            return floor.default_waiter_id
+    return None
+
+
+def _resolve_tip_for_mark_paid(
+    session: Session,
+    tenant: models.Tenant,
+    order_id: int,
+    payment_data: models.OrderMarkPaid,
+) -> tuple[int | None, int]:
+    """Returns (tip_percent_applied, tip_amount_cents)."""
+    mode = _tenant_tip_entry_mode(tenant)
+    if mode == "overpayment":
+        if payment_data.tip_amount_cents is None:
+            raise HTTPException(
+                status_code=400,
+                detail="tip_amount_cents is required when tip entry mode is overpayment",
+            )
+        tip_amt = int(payment_data.tip_amount_cents)
+        if tip_amt < 0:
+            raise HTTPException(status_code=400, detail="Invalid tip_amount_cents")
+        if tip_amt > 100_000_000:
+            raise HTTPException(status_code=400, detail="tip_amount_cents too large")
+        subtotal = _active_order_subtotal_cents(session, order_id)
+        if subtotal <= 0 and tip_amt > 0:
+            raise HTTPException(status_code=400, detail="Cannot add a tip to an empty order")
+        if payment_data.amount_paid_cents is not None:
+            ap = int(payment_data.amount_paid_cents)
+            if ap < subtotal + tip_amt:
+                raise HTTPException(
+                    status_code=400,
+                    detail="amount_paid_cents must cover subtotal and tip",
+                )
+        return None, tip_amt
+    if payment_data.tip_amount_cents is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="tip_amount_cents is only used when tip entry mode is overpayment",
+        )
+    if payment_data.amount_paid_cents is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="amount_paid_cents is only used when tip entry mode is overpayment",
+        )
+    return _resolve_tip_on_mark_paid(
+        session, tenant, order_id, payment_data.tip_percent
+    )
+
+
 def _resolve_tip_on_mark_paid(
     session: Session,
     tenant: models.Tenant,
@@ -9676,6 +10063,7 @@ def list_orders(
             "subtotal_cents": subtotal_cents,
             "tip_percent_applied": getattr(order, "tip_percent_applied", None),
             "tip_amount_cents": getattr(order, "tip_amount_cents", None),
+            "tip_attributed_user_id": getattr(order, "tip_attributed_user_id", None),
             "total_cents": total_cents,
             "removed_items_count": len([item for item in all_items if item.removed_by_customer])
         })
@@ -9774,8 +10162,8 @@ def mark_order_paid(
     tenant = session.get(models.Tenant, current_user.tenant_id)
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
-    tip_pct, tip_amt = _resolve_tip_on_mark_paid(
-        session, tenant, order_id, payment_data.tip_percent
+    tip_pct, tip_amt = _resolve_tip_for_mark_paid(
+        session, tenant, order_id, payment_data
     )
 
     # Allow pre-pay: staff can mark as paid even when not all items are delivered (e.g. customer pays before food is ready).
@@ -9786,10 +10174,11 @@ def mark_order_paid(
     order.payment_method = payment_data.payment_method
     order.tip_percent_applied = tip_pct
     order.tip_amount_cents = tip_amt if tip_amt else None
-    
+    order.tip_attributed_user_id = _effective_waiter_for_tip(session, order)
+
     session.add(order)
     session.commit()
-    
+
     # Publish update
     table = session.exec(select(models.Table).where(models.Table.id == order.table_id)).first()
     publish_order_update(current_user.tenant_id, {
@@ -9798,7 +10187,7 @@ def mark_order_paid(
         "table_name": table.name if table else "Unknown",
         "payment_method": payment_data.payment_method
     }, table_id=order.table_id)
-    
+
     return {
         "status": "paid",
         "order_id": order.id,
@@ -9839,8 +10228,8 @@ def finish_order(
     tenant = session.get(models.Tenant, current_user.tenant_id)
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
-    tip_pct, tip_amt = _resolve_tip_on_mark_paid(
-        session, tenant, order_id, payment_data.tip_percent
+    tip_pct, tip_amt = _resolve_tip_for_mark_paid(
+        session, tenant, order_id, payment_data
     )
 
     items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order_id)).all()
@@ -9861,6 +10250,7 @@ def finish_order(
     order.payment_method = payment_data.payment_method
     order.tip_percent_applied = tip_pct
     order.tip_amount_cents = tip_amt if tip_amt else None
+    order.tip_attributed_user_id = _effective_waiter_for_tip(session, order)
 
     session.add(order)
     session.commit()
@@ -9916,6 +10306,7 @@ def unmark_order_paid(
     order.payment_method = None
     order.tip_percent_applied = None
     order.tip_amount_cents = None
+    order.tip_attributed_user_id = None
     # Restore workflow status from items (do not leave status as 'paid')
     items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order_id)).all()
     order.status = compute_order_status_from_items(list(items))

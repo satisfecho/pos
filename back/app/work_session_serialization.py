@@ -78,3 +78,12 @@ def serialize_work_session(
         "break_started_at": ws.break_started_at.isoformat() if getattr(ws, "break_started_at", None) else None,
         "break_seconds_total": break_sec,
     }
+
+
+def work_session_net_duration_minutes(ws: models.WorkSession, session: Session) -> int | None:
+    """Net worked minutes for a closed session (breaks excluded). None if still open or missing times."""
+    if ws.ended_at is None or ws.started_at is None:
+        return None
+    break_sec = _total_break_seconds(session, ws, now_utc=ws.ended_at)
+    gross = max(0, int((ws.ended_at - ws.started_at).total_seconds() // 60))
+    return max(0, gross - break_sec // 60)

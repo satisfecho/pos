@@ -188,6 +188,8 @@ class Tenant(SQLModel, table=True):
     tip_preset_percents: list | None = Field(default=None, sa_column=Column(JSONB, nullable=True))
     # VAT/IVA rate (0–100) applied to tip amount for invoice breakdown (tax-inclusive tip, same basis as menu prices)
     tip_tax_rate_percent: int | None = Field(default=0)
+    # POS: "preset" = tip from tip_preset_percents; "overpayment" = staff enters amount paid, tip = difference (see OrderMarkPaid)
+    tip_entry_mode: str = Field(default="preset", max_length=32)
 
     # Default tax (IVA) applied system-wide when product has no tax override
     default_tax_id: int | None = Field(default=None, foreign_key="tax.id", index=True)
@@ -676,6 +678,7 @@ class Order(TenantMixin, table=True):
     revolut_order_id: str | None = None  # Revolut Merchant order id when paying via Revolut
     tip_percent_applied: int | None = None  # Preset % charged as tip when staff marked paid (null = no tip)
     tip_amount_cents: int | None = None  # Tip amount in cents (gross; VAT split uses tenant tip_tax_rate_percent)
+    tip_attributed_user_id: int | None = Field(default=None, foreign_key="user.id")
 
     # Location verification tracking
     location_verified: bool | None = Field(default=None)  # None=not checked, True=inside, False=outside
@@ -936,6 +939,14 @@ class ShiftBulkCreate(SQLModel):
     skip_days_with_existing_shift: bool = True
 
 
+class ShiftWeekCopy(SQLModel):
+    """Copy all shifts from one ISO week (Mon–Sun) to another; week starts must be Mondays (YYYY-MM-DD)."""
+
+    source_week_start: str
+    target_week_start: str
+    skip_days_with_existing_shift: bool = True
+
+
 class OrderItemCreate(SQLModel):
     product_id: int
     quantity: int
@@ -982,6 +993,10 @@ class OrderItemCancel(SQLModel):
 class OrderMarkPaid(SQLModel):
     payment_method: str = "cash"  # 'cash', 'terminal', 'stripe', etc.
     tip_percent: int | None = None  # 0 or omitted = no tip; otherwise must be in tenant tip_preset_percents
+    # When tenant tip_entry_mode is "overpayment": required explicit tip in cents (0 = no tip)
+    tip_amount_cents: int | None = None
+    # Optional: amount charged on card/terminal (cents); must be >= subtotal + tip when set
+    amount_paid_cents: int | None = None
 
 
 class OrderBillingCustomerSet(SQLModel):
@@ -1106,6 +1121,7 @@ class TenantUpdate(SQLModel):
     # POS tips: up to 4 percentages (0–100 each); empty list disables tip buttons
     tip_preset_percents: list | None = None
     tip_tax_rate_percent: int | None = Field(default=None, ge=0, le=100)
+    tip_entry_mode: str | None = None  # "preset" | "overpayment"
 
 
 class TenantProductCreate(SQLModel):

@@ -7,6 +7,8 @@ import {
   ShiftCreate,
   ShiftUpdate,
   ShiftBulkCreate,
+  PlannedVsActualRow,
+  ScheduleComplianceWarning,
   User,
 } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
@@ -156,6 +158,17 @@ function isValidView(v: string | null): v is ViewMode {
         <button type="button" class="btn btn-secondary" (click)="openBulkMonth()" data-testid="working-plan-bulk-month">
           {{ 'WORKING_PLAN.BULK_MONTH' | translate }}
         </button>
+        @if (viewMode() === 'week') {
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="copyWeekToNextWeek()"
+            [disabled]="copyWeekSaving()"
+            data-testid="working-plan-copy-week"
+          >
+            {{ copyWeekSaving() ? ('COMMON.LOADING' | translate) : ('WORKING_PLAN.COPY_WEEK' | translate) }}
+          </button>
+        }
         <button type="button" class="btn btn-primary" (click)="openCreate()" data-testid="working-plan-add-shift">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -212,6 +225,50 @@ function isValidView(v: string | null): v is ViewMode {
         <p class="export-hint">{{ 'WORKING_PLAN.EXPORT_MONTH_HINT' | translate: { month: exportMonthLabel() } }}</p>
       } @else {
         <p class="export-hint export-hint-muted">{{ 'WORKING_PLAN.EXPORT_NO_STAFF_HINT' | translate }}</p>
+      }
+
+      @if (complianceWarnings().length) {
+        <div class="compliance-banner" role="alert" data-testid="working-plan-compliance">
+          <strong>{{ 'WORKING_PLAN.COMPLIANCE_TITLE' | translate }}</strong>
+          <ul class="compliance-list">
+            @for (w of complianceWarnings(); track $index) {
+              <li>{{ complianceWarningText(w) }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      @if (plannedVsActualFiltered().length) {
+        <div class="pva-section" data-testid="working-plan-pva">
+          <h3 class="pva-title">{{ 'WORKING_PLAN.PLANNED_VS_ACTUAL' | translate }}</h3>
+          <p class="pva-hint">{{ 'WORKING_PLAN.PLANNED_VS_ACTUAL_HINT' | translate }}</p>
+          <div class="pva-table-wrap">
+            <table class="pva-table">
+              <thead>
+                <tr>
+                  <th>{{ 'WORKING_PLAN.PVA_COL_DATE' | translate }}</th>
+                  <th>{{ 'WORKING_PLAN.PVA_COL_STAFF' | translate }}</th>
+                  <th>{{ 'WORKING_PLAN.PVA_COL_PLANNED' | translate }}</th>
+                  <th>{{ 'WORKING_PLAN.PVA_COL_CLOCKED' | translate }}</th>
+                  <th>{{ 'WORKING_PLAN.PVA_COL_VARIANCE' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of plannedVsActualFiltered(); track r.date + '-' + r.user_id) {
+                  <tr>
+                    <td>{{ r.date }}</td>
+                    <td>{{ r.user_name }}</td>
+                    <td>{{ formatMinutes(r.planned_minutes) }}</td>
+                    <td>{{ formatMinutes(r.actual_minutes) }}</td>
+                    <td [class.pva-var-pos]="r.variance_minutes > 0" [class.pva-var-neg]="r.variance_minutes < 0">
+                      {{ formatSignedMinutes(r.variance_minutes) }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
       }
 
       @if (viewMode() === 'calendar') {
@@ -583,6 +640,24 @@ function isValidView(v: string | null): v is ViewMode {
       color: var(--text-muted, #666);
       font-style: italic;
     }
+    .compliance-banner {
+      margin-bottom: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--warning-border, #f59e0b);
+      background: rgba(245, 158, 11, 0.1);
+      font-size: 0.875rem;
+    }
+    .compliance-list { margin: 0.35rem 0 0 1rem; padding: 0; }
+    .pva-section { margin-bottom: 1.5rem; }
+    .pva-title { font-size: 1rem; margin: 0 0 0.35rem 0; }
+    .pva-hint { font-size: 0.75rem; color: var(--text-muted, #666); margin: 0 0 0.5rem 0; }
+    .pva-table-wrap { overflow-x: auto; }
+    .pva-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .pva-table th, .pva-table td { text-align: left; padding: 0.35rem 0.5rem; border-bottom: 1px solid var(--border-color, #eee); }
+    .pva-table th { font-weight: 600; color: var(--text-muted, #666); }
+    .pva-var-pos { color: var(--color-success, #16a34a); }
+    .pva-var-neg { color: var(--danger, #dc2626); }
   `],
 })
 export class WorkingPlanComponent implements OnInit, OnDestroy {
@@ -604,6 +679,10 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
   /** First day of the month for calendar view. */
   calendarMonth = signal<Date>(new Date());
   shifts = signal<Shift[]>([]);
+  /** Planned vs clocked rows for current date range (subset with activity). */
+  plannedVsActualRows = signal<PlannedVsActualRow[]>([]);
+  complianceWarnings = signal<ScheduleComplianceWarning[]>([]);
+  copyWeekSaving = signal(false);
   scheduleUsers = signal<User[]>([]);
   /** Worker selected for Excel export (month scoped by current view). */
   exportUserId: number | null = null;
@@ -686,6 +765,10 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
     });
     return list;
   });
+
+  plannedVsActualFiltered = computed(() =>
+    this.plannedVsActualRows().filter((r) => r.planned_minutes > 0 || r.actual_minutes > 0),
+  );
 
   calendarMonthLabel = computed(() => {
     const d = this.calendarMonth();
@@ -1098,6 +1181,78 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
     return { year: parts[0], month: parts[1] };
   }
 
+  copyWeekToNextWeek(): void {
+    const src = this.weekRange().from;
+    const d = new Date(src + 'T12:00:00');
+    d.setDate(d.getDate() + 7);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const tgt = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    this.copyWeekSaving.set(true);
+    this.api
+      .copyScheduleWeek({
+        source_week_start: src,
+        target_week_start: tgt,
+        skip_days_with_existing_shift: true,
+      })
+      .subscribe({
+        next: (res) => {
+          this.copyWeekSaving.set(false);
+          this.nextWeek();
+          this.showToast(
+            this.translate.instant('WORKING_PLAN.COPY_WEEK_DONE', {
+              created: res.created_count,
+              skipped: res.skipped_existing_count,
+            }),
+            'success',
+          );
+        },
+        error: (err) => {
+          this.copyWeekSaving.set(false);
+          this.showToast(this.getApiErrorMessage(err), 'error');
+        },
+      });
+  }
+
+  formatMinutes(m: number): string {
+    if (m === 0) return '0';
+    const h = Math.floor(m / 60);
+    const min = m % 60;
+    return min > 0 ? `${h}h ${min}m` : `${h}h`;
+  }
+
+  formatSignedMinutes(m: number): string {
+    if (m === 0) return '0';
+    const sign = m > 0 ? '+' : '−';
+    return `${sign}${this.formatMinutes(Math.abs(m))}`;
+  }
+
+  complianceWarningText(w: ScheduleComplianceWarning): string {
+    if (w.code === 'weekly_planned_over_limit') {
+      return this.translate.instant('WORKING_PLAN.COMPLIANCE_WEEKLY', {
+        name: w.user_name || '',
+        week: w.week_start || '',
+        minutes: w.planned_minutes ?? 0,
+        limit: w.limit_minutes ?? 0,
+      });
+    }
+    if (w.code === 'rest_between_shifts') {
+      return this.translate.instant('WORKING_PLAN.COMPLIANCE_REST', {
+        name: w.user_name || '',
+        gap: w.gap_minutes ?? 0,
+        required: w.required_min_rest_minutes ?? 0,
+      });
+    }
+    if (w.code === 'yearly_planned_hours_threshold') {
+      return this.translate.instant('WORKING_PLAN.COMPLIANCE_YEARLY', {
+        name: w.user_name || '',
+        year: String(w.year ?? ''),
+        minutes: w.planned_minutes ?? 0,
+        warn: w.warn_at_minutes ?? 0,
+      });
+    }
+    return JSON.stringify(w);
+  }
+
   exportExcel(): void {
     const uid = this.exportUserId;
     if (uid == null) return;
@@ -1137,8 +1292,21 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
             next: (n) => this.api.workingPlanHasUpdates.set(n.has_updates),
           });
         }
+        this.api.getSchedulePlannedVsActual(range.from, range.to).subscribe({
+          next: (res) => this.plannedVsActualRows.set(res.rows),
+          error: () => this.plannedVsActualRows.set([]),
+        });
+        this.api.getScheduleComplianceSummary(range.from, range.to).subscribe({
+          next: (res) => this.complianceWarnings.set(res.warnings),
+          error: () => this.complianceWarnings.set([]),
+        });
       },
-      error: () => { this.shifts.set([]); this.loading.set(false); },
+      error: () => {
+        this.shifts.set([]);
+        this.plannedVsActualRows.set([]);
+        this.complianceWarnings.set([]);
+        this.loading.set(false);
+      },
     });
   }
 
