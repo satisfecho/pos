@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** The tester completed verification of the tablet-optimized floor canvas and `GET /tables/with-status` work for issue #120.
+- **What was done:** Backend exposes `operational_status` (and related fields) per table; the floor canvas uses dark tablet styling, a five-state legend, compact name + seat labels, and touch-sized controls; persistent merge/split was explicitly deferred.
+- **What was tested:** API shape, `/tables/canvas` UI (legend, labels, navigation), German i18n, `ng build --development`, and landing smoke — **PASS**, with live open_order vs bill_issued color transition left for optional spot QA.
+- **Why closed:** Tester overall **PASS**; acceptance criteria met for this pass with the documented limitation.
+- **Closed at (UTC):** 2026-03-31 10:23
+---
+
 # Tablet-optimized interactive floor plan (table management)
 
 ## GitHub
