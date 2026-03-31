@@ -19,6 +19,7 @@ import { ConfirmationModalComponent } from '../shared/confirmation-modal.compone
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { ReservationWeekSlotGridComponent } from '../shared/reservation-week-slot-grid.component';
 import { tenantOpeningHoursHasMealSplit } from '../shared/booking-meal-split';
+import { reservationDietaryNotesDisplay, reservationDietaryNotesFormValue } from '../shared/reservation-dietary-notes';
 import { contactEmailValid, contactPhoneValid } from '../shared/contact-validators';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -105,14 +106,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                 @if (r.seating_preference) {
                   <div class="res-meta">{{ 'BOOK.SEATING_PREFERENCE' | translate }}: {{ seatingLabel(r.seating_preference) }}</div>
                 }
-                @if (r.allergies_has) {
-                  <div class="res-meta">
-                    {{ 'BOOK.ALLERGIES_HAS' | translate }}
-                    @if (r.allergies_detail) {
-                      <span> — {{ r.allergies_detail }}</span>
-                    }
-                  </div>
-                }
                 <div>{{ r.customer_phone }}</div>
                 @if (r.customer_email) {
                   <div>{{ r.customer_email }}</div>
@@ -120,8 +113,10 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                 @if (r.client_notes) {
                   <div class="res-notes client-notes"><strong>{{ 'RESERVATIONS.RESERVATION_NOTES' | translate }}:</strong> {{ r.client_notes }}</div>
                 }
-                @if (r.customer_notes) {
-                  <div class="res-notes client-notes"><strong>{{ 'RESERVATIONS.CUSTOMER_NOTES' | translate }}:</strong> {{ r.customer_notes }}</div>
+                @if (dietaryNotesLine(r); as dn) {
+                  <div class="res-notes client-notes"><strong>{{ 'RESERVATIONS.CUSTOMER_NOTES' | translate }}:</strong> {{ dn }}</div>
+                } @else if (r.allergies_has) {
+                  <div class="res-meta">{{ 'BOOK.ALLERGIES_HAS' | translate }}</div>
                 }
                 @if (r.owner_notes) {
                   <div class="res-notes owner-notes"><strong>{{ 'RESERVATIONS.OWNER_NOTES' | translate }}:</strong> {{ r.owner_notes }}</div>
@@ -215,20 +210,15 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                     </div>
                   </div>
                   <div class="form-group">
-                    <label class="checkbox-label">
-                      <input type="checkbox" [(ngModel)]="formAllergiesHas" name="resAllergiesHas" />
-                      {{ 'BOOK.ALLERGIES_HAS' | translate }}
-                    </label>
-                    @if (formAllergiesHas) {
-                      <textarea
-                        id="res-modal-allergies"
-                        class="res-allergies-detail"
-                        [(ngModel)]="formAllergiesDetail"
-                        name="resAllergiesDetail"
-                        rows="2"
-                        [placeholder]="'BOOK.ALLERGIES_DETAIL_PLACEHOLDER' | translate"
-                      ></textarea>
-                    }
+                    <label for="res-modal-dietary">{{ 'RESERVATIONS.CUSTOMER_NOTES' | translate }}</label>
+                    <textarea
+                      id="res-modal-dietary"
+                      class="res-dietary-notes"
+                      [(ngModel)]="formDietaryNotes"
+                      name="resDietaryNotes"
+                      rows="2"
+                      [placeholder]="'BOOK.ALLERGIES_DETAIL_PLACEHOLDER' | translate"
+                    ></textarea>
                   </div>
                 </div>
                 @if (tenantId != null) {
@@ -285,16 +275,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                     [(ngModel)]="formClientNotes"
                     rows="2"
                     [placeholder]="'RESERVATIONS.RESERVATION_NOTES_PLACEHOLDER' | translate"
-                  ></textarea>
-                </div>
-                <div class="form-group">
-                  <label for="res-modal-customer-notes">{{ 'RESERVATIONS.CUSTOMER_NOTES' | translate }}</label>
-                  <textarea
-                    id="res-modal-customer-notes"
-                    name="customerNotes"
-                    [(ngModel)]="formCustomerNotes"
-                    rows="2"
-                    [placeholder]="'RESERVATIONS.CUSTOMER_NOTES_PLACEHOLDER' | translate"
                   ></textarea>
                 </div>
                 <div class="form-group">
@@ -442,9 +422,10 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     .res-booking-controls { margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e5e7eb; }
     .res-seating-group .label-block { display: block; font-weight: 500; margin-bottom: 0.35rem; }
     .res-seating-group .radio-row { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: center; }
-    .res-seating-group .radio-label { font-weight: normal; cursor: pointer; }
-    .res-allergies-detail { display: block; width: 100%; margin-top: 0.35rem; padding: 0.35rem 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
-    .checkbox-label { font-weight: normal; cursor: pointer; }
+    .res-seating-group .radio-label { display: inline-flex; align-items: center; gap: 0.5rem; font-weight: normal; font-size: 1rem; line-height: 1.4; cursor: pointer; }
+    .reservation-modal-form input[type="radio"],
+    .reservation-modal-form input[type="checkbox"] { width: 1.125em; height: 1.125em; flex-shrink: 0; margin: 0; padding: 0; border: none; background: transparent; accent-color: var(--color-primary, #2563eb); vertical-align: middle; }
+    .res-dietary-notes { display: block; width: 100%; margin-top: 0.35rem; padding: 0.35rem 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
   `],
 })
 export class ReservationsComponent implements OnInit, OnDestroy {
@@ -469,15 +450,14 @@ export class ReservationsComponent implements OnInit, OnDestroy {
   formPhone = '';
   formEmail = '';
   formClientNotes = '';
-  formCustomerNotes = '';
   formOwnerNotes = '';
   formDate = '';
   formTime = '';
   formPartySize = 1;
   /** lunch/dinner/all — week grid when opening hours have a break */
   formService: 'all' | 'lunch' | 'dinner' = 'all';
-  formAllergiesHas = false;
-  formAllergiesDetail = '';
+  /** Allergies / special requirements (synced to allergies_* and customer_notes on save). */
+  formDietaryNotes = '';
   formSeating: 'no_preference' | 'indoor' | 'terrace' = 'no_preference';
   formError = signal<string | null>(null);
   reservationToSeat = signal<Reservation | null>(null);
@@ -595,6 +575,10 @@ export class ReservationsComponent implements OnInit, OnDestroy {
     return this.translate.instant('RESERVATIONS.TABLE_NOT_ASSIGNED');
   }
 
+  dietaryNotesLine(r: Reservation): string | null {
+    return reservationDietaryNotesDisplay(r);
+  }
+
   isSlotOverbooked(r: Reservation): boolean {
     const report = this.overbookingReport();
     if (!report?.slots?.length) return false;
@@ -628,14 +612,12 @@ export class ReservationsComponent implements OnInit, OnDestroy {
     this.formPhone = '';
     this.formEmail = '';
     this.formClientNotes = '';
-    this.formCustomerNotes = '';
     this.formOwnerNotes = '';
     this.formDate = this.tenantTodayForForm();
     this.formTime = '';
     this.formPartySize = 2;
     this.formService = 'all';
-    this.formAllergiesHas = false;
-    this.formAllergiesDetail = '';
+    this.formDietaryNotes = '';
     this.formSeating = 'no_preference';
     this.formError.set(null);
     this.prefillMessage.set(null);
@@ -665,13 +647,11 @@ export class ReservationsComponent implements OnInit, OnDestroy {
           this.formName = r.customer_name ?? '';
           this.formEmail = r.customer_email ?? '';
           this.formClientNotes = r.client_notes ?? '';
-          this.formCustomerNotes = r.customer_notes ?? '';
           this.formOwnerNotes = r.owner_notes ?? '';
           this.formPartySize = r.party_size ?? this.formPartySize;
           const st = (r.service_type || '').toLowerCase();
           this.formService = st === 'lunch' || st === 'dinner' ? (st as 'lunch' | 'dinner') : 'all';
-          this.formAllergiesHas = !!r.allergies_has;
-          this.formAllergiesDetail = r.allergies_detail ?? '';
+          this.formDietaryNotes = reservationDietaryNotesFormValue(r);
           const sp = (r.seating_preference || 'no_preference').toLowerCase();
           this.formSeating =
             sp === 'indoor' || sp === 'terrace' ? sp : 'no_preference';
@@ -696,15 +676,13 @@ export class ReservationsComponent implements OnInit, OnDestroy {
     this.formPhone = r.customer_phone;
     this.formEmail = r.customer_email ?? '';
     this.formClientNotes = r.client_notes ?? '';
-    this.formCustomerNotes = r.customer_notes ?? '';
     this.formOwnerNotes = r.owner_notes ?? '';
     this.formDate = r.reservation_date.slice(0, 10);
     this.formTime = r.reservation_time.length >= 5 ? r.reservation_time.slice(0, 5) : r.reservation_time;
     this.formPartySize = r.party_size;
     const st = (r.service_type || '').toLowerCase();
     this.formService = st === 'lunch' || st === 'dinner' ? (st as 'lunch' | 'dinner') : 'all';
-    this.formAllergiesHas = !!r.allergies_has;
-    this.formAllergiesDetail = r.allergies_detail ?? '';
+    this.formDietaryNotes = reservationDietaryNotesFormValue(r);
     const sp = (r.seating_preference || 'no_preference').toLowerCase();
     this.formSeating = sp === 'indoor' || sp === 'terrace' ? sp : 'no_preference';
     this.formError.set(null);
@@ -721,10 +699,6 @@ export class ReservationsComponent implements OnInit, OnDestroy {
 
   saveReservation() {
     this.formError.set(null);
-    if (this.formAllergiesHas && !this.formAllergiesDetail.trim()) {
-      this.formError.set(this.translate.instant('BOOK.ALLERGIES_DETAIL_REQUIRED'));
-      return;
-    }
     if (!contactPhoneValid(this.formPhone)) {
       this.formError.set(this.translate.instant('BOOK.INVALID_PHONE'));
       return;
@@ -771,6 +745,7 @@ export class ReservationsComponent implements OnInit, OnDestroy {
       return;
     }
     const svc = this.hasMealSplit() && this.formService !== 'all' ? this.formService : null;
+    const dietary = this.formDietaryNotes.trim();
     const payload: ReservationCreate = {
       customer_name: this.formName.trim(),
       customer_phone: this.formPhone.trim(),
@@ -779,11 +754,11 @@ export class ReservationsComponent implements OnInit, OnDestroy {
       reservation_time: timeNorm,
       party_size: ps,
       client_notes: this.formClientNotes.trim() || undefined,
-      customer_notes: this.formCustomerNotes.trim() || undefined,
+      customer_notes: dietary || undefined,
       service_type: svc,
       seating_preference: this.formSeating,
-      allergies_has: this.formAllergiesHas,
-      allergies_detail: this.formAllergiesHas ? this.formAllergiesDetail.trim() : undefined,
+      allergies_has: dietary.length > 0,
+      allergies_detail: dietary || undefined,
     };
     if (!this.editingReservation() && tenantId) (payload as ReservationCreate).tenant_id = tenantId;
     if (this.editingReservation()) {
@@ -795,12 +770,12 @@ export class ReservationsComponent implements OnInit, OnDestroy {
         reservation_time: timeNorm,
         party_size: ps,
         client_notes: this.formClientNotes.trim() || undefined,
-        customer_notes: this.formCustomerNotes.trim() || undefined,
+        customer_notes: dietary.length > 0 ? dietary : null,
         owner_notes: this.formOwnerNotes.trim() || undefined,
         service_type: svc,
         seating_preference: this.formSeating,
-        allergies_has: this.formAllergiesHas,
-        allergies_detail: this.formAllergiesHas ? this.formAllergiesDetail.trim() : undefined,
+        allergies_has: dietary.length > 0,
+        allergies_detail: dietary.length > 0 ? dietary : null,
       };
       this.api.updateReservation(this.editingReservation()!.id, update).subscribe({
         next: () => { this.closeForm(); this.load(); this.loadTables(); },

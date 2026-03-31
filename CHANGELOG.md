@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Reservations / public booking (GitHub #128):** Single **allergies / special requirements** textarea on `/book/:tenantId` and in the staff reservation modal (removed duplicate checkbox + second “customer notes” field that repeated the same intent). Radio controls use **1rem** label text and **1.125em** native inputs with theme **accent-color**. Staff list and guest reservation view show one merged dietary line (`reservation-dietary-notes` helper).
+
 ### Fixed
 
 - **Reservations / public booking (GitHub #127):** On **today** (tenant calendar date), the time-slot dropdown in **`ReservationWeekSlotGridComponent`** no longer lists API-marked **past** slots, so the first options align with the next bookable times.

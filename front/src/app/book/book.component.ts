@@ -42,14 +42,13 @@ export class BookComponent implements OnInit {
   formPartySize = 2;
   /** lunch/dinner/all — grid + API when opening hours have a break */
   formService: 'all' | 'lunch' | 'dinner' = 'all';
-  formAllergiesHas = false;
-  formAllergiesDetail = '';
+  /** Allergies / special requirements (maps to allergies_* + customer_notes on submit). */
+  formDietaryNotes = '';
   formSeating: 'no_preference' | 'indoor' | 'terrace' = 'no_preference';
   formName = '';
   formPhone = '';
   formEmail = '';
   formClientNotes = '';
-  formCustomerNotes = '';
   submitting = signal(false);
   error = signal<string | null>(null);
   successReservation = signal<Reservation | null>(null);
@@ -201,10 +200,6 @@ export class BookComponent implements OnInit {
       this.error.set(this.translate.instant('BOOK.INVALID_EMAIL'));
       return;
     }
-    if (this.formAllergiesHas && !this.formAllergiesDetail.trim()) {
-      this.error.set(this.translate.instant('BOOK.ALLERGIES_DETAIL_REQUIRED'));
-      return;
-    }
     if (!this.formDate?.trim() || !this.formTime?.trim()) {
       this.error.set(this.translate.instant('BOOK.PICK_SLOT'));
       return;
@@ -217,6 +212,7 @@ export class BookComponent implements OnInit {
     this.submitting.set(true);
     const svc =
       this.hasMealSplit() && this.formService !== 'all' ? this.formService : undefined;
+    const dietary = this.formDietaryNotes.trim();
     const body: ReservationCreate = {
       tenant_id: tid,
       customer_name: this.formName.trim(),
@@ -226,14 +222,14 @@ export class BookComponent implements OnInit {
       reservation_time: this.formTime,
       party_size: this.formPartySize,
       client_notes: this.formClientNotes.trim() || undefined,
-      customer_notes: this.formCustomerNotes.trim() || undefined,
+      customer_notes: dietary || undefined,
       client_fingerprint: this.getClientFingerprint(),
       client_screen_width: typeof screen !== 'undefined' ? screen.width : undefined,
       client_screen_height: typeof screen !== 'undefined' ? screen.height : undefined,
       service_type: svc,
       seating_preference: this.formSeating,
-      allergies_has: this.formAllergiesHas,
-      allergies_detail: this.formAllergiesHas ? this.formAllergiesDetail.trim() : undefined,
+      allergies_has: dietary.length > 0,
+      allergies_detail: dietary || undefined,
     };
     this.api.createReservationPublic(body).subscribe({
       next: (res) => {

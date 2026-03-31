@@ -186,20 +186,15 @@
                 </div>
               </div>
               <div class="form-group">
-                <label class="checkbox-label">
-                  <input type="checkbox" [(ngModel)]="formAllergiesHas" name="allergiesHas" />
-                  {{ 'BOOK.ALLERGIES_HAS' | translate }}
-                </label>
-                @if (formAllergiesHas) {
-                  <textarea
-                    id="book-allergies"
-                    class="book-allergies-detail"
-                    [(ngModel)]="formAllergiesDetail"
-                    name="allergiesDetail"
-                    rows="2"
-                    [placeholder]="'BOOK.ALLERGIES_DETAIL_PLACEHOLDER' | translate"
-                  ></textarea>
-                }
+                <label for="book-dietary">{{ 'RESERVATIONS.CUSTOMER_NOTES' | translate }}</label>
+                <textarea
+                  id="book-dietary"
+                  class="book-dietary-notes"
+                  [(ngModel)]="formDietaryNotes"
+                  name="dietaryNotes"
+                  rows="2"
+                  [placeholder]="'BOOK.ALLERGIES_DETAIL_PLACEHOLDER' | translate"
+                ></textarea>
               </div>
             </div>
             <app-reservation-week-slot-grid
@@ -226,10 +221,6 @@
             <div class="form-group">
               <label for="book-notes">{{ 'RESERVATIONS.RESERVATION_NOTES' | translate }}</label>
               <textarea id="book-notes" [(ngModel)]="formClientNotes" name="clientNotes" rows="2" [placeholder]="'RESERVATIONS.RESERVATION_NOTES_PLACEHOLDER' | translate"></textarea>
-            </div>
-            <div class="form-group">
-              <label for="book-customer-notes">{{ 'RESERVATIONS.CUSTOMER_NOTES' | translate }}</label>
-              <textarea id="book-customer-notes" [(ngModel)]="formCustomerNotes" name="customerNotes" rows="2" [placeholder]="'RESERVATIONS.CUSTOMER_NOTES_PLACEHOLDER' | translate"></textarea>
             </div>
             @if (error()) {
               <div class="form-error">{{ error() }}</div>

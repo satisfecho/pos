@@ -6,6 +6,7 @@ import { ApiService, Reservation, TenantSummary } from '../services/api.service'
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterLink } from '@angular/router';
 import { ConfirmationModalComponent } from '../shared/confirmation-modal.component';
+import { reservationDietaryNotesDisplay } from '../shared/reservation-dietary-notes';
 import { LanguagePickerComponent } from '../shared/language-picker.component';
 
 @Component({
@@ -38,6 +39,11 @@ export class ReservationViewComponent implements OnInit {
   getStatusKey(): string {
     const s = this.reservation()?.status;
     return s ? 'RESERVATIONS.STATUS_' + s.toUpperCase() : '';
+  }
+
+  dietaryNotesDisplay(): string | null {
+    const r = this.reservation();
+    return r ? reservationDietaryNotesDisplay(r) : null;
   }
 
   getLogoSafeUrl(url: string | null): SafeResourceUrl | null {

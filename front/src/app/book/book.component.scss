@@ -368,7 +368,7 @@
   margin-bottom: var(--space-2);
   font-weight: 500;
   color: var(--color-text);
-  font-size: 0.9375rem;
+  font-size: 1rem;
 }
 
 .book-seating-group .radio-row {
@@ -380,20 +380,14 @@
 .radio-label {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  font-weight: normal;
-  font-size: 0.9375rem;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: flex-start;
   gap: 0.5rem;
-  font-weight: 500;
+  font-weight: normal;
+  font-size: 1rem;
+  line-height: 1.4;
 }
 
-.book-allergies-detail {
-  margin-top: var(--space-2);
+.book-dietary-notes {
+  margin-top: var(--space-1);
 }
 
 .book-form label {
@@ -404,7 +398,7 @@
   font-size: 0.9375rem;
 }
 
-.book-form input,
+.book-form input:not([type='radio']):not([type='checkbox']),
 .book-form select,
 .book-form textarea {
   width: 100%;
@@ -414,6 +408,19 @@
   background: white;
   color: var(--color-text);
   font-size: 1rem;
+}
+
+.book-form input[type='radio'],
+.book-form input[type='checkbox'] {
+  width: 1.125em;
+  height: 1.125em;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  accent-color: var(--color-primary);
+  vertical-align: middle;
 }
 
 .form-error {

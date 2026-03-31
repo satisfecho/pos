@@ -128,8 +128,10 @@
             @if (reservation()?.client_notes) {
               <p><strong>{{ 'RESERVATIONS.RESERVATION_NOTES' | translate }}:</strong> {{ reservation()?.client_notes }}</p>
             }
-            @if (reservation()?.customer_notes) {
-              <p><strong>{{ 'RESERVATIONS.CUSTOMER_NOTES' | translate }}:</strong> {{ reservation()?.customer_notes }}</p>
+            @if (dietaryNotesDisplay(); as dn) {
+              <p><strong>{{ 'RESERVATIONS.CUSTOMER_NOTES' | translate }}:</strong> {{ dn }}</p>
+            } @else if (reservation()?.allergies_has) {
+              <p><strong>{{ 'BOOK.ALLERGIES_HAS' | translate }}</strong></p>
             }
             @if (reservation()?.delay_notice) {
               <p class="delay-notice"><strong>{{ 'RESERVATIONS.DELAY_NOTICE' | translate }}:</strong> {{ reservation()?.delay_notice }}</p>
