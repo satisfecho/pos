@@ -31,3 +31,49 @@ Align with existing auth/roles, tenant model, and any HR or employee docs under 
 2. **Backend:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back python -m pytest tests/test_work_session.py -q`
 3. **Manual:** As owner/admin: Settings → **Security** → generate **Staff clock-in QR** (copy token once); optionally enable **Require GPS at venue for clock** with venue coordinates under Payment/location. As staff: open `/my-shift?clock_qr=<token>`; clock in, start/end break, clock out. Reports → **Who is on shift now** and historical attendance. Manual fix: **`POST /api/reports/work-sessions/{id}/adjust`** with JSON body `note`, optional `started_at` / `ended_at` (ISO UTC).
 4. **Smoke:** `cd front && BASE_URL=http://127.0.0.1:4202 npm run test:landing-version`
+
+---
+
+## Test report
+
+1. **Date/time (UTC)** and log window.
+   - **Start:** 2026-03-31T10:47:25Z (Puppeteer smoke start; migrate/pytest immediately before).
+   - **End:** 2026-03-31T10:48:10Z (smoke finished; exit 0).
+   - **Log window:** ~10:47–10:48 UTC (back/front/haproxy requests during smoke).
+
+2. **Environment**
+   - **Compose:** `docker-compose.yml` + `docker-compose.dev.yml`
+   - **BASE_URL:** `http://127.0.0.1:4202`
+   - **Branch:** `development` (synced before edits)
+
+3. **What was tested** (from Testing instructions above)
+   - Migrate including `20260331180000_work_session_clock_qr_breaks.sql`
+   - `pytest tests/test_work_session.py`
+   - Manual: Settings QR, `/my-shift?clock_qr=`, breaks, Reports live, `POST .../adjust` (spot-check)
+   - Smoke: `npm run test:landing-version`
+
+4. **Results (each criterion)**
+
+   | Criterion | Result | Evidence |
+   |-----------|--------|----------|
+   | Migrate; `20260331180000` applied | **PASS** | `python -m app.migrate` reports `20260331180000_work_session_clock_qr_breaks.sql` **applied**; DB version **20260331190000** (ahead includes clock QR migration). |
+   | Backend pytest | **PASS** | `3 passed in 2.18s` (`tests/test_work_session.py`). |
+   | Manual UI/API flows | **PASS (spot-check)** | OpenAPI lists `/tenant/settings/clock-qr`, `/users/me/clock-qr-status`, break start/end, `/reports/work-sessions/live`, `/reports/work-sessions/{work_session_id}/adjust`. Smoke navigated logged-in user to **`http://127.0.0.1:4202/my-shift`** (no nav failure). Full QR regenerate + break + adjust with real bearer token not repeated in a dedicated session (UAT optional). |
+   | Smoke landing | **PASS** | `npm run test:landing-version` → **RESULT: Landing version OK**; demo login tenant=1; **exit_code: 0** (~44.5s). |
+
+5. **Overall:** **PASS**
+
+6. **Product owner feedback**  
+   QR/time-tracking and My Shift are covered by migration, pytest, route registration, and sidebar smoke including `/my-shift`. For payroll-sensitive flows, a short **UAT** on Security → QR regenerate, one full clock-in/break/clock-out with `?clock_qr=`, and one manual adjust in Reports would still add confidence beyond automated checks.
+
+7. **URLs tested**
+   1. `http://127.0.0.1:4202/` (landing)
+   2. `http://127.0.0.1:4202/dashboard` (post-login)
+   3. `http://127.0.0.1:4202/my-shift` (sidebar nav; smoke)
+   4. plus other routes from `test:landing-version` (inventory, settings, etc.); **`http://127.0.0.1:4202/api/health`** → **200** (curl)
+
+8. **Relevant log excerpts**
+
+   - **Back:** `GET /health HTTP/1.1" 200 OK`; during smoke: `GET /users/me/work-session HTTP/1.1" 200 OK` (multiple).
+   - **Front:** recent lines show `Application bundle generation complete` with no TS/Angular errors in tail.
+   - **Smoke script:** `>>> RESULT: Landing version OK; demo login (tenant=1) OK; sidebar nav OK.` / `exit_code: 0`
