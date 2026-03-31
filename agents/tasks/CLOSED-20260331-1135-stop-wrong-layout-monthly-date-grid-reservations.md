@@ -37,3 +37,54 @@ This supersedes the prior weekly time-slot–oriented direction where issue #125
 4. **Public booking:** `cd front && BASE_URL=http://127.0.0.1:4202 node scripts/debug-reservations-public.mjs` — expect success message and booking created.
 
 5. **Staff create (optional, needs `.env` login):** `cd front && BASE_URL=http://127.0.0.1:4202 node scripts/debug-reservations.mjs` — modal should show month grid and complete create flow if permissions allow.
+
+---
+
+## Test report
+
+1. **Date/time (UTC)** and log window  
+   - Started: 2026-03-31T11:43Z (approx.; pytest/smoke run window).  
+   - Finished: 2026-03-31T11:44:12Z.  
+   - Front log window reviewed: `docker compose … logs --tail=50 front` immediately after runs (entries through 2026-03-31T11:41:53Z).
+
+2. **Environment**  
+   - Compose: `docker-compose.yml` + `docker-compose.dev.yml`.  
+   - `BASE_URL`: `http://127.0.0.1:4202` (HAProxy → front).  
+   - Branch: `development` @ `b529ea5`.
+
+3. **What was tested**  
+   - Per **Testing instructions** §1–5 (backend pytest, front build logs, landing smoke, public book flow, staff reservations script).
+
+4. **Results**  
+   - **Backend pytest (§1):** **PASS** — `7 passed in 1.41s` (`test_book_month_day_slots_public.py`, `test_book_week_slots_public.py`).  
+   - **Frontend build (§2):** **PASS** — last 50 `pos-front` lines show only successful rebuilds and `Application bundle generation complete` (no `ERROR` / `TS` lines in that tail).  
+   - **Landing smoke (§3):** **PASS** — `npm run test:landing-version` exited 0; navigated reservations among other routes.  
+   - **Public booking (§4):** **PASS** — `debug-reservations-public.mjs` exited 0; “Public user successfully reserved a table.”  
+   - **Staff create (§5, optional):** **PASS** — `debug-reservations.mjs` exited 0; create used “grid selection (hidden fields)”, card visible after save, cancel confirmed.
+
+5. **Overall:** **PASS** (all required criteria + optional staff flow).
+
+6. **Product owner feedback**  
+   - Automated checks confirm the month/day booking path works end-to-end for public `/book/1` and staff create/cancel, with backend slot/month APIs covered by pytest.  
+   - WebSocket token warnings appeared in browser console during some navigations but did not block booking or nav success in this run.
+
+7. **URLs tested**  
+   1. `http://127.0.0.1:4202/`  
+   2. `http://127.0.0.1:4202/login?tenant=1`  
+   3. `http://127.0.0.1:4202/dashboard`  
+   4. `http://127.0.0.1:4202/reservations`  
+   5. `http://127.0.0.1:4202/book/1`  
+   6. Additional sidebar targets from `test:landing-version` (`/my-shift`, `/staff/orders`, `/guest-feedback`, `/tables`, `/kitchen`, `/bar`, `/customers`, `/products`, `/catalog`, `/reports`, `/working-plan`, `/users`, `/contracts`, `/settings`, inventory subroutes).
+
+8. **Relevant log excerpts**  
+
+```text
+# back (pytest)
+.......                                                                  [100%]
+7 passed in 1.41s
+
+# front (pos-front, tail=50 excerpt)
+Application bundle generation complete. [0.299 seconds] - 2026-03-31T11:41:51.540Z
+...
+Application bundle generation complete. [0.483 seconds] - 2026-03-31T11:41:53.737Z
+```
