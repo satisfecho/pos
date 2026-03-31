@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** The team implemented the dynamic booking system (tenant capacity, service/allergies/seating, weekly grid, edit paths) and iterated through tester findings until all handoff criteria passed.
+- **What was done:** DB migration and fields, backend capacity and APIs (including `reservation_max_guests_per_slot` on single-tenant public JSON), Angular settings and reservations UI, Puppeteer script fixes (modal selectors, valid E.164 test phone), and pytest coverage for booking and public tenant responses.
+- **What was tested:** Migration, `test_book_week_slots_public.py` + `test_public_tenant_whatsapp.py`, landing smoke, `GET /api/public/tenants/1` field check, and staff `debug-reservations.mjs` create/cancel — final run **PASS** (POST `/reservations` 200, card visible after save).
+- **Why closed:** Final test report (handoff verify 2026-03-31 UTC) records overall **PASS**; all stated pass/fail criteria met.
+- **Closed at (UTC):** 2026-03-31 10:20
+---
+
 # Dynamic booking system with advanced filters and calendar logic
 
 ## GitHub
