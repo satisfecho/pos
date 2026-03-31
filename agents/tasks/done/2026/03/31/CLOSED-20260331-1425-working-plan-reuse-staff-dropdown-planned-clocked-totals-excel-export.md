@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue #130 delivered Working plan improvements: one staff dropdown for planned-vs-clocked scope, a collapsible comparison block with totals, and Excel export aligned with existing schedule patterns.
+- **What was done:** Frontend uses **All staff** / single-user filtering, localStorage for disclosure state, totals row, comparison export gating; backend adds `GET /schedule/planned-vs-actual/export` with shared row builder and i18n labels; follow-up fixed PVA visibility via Angular signals and updated `/schedule/export` workbook tests for tips footer rows.
+- **What was tested:** Tester reported **PASS** — HAProxy 200, `npm run test:working-plan` exit 0, `pytest tests/test_schedule_export.py` (5 passed), front bundle generation complete; extended manual steps §3–8 were not re-run (residual UX spot-check noted).
+- **Why closed:** Task **Pass criteria** met; automated smoke and backend export tests satisfied with documented residual manual risk for full UX sign-off.
+- **Closed at (UTC):** 2026-03-31 14:44
+---
+
 # Working plan: reuse staff dropdown for collapsible “Planned vs clocked” + totals; optional Excel export
 
 ## GitHub
