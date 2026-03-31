@@ -60,7 +60,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- **Agents:** 001 log-reviewer Run 001 sweep recorded (`agents/001-log-reviewer/time-of-last-review.txt`; **0** open GitHub issues → **0** new **FEAT-**; Docker window clean → **0** new **NEW-**).
+- **Agents:** 001 log-reviewer sweep watermark updated (`agents/001-log-reviewer/time-of-last-review.txt`, **2026-03-31T12:27Z**): **0** open GitHub issues → **0** new **FEAT-**; Docker log pass → **0** new **NEW-**.
 
 - **Auth / landing footers — Terms & Privacy next to account actions (GitHub #114):** Staff login and register show provider login, register-as-provider, contact, and legal links in one wrapped row; landing keeps the same order with inline legal links. Provider login/register footers include contact and `getPublicLegalUrls()` links; **`PROVIDER_AUTH.*`** i18n in all shipped locales. **`app-legal-links`** supports **`[inline]="true"`** for footer flow.
 
