@@ -176,3 +176,44 @@ Align with existing reservation models, public book flow, and `docs/` where the 
 - **Pass/fail criteria**
   - **PASS:** Pytest and landing smoke green; staff script shows card after save and no `400` on `POST /reservations` when credentials allow writes.
   - **FAIL:** `400` on create with valid login; `party_size=null` on `book-week-slots`; missing `reservation_max_guests_per_slot` on single-tenant public JSON.
+
+---
+
+## Test report (handoff verify — 2026-03-31 UTC)
+
+1. **Date/time (UTC)** and log window  
+   - **Started:** 2026-03-31 10:16:30 UTC  
+   - **Ended:** 2026-03-31 10:19:00 UTC (approx.)  
+   - **Log window:** `pos-back` lines sampled for reservation API calls during staff script run (see excerpts).
+
+2. **Environment**  
+   - **Compose:** `docker-compose.yml` + `docker-compose.dev.yml`  
+   - **BASE_URL:** `http://127.0.0.1:4202`  
+   - **Branch:** `development` (synced via `./scripts/git-sync-development.sh` before edits)
+
+3. **What was tested**  
+   - Handoff: migrate; `tests/test_book_week_slots_public.py` + `tests/test_public_tenant_whatsapp.py`; `npm run test:landing-version`; `reservation_max_guests_per_slot` on `GET /api/public/tenants/1`; staff `node scripts/debug-reservations.mjs` with `DEMO_LOGIN_*` from repo `.env`.
+
+4. **Results:** each criterion **PASS** / **FAIL** + one evidence line  
+   - **Migrate (step 1):** **PASS** — `python -m app.migrate` reports schema at `20260331190000`, up to date.  
+   - **Backend pytest (step 2):** **PASS** — `5 passed in 1.20s`.  
+   - **Landing smoke (step 3):** **PASS** — `>>> RESULT: Landing version OK; demo login (tenant=1) OK; sidebar nav OK.` (exit 0).  
+   - **API field (step 4):** **PASS** — Python check on JSON body: `has_key True` for `reservation_max_guests_per_slot`.  
+   - **Staff script (step 5):** **PASS** — `Create: card visible after save: true`; cancel path OK. No `party_size=null` on `book-week-slots`; `GET ...book-week-slots?...party_size=2...` **200**; `POST /reservations` **200 OK** in `pos-back` (not 400).
+
+5. **Overall:** **PASS** — All handoff pass/fail criteria met.
+
+6. **Product owner feedback**  
+   Dynamic booking handoff checks are green: automated tests, landing smoke, single-tenant public JSON includes max-guests-per-slot, and the staff Puppeteer flow creates and cancels a reservation without the earlier phone or modal-order regressions. Ready for closing reviewer to archive when convenient.
+
+7. **URLs tested**  
+   1. `http://127.0.0.1:4202/login?tenant=1`  
+   2. `http://127.0.0.1:4202/dashboard`  
+   3. `http://127.0.0.1:4202/reservations`  
+   4. `http://127.0.0.1:4202/api/public/tenants/1`  
+   5. `http://127.0.0.1:4202/` (landing smoke)
+
+8. **Relevant log excerpts**  
+   - **pos-back:** `GET /reservations/book-week-slots?tenant_id=1&party_size=2&week_anchor=2026-03-31 HTTP/1.1" 200 OK`  
+   - **pos-back:** `GET /reservations/slot-capacity?date_str=2026-04-01&time_str=14:00 HTTP/1.1" 200 OK`  
+   - **pos-back:** `POST /reservations HTTP/1.1" 200 OK`
