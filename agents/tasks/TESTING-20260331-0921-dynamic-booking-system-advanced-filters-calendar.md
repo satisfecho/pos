@@ -87,7 +87,7 @@ Align with existing reservation models, public book flow, and `docs/` where the 
 
 - **`GET /public/tenants/{id}`:** Response body includes **`reservation_max_guests_per_slot`** (aligned with `TenantSummary` and `GET /public/tenants`).
 - **Tests:** `tests/test_public_tenant_whatsapp.py` — key present when unset (`null`); value `4` when set on tenant.
-- **`front/scripts/debug-reservations.mjs`:** Staff create flow uses `#res-modal-party`, first `.week-slot.ws-available`, `#res-modal-name`, `#res-modal-phone` (replaces obsolete `.modal-body input` index order that caused `party_size=null` and bad `slot-capacity` params).
+- **`front/scripts/debug-reservations.mjs`:** Staff create flow sets party via keyboard on `#res-modal-party`, waits for grid ready + `button.week-slot.ws-available`, clicks first slot, reads `#week-grid-hidden-date` for list filter, then `#res-modal-name` / `#res-modal-phone` (replaces obsolete `.modal-body input` index order that caused `party_size=null` and bad `slot-capacity` params).
 
 ## Testing instructions (handoff — re-verify)
 
