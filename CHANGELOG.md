@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Reservations / public booking week grid (GitHub #125):** Shared `ReservationWeekSlotGridComponent` — Mon–Sun column borders, single-letter weekday headers, state styling (available / full / closed / selected), dot legend, summary row (guests, service, date, time-slot dropdown); i18n updates across locales. Task: `agents/tasks/UNTESTED-20260331-1105-improve-reservations-ui-weekly-calendar.md`.
+
 - **Version metadata:** Bumped frontend package/version metadata to `2.0.65` (`front/package.json`, `front/package-lock.json`, regenerated `front/src/environments/commit-hash.ts`) to keep landing version checks aligned.
 
 - **Agents task flow:** Dynamic booking issue #119 handoff task moved from `TESTING-20260331-0921-...` to `WIP-20260331-0921-...` after re-verify notes were appended, so the coder queue can continue follow-up work.

@@ -33,9 +33,14 @@
       [attr.aria-colcount]="weekDays().length + 1"
     >
       <div class="week-corner" role="presentation"></div>
-      @for (col of weekDays(); track col.date) {
-        <div class="week-col-head" role="columnheader">
-          {{ weekDayColumnHeader(col.date) }}
+      @for (col of weekDays(); track col.date; let ci = $index) {
+        <div
+          class="week-col-head"
+          [class.week-col-bordered]="ci > 0"
+          role="columnheader"
+        >
+          <span class="week-col-letter">{{ weekDayLetter(col.date) }}</span>
+          <span class="week-col-daynum">{{ weekDayMonthDay(col.date) }}</span>
         </div>
       }
       @for (timeStr of weekTimes(); track timeStr; let ri = $index) {
@@ -45,6 +50,7 @@
             type="button"
             class="week-slot"
             role="gridcell"
+            [class.week-col-bordered]="ci > 0"
             [attr.aria-rowindex]="ri + 2"
             [attr.aria-colindex]="ci + 2"
             [attr.aria-label]="slotAriaLabel(col.date, timeStr)"
@@ -56,10 +62,55 @@
       }
     </div>
   </div>
-  <div class="book-week-legend" aria-hidden="true">
-    <span class="leg-item"><span class="leg-swatch leg-free"></span>{{ 'BOOK.SLOT_FREE' | translate }}</span>
-    <span class="leg-item"><span class="leg-swatch leg-full"></span>{{ 'BOOK.SLOT_FULL' | translate }}</span>
-    <span class="leg-item"><span class="leg-swatch leg-muted"></span>{{ 'BOOK.SLOT_OTHER' | translate }}</span>
+  <div class="book-week-legend" role="list" [attr.aria-label]="'BOOK.WEEK_LEGEND_LABEL' | translate">
+    <span class="leg-item" role="listitem">
+      <span class="leg-dot leg-dot-available" aria-hidden="true"></span>{{ 'BOOK.LEGEND_AVAILABLE' | translate }}
+    </span>
+    <span class="leg-item" role="listitem">
+      <span class="leg-dot leg-dot-selected" aria-hidden="true"></span>{{ 'BOOK.LEGEND_SELECTED' | translate }}
+    </span>
+    <span class="leg-item" role="listitem">
+      <span class="leg-dot leg-dot-full" aria-hidden="true"></span>{{ 'BOOK.LEGEND_FULL' | translate }}
+    </span>
+    <span class="leg-item" role="listitem">
+      <span class="leg-dot leg-dot-closed" aria-hidden="true"></span>{{ 'BOOK.LEGEND_CLOSED' | translate }}
+    </span>
+  </div>
+  <div class="book-week-summary" aria-live="polite">
+    <div class="book-week-summary-row">
+      <span class="summary-kv"
+        ><span class="summary-key">{{ 'RESERVATIONS.PARTY_SIZE' | translate }}:</span>
+        {{ partySize() }}</span
+      >
+      <span class="summary-kv"
+        ><span class="summary-key">{{ 'BOOK.SERVICE_TYPE' | translate }}:</span>
+        {{ serviceLabel() }}</span
+      >
+    </div>
+    @if (selectedDate() && selectedTime()) {
+      <div class="book-week-summary-row book-week-summary-main">
+        <div class="summary-datetime">
+          <span class="summary-kv"
+            ><span class="summary-key">{{ 'RESERVATIONS.DATE' | translate }}:</span>
+            {{ formattedSelectedDate() }}</span
+          >
+        </div>
+        <div class="summary-time-control">
+          <label class="summary-time-label" for="week-slot-time-select">{{ 'BOOK.TIME_SLOT' | translate }}</label>
+          <select
+            id="week-slot-time-select"
+            class="book-week-time-select"
+            [value]="selectedTime()"
+            (change)="onTimeSlotSelectChange($event)"
+            [disabled]="weekSlotsLoading()"
+          >
+            @for (t of weekTimes(); track t) {
+              <option [value]="t" [disabled]="!weekSlotSelectable(selectedDate(), t)">{{ t }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    }
   </div>
   <p class="visually-hidden">
     <label for="week-grid-hidden-date">{{ 'RESERVATIONS.DATE' | translate }}</label>
@@ -67,9 +118,4 @@
     <label for="week-grid-hidden-time">{{ 'RESERVATIONS.TIME' | translate }}</label>
     <input id="week-grid-hidden-time" type="text" [ngModel]="selectedTime()" (ngModelChange)="selectedTime.set($event)" name="gridTime" readonly tabindex="-1" />
   </p>
-  @if (selectedDate() && selectedTime()) {
-    <p class="book-selected-summary" aria-live="polite">
-      {{ 'BOOK.SELECTED_SLOT' | translate }}: {{ selectedDate() }} {{ selectedTime() }}
-    </p>
-  }
 </div>

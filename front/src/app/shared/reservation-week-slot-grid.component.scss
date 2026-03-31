@@ -71,23 +71,44 @@
   .book-week-grid {
     display: grid;
     grid-template-columns: 3.25rem repeat(7, minmax(2.25rem, 1fr));
-    gap: 3px;
+    column-gap: 0;
+    row-gap: 2px;
     padding: var(--space-2);
     min-width: min(100%, 520px);
   }
 
   .week-corner {
-    min-height: 1.75rem;
+    min-height: 2.25rem;
   }
 
   .week-col-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    font-size: 0.65rem;
     font-weight: 700;
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    line-height: 1.2;
-    padding: 2px 0;
+    line-height: 1.15;
+    padding: 4px 2px;
+    min-height: 2.25rem;
+
+    &.week-col-bordered {
+      border-left: 1px solid var(--color-border);
+    }
+  }
+
+  .week-col-letter {
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: var(--color-text);
+  }
+
+  .week-col-daynum {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
   }
 
   .week-row-label {
@@ -100,43 +121,67 @@
   }
 
   .week-slot {
-    min-height: 1.35rem;
+    min-height: 1.4rem;
     min-width: 0;
-    border-radius: 3px;
-    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    border: 1px solid #cbd5e1;
     padding: 0;
     cursor: pointer;
-    transition: transform 0.08s ease, box-shadow 0.08s ease;
+    transition:
+      background 0.1s ease,
+      border-color 0.1s ease,
+      box-shadow 0.1s ease;
 
+    &.week-col-bordered {
+      border-left: 1px solid var(--color-border);
+    }
+
+    /* Available: light cell */
     &.ws-available {
-      background: #15803d;
-      border-color: #166534;
+      background: #ffffff;
+      border-color: #cbd5e1;
     }
 
+    /* Full: not enough capacity for party size */
     &.ws-full {
-      background: #b91c1c;
-      border-color: #991b1b;
-    }
-
-    &.ws-muted {
-      background: var(--color-border);
-      border-color: var(--color-border);
+      background: #94a3b8;
+      border-color: #64748b;
       cursor: not-allowed;
-      opacity: 0.55;
     }
 
+    /* Closed / past / outside hours */
+    &.ws-muted {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+      cursor: not-allowed;
+      opacity: 0.88;
+    }
+
+    &.ws-closed-day {
+      opacity: 0.72;
+      background: #f1f5f9;
+    }
+
+    /* Selected available slot */
     &.ws-selected {
-      box-shadow: 0 0 0 2px var(--color-primary);
-      transform: scale(1.06);
+      background: #0f172a;
+      border-color: #0f172a;
+      box-shadow: 0 0 0 1px #0f172a;
       z-index: 1;
     }
 
     &.ws-available:hover:not(:disabled) {
-      filter: brightness(1.08);
+      border-color: #64748b;
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.12);
     }
 
     &:disabled {
       cursor: not-allowed;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 1px;
     }
   }
 
@@ -152,36 +197,100 @@
   .leg-item {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
   }
 
-  .leg-swatch {
-    width: 14px;
-    height: 14px;
-    border-radius: 3px;
-    border: 1px solid var(--color-border);
+  .leg-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
     flex-shrink: 0;
 
-    &.leg-free {
-      background: #15803d;
-      border-color: #166534;
+    &.leg-dot-available {
+      background: #ffffff;
+      border: 2px solid #64748b;
     }
 
-    &.leg-full {
-      background: #b91c1c;
-      border-color: #991b1b;
+    &.leg-dot-selected {
+      background: #0f172a;
+      border: 2px solid #0f172a;
     }
 
-    &.leg-muted {
-      background: var(--color-border);
+    &.leg-dot-full {
+      background: #94a3b8;
+      border: 2px solid #64748b;
+    }
+
+    &.leg-dot-closed {
+      background: transparent;
+      border: 2px dashed #94a3b8;
     }
   }
 
-  .book-selected-summary {
-    margin: var(--space-3) 0 0;
+  .book-week-summary {
+    margin-top: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
     font-size: 0.875rem;
-    font-weight: 500;
     color: var(--color-text);
+  }
+
+  .book-week-summary-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-4);
+    align-items: baseline;
+  }
+
+  .book-week-summary-main {
+    margin-top: var(--space-2);
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+
+  @media (min-width: 480px) {
+    .book-week-summary-main {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+  }
+
+  .summary-kv {
+    display: inline-block;
+  }
+
+  .summary-key {
+    font-weight: 600;
+    margin-right: 0.25rem;
+    color: var(--color-text-muted);
+  }
+
+  .summary-time-control {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 8rem;
+  }
+
+  .summary-time-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+
+  .book-week-time-select {
+    font: inherit;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    max-width: 100%;
   }
 }
 

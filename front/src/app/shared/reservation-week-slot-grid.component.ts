@@ -100,6 +100,7 @@ export class ReservationWeekSlotGridComponent {
         st === 'closed_day' ||
         st === 'out_of_hours' ||
         st === 'out_of_range',
+      'ws-closed-day': st === 'closed_day',
       'ws-selected': selected && st === 'available',
     };
   }
@@ -114,6 +115,18 @@ export class ReservationWeekSlotGridComponent {
     this.selectedTime.set(timeStr);
   }
 
+  /** Long weekday + date for aria labels (not the single-letter header). */
+  private weekDayAriaDate(dateStr: string): string {
+    const locale = this.translate.currentLang || this.translate.defaultLang || 'en';
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    return new Intl.DateTimeFormat(locale, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    }).format(dt);
+  }
+
   slotAriaLabel(dateStr: string, timeStr: string): string {
     const st = this.slotState(dateStr, timeStr);
     const keyMap: Record<string, string> = {
@@ -125,7 +138,7 @@ export class ReservationWeekSlotGridComponent {
       out_of_range: 'BOOK.SLOT_STATE_OUT_OF_RANGE',
     };
     const msg = this.translate.instant(keyMap[st] || 'BOOK.SLOT_STATE_OUT_OF_HOURS');
-    return `${this.weekDayColumnHeader(dateStr)} ${timeStr}. ${msg}`;
+    return `${this.weekDayAriaDate(dateStr)} ${timeStr}. ${msg}`;
   }
 
   weekRangeTitle(): string {
@@ -140,12 +153,49 @@ export class ReservationWeekSlotGridComponent {
     return `${a.toLocaleDateString(locale, opts)} – ${b.toLocaleDateString(locale, { ...opts, year: 'numeric' })}`;
   }
 
-  weekDayColumnHeader(dateStr: string): string {
+  /** Single-letter weekday (locale-aware; e.g. M T W …). */
+  weekDayLetter(dateStr: string): string {
     const locale = this.translate.currentLang || this.translate.defaultLang || 'en';
     const [y, m, d] = dateStr.split('-').map(Number);
     const dt = new Date(y, m - 1, d);
-    const wd = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(dt);
-    return `${wd} ${d}`;
+    return new Intl.DateTimeFormat(locale, { weekday: 'narrow' }).format(dt);
+  }
+
+  /** Day-of-month for column header (below weekday letter). */
+  weekDayMonthDay(dateStr: string): string {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const locale = this.translate.currentLang || this.translate.defaultLang || 'en';
+    const dt = new Date(y, m - 1, d);
+    return new Intl.DateTimeFormat(locale, { day: 'numeric' }).format(dt);
+  }
+
+  serviceLabel(): string {
+    const s = this.serviceType();
+    if (s === 'lunch') return this.translate.instant('BOOK.SERVICE_LUNCH');
+    if (s === 'dinner') return this.translate.instant('BOOK.SERVICE_DINNER');
+    return this.translate.instant('BOOK.SERVICE_ALL');
+  }
+
+  formattedSelectedDate(): string {
+    const raw = this.selectedDate()?.trim();
+    if (!raw) return '';
+    const [y, m, d] = raw.split('-').map(Number);
+    const locale = this.translate.currentLang || this.translate.defaultLang || 'en';
+    const dt = new Date(y, m - 1, d);
+    return new Intl.DateTimeFormat(locale, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(dt);
+  }
+
+  onTimeSlotSelectChange(ev: Event): void {
+    const value = (ev.target as HTMLSelectElement).value;
+    const dateStr = this.selectedDate().trim();
+    if (!dateStr || !value) return;
+    if (!this.weekSlotSelectable(dateStr, value)) return;
+    this.selectedTime.set(value);
   }
 
   weekTimes(): string[] {
