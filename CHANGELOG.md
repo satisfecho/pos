@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **POS tips verification (GitHub #123):** `back/tests/test_order_tip.py` covers overpayment resolution and mark-paid + waiter attribution; Puppeteer **`npm run test:order-tip-flows --prefix front`** exercises Settings → Payments (`data-testid="settings-payments-tab"`) and Reports tips card (`data-testid="reports-summary-tips"`). Documented in **`docs/testing.md`** §8b.
+
 - **Reservations / public booking week grid (GitHub #125):** Shared `ReservationWeekSlotGridComponent` — Mon–Sun column borders, single-letter weekday headers, state styling (available / full / closed / selected), dot legend, summary row (guests, service, date, time-slot dropdown); i18n updates across locales. Task: `agents/tasks/UNTESTED-20260331-1105-improve-reservations-ui-weekly-calendar.md`.
 
 - **Version metadata:** Bumped frontend package/version metadata to `2.0.65` (`front/package.json`, `front/package-lock.json`, regenerated `front/src/environments/commit-hash.ts`) to keep landing version checks aligned.

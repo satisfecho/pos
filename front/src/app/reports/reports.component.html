@@ -43,7 +43,7 @@
             <span class="card-label">{{ 'REPORTS.TOTAL_REVENUE' | translate }}</span>
             <span class="card-value">{{ formatCurrency(r.summary.total_revenue_cents) }}</span>
           </div>
-          <div class="summary-card tips">
+          <div class="summary-card tips" data-testid="reports-summary-tips">
             <span class="card-label">{{ 'REPORTS.TOTAL_TIPS' | translate }}</span>
             <span class="card-value">{{ formatCurrency(r.summary.total_tips_cents ?? 0) }}</span>
           </div>

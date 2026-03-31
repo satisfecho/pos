@@ -315,6 +315,17 @@ npm run test:reports --prefix front
 
 - **Env:** `BASE_URL`, `LOGIN_EMAIL`, `LOGIN_PASSWORD` (must be owner or admin), `HEADLESS`.
 
+### 8b. Order tip entry mode + Reports tips card (GitHub #123)
+
+Owner/admin: Settings → Payments → `#tip_entry_mode` (switch to overpayment, save, restore preset), then `/reports` and `[data-testid="reports-summary-tips"]`.
+
+```bash
+npm run test:order-tip-flows --prefix front
+# Or: BASE_URL=http://127.0.0.1:4202 LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/test-order-tip-flows.mjs
+```
+
+- **Env:** `BASE_URL`, `LOGIN_EMAIL` / `LOGIN_PASSWORD` or `DEMO_LOGIN_*` from `.env`, `TENANT_ID` (default `1`), `HEADLESS`.
+
 ---
 
 ### 9. Catalog (products + images)
@@ -404,6 +415,7 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `test:order-8-status` | `scripts/test-order-8-status.mjs` |
 | `test:register-page` | `scripts/test-register-page.mjs` |
 | `test:reports` | `scripts/test-reports.mjs` (Reports page smoke; owner/admin) |
+| `test:order-tip-flows` | `scripts/test-order-tip-flows.mjs` (Settings tip entry mode + Reports tips card; owner/admin) |
 | `test:changelog` | `scripts/test-changelog.mjs` (Dashboard What's new → changelog modal; API serves CHANGELOG.md) |
 | `test:settings-providers` | `scripts/test-settings-providers.mjs` (Settings → Providers tab; personal providers smoke; uses .env, tenant=1) |
 | `test:bartender-role` | `scripts/test-bartender-role.mjs` (Users → Add user → role dropdown includes Bartender) |
@@ -478,6 +490,7 @@ GO_AHEAD_LOOP=1 DURATION_SECONDS=120 INTERVAL_SECONDS=60 SKIP_TESTS=1 ./scripts/
 | **Staff auth** | Register page content, full register | Who-is-this-for; full registration (no cleanup). |
 | **Orders** | Order #8 status dropdown; `review-order-edit-puppeteer.mjs` (Edit button, order edit modal, status popover) | Order #8: requires existing order in Active Orders. Review script: login, /staff/orders, card + History Edit, status dropdown z-index. |
 | **Reports** | `test-reports.mjs` | Smoke: page loads (owner/admin). |
+| **Tips (POS)** | `test-order-tip-flows.mjs` | Settings Payments tip mode toggle + Reports tips summary card. |
 | **Users / Bartender role** | `test-bartender-role.mjs` | Admin/owner: /users → Add user → role dropdown includes Bartender. |
 | **Kitchen display** | `test-kitchen-status-dropdown.mjs` | Status dropdown visible and not clipped on /kitchen. |
 | **Catalog** | `test-catalog.mjs` | Cards and image placeholders. |

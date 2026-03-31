@@ -98,6 +98,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           <button 
             type="button" 
             class="tab" 
+            data-testid="settings-payments-tab"
             [class.active]="activeSection() === 'payments'"
             (click)="activeSection.set('payments')">
             <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

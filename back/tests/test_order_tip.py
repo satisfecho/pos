@@ -1,12 +1,30 @@
 """POS tip presets and mark-paid tip amount (GitHub #58)."""
+from __future__ import annotations
+
 import unittest
+from datetime import timedelta
 
 from fastapi import HTTPException
 from pg_client_mixin import PgClientTestCase
 
-from app import models
-from app.main import _allowed_tip_presets, _resolve_tip_on_mark_paid
+from app import models, security
+from app.main import (
+    _allowed_tip_presets,
+    _resolve_tip_for_mark_paid,
+    _resolve_tip_on_mark_paid,
+)
 from app.security import get_password_hash
+
+
+def _bearer_headers(user: models.User) -> dict[str, str]:
+    data = {
+        "sub": user.email,
+        "tenant_id": user.tenant_id,
+        "provider_id": getattr(user, "provider_id", None),
+        "token_version": user.token_version,
+    }
+    token = security.create_access_token(data, expires_delta=timedelta(minutes=30))
+    return {"Authorization": f"Bearer {token}"}
 
 
 class TestOrderTip(PgClientTestCase):
@@ -153,6 +171,95 @@ class TestOrderTip(PgClientTestCase):
         with self.assertRaises(HTTPException) as ctx:
             _resolve_tip_on_mark_paid(self.session, t, self.order.id, 10)
         self.assertEqual(ctx.exception.status_code, 400)
+
+    def test_resolve_mark_paid_overpayment_mode(self) -> None:
+        self.tenant.tip_entry_mode = "overpayment"
+        self.session.add(self.tenant)
+        self.session.commit()
+        pdata = models.OrderMarkPaid(
+            payment_method="terminal",
+            tip_percent=None,
+            tip_amount_cents=150,
+            amount_paid_cents=1000 + 150,
+        )
+        pct, amt = _resolve_tip_for_mark_paid(
+            self.session, self.tenant, self.order.id, pdata
+        )
+        self.assertIsNone(pct)
+        self.assertEqual(amt, 150)
+
+    def test_preset_mode_rejects_tip_amount_cents_body(self) -> None:
+        pdata = models.OrderMarkPaid(
+            payment_method="cash",
+            tip_percent=None,
+            tip_amount_cents=10,
+        )
+        with self.assertRaises(HTTPException) as ctx:
+            _resolve_tip_for_mark_paid(
+                self.session, self.tenant, self.order.id, pdata
+            )
+        self.assertEqual(ctx.exception.status_code, 400)
+
+    def test_overpayment_requires_tip_amount_cents(self) -> None:
+        self.tenant.tip_entry_mode = "overpayment"
+        self.session.add(self.tenant)
+        self.session.commit()
+        pdata = models.OrderMarkPaid(payment_method="cash", tip_percent=None)
+        with self.assertRaises(HTTPException) as ctx:
+            _resolve_tip_for_mark_paid(
+                self.session, self.tenant, self.order.id, pdata
+            )
+        self.assertEqual(ctx.exception.status_code, 400)
+
+    def test_overpayment_rejects_amount_paid_below_subtotal_plus_tip(self) -> None:
+        self.tenant.tip_entry_mode = "overpayment"
+        self.session.add(self.tenant)
+        self.session.commit()
+        pdata = models.OrderMarkPaid(
+            payment_method="terminal",
+            tip_amount_cents=150,
+            amount_paid_cents=1000 + 149,
+        )
+        with self.assertRaises(HTTPException) as ctx:
+            _resolve_tip_for_mark_paid(
+                self.session, self.tenant, self.order.id, pdata
+            )
+        self.assertEqual(ctx.exception.status_code, 400)
+
+    def test_api_mark_paid_overpayment_sets_tip_and_waiter(self) -> None:
+        self.tenant.tip_entry_mode = "overpayment"
+        self.session.add(self.tenant)
+        self.session.commit()
+        waiter = models.User(
+            email="tip-waiter@test.local",
+            hashed_password=get_password_hash("secret"),
+            role=models.UserRole.waiter,
+            tenant_id=self.tenant.id,
+        )
+        self.session.add(waiter)
+        self.session.commit()
+        self.session.refresh(waiter)
+        self.table.assigned_waiter_id = waiter.id
+        self.session.add(self.table)
+        self.session.commit()
+
+        h = _bearer_headers(self.user)
+        r = self.client.put(
+            f"/orders/{self.order.id}/mark-paid",
+            json={
+                "payment_method": "terminal",
+                "tip_amount_cents": 200,
+                "amount_paid_cents": 1000 + 200,
+            },
+            headers=h,
+        )
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        self.assertEqual(body.get("tip_amount_cents"), 200)
+        order = self.session.get(models.Order, self.order.id)
+        assert order is not None
+        self.assertEqual(order.tip_amount_cents, 200)
+        self.assertEqual(order.tip_attributed_user_id, waiter.id)
 
 
 if __name__ == "__main__":
