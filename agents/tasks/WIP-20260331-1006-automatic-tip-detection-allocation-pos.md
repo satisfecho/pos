@@ -35,3 +35,45 @@ When a payment total exceeds the bill (e.g. card charge above menu total), treat
 4. **Reporting:** Reports page shows **Tips (total)** card and waiter table **Tips** column; export CSV/Excel summary includes tips columns.
 5. **Schedule export:** Working plan → export month Excel for a user; footer shows monthly tips total when applicable.
 6. **Smoke:** `npm run test:landing-version`; confirm Angular build clean in `docker compose logs --tail=80 front`.
+
+---
+
+## Test report
+
+1. **Date/time (UTC):** 2026-03-31T11:02:00Z (run window ~10:56–11:03Z). Log window for excerpts: same window.
+
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; `BASE_URL=http://127.0.0.1:4202`; branch **`development`**, commit **`2ae9305`**.
+
+3. **What was tested:** **Testing instructions** §1 and §6 in full; automated backend **`tests/test_order_tip.py`** (related tip/mark-paid helpers); **§2–§5** require interactive Settings / Orders / Reports / Working plan flows — **not executed** in this run (see below).
+
+4. **Results:**
+   - **§1 Migrate (schema 20260331190000):** **PASS** — `app.migrate` reports DB up to date at **20260331190000**.
+   - **§2 Preset mode UI:** **NOT VERIFIED** — no headless run with documented steps (Settings → Orders → mark paid). *Evidence:* not executed.
+   - **§3 Overpayment mode UI:** **NOT VERIFIED** — same.
+   - **§4 Reporting (Tips card, waiter Tips, CSV/Excel):** **NOT VERIFIED** — `npm run test:reports` requires `LOGIN_EMAIL` + `LOGIN_PASSWORD` (owner/admin); not set in this agent environment; script exited before opening `/reports`.
+   - **§5 Schedule export (Excel footer tips):** **NOT VERIFIED** — depends on same login/working-plan flow as manual check.
+   - **§6 Smoke (`test:landing-version` + front logs):** **PASS** — landing script exit **0** (“Landing version OK; demo login (tenant=1) OK; sidebar nav OK.”); `docker compose logs --tail=80 front` shows **Application bundle generation complete** with no TS/Angular error lines in the tail.
+   - **Extra — `pytest tests/test_order_tip.py`:** **PASS** — `9 passed` (validates preset tip resolution helpers; not a substitute for §2–§5).
+
+5. **Overall:** **FAIL** — required manual/browser criteria **§2–§5** were not completed with evidence. Automated checks (migrate, tip unit tests, landing smoke, front log sanity) passed.
+
+6. **Product owner feedback:** Database migration and core tip preset tests look healthy, and the app still builds and passes the broad landing navigation smoke. The new overpayment UI, reports Tips columns, and schedule Excel footer still need a logged-in verification pass (set `LOGIN_EMAIL` / `LOGIN_PASSWORD` for `test:reports` or run the checklist manually once).
+
+7. **URLs tested:**
+   1. `http://127.0.0.1:4202/` (landing)
+   2. Post-login routes exercised by `test:landing-version` (includes `/settings`, `/reports`, `/staff/orders`, `/working-plan` as nav smoke only — **not** the task-specific tip flows).
+
+8. **Relevant log excerpts (last section)**
+
+`pos-front` (successful bundles, no errors in tail):
+
+```
+Application bundle generation complete. [0.583 seconds] - 2026-03-31T10:34:23.775Z
+```
+
+`app.migrate` (schema target):
+
+```
+INFO: Database schema version: 20260331190000
+✅ Database schema version: 20260331190000
+```
