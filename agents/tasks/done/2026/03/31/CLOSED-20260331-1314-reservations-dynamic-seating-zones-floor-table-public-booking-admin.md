@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Tester completed verification for GitHub issue #129 (dynamic seating zones from floor/table data for public booking and admin).
+- **What was done:** Migrations added `floor.is_active` and `reservation.preferred_floor_id`; migration runner applies any version missing from `schema_version`; public zones API, floor-scoped slot/capacity and demand rules, public POST validation, and admin Tables UI for zone booking/reorder were implemented per the task.
+- **What was tested:** Migrations and `--sync-idempotent`, `GET /public/tenants/{id}/reservation-book-zones`, DB columns, `/book/1` and public Puppeteer flow, inactive-floor exclusion, tenant isolation, `preferred_floor_id` on create, Angular/front logs, and landing smoke test — **overall PASS**.
+- **Why closed:** All pass/fail criteria in the test report were met.
+- **Closed at (UTC):** 2026-03-31 13:36
+---
+
 # Reservations: dynamic seating zones from Floor/Table data (public booking + admin)
 
 ## GitHub
