@@ -106,3 +106,47 @@ Align with existing reservation models, public book flow, and `docs/` where the 
 - **Pass/fail criteria**
   - **PASS:** Pytest green for both files; landing smoke exit 0; `reservation_max_guests_per_slot` in single-tenant JSON; staff script create path succeeds or fails only for permission/data, not wrong modal field order.
   - **FAIL:** Missing JSON field; regression in booking tests; staff script still logs `party_size=null` on `book-week-slots`.
+
+---
+
+## Test report (re-verify 2026-03-31 UTC)
+
+1. **Date/time (UTC)** and log window  
+   - **Started:** 2026-03-31 09:53 UTC  
+   - **Ended:** 2026-03-31 09:57 UTC  
+   - **Log window:** `pos-back` / `pos-front` / `pos-haproxy` entries sampled for 09:53-09:57 UTC.
+
+2. **Environment**  
+   - **Compose:** `docker-compose.yml` + `docker-compose.dev.yml`  
+   - **BASE_URL:** `http://127.0.0.1:4202`  
+   - **Branch:** `development` (synced with `./scripts/git-sync-development.sh`)
+
+3. **What was tested**  
+   - Handoff re-verification: migration, both pytest files, landing smoke, single-tenant public API field presence, staff reservation automation flow (`debug-reservations.mjs`).
+
+4. **Results:** each criterion **PASS** / **FAIL** + one evidence line  
+   - **Migrate:** **PASS** - `python -m app.migrate` reports up-to-date schema at `20260331180000`.  
+   - **Backend tests:** **PASS** - `pytest tests/test_book_week_slots_public.py tests/test_public_tenant_whatsapp.py -q` -> `5 passed in 1.21s`.  
+   - **Frontend smoke:** **PASS** - `BASE_URL=http://127.0.0.1:4202 npm run test:landing-version` finished with `>>> RESULT: Landing version OK; demo login (tenant=1) OK; sidebar nav OK.`  
+   - **API spot check:** **PASS** - `curl .../api/public/tenants/1 | jq 'has("reservation_max_guests_per_slot")'` -> `true`.  
+   - **Staff script week-slot regression check:** **PASS** - no `party_size=null` requests observed; back logs show `GET /reservations/book-week-slots?...party_size=2... 200` and `GET /reservations/slot-capacity?date_str=2026-03-31... 200`.  
+   - **Staff script create flow outcome:** **FAIL** - `debug-reservations.mjs` reports `Create: card visible after save: false` and backend logs `POST /reservations HTTP/1.1" 400 Bad Request` in the same window.
+
+5. **Overall:** **FAIL**  
+   - Failed criterion: staff create path in `debug-reservations.mjs` still does not complete successfully for this run (400 on create), so handoff pass criteria are not fully met.
+
+6. **Product owner feedback**  
+   The single-tenant public endpoint now includes `reservation_max_guests_per_slot`, and the earlier `party_size=null` / invalid slot-capacity parameter regression appears fixed. However, the staff automation still cannot complete reservation creation (`400` on POST), so this task is not ready to close yet. Please resolve the create failure path and re-submit as `UNTESTED` for another verification cycle.
+
+7. **URLs tested**  
+   1. `http://127.0.0.1:4202/`  
+   2. `http://127.0.0.1:4202/login?tenant=1`  
+   3. `http://127.0.0.1:4202/dashboard`  
+   4. `http://127.0.0.1:4202/reservations`  
+   5. `http://127.0.0.1:4202/api/public/tenants/1`
+
+8. **Relevant log excerpts**  
+   - **pos-back:** `GET /reservations/book-week-slots?tenant_id=1&party_size=2&week_anchor=2026-03-31 HTTP/1.1" 200 OK`  
+   - **pos-back:** `GET /reservations/slot-capacity?date_str=2026-03-31&time_str=14:15 HTTP/1.1" 200 OK`  
+   - **pos-back:** `POST /reservations HTTP/1.1" 400 Bad Request`  
+   - **pos-front:** landing smoke completed with `>>> RESULT: Landing version OK; demo login (tenant=1) OK; sidebar nav OK.`

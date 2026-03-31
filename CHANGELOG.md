@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Agents task flow:** Dynamic booking issue #119 handoff task moved from `TESTING-20260331-0921-...` to `WIP-20260331-0921-...` after re-verify notes were appended, so the coder queue can continue follow-up work.
+
 - **Tables / floor canvas (GitHub #120):** Tablet-oriented **dark** floor view, **status legend**, compact **table name + seat count** labels (no per-chair icons), and finer **operational** colors from **`GET /tables/with-status`** (`operational_status`: available, reserved, seated, open order, bill/ready). Response also includes **`is_active`** and **`active_order_id`** for the canvas panel.
 
 - **`.gitignore`:** Ignore **`time-of-last-review.txt`** anywhere in the tree (single pattern) instead of only **`agents/*/time-of-last-review.txt`**, so agent review timestamps stay untracked regardless of path.
