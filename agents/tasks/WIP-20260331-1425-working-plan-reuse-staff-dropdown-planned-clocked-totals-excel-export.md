@@ -35,3 +35,26 @@ On the Working plan screen, improve how owners see **planned** (scheduled shifts
 6. **Manual — exports**: With a staff member selected, **Export Excel** downloads shift month file as before. With at least one comparison row, **Export comparison (Excel)** downloads `planned-vs-clocked-<from>-to-<to>.xlsx` with headers + totals; try with **All staff** and with one user filtered.
 7. **Backend**: Optional `curl` with Bearer token: `GET /schedule/planned-vs-actual/export?from_date=...&to_date=...` and with `&user_id=<id>`; expect 400 for wrong tenant user id.
 8. **i18n**: Switch UI language; verify new strings (staff hint, show/hide, export comparison, empty filtered).
+
+---
+
+## Test report
+
+1. **Date/time (UTC):** 2026-03-31 ~14:35–14:50 (log window aligned with Puppeteer runs and pytest below).
+2. **Environment:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml`; `BASE_URL=http://127.0.0.1:4202`; branch **development**, commit **020334e** (short).
+3. **What was tested:** Items 1–2 (stack + smoke), extended Puppeteer checks for staff scope / PVA visibility, backend `pytest` subset matching `schedule` / `planned`; manual browser checklist items 3–6 partially automated; item 7 (curl) not run; item 8 (full i18n sweep) not run.
+4. **Results:**
+   - **Stack / app up:** **PASS** — `curl` to `/` and `/api/health` returned 200; compose services up.
+   - **Smoke `npm run test:working-plan`:** **PASS** — Working plan loads, week + calendar + export controls present (exit 0).
+   - **Staff scope (instruction 3):** **PARTIAL PASS** — Label **Staff**, first option **All staff**, 3 options total; **Export Excel** disabled with **All staff**, enabled after selecting a specific user (proves `exportUserId` updates in the template).
+   - **Planned vs clocked section when a specific staff is selected (instruction 3):** **FAIL** — After selecting a named user (with no planned/clocked rows in range on this tenant), `[data-testid="working-plan-pva"]` never appeared in the DOM. **Cause:** `showPvaSection` is an Angular `computed()` that reads plain field `this.exportUserId`; signal `computed` does not track non-signal fields, so the section does not re-render when only the dropdown changes. Requirement “section appears … when a specific staff is selected” is not met.
+   - **Disclosure / persistence / totals / PVA export (instructions 4–6):** **NOT VERIFIED** — Blocked because PVA block was absent in the staff-selected scenario above; could not exercise toggle, `localStorage`, totals row, or **Export comparison (Excel)** in the UI.
+   - **Backend pytest (`-k "schedule or planned"`):** **FAIL** — `tests/test_schedule_export.py::test_export_empty_month_header_only` (expected `max_row == 1`, got 3) and `test_export_xlsx_contains_shift` (expected `max_row == 2`, got 4), consistent with added totals/extra rows in XLSX without updating tests.
+   - **Optional curl export + wrong-tenant `user_id` (instruction 7):** **NOT RUN** (no Bearer flow in this pass).
+   - **i18n (instruction 8):** **NOT RUN**.
+5. **Overall:** **FAIL** — Failed criteria: PVA visibility after staff selection; schedule export unit tests out of sync with workbook shape.
+6. **Product owner feedback:** The staff dropdown and shift **Export Excel** gating behave as described, and the automated working-plan smoke test still passes. The planned-vs-clocked block does not show up when you pick a single staff member unless some other signal-driven refresh happens, which breaks the stated UX. Backend export layout changes also need test updates so CI reflects the new rows.
+7. **URLs tested:** (1) `http://127.0.0.1:4202/login?tenant=1` (2) `http://127.0.0.1:4202/working-plan` (Puppeteer).
+8. **Relevant log excerpts:**
+   - Front (compose): `Application bundle generation complete` — no TS/build errors in tail.
+   - Pytest: `AssertionError: 3 != 1` (`test_export_empty_month_header_only`), `AssertionError: 4 != 2` (`test_export_xlsx_contains_shift`).
