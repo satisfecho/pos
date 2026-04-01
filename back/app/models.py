@@ -506,6 +506,14 @@ class Floor(TenantMixin, table=True):
     default_waiter_id: int | None = Field(default=None, foreign_key="user.id")
 
 
+class TableGroup(TenantMixin, table=True):
+    """Logical merge of N physical tables (same party, shared capacity rules)."""
+
+    __tablename__ = "table_group"
+    id: int | None = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 class Table(TenantMixin, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str  # e.g., "Table 5"
@@ -519,6 +527,7 @@ class Table(TenantMixin, table=True):
     width: float = Field(default=100)
     height: float = Field(default=60)
     seat_count: int = Field(default=4)
+    table_group_id: int | None = Field(default=None, foreign_key="table_group.id", index=True)
 
     # Waiter assignment (overrides floor-level default)
     assigned_waiter_id: int | None = Field(default=None, foreign_key="user.id")
@@ -818,6 +827,10 @@ class TableUpdate(SQLModel):
     height: float | None = None
     seat_count: int | None = None
     assigned_waiter_id: int | None = None
+
+
+class TableGroupCreate(SQLModel):
+    table_ids: list[int]
 
 
 class ReservationCreate(SQLModel):

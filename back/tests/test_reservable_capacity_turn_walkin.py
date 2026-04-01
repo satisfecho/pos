@@ -36,6 +36,7 @@ class TestReservableCapacityTurnWalkin(unittest.TestCase):
             tables=[
                 models.Tenant.__table__,
                 models.Floor.__table__,
+                models.TableGroup.__table__,
                 models.Table.__table__,
                 models.Reservation.__table__,
                 models.Order.__table__,
@@ -183,6 +184,45 @@ class TestReservableCapacityTurnWalkin(unittest.TestCase):
         )
         self.assertEqual(n_tables, 2)
         self.assertEqual(seats, 8)
+
+    def test_group_blocks_all_members_when_one_seated(self):
+        """Joined tables share one reservation slot: seating one blocks the whole group."""
+        a, b, c = self.tables[0], self.tables[1], self.tables[2]
+        g = models.TableGroup(tenant_id=self.tenant.id)
+        self.session.add(g)
+        self.session.commit()
+        self.session.refresh(g)
+        a.table_group_id = g.id
+        b.table_group_id = g.id
+        self.session.add(a)
+        self.session.add(b)
+        self.session.commit()
+
+        r = models.Reservation(
+            tenant_id=self.tenant.id,
+            customer_name="x",
+            customer_phone="1",
+            reservation_date=date(2030, 6, 10),
+            reservation_time=time(18, 0),
+            party_size=2,
+            status=models.ReservationStatus.seated,
+            table_id=a.id,
+            seated_at=datetime(2030, 6, 10, 18, 0, tzinfo=timezone.utc),
+        )
+        self.session.add(r)
+        self.session.commit()
+
+        now = datetime(2030, 6, 10, 18, 15, tzinfo=timezone.utc)
+        seats, n_tables = _reservable_capacity_for_tenant(
+            self.session,
+            self.tenant.id,
+            date(2030, 6, 10),
+            self.tenant,
+            time(18, 30),
+            _now_utc=now,
+        )
+        self.assertEqual(n_tables, 1)
+        self.assertEqual(seats, 6)
 
 
 if __name__ == "__main__":

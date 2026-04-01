@@ -14,3 +14,12 @@ Staff need to treat multiple physical tables as one party: shared capacity, cohe
 - Implement floor plan / tables UI for join/unjoin and group indication; wire staff order flows so capacity and booking rules stay consistent.
 - Add or extend tests (API and/or e2e) for group create/dissolve, validation failures, and reservation/order behaviour on grouped tables.
 - Document table-token / menu behaviour for grouped tables in a short note or existing doc if product behaviour is non-obvious.
+
+## Testing instructions
+
+1. **Migrate:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back python -m app.migrate` — expect **`20260401140000_table_group`** applied.
+2. **Backend:** From `back/` with DB up: `PYTHONPATH=. python3 -m pytest tests/test_reservable_capacity_turn_walkin.py -q` (note: SQLite in-memory tests may fail on `Tenant` JSONB; use Postgres-backed runs if needed). Manually verify **`POST /table-groups`** with two same-floor tables (no orders/reservations) returns **`id`** + **`table_ids`**; **`DELETE /table-groups/{id}`** clears **`table_group_id`** on members.
+3. **Frontend:** Restart **`front`** if needed so **`package.json`** version matches the landing bar. Open **`/tables/canvas`**, **Ctrl+click** two tables on the same floor → **Join tables** → confirm violet outline and **Group** line in the panel; **Unjoin** → outlines clear. **`GET /tables/with-status`** in network tab should show **`group_member_ids`** / **`group_seat_total`**.
+4. **Staff orders:** With an order on a grouped table, confirm **`table_group_label`** (e.g. `T1 + T2`) appears next to the table name on active / not-paid cards.
+5. **Smoke:** `BASE_URL=http://127.0.0.1:4202 npm run test:landing-version --prefix front` (after dev server picks up **`front/package.json`** version / commit hash).
+6. **Docs:** Skim **`docs/0051-table-groups-mvp.md`** for QR/session MVP behaviour.

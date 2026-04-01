@@ -90,9 +90,22 @@ const STAFF_ORDERS_ROLES = new Set([
               </svg>
               {{ 'TABLES.SAVE_LAYOUT' | translate }}
             </button>
+            @if (canJoinSelection()) {
+              <button type="button" class="btn btn-secondary" (click)="joinSelectedTables()" data-testid="tables-join-btn">
+                {{ 'TABLES.JOIN_TABLES' | translate }}
+              </button>
+            }
+            @if (canUnjoinFromSelection()) {
+              <button type="button" class="btn btn-secondary" (click)="unjoinSelectedGroup()" data-testid="tables-unjoin-btn">
+                {{ 'TABLES.UNJOIN_TABLES' | translate }}
+              </button>
+            }
           </div>
           </div>
         </div>
+        @if (floors().length > 0) {
+          <p class="join-hint muted">{{ 'TABLES.JOIN_HINT' | translate }}</p>
+        }
 
         @if (error()) {
           <div class="error-banner">{{ error() }}</div>
@@ -263,7 +276,8 @@ const STAFF_ORDERS_ROLES = new Set([
                 @for (table of tablesOnCurrentFloor(); track table.id) {
                   <g
                     class="table-group"
-                    [class.selected]="selectedTable()?.id === table.id"
+                    [class.selected]="isTableVisualSelected(table)"
+                    [class.join-picked]="isTableJoinPicked(table)"
                     [class.dragging]="isDragging && draggedTable?.id === table.id"
                     [attr.transform]="'translate(' + (table.x_position || 100) + ',' + (table.y_position || 100) + ')'"
                     (mousedown)="onTableMouseDown($event, table)"
@@ -271,7 +285,7 @@ const STAFF_ORDERS_ROLES = new Set([
                     (touchstart)="onTableTouchStart($event, table)"
                   >
                     <!-- Table shape with shadow -->
-                    <g [attr.filter]="selectedTable()?.id === table.id ? 'url(#selectedGlow)' : 'url(#tableShadow)'">
+                    <g [attr.filter]="isTableVisualSelected(table) ? 'url(#selectedGlow)' : 'url(#tableShadow)'">
                       @if (table.shape === 'circle') {
                         <ellipse
                           cx="0" cy="0"
@@ -361,7 +375,7 @@ const STAFF_ORDERS_ROLES = new Set([
                       font-size="11"
                     >
                       <tspan x="0" dy="-0.2em">{{ tableCaptionName(table) }}</tspan>
-                      <tspan x="0" dy="1.15em" font-size="10" font-weight="500" opacity="0.92">— {{ table.seat_count ?? 0 }}</tspan>
+                      <tspan x="0" dy="1.15em" font-size="10" font-weight="500" opacity="0.92">— {{ tableSeatLabel(table) }}</tspan>
                     </text>
                     @if (getWaiterInitials(table)) {
                       <g [attr.transform]="'translate(' + ((table.width || 100) / 2 - 10) + ',' + (-((table.height || 70) / 2) - 4) + ')'">
@@ -414,7 +428,7 @@ const STAFF_ORDERS_ROLES = new Set([
 
           <!-- Properties Panel (shown when table selected) - Bottom sheet on mobile -->
           @if (selectedTable()) {
-            <div class="properties-panel-backdrop" (click)="selectedTable.set(null)"></div>
+            <div class="properties-panel-backdrop" (click)="selectedTable.set(null); joinSelectionIds.set([])"></div>
             <div class="properties-panel" [class.expanded]="propertiesPanelExpanded">
               <!-- Drag handle for mobile -->
               <div class="panel-drag-handle" (click)="propertiesPanelExpanded = !propertiesPanelExpanded">
@@ -433,13 +447,16 @@ const STAFF_ORDERS_ROLES = new Set([
                     {{ operationalStatusLabelKey(selectedTable()!) | translate }}
                   </div>
                 </div>
-                <button class="close-btn" (click)="selectedTable.set(null)">
+                <button class="close-btn" (click)="selectedTable.set(null); joinSelectionIds.set([])">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M18 6L6 18M6 6l12 12"/>
                   </svg>
                 </button>
               </div>
               <div class="panel-body">
+                @if (selectedTable()?.table_group_id) {
+                  <p class="panel-group-line">{{ 'TABLES.GROUP_MEMBERS' | translate }}: {{ groupLineForSelected() }}</p>
+                }
                 <div class="form-row">
                   <div class="form-group">
                     <label>{{ 'TABLES.NAME' | translate }}</label>
@@ -591,6 +608,16 @@ const STAFF_ORDERS_ROLES = new Set([
     </app-sidebar>
   `,
   styles: [`
+    .join-hint {
+      font-size: 12px;
+      margin: -4px 0 8px 12px;
+      opacity: 0.75;
+    }
+    .panel-group-line {
+      font-size: 13px;
+      margin: 0 0 12px;
+      color: var(--text-muted, #64748b);
+    }
     .canvas-container {
       display: flex;
       flex-direction: column;
@@ -1442,6 +1469,8 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   tables = signal<CanvasTable[]>([]);
   selectedFloorId = signal<number | null>(null);
   selectedTable = signal<CanvasTable | null>(null);
+  /** Ctrl/Cmd+click table ids for Join (same floor, not already grouped). */
+  joinSelectionIds = signal<number[]>([]);
   editingFloorId = signal<number | null>(null);
   editingFloorName = '';
   hasUnsavedChanges = signal(false);
@@ -1573,11 +1602,13 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   selectFloor(id: number) {
     this.selectedFloorId.set(id);
     this.selectedTable.set(null);
+    this.joinSelectionIds.set([]);
   }
 
   /** Focus the add-table shape palette (used by header Add Table button). */
   focusAddTablePalette() {
     this.selectedTable.set(null);
+    this.joinSelectionIds.set([]);
     if (this.floors().length > 0 && !this.selectedFloorId()) {
       this.selectedFloorId.set(this.floors()[0].id!);
     }
@@ -1697,6 +1728,9 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   }
 
   tableSurfaceStroke(table: CanvasTable): string {
+    if (table.table_group_id) {
+      return '#a855f7';
+    }
     return this.opColors(this.operationalKey(table)).stroke;
   }
 
@@ -1710,6 +1744,75 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     const raw = (table.name || '').trim();
     if (raw.length <= 14) return raw || '?';
     return raw.slice(0, 12) + '…';
+  }
+
+  tableSeatLabel(table: CanvasTable): string {
+    const n = table.group_seat_total ?? table.seat_count ?? 0;
+    return String(n);
+  }
+
+  isTableJoinPicked(table: CanvasTable): boolean {
+    const id = table.id;
+    if (id == null) return false;
+    return this.joinSelectionIds().includes(id);
+  }
+
+  isTableVisualSelected(table: CanvasTable): boolean {
+    if (this.selectedTable()?.id === table.id) return true;
+    return this.isTableJoinPicked(table);
+  }
+
+  groupLineForSelected(): string {
+    const st = this.selectedTable();
+    if (!st?.group_member_ids?.length) return '';
+    return st.group_member_ids
+      .map(id => this.tables().find(t => t.id === id)?.name || '?')
+      .join(' + ');
+  }
+
+  canJoinSelection(): boolean {
+    const ids = this.joinSelectionIds();
+    if (ids.length < 2) return false;
+    const floorId = this.selectedFloorId();
+    const picked = ids.map(i => this.tables().find(t => t.id === i)).filter((t): t is CanvasTable => !!t);
+    if (picked.length !== ids.length) return false;
+    if (picked.some(t => t.table_group_id)) return false;
+    const floors = new Set(picked.map(t => t.floor_id));
+    if (floors.size !== 1) return false;
+    if (floors.values().next().value !== floorId) return false;
+    return true;
+  }
+
+  canUnjoinFromSelection(): boolean {
+    return !!this.selectedTable()?.table_group_id;
+  }
+
+  joinSelectedTables(): void {
+    const ids = [...this.joinSelectionIds()].sort((a, b) => a - b);
+    if (ids.length < 2) return;
+    this.error.set('');
+    this.api.createTableGroup(ids).subscribe({
+      next: () => {
+        this.joinSelectionIds.set([]);
+        this.loadData();
+      },
+      error: (err: { error?: { detail?: string } }) =>
+        this.error.set(err.error?.detail || 'Join failed'),
+    });
+  }
+
+  unjoinSelectedGroup(): void {
+    const gid = this.selectedTable()?.table_group_id;
+    if (gid == null) return;
+    this.error.set('');
+    this.api.deleteTableGroup(gid).subscribe({
+      next: () => {
+        this.joinSelectionIds.set([]);
+        this.loadData();
+      },
+      error: (err: { error?: { detail?: string } }) =>
+        this.error.set(err.error?.detail || 'Unjoin failed'),
+    });
   }
 
   // Waiter assignment helpers
@@ -1973,6 +2076,24 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     event.preventDefault(); // Prevent text selection
     event.stopPropagation();
 
+    if (event.ctrlKey || event.metaKey) {
+      const id = table.id;
+      if (id == null) return;
+      this.joinSelectionIds.update(ids => {
+        const set = new Set(ids);
+        if (set.has(id)) set.delete(id);
+        else set.add(id);
+        return Array.from(set).sort((a, b) => a - b);
+      });
+      this.selectedTable.set(table);
+      this.selectedTableName = table.name;
+      this.selectedTableSeats = table.seat_count || 4;
+      this.isDragging = false;
+      this.draggedTable = null;
+      return;
+    }
+
+    this.joinSelectionIds.set([]);
     this.selectedTable.set(table);
     this.selectedTableName = table.name;
     this.selectedTableSeats = table.seat_count || 4;

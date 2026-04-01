@@ -6531,6 +6531,7 @@ def list_tables(
         d["assigned_waiter_name"] = waiter_map.get(t.assigned_waiter_id) if t.assigned_waiter_id else None
         d["effective_waiter_id"] = effective_waiter_id
         d["effective_waiter_name"] = waiter_map.get(effective_waiter_id) if effective_waiter_id else None
+        _append_table_group_fields(session, current_user.tenant_id, t, d)
         result.append(d)
     return result
 
@@ -6660,7 +6661,40 @@ def list_tables_with_status(
         }
         if upcoming_reservation is not None:
             row["upcoming_reservation"] = upcoming_reservation
+        _append_table_group_fields(session, current_user.tenant_id, table, row)
         result.append(row)
+
+    # Merge status across joined tables so the canvas shows one coherent party state.
+    group_to_indices: dict[int, list[int]] = {}
+    for i, table in enumerate(tables):
+        if table.id is None or not table.table_group_id:
+            continue
+        group_to_indices.setdefault(table.table_group_id, []).append(i)
+
+    for _gid, indices in group_to_indices.items():
+        if len(indices) < 2:
+            continue
+        op_stats = [result[i]["operational_status"] for i in indices]
+        st_stats = [result[i]["status"] for i in indices]
+        merged_op = _merge_operational_statuses(op_stats)
+        merged_st = _merge_table_statuses(st_stats)
+        upcoming_list = [result[i].get("upcoming_reservation") for i in indices]
+        merged_up = next((u for u in upcoming_list if u), None)
+        any_active = any(result[i].get("is_active") for i in indices)
+        active_oid = next(
+            (result[i].get("active_order_id") for i in indices if result[i].get("active_order_id")),
+            None,
+        )
+        for i in indices:
+            result[i]["operational_status"] = merged_op
+            result[i]["status"] = merged_st
+            result[i]["is_active"] = any_active
+            if active_oid is not None:
+                result[i]["active_order_id"] = active_oid
+            if merged_up is not None:
+                result[i]["upcoming_reservation"] = merged_up
+            elif merged_st != "reserved":
+                result[i].pop("upcoming_reservation", None)
 
     return result
 
@@ -6717,6 +6751,11 @@ def update_table(
     # Update all provided fields
     if table_update.name is not None:
         table.name = table_update.name
+    if table_update.floor_id is not None and table.table_group_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Unjoin the table group before moving this table to another floor",
+        )
     if table_update.floor_id is not None:
         table.floor_id = table_update.floor_id
     if table_update.x_position is not None:
@@ -6742,6 +6781,129 @@ def update_table(
         content=table.model_dump(mode="json"),
         status_code=status.HTTP_200_OK,
     )
+
+
+@app.post("/table-groups")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def create_table_group(
+    request: Request,
+    body: models.TableGroupCreate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_WRITE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Join N tables into one logical group (same floor, no open orders or blocking reservations)."""
+    ids = sorted({int(x) for x in body.table_ids})
+    if len(ids) < 2:
+        raise HTTPException(status_code=400, detail="At least two tables are required")
+    tables = session.exec(
+        select(models.Table).where(
+            models.Table.id.in_(ids),
+            models.Table.tenant_id == current_user.tenant_id,
+        )
+    ).all()
+    if len(tables) != len(ids):
+        raise HTTPException(status_code=404, detail="One or more tables not found")
+    if any(t.table_group_id for t in tables):
+        raise HTTPException(
+            status_code=400,
+            detail="A selected table is already in a group; unjoin it first",
+        )
+    floor_ids = {t.floor_id for t in tables}
+    if len(floor_ids) != 1:
+        raise HTTPException(status_code=400, detail="Tables must be on the same floor to join")
+    for t in tables:
+        if t.is_active:
+            raise HTTPException(
+                status_code=400,
+                detail="Close active table sessions before joining",
+            )
+        ao = session.exec(
+            select(models.Order).where(
+                models.Order.table_id == t.id,
+                models.Order.status.in_(
+                    [
+                        models.OrderStatus.pending,
+                        models.OrderStatus.preparing,
+                        models.OrderStatus.ready,
+                        models.OrderStatus.partially_delivered,
+                    ]
+                ),
+            )
+        ).first()
+        if ao:
+            raise HTTPException(
+                status_code=400,
+                detail="Finish or clear open orders on all selected tables before joining",
+            )
+        seated = session.exec(
+            select(models.Reservation).where(
+                models.Reservation.table_id == t.id,
+                models.Reservation.status == models.ReservationStatus.seated,
+            )
+        ).first()
+        if seated:
+            raise HTTPException(
+                status_code=400,
+                detail="Finish seated reservations on all selected tables before joining",
+            )
+        booked = session.exec(
+            select(models.Reservation).where(
+                models.Reservation.table_id == t.id,
+                models.Reservation.status == models.ReservationStatus.booked,
+            )
+        ).first()
+        if booked:
+            raise HTTPException(
+                status_code=400,
+                detail="Resolve booked reservations on all selected tables before joining",
+            )
+
+    g = models.TableGroup(tenant_id=current_user.tenant_id)
+    session.add(g)
+    session.commit()
+    session.refresh(g)
+    for t in tables:
+        t.table_group_id = g.id
+        session.add(t)
+    session.commit()
+    return {
+        "id": g.id,
+        "table_ids": ids,
+        "tenant_id": current_user.tenant_id,
+    }
+
+
+@app.delete("/table-groups/{group_id}")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def delete_table_group(
+    request: Request,
+    group_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.TABLE_WRITE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Dissolve a table group; physical tables and tokens are unchanged."""
+    g = session.exec(
+        select(models.TableGroup).where(
+            models.TableGroup.id == group_id,
+            models.TableGroup.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not g:
+        raise HTTPException(status_code=404, detail="Table group not found")
+    members = _tables_in_group(session, current_user.tenant_id, group_id)
+    member_ids = [m.id for m in members if m.id is not None]
+    for t in members:
+        t.table_group_id = None
+        session.add(t)
+    session.delete(g)
+    session.commit()
+    return {"dissolved": True, "id": group_id, "table_ids": member_ids}
 
 
 @app.delete("/tables/{table_id}")
@@ -6824,7 +6986,32 @@ def delete_table(
             res.updated_at = datetime.now(timezone.utc)
             session.add(res)
 
+    gid = table.table_group_id
+    others_in_group: list[models.Table] = []
+    if gid:
+        others_in_group = list(
+            session.exec(
+                select(models.Table).where(
+                    models.Table.tenant_id == current_user.tenant_id,
+                    models.Table.table_group_id == gid,
+                    models.Table.id != table_id,
+                )
+            ).all()
+        )
+
     session.delete(table)
+
+    if gid:
+        grp = session.get(models.TableGroup, gid)
+        if grp and grp.tenant_id == current_user.tenant_id:
+            if len(others_in_group) == 0:
+                session.delete(grp)
+            elif len(others_in_group) == 1:
+                lone = others_in_group[0]
+                lone.table_group_id = None
+                session.add(lone)
+                session.delete(grp)
+
     session.commit()
     return JSONResponse(
         content={"status": "deleted", "id": table_id},
@@ -7053,6 +7240,92 @@ def _capacity_for_tenant(session: Session, tenant_id: int) -> tuple[int, int]:
     return (total_seats, len(tables))
 
 
+def _tables_in_group(
+    session: Session, tenant_id: int, group_id: int
+) -> list[models.Table]:
+    return list(
+        session.exec(
+            select(models.Table).where(
+                models.Table.tenant_id == tenant_id,
+                models.Table.table_group_id == group_id,
+            )
+        ).all()
+    )
+
+
+def _group_total_seats(session: Session, tenant_id: int, table: models.Table) -> int:
+    if not table.table_group_id:
+        return table.seat_count
+    members = _tables_in_group(session, tenant_id, table.table_group_id)
+    return sum(m.seat_count for m in members)
+
+
+def _group_member_table_ids(session: Session, tenant_id: int, table: models.Table) -> list[int]:
+    if not table.table_group_id:
+        return [table.id] if table.id is not None else []
+    return sorted(
+        tid
+        for tid in (
+            m.id for m in _tables_in_group(session, tenant_id, table.table_group_id)
+        )
+        if tid is not None
+    )
+
+
+def _table_group_display_label(session: Session, tenant_id: int, table: models.Table) -> str | None:
+    if not table.table_group_id:
+        return None
+    members = _tables_in_group(session, tenant_id, table.table_group_id)
+    names = sorted((m.name or "") for m in members)
+    return " + ".join(names) if names else None
+
+
+def _append_table_group_fields(
+    session: Session,
+    tenant_id: int,
+    table: models.Table,
+    row: dict,
+) -> None:
+    """Mutates row with group_member_ids, group_seat_total, table_group_id."""
+    row["table_group_id"] = table.table_group_id
+    if not table.table_group_id or table.id is None:
+        row["group_member_ids"] = None
+        row["group_seat_total"] = None
+        return
+    members = _tables_in_group(session, tenant_id, table.table_group_id)
+    ids = sorted(m.id for m in members if m.id is not None)
+    row["group_member_ids"] = ids
+    row["group_seat_total"] = sum(m.seat_count for m in members)
+
+
+_OP_STATUS_RANK = {
+    "available": 1,
+    "reserved": 2,
+    "occupied": 3,
+    "open_order": 4,
+    "bill_issued": 5,
+}
+
+
+def _merge_operational_statuses(statuses: list[str]) -> str:
+    best = "available"
+    best_r = 0
+    for s in statuses:
+        r = _OP_STATUS_RANK.get(s, 0)
+        if r > best_r:
+            best_r = r
+            best = s
+    return best
+
+
+def _merge_table_statuses(statuses: list[str]) -> str:
+    if any(s == "occupied" for s in statuses):
+        return "occupied"
+    if any(s == "reserved" for s in statuses):
+        return "reserved"
+    return "available"
+
+
 def _ensure_aware_utc(dt: datetime) -> datetime:
     if dt.tzinfo is None:
         return dt.replace(tzinfo=timezone.utc)
@@ -7200,7 +7473,7 @@ def _reservable_capacity_for_tenant(
         if tid not in orders_by_table or o.created_at < orders_by_table[tid].created_at:
             orders_by_table[tid] = o
 
-    eligible: list[models.Table] = []
+    blocked: set[int] = set()
     for t in tables:
         if t.id is None:
             continue
@@ -7213,15 +7486,49 @@ def _reservable_capacity_for_tenant(
             tenant,
             now_utc,
         ):
-            continue
-        eligible.append(t)
+            blocked.add(t.id)
 
-    eligible.sort(key=lambda x: (x.seat_count, x.id or 0))
+    seen_group: set[int] = set()
+    for t in tables:
+        if t.id is None or not t.table_group_id:
+            continue
+        if t.table_group_id in seen_group:
+            continue
+        seen_group.add(t.table_group_id)
+        member_ids = [
+            x.id for x in tables if x.table_group_id == t.table_group_id and x.id is not None
+        ]
+        if any(mid in blocked for mid in member_ids):
+            blocked.update(member_ids)
+
+    # Reservation pool units: standalone tables or one unit per table group (combined seats).
+    units: list[tuple[int, int]] = []  # (seat_weight, sort_id)
+    seen_group = set()
+    for t in tables:
+        if t.id is None:
+            continue
+        if t.table_group_id:
+            if t.table_group_id in seen_group:
+                continue
+            seen_group.add(t.table_group_id)
+            members = [x for x in tables if x.table_group_id == t.table_group_id]
+            member_ids = [m.id for m in members if m.id is not None]
+            if any(mid in blocked for mid in member_ids):
+                continue
+            w = sum(m.seat_count for m in members)
+            rid = min(member_ids)
+            units.append((w, rid))
+        else:
+            if t.id in blocked:
+                continue
+            units.append((t.seat_count, t.id))
+
+    units.sort(key=lambda u: (u[0], u[1]))
     walk = max(0, tenant.reservation_walk_in_tables_reserved or 0)
-    if walk >= len(eligible):
+    if walk >= len(units):
         return (0, 0)
-    pool = eligible[walk:]
-    total_seats = sum(x.seat_count for x in pool)
+    pool = units[walk:]
+    total_seats = sum(u[0] for u in pool)
     n_tables = len(pool)
     cap = tenant.reservation_max_guests_per_slot
     if cap is not None and cap > 0:
@@ -8421,42 +8728,45 @@ def seat_reservation(
     ).first()
     if not table:
         raise HTTPException(status_code=404, detail="Table not found")
-    if table.seat_count < reservation.party_size:
+    group_total = _group_total_seats(session, current_user.tenant_id, table)
+    if group_total < reservation.party_size:
         raise HTTPException(status_code=400, detail="Table capacity is less than party size")
     if table.floor_id is not None:
         fl = session.get(models.Floor, table.floor_id)
         if fl and fl.tenant_id == current_user.tenant_id:
             _validate_floor_seating_pair_or_raise(fl, getattr(reservation, "seating_preference", None), lang)
-    if table.is_active:
+    member_ids = _group_member_table_ids(session, current_user.tenant_id, table)
+    if any((mt := session.get(models.Table, mid)) and mt.is_active for mid in member_ids):
         raise HTTPException(
             status_code=400,
             detail="Table has an active ordering session; close the table or finish orders before seating a reservation here.",
         )
-    # Check table not already occupied or reserved by another
-    active_order = session.exec(
-        select(models.Order).where(
-            models.Order.table_id == table.id,
-            models.Order.status.in_(
-                [
-                    models.OrderStatus.pending,
-                    models.OrderStatus.preparing,
-                    models.OrderStatus.ready,
-                    models.OrderStatus.partially_delivered,
-                ]
-            ),
-        )
-    ).first()
-    if active_order:
-        raise HTTPException(status_code=400, detail="Table is already occupied")
-    other_reserved = session.exec(
-        select(models.Reservation).where(
-            models.Reservation.table_id == table.id,
-            models.Reservation.status == models.ReservationStatus.booked,
-            models.Reservation.id != reservation_id,
-        )
-    ).first()
-    if other_reserved:
-        raise HTTPException(status_code=400, detail="Table is already reserved")
+    # Check no member table already occupied or reserved by another
+    for mid in member_ids:
+        active_order = session.exec(
+            select(models.Order).where(
+                models.Order.table_id == mid,
+                models.Order.status.in_(
+                    [
+                        models.OrderStatus.pending,
+                        models.OrderStatus.preparing,
+                        models.OrderStatus.ready,
+                        models.OrderStatus.partially_delivered,
+                    ]
+                ),
+            )
+        ).first()
+        if active_order:
+            raise HTTPException(status_code=400, detail="Table is already occupied")
+        other_reserved = session.exec(
+            select(models.Reservation).where(
+                models.Reservation.table_id == mid,
+                models.Reservation.status == models.ReservationStatus.booked,
+                models.Reservation.id != reservation_id,
+            )
+        ).first()
+        if other_reserved:
+            raise HTTPException(status_code=400, detail="Table is already reserved")
     reservation.table_id = body.table_id
     reservation.status = models.ReservationStatus.seated
     reservation.seated_at = datetime.now(timezone.utc)
@@ -10602,7 +10912,11 @@ def list_orders(
                 }
             )
 
-        result.append({
+        tg_label = None
+        if table:
+            tg_label = _table_group_display_label(session, current_user.tenant_id, table)
+
+        row_out = {
             "id": order.id,
             "table_name": table.name if table else "Unknown",
             "table_id": table.id if table else None,
@@ -10624,7 +10938,10 @@ def list_orders(
             "tip_attributed_user_id": getattr(order, "tip_attributed_user_id", None),
             "total_cents": total_cents,
             "removed_items_count": len([item for item in all_items if item.removed_by_customer])
-        })
+        }
+        if tg_label:
+            row_out["table_group_label"] = tg_label
+        result.append(row_out)
     
     return result
 

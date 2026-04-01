@@ -118,6 +118,9 @@ ModuleRegistry.registerModules([
                       <div class="order-header-main">
                         <span class="order-id">#{{ order.id }}</span>
                         <span class="order-table">{{ order.table_name }}</span>
+                        @if (order.table_group_label) {
+                          <span class="order-table-group">{{ order.table_group_label }}</span>
+                        }
                         @if (order.customer_name) {
                           <span class="order-customer">{{ 'ORDERS.CUSTOMER' | translate }}: {{ order.customer_name }}</span>
                         }
@@ -394,6 +397,9 @@ ModuleRegistry.registerModules([
                         <div class="order-header-main">
                           <span class="order-id">#{{ order.id }}</span>
                           <span class="order-table">{{ order.table_name }}</span>
+                          @if (order.table_group_label) {
+                            <span class="order-table-group">{{ order.table_group_label }}</span>
+                          }
                           @if (order.customer_name) {
                             <span class="order-customer">{{ 'ORDERS.CUSTOMER' | translate }}: {{ order.customer_name }}</span>
                           }
@@ -1190,6 +1196,7 @@ ModuleRegistry.registerModules([
     .btn-delete-order:hover { background: rgba(220, 38, 38, 0.08); color: var(--color-error, #dc2626); border-color: rgba(220, 38, 38, 0.3); }
     .order-id { font-weight: 600; color: var(--color-text); }
     .order-table { color: var(--color-text-muted); font-size: 0.875rem; }
+    .order-table-group { color: var(--color-text-muted); font-size: 0.75rem; margin-left: 0.35rem; opacity: 0.9; }
     .order-customer { color: var(--color-primary); font-size: 0.875rem; font-weight: 500; }
     .order-time { color: var(--color-text-muted); font-size: 0.75rem; }
 

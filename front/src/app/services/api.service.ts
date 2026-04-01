@@ -721,6 +721,10 @@ export interface Table {
   assigned_waiter_name?: string | null;
   effective_waiter_id?: number | null;
   effective_waiter_name?: string | null;
+  /** Set when this table is part of a joined group */
+  table_group_id?: number | null;
+  group_member_ids?: number[] | null;
+  group_seat_total?: number | null;
 }
 
 export interface TableActivateResponse {
@@ -936,6 +940,8 @@ export interface Order {
   payment_method?: string | null;
   /** Waiter marked urgent — guest waiting (kitchen/bar). */
   staff_urgent?: boolean;
+  /** When set, joined tables label e.g. "T1 + T2" for staff context */
+  table_group_label?: string | null;
 }
 
 export interface MenuResponse {
@@ -1768,6 +1774,19 @@ export class ApiService {
 
   updateTable(id: number, data: Partial<Table>): Observable<Table> {
     return this.http.put<Table>(`${this.apiUrl}/tables/${id}`, data);
+  }
+
+  createTableGroup(tableIds: number[]): Observable<{ id: number; table_ids: number[]; tenant_id: number }> {
+    return this.http.post<{ id: number; table_ids: number[]; tenant_id: number }>(
+      `${this.apiUrl}/table-groups`,
+      { table_ids: tableIds }
+    );
+  }
+
+  deleteTableGroup(groupId: number): Observable<{ dissolved: boolean; id: number; table_ids: number[] }> {
+    return this.http.delete<{ dissolved: boolean; id: number; table_ids: number[] }>(
+      `${this.apiUrl}/table-groups/${groupId}`
+    );
   }
 
   deleteTable(id: number, reassignToTableId?: number): Observable<{ status: string; id: number }> {
