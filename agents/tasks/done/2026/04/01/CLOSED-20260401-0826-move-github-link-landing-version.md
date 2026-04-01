@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub issue #134 asked to expose the repo link beside the landing page version line with an open-source tagline and El Masnou / Los Mochis attribution, without cluttering duplicate footer links.
+- **What was done:** The landing version strip now includes the GitHub icon/link, translated tagline via ngx-translate, and footer GitHub was removed so the version area is the primary location; layout padding and responsive behavior were adjusted per implementation notes.
+- **What was tested:** Tester reported PASS: Docker front rebuilds clean, `test:landing-version` (with `LANDING_VERSION_ONLY=1`) passed, manual checks for test ids, href, no GitHub in footer, and narrow viewport (375×667) passed.
+- **Why closed:** All required test criteria passed; overall PASS with product owner sign-off in the test report.
+- **Closed at (UTC):** 2026-04-01 08:34
+---
+
 # Move GitHub link to landing-version area
 
 ## GitHub
