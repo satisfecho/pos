@@ -487,7 +487,12 @@ function isValidView(v: string | null): v is ViewMode {
 
       @if (showModal()) {
         <div class="modal-overlay" (click)="closeModal()">
-          <div class="modal-content" (click)="$event.stopPropagation()" appFocusFirstInput>
+          <div
+            class="modal-content"
+            [class.modal-content-wide]="formSplitShift && !editingShift()"
+            (click)="$event.stopPropagation()"
+            appFocusFirstInput
+          >
             <div class="modal-header">
               <h3>{{ editingShift() ? ('WORKING_PLAN.EDIT_SHIFT' | translate) : ('WORKING_PLAN.ADD_SHIFT' | translate) }}</h3>
               <button type="button" class="close-btn" (click)="closeModal()">
@@ -522,9 +527,20 @@ function isValidView(v: string | null): v is ViewMode {
                 </label>
                 <span class="form-hint">{{ 'WORKING_PLAN.USE_ANY_HOUR_HINT' | translate }}</span>
               </div>
+              @if (!editingShift()) {
+                <div class="form-group form-group-checkbox">
+                  <label>
+                    <input type="checkbox" [(ngModel)]="formSplitShift" (ngModelChange)="onSplitShiftChange($event)" />
+                    {{ 'WORKING_PLAN.SPLIT_SHIFT' | translate }}
+                  </label>
+                </div>
+              }
+              @if (formSplitShift && !editingShift()) {
+                <span class="bulk-section-label">{{ 'WORKING_PLAN.SHIFT_BLOCK_A' | translate }}</span>
+              }
               <div class="form-group">
                 <label>{{ 'WORKING_PLAN.START_TIME' | translate }}</label>
-                <select [(ngModel)]="formStartTime">
+                <select [(ngModel)]="formStartTime" (ngModelChange)="onFormBlock1TimesChange()">
                   @for (t of timeOptsForSelectedDay(); track t) {
                     <option [value]="t">{{ t }}</option>
                   }
@@ -532,12 +548,34 @@ function isValidView(v: string | null): v is ViewMode {
               </div>
               <div class="form-group">
                 <label>{{ 'WORKING_PLAN.END_TIME' | translate }}</label>
-                <select [(ngModel)]="formEndTime">
+                <select [(ngModel)]="formEndTime" (ngModelChange)="onFormBlock1TimesChange()">
                   @for (t of timeOptsForSelectedDay(); track t) {
                     <option [value]="t">{{ t }}</option>
                   }
                 </select>
               </div>
+              @if (formSplitShift && !editingShift()) {
+                <span class="bulk-section-label">{{ 'WORKING_PLAN.SHIFT_BLOCK_B' | translate }}</span>
+                @if (!timeOptsForBlock2Start().length) {
+                  <p class="form-error">{{ 'WORKING_PLAN.SPLIT_ERR_NO_ROOM' | translate }}</p>
+                }
+                <div class="form-group">
+                  <label>{{ 'WORKING_PLAN.START_TIME' | translate }}</label>
+                  <select [(ngModel)]="formStartTime2" (ngModelChange)="onFormBlock2TimesChange()">
+                    @for (t of timeOptsForBlock2Start(); track t) {
+                      <option [value]="t">{{ t }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>{{ 'WORKING_PLAN.END_TIME' | translate }}</label>
+                  <select [(ngModel)]="formEndTime2" (ngModelChange)="onFormBlock2TimesChange()">
+                    @for (t of timeOptsForBlock2End(); track t) {
+                      <option [value]="t">{{ t }}</option>
+                    }
+                  </select>
+                </div>
+              }
               <div class="form-group">
                 <label>{{ 'WORKING_PLAN.LABEL' | translate }}</label>
                 <input type="text" [(ngModel)]="formLabel" placeholder="{{ 'WORKING_PLAN.LABEL_PLACEHOLDER' | translate }}" />
@@ -779,6 +817,10 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
   formTimeStep: 30 | 60 = 30;
   /** When true, time options are full-day (e.g. for cleaning), not limited to opening hours. */
   formUseAnyHour = false;
+  /** Create flow only: add two time blocks the same day as two schedule rows (split shift). */
+  formSplitShift = false;
+  formStartTime2 = '16:00';
+  formEndTime2 = '20:00';
 
   weekRange = computed(() => getWeekRange(this.weekStart()));
 
@@ -807,6 +849,16 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
     const close = day.hasBreak && day.eveningClose ? day.eveningClose : day.close;
     const opts = timeOptionsBetween(open, close, step);
     return opts.length > 0 ? opts : defaultTimeOptions(step);
+  }
+
+  /** Second block start options: strictly after first block end (split shift). */
+  timeOptsForBlock2Start(): string[] {
+    return this.timeOptsForSelectedDay().filter((t) => t > this.formEndTime);
+  }
+
+  /** Second block end options: strictly after second block start. */
+  timeOptsForBlock2End(): string[] {
+    return this.timeOptsForSelectedDay().filter((t) => t > this.formStartTime2);
   }
 
   weekLabel = computed(() => {
@@ -1048,6 +1100,52 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
     if (this.formStartTime >= this.formEndTime) {
       this.formEndTime = opts[opts.indexOf(this.formStartTime) + 1] ?? opts[opts.length - 1];
     }
+    if (this.formSplitShift && !this.editingShift()) {
+      this.clampSplitBlockTimes();
+    }
+  }
+
+  /** Keep block 2 times inside available options and after block 1. */
+  private clampSplitBlockTimes(): void {
+    const startOpts = this.timeOptsForBlock2Start();
+    if (startOpts.length === 0) return;
+    if (!startOpts.includes(this.formStartTime2)) this.formStartTime2 = startOpts[0];
+    const endOpts = this.timeOptsForBlock2End();
+    if (endOpts.length === 0) return;
+    if (!endOpts.includes(this.formEndTime2)) this.formEndTime2 = endOpts[0];
+    if (this.formStartTime2 >= this.formEndTime2) {
+      const i = endOpts.indexOf(this.formStartTime2);
+      this.formEndTime2 = endOpts[i + 1] ?? endOpts[endOpts.length - 1];
+    }
+  }
+
+  onFormBlock1TimesChange(): void {
+    this.clampFormTimes();
+  }
+
+  onFormBlock2TimesChange(): void {
+    if (!this.formSplitShift) return;
+    const endOpts = this.timeOptsForBlock2End();
+    if (endOpts.length === 0) return;
+    if (!endOpts.includes(this.formEndTime2)) this.formEndTime2 = endOpts[0];
+    if (this.formStartTime2 >= this.formEndTime2) {
+      const i = endOpts.indexOf(this.formStartTime2);
+      this.formEndTime2 = endOpts[i + 1] ?? endOpts[endOpts.length - 1];
+    }
+  }
+
+  onSplitShiftChange(enabled: boolean): void {
+    if (enabled) {
+      this.clampFormTimes();
+      const startOpts = this.timeOptsForBlock2Start();
+      if (startOpts.length) {
+        this.formStartTime2 = startOpts[0];
+        const endOpts = this.timeOptsForBlock2End();
+        if (endOpts.length > 1) this.formEndTime2 = endOpts[1];
+        else this.formEndTime2 = endOpts[0];
+      }
+    }
+    this.clampFormTimes();
   }
 
   onBulkTimeOptionsChange(): void {
@@ -1540,6 +1638,9 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
     this.formUseAnyHour = false;
     this.formStartTime = '09:00';
     this.formEndTime = '14:00';
+    this.formSplitShift = false;
+    this.formStartTime2 = '16:00';
+    this.formEndTime2 = '20:00';
     this.formLabel = '';
     this.formError.set(null);
     this.showModal.set(true);
@@ -1552,6 +1653,7 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
     this.formDate = s.date || '';
     this.formStartTime = s.start_time || '09:00';
     this.formEndTime = s.end_time || '14:00';
+    this.formSplitShift = false;
     this.formLabel = s.label || '';
     this.formError.set(null);
     this.showModal.set(true);
@@ -1595,8 +1697,25 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
     const start = this.formStartTime;
     const end = this.formEndTime;
     if (start >= end) {
-      this.formError.set('Start time must be before end time');
+      this.formError.set(this.translate.instant('WORKING_PLAN.BULK_ERR_TIMES'));
       return;
+    }
+    const split = this.formSplitShift && !this.editingShift();
+    if (split) {
+      if (this.timeOptsForBlock2Start().length === 0) {
+        this.formError.set(this.translate.instant('WORKING_PLAN.SPLIT_ERR_NO_ROOM'));
+        return;
+      }
+      const s2 = this.formStartTime2;
+      const e2 = this.formEndTime2;
+      if (s2 <= end) {
+        this.formError.set(this.translate.instant('WORKING_PLAN.SPLIT_ERR_ORDER'));
+        return;
+      }
+      if (s2 >= e2) {
+        this.formError.set(this.translate.instant('WORKING_PLAN.SPLIT_ERR_BLOCK2_TIMES'));
+        return;
+      }
     }
     const edit = this.editingShift();
     if (edit) {
@@ -1613,6 +1732,53 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
           this.closeModal();
           this.load();
           this.showToast(this.translate.instant('WORKING_PLAN.UPDATED'), 'success');
+        },
+        error: (err) => {
+          const msg = this.getApiErrorMessage(err);
+          this.formError.set(msg);
+          this.showToast(msg, 'error');
+        },
+      });
+    } else if (split) {
+      const label = this.formLabel || null;
+      const payload1: ShiftCreate = {
+        user_id: this.formUserId,
+        date: this.formDate,
+        start_time: start,
+        end_time: end,
+        label,
+      };
+      const payload2: ShiftCreate = {
+        user_id: this.formUserId,
+        date: this.formDate,
+        start_time: this.formStartTime2,
+        end_time: this.formEndTime2,
+        label,
+      };
+      this.api.createShift(payload1).subscribe({
+        next: (createdFirst) => {
+          this.api.createShift(payload2).subscribe({
+            next: () => {
+              this.focusScheduleOnDate(this.formDate);
+              this.closeModal();
+              this.load();
+              this.showToast(this.translate.instant('WORKING_PLAN.SAVED'), 'success');
+            },
+            error: (err) => {
+              const msg = this.getApiErrorMessage(err);
+              this.api.deleteShift(createdFirst.id).subscribe({
+                next: () => {
+                  this.formError.set(msg);
+                  this.showToast(msg, 'error');
+                },
+                error: () => {
+                  const rb = this.translate.instant('WORKING_PLAN.SPLIT_ROLLBACK_FAILED');
+                  this.formError.set(rb);
+                  this.showToast(rb, 'error');
+                },
+              });
+            },
+          });
         },
         error: (err) => {
           const msg = this.getApiErrorMessage(err);
