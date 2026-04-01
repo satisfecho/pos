@@ -241,6 +241,8 @@ The Compose database publishes **`127.0.0.1:${POSTGRES_PORT:-5433}`** → contai
 
 If **`docker logs pos-postgres`** shows **`FATAL: role "postgres" does not exist`**, a client (GUI, `psql`, or a copy-pasted DSN) is using username **`postgres`**. Point it at **`POSTGRES_USER`** / **`DB_USER`** and **`POSTGRES_PASSWORD`** / **`DB_PASSWORD`** from `config.env` instead.
 
+**Ad-hoc SQL:** There is no relation **`restaurantorder`**. Orders live in **`"order"`** (quoted — SQL keyword), line items in **`orderitem`**, floor tables in **`"table"`**. See [docs/0033-postgres-adhoc-sql-table-names.md](docs/0033-postgres-adhoc-sql-table-names.md).
+
 ### Hot reload
 
 - Frontend and backend both reload on code changes when run via Docker Compose.
