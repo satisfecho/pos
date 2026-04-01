@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Tester verified the tablet-oriented drag-and-proximity join flow on `/tables/canvas` and the Ctrl/Cmd multi-select Join fallback after implementation landed on `development`.
+- **What was done:** Canvas-space overlap with ~160 ms hold, i18n confirmation via `app-confirmation-modal`, purple target hint, zoom/pan–consistent SVG mapping; multi-select path unchanged; docs and CHANGELOG per task notes.
+- **What was tested:** Puppeteer on `http://127.0.0.1:4202`: gesture opens translated Join dialog after overlap hold, Cancel leaves layout unchanged, ⌘+click Join button visible (macOS), zoom-then-drag still shows modal; Angular build clean; i18n keys spot-checked — **PASS** (busy-table conflict banner not re-exercised).
+- **Why closed:** Test report **PASS** overall; remaining gap is explicitly documented non-exercise of one edge case, not a failure.
+- **Closed at (UTC):** 2026-04-01 13:15
+---
+
 # Tablet UX: Join tables via drag + proximity (primary flow)
 
 ## GitHub

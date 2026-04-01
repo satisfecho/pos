@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Table-group `POST`/`DELETE` returned 500 with SlowAPI when rate limiting was enabled because handlers returned plain dicts instead of `Response`, triggering the `parameter 'response' must be an instance of starlette.responses.Response` error.
+- **What was done:** Fix on `development` uses `JSONResponse` for those routes (aligned with other SlowAPI-safe patterns); subprocess test `back/tests/test_table_groups_slowapi_subprocess.py` runs with `RATE_LIMIT_ENABLED=true` outside normal pytest conftest.
+- **What was tested:** `docker compose exec back python3 -m pytest tests/test_table_groups_slowapi_subprocess.py -v` — **1 passed**; no SlowAPI `response` errors in sampled `pos-back` logs.
+- **Why closed:** Automated criteria **PASS**; POST/DELETE with rate limiting verified in isolation.
+- **Closed at (UTC):** 2026-04-01 13:15
+---
+
 # DELETE /table-groups/{id} returns 500 — SlowAPI `response` parameter
 
 ## Source
