@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Tester completed verification of split-shift behavior in the Working plan **Add Shift** modal for GitHub issue #135.
+- **What was done:** The feature adds optional split mode with two time blocks, creates two `/schedule` rows on save, validates ordering and same-day room for block B, and shows two distinct blocks in week/calendar; rollback on partial POST failure is documented.
+- **What was tested:** Manual checks (calendar lines, week cards, Planned vs clocked totals, `SPLIT_ERR_NO_ROOM`, constrained block B times) plus `npm run test:working-plan` and `npm run test:working-plan-calendar` — all reported **PASS**.
+- **Why closed:** All acceptance criteria in the test report passed with overall **PASS**.
+- **Closed at (UTC):** 2026-04-01 09:02
+---
+
 # Split shift logic for "Add Shift" modal (Working Plan)
 
 ## GitHub
