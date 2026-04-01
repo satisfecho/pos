@@ -140,7 +140,8 @@
     "PROVIDER_LOGIN": "Вход за доставчик",
     "REGISTER_AS_PROVIDER": "Регистрирайте се като доставчик",
     "CONTACT_US": "Свържете се с нас",
-    "GITHUB_REPO": "Изходен код в GitHub"
+    "GITHUB_REPO": "Изходен код в GitHub",
+    "OPEN_SOURCE_TAGLINE": "Отворен код с ♥ от Ел Масноу (Барселона) и Лос Мочис (Мексико)."
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Отнемане и поръчване на дома",

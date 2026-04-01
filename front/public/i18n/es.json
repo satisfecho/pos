@@ -140,7 +140,8 @@
     "PROVIDER_LOGIN": "Inicio de sesión de proveedor",
     "REGISTER_AS_PROVIDER": "Registrarse como proveedor",
     "CONTACT_US": "Contáctenos",
-    "GITHUB_REPO": "Código en GitHub"
+    "GITHUB_REPO": "Código en GitHub",
+    "OPEN_SOURCE_TAGLINE": "Código abierto con ♥ desde El Masnou (Barcelona) y Los Mochis (México)."
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Para llevar y pedido a domicilio",

@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- **Landing (GitHub #133):** Footer link **Source on GitHub** → `https://github.com/satisfecho/pos/` (i18n `LANDING.GITHUB_REPO`), responsive footer layout.
+- **Landing (GitHub #133 / #134):** **Source on GitHub** → `https://github.com/satisfecho/pos/` as an **icon link** in the fixed **landing-version** bar (next to version/commit), with translated **open-source tagline** (`LANDING.OPEN_SOURCE_TAGLINE`, ♥, El Masnou & Los Mochis). Footer no longer duplicates the repo link—single primary location, responsive layout.
 
 - **Documentation (GitHub #132):** Root **README.md** — staff sidebar/navigation summary, **Stripe** + **Revolut** in payments and configuration, accurate **rate limiting** pointer to [docs/0020-rate-limiting-production.md](docs/0020-rate-limiting-production.md); [docs/README.md](docs/README.md) quick link and feature row for [docs/REVOLUT.md](docs/REVOLUT.md).
 

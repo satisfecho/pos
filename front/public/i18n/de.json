@@ -140,7 +140,8 @@
     "PROVIDER_LOGIN": "Anbieter-Login",
     "REGISTER_AS_PROVIDER": "Als Anbieter registrieren",
     "CONTACT_US": "Kontakt",
-    "GITHUB_REPO": "Quellcode auf GitHub"
+    "GITHUB_REPO": "Quellcode auf GitHub",
+    "OPEN_SOURCE_TAGLINE": "Open Source mit ♥ aus El Masnou (Barcelona) und Los Mochis (Mexiko)."
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Mitnahme & Lieferservice",

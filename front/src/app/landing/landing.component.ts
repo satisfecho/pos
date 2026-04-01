@@ -161,26 +161,47 @@ import { environment } from '../../environments/environment';
         <a routerLink="/provider/register" data-testid="landing-provider-register">{{ 'LANDING.REGISTER_AS_PROVIDER' | translate }}</a>
         <span class="footer-sep">·</span>
         <a href="mailto:sales@satisfecho.de" data-testid="landing-contact-us">{{ 'LANDING.CONTACT_US' | translate }}</a>
-        <span class="footer-sep">·</span>
-        <a
-          href="https://github.com/satisfecho/pos/"
-          target="_blank"
-          rel="noopener noreferrer"
-          data-testid="landing-github"
-          >{{ 'LANDING.GITHUB_REPO' | translate }}</a
-        >
         @if (legalTermsUrl() || legalPrivacyUrl()) {
           <span class="footer-sep">·</span>
           <app-legal-links [inline]="true" [termsUrl]="legalTermsUrl()" [privacyUrl]="legalPrivacyUrl()" />
         }
       </div>
-      <div class="landing-version-bar" data-testid="landing-version">{{ version || '0.0.0' }} <span class="landing-commit">{{ commitHash || '' }}</span></div>
+      <div class="landing-version-bar" data-testid="landing-version">
+        <div class="landing-version-bar__row">
+          <span class="landing-version-meta"
+            >{{ version || '0.0.0' }} <span class="landing-commit">{{ commitHash || '' }}</span></span
+          >
+          <a
+            href="https://github.com/satisfecho/pos/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="landing-version-github"
+            data-testid="landing-github"
+            [attr.aria-label]="'LANDING.GITHUB_REPO' | translate"
+          >
+            <svg
+              class="landing-github-icon"
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path
+                fill="currentColor"
+                d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.694.825.576C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12z"
+              />
+            </svg>
+          </a>
+        </div>
+        <p class="landing-version-tagline">{{ 'LANDING.OPEN_SOURCE_TAGLINE' | translate }}</p>
+      </div>
     </div>
   `,
   styles: [`
     .landing-page {
       min-height: 100vh;
-      padding: var(--space-8) var(--space-4) calc(var(--space-8) + 36px);
+      padding: var(--space-8) var(--space-4) calc(var(--space-8) + 72px);
       background: var(--color-bg);
       display: flex;
       flex-direction: column;
@@ -201,12 +222,53 @@ import { environment } from '../../environments/environment';
       text-align: center;
       opacity: 0.9;
       z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-1);
     }
 
-    .landing-version-bar .landing-commit {
+    .landing-version-bar__row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      row-gap: var(--space-1);
+    }
+
+    .landing-version-meta .landing-commit {
       margin-left: 4px;
       font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
       font-size: 0.625rem;
+    }
+
+    .landing-version-github {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-muted);
+      line-height: 1;
+      flex-shrink: 0;
+      border-radius: var(--radius-sm);
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+
+    .landing-version-github:hover {
+      color: var(--color-primary);
+      background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    }
+
+    .landing-github-icon {
+      display: block;
+    }
+
+    .landing-version-tagline {
+      margin: 0;
+      max-width: 36rem;
+      font-size: 0.625rem;
+      line-height: 1.35;
+      color: var(--color-text-muted);
     }
 
     .landing-language-picker {

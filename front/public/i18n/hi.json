@@ -140,7 +140,8 @@
     "PROVIDER_LOGIN": "प्रदाता लॉगिन",
     "REGISTER_AS_PROVIDER": "प्रदाता के रूप में पंजीकरण करें",
     "CONTACT_US": "संपर्क करें",
-    "GITHUB_REPO": "GitHub पर स्रोत"
+    "GITHUB_REPO": "GitHub पर स्रोत",
+    "OPEN_SOURCE_TAGLINE": "ओपन सोर्स ♥ के साथ — एल मास्नोउ (बार्सिलोना) और लॉस मोचिस (मेक्सिको)।"
   },
   "DASHBOARD": {
     "TITLE": "डैशबोर्ड",

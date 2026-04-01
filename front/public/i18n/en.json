@@ -140,7 +140,8 @@
     "PROVIDER_LOGIN": "Provider login",
     "REGISTER_AS_PROVIDER": "Register as provider",
     "CONTACT_US": "Contact us",
-    "GITHUB_REPO": "Source on GitHub"
+    "GITHUB_REPO": "Source on GitHub",
+    "OPEN_SOURCE_TAGLINE": "Open source with ♥ from El Masnou (Barcelona) & Los Mochis (Mexico)."
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Take away & Home ordering",

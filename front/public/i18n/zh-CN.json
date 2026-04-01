@@ -140,7 +140,8 @@
     "PROVIDER_LOGIN": "供应商登录",
     "REGISTER_AS_PROVIDER": "注册为供应商",
     "CONTACT_US": "联系我们",
-    "GITHUB_REPO": "GitHub 源码"
+    "GITHUB_REPO": "GitHub 源码",
+    "OPEN_SOURCE_TAGLINE": "开源 ♥ 来自西班牙巴塞罗那埃尔马斯诺与墨西哥洛斯莫奇斯。"
   },
   "DASHBOARD": {
     "TITLE": "仪表板",

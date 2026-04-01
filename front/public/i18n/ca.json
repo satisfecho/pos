@@ -140,7 +140,8 @@
     "PROVIDER_LOGIN": "Inici de sessió de proveïdor",
     "REGISTER_AS_PROVIDER": "Registrar-se com a proveïdor",
     "CONTACT_US": "Contacteu-nos",
-    "GITHUB_REPO": "Codi a GitHub"
+    "GITHUB_REPO": "Codi a GitHub",
+    "OPEN_SOURCE_TAGLINE": "Codi obert amb ♥ des d'El Masnou (Barcelona) i Los Mochis (Mèxic)."
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Emportar i comanda a domicili",
