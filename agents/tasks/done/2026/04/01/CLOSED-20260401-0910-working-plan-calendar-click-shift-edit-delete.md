@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue #136 asked for Working Plan calendar shift rows to open the same edit/delete flow as Week view instead of staying read-only.
+- **What was done:** Calendar `shiftLines` now attach the full `Shift` on real rows; interactive buttons call `openEdit` / `confirmDelete` with `schedule:write` gating, overflow `+N more` stays non-editable, and i18n keys were added for accessibility labels.
+- **What was tested:** Tester reported PASS: front build clean, `test:working-plan` smoke, Puppeteer verified edit modal and delete confirmation on calendar lines, structural check that overflow has no edit affordance.
+- **Why closed:** All acceptance criteria and test-report items passed.
+- **Closed at (UTC):** 2026-04-01 09:21
+---
+
 # Working Plan calendar — click a shift line to edit or delete
 
 ## GitHub
