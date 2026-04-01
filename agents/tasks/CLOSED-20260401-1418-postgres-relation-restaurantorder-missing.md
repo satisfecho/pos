@@ -49,3 +49,45 @@ No migration or application code change — the error is from **external** SQL u
 
 - **PASS:** Doc and README are accurate; changelog entry present; no in-repo code still references `restaurantorder` as a DB table.
 - **FAIL:** Wrong table names, broken links, or contradictory guidance vs **`back/migrations/`**.
+
+---
+
+## Test report
+
+1. **Date/time (UTC) and log window:** **2026-04-01T14:20:35Z** (verification run). No PostgreSQL error log review required for this doc-only scope; optional DB checks used `pos-postgres` while healthy.
+
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; DB **`pos-postgres`** (`psql -U pos -d pos`). Git branch **`development`**, commit **`58aa7ec`**.
+
+3. **What was tested:** Doc accuracy for `"order"` / `orderitem` / `"table"`; README link to `docs/0033-postgres-adhoc-sql-table-names.md`; `docs/README.md` index row; `CHANGELOG.md` `[Unreleased]` entry; `grep` for `restaurantorder` under `back/`; alignment with `back/migrations/*.sql` and `Order` / `OrderItem` in `back/app/models.py`; optional `\dt` against live DB.
+
+4. **Results:**
+   - **0033 doc vs schema:** **PASS** — Table map matches migrations (`"order"`, `orderitem`, `"table"`); example corrected query uses `tenant_id` / `deleted_at` consistent with models.
+   - **README link:** **PASS** — `README.md` § PostgreSQL links to `docs/0033-postgres-adhoc-sql-table-names.md` (relative path valid).
+   - **docs/README.md index:** **PASS** — Row lists `0033-postgres-adhoc-sql-table-names.md` with accurate one-line summary.
+   - **CHANGELOG:** **PASS** — `[Unreleased]` documents 0033 and README link.
+   - **No `restaurantorder` in app SQL:** **PASS** — `grep` under `back/` returned no matches; only docs/tasks use the string as symptom/examples.
+   - **Optional DB:** **PASS** — `\dt "order"`, `\dt orderitem`, `\dt "table"` all list expected tables.
+
+5. **Overall:** **PASS**
+
+6. **Product owner feedback:** Operators who see `relation "restaurantorder" does not exist` now have a single doc that explains the mistake and gives a working example query. The README PostgreSQL section points there without duplicating long detail. No application change was required; the log line reflects external or guessed SQL, not this product’s schema.
+
+7. **URLs tested:** **N/A — no browser** (documentation and `psql` only).
+
+8. **Relevant log excerpts (last section):** `psql` evidence (UTC run ~14:20Z):
+
+   ```text
+   Schema | Name  | Type  | Owner 
+   --------+-------+-------+-------
+   public | order | table | pos
+
+   Schema |   Name    | Type  | Owner 
+   --------+-----------+-------+-------
+   public | orderitem | table | pos
+
+   Schema | Name  | Type  | Owner 
+   --------+-------+-------+-------
+   public | table | table | pos
+   ```
+
+**GitHub:** No issue number on this task file — labels/comments not updated.
