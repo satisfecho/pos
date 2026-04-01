@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** The tables canvas join/group confirmation was firing on proximity instead of true overlap with other table shapes.
+- **What was done:** Coder tightened the trigger to geometric overlap (`tableShapesOverlapForJoin` in `tables-canvas.component.ts`) with a documented rule for rects vs ellipses, and aligned `docs/0051-table-groups-mvp.md`.
+- **What was tested:** Docker dev front build/logs clean; Puppeteer negative (no overlap → no dialog) and positive (overlap + dwell → confirmation) **PASS**; optional round-table case skipped.
+- **Why closed:** Tester test report overall **PASS**; acceptance criteria met.
+- **Closed at (UTC):** 2026-04-01 13:47
+---
+
 # Table join dialog — trigger rule
 
 ## GitHub
