@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- **Tables / floor canvas (GitHub #141):** Tablet-oriented **join by drag + proximity** on `/tables/canvas` — tables use **inflated bounding-box overlap** in floor canvas coordinates (stable with zoom/pan); brief hold (~160 ms) before release reduces accidental joins; **confirmation** dialog before `POST /table-groups`; Ctrl/Cmd multi-select + **Join** unchanged. See **`docs/0051-table-groups-mvp.md`**.
+- **Tables / floor canvas (GitHub #141):** Tablet-oriented **join by drag** on `/tables/canvas` — overlap is evaluated in **floor canvas coordinates** (stable with zoom/pan); brief hold (~160 ms) before release reduces accidental joins; **confirmation** dialog before `POST /table-groups`; Ctrl/Cmd multi-select + **Join** unchanged. See **`docs/0051-table-groups-mvp.md`**. (GitHub #142 tightens overlap to require real footprint intersection, not mere proximity.)
 
 - **Table groups / join tables (GitHub #140):** Tenant-scoped **`table_group`** and **`table.table_group_id`**. APIs **`POST /table-groups`** (join same-floor tables) and **`DELETE /table-groups/{id}`** (dissolve). **`GET /tables`** and **`GET /tables/with-status`** expose **`group_member_ids`**, **`group_seat_total`**, merged canvas status for joined tables. **Reservation seating** uses combined capacity and blocks conflicts on any member; **`GET /orders`** may include **`table_group_label`**. Floor plan: **Ctrl/Cmd+click** multi-select + **Join** / **Unjoin**; staff orders show optional group label. See **`docs/0051-table-groups-mvp.md`**.
 
@@ -31,6 +31,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Reservations / public booking (GitHub #128):** Single **allergies / special requirements** textarea on `/book/:tenantId` and in the staff reservation modal (removed duplicate checkbox + second “customer notes” field that repeated the same intent). Radio controls use **1rem** label text and **1.125em** native inputs with theme **accent-color**. Staff list and guest reservation view show one merged dietary line (`reservation-dietary-notes` helper).
 
 ### Fixed
+
+- **Tables / floor canvas (GitHub #142):** Drag-to-join confirmation on `/tables/canvas` fires only when table footprints **overlap** in layout coordinates (strict AABB for rectangle/booth/bar; ellipse metric for circle/oval pairs), not when tables are merely **near** each other—removes the previous inflated proximity margin.
 
 - **Tables / floor canvas (GitHub #137):** Staff **Tables** floor-plan view — **header** (`tables-canvas-header`) and **floor tabs** use the normal light/neutral theme again; the dark tablet canvas styling applies only to the drawing area, not the chrome above it.
 

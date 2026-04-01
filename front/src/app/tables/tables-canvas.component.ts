@@ -1541,10 +1541,8 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   private lastPanPosition = { x: 0, y: 0 };
   Math = Math; // Expose Math for template
 
-  /** Target table id while dragging — another table whose bbox overlaps the dragged table in canvas space (join gesture). */
+  /** Target table id while dragging — another table whose footprint overlaps the dragged table in canvas space (join gesture). */
   joinProximityTargetId = signal<number | null>(null);
-  /** Inflated AABB overlap margin in SVG canvas units (stable across zoom; zoom only affects screen→SVG via CTM). */
-  private readonly joinProximityMargin = 24;
   /** Require overlap with the same candidate for this long before release opens the join dialog (reduces accidental joins). */
   private readonly joinProximityMinHoldMs = 160;
   private joinProximityCandidateId: number | null = null;
@@ -1856,23 +1854,72 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     };
   }
 
-  /** True if expanded AABBs overlap (margin in canvas units — same space as table positions). */
-  private canvasBoundsOverlapInflated(
-    a: { left: number; right: number; top: number; bottom: number },
-    b: { left: number; right: number; top: number; bottom: number },
-    margin: number
-  ): boolean {
-    return !(
-      a.right + margin < b.left - margin ||
-      a.left - margin > b.right + margin ||
-      a.bottom + margin < b.top - margin ||
-      a.top - margin > b.bottom + margin
-    );
+  private static readonly joinOverlapEps = 1e-6;
+
+  private isRectLikeTableShape(shape: string | undefined): boolean {
+    if (!shape) return true;
+    return shape === 'rectangle' || shape === 'booth' || shape === 'bar';
+  }
+
+  private isEllipseTableShape(shape: string | undefined): boolean {
+    return shape === 'circle' || shape === 'oval';
   }
 
   /**
-   * While dragging `dragged`, find the closest other table on the same floor that overlaps
-   * inflated bounding boxes (tablet join gesture). Uses canvas coordinates only.
+   * Join-on-drop: require real overlap in floor SVG space (not proximity / inflated boxes).
+   * - Rectangular footprints (rectangle, booth, bar): strict AABB intersection with positive area
+   *   (edge-only contact does not count — intersection width and height must exceed eps).
+   * - Two ellipses (circle, oval as drawn): overlap if (dx/(rx1+rx2))² + (dy/(ry1+ry2))² < 1
+   *   using the same half-axes as the SVG ellipses and tableCanvasBounds.
+   * - Mixed rect + ellipse: strict AABB overlap between their axis-aligned bounds (approximation).
+   * Zoom/pan only affect the view transform; positions stay in these canvas units.
+   */
+  private tableShapesOverlapForJoin(a: CanvasTable, b: CanvasTable): boolean {
+    const ba = this.tableCanvasBounds(a);
+    const bb = this.tableCanvasBounds(b);
+    const sa = a.shape;
+    const sb = b.shape;
+    if (this.isRectLikeTableShape(sa) && this.isRectLikeTableShape(sb)) {
+      return this.aabbStrictPositiveOverlap(ba, bb);
+    }
+    if (this.isEllipseTableShape(sa) && this.isEllipseTableShape(sb)) {
+      return this.axisAlignedEllipsesOverlapPositive(ba, bb, a, b);
+    }
+    return this.aabbStrictPositiveOverlap(ba, bb);
+  }
+
+  /** True iff axis-aligned rectangles intersect with interior overlap (not edge-only). */
+  private aabbStrictPositiveOverlap(
+    a: { left: number; right: number; top: number; bottom: number },
+    b: { left: number; right: number; top: number; bottom: number }
+  ): boolean {
+    const iw = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+    const ih = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+    return iw > TablesCanvasComponent.joinOverlapEps && ih > TablesCanvasComponent.joinOverlapEps;
+  }
+
+  private axisAlignedEllipsesOverlapPositive(
+    ba: { cx: number; cy: number },
+    bb: { cx: number; cy: number },
+    ta: CanvasTable,
+    tb: CanvasTable
+  ): boolean {
+    const wa = ta.width || 100;
+    const ha = ta.height || 70;
+    const wb = tb.width || 100;
+    const hb = tb.height || 70;
+    const rxSum = wa / 2 + wb / 2;
+    const rySum = ha / 2 + hb / 2;
+    if (rxSum <= 0 || rySum <= 0) return false;
+    const dx = ba.cx - bb.cx;
+    const dy = ba.cy - bb.cy;
+    const metric = (dx / rxSum) * (dx / rxSum) + (dy / rySum) * (dy / rySum);
+    return metric < 1 - TablesCanvasComponent.joinOverlapEps;
+  }
+
+  /**
+   * While dragging `dragged`, find the closest other table on the same floor whose footprint
+   * overlaps the dragged table (canvas coordinates only).
    */
   private findJoinProximityTarget(dragged: CanvasTable): CanvasTable | null {
     if (dragged.id == null || dragged.table_group_id) return null;
@@ -1881,8 +1928,8 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     let bestDist = Infinity;
     for (const t of this.tablesOnCurrentFloor()) {
       if (t.id == null || t.id === dragged.id || t.table_group_id) continue;
+      if (!this.tableShapesOverlapForJoin(dragged, t)) continue;
       const db = this.tableCanvasBounds(t);
-      if (!this.canvasBoundsOverlapInflated(da, db, this.joinProximityMargin)) continue;
       const dist = Math.hypot(da.cx - db.cx, da.cy - db.cy);
       if (dist < bestDist) {
         bestDist = dist;
