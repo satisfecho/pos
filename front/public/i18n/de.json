@@ -647,6 +647,7 @@
     "JOIN_TABLES_CONFIRM_MESSAGE": "{{tableA}} und {{tableB}} verbinden? Für Reservierungen gelten sie bis zum Trennen als eine Gruppe.",
     "GROUP_MEMBERS": "Verbundene Gruppe",
     "UNSAVED_CHANGES": "Ungespeicherte Änderungen",
+    "LEAVE_UNSAVED_LAYOUT": "Der Grundriss konnte nicht gespeichert werden. Seite trotzdem verlassen? Ungespeicherte Tischpositionen gehen verloren.",
     "DELETE": "Löschen",
     "NAME": "Name",
     "SEATS": "Sitzplätze",

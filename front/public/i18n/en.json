@@ -779,6 +779,7 @@
     "JOIN_TABLES_CONFIRM_MESSAGE": "Join {{tableA}} and {{tableB}}? They will share one group for reservations until unjoined.",
     "GROUP_MEMBERS": "Joined group",
     "UNSAVED_CHANGES": "Unsaved changes",
+    "LEAVE_UNSAVED_LAYOUT": "The floor layout could not be saved. Leave this page anyway? Unsaved table positions will be lost.",
     "ADD_TABLE": "Add Table",
     "EDIT_TABLE": "Edit table",
     "DELETE_TABLE": "Delete table",

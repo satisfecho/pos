@@ -753,6 +753,7 @@
     "JOIN_TABLES_CONFIRM_MESSAGE": "Fusionner {{tableA}} et {{tableB}} ? Elles formeront un seul groupe pour les réservations jusqu’à séparation.",
     "GROUP_MEMBERS": "Groupe fusionné",
     "UNSAVED_CHANGES": "Modifications non enregistrées",
+    "LEAVE_UNSAVED_LAYOUT": "Impossible d'enregistrer le plan de salle. Quitter quand même ? Les positions des tables non enregistrées seront perdues.",
     "ADD_TABLE": "Ajouter une table",
     "EDIT_TABLE": "Modifier la table",
     "DELETE_TABLE": "Supprimer la table",

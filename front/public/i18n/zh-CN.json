@@ -669,6 +669,7 @@
     "JOIN_TABLES_CONFIRM_MESSAGE": "合并 {{tableA}} 与 {{tableB}}？拆分前预订将视为同一组。",
     "GROUP_MEMBERS": "已合并组",
     "UNSAVED_CHANGES": "未保存的更改",
+    "LEAVE_UNSAVED_LAYOUT": "无法保存平面图。仍要离开页面吗？未保存的桌位将丢失。",
     "DELETE": "删除",
     "NAME": "名称",
     "SEATS": "座位",

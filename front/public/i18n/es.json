@@ -762,6 +762,7 @@
     "JOIN_TABLES_CONFIRM_MESSAGE": "¿Unir {{tableA}} y {{tableB}}? Compartirán un grupo para reservas hasta separarlas.",
     "GROUP_MEMBERS": "Grupo unido",
     "UNSAVED_CHANGES": "Cambios sin guardar",
+    "LEAVE_UNSAVED_LAYOUT": "No se pudo guardar la distribución del local. ¿Salir de todas formas? Se perderán las posiciones de las mesas no guardadas.",
     "ADD_TABLE": "Añadir Mesa",
     "EDIT_TABLE": "Editar mesa",
     "DELETE_TABLE": "Eliminar mesa",

@@ -1,4 +1,5 @@
-import { Component, inject, signal, computed, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy, ElementRef, ViewChild, HostListener } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { LowerCasePipe } from '@angular/common';
@@ -11,6 +12,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { StaffPosToolbarComponent } from '../shared/staff-pos-toolbar.component';
 import { TablesAreaPreferenceService } from '../services/tables-area-preference.service';
 import { ApiErrorMessageService } from '../services/api-error-message.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 interface TableShape {
   id: string;
@@ -1483,6 +1485,13 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   editingFloorName = '';
   hasUnsavedChanges = signal(false);
 
+  /** Bumps on each layout mutation so in-flight saves can detect concurrent edits and re-persist. */
+  private layoutMutationEpoch = 0;
+  private readonly layoutAutoSaveDebounceMs = 550;
+  private layoutAutoSaveTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Serializes layout PUTs so concurrent flush + debounce coalesce. */
+  private layoutSaveTail: Promise<void> = Promise.resolve();
+
   selectedTableName = '';
   selectedTableSeats = 4;
   waiters = signal<User[]>([]);
@@ -1582,11 +1591,29 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.clearLayoutAutoSaveTimer();
     document.removeEventListener('mousemove', this.onMouseMove);
     document.removeEventListener('mouseup', this.onMouseUp);
     document.removeEventListener('touchmove', this.onTouchMove);
     document.removeEventListener('touchend', this.onTouchEnd);
     document.removeEventListener('touchcancel', this.onTouchEnd);
+  }
+
+  /** Router `canDeactivate`: try to save; if save fails, optional browser confirm to discard. */
+  confirmCanDeactivate(): boolean | Promise<boolean> {
+    if (!this.hasUnsavedChanges()) return true;
+    return this.flushLayoutSave().then(ok => {
+      if (ok) return true;
+      return window.confirm(this.translate.instant('TABLES.LEAVE_UNSAVED_LAYOUT'));
+    });
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
   }
 
   loadData() {
@@ -1619,9 +1646,19 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   }
 
   selectFloor(id: number) {
-    this.selectedFloorId.set(id);
-    this.selectedTable.set(null);
-    this.joinSelectionIds.set([]);
+    if (id === this.selectedFloorId()) return;
+    const apply = () => {
+      this.selectedFloorId.set(id);
+      this.selectedTable.set(null);
+      this.joinSelectionIds.set([]);
+    };
+    if (!this.hasUnsavedChanges()) {
+      apply();
+      return;
+    }
+    void this.flushLayoutSave().then(ok => {
+      if (ok) apply();
+    });
   }
 
   /** Focus the add-table shape palette (used by header Add Table button). */
@@ -1809,28 +1846,46 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   joinSelectedTables(): void {
     const ids = [...this.joinSelectionIds()].sort((a, b) => a - b);
     if (ids.length < 2) return;
-    this.error.set('');
-    this.api.createTableGroup(ids).subscribe({
-      next: () => {
-        this.joinSelectionIds.set([]);
-        this.loadData();
-      },
-      error: (err: { error?: { detail?: string } }) =>
-        this.error.set(this.apiErr.fromHttpError(err, 'COMMON.API_REQUEST_FAILED')),
+    const proceed = () => {
+      this.error.set('');
+      this.api.createTableGroup(ids).subscribe({
+        next: () => {
+          this.joinSelectionIds.set([]);
+          this.loadData();
+        },
+        error: (err: { error?: { detail?: string } }) =>
+          this.error.set(this.apiErr.fromHttpError(err, 'COMMON.API_REQUEST_FAILED')),
+      });
+    };
+    if (!this.hasUnsavedChanges()) {
+      proceed();
+      return;
+    }
+    void this.flushLayoutSave().then(ok => {
+      if (ok) proceed();
     });
   }
 
   unjoinSelectedGroup(): void {
     const gid = this.selectedTable()?.table_group_id;
     if (gid == null) return;
-    this.error.set('');
-    this.api.deleteTableGroup(gid).subscribe({
-      next: () => {
-        this.joinSelectionIds.set([]);
-        this.loadData();
-      },
-      error: (err: { error?: { detail?: string } }) =>
-        this.error.set(this.apiErr.fromHttpError(err, 'COMMON.API_REQUEST_FAILED')),
+    const proceed = () => {
+      this.error.set('');
+      this.api.deleteTableGroup(gid).subscribe({
+        next: () => {
+          this.joinSelectionIds.set([]);
+          this.loadData();
+        },
+        error: (err: { error?: { detail?: string } }) =>
+          this.error.set(this.apiErr.fromHttpError(err, 'COMMON.API_REQUEST_FAILED')),
+      });
+    };
+    if (!this.hasUnsavedChanges()) {
+      proceed();
+      return;
+    }
+    void this.flushLayoutSave().then(ok => {
+      if (ok) proceed();
     });
   }
 
@@ -2395,7 +2450,7 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
       )
     );
 
-    this.hasUnsavedChanges.set(true);
+    this.markLayoutDirty();
     if (this.draggedTable?.id != null) {
       this.updateJoinProximityDuringDrag(this.draggedTable.id);
     }
@@ -2461,7 +2516,7 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
       )
     );
 
-    this.hasUnsavedChanges.set(true);
+    this.markLayoutDirty();
     if (this.draggedTable?.id != null) {
       this.updateJoinProximityDuringDrag(this.draggedTable.id);
     }
@@ -2551,27 +2606,36 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     const table = this.selectedTable();
     if (!table?.id) return;
 
-    this.error.set('');
-    this.api.deleteTable(table.id).subscribe({
-      next: () => {
-        this.tables.update(tables => tables.filter(t => t.id !== table.id));
-        this.selectedTable.set(null);
-      },
-      error: err => {
-        const d = err.error?.detail;
-        const code =
-          d && typeof d === 'object' && !Array.isArray(d) && 'code' in d
-            ? (d as { code?: string }).code
-            : undefined;
-        if (err.status === 400 && code === 'table_has_orders') {
-          this.confirmationModal.update(m => ({ ...m, show: false }));
-          this.reassignTableModal.set(table);
-          const other = this.tables().filter(t => t.id !== table.id);
-          this.reassignTargetTableId.set(other.length > 0 ? other[0].id ?? null : null);
-        } else {
-          this.error.set(this.apiErr.fromHttpError(err, 'COMMON.API_REQUEST_FAILED'));
-        }
-      }
+    const runDelete = () => {
+      this.error.set('');
+      this.api.deleteTable(table.id!).subscribe({
+        next: () => {
+          this.tables.update(tables => tables.filter(t => t.id !== table.id));
+          this.selectedTable.set(null);
+        },
+        error: err => {
+          const d = err.error?.detail;
+          const code =
+            d && typeof d === 'object' && !Array.isArray(d) && 'code' in d
+              ? (d as { code?: string }).code
+              : undefined;
+          if (err.status === 400 && code === 'table_has_orders') {
+            this.confirmationModal.update(m => ({ ...m, show: false }));
+            this.reassignTableModal.set(table);
+            const other = this.tables().filter(t => t.id !== table.id);
+            this.reassignTargetTableId.set(other.length > 0 ? other[0].id ?? null : null);
+          } else {
+            this.error.set(this.apiErr.fromHttpError(err, 'COMMON.API_REQUEST_FAILED'));
+          }
+        },
+      });
+    };
+    if (!this.hasUnsavedChanges()) {
+      runDelete();
+      return;
+    }
+    void this.flushLayoutSave().then(ok => {
+      if (ok) runDelete();
     });
   }
 
@@ -2584,13 +2648,22 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     const table = this.reassignTableModal();
     const targetId = this.reassignTargetTableId();
     if (!table?.id || targetId == null) return;
-    this.api.deleteTable(table.id, targetId).subscribe({
-      next: () => {
-        this.tables.update(tables => tables.filter(t => t.id !== table.id));
-        this.selectedTable.set(null);
-        this.cancelReassign();
-      },
-      error: err => this.error.set(this.apiErr.fromHttpError(err, 'COMMON.API_REQUEST_FAILED'))
+    const proceed = () => {
+      this.api.deleteTable(table.id!, targetId).subscribe({
+        next: () => {
+          this.tables.update(tables => tables.filter(t => t.id !== table.id));
+          this.selectedTable.set(null);
+          this.cancelReassign();
+        },
+        error: err => this.error.set(this.apiErr.fromHttpError(err, 'COMMON.API_REQUEST_FAILED')),
+      });
+    };
+    if (!this.hasUnsavedChanges()) {
+      proceed();
+      return;
+    }
+    void this.flushLayoutSave().then(ok => {
+      if (ok) proceed();
     });
   }
 
@@ -2603,15 +2676,24 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
       this.confirmDeleteTable();
     } else if (action === 'joinTables' && m.joinPairIds && m.joinPairIds.length >= 2) {
       const ids = m.joinPairIds;
-      this.error.set('');
-      this.api.createTableGroup(ids).subscribe({
-        next: () => {
-          this.joinSelectionIds.set([]);
-          this.loadData();
-        },
-        error: (err: { error?: { detail?: string } }) =>
-          this.error.set(this.apiErr.fromHttpError(err, 'COMMON.API_REQUEST_FAILED')),
-      });
+      const proceed = () => {
+        this.error.set('');
+        this.api.createTableGroup(ids).subscribe({
+          next: () => {
+            this.joinSelectionIds.set([]);
+            this.loadData();
+          },
+          error: (err: { error?: { detail?: string } }) =>
+            this.error.set(this.apiErr.fromHttpError(err, 'COMMON.API_REQUEST_FAILED')),
+        });
+      };
+      if (!this.hasUnsavedChanges()) {
+        proceed();
+      } else {
+        void this.flushLayoutSave().then(ok => {
+          if (ok) proceed();
+        });
+      }
     }
     this.onConfirmationCancel();
   }
@@ -2626,17 +2708,73 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     }));
   }
 
-  saveAllPositions() {
-    const updates = this.tablesOnCurrentFloor().map(table =>
-      this.api.updateTable(table.id!, {
-        x_position: table.x_position,
-        y_position: table.y_position
-      }).toPromise()
-    );
+  private markLayoutDirty(): void {
+    this.layoutMutationEpoch++;
+    this.hasUnsavedChanges.set(true);
+    this.scheduleLayoutAutoSave();
+  }
 
-    Promise.all(updates)
-      .then(() => this.hasUnsavedChanges.set(false))
-      .catch(() => this.error.set('Failed to save layout'));
+  private clearLayoutAutoSaveTimer(): void {
+    if (this.layoutAutoSaveTimer != null) {
+      clearTimeout(this.layoutAutoSaveTimer);
+      this.layoutAutoSaveTimer = null;
+    }
+  }
+
+  private scheduleLayoutAutoSave(): void {
+    this.clearLayoutAutoSaveTimer();
+    this.layoutAutoSaveTimer = setTimeout(() => {
+      this.layoutAutoSaveTimer = null;
+      void this.flushLayoutSave();
+    }, this.layoutAutoSaveDebounceMs);
+  }
+
+  /** Persists current-floor table positions; coalesces with other callers via `layoutSaveTail`. */
+  flushLayoutSave(): Promise<boolean> {
+    this.clearLayoutAutoSaveTimer();
+    const p = this.layoutSaveTail.then(() => this.performOneLayoutSaveRound());
+    this.layoutSaveTail = p.then(
+      () => {},
+      () => {}
+    );
+    return p;
+  }
+
+  private async performOneLayoutSaveRound(): Promise<boolean> {
+    if (!this.hasUnsavedChanges()) return true;
+    const epochAtStart = this.layoutMutationEpoch;
+    const tables = this.tablesOnCurrentFloor().filter(t => t.id != null);
+    if (tables.length === 0) {
+      this.hasUnsavedChanges.set(false);
+      return true;
+    }
+    try {
+      await Promise.all(
+        tables.map(t =>
+          firstValueFrom(
+            this.api.updateTable(t.id!, {
+              x_position: t.x_position,
+              y_position: t.y_position,
+            })
+          )
+        )
+      );
+    } catch (err: unknown) {
+      this.error.set(
+        this.apiErr.fromHttpError(err as HttpErrorResponse | { error?: unknown; status?: number }, 'COMMON.API_REQUEST_FAILED')
+      );
+      return false;
+    }
+    if (this.layoutMutationEpoch !== epochAtStart) {
+      return this.performOneLayoutSaveRound();
+    }
+    this.error.set('');
+    this.hasUnsavedChanges.set(false);
+    return true;
+  }
+
+  saveAllPositions(): void {
+    void this.flushLayoutSave();
   }
 
 }

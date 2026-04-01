@@ -28,6 +28,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Tables / floor plan (GitHub #144):** `/tables/canvas` **debounced auto-save** (~550 ms after the last drag) for table **x/y** positions using existing `PUT /tables/{id}` calls; saves are **serialized** so overlapping flush/debounce only persist the latest state. **Unsaved changes** stays accurate until a successful save. **Switch floor**, **join/unjoin**, **delete table**, and **reassign-and-delete** **flush** pending layout saves first. **Route leave** runs `canDeactivate` (save then optional confirm) plus **`beforeunload`** when still dirty.
+
 - **API errors / i18n (GitHub #143):** Many FastAPI `HTTPException` responses now use structured `detail` (`code`, `message`, optional `params`) via `api_error_payload`, so the Angular app can map **`API_ERRORS.*`** keys in all shipped languages. Staff/public surfaces updated include login/register, provider auth, booking, reservations, tables, working plan, and landing tenant list. Table delete “has orders” is detected by `code: table_has_orders`.
 
 - **Working plan (GitHub #138):** **Calendar** view — grid uses **full width** up to **100rem** (was capped at 42rem); day cells **min-height 7.75rem** for more shift lines; weekday header row stays compact (`min-height: auto` on header cells). Scoped to `WorkingPlanComponent` styles only.

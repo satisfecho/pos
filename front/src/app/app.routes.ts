@@ -5,6 +5,7 @@ import { uiModuleGuard } from './auth/ui-module.guard';
 import { reservationAccessGuard } from './auth/reservation-access.guard';
 import { providerGuard } from './auth/provider.guard';
 import { permissionGuard } from './auth/permission.guard';
+import { tablesCanvasCanDeactivate } from './tables/tables-canvas-deactivate.guard';
 
 export const routes: Routes = [
   // Public routes
@@ -53,7 +54,12 @@ export const routes: Routes = [
   { path: 'catalog', canActivate: [authGuard, uiModuleGuard('providers')], loadComponent: () => import('./catalog/catalog.component').then(m => m.CatalogComponent) },
 
   // Register `tables/canvas` before `tables` (prefix matching would otherwise match `/tables/canvas` as `/tables`).
-  { path: 'tables/canvas', canActivate: [authGuard, uiModuleGuard('tables'), tableAccessGuard], loadComponent: () => import('./tables/tables-canvas.component').then(m => m.TablesCanvasComponent) },
+  {
+    path: 'tables/canvas',
+    canActivate: [authGuard, uiModuleGuard('tables'), tableAccessGuard],
+    canDeactivate: [tablesCanvasCanDeactivate],
+    loadComponent: () => import('./tables/tables-canvas.component').then(m => m.TablesCanvasComponent),
+  },
   { path: 'tables', canActivate: [authGuard, uiModuleGuard('tables'), tableAccessGuard], loadComponent: () => import('./tables/tables.component').then(m => m.TablesComponent) },
 
   // Staff orders (list and manage orders)

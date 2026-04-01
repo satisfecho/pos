@@ -644,6 +644,7 @@
     "JOIN_TABLES_CONFIRM_MESSAGE": "Unir {{tableA}} i {{tableB}}? Compartiran un grup per a reserves fins que es separin.",
     "GROUP_MEMBERS": "Grup unit",
     "UNSAVED_CHANGES": "Canvis no desats",
+    "LEAVE_UNSAVED_LAYOUT": "No s'ha pogut desar el plànol de la sala. Voleu sortir igualment? Es perdran les posicions de les taules no desades.",
     "DELETE": "Eliminar",
     "NAME": "Nom",
     "SEATS": "Seients",
