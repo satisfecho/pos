@@ -2,7 +2,10 @@
 
 ## Staff
 
-- Tables can be **joined** on the floor plan (`/tables/canvas`): **Ctrl+click** (⌘+click on Mac) to multi-select tables on the same floor, then **Join tables**. **Unjoin** clears the group; each table keeps its own name and QR token.
+- Tables can be **joined** on the floor plan (`/tables/canvas`):
+  - **Touch / drag (tablet primary):** Drag one table toward another until their bounding boxes overlap in **floor canvas coordinates** (expanded by a fixed margin so the gesture is stable when zooming or panning—the SVG view maps screen pixels via the matrix, positions stay in canvas units). Hold overlap briefly (~160 ms) so accidental joins while swiping past are unlikely; on release, confirm **Join** in the dialog. Backend errors (orders, reservations) surface in the banner as for the Join button.
+  - **Desktop / accessibility:** **Ctrl+click** (⌘+click on Mac) to multi-select tables on the same floor, then **Join tables**.
+- **Unjoin** clears the group; each table keeps its own name and QR token.
 - Join requires: same floor, no open orders, no active table session, no booked or seated reservation on any selected table.
 - **Reservations:** seating uses **combined seat counts** for the group. A party can be seated at any member table; the group is one logical unit for conflicts (another booking cannot use a sibling table for the same overlap rules as today).
 - **Reservation pool capacity** (`_reservable_capacity_for_tenant`): a joined set counts as **one** table unit with **sum(seat_count)**; if any member is busy for the slot, the **whole** group is excluded from the pool.

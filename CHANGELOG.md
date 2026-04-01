@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Tables / floor canvas (GitHub #141):** Tablet-oriented **join by drag + proximity** on `/tables/canvas` — tables use **inflated bounding-box overlap** in floor canvas coordinates (stable with zoom/pan); brief hold (~160 ms) before release reduces accidental joins; **confirmation** dialog before `POST /table-groups`; Ctrl/Cmd multi-select + **Join** unchanged. See **`docs/0051-table-groups-mvp.md`**.
+
 - **Table groups / join tables (GitHub #140):** Tenant-scoped **`table_group`** and **`table.table_group_id`**. APIs **`POST /table-groups`** (join same-floor tables) and **`DELETE /table-groups/{id}`** (dissolve). **`GET /tables`** and **`GET /tables/with-status`** expose **`group_member_ids`**, **`group_seat_total`**, merged canvas status for joined tables. **Reservation seating** uses combined capacity and blocks conflicts on any member; **`GET /orders`** may include **`table_group_label`**. Floor plan: **Ctrl/Cmd+click** multi-select + **Join** / **Unjoin**; staff orders show optional group label. See **`docs/0051-table-groups-mvp.md`**.
 
 - **Reservations / floor seating (GitHub #139):** Floors have **`seating_zone`** (`indoor` | `outdoor` | `any`). Public **`/book`** filters the seating-area dropdown and slot capacity by the guest’s **seating preference** (terrace ↔ outdoor). API validates **preferred floor** vs preference; **seat** rejects tables on zones that don’t match. **Tables** list: per-floor **Reservation seating** control for staff. Task: `agents/tasks/UNTESTED-20260401-1035-syncing-reservation-seating-with-floor-plan-sections.md`.

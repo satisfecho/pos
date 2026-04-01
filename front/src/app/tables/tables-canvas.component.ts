@@ -278,6 +278,7 @@ const STAFF_ORDERS_ROLES = new Set([
                     class="table-group"
                     [class.selected]="isTableVisualSelected(table)"
                     [class.join-picked]="isTableJoinPicked(table)"
+                    [class.join-proximity-hint]="joinProximityTargetId() === table.id"
                     [class.dragging]="isDragging && draggedTable?.id === table.id"
                     [attr.transform]="'translate(' + (table.x_position || 100) + ',' + (table.y_position || 100) + ')'"
                     (mousedown)="onTableMouseDown($event, table)"
@@ -568,6 +569,7 @@ const STAFF_ORDERS_ROLES = new Set([
           <app-confirmation-modal
             [title]="confirmationModal().title"
             [message]="confirmationModal().message"
+            [messageParams]="confirmationModal().messageParams ?? {}"
             [confirmText]="confirmationModal().confirmText"
             [cancelText]="confirmationModal().cancelText"
             [confirmBtnClass]="confirmationModal().confirmBtnClass"
@@ -1004,6 +1006,10 @@ const STAFF_ORDERS_ROLES = new Set([
     .table-group.dragging {
       cursor: grabbing;
       filter: brightness(1.1) drop-shadow(0 0 12px rgba(34, 197, 94, 0.8));
+    }
+    .table-group.join-proximity-hint :is(ellipse, rect) {
+      stroke: #c084fc !important;
+      stroke-width: 3px;
     }
 
     /* Properties Panel - Mobile-first (Bottom Sheet) */
@@ -1490,18 +1496,22 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     show: boolean;
     title: string;
     message: string;
+    messageParams?: Record<string, string>;
     confirmText: string;
     cancelText: string;
     confirmBtnClass: string;
-    action: 'deleteFloor' | 'deleteTable' | null;
+    action: 'deleteFloor' | 'deleteTable' | 'joinTables' | null;
+    joinPairIds?: number[];
   }>({
     show: false,
     title: '',
     message: '',
+    messageParams: undefined,
     confirmText: 'COMMON.YES',
     cancelText: 'COMMON.NO',
     confirmBtnClass: 'btn-primary',
-    action: null
+    action: null,
+    joinPairIds: undefined,
   });
 
   reassignTableModal = signal<CanvasTable | null>(null);
@@ -1530,6 +1540,15 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   private isPanning = false;
   private lastPanPosition = { x: 0, y: 0 };
   Math = Math; // Expose Math for template
+
+  /** Target table id while dragging — another table whose bbox overlaps the dragged table in canvas space (join gesture). */
+  joinProximityTargetId = signal<number | null>(null);
+  /** Inflated AABB overlap margin in SVG canvas units (stable across zoom; zoom only affects screen→SVG via CTM). */
+  private readonly joinProximityMargin = 24;
+  /** Require overlap with the same candidate for this long before release opens the join dialog (reduces accidental joins). */
+  private readonly joinProximityMinHoldMs = 160;
+  private joinProximityCandidateId: number | null = null;
+  private joinProximityCandidateSince: number | null = null;
 
   tableShapes: TableShape[] = [
     { id: 'square4', name: 'Square 4', shape: 'rectangle', width: 80, height: 80, seats: 4 },
@@ -1815,6 +1834,128 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     });
   }
 
+  private resetJoinProximityGesture(): void {
+    this.joinProximityCandidateId = null;
+    this.joinProximityCandidateSince = null;
+    this.joinProximityTargetId.set(null);
+  }
+
+  /** Axis-aligned bounds of a table in floor canvas (SVG) coordinates; center is x_position/y_position. */
+  private tableCanvasBounds(t: CanvasTable): { left: number; right: number; top: number; bottom: number; cx: number; cy: number } {
+    const w = t.width || 100;
+    const h = t.height || 70;
+    const cx = t.x_position || 0;
+    const cy = t.y_position || 0;
+    return {
+      left: cx - w / 2,
+      right: cx + w / 2,
+      top: cy - h / 2,
+      bottom: cy + h / 2,
+      cx,
+      cy,
+    };
+  }
+
+  /** True if expanded AABBs overlap (margin in canvas units — same space as table positions). */
+  private canvasBoundsOverlapInflated(
+    a: { left: number; right: number; top: number; bottom: number },
+    b: { left: number; right: number; top: number; bottom: number },
+    margin: number
+  ): boolean {
+    return !(
+      a.right + margin < b.left - margin ||
+      a.left - margin > b.right + margin ||
+      a.bottom + margin < b.top - margin ||
+      a.top - margin > b.bottom + margin
+    );
+  }
+
+  /**
+   * While dragging `dragged`, find the closest other table on the same floor that overlaps
+   * inflated bounding boxes (tablet join gesture). Uses canvas coordinates only.
+   */
+  private findJoinProximityTarget(dragged: CanvasTable): CanvasTable | null {
+    if (dragged.id == null || dragged.table_group_id) return null;
+    const da = this.tableCanvasBounds(dragged);
+    let best: CanvasTable | null = null;
+    let bestDist = Infinity;
+    for (const t of this.tablesOnCurrentFloor()) {
+      if (t.id == null || t.id === dragged.id || t.table_group_id) continue;
+      const db = this.tableCanvasBounds(t);
+      if (!this.canvasBoundsOverlapInflated(da, db, this.joinProximityMargin)) continue;
+      const dist = Math.hypot(da.cx - db.cx, da.cy - db.cy);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = t;
+      }
+    }
+    return best;
+  }
+
+  private canJoinPair(a: CanvasTable, b: CanvasTable): boolean {
+    if (a.id == null || b.id == null || a.id === b.id) return false;
+    if (a.table_group_id || b.table_group_id) return false;
+    const floorId = this.selectedFloorId();
+    if ((a.floor_id ?? null) !== (floorId ?? null) || (b.floor_id ?? null) !== (floorId ?? null)) return false;
+    return true;
+  }
+
+  private updateJoinProximityDuringDrag(draggedId: number): void {
+    const fresh = this.tables().find(t => t.id === draggedId);
+    if (!fresh) return;
+    const candidate = this.findJoinProximityTarget(fresh);
+    const cid = candidate?.id ?? null;
+    if (cid !== this.joinProximityCandidateId) {
+      this.joinProximityCandidateId = cid;
+      this.joinProximityCandidateSince = cid ? Date.now() : null;
+    }
+    this.joinProximityTargetId.set(cid);
+  }
+
+  /** After drag release: if overlap + hold time satisfied, show join confirmation (no API until confirm). */
+  private finishTableDragInteraction(): void {
+    const dragged = this.draggedTable;
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+
+    this.isDragging = false;
+    this.draggedTable = null;
+
+    if (!dragged?.id) {
+      this.resetJoinProximityGesture();
+      return;
+    }
+
+    const fresh = this.tables().find(t => t.id === dragged.id);
+    const candidate = fresh ? this.findJoinProximityTarget(fresh) : null;
+    const heldLongEnough =
+      !!candidate &&
+      candidate.id === this.joinProximityCandidateId &&
+      this.joinProximityCandidateSince != null &&
+      Date.now() - this.joinProximityCandidateSince >= this.joinProximityMinHoldMs;
+
+    this.resetJoinProximityGesture();
+
+    if (fresh && candidate && heldLongEnough && this.canJoinPair(fresh, candidate)) {
+      this.openJoinTablesModal(fresh, candidate);
+    }
+  }
+
+  private openJoinTablesModal(a: CanvasTable, b: CanvasTable): void {
+    if (a.id == null || b.id == null) return;
+    this.confirmationModal.set({
+      show: true,
+      title: 'TABLES.JOIN_TABLES_CONFIRM_TITLE',
+      message: 'TABLES.JOIN_TABLES_CONFIRM_MESSAGE',
+      messageParams: { tableA: a.name || '?', tableB: b.name || '?' },
+      confirmText: 'TABLES.JOIN_TABLES',
+      cancelText: 'COMMON.CANCEL',
+      confirmBtnClass: 'btn-primary',
+      action: 'joinTables',
+      joinPairIds: [a.id, b.id].sort((x, y) => x - y),
+    });
+  }
+
   // Waiter assignment helpers
   private waiterColors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ef4444', '#14b8a6'];
 
@@ -2063,6 +2204,7 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     this.isDragging = false;
     this.draggedTable = null;
+    this.resetJoinProximityGesture();
     this.isPanning = false;
     document.body.style.cursor = '';
     document.body.style.userSelect = '';
@@ -2100,6 +2242,7 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
 
     this.isDragging = true;
     this.draggedTable = table;
+    this.resetJoinProximityGesture();
     document.body.style.userSelect = 'none'; // Prevent text selection globally
     document.body.style.cursor = 'grabbing';
 
@@ -2127,6 +2270,7 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
 
     this.isDragging = true;
     this.draggedTable = table;
+    this.resetJoinProximityGesture();
 
     const svgPoint = this.getSvgPoint(touch.clientX, touch.clientY);
     if (svgPoint) {
@@ -2203,6 +2347,9 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     );
 
     this.hasUnsavedChanges.set(true);
+    if (this.draggedTable?.id != null) {
+      this.updateJoinProximityDuringDrag(this.draggedTable.id);
+    }
   };
 
   onMouseUp = () => {
@@ -2210,13 +2357,14 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     if (this.isPanning) {
       this.isPanning = false;
       document.body.style.cursor = '';
+      return;
     }
 
-    // Stop table dragging
-    if (this.isDragging) {
-      document.body.style.userSelect = '';
-      document.body.style.cursor = '';
+    if (this.isDragging && this.draggedTable) {
+      this.finishTableDragInteraction();
+      return;
     }
+
     this.isDragging = false;
     this.draggedTable = null;
   };
@@ -2265,12 +2413,20 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     );
 
     this.hasUnsavedChanges.set(true);
+    if (this.draggedTable?.id != null) {
+      this.updateJoinProximityDuringDrag(this.draggedTable.id);
+    }
   };
 
   // Touch end handler for mobile
   onTouchEnd = () => {
-    this.isDragging = false;
-    this.draggedTable = null;
+    if (this.isDragging && this.draggedTable) {
+      this.finishTableDragInteraction();
+    } else {
+      this.isDragging = false;
+      this.draggedTable = null;
+      this.resetJoinProximityGesture();
+    }
     this.lastPinchDistance = 0; // Reset pinch tracking
   };
 
@@ -2386,17 +2542,35 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   }
 
   onConfirmationConfirm() {
-    const action = this.confirmationModal().action;
+    const m = this.confirmationModal();
+    const action = m.action;
     if (action === 'deleteFloor') {
       this.confirmDeleteFloor();
     } else if (action === 'deleteTable') {
       this.confirmDeleteTable();
+    } else if (action === 'joinTables' && m.joinPairIds && m.joinPairIds.length >= 2) {
+      const ids = m.joinPairIds;
+      this.error.set('');
+      this.api.createTableGroup(ids).subscribe({
+        next: () => {
+          this.joinSelectionIds.set([]);
+          this.loadData();
+        },
+        error: (err: { error?: { detail?: string } }) =>
+          this.error.set(err.error?.detail || 'Join failed'),
+      });
     }
     this.onConfirmationCancel();
   }
 
   onConfirmationCancel() {
-    this.confirmationModal.update(m => ({ ...m, show: false, action: null }));
+    this.confirmationModal.update(m => ({
+      ...m,
+      show: false,
+      action: null,
+      joinPairIds: undefined,
+      messageParams: undefined,
+    }));
   }
 
   saveAllPositions() {
