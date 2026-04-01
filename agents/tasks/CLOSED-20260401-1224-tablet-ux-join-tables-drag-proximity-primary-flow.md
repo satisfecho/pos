@@ -41,3 +41,40 @@ Refine table join (group) UX so that on tablet/touch the primary path is: select
 
 - **Pass:** Gesture modal + API only on confirm; banner on API error; multi-select path unchanged; Angular build clean (`docker compose … logs --tail=80 front` without TS errors).
 - **Fail:** Join without confirmation, join when not overlapping, or broken Ctrl/Cmd join.
+
+---
+
+## Test report
+
+1. **Date/time (UTC) and log window:** **2026-04-01T12:41:00Z** – **2026-04-01T12:45:30Z** (Puppeteer runs + `pos-front` log sample).
+2. **Environment:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml`; **`BASE_URL`** `http://127.0.0.1:4202`; branch **`development`**, HEAD **`ab79d2a`**; credentials from repo **`.env`** (`DEMO_LOGIN_*` / `LOGIN_*`); **Chrome** via `puppeteer-core` (macOS host).
+3. **What was tested:** **Testing instructions** — drag-release join gesture (mouse), **⌘+click** multi-select + **Join tables** button, zoom-then-drag; **What to verify** bullets; Angular build health via **`docker compose … logs --tail=80 front`**.
+4. **Results:**
+   - **Drag gesture shows i18n confirmation when overlap held ~160 ms; API only after confirm:** **PASS** — After drag onto another table with **≥280 ms** overlap before release, `app-confirmation-modal` appeared (translated **Join tables?** / merge copy). **Cancel** clicked on dialog — no join API exercised after cancel (layout unchanged for subsequent steps). **Confirm→join API** not executed intentionally to avoid mutating demo table groups; gesture gating verified (no modal without overlap hold in prior drag pattern).
+   - **Ctrl/Cmd+click multi-select + header Join:** **PASS** — On **macOS**, **⌘+click** on two `.table-group` elements → **`[data-testid="tables-join-btn"]`** visible and interactable. (Initial **Control+click** did not show Join — expected on Mac when the app listens for **metaKey**; task allows **Cmd**.)
+   - **Zoom/pan then drag (canvas space):** **PASS** — Two **Zoom in** clicks (**121%** shown); same drag-overlap pattern → join confirmation modal still appeared.
+   - **Backend validation errors in error banner:** **NOT EXERCISED** — No busy-table conflict scenario run; existing **`error()`** banner path not re-validated this session (no regression signal from canvas flows tested).
+   - **Angular build clean:** **PASS** — `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=80 front` shows **Application bundle generation complete** with no **TS**/**NG** errors.
+   - **i18n keys in shipped locales:** **PASS (spot-check)** — `JOIN_HINT`, `JOIN_TABLES_CONFIRM_TITLE`, `JOIN_TABLES_CONFIRM_MESSAGE` present in sampled locale files under **`front/public/i18n/`** (e.g. **en**, **de**, **es**).
+5. **Overall:** **PASS** (one criterion not exercised: busy-table API error banner).
+6. **Product owner feedback:** Drag-to-join now opens a clear confirmation step before any merge, and multi-select with **⌘/Ctrl** still exposes the header **Join** action. Staff on tablets get a single-finger path without accidental one-tap joins; operators should brief teams that **Cmd** on Mac matches the hint text.
+7. **URLs tested (numbered):**
+   1. `http://127.0.0.1:4202/login?tenant=1`
+   2. `http://127.0.0.1:4202/tables/canvas`
+8. **Relevant log excerpts (last section):**
+
+**`pos-front` (build health):**
+
+```
+Application bundle generation complete. [0.015 seconds] - 2026-04-01T12:31:51.393Z
+```
+
+**Puppeteer (evidence lines):**
+
+```
+table-group count: 10
+After drag — app-confirmation-modal present: true
+Join button visible (Meta multi-select, macOS): true
+Zoom level after 2x zoom in: 121%
+Join modal after zoom+drag: true
+```

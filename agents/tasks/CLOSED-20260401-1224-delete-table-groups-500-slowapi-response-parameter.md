@@ -40,3 +40,26 @@
 
 - **Pass:** Subprocess pytest **PASS**; or manual flow completes with **200** on delete and logs show no **`parameter \`response\` must be an instance of starlette.responses.Response`** from **`slowapi.extension`**.
 - **Fail:** **500** on **`POST`/`DELETE /table-groups`** with that SlowAPI error, or regression in join/delete behaviour.
+
+---
+
+## Test report
+
+1. **Date/time (UTC) and log window:** **2026-04-01T12:39:30Z** – **2026-04-01T12:40:15Z** (tester run; `pos-back` logs sampled immediately after pytest).
+2. **Environment:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml`; backend via **`back`** service exec; branch **`development`**, HEAD **`ab79d2a`**; **`BASE_URL`** for manual path not used (automated only).
+3. **What was tested:** Per **Testing instructions**: table-groups **POST**/**DELETE** with SlowAPI/rate limiting enabled via subprocess pytest; criteria from **What to verify**.
+4. **Results:**
+   - **`POST`/`DELETE` succeed with rate limiting enabled (no 500 / no SlowAPI `Response` traceback):** **PASS** — `tests/test_table_groups_slowapi_subprocess.py::test_table_groups_post_delete_with_slowapi_enabled_subprocess` completed without exception; subprocess enables **`RATE_LIMIT_ENABLED=true`** per test design.
+   - **Automated pytest in Docker:** **PASS** — `1 passed in 0.94s` (command below).
+5. **Overall:** **PASS**.
+6. **Product owner feedback:** The automated subprocess test gives confidence that table-group create/delete no longer trips SlowAPI when rate limiting is on. Operators deleting or dissolving groups should see normal success responses instead of intermittent 500s from the decorator mismatch.
+7. **URLs tested:** **N/A — no browser** (automated pytest only; manual floor-plan path not exercised this run).
+8. **Relevant log excerpts:**
+
+```
+$ docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T back python3 -m pytest tests/test_table_groups_slowapi_subprocess.py -v
+tests/test_table_groups_slowapi_subprocess.py::test_table_groups_post_delete_with_slowapi_enabled_subprocess PASSED [100%]
+============================== 1 passed in 0.94s ===============================
+```
+
+`docker compose … logs --tail=30 back` during the window showed routine **GET /docs** **200** lines only; no **`slowapi.extension`** **`parameter 'response'`** errors (subprocess test traffic is isolated to the test child process).
