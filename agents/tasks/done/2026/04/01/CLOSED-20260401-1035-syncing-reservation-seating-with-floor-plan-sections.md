@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub issue #139 was delivered to align reservation seating preferences (indoor, terrace/outdoor, no preference) with tenant floor zones so availability, booking UI, and table assignment stay consistent.
+- **What was done:** The codebase adds `floor.seating_zone`, migration `20260401103000`, public/staff API validation, `/book` zone and slot filtering, per-floor **Reservation seating** on Tables, and seat-assignment checks when a table’s floor conflicts with the reservation’s preference.
+- **What was tested:** Migration and schema version, `reservation-book-zones` JSON, public `/book/1` with classified floors, seating mismatch validation (exec path), supplementary landing smoke with `SKIP_LANDING_PACKAGE_VERSION_CHECK`; partial verification of per-floor Tables control save/reload and strict landing semver vs `package.json`.
+- **Why closed:** Tester **overall PASS** — core behavior matches the spec; remaining gaps are documented (semver drift on strict smoke, spot-check Tables UI after deploy, SQLite pytest limitation as noted).
+- **Closed at (UTC):** 2026-04-01 10:53
+---
+
 # Technical requirement: syncing reservation seating with floor plan sections
 
 ## GitHub
