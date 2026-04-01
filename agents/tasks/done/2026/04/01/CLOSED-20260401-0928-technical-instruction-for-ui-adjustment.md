@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** The tester completed verification for GitHub #137: restore a light/neutral header and floor tabs on the Tables canvas (staff flow) instead of the dark/black canvas palette bleeding into `.page-header` / `.floor-tabs`.
+- **What was done:** Implementation removed scoped tablet overrides in `tables-canvas.component.ts` so the header uses base staff-flow light surfaces again; the drawing area keeps the dark grid styling.
+- **What was tested:** Stack on HAProxy 4202, staff `/tables/canvas`, automated luminance on header/floor-tabs vs canvas, optional `test-tables-canvas-view-options.mjs`, and `test:landing-version` — all **PASS** per the test report.
+- **Why closed:** Overall **PASS**; acceptance criteria met; no further action unless design requests token tweaks.
+- **Closed at (UTC):** 2026-04-01 09:37
+---
+
 # Technical Instruction for UI Adjustment
 
 ## GitHub
