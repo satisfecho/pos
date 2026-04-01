@@ -16,7 +16,13 @@ import { ConfirmationModalComponent } from '../shared/confirmation-modal.compone
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../services/language.service';
+import { PermissionService } from '../services/permission.service';
 import { hueFromUserId, weekShiftCardBorderLeft } from './working-plan-shift-colors';
+
+/** One row in a calendar day cell: a real shift or the “+N more” overflow line. */
+type CalendarShiftLineRow =
+  | { text: string; userId: number; shift: Shift }
+  | { text: string; userId: null; shift: null };
 
 function getWeekRange(weekStart: Date): { from: string; to: string } {
   const d = new Date(weekStart);
@@ -345,15 +351,43 @@ function isValidView(v: string | null): v is ViewMode {
                       }
                       @if (cell.shiftLines?.length) {
                         <ul class="calendar-shift-lines">
-                          @for (line of cell.shiftLines; track $index) {
-                            @if (line.userId !== null) {
-                              <li
-                                class="calendar-shift-line"
-                                [style.--wp-shift-h]="shiftHue(line.userId)"
-                                data-testid="working-plan-calendar-shift-line"
-                              >
-                                {{ line.text }}
-                              </li>
+                          @for (line of cell.shiftLines; track calendarShiftLineTrack(line, $index)) {
+                            @if (line.shift) {
+                              @if (canWriteSchedule()) {
+                                <li
+                                  class="calendar-shift-line-row"
+                                  [style.--wp-shift-h]="shiftHue(line.userId)"
+                                  data-testid="working-plan-calendar-shift-line"
+                                >
+                                  <button
+                                    type="button"
+                                    class="calendar-shift-line calendar-shift-line--btn"
+                                    (click)="openEdit(line.shift)"
+                                    [attr.aria-label]="calendarShiftEditAria(line.shift)"
+                                  >
+                                    {{ line.text }}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="calendar-shift-line-delete"
+                                    (click)="onCalendarShiftDeleteClick($event, line.shift)"
+                                    [attr.aria-label]="calendarShiftDeleteAria(line.shift)"
+                                    data-testid="working-plan-calendar-shift-delete"
+                                  >
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                      <path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                    </svg>
+                                  </button>
+                                </li>
+                              } @else {
+                                <li
+                                  class="calendar-shift-line"
+                                  [style.--wp-shift-h]="shiftHue(line.userId)"
+                                  data-testid="working-plan-calendar-shift-line"
+                                >
+                                  {{ line.text }}
+                                </li>
+                              }
                             } @else {
                               <li class="calendar-shift-line-overflow" data-testid="working-plan-calendar-shift-overflow">
                                 {{ line.text }}
@@ -714,6 +748,52 @@ function isValidView(v: string | null): v is ViewMode {
         --shift-text-light: 93%;
       }
     }
+    .calendar-shift-line-row {
+      display: flex;
+      align-items: stretch;
+      gap: 0.12rem;
+      min-width: 0;
+      margin: 0;
+      list-style: none;
+    }
+    .calendar-shift-line--btn {
+      border: none;
+      font: inherit;
+      cursor: pointer;
+      text-align: left;
+      flex: 1;
+      min-width: 0;
+    }
+    .calendar-shift-line--btn:hover {
+      filter: brightness(0.96);
+    }
+    .calendar-shift-line--btn:focus-visible {
+      outline: 2px solid var(--focus-ring, #2563eb);
+      outline-offset: 1px;
+    }
+    .calendar-shift-line-delete {
+      flex-shrink: 0;
+      align-self: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.1rem;
+      border: none;
+      border-radius: 3px;
+      background: transparent;
+      color: var(--danger, #dc2626);
+      cursor: pointer;
+      line-height: 0;
+      opacity: 0.9;
+    }
+    .calendar-shift-line-delete:hover {
+      opacity: 1;
+      background: rgba(220, 38, 38, 0.12);
+    }
+    .calendar-shift-line-delete:focus-visible {
+      outline: 2px solid var(--focus-ring, #2563eb);
+      outline-offset: 1px;
+    }
     .calendar-shift-line-overflow {
       overflow: hidden;
       text-overflow: ellipsis;
@@ -760,6 +840,7 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private translate = inject(TranslateService);
   private languageService = inject(LanguageService);
+  private permissions = inject(PermissionService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private routeParamSub?: { unsubscribe: () => void };
@@ -945,7 +1026,7 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
       hasIssue?: boolean;
       isClosed?: boolean;
       showOk?: boolean;
-      shiftLines?: { text: string; userId: number | null }[];
+      shiftLines?: CalendarShiftLineRow[];
     };
     const cells: Cell[] = [];
     let idx = 0;
@@ -960,9 +1041,10 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
       const dayShifts = this.shifts()
         .filter((s) => s.date === dateStr)
         .sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''));
-      const lines = dayShifts.map((s) => ({
+      const lines: CalendarShiftLineRow[] = dayShifts.map((s) => ({
         text: this.formatShiftLine(s),
         userId: s.user_id,
+        shift: s,
       }));
       const maxLines = 5;
       const shiftLines =
@@ -974,6 +1056,7 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
                   count: lines.length - maxLines,
                 }),
                 userId: null,
+                shift: null,
               },
             ]
           : lines;
@@ -1602,6 +1685,33 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
   /** Hue 0–360 for calendar chip CSS variable --wp-shift-h. */
   shiftHue(userId: number): number {
     return hueFromUserId(userId);
+  }
+
+  /** Same permission gate as week view actions (schedule write). */
+  canWriteSchedule(): boolean {
+    return this.permissions.hasPermission(this.api.getCurrentUser(), 'schedule:write');
+  }
+
+  calendarShiftLineTrack(line: CalendarShiftLineRow, idx: number): string {
+    if (line.shift) return `s-${line.shift.id}`;
+    return `o-${idx}`;
+  }
+
+  calendarShiftEditAria(s: Shift): string {
+    return this.translate.instant('WORKING_PLAN.CALENDAR_SHIFT_EDIT_ARIA', {
+      detail: this.formatShiftLine(s),
+    });
+  }
+
+  calendarShiftDeleteAria(s: Shift): string {
+    return this.translate.instant('WORKING_PLAN.CALENDAR_SHIFT_DELETE_ARIA', {
+      detail: this.formatShiftLine(s),
+    });
+  }
+
+  onCalendarShiftDeleteClick(ev: Event, s: Shift): void {
+    ev.stopPropagation();
+    this.confirmDelete(s);
   }
 
   /** One line per shift for the calendar cell (name, role, time). */

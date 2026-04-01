@@ -918,6 +918,8 @@
     "CALENDAR_LEGEND": "灰色 = 休息日。红色 = 人员配置异常。绿色 = 符合计划。每条排班行使用该成员专属颜色。每个日期下显示排班。",
     "CLOSED_DAY": "休息",
     "CALENDAR_MORE_SHIFTS": "另 {{count}} 条",
+    "CALENDAR_SHIFT_EDIT_ARIA": "编辑班次：{{detail}}",
+    "CALENDAR_SHIFT_DELETE_ARIA": "删除班次：{{detail}}",
     "MON": "一",
     "TUE": "二",
     "WED": "三",

@@ -908,6 +908,8 @@
     "CALENDAR_LEGEND": "Gris = tancat. Vermell = problema de personal. Verd = coincideix amb el pla. Cada línia de torn usa el color d'aquell membre de l'equip. Els torns es mostren sota cada data.",
     "CLOSED_DAY": "Tancat",
     "CALENDAR_MORE_SHIFTS": "+{{count}} més",
+    "CALENDAR_SHIFT_EDIT_ARIA": "Edita el torn: {{detail}}",
+    "CALENDAR_SHIFT_DELETE_ARIA": "Suprimeix el torn: {{detail}}",
     "MON": "Dl",
     "TUE": "Dt",
     "WED": "Dc",

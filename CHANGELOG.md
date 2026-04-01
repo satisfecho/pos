@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Working plan (GitHub #136):** **Calendar** view — each real shift line is **clickable** to **edit** (same modal as week list), with a small **delete** control; overflow `+N more` stays non-interactive. Task: `agents/tasks/UNTESTED-20260401-0910-working-plan-calendar-click-shift-edit-delete.md`.
+
 - **Working plan (GitHub #135):** **Add shift** modal — optional **split shift** (checkbox; Shift A / Shift B) with a second start/end pair; saves as **two** planned shifts the same day so calendar, week list, and planned-minute totals include **both** blocks. Task: `agents/tasks/UNTESTED-20260401-0841-split-shift-add-shift-modal-working-plan.md`.
 
 - **Landing (GitHub #133 / #134):** **Source on GitHub** → `https://github.com/satisfecho/pos/` as an **icon link** in the fixed **landing-version** bar (next to version/commit), with translated **open-source tagline** (`LANDING.OPEN_SOURCE_TAGLINE`, ♥, El Masnou & Los Mochis). Footer no longer duplicates the repo link—single primary location, responsive layout.
