@@ -43,7 +43,10 @@ Creates **FEATURE queue** files (**`FEAT-`**), not **`NEW-`**.
      ```markdown
      # <short title from issue>
 
-     ## GitHub
+     ## GitHub Issues
+     - [github.com/satisfecho/pos/issues](https://github.com/satisfecho/pos/issues)
+     - `gh issue list --repo satisfecho/pos --state open --limit 40`
+     - Optional: `--json number,title,labels,updatedAt,url`
      - **Issue:** https://github.com/satisfecho/pos/issues/NN
 
      ## Problem / goal
@@ -51,6 +54,8 @@ Creates **FEATURE queue** files (**`FEAT-`**), not **`NEW-`**.
 
      ## High-level instructions for coder
      - <bullets — no code, no patches>
+     - Provide clear, actionable steps for the coder to fix or investigate
+     - Reference relevant documentation or issue details when needed
      ```
 6. **Update GitHub** for each scheduled **`NN`** (**`docs/agent-loop.md`**):
    - `gh issue comment …` — mention **`agents/tasks/FEAT-…md`** (path must say **FEAT**).
@@ -69,7 +74,7 @@ Creates **main-coder queue** files (**`NEW-`**), not **`FEAT-`**.
 4. Each **NEW-** file should include:
    - **Title** reflecting the log finding.
    - **`## Source`** — which service log, UTC window, representative error lines (short quote).
-   - **`## High-level instructions for coder`** — what to fix / where to investigate (no code).
+   - **`## High-level instructions for coder`** — what to fix / where to investigate (no code): bullets only (no code, no patches); clear, actionable steps; reference docs or issue details when needed.
 
 ### Your output (summary)
 

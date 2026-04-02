@@ -30,6 +30,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Agents (001 log reviewer):** `agents/001-log-reviewer/LOG-REVIEWER-PROMPT.md` — FEAT task template uses a **GitHub Issues** section (repo link, `gh issue list`, optional `--json`); **High-level instructions for coder** and **NEW-** queue guidance spell out actionable, doc-referenced bullets without code (duplicate placeholder text removed).
+
 - **Reservation emails (GitHub #150):** Shared **HTML shell** for confirmation and reminder (muted background, card, optional **tenant logo** when `PUBLIC_APP_BASE_URL` is set). **Manage reservation** links use a consistent **CTA** style and **`get_message`** copy (`email_reservation_manage_link_text`) in the tenant’s **`default_language`**. Reminder **subject/body** are localized; plain-text reminders append a **timezone line** when the tenant has **`timezone`** set. New keys in `back/app/messages.py`; `normalize_lang_for_messages()` maps UI codes to message bundles.
 
 - **Agent loop — local LLM triage:** **`scripts/agent-ollama-log-triage.sh`** calls **llama.cpp** (OpenAI-compatible **`POST`** to **`…/v1/chat/completions`**, default base **`http://127.0.0.1:8080/v1`**, model **`Bonsai-8B.gguf`**) first, then **Ollama** if that fails or returns nothing. **`pos-agent-loop.sh`** runs triage when **`GET …/v1/models`** succeeds and **`python3`** exists, or when **`ollama list`** shows ≥1 model (unless **`AGENT_001_OLLAMA_LOG_TRIAGE=0`**). Optional **`AGENT_001_SKIP_LLAMA_CPP=1`** uses only Ollama. **`docs/agent-loop.md`** updated.
