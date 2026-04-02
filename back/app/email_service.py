@@ -12,15 +12,10 @@ from typing import TYPE_CHECKING, Any, Optional
 
 import aiosmtplib
 
-from .messages import get_message
+from .messages import get_message, normalize_lang_for_messages
 from .reservation_email_template import (
-    contact_block_html,
-    contact_block_plain,
-    google_maps_link_block_html,
-    openstreetmap_link_block_html,
-    google_maps_link_block_plain,
-    openstreetmap_link_block_plain,
     render_confirmation_email,
+    render_reminder_email,
     wrap_html_email,
 )
 from .settings import settings
@@ -295,6 +290,7 @@ async def send_reservation_confirmation(
     credentials (when tenant uses global SMTP, pass None to use global config).
     """
     mail_tenant = smtp_tenant if smtp_tenant is not None else tenant
+    lang = normalize_lang_for_messages(getattr(tenant, "default_language", None))
     subject, text_content, html_inner = render_confirmation_email(
         tenant,
         customer_name,
@@ -302,8 +298,14 @@ async def send_reservation_confirmation(
         reservation_time,
         party_size,
         view_url,
+        lang=lang,
     )
-    html_content = wrap_html_email(html_inner.replace("\n", "<br>\n"))
+    html_content = wrap_html_email(
+        html_inner.replace("\n", "<br>\n"),
+        tenant=tenant,
+        public_app_base_url=settings.public_app_base_url,
+        lang=lang,
+    )
     return await send_email(to_email, subject, html_content, text_content, tenant=mail_tenant)
 
 
@@ -318,81 +320,20 @@ async def send_reservation_reminder(
     tenant: Optional["Tenant"] = None,
 ) -> bool:
     """Send a reminder email for an upcoming reservation. Helps reduce no-shows."""
-    subject = f"Reminder: Your reservation at {tenant_name}"
-
-    view_block = ""
-    if view_url:
-        # Same wording and href escaping as reservation confirmation (reservation_email_template._link_block_html).
-        safe_href = html.escape(view_url, quote=True)
-        view_block = f'<p><a href="{safe_href}">View or change your reservation online</a></p>'
-
-    maps_html = ""
-    maps_plain = ""
-    if tenant:
-        maps_html = google_maps_link_block_html(tenant) + openstreetmap_link_block_html(tenant)
-        gp = google_maps_link_block_plain(tenant)
-        op = openstreetmap_link_block_plain(tenant)
-        if gp:
-            maps_plain += f"\n{gp}\n"
-        if op:
-            maps_plain += f"\n{op}\n"
-
-    contact_html = contact_block_html(tenant) if tenant else ""
-    contact_plain = contact_block_plain(tenant) if tenant else ""
-
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <style>
-            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-            .details {{ background: #f5f5f5; padding: 12px 16px; border-radius: 6px; margin: 16px 0; }}
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Reservation reminder</h1>
-            <p>Hi {customer_name},</p>
-            <p>This is a friendly reminder of your reservation at <strong>{tenant_name}</strong>.</p>
-            <div class="details">
-                <p><strong>Date:</strong> {reservation_date}<br>
-                <strong>Time:</strong> {reservation_time}<br>
-                <strong>Party size:</strong> {party_size}</p>
-            </div>
-            <p>We look forward to seeing you. Please contact us if you need to change or cancel.</p>
-            {view_block}
-            {maps_html}
-            {contact_html}
-            <hr>
-            <p style="color: #666; font-size: 12px;">This is an automated reminder from {tenant_name}.</p>
-        </div>
-    </body>
-    </html>
-    """
-
-    text_content = f"""
-    Reservation reminder
-
-    Hi {customer_name},
-
-    This is a friendly reminder of your reservation at {tenant_name}.
-
-    Date: {reservation_date}
-    Time: {reservation_time}
-    Party size: {party_size}
-
-    We look forward to seeing you. Please contact us if you need to change or cancel.
-    """
-    if view_url:
-        text_content += f"\nView or change your reservation online:\n{view_url}\n"
-    if maps_plain.strip():
-        text_content += maps_plain
-    if contact_plain:
-        text_content += f"\n{contact_plain}\n"
-    text_content += f"\n---\nAutomated reminder from {tenant_name}."
-
+    lang = normalize_lang_for_messages(
+        getattr(tenant, "default_language", None) if tenant else None
+    )
+    subject, text_content, html_content = render_reminder_email(
+        customer_name=customer_name,
+        reservation_date=reservation_date,
+        reservation_time=reservation_time,
+        party_size=party_size,
+        tenant_name=tenant_name,
+        view_url=view_url,
+        tenant=tenant,
+        public_app_base_url=settings.public_app_base_url,
+        lang=lang,
+    )
     return await send_email(to_email, subject, html_content, text_content, tenant=tenant)
 
 

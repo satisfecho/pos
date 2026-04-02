@@ -62,6 +62,18 @@ MESSAGES = {
         "email_password_reset_copy_link": "Or copy and paste this link into your browser:",
         "email_password_reset_disclaimer": "If you did not request this, you can ignore this email. Your password will not change.",
         "email_password_reset_automated_footer": "This is an automated message, please do not reply.",
+        "email_reservation_manage_link_text": "View or change your reservation online",
+        "email_reservation_confirmation_footer": "You are receiving this because a reservation was associated with this email address at {restaurant_name}.",
+        "email_reservation_reminder_subject": "Reminder: Your reservation at {restaurant_name}",
+        "email_reservation_reminder_heading": "Reservation reminder",
+        "email_reservation_reminder_greeting": "Hi {customer_name},",
+        "email_reservation_reminder_intro": "This is a friendly reminder of your reservation at {restaurant_name}.",
+        "email_reservation_reminder_label_date": "Date",
+        "email_reservation_reminder_label_time": "Time",
+        "email_reservation_reminder_label_party": "Party size",
+        "email_reservation_reminder_closing": "We look forward to seeing you. Please contact us if you need to change or cancel.",
+        "email_reservation_reminder_footer": "This is an automated reminder from {restaurant_name}.",
+        "email_reservation_timezone_note": "Times are shown in the restaurant's local timezone ({timezone}).",
     },
     "es": {
         "database_error": "Error de base de datos",
@@ -116,6 +128,18 @@ MESSAGES = {
         "email_password_reset_copy_link": "O copie y pegue este enlace en su navegador:",
         "email_password_reset_disclaimer": "Si no solicitó esto, puede ignorar este correo. Su contraseña no cambiará.",
         "email_password_reset_automated_footer": "Este es un mensaje automático; no responda.",
+        "email_reservation_manage_link_text": "Ver o cambiar su reserva en línea",
+        "email_reservation_confirmation_footer": "Recibe este correo porque se asoció una reserva a esta dirección en {restaurant_name}.",
+        "email_reservation_reminder_subject": "Recordatorio: su reserva en {restaurant_name}",
+        "email_reservation_reminder_heading": "Recordatorio de reserva",
+        "email_reservation_reminder_greeting": "Hola, {customer_name}:",
+        "email_reservation_reminder_intro": "Le recordamos amablemente su reserva en {restaurant_name}.",
+        "email_reservation_reminder_label_date": "Fecha",
+        "email_reservation_reminder_label_time": "Hora",
+        "email_reservation_reminder_label_party": "Comensales",
+        "email_reservation_reminder_closing": "Le esperamos. Contáctenos si necesita cambiar o cancelar.",
+        "email_reservation_reminder_footer": "Recordatorio automático de {restaurant_name}.",
+        "email_reservation_timezone_note": "Las horas se muestran en la zona horaria local del restaurante ({timezone}).",
     },
     "ca": {
         "database_error": "Error de base de dades",
@@ -167,6 +191,18 @@ MESSAGES = {
         "email_password_reset_copy_link": "O copieu i enganxeu aquest enllaç al navegador:",
         "email_password_reset_disclaimer": "Si no ho heu sol·licitat, podeu ignorar aquest correu. La contrasenya no canviarà.",
         "email_password_reset_automated_footer": "Aquest és un missatge automàtic; no respongueu.",
+        "email_reservation_manage_link_text": "Veure o canviar la reserva en línia",
+        "email_reservation_confirmation_footer": "Rebeu aquest correu perquè s'ha associat una reserva a aquesta adreça a {restaurant_name}.",
+        "email_reservation_reminder_subject": "Recordatori: la vostra reserva a {restaurant_name}",
+        "email_reservation_reminder_heading": "Recordatori de reserva",
+        "email_reservation_reminder_greeting": "Hola, {customer_name}:",
+        "email_reservation_reminder_intro": "Us recordem amb amabilitat la vostra reserva a {restaurant_name}.",
+        "email_reservation_reminder_label_date": "Data",
+        "email_reservation_reminder_label_time": "Hora",
+        "email_reservation_reminder_label_party": "Nombre de comensals",
+        "email_reservation_reminder_closing": "Us esperem. Contacteu-nos si cal canviar o cancel·lar.",
+        "email_reservation_reminder_footer": "Recordatori automàtic de {restaurant_name}.",
+        "email_reservation_timezone_note": "Els horaris es mostren en la zona horària local del restaurant ({timezone}).",
     },
     "de": {
         "database_error": "Datenbankfehler",
@@ -218,6 +254,18 @@ MESSAGES = {
         "email_password_reset_copy_link": "Oder kopieren Sie diesen Link in Ihren Browser:",
         "email_password_reset_disclaimer": "Falls Sie dies nicht angefordert haben, können Sie diese E-Mail ignorieren. Ihr Passwort bleibt unverändert.",
         "email_password_reset_automated_footer": "Diese Nachricht wurde automatisch versendet; bitte nicht antworten.",
+        "email_reservation_manage_link_text": "Reservierung online ansehen oder ändern",
+        "email_reservation_confirmation_footer": "Sie erhalten diese E-Mail, weil eine Reservierung unter dieser Adresse bei {restaurant_name} verbunden wurde.",
+        "email_reservation_reminder_subject": "Erinnerung: Ihre Reservierung bei {restaurant_name}",
+        "email_reservation_reminder_heading": "Reservierungserinnerung",
+        "email_reservation_reminder_greeting": "Hallo {customer_name},",
+        "email_reservation_reminder_intro": "Dies ist eine freundliche Erinnerung an Ihre Reservierung bei {restaurant_name}.",
+        "email_reservation_reminder_label_date": "Datum",
+        "email_reservation_reminder_label_time": "Uhrzeit",
+        "email_reservation_reminder_label_party": "Personen",
+        "email_reservation_reminder_closing": "Wir freuen uns auf Ihren Besuch. Kontaktieren Sie uns bei Änderungen oder Stornierung.",
+        "email_reservation_reminder_footer": "Automatische Erinnerung von {restaurant_name}.",
+        "email_reservation_timezone_note": "Die Zeiten entsprechen der lokalen Zeitzone des Restaurants ({timezone}).",
     },
     "zh-CN": {
         "database_error": "数据库错误",
@@ -269,6 +317,18 @@ MESSAGES = {
         "email_password_reset_copy_link": "或复制以下链接到浏览器中打开：",
         "email_password_reset_disclaimer": "如果您未发起此请求，请忽略本邮件，您的密码不会更改。",
         "email_password_reset_automated_footer": "此为自动发送的邮件，请勿直接回复。",
+        "email_reservation_manage_link_text": "在线查看或更改预订",
+        "email_reservation_confirmation_footer": "您收到此邮件是因为在 {restaurant_name} 关联了使用此地址的预订。",
+        "email_reservation_reminder_subject": "提醒：您在 {restaurant_name} 的预订",
+        "email_reservation_reminder_heading": "预订提醒",
+        "email_reservation_reminder_greeting": "{customer_name}，您好：",
+        "email_reservation_reminder_intro": "温馨提醒：您在 {restaurant_name} 的预订。",
+        "email_reservation_reminder_label_date": "日期",
+        "email_reservation_reminder_label_time": "时间",
+        "email_reservation_reminder_label_party": "人数",
+        "email_reservation_reminder_closing": "期待您的光临。如需更改或取消，请联系我们。",
+        "email_reservation_reminder_footer": "此为 {restaurant_name} 的自动提醒。",
+        "email_reservation_timezone_note": "时间均为餐厅本地时区（{timezone}）。",
     },
     "hi": {
         "database_error": "डेटाबेस त्रुटि",
@@ -320,6 +380,18 @@ MESSAGES = {
         "email_password_reset_copy_link": "या इस लिंक को कॉपी करके अपने ब्राउज़र में पेस्ट करें:",
         "email_password_reset_disclaimer": "यदि आपने यह अनुरोध नहीं किया है, तो इस ईमेल को नज़रअंदाज़ कर सकते हैं। आपका पासवर्ड नहीं बदलेगा।",
         "email_password_reset_automated_footer": "यह स्वचालित संदेश है; कृपया उत्तर न दें।",
+        "email_reservation_manage_link_text": "अपनी बुकिंग ऑनलाइन देखें या बदलें",
+        "email_reservation_confirmation_footer": "आपको यह ईमेल इसलिए मिल रहा है क्योंकि {restaurant_name} पर इस पते से एक आरक्षण जुड़ा है।",
+        "email_reservation_reminder_subject": "अनुस्मारक: {restaurant_name} पर आपकी बुकिंग",
+        "email_reservation_reminder_heading": "आरक्षण अनुस्मारक",
+        "email_reservation_reminder_greeting": "नमस्ते {customer_name},",
+        "email_reservation_reminder_intro": "यह {restaurant_name} पर आपकी बुकिंग की एक सौहार्दपूर्ण याद दिलाने वाला संदेश है।",
+        "email_reservation_reminder_label_date": "तारीख",
+        "email_reservation_reminder_label_time": "समय",
+        "email_reservation_reminder_label_party": "अतिथि संख्या",
+        "email_reservation_reminder_closing": "हम आपकी प्रतीक्षा करते हैं। बदलाव या रद्द करने के लिए हमसे संपर्क करें।",
+        "email_reservation_reminder_footer": "यह {restaurant_name} से एक स्वचालित अनुस्मारक है।",
+        "email_reservation_timezone_note": "समय रेस्तरां के स्थानीय समय क्षेत्र ({timezone}) में हैं।",
     },
     "bg": {
         "database_error": "Грешка в базата данни",
@@ -375,6 +447,18 @@ MESSAGES = {
         "email_password_reset_copy_link": "Или копирайте този линк в браузъра:",
         "email_password_reset_disclaimer": "Ако не сте заявявали това, игнорирайте имейла. Паролата ви няма да се промени.",
         "email_password_reset_automated_footer": "Това е автоматично съобщение; моля, не отговаряйте.",
+        "email_reservation_manage_link_text": "Преглед или промяна на резервацията онлайн",
+        "email_reservation_confirmation_footer": "Получавате този имейл, защото към този адрес е свързана резервация в {restaurant_name}.",
+        "email_reservation_reminder_subject": "Напомняне: Вашата резервация в {restaurant_name}",
+        "email_reservation_reminder_heading": "Напомняне за резервация",
+        "email_reservation_reminder_greeting": "Здравейте, {customer_name},",
+        "email_reservation_reminder_intro": "Това е любезно напомняне за Вашата резервация в {restaurant_name}.",
+        "email_reservation_reminder_label_date": "Дата",
+        "email_reservation_reminder_label_time": "Час",
+        "email_reservation_reminder_label_party": "Брой гости",
+        "email_reservation_reminder_closing": "Очакваме Ви. Свържете се с нас при нужда от промяна или отмяна.",
+        "email_reservation_reminder_footer": "Автоматично напомняне от {restaurant_name}.",
+        "email_reservation_timezone_note": "Часовете са в местната часова зона на ресторанта ({timezone}).",
     },
     "fr": {
         "database_error": "Erreur de base de données",
@@ -428,8 +512,36 @@ MESSAGES = {
         "email_password_reset_copy_link": "Ou copiez-collez ce lien dans votre navigateur :",
         "email_password_reset_disclaimer": "Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail. Votre mot de passe ne sera pas modifié.",
         "email_password_reset_automated_footer": "Ceci est un message automatique ; merci de ne pas répondre.",
+        "email_reservation_manage_link_text": "Voir ou modifier votre réservation en ligne",
+        "email_reservation_confirmation_footer": "Vous recevez cet e-mail parce qu'une réservation a été associée à cette adresse chez {restaurant_name}.",
+        "email_reservation_reminder_subject": "Rappel : votre réservation chez {restaurant_name}",
+        "email_reservation_reminder_heading": "Rappel de réservation",
+        "email_reservation_reminder_greeting": "Bonjour {customer_name},",
+        "email_reservation_reminder_intro": "Ceci est un rappel amical concernant votre réservation chez {restaurant_name}.",
+        "email_reservation_reminder_label_date": "Date",
+        "email_reservation_reminder_label_time": "Heure",
+        "email_reservation_reminder_label_party": "Nombre de convives",
+        "email_reservation_reminder_closing": "Au plaisir de vous accueillir. Contactez-nous pour toute modification ou annulation.",
+        "email_reservation_reminder_footer": "Rappel automatique de {restaurant_name}.",
+        "email_reservation_timezone_note": "Les heures sont indiquées selon le fuseau horaire local du restaurant ({timezone}).",
     },
 }
+
+
+def normalize_lang_for_messages(lang: str | None) -> str:
+    """Map tenant/UI language codes to MESSAGES keys (e.g. zh → zh-CN)."""
+    if not lang or not str(lang).strip():
+        return "en"
+    s = str(lang).strip()
+    if s in MESSAGES:
+        return s
+    low = s.lower()
+    if low.startswith("zh"):
+        return "zh-CN"
+    base = s.split("-")[0].lower()
+    if base in MESSAGES:
+        return base
+    return "en"
 
 
 def get_message(key: str, lang: str = "en", **kwargs) -> str:
