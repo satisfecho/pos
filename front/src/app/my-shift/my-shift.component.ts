@@ -1,8 +1,18 @@
-import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  Injector,
+  OnDestroy,
+  OnInit,
+  afterNextRender,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EMPTY, forkJoin, from, Observable, of } from 'rxjs';
 import { catchError, finalize, switchMap } from 'rxjs/operators';
+import { Html5Qrcode } from 'html5-qrcode';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { TranslateModule } from '@ngx-translate/core';
 import {
@@ -13,6 +23,8 @@ import {
   workSessionNetWorkSeconds,
   workSessionOpenExceedsContract,
 } from '../services/api.service';
+
+const MY_SHIFT_QR_READER_ID = 'my-shift-qr-reader';
 
 @Component({
   selector: 'app-my-shift',
@@ -31,6 +43,16 @@ import {
         @if (clockStatus()?.clock_qr_required) {
           <p class="hint qr-hint">{{ 'MY_SHIFT.QR_HINT' | translate }}</p>
         }
+        @if (clockStatus()?.clock_qr_required && qrBlocked()) {
+          <div class="scan-prompt">
+            <button type="button" class="btn btn-primary scan-cta" (click)="openVenueScan()" [disabled]="scanStarting()">
+              {{ scanStarting() ? ('MY_SHIFT.SCANNER_STARTING' | translate) : ('MY_SHIFT.SCAN_VENUE_QR' | translate) }}
+            </button>
+          </div>
+        }
+        @if (clockStatus()?.clock_qr_required && !qrBlocked()) {
+          <p class="hint venue-ok">{{ 'MY_SHIFT.VENUE_VERIFIED' | translate }}</p>
+        }
         @if (clockStatus()?.clock_qr_location_verify) {
           <p class="hint">{{ 'MY_SHIFT.LOCATION_HINT' | translate }}</p>
         }
@@ -48,6 +70,31 @@ import {
 
         @if (qrBlocked()) {
           <div class="error-banner" role="alert">{{ 'MY_SHIFT.ERR_QR' | translate }}</div>
+        }
+
+        @if (scanOpen()) {
+          <div
+            class="scan-backdrop"
+            role="dialog"
+            aria-modal="true"
+            [attr.aria-label]="'MY_SHIFT.SCANNER_TITLE' | translate"
+            (click)="closeVenueScan()"
+          >
+            <div class="scan-modal" (click)="$event.stopPropagation()">
+              <h2 class="scan-title">{{ 'MY_SHIFT.SCANNER_TITLE' | translate }}</h2>
+              <p class="hint scan-help">{{ 'MY_SHIFT.SCANNER_HELP' | translate }}</p>
+              @if (scanError()) {
+                <div class="error-banner scan-inline-err" role="alert">{{ scanError()! | translate }}</div>
+                <button type="button" class="btn btn-primary scan-retry" (click)="retryVenueScan()">
+                  {{ 'MY_SHIFT.SCAN_RETRY' | translate }}
+                </button>
+              }
+              <div [id]="qrReaderId" class="qr-reader-host"></div>
+              <button type="button" class="btn btn-secondary scan-cancel" (click)="closeVenueScan()">
+                {{ 'COMMON.CANCEL' | translate }}
+              </button>
+            </div>
+          </div>
         }
 
         <section class="card clock-card">
@@ -163,6 +210,63 @@ import {
     .qr-hint {
       margin-bottom: 0.5rem;
     }
+    .scan-prompt {
+      margin-bottom: 1rem;
+    }
+    .scan-cta {
+      min-height: 48px;
+      font-size: 1rem;
+      width: 100%;
+      max-width: 360px;
+    }
+    .venue-ok {
+      color: var(--color-success, #15803d);
+      margin-bottom: 1rem;
+    }
+    .scan-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      box-sizing: border-box;
+    }
+    .scan-modal {
+      background: var(--color-surface, #fff);
+      border-radius: 12px;
+      padding: 1.25rem;
+      max-width: 420px;
+      width: 100%;
+      max-height: min(90vh, 640px);
+      overflow: auto;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+    .scan-title {
+      margin: 0 0 0.5rem;
+      font-size: 1.125rem;
+    }
+    .scan-help {
+      margin-bottom: 0.75rem;
+    }
+    .qr-reader-host {
+      min-height: 220px;
+      margin-bottom: 1rem;
+    }
+    .scan-inline-err {
+      margin-bottom: 0.75rem;
+    }
+    .scan-retry {
+      width: 100%;
+      min-height: 44px;
+      margin-bottom: 0.75rem;
+    }
+    .scan-cancel {
+      width: 100%;
+      min-height: 44px;
+    }
     .error-banner {
       background: var(--color-danger-bg, #fde8e8);
       color: var(--color-danger, #b91c1c);
@@ -264,6 +368,10 @@ export class MyShiftComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private injector = inject(Injector);
+
+  /** Host element id for html5-qrcode (template binding). */
+  readonly qrReaderId = MY_SHIFT_QR_READER_ID;
 
   loading = signal(true);
   actionLoading = signal(false);
@@ -271,12 +379,18 @@ export class MyShiftComponent implements OnInit, OnDestroy {
   open = signal<WorkSession | null>(null);
   history = signal<WorkSession[]>([]);
   clockStatus = signal<ClockQrStatus | null>(null);
-  /** From ?clock_qr= only; persisted to sessionStorage in ngOnInit */
+  /** From ?clock_qr=, scan, or sessionStorage */
   clockQrToken = signal<string | null>(null);
+
+  scanOpen = signal(false);
+  scanError = signal<string | null>(null);
+  scanStarting = signal(false);
 
   private overtimeTick = signal(0);
   private overtimeTimer: ReturnType<typeof setInterval> | null = null;
   private querySub: { unsubscribe: () => void } | null = null;
+  private html5Qr: Html5Qrcode | null = null;
+  private scanDecodeHandled = false;
 
   exceedsContract = computed(() => {
     this.overtimeTick();
@@ -315,12 +429,7 @@ export class MyShiftComponent implements OnInit, OnDestroy {
     this.querySub = this.route.queryParamMap.subscribe((q) => {
       const t = q.get('clock_qr');
       if (t?.trim()) {
-        this.clockQrToken.set(t.trim());
-        const u = this.api.getCurrentUser();
-        const tid = u?.tenant_id;
-        if (tid != null) {
-          sessionStorage.setItem(`clock_qr_${tid}`, t.trim());
-        }
+        this.persistClockQrToken(t.trim());
         this.router.navigate([], {
           relativeTo: this.route,
           queryParams: { clock_qr: null },
@@ -338,6 +447,136 @@ export class MyShiftComponent implements OnInit, OnDestroy {
     if (this.overtimeTimer != null) {
       clearInterval(this.overtimeTimer);
       this.overtimeTimer = null;
+    }
+    void this.stopVenueScanner();
+  }
+
+  openVenueScan(): void {
+    this.scanError.set(null);
+    this.scanStarting.set(true);
+    this.scanOpen.set(true);
+    afterNextRender(
+      () => {
+        void this.startVenueScanner();
+      },
+      { injector: this.injector }
+    );
+  }
+
+  closeVenueScan(): void {
+    void this.stopVenueScanner();
+    this.scanOpen.set(false);
+    this.scanStarting.set(false);
+    this.scanError.set(null);
+    this.scanDecodeHandled = false;
+  }
+
+  retryVenueScan(): void {
+    this.scanError.set(null);
+    this.scanDecodeHandled = false;
+    this.scanStarting.set(true);
+    void this.startVenueScanner();
+  }
+
+  private async startVenueScanner(): Promise<void> {
+    this.scanDecodeHandled = false;
+    try {
+      await this.stopVenueScanner();
+      const inst = new Html5Qrcode(MY_SHIFT_QR_READER_ID);
+      this.html5Qr = inst;
+      await inst.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (text) => this.onVenueQrDecoded(text),
+        () => {}
+      );
+    } catch {
+      this.scanError.set('MY_SHIFT.SCANNER_CAMERA_ERROR');
+      this.html5Qr = null;
+    } finally {
+      this.scanStarting.set(false);
+    }
+  }
+
+  private async stopVenueScanner(): Promise<void> {
+    const inst = this.html5Qr;
+    this.html5Qr = null;
+    if (!inst) return;
+    try {
+      await inst.stop();
+    } catch {
+      /* not running */
+    }
+    try {
+      await inst.clear();
+    } catch {
+      /* ignore */
+    }
+  }
+
+  private onVenueQrDecoded(text: string): void {
+    if (this.scanDecodeHandled) return;
+    const token = this.extractClockQrFromScan(text);
+    if (!token) {
+      this.scanDecodeHandled = true;
+      void this.stopVenueScanner();
+      this.scanError.set('MY_SHIFT.SCAN_INVALID');
+      return;
+    }
+    this.scanDecodeHandled = true;
+    this.persistClockQrToken(token);
+    void this.stopVenueScanner();
+    this.scanOpen.set(false);
+    this.scanError.set(null);
+  }
+
+  /**
+   * Accepts full URLs with ?clock_qr=, relative paths, or the raw 64-char hex token.
+   */
+  private extractClockQrFromScan(raw: string): string | null {
+    const s = raw.trim();
+    if (!s) return null;
+    if (/^[a-fA-F0-9]{64}$/.test(s)) return s.toLowerCase();
+    let u: URL | null = null;
+    try {
+      u = new URL(s);
+    } catch {
+      try {
+        u = new URL(s, window.location.origin);
+      } catch {
+        u = null;
+      }
+    }
+    if (u) {
+      const q = u.searchParams.get('clock_qr');
+      if (q?.trim()) return this.normalizeClockQrToken(q.trim());
+    }
+    const m = s.match(/[?&]clock_qr=([^&\s#]+)/i);
+    if (m?.[1]) {
+      try {
+        const decoded = decodeURIComponent(m[1]).trim();
+        return decoded ? this.normalizeClockQrToken(decoded) : null;
+      } catch {
+        return m[1].trim() ? this.normalizeClockQrToken(m[1].trim()) : null;
+      }
+    }
+    return null;
+  }
+
+  private normalizeClockQrToken(t: string): string {
+    if (/^[a-fA-F0-9]{64}$/.test(t)) return t.toLowerCase();
+    return t;
+  }
+
+  private persistClockQrToken(token: string): void {
+    const trimmed = token.trim();
+    if (!trimmed) return;
+    const normalized = this.normalizeClockQrToken(trimmed);
+    this.clockQrToken.set(normalized);
+    const u = this.api.getCurrentUser();
+    const tid = u?.tenant_id;
+    if (tid != null) {
+      sessionStorage.setItem(`clock_qr_${tid}`, normalized);
     }
   }
 
