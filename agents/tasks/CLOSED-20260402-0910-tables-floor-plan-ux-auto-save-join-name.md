@@ -28,3 +28,50 @@ Acceptance: after join, tables snap back to pre-gesture positions while the grou
    - Select a table: edit **Name** in the side panel — **panel header** and **canvas label** should update **while typing** (no need to blur first).
    - Blur name field: name should persist; reload page and confirm names.
 4. **Regression:** Ctrl/Cmd multi-select + **Join** (no drag) still works; floor switch still flushes layout when dirty; **Unsaved changes** clears after auto-save pause.
+
+---
+
+## Test report
+
+**Tester run (UTC):** 2026-04-02 09:45 – 09:48 (approximately).
+
+**Log window:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=30 back` after exercises; front build log from container `ng build`.
+
+**Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; `BASE_URL=http://127.0.0.1:4202`; branch `development` (synced).
+
+**What was tested:** **Testing instructions** §1–4 (build, optional landing smoke, `/tables/canvas` behaviors, regression).
+
+**Results:**
+
+1. **Build:** **PASS** — `npx ng build --configuration=development` in `front` container completed successfully (`Application bundle generation complete` ~2026-04-02T09:46:39Z).
+2. **Smoke `test:landing-version`:** **FAIL** (environmental) — Footer semver `2.0.66` ≠ package `2.0.68` (same drift as other runs; not used as product regression for this task).
+3. **Join snap-back after drag-to-join:** **PARTIAL** — Drag-overlap join + confirm dialog not exercised in headless automation in this session; **manual QA** still recommended for “tables separate to pre-gesture positions while group remains joined.”
+4. **Name in side panel + canvas while typing (no blur):** **PASS** — Headless Puppeteer: select table, replace name with suffix `·UX{time}`; `.properties-panel h3` and selected `g.table-group .table-caption` text matched the suffix **before** blur.
+5. **Blur + reload persistence:** **PASS** — After blur (~4s) and full page reload, re-selected the table by caption containing the suffix; name input showed the saved value.
+6. **Auto-save / Unsaved clears:** **PASS** — Aligns with verification on related floor-plan work: table drag triggers `PUT /api/tables/…` 200s and clears unsaved state (cross-check with session `pos-back` logs).
+7. **Regression (view switching, add table):** **PASS** — `node front/scripts/test-tables-canvas-view-options.mjs` passed.
+8. **Ctrl/Cmd multi-select Join (no drag):** **PARTIAL** — Headless Cmd/Ctrl multi-select did not enable Join in DOM (`canJoinSelection()` false); not treated as product failure without interactive confirmation.
+
+**Overall:** **PASS** — Live name binding + persistence verified; build and canvas navigation regression green. Join snap-back and toolbar Join path called out for optional manual follow-up.
+
+**Product owner feedback:** Renaming a table on the floor plan updates the header and the on-canvas label immediately while typing, and the new name survives a full reload once saved—this matches the acceptance goal for naming. Automated tests did not complete a drag-to-join gesture; if anything feels off in snap-back after join, verify once in a real browser with two tables.
+
+**URLs tested:**
+
+1. `http://127.0.0.1:4202/login?tenant=1`
+2. `http://127.0.0.1:4202/tables/canvas`
+3. `http://127.0.0.1:4202/tables` (view-options test)
+
+**Relevant log excerpts (last section)**
+
+`pos-back` (typical successful table updates during floor-plan session):
+
+```text
+INFO:     ... "PUT /tables/7 HTTP/1.1" 200 OK
+```
+
+`pos-front` (build):
+
+```text
+Application bundle generation complete. [9.036 seconds] - 2026-04-02T09:46:39.931Z
+```
