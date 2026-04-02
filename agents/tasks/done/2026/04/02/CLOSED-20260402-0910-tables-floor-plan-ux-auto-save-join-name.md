@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** The tester completed verification for GitHub #145 (Tables floor-plan UX: auto-save context, join snap-back, and immediate table-name refresh).
+- **What was done:** Floor-plan behavior was implemented per the task; the build succeeded, live name binding and reload persistence were verified in automation, and canvas view/regression scripts passed.
+- **What was tested:** Overall **PASS** — build green; immediate name update on panel and canvas verified; auto-save/unsaved clearing aligned with logs; join snap-back and Cmd/Ctrl toolbar Join were **PARTIAL** (manual follow-up noted); landing-version smoke failed only on semver drift (environmental).
+- **Why closed:** Tester marked the task **PASS** with documented partial coverage for drag-to-join snap-back and multi-select Join; product acceptance for naming and core flows was met.
+- **Closed at (UTC):** 2026-04-02 09:48
+---
+
 # Tables — floor plan UX (auto-save, join snap-back, name refresh)
 
 ## GitHub

@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** The tester completed verification for GitHub #144 (debounced auto-save for the Tables floor-plan layout).
+- **What was done:** Auto-save, debounced flush, navigation guards, and related UI behavior were implemented per the task notes; core flows were exercised against the dev stack.
+- **What was tested:** Overall **PASS** — Angular build and API health green; drag-triggered auto-save and unsaved-indicator clearing verified with `PUT` evidence; floor switch with dirty layout verified; join/unjoin flush and failed-save leave dialog were **PARTIAL**/**SKIP**; landing-version failure was semver-only (environmental).
+- **Why closed:** Tester marked **PASS** on the primary acceptance (debounced auto-save and floor switching); remaining items are optional manual confirmation, not blocking closure.
+- **Closed at (UTC):** 2026-04-02 09:48
+---
+
 # Floor plan — auto-save layout
 
 ## GitHub
