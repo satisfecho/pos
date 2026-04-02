@@ -14,3 +14,17 @@ Acceptance: after join, tables snap back to pre-gesture positions while the grou
 - Ensure table rename updates UI immediately; separate debounced persistence from local display state.
 - Reuse existing floor/table APIs; keep tenant scoping and authorization consistent with adjacent tables code.
 - Update CHANGELOG if behavior is user-visible.
+
+## Implementation notes (coder)
+- **Layout auto-save:** Already present in `tables-canvas.component.ts` (~550 ms debounce, serialized saves, epoch coalescing, `canDeactivate` + `beforeunload`). No change beyond UX fixes below.
+- **Join snap-back:** On table drag start, snapshot all table positions on the current floor. On successful **drag-to-join** confirmation (`POST /table-groups`), after `GET /tables/with-status` reload, re-apply snapshot positions for the joined pair and trigger layout dirty + debounced auto-save. Cancel join modal or failed join API clears snapshot state; reload failure clears pending restore.
+- **Name refresh:** Side panel title uses `selectedTableName`; `ngModelChange` on the name field updates `tables` + `selectedTable` so canvas labels update immediately; `PUT` still on blur.
+
+## Testing instructions
+1. **Build:** From `front/`, `npx ng build --configuration=development` (or rely on Docker `front` logs with no TS errors).
+2. **Smoke (optional):** With app on e.g. `http://127.0.0.1:4202`, `BASE_URL=http://127.0.0.1:4202 npm run test:landing-version --prefix front`.
+3. **Manual — `/tables/canvas`:**
+   - Drag one table over another until join dialog appears; confirm join. Tables should **separate** to their pre-drag positions; group styling / group line in panel should still show joined service.
+   - Select a table: edit **Name** in the side panel — **panel header** and **canvas label** should update **while typing** (no need to blur first).
+   - Blur name field: name should persist; reload page and confirm names.
+4. **Regression:** Ctrl/Cmd multi-select + **Join** (no drag) still works; floor switch still flushes layout when dirty; **Unsaved changes** clears after auto-save pause.

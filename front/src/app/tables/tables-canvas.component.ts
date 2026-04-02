@@ -441,7 +441,7 @@ const STAFF_ORDERS_ROLES = new Set([
               </div>
               <div class="panel-header">
                   <div class="panel-title-row">
-                  <h3>{{ selectedTable()?.name }}</h3>
+                  <h3>{{ selectedTableName }}</h3>
                   <div
                     class="status-badge"
                     [class.op-available]="operationalKey(selectedTable()!) === 'available'"
@@ -465,7 +465,12 @@ const STAFF_ORDERS_ROLES = new Set([
                 <div class="form-row">
                   <div class="form-group">
                     <label>{{ 'TABLES.NAME' | translate }}</label>
-                    <input type="text" [(ngModel)]="selectedTableName" (blur)="updateSelectedTable()">
+                    <input
+                      type="text"
+                      [(ngModel)]="selectedTableName"
+                      (ngModelChange)="onSelectedTableNameInput($event)"
+                      (blur)="updateSelectedTable()"
+                    >
                   </div>
                   <div class="form-group">
                     <label>{{ 'TABLES.SEATS' | translate }}</label>
@@ -1562,6 +1567,14 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   private joinProximityCandidateId: number | null = null;
   private joinProximityCandidateSince: number | null = null;
 
+  /**
+   * Positions of all tables on the current floor when a table drag starts.
+   * After a successful drag-to-join, we restore these so the canvas does not keep overlap from the gesture.
+   */
+  private preJoinGesturePositions: Map<number, { x: number; y: number }> | null = null;
+  /** Set before `loadData()` after join API success so the next tables load applies `preJoinGesturePositions`. */
+  private pendingPostJoinLayoutRestore: number[] | null = null;
+
   tableShapes: TableShape[] = [
     { id: 'square4', name: 'Square 4', shape: 'rectangle', width: 80, height: 80, seats: 4 },
     { id: 'rect4', name: 'Rectangle 4', shape: 'rectangle', width: 100, height: 70, seats: 4 },
@@ -1637,13 +1650,47 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     this.api.getTablesWithStatus().subscribe({
       next: tables => {
         this.tables.set(tables);
-        this.syncSelectedTableAfterTablesLoad(tables);
+        this.applyPendingJoinGestureLayoutRestore();
+        this.syncSelectedTableAfterTablesLoad(this.tables());
       },
       error: err => {
         this.error.set(this.apiErr.fromHttpError(err, 'COMMON.API_REQUEST_FAILED'));
         this.tables.set([]);
+        this.pendingPostJoinLayoutRestore = null;
+        this.preJoinGesturePositions = null;
       }
     });
+  }
+
+  /** After drag-to-join succeeds, snap tables back to pre-overlap positions and auto-save layout. */
+  private applyPendingJoinGestureLayoutRestore(): void {
+    const ids = this.pendingPostJoinLayoutRestore;
+    this.pendingPostJoinLayoutRestore = null;
+    if (!ids?.length) return;
+    const snap = this.preJoinGesturePositions;
+    this.preJoinGesturePositions = null;
+    if (!snap?.size) return;
+    this.tables.update(ts =>
+      ts.map(t => {
+        if (t.id == null || !ids.includes(t.id)) return t;
+        const p = snap.get(t.id);
+        if (!p) return t;
+        return { ...t, x_position: p.x, y_position: p.y };
+      })
+    );
+    this.markLayoutDirty();
+  }
+
+  /** Snapshot floor positions when the user starts moving a table (for post-join snap-back). */
+  private capturePreJoinGestureLayout(): void {
+    const floorId = this.selectedFloorId();
+    const m = new Map<number, { x: number; y: number }>();
+    for (const t of this.tables()) {
+      if (t.id == null) continue;
+      if (!(t.floor_id === floorId || (!t.floor_id && !floorId))) continue;
+      m.set(t.id, { x: t.x_position ?? 0, y: t.y_position ?? 0 });
+    }
+    this.preJoinGesturePositions = m;
   }
 
   /** After tables are reloaded, keep the side panel / header in sync (avoids stale group ids after unjoin/join). */
@@ -2052,6 +2099,7 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
 
     if (!dragged?.id) {
       this.resetJoinProximityGesture();
+      this.preJoinGesturePositions = null;
       return;
     }
 
@@ -2067,6 +2115,8 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
 
     if (fresh && candidate && heldLongEnough && this.canJoinPair(fresh, candidate)) {
       this.openJoinTablesModal(fresh, candidate);
+    } else {
+      this.preJoinGesturePositions = null;
     }
   }
 
@@ -2371,6 +2421,7 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
 
     this.isDragging = true;
     this.draggedTable = table;
+    this.capturePreJoinGestureLayout();
     this.resetJoinProximityGesture();
     document.body.style.userSelect = 'none'; // Prevent text selection globally
     document.body.style.cursor = 'grabbing';
@@ -2399,6 +2450,7 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
 
     this.isDragging = true;
     this.draggedTable = table;
+    this.capturePreJoinGestureLayout();
     this.resetJoinProximityGesture();
 
     const svgPoint = this.getSvgPoint(touch.clientX, touch.clientY);
@@ -2575,6 +2627,14 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     this.selectedTable.set(null);
   }
 
+  /** Keeps canvas labels and panel title in sync while typing; persistence still runs on blur. */
+  onSelectedTableNameInput(name: string): void {
+    const id = this.selectedTable()?.id;
+    if (id == null) return;
+    this.tables.update(ts => ts.map(t => (t.id === id ? { ...t, name } : t)));
+    this.selectedTable.update(st => (st && st.id === id ? { ...st, name } : st));
+  }
+
   updateSelectedTable() {
     const table = this.selectedTable();
     if (!table?.id) return;
@@ -2703,13 +2763,17 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
       const ids = m.joinPairIds;
       const proceed = () => {
         this.error.set('');
+        this.pendingPostJoinLayoutRestore = [...ids];
         this.api.createTableGroup(ids).subscribe({
           next: () => {
             this.joinSelectionIds.set([]);
             this.loadData();
           },
-          error: (err: { error?: { detail?: string } }) =>
-            this.error.set(this.apiErr.fromHttpError(err, 'COMMON.API_REQUEST_FAILED')),
+          error: (err: { error?: { detail?: string } }) => {
+            this.pendingPostJoinLayoutRestore = null;
+            this.preJoinGesturePositions = null;
+            this.error.set(this.apiErr.fromHttpError(err, 'COMMON.API_REQUEST_FAILED'));
+          },
         });
       };
       if (!this.hasUnsavedChanges()) {
@@ -2724,6 +2788,8 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   }
 
   onConfirmationCancel() {
+    this.preJoinGesturePositions = null;
+    this.pendingPostJoinLayoutRestore = null;
     this.confirmationModal.update(m => ({
       ...m,
       show: false,
