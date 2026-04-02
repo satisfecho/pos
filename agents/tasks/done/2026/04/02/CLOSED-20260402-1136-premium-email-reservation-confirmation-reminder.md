@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue #150 requested professional, on-brand transactional reservation emails (confirmation and reminder) with shared layout, tenant branding hooks, localization, and safe HTML.
+- **What was done:** Implementation delivered shared `reservation_email_document` / logo HTML, extended `wrap_html_email` and reminder rendering via `render_reminder_email`, new message keys with `normalize_lang_for_messages`, and timezone-aware plain-text behavior for reminders.
+- **What was tested:** Backend pytest for `tests/test_reservation_reminder_email.py` and `tests/test_reservation_email_template.py` — **14 passed**; optional manual/SMTP verification was not run (N/A).
+- **Why closed:** Tester marked **PASS**; mandatory automated criteria satisfied.
+- **Closed at (UTC):** 2026-04-02 11:48
+---
+
 # Premium email experience: reservation confirmation + reservation reminder (layout, branding, localization)
 
 ## GitHub
