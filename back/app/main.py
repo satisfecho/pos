@@ -8995,6 +8995,21 @@ async def send_reservation_reminder(
             normalized = normalize_phone_to_e164(reservation.customer_phone.strip(), default_country)
             to_phone = normalized
 
+    attempted_email = has_email
+    attempted_wa = bool(has_phone and whatsapp_ok)
+    delivered = email_sent or whatsapp_sent
+    if (attempted_email or attempted_wa) and not delivered:
+        raise HTTPException(
+            status_code=503,
+            detail=email_svc.reminder_send_failure_message(
+                attempted_email,
+                email_sent,
+                attempted_wa,
+                whatsapp_sent,
+                tenant,
+            ),
+        )
+
     # Mark both reminder slots as sent so the autonomous heartbeat won't send again
     now_utc = datetime.now(timezone.utc)
     reservation.reminder_24h_sent_at = now_utc

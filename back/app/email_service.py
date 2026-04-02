@@ -55,6 +55,42 @@ def _effective_smtp_config(tenant: Optional["Tenant"] = None) -> dict[str, Any]:
     }
 
 
+def smtp_credentials_configured(tenant: Optional["Tenant"] = None) -> bool:
+    """True when tenant or global SMTP has user and password (email can be attempted)."""
+    cfg = _effective_smtp_config(tenant)
+    return bool(cfg.get("user") and cfg.get("password"))
+
+
+def reminder_send_failure_message(
+    attempted_email: bool,
+    email_sent: bool,
+    attempted_whatsapp: bool,
+    whatsapp_sent: bool,
+    tenant: Optional["Tenant"] = None,
+) -> str:
+    """
+    User-facing explanation when no reminder channel succeeded (staff UI / HTTP detail).
+    Does not include secrets or raw SMTP errors.
+    """
+    parts: list[str] = []
+    if attempted_email and not email_sent:
+        if not smtp_credentials_configured(tenant):
+            parts.append(
+                "Email is not configured: add SMTP credentials in Settings (Email) or server configuration."
+            )
+        else:
+            parts.append(
+                "Email could not be sent. Check SMTP settings, network connectivity, and server logs."
+            )
+    if attempted_whatsapp and not whatsapp_sent:
+        parts.append(
+            "WhatsApp reminder could not be sent. Check the phone number, Twilio settings, and server logs."
+        )
+    if not parts:
+        return "Reminder could not be sent."
+    return " ".join(parts)
+
+
 async def send_email(
     to_email: str,
     subject: str,

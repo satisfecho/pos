@@ -116,8 +116,9 @@ def _collect_due_reminders(session: Session) -> list[tuple[models.Reservation, m
 async def _send_one_reminder(
     reservation: models.Reservation,
     tenant: models.Tenant,
-) -> None:
-    """Send email and/or WhatsApp for one reservation (same logic as POST send-reminder)."""
+) -> bool:
+    """Send email and/or WhatsApp for one reservation (same logic as POST send-reminder).
+    Returns True if at least one channel delivered."""
     has_email = bool(reservation.customer_email and reservation.customer_email.strip())
     has_phone = bool(reservation.customer_phone and reservation.customer_phone.strip())
     whatsapp_ok = whatsapp_svc.is_whatsapp_configured()
@@ -130,8 +131,10 @@ async def _send_one_reminder(
         base = settings.public_app_base_url.rstrip("/")
         view_url = f"{base}/reservation?token={reservation.token}"
 
+    email_sent = False
+    whatsapp_sent = False
     if has_email:
-        await email_svc.send_reservation_reminder(
+        email_sent = await email_svc.send_reservation_reminder(
             to_email=reservation.customer_email.strip(),
             customer_name=reservation.customer_name,
             reservation_date=date_str,
@@ -142,7 +145,7 @@ async def _send_one_reminder(
             tenant=tenant,
         )
     if has_phone and whatsapp_ok:
-        await whatsapp_svc.send_reservation_reminder_whatsapp_async(
+        whatsapp_sent = await whatsapp_svc.send_reservation_reminder_whatsapp_async(
             to_phone=reservation.customer_phone.strip(),
             customer_name=reservation.customer_name,
             reservation_date=date_str,
@@ -151,6 +154,7 @@ async def _send_one_reminder(
             tenant_name=tenant_name,
             default_country=default_country,
         )
+    return email_sent or whatsapp_sent
 
 
 async def _tick_async() -> int:
@@ -162,7 +166,7 @@ async def _tick_async() -> int:
     count = 0
     for reservation, tenant, kind in due:
         try:
-            await _send_one_reminder(reservation, tenant)
+            delivered = await _send_one_reminder(reservation, tenant)
         except Exception as e:
             logger.warning(
                 "Reservation reminder heartbeat: failed to send %s for reservation id=%s: %s",
@@ -170,6 +174,14 @@ async def _tick_async() -> int:
                 reservation.id,
                 e,
                 exc_info=True,
+            )
+            continue
+        if not delivered:
+            logger.warning(
+                "Reservation reminder heartbeat: no channel delivered for %s reminder reservation id=%s tenant_id=%s",
+                kind,
+                reservation.id,
+                tenant.id,
             )
             continue
         with Session(engine) as session:

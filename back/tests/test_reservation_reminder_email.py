@@ -136,6 +136,41 @@ class TestReservationReminderEmail(unittest.TestCase):
         self.assertIn("maps.example", text_content)
         self.assertIn("openstreetmap.org", text_content)
 
+    def test_smtp_credentials_configured_requires_user_and_password(self):
+        with patch.object(email_service.settings, "smtp_user", ""), patch.object(
+            email_service.settings, "smtp_password", ""
+        ):
+            self.assertFalse(email_service.smtp_credentials_configured(None))
+        with patch.object(email_service.settings, "smtp_user", "u"), patch.object(
+            email_service.settings, "smtp_password", "p"
+        ):
+            self.assertTrue(email_service.smtp_credentials_configured(None))
+
+    def test_reminder_send_failure_message_when_smtp_not_configured(self):
+        with patch.object(email_service.settings, "smtp_user", ""), patch.object(
+            email_service.settings, "smtp_password", ""
+        ):
+            msg = email_service.reminder_send_failure_message(
+                True, False, False, False, None
+            )
+            self.assertIn("Email is not configured", msg)
+            self.assertIn("SMTP", msg)
+
+    def test_reminder_send_failure_message_when_smtp_configured_but_email_failed(self):
+        with patch.object(email_service.settings, "smtp_user", "u"), patch.object(
+            email_service.settings, "smtp_password", "p"
+        ):
+            msg = email_service.reminder_send_failure_message(
+                True, False, False, False, None
+            )
+            self.assertIn("Email could not be sent", msg)
+
+    def test_reminder_send_failure_message_whatsapp_attempted(self):
+        msg = email_service.reminder_send_failure_message(
+            False, False, True, False, None
+        )
+        self.assertIn("WhatsApp", msg)
+
 
 if __name__ == "__main__":
     unittest.main()

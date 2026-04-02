@@ -40,6 +40,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **Reservations / reminder (GitHub #149):** Manual **Send reminder** no longer returns **200** with both channels false while still marking reminder timestamps sent. Delivery failure returns **503** with a clear `detail` (missing SMTP vs send/WhatsApp failure). Background reminder heartbeat only marks sent when a channel actually delivers.
+
 - **Password reset (GitHub #148):** If **`PUBLIC_APP_BASE_URL`** is unset, **`POST /password-reset/request`** now returns **503** with `password_reset_not_configured` (before user lookup — no email enumeration) instead of **200** with a message that implied an email would be sent. Forgot-password UI uses structured API errors + i18n **`API_ERRORS.PASSWORD_RESET_NOT_CONFIGURED`**. **`config.env.example`** documents that the public base URL (and SMTP) are required for reset emails.
 
 - **Tables / floor canvas (GitHub #145):** **Drag-to-join** — after a successful join, table **canvas positions** snap back to where they were before the overlap gesture (grouping stays logical); **rename** in the side panel updates the **header and canvas label** immediately while typing. (Layout still **auto-saves** on a debounce after moves.)
