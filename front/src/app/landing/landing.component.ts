@@ -4,14 +4,13 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService, PublicTableLookupChoice, TenantSummary } from '../services/api.service';
 import { FormsModule } from '@angular/forms';
 import { LanguagePickerComponent } from '../shared/language-picker.component';
-import { LegalLinksComponent } from '../shared/legal-links.component';
 import { environment } from '../../environments/environment';
 import { ApiErrorMessageService } from '../services/api-error-message.service';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterLink, TranslateModule, FormsModule, LanguagePickerComponent, LegalLinksComponent],
+  imports: [RouterLink, TranslateModule, FormsModule, LanguagePickerComponent],
   template: `
     <div class="landing-page">
       <app-language-picker class="landing-language-picker"></app-language-picker>
@@ -162,10 +161,10 @@ import { ApiErrorMessageService } from '../services/api-error-message.service';
         <a routerLink="/provider/register" data-testid="landing-provider-register">{{ 'LANDING.REGISTER_AS_PROVIDER' | translate }}</a>
         <span class="footer-sep">·</span>
         <a href="mailto:sales@satisfecho.de" data-testid="landing-contact-us">{{ 'LANDING.CONTACT_US' | translate }}</a>
-        @if (legalTermsUrl() || legalPrivacyUrl()) {
-          <span class="footer-sep">·</span>
-          <app-legal-links [inline]="true" [termsUrl]="legalTermsUrl()" [privacyUrl]="legalPrivacyUrl()" />
-        }
+        <span class="footer-sep">·</span>
+        <a routerLink="/terms" data-testid="landing-terms">{{ 'LEGAL.TERMS_OF_SERVICE' | translate }}</a>
+        <span class="footer-sep">·</span>
+        <a routerLink="/privacy" data-testid="landing-privacy">{{ 'LEGAL.PRIVACY_POLICY' | translate }}</a>
       </div>
       <div class="landing-version-bar" data-testid="landing-version">
         <div class="landing-version-bar__row">
@@ -682,17 +681,8 @@ export class LandingComponent implements OnInit {
   tableLookupLoading = signal(false);
   tableLookupError = signal<string | null>(null);
   tableLookupChoices = signal<PublicTableLookupChoice[]>([]);
-  legalTermsUrl = signal<string | null>(null);
-  legalPrivacyUrl = signal<string | null>(null);
 
   ngOnInit(): void {
-    this.api.getPublicLegalUrls().subscribe({
-      next: (u) => {
-        this.legalTermsUrl.set(u.terms_of_service_url ?? null);
-        this.legalPrivacyUrl.set(u.privacy_policy_url ?? null);
-      },
-      error: () => {},
-    });
     // `ApiService` constructor already calls `checkAuth()` once; avoid a second `/users/me` (extra 401 noise).
     this.api.waitForInitialAuthCheck().subscribe(() => {
       const user = this.api.getCurrentUser();

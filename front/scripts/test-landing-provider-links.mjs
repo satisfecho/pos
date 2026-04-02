@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Puppeteer test: landing page shows provider login, provider registration, and contact (mailto) links in the footer.
+ * Puppeteer test: landing page shows provider login, provider registration, contact (mailto), terms, and privacy links in the footer.
  *
  * Usage (from repo root):
  *   node front/scripts/test-landing-provider-links.mjs
@@ -120,6 +120,29 @@ async function main() {
     }
     console.log('   Contact us (mailto) link: OK');
 
+    const termsEl = await page.$('[data-testid="landing-terms"]');
+    const privacyEl = await page.$('[data-testid="landing-privacy"]');
+    if (!termsEl || !privacyEl) {
+      console.log('   FAIL: Terms and/or privacy footer links missing ([data-testid="landing-terms"], [data-testid="landing-privacy"]).');
+      await browser.close();
+      process.exit(1);
+    }
+    const termsPath = await page.evaluate(() => {
+      const el = document.querySelector('[data-testid="landing-terms"]');
+      return el ? el.getAttribute('href') || el.getAttribute('ng-reflect-router-link') || '' : '';
+    });
+    const privacyPath = await page.evaluate(() => {
+      const el = document.querySelector('[data-testid="landing-privacy"]');
+      return el ? el.getAttribute('href') || el.getAttribute('ng-reflect-router-link') || '' : '';
+    });
+    if (!String(termsPath).includes('/terms') || !String(privacyPath).includes('/privacy')) {
+      console.log('   FAIL: Expected terms → /terms and privacy → /privacy, got:', termsPath, privacyPath);
+      await browser.close();
+      process.exit(1);
+    }
+    console.log('   Terms of service link: OK');
+    console.log('   Privacy policy link: OK');
+
     const registerHref = await page.evaluate(() => {
       const el = document.querySelector('[data-testid="landing-provider-register"]');
       return el ? (el.getAttribute('href') || el.getAttribute('ng-reflect-router-link')) : null;
@@ -146,7 +169,7 @@ async function main() {
 
     console.log('   Provider register page loaded: OK');
     await browser.close();
-    console.log('\n>>> RESULT: Landing shows provider login, register, and contact links; register link works.');
+    console.log('\n>>> RESULT: Landing shows provider login, register, contact, terms, and privacy links; register link works.');
     process.exit(0);
   } catch (err) {
     console.error('Error:', err.message);

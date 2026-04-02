@@ -38,6 +38,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **Landing (GitHub #146):** Homepage footer always shows **Terms of service** and **Privacy policy** links to the in-app **`/terms`** and **`/privacy`** routes (no longer hidden when public legal URLs are unset).
+
 - **Tables / floor canvas (GitHub #147):** After **Unjoin**, the selected table’s details and **Unjoin** control now follow server state — `GET /tables/with-status` results re-sync the side panel selection, and the unjoin action is guarded against duplicate requests (avoids stale group ids and spurious errors).
 
 - **DELETE `/tables/{id}`:** Resolved **500** (`Query` object passed to language normalization) by injecting `lang` with **`Depends(_get_requested_language)`** instead of calling `_get_requested_language(request)` directly. Regression: `back/tests/test_delete_table_api.py`.
