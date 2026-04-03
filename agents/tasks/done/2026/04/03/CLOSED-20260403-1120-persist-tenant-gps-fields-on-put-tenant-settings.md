@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Tenant venue GPS fields were not persisted on `PUT /tenant/settings`, so clock flows requiring venue coordinates failed even after owners saved location in settings.
+- **What was done:** `update_tenant_settings` in `back/app/main.py` now applies `latitude`, `longitude`, `location_radius_meters`, and `location_check_enabled` with validation (lat/lon bounds, non-negative radius, HTTP 400 on invalid input); three new tests were added in `back/tests/test_work_session.py`.
+- **What was tested:** Full `tests/test_work_session.py` via Docker Compose back container — **6 passed** in ~3.5s; optional manual UI path was N/A per tester.
+- **Why closed:** Tester **Overall: PASS**; implementation and automated criteria met.
+- **Closed at (UTC):** 2026-04-03 11:23
+---
+
 # Persist tenant GPS fields on PUT /tenant/settings
 
 ## GitHub Issues
