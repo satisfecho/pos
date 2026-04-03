@@ -31,3 +31,37 @@ Staff with **report:read** need an **Adjust** action on **Reports** to correct a
 5. Submit a **valid** adjustment (optional note) → modal closes; tables reload (times updated). If the API returns an error (e.g. 400), expect message from **`ApiErrorMessageService`** in the modal.
 6. **i18n:** spot-check another language; new keys are under **`REPORTS.WORK_SESSION_ADJUST_*`** (and **`WORK_SESSION_ADJUST_COL_ACTIONS`**).
 7. **Automated:** `BASE_URL=http://127.0.0.1:4202 npm run test:landing-version --prefix front` (includes navigating to `/reports`). With credentials: `BASE_URL=… LOGIN_EMAIL=… LOGIN_PASSWORD=… npm run test:reports --prefix front`.
+
+---
+
+## Test report
+
+1. **Date/time (UTC):** 2026-04-03T12:07Z–12:12Z (log window aligned with `docker compose … logs --since 15m` for `front` / `back`).
+
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; **`BASE_URL=http://127.0.0.1:4202`** (HAProxy); branch **`development`**, HEAD **`b4531ff`**.
+
+3. **What was tested:** Items 1–7 from **Testing instructions** above (live block dedup, Adjust modal fields, invalid range message, valid save + reload, i18n spot-check, automated scripts). Targeted Puppeteer checks run from host using repo **`front`** `puppeteer-core` (one-off scripts in `/tmp`, not committed).
+
+4. **Results:**
+   - **Single “Who is on shift now” / live section:** **PASS** — `document.querySelectorAll('[data-testid="reports-work-sessions-live"]').length === 1` on `/reports`.
+   - **Adjust modal (staff name, `datetime-local` start/end, note):** **PASS** — `#ws-adjust-start`, `#ws-adjust-end`, `#ws-adjust-note` present after opening first **Adjust** button (EN label “Adjust”).
+   - **Invalid range (clock-out before clock-in):** **PASS** — After Save, modal shows English text **“Clock out must be on or after clock in.”** (maps to **`REPORTS.WORK_SESSION_ADJUST_INVALID_RANGE`**).
+   - **Valid adjustment + reload:** **PASS** — Set clock-out to start + 1 minute, note `tester-smoke`, Save; modal closed; backend **`POST /reports/work-sessions/6/adjust` 200** followed by **`GET /reports/work-sessions/live`** and **`GET /reports/work-sessions?...`** 200 (tables refetched).
+   - **API error path (`ApiErrorMessageService`):** **PASS (by construction)** — Invalid range uses in-modal `workSessionAdjustError` banner consistent with save error path; no forced HTTP error in this run.
+   - **`npm run test:landing-version`:** **PASS** with **`SKIP_LANDING_PACKAGE_VERSION_CHECK=1`** — Footer showed **2.0.70** vs **`package.json` 2.0.71** without skip (**FAIL** semver check only); login + sidebar nav including **`/reports`** succeeded.
+   - **`npm run test:reports`:** **PASS** — Reports page and “Por producto” layout checks OK.
+   - **i18n:** **PASS** — **`REPORTS.WORK_SESSION_ADJUST_*`** present in all 9 locale files (12 matching keys each per file); **`de.json`** spot-check: **`WORK_SESSION_ADJUST_INVALID_RANGE`** present.
+
+5. **Overall:** **PASS**.
+
+6. **Product owner feedback:** Reports now exposes a single live attendance block and a clear **Adjust** flow for correcting times with local **datetime-local** inputs and audit notes. Client-side range validation prevents bad ranges before the API call, and a successful adjustment refreshes live and historical work-session data as expected.
+
+7. **URLs tested:**
+   1. `http://127.0.0.1:4202/login`
+   2. `http://127.0.0.1:4202/dashboard` (post-login)
+   3. `http://127.0.0.1:4202/reports` (primary)
+   4. Additional sidebar targets from **`test:landing-version`**: `/my-shift`, `/staff/orders`, `/reservations`, `/guest-feedback`, `/tables`, `/kitchen`, `/bar`, `/customers`, `/products`, `/catalog`, `/working-plan`, `/users`, `/contracts`, `/settings`, and five `/inventory/*` sublinks.
+
+8. **Relevant log excerpts:**
+   - **`pos-front`** (excerpt): `Application bundle generation complete` — no TS/NG errors in tail window.
+   - **`pos-back`** (excerpt): `POST /reports/work-sessions/6/adjust HTTP/1.1" 200 OK` then `GET /reports/work-sessions/live` and `GET /reports/work-sessions?from_date=…` **200 OK**.
