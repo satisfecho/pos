@@ -2,6 +2,7 @@
 import os
 import sys
 import unittest
+from types import SimpleNamespace
 
 # Container cwd=/app → "app.*"; repo checkout with "back" on path → "back.app.*"
 _back_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -13,6 +14,7 @@ if _repo_root and os.path.basename(_back_dir) == "back" and _repo_root not in sy
 
 try:
     from back.app import models
+    from back.app.messages import reservation_transactional_lang
     from back.app.reservation_email_template import (
         ALLOWED_PLACEHOLDERS,
         build_value_maps,
@@ -22,6 +24,7 @@ try:
     )
 except ImportError:
     from app import models
+    from app.messages import reservation_transactional_lang
     from app.reservation_email_template import (
         ALLOWED_PLACEHOLDERS,
         build_value_maps,
@@ -107,6 +110,57 @@ class TestReservationEmailTemplate(unittest.TestCase):
         self.assertIn("Open in OpenStreetMap", text)
         self.assertIn("maps.app.goo.gl", inner)
         self.assertIn("openstreetmap.org", inner)
+
+    def test_confirmation_spanish_default_body_and_labels(self):
+        tenant = _tenant(default_language="es")
+        sub, text, inner = render_confirmation_email(
+            tenant, "Ana", "2026-03-22", "19:00", 2, "https://app.test/r?t=1", lang="es"
+        )
+        self.assertIn("Reserva confirmada", sub)
+        self.assertIn("Café Demo", sub)
+        self.assertIn("Hola", text)
+        self.assertIn("Ana", text)
+        self.assertIn("confirmada", text.lower())
+        self.assertIn("Fecha:", text)
+        self.assertIn("Hora:", text)
+        self.assertIn("Comensales:", text)
+        self.assertIn("Ver o cambiar su reserva en línea", text)
+        self.assertIn("Contacto:", text)
+        self.assertIn("Le esperamos", text)
+        self.assertIn("Ver o cambiar", inner)
+
+    def test_confirmation_spanish_prepayment_and_arrival(self):
+        tenant = _tenant(
+            default_language="es",
+            reservation_prepayment_cents=500,
+            reservation_prepayment_text="Pague al llegar.",
+            reservation_arrival_tolerance_minutes=10,
+        )
+        _sub, text, inner = render_confirmation_email(
+            tenant, "Ana", "2026-03-22", "19:00", 2, None, lang="es"
+        )
+        self.assertIn("Importe del prepago:", text)
+        self.assertIn("5.00 EUR", text)
+        self.assertIn("Pague al llegar.", text)
+        self.assertIn("10", text)
+        self.assertIn("minutos", text.lower())
+        self.assertIn("Importe del prepago", inner)
+        self.assertIn("Pague al llegar.", inner)
+
+    def test_reservation_transactional_lang_prefers_booking_locale_when_set(self):
+        tenant = SimpleNamespace(default_language="en")
+        reservation = SimpleNamespace(locale="es")
+        self.assertEqual(reservation_transactional_lang(tenant, reservation), "es")
+
+    def test_reservation_transactional_lang_falls_back_to_tenant_default(self):
+        tenant = SimpleNamespace(default_language="es")
+        reservation = SimpleNamespace(locale=None)
+        self.assertEqual(reservation_transactional_lang(tenant, reservation), "es")
+
+    def test_reservation_transactional_lang_empty_booking_locale_uses_tenant(self):
+        tenant = SimpleNamespace(default_language="de")
+        reservation = SimpleNamespace(locale="   ")
+        self.assertEqual(reservation_transactional_lang(tenant, reservation), "de")
 
     def test_allowlist_is_lowercase_snake(self):
         for name in ALLOWED_PLACEHOLDERS:

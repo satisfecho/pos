@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, Optional
 
 import aiosmtplib
 
-from .messages import get_message, normalize_lang_for_messages
+from .messages import get_message, reservation_transactional_lang
 from .reservation_email_template import (
     render_confirmation_email,
     render_reminder_email,
@@ -282,15 +282,17 @@ async def send_reservation_confirmation(
     tenant: "Tenant",
     view_url: Optional[str] = None,
     smtp_tenant: Optional["Tenant"] = None,
+    reservation: Optional[object] = None,
 ) -> bool:
     """
     Send reservation confirmation using per-tenant templates (or built-in defaults).
 
     `tenant` is used for placeholder values and templates. `smtp_tenant` selects SMTP
     credentials (when tenant uses global SMTP, pass None to use global config).
+    Optional `reservation` supplies a per-booking locale when the model stores one.
     """
     mail_tenant = smtp_tenant if smtp_tenant is not None else tenant
-    lang = normalize_lang_for_messages(getattr(tenant, "default_language", None))
+    lang = reservation_transactional_lang(tenant, reservation)
     subject, text_content, html_inner = render_confirmation_email(
         tenant,
         customer_name,
@@ -320,9 +322,7 @@ async def send_reservation_reminder(
     tenant: Optional["Tenant"] = None,
 ) -> bool:
     """Send a reminder email for an upcoming reservation. Helps reduce no-shows."""
-    lang = normalize_lang_for_messages(
-        getattr(tenant, "default_language", None) if tenant else None
-    )
+    lang = reservation_transactional_lang(tenant, None)
     subject, text_content, html_content = render_reminder_email(
         customer_name=customer_name,
         reservation_date=reservation_date,

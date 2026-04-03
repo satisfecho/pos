@@ -63,6 +63,10 @@ After the code change that added logging, you will see one of:
 
 Tenants can set **plain-text** subject and body with `{{placeholders}}` (e.g. `{{customer_name}}`, `{{cancellation_policy}}`, `{{reservation_link_block_html}}`). Only allowed names are replaced; this is not a full template engine (no code execution). See `back/app/reservation_email_template.py` for the allowlist. Leave both fields empty to use the built-in default wording.
 
+**Language:** Server-generated parts of the confirmation (default subject/body when templates are empty, prepayment amount line, arrival note, map link labels, contact labels, manage-reservation button, HTML footer) follow the tenant **default UI language** (`default_language`), normalized like other API messages. If the reservation model later stores a per-booking locale, that overrides the tenant default for the same send path.
+
+**Prepayment placeholders:** Use `{{prepayment_notice}}` for the combined prepayment amount (when set) plus your **Reservations → prepayment text**. Use `{{prepayment_text}}` only in custom layouts that do **not** also include `{{prepayment_notice}}`, so guests do not see the same policy text twice.
+
 ## 4. Quick check: tenant SMTP (or use full diagnostic above)
 
 The reservation confirmation flow uses **tenant SMTP** if the tenant has it; otherwise it falls back to **global** `config.env` SMTP. If neither is set, the backend skips sending and logs "Reservation confirmation skipped".

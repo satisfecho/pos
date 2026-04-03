@@ -74,6 +74,21 @@ MESSAGES = {
         "email_reservation_reminder_closing": "We look forward to seeing you. Please contact us if you need to change or cancel.",
         "email_reservation_reminder_footer": "This is an automated reminder from {restaurant_name}.",
         "email_reservation_timezone_note": "Times are shown in the restaurant's local timezone ({timezone}).",
+        "email_reservation_confirmation_default_subject": "Reservation confirmed at {{restaurant_name}}",
+        "email_reservation_confirmation_greeting": "Hi {{customer_name}},",
+        "email_reservation_confirmation_intro": "Your reservation at {{restaurant_name}} is confirmed.",
+        "email_reservation_confirmation_label_date": "Date",
+        "email_reservation_confirmation_label_time": "Time",
+        "email_reservation_confirmation_label_party": "Party size",
+        "email_reservation_confirmation_closing": "We look forward to seeing you.",
+        "email_reservation_prepayment_amount": "Prepayment amount: {amount} {currency}",
+        "email_reservation_arrival_tolerance": "Please arrive within {minutes} minutes of your booking time.",
+        "email_reservation_maps_google": "Open in Google Maps",
+        "email_reservation_maps_osm": "Open in OpenStreetMap",
+        "email_reservation_contact_heading": "Contact us",
+        "email_reservation_contact_phone_label": "Phone",
+        "email_reservation_contact_email_label": "Email",
+        "email_reservation_logo_alt_fallback": "Restaurant",
     },
     "es": {
         "database_error": "Error de base de datos",
@@ -140,6 +155,21 @@ MESSAGES = {
         "email_reservation_reminder_closing": "Le esperamos. Contáctenos si necesita cambiar o cancelar.",
         "email_reservation_reminder_footer": "Recordatorio automático de {restaurant_name}.",
         "email_reservation_timezone_note": "Las horas se muestran en la zona horaria local del restaurante ({timezone}).",
+        "email_reservation_confirmation_default_subject": "Reserva confirmada en {{restaurant_name}}",
+        "email_reservation_confirmation_greeting": "Hola, {{customer_name}}:",
+        "email_reservation_confirmation_intro": "Su reserva en {{restaurant_name}} está confirmada.",
+        "email_reservation_confirmation_label_date": "Fecha",
+        "email_reservation_confirmation_label_time": "Hora",
+        "email_reservation_confirmation_label_party": "Comensales",
+        "email_reservation_confirmation_closing": "Le esperamos.",
+        "email_reservation_prepayment_amount": "Importe del prepago: {amount} {currency}",
+        "email_reservation_arrival_tolerance": "Llegue dentro de los {minutes} minutos siguientes a la hora de su reserva.",
+        "email_reservation_maps_google": "Abrir en Google Maps",
+        "email_reservation_maps_osm": "Abrir en OpenStreetMap",
+        "email_reservation_contact_heading": "Contacto",
+        "email_reservation_contact_phone_label": "Teléfono",
+        "email_reservation_contact_email_label": "Correo electrónico",
+        "email_reservation_logo_alt_fallback": "Restaurante",
     },
     "ca": {
         "database_error": "Error de base de dades",
@@ -526,6 +556,23 @@ MESSAGES = {
         "email_reservation_timezone_note": "Les heures sont indiquées selon le fuseau horaire local du restaurant ({timezone}).",
     },
 }
+
+
+def reservation_transactional_lang(
+    tenant: object | None = None,
+    reservation: object | None = None,
+) -> str:
+    """
+    Language for reservation confirmation/reminder emails and related server-built strings.
+
+    Prefer an explicit booking locale on the reservation when present (future-safe);
+    otherwise the tenant's default UI language; normalized to a MESSAGES key.
+    """
+    rl = getattr(reservation, "locale", None) if reservation is not None else None
+    if rl is not None and str(rl).strip():
+        return normalize_lang_for_messages(str(rl).strip())
+    tl = getattr(tenant, "default_language", None) if tenant is not None else None
+    return normalize_lang_for_messages(tl)
 
 
 def normalize_lang_for_messages(lang: str | None) -> str:

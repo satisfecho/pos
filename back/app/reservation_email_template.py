@@ -4,6 +4,12 @@ Reservation confirmation emails: simple {{placeholder}} substitution only.
 Security: no Jinja/format eval — only an allowlist of placeholder names is replaced.
 Dynamic values are HTML-escaped in the HTML part; static template text is escaped too,
 except for reservation_link_block_html (server-generated <a> only).
+
+Prepayment placeholders (avoid duplicate wording in custom bodies):
+- {{prepayment_notice}} — localized prepayment amount line (if any) plus tenant
+  reservation_prepayment_text. Prefer this in templates.
+- {{prepayment_text}} — tenant reservation_prepayment_text only. Use when you build a
+  custom layout without {{prepayment_notice}}; do not use both for the same text.
 """
 
 from __future__ import annotations
@@ -57,49 +63,57 @@ _TRUSTED_HTML_PLACEHOLDERS: frozenset[str] = frozenset(
 MAX_SUBJECT_LEN = 200
 MAX_BODY_LEN = 32000
 
-DEFAULT_SUBJECT = "Reservation confirmed at {{restaurant_name}}"
 
-DEFAULT_BODY = """Hi {{customer_name}},
+def default_confirmation_body_template(lang: str = "en") -> str:
+    """Built-in body when the tenant has not set reservation_confirmation_email_body."""
+    g = get_message("email_reservation_confirmation_greeting", lang)
+    intro = get_message("email_reservation_confirmation_intro", lang)
+    ld = get_message("email_reservation_confirmation_label_date", lang)
+    lt = get_message("email_reservation_confirmation_label_time", lang)
+    lp = get_message("email_reservation_confirmation_label_party", lang)
+    closing = get_message("email_reservation_confirmation_closing", lang)
+    return f"""{g}
 
-Your reservation at {{restaurant_name}} is confirmed.
+{intro}
 
-Date: {{date}}
-Time: {{time}}
-Party size: {{party_size}}
+{ld}: {{{{date}}}}
+{lt}: {{{{time}}}}
+{lp}: {{{{party_size}}}}
 
-{{cancellation_policy}}
+{{{{cancellation_policy}}}}
 
-{{prepayment_notice}}
+{{{{prepayment_notice}}}}
 
-{{dress_code}}
+{{{{dress_code}}}}
 
-{{arrival_note}}
+{{{{arrival_note}}}}
 
-{{reservation_link_block_html}}
+{{{{reservation_link_block_html}}}}
 
-{{google_maps_link_block_html}}
-{{openstreetmap_link_block_html}}
+{{{{google_maps_link_block_html}}}}
+{{{{openstreetmap_link_block_html}}}}
 
-{{restaurant_contact_block_html}}
+{{{{restaurant_contact_block_html}}}}
 
-We look forward to seeing you.
+{closing}
 
 ---
-{{restaurant_name}}
+{{{{restaurant_name}}}}
 """
 
 
-def _format_money_line(cents: int | None, currency_code: str | None) -> str:
+def _format_money_line(cents: int | None, currency_code: str | None, lang: str = "en") -> str:
     if cents is None or cents <= 0:
         return ""
     code = (currency_code or "EUR").strip().upper()
     amount = cents / 100.0
-    return f"Prepayment amount: {amount:.2f} {code}"
+    amount_s = f"{amount:.2f}"
+    return get_message("email_reservation_prepayment_amount", lang, amount=amount_s, currency=code)
 
 
-def _prepayment_notice(tenant: Tenant) -> str:
+def _prepayment_notice(tenant: Tenant, lang: str = "en") -> str:
     parts: list[str] = []
-    line = _format_money_line(tenant.reservation_prepayment_cents, tenant.currency_code)
+    line = _format_money_line(tenant.reservation_prepayment_cents, tenant.currency_code, lang)
     if line:
         parts.append(line)
     pt = (tenant.reservation_prepayment_text or "").strip()
@@ -108,11 +122,11 @@ def _prepayment_notice(tenant: Tenant) -> str:
     return "\n".join(parts)
 
 
-def _arrival_note(tenant: Tenant) -> str:
+def _arrival_note(tenant: Tenant, lang: str = "en") -> str:
     m = tenant.reservation_arrival_tolerance_minutes
     if m is None or m <= 0:
         return ""
-    return f"Please arrive within {m} minutes of your booking time."
+    return get_message("email_reservation_arrival_tolerance", lang, minutes=m)
 
 
 def _link_block_plain(view_url: str | None, lang: str = "en") -> str:
@@ -150,20 +164,24 @@ def _map_link_html(link_label: str, url: str | None) -> str:
     return f'<p><a href="{safe_href}">{html.escape(link_label, quote=False)}</a></p>'
 
 
-def google_maps_link_block_plain(tenant: Tenant) -> str:
-    return _map_link_plain("Open in Google Maps", getattr(tenant, "public_google_maps_url", None))
+def google_maps_link_block_plain(tenant: Tenant, lang: str = "en") -> str:
+    label = get_message("email_reservation_maps_google", lang)
+    return _map_link_plain(label, getattr(tenant, "public_google_maps_url", None))
 
 
-def google_maps_link_block_html(tenant: Tenant) -> str:
-    return _map_link_html("Open in Google Maps", getattr(tenant, "public_google_maps_url", None))
+def google_maps_link_block_html(tenant: Tenant, lang: str = "en") -> str:
+    label = get_message("email_reservation_maps_google", lang)
+    return _map_link_html(label, getattr(tenant, "public_google_maps_url", None))
 
 
-def openstreetmap_link_block_plain(tenant: Tenant) -> str:
-    return _map_link_plain("Open in OpenStreetMap", getattr(tenant, "public_openstreetmap_url", None))
+def openstreetmap_link_block_plain(tenant: Tenant, lang: str = "en") -> str:
+    label = get_message("email_reservation_maps_osm", lang)
+    return _map_link_plain(label, getattr(tenant, "public_openstreetmap_url", None))
 
 
-def openstreetmap_link_block_html(tenant: Tenant) -> str:
-    return _map_link_html("Open in OpenStreetMap", getattr(tenant, "public_openstreetmap_url", None))
+def openstreetmap_link_block_html(tenant: Tenant, lang: str = "en") -> str:
+    label = get_message("email_reservation_maps_osm", lang)
+    return _map_link_html(label, getattr(tenant, "public_openstreetmap_url", None))
 
 
 def _tel_uri(display_phone: str) -> str | None:
@@ -172,40 +190,46 @@ def _tel_uri(display_phone: str) -> str | None:
     return f"tel:{compact}" if compact else None
 
 
-def contact_block_plain(tenant: Tenant) -> str:
+def contact_block_plain(tenant: Tenant, lang: str = "en") -> str:
     """Plain-text contact lines (phone + public email); empty if both missing."""
     phone = (tenant.phone or "").strip()
     em = (tenant.email or "").strip()
     if not phone and not em:
         return ""
-    lines = ["Contact us:"]
+    heading = get_message("email_reservation_contact_heading", lang)
+    phone_l = get_message("email_reservation_contact_phone_label", lang)
+    email_l = get_message("email_reservation_contact_email_label", lang)
+    lines = [f"{heading}:"]
     if phone:
-        lines.append(f"Phone: {phone}")
+        lines.append(f"{phone_l}: {phone}")
     if em:
-        lines.append(f"Email: {em}")
+        lines.append(f"{email_l}: {em}")
     return "\n".join(lines)
 
 
-def contact_block_html(tenant: Tenant) -> str:
+def contact_block_html(tenant: Tenant, lang: str = "en") -> str:
     """HTML contact block with tel:/mailto: links; empty if both missing."""
     phone = (tenant.phone or "").strip()
     em = (tenant.email or "").strip()
     if not phone and not em:
         return ""
-    parts: list[str] = ["<p><strong>Contact us</strong>"]
+    heading = html.escape(get_message("email_reservation_contact_heading", lang), quote=False)
+    phone_l = html.escape(get_message("email_reservation_contact_phone_label", lang), quote=False)
+    email_l = html.escape(get_message("email_reservation_contact_email_label", lang), quote=False)
+    parts: list[str] = [f"<p><strong>{heading}</strong>"]
     if phone:
         tel = _tel_uri(phone)
         if tel:
             parts.append(
-                f'<br>Phone: <a href="{html.escape(tel, quote=True)}">'
+                f'<br>{phone_l}: <a href="{html.escape(tel, quote=True)}">'
                 f"{html.escape(phone, quote=False)}</a>"
             )
         else:
-            parts.append(f"<br>Phone: {html.escape(phone, quote=False)}")
+            parts.append(f"<br>{phone_l}: {html.escape(phone, quote=False)}")
     if em:
         mailto = f"mailto:{em}"
         parts.append(
-            f'<br>Email: <a href="{html.escape(mailto, quote=True)}">'
+            f'<br>{email_l}: <a href="{html.escape(mailto, quote=True)}">'
             f"{html.escape(em, quote=False)}</a>"
         )
     parts.append("</p>")
@@ -230,16 +254,16 @@ def build_value_maps(
         "party_size": str(party_size),
         "reservation_url": view_url or "",
         "reservation_link_block_html": _link_block_plain(view_url, lang),
-        "google_maps_link_block_html": google_maps_link_block_plain(tenant),
-        "openstreetmap_link_block_html": openstreetmap_link_block_plain(tenant),
+        "google_maps_link_block_html": google_maps_link_block_plain(tenant, lang),
+        "openstreetmap_link_block_html": openstreetmap_link_block_plain(tenant, lang),
         "cancellation_policy": (tenant.reservation_cancellation_policy or "").strip(),
         "prepayment_text": (tenant.reservation_prepayment_text or "").strip(),
-        "prepayment_notice": _prepayment_notice(tenant),
+        "prepayment_notice": _prepayment_notice(tenant, lang),
         "dress_code": (tenant.reservation_dress_code or "").strip(),
-        "arrival_note": _arrival_note(tenant),
+        "arrival_note": _arrival_note(tenant, lang),
         "restaurant_phone": (tenant.phone or "").strip(),
         "restaurant_email": (tenant.email or "").strip(),
-        "restaurant_contact_block_html": contact_block_plain(tenant),
+        "restaurant_contact_block_html": contact_block_plain(tenant, lang),
     }
     html_map: dict[str, str] = {}
     for k, v in plain.items():
@@ -247,9 +271,9 @@ def build_value_maps(
             continue
         html_map[k] = html.escape(v, quote=False)
     html_map["reservation_link_block_html"] = _link_block_html(view_url, lang)
-    html_map["google_maps_link_block_html"] = google_maps_link_block_html(tenant)
-    html_map["openstreetmap_link_block_html"] = openstreetmap_link_block_html(tenant)
-    html_map["restaurant_contact_block_html"] = contact_block_html(tenant)
+    html_map["google_maps_link_block_html"] = google_maps_link_block_html(tenant, lang)
+    html_map["openstreetmap_link_block_html"] = openstreetmap_link_block_html(tenant, lang)
+    html_map["restaurant_contact_block_html"] = contact_block_html(tenant, lang)
     return plain, html_map
 
 
@@ -310,8 +334,12 @@ def render_confirmation_email(
 
     html_fragment_body is inner content only; email_service wraps it in a minimal document.
     """
-    sub_t = (tenant.reservation_confirmation_email_subject or "").strip() or DEFAULT_SUBJECT
-    body_t = (tenant.reservation_confirmation_email_body or "").strip() or DEFAULT_BODY
+    sub_t = (tenant.reservation_confirmation_email_subject or "").strip() or get_message(
+        "email_reservation_confirmation_default_subject", lang
+    )
+    body_t = (tenant.reservation_confirmation_email_body or "").strip() or default_confirmation_body_template(
+        lang
+    )
 
     plain, html_map = build_value_maps(
         tenant, customer_name, reservation_date, reservation_time, party_size, view_url, lang
@@ -322,7 +350,9 @@ def render_confirmation_email(
     return subject, text_body, html_inner
 
 
-def tenant_logo_block_html(tenant: Tenant | None, public_app_base_url: str | None) -> str:
+def tenant_logo_block_html(
+    tenant: Tenant | None, public_app_base_url: str | None, lang: str = "en"
+) -> str:
     """Centered optional logo when tenant has logo and public base URL is set."""
     if not tenant or not public_app_base_url or not tenant.logo_filename:
         return ""
@@ -332,7 +362,8 @@ def tenant_logo_block_html(tenant: Tenant | None, public_app_base_url: str | Non
     fn = quote(str(tenant.logo_filename).strip(), safe="/.-_")
     safe_base = public_app_base_url.rstrip("/")
     url = f"{safe_base}/uploads/{tid}/logo/{fn}"
-    alt = html.escape((tenant.name or "Restaurant").strip() or "Restaurant", quote=False)
+    alt_fb = get_message("email_reservation_logo_alt_fallback", lang)
+    alt = html.escape((tenant.name or alt_fb).strip() or alt_fb, quote=False)
     return (
         f'<img src="{html.escape(url, quote=True)}" alt="{alt}" width="200" '
         'style="max-width:220px;height:auto;display:block;margin:0 auto 4px auto;border:0;outline:none;" />'
@@ -353,7 +384,7 @@ def reservation_email_document(
     `footer_kind` is \"confirmation\" or \"reminder\".
     `footer_restaurant_name` overrides the name used in the footer (e.g. when tenant is None in tests).
     """
-    logo_html = tenant_logo_block_html(tenant, public_app_base_url)
+    logo_html = tenant_logo_block_html(tenant, public_app_base_url, lang)
     brand_plain = (footer_restaurant_name or (tenant.name if tenant else "") or "").strip()
     restaurant = html.escape(brand_plain, quote=False)
     if footer_kind == "reminder":
@@ -447,16 +478,18 @@ def render_reminder_email(
     maps_html = ""
     maps_plain = ""
     if tenant:
-        maps_html = google_maps_link_block_html(tenant) + openstreetmap_link_block_html(tenant)
-        gp = google_maps_link_block_plain(tenant)
-        op = openstreetmap_link_block_plain(tenant)
+        maps_html = google_maps_link_block_html(tenant, lang) + openstreetmap_link_block_html(
+            tenant, lang
+        )
+        gp = google_maps_link_block_plain(tenant, lang)
+        op = openstreetmap_link_block_plain(tenant, lang)
         if gp:
             maps_plain += f"\n{gp}\n"
         if op:
             maps_plain += f"\n{op}\n"
 
-    contact_html = contact_block_html(tenant) if tenant else ""
-    contact_plain = contact_block_plain(tenant) if tenant else ""
+    contact_html = contact_block_html(tenant, lang) if tenant else ""
+    contact_plain = contact_block_plain(tenant, lang) if tenant else ""
 
     view_block = _link_block_html(view_url, lang)
 

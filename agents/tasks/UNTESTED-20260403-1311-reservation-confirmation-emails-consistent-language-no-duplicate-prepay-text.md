@@ -22,3 +22,12 @@ Add or adjust message keys for supported languages and tests covering rendered o
 - Fix duplicate prepay lines by reconciling `prepayment_notice`, `prepayment_text`, and tenant body defaults/docs.
 - Extend translations and add/adjust tests for en + es rendered HTML/text as appropriate.
 - Skim `docs/` for reservation/email behavior if referenced elsewhere; keep changes backend-focused unless the issue explicitly needs front settings copy.
+
+## Testing instructions
+
+1. From repo root with dev compose DB/redis up:
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm back python3 -m pytest tests/test_reservation_email_template.py tests/test_reservation_reminder_email.py -q
+   ```
+2. Confirm new/updated cases: English defaults unchanged for `lang=en`; Spanish body/subject/prepayment/arrival/map/contact strings for `lang=es`; `reservation_transactional_lang` prefers a non-empty reservation `locale` when present, else tenant `default_language`.
+3. Optional manual: set tenant `default_language` to `es`, create a reservation with email and SMTP configured; confirm confirmation email uses Spanish for server-built lines (custom subject/body in Settings remain tenant-authored).

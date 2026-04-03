@@ -67,7 +67,7 @@ def main() -> None:
     can_send = any_tenant_smtp or has_global
     print("3. When is confirmation email sent?")
     print("   - When a reservation is created with a non-empty customer email (staff or public).")
-    print("   - Subject/body use Settings → Email templates ({{placeholders}}) or built-in defaults.")
+    print("   - Subject/body use Settings → Email templates ({{placeholders}}) or built-in localized defaults.")
     print("   - Backend uses TENANT SMTP if tenant has smtp_user + smtp_password.")
     print("   - If tenant has no SMTP, backend falls back to GLOBAL SMTP (config.env).")
     print("   - If neither tenant nor global SMTP is set, sending is skipped.")

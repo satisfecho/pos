@@ -154,7 +154,9 @@ class Tenant(SQLModel, table=True):
 
     # Reservation options: pre-payment (discounted on meal), policies, reminders
     reservation_prepayment_cents: int | None = Field(default=None)
-    reservation_prepayment_text: str | None = Field(default=None)  # Configurable text for end user
+    reservation_prepayment_text: str | None = Field(
+        default=None
+    )  # Shown inside {{prepayment_notice}}; use {{prepayment_text}} alone only without {{prepayment_notice}} (see reservation_email_template.py)
     reservation_cancellation_policy: str | None = Field(default=None)
     reservation_arrival_tolerance_minutes: int | None = Field(default=None)  # e.g. 15
     # Planning: average seated session length; used to free tables for later reservation slots (null = legacy same-day block)

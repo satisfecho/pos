@@ -7936,6 +7936,7 @@ def _send_reservation_confirmation_background(tenant_id: int, reservation_id: in
                     tenant=tenant,
                     view_url=view_url,
                     smtp_tenant=smtp_tenant,
+                    reservation=reservation,
                 )
             )
             logger.info("Reservation confirmation email sent for reservation_id=%s to %s", reservation_id, reservation.customer_email.strip())

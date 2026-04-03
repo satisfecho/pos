@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Reservation confirmation email (GitHub #162):** Server-built copy (default subject/body when templates are empty, prepayment amount line, arrival tolerance, map and contact labels, logo alt fallback) uses **`get_message`** for the tenant’s default UI language (`reservation_transactional_lang`: optional future per-reservation `locale` overrides tenant default). Documented **`{{prepayment_notice}}` vs `{{prepayment_text}}`** in code and **`docs/0030-reservation-confirmation-email-troubleshooting.md`**. Tests: **`tests/test_reservation_email_template.py`** (en + es).
+
 - **Reports / attendance (GitHub #160):** Work-session tables (**Who is on shift now**, **Staff attendance**) use **`work-sessions-attendance-table`** layout (`table-layout: auto`, min width, nowrap) so columns no longer collide with the revenue-only fixed 4-column **`data-table`** rule; **Adjust** column uses **`work-sessions-actions`** (minimal width, right align, extra left padding). Task: `agents/tasks/UNTESTED-20260403-1242-fix-attendance-table-column-overlap-on-reports.md`.
 
 - **Agent loop — local LLM triage:** Default **`OLLAMA_MODEL`** when unset is **`Gemma4:latest`** (was **`qwen2.5:1.5b`**) for Ollama fallback labeling and use in **`agents/pos-agent-loop.sh`**.
