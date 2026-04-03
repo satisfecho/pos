@@ -34,3 +34,36 @@ See **`docs/0030-reservation-confirmation-email-troubleshooting.md`** (and relat
 1. **Migrate:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back python3 -m app.migrate` (expect version **20260403150000**).
 2. **Pytest:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back python3 -m pytest tests/test_reservation_email_template.py tests/test_reservation_reminder_email.py -q`
 3. **Manual (optional):** Create a public booking with `?lang=es` (or `Accept-Language: es`) and a customer email; confirm the received confirmation is Spanish end-to-end (subject, labels, button, footer). Staff-created bookings use the request language captured in **`locale`**; reminders use the same **`reservation_transactional_lang`** path when **`send_reservation_reminder`** runs.
+
+---
+
+## Test report
+
+1. **Date/time (UTC) and log window:** 2026-04-03 14:08–14:10 UTC (migrate + pytest in `pos-back` container).
+
+2. **Environment:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml`; branch **development** @ **f76de49**; no browser / no `BASE_URL` smoke (backend-only verification).
+
+3. **What was tested:** Task **Testing instructions** items 1–2 (migrate expected version; targeted pytest). Item 3 (manual Spanish booking + inbox) **not** run — marked optional in task.
+
+4. **Results:**
+   - **Migrate to 20260403150000:** **PASS** — `app.migrate` reported max applied **20260403150000** and “Database is up to date”.
+   - **`tests/test_reservation_email_template.py` + `tests/test_reservation_reminder_email.py`:** **PASS** — `22 passed in 0.27s`.
+   - **Manual Spanish end-to-end email:** **N/A (optional, not executed)** — no SMTP/inbox check in this run.
+
+5. **Overall:** **PASS** (required automated checks satisfied).
+
+6. **Product owner feedback:** Reservation email template and reminder tests pass in Docker with the current schema, including localized assertions covered by the suite. Optional real-inbox verification for Spanish public booking was skipped; run that if you want end-to-end mail client confirmation beyond pytest.
+
+7. **URLs tested:** **N/A — no browser** (API/pytest only).
+
+8. **Relevant log excerpts:**
+
+```text
+# docker compose … exec back python3 -m app.migrate
+INFO: Database schema version (max applied): 20260403150000
+INFO: Database is up to date (version 20260403150000)
+✅ Database schema version: 20260403150000
+
+# docker compose … exec back python3 -m pytest tests/test_reservation_email_template.py tests/test_reservation_reminder_email.py -q
+22 passed in 0.27s
+```
