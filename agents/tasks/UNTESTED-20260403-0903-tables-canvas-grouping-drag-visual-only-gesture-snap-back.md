@@ -17,3 +17,18 @@ Refactor the tables canvas so **grouping drag** is a **pure visual gesture**: wh
 - Separate **layout edit** vs **grouping gesture** if both exist; gate autosave so grouping never triggers it.
 - Manually test: drag toward join target, cancel, invalid target — table returns to original spot; successful join still works; moving tables (if applicable) still persists and autosaves.
 - See `docs/` for any floor-plan / tables UX notes if present (e.g. prior table-group or canvas work).
+
+## Implementation notes (coder)
+
+- **`front/src/app/tables/tables-canvas.component.ts`:** Join gesture uses `groupingDragOffset` signal + `tableGroupTransform()`; `tables()` x/y unchanged until **layout move** (`activeDragIsLayoutMove`: **Alt+mousedown** or **`layoutArrangeMode`** toggle). Join hit-testing uses `applyGroupingOffsetToTable`. **Join confirm** closes the modal without `onConfirmationCancel()` so restore maps are not cleared early; failed pre-join flush clears gesture snapshots.
+- **i18n:** `TABLES.JOIN_HINT` plus `ARRANGE_LAYOUT_OFF` / `ON` / `TITLE` in all `front/public/i18n/*.json`.
+
+## Testing instructions
+
+1. **Stack:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml` (or `./run.sh`); open `http://127.0.0.1:4202/tables/canvas` (staff login).
+2. **Join gesture (default drag):** Drag an ungrouped table over another until proximity highlight; release without holding — table should **snap back**; **Unsaved changes** should **not** appear from that gesture alone.
+3. **Join confirm / cancel:** Overlap ~1s+, release → confirm dialog → **Cancel** → tables stay at **original** stored positions; repeat and **Confirm** → group forms and prior **snap-after-join** still applies (no stuck overlap from the gesture).
+4. **Layout move — desktop:** Turn off arrange toggle if on; **Alt+drag** a table → **Unsaved changes** / autosave should behave as before (debounced save).
+5. **Layout move — touch / tablet:** Enable **Move tables** (`data-testid="tables-canvas-arrange-layout-btn"`), drag → positions persist and autosave; toggle off → drag is join-only again.
+6. **Regression:** Ctrl/Cmd+click multi-select join; palette **add table**; floor switch with unsaved layout still prompts/flush as before.
+7. **Build:** `docker compose … logs --tail=80 front` — no Angular/TS errors after edits.
