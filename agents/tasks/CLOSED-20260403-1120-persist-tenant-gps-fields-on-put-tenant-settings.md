@@ -24,3 +24,30 @@ Owner settings for venue location (latitude, longitude, radius, location check t
    `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T back python3 -m pytest tests/test_work_session.py -q`  
    Expect **6 passed** (includes three new tests).
 2. Optional manual: as owner/admin, **Settings** → set venue coordinates and radius, enable **Require GPS at venue** for clock QR if applicable; staff **clock in** with QR + location should no longer fail with “Venue coordinates must be set” when coords were saved.
+
+---
+
+## Test report
+
+1. **Date/time (UTC) and log window:** 2026-04-03 11:22 UTC; verification run ~11:21–11:22 UTC (pytest completed in ~3.5s).
+
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; services `back`, `db`, etc. up; pytest via `docker compose … exec -T back`. Branch `development`, commit `7cbb70a`.
+
+3. **What was tested:** Task **Testing instructions** §1 — `tests/test_work_session.py` full module (includes GPS persistence, invalid GPS rejection, clock-in with venue coords via settings).
+
+4. **Results:**
+   - **Pytest `tests/test_work_session.py` — 6 tests, all green:** **PASS** — command exit 0; output `6 passed in 3.51s`.
+   - **Optional manual UI / clock flow:** **N/A** — not required by §1; skipped to stay within stated instructions.
+
+5. **Overall:** **PASS**
+
+6. **Product owner feedback:** Automated coverage confirms tenant settings now persist GPS fields and that clock-in succeeds when QR location verify is on and coordinates were set through the settings API. Owners can rely on saved venue coordinates for staff clock flows without a separate data fix. Optional end-to-end UI check remains a good sanity pass before release if policies change.
+
+7. **URLs tested:** **N/A — no browser** (API-level pytest only).
+
+8. **Relevant log excerpts:** Pytest (primary evidence):
+   ```
+   ......                                                                   [100%]
+   6 passed in 3.51s
+   ```
+   `pos-back` access log during the window showed only unrelated `GET /docs` from HAProxy; pytest ran in-process and did not add distinguishing lines there.
