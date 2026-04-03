@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Tester handed off this CLOSED task after verifying the reservation email i18n and spacing work tied to GitHub issue #163.
+- **What was done:** Implementation covered localized confirmation/reminder strings via `get_message`, prepayment placeholder rules without duplicate wording, tighter HTML spacing in the server-built path, migration **20260403150000**, and extended pytest coverage for **en** / **es** per the task brief.
+- **What was tested:** Migrate reported up to date at **20260403150000**; **22** pytest tests passed for `test_reservation_email_template.py` and `test_reservation_reminder_email.py`; optional manual Spanish SMTP/inbox check was not run (N/A per tester).
+- **Why closed:** Required automated verification passed; overall test report **PASS**.
+- **Closed at (UTC):** 2026-04-03 14:10
+---
+
 # Reservation emails: full i18n, no mixed language, tighter HTML spacing
 
 ## GitHub Issues
