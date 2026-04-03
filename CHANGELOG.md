@@ -36,7 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- **Tables / floor canvas (GitHub #154):** **Join-by-drag** is a **visual-only** gesture: stored `x_position` / `y_position` and **layout autosave** are not updated until the user **moves tables** explicitly (**Alt+drag** on desktop, or **Move tables** toolbar toggle on touch). Transient **SVG translate** follows the pointer; **snap-back** on release or join modal cancel. Overlap detection uses **effective** (base + offset) coordinates. **Join confirm** no longer clears `pendingPostJoinLayoutRestore` / `preJoinGesturePositions` before `loadData()`, so post-join position snap can run. Task: `agents/tasks/UNTESTED-20260403-0903-tables-canvas-grouping-drag-visual-only-gesture-snap-back.md`.
+- **Tables / floor canvas (GitHub #156):** **Move tables** toggle and **Alt+drag** gating removed — table drag **always** updates layout positions (with autosave). **Join-by-drag** still uses overlap + short hold → **Join tables?** confirmation; **cancel** restores the **whole floor** layout from the drag-start snapshot. Successful join keeps the existing API + post-join snap-back path. i18n: `TABLES.JOIN_HINT` updated; `ARRANGE_LAYOUT_*` keys removed.
 
 - **Working plan / compliance (GitHub #153):** **Schedule compliance (heuristic checks)** on `/working-plan/calendar` (and week view) formats planned time, weekly limits, rest gaps, and yearly thresholds with the same **`formatMinutes`** helper as **Planned vs clocked** (`Xh` / `Xh Ym`), instead of raw minute counts in translated strings. Task: `agents/tasks/UNTESTED-20260402-1606-change-minutes-to-hours.md`.
 

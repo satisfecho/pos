@@ -15,3 +15,15 @@ Remove the “Moviendo mesas” / move-mode UI and any logic that forces Alt or 
 - After successful join, preserve existing API and UI behavior.
 - Sweep `front/public/i18n/*.json` (and any inline hints) for strings referencing Alt, move mode, or the removed toggle; align copy with the new interaction model.
 - Smoke-test: drag tables, open join dialog, cancel → positions revert; confirm join → group forms as today.
+
+## Testing instructions (for tester)
+
+1. **Build:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=80 front` — no Angular/TS errors after edits.
+2. **Smoke:** From `front/`, `BASE_URL=http://127.0.0.1:4202 npm run test:landing-version` (exit 0).
+3. **Manual `/tables/canvas` (staff with table layout access):**
+   - Header: **no** “Move tables” / arrange toggle (`tables-canvas-arrange-layout-btn` removed). **Join hint** text must **not** mention Alt or a move toggle.
+   - Drag a table without overlap → release → position **stays** (unsaved / autosave as before).
+   - Drag one table over another (~1s overlap hold), release → **Join tables?** opens. **Cancel** → both tables return to **pre-drag** positions on the floor.
+   - Same gesture → **Confirm** → group created; layout snap-back after reload behaves as before.
+   - **Ctrl/Cmd+click** multi-select still does not start a drag.
+4. **Regression:** Touch: single-finger drag still moves tables and persists layout (no separate mode).

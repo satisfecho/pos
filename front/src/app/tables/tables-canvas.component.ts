@@ -80,20 +80,6 @@ const STAFF_ORDERS_ROLES = new Set([
               <span class="unsaved-indicator">{{ 'TABLES.UNSAVED_CHANGES' | translate }}</span>
             }
             @if (floors().length > 0) {
-              <button
-                type="button"
-                class="btn btn-secondary"
-                [class.active]="layoutArrangeMode()"
-                (click)="toggleLayoutArrangeMode()"
-                [title]="'TABLES.ARRANGE_LAYOUT_TITLE' | translate"
-                data-testid="tables-canvas-arrange-layout-btn"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l3-3-3-3M19 9l3 3-3 3"/>
-                  <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
-                </svg>
-                {{ (layoutArrangeMode() ? 'TABLES.ARRANGE_LAYOUT_ON' : 'TABLES.ARRANGE_LAYOUT_OFF') | translate }}
-              </button>
               <button type="button" class="btn btn-primary" (click)="focusAddTablePalette()" [title]="'TABLES.ADD_TABLE' | translate" data-testid="tables-canvas-add-table-btn">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -1568,12 +1554,6 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   isDragging = false;
   draggedTable: CanvasTable | null = null;
   private dragOffset = { x: 0, y: 0 };
-  /** True while pointer is down: persist x/y and autosave (Alt+drag or Arrange layout). False = join gesture only (visual offset). */
-  private activeDragIsLayoutMove = false;
-  /** Tablet / explicit layout mode (touch has no Alt key). */
-  layoutArrangeMode = signal(false);
-  /** Transient pixel offset for join gesture; never written to `tables()` or the API. */
-  groupingDragOffset = signal<{ dx: number; dy: number } | null>(null);
 
   // Zoom and pan state
   zoomLevel = 1;
@@ -1716,6 +1696,21 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
       m.set(t.id, { x: t.x_position ?? 0, y: t.y_position ?? 0 });
     }
     this.preJoinGesturePositions = m;
+  }
+
+  /** Used when the join confirmation modal is dismissed: restore floor layout from drag-start snapshot. */
+  private restorePreJoinGestureLayoutFromSnapshot(): void {
+    const snap = this.preJoinGesturePositions;
+    if (!snap?.size) return;
+    this.tables.update(ts =>
+      ts.map(t => {
+        if (t.id == null) return t;
+        const p = snap.get(t.id);
+        if (!p) return t;
+        return { ...t, x_position: p.x, y_position: p.y };
+      })
+    );
+    this.markLayoutDirty();
   }
 
   /** After tables are reloaded, keep the side panel / header in sync (avoids stale group ids after unjoin/join). */
@@ -1986,35 +1981,11 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     });
   }
 
-  toggleLayoutArrangeMode(): void {
-    this.layoutArrangeMode.update(v => !v);
-  }
-
-  /** SVG `transform` for a table: base position plus transient offset during join drag. */
+  /** SVG `transform` for a table (positions live in `tables()` during drag). */
   tableGroupTransform(table: CanvasTable): string {
     const bx = table.x_position || 100;
     const by = table.y_position || 100;
-    if (
-      !this.activeDragIsLayoutMove &&
-      this.isDragging &&
-      this.draggedTable?.id === table.id
-    ) {
-      const off = this.groupingDragOffset();
-      if (off) {
-        return `translate(${bx + off.dx},${by + off.dy})`;
-      }
-    }
     return `translate(${bx},${by})`;
-  }
-
-  /** Effective canvas coordinates for join hit-testing while grouping-dragging. */
-  private applyGroupingOffsetToTable(t: CanvasTable, off: { dx: number; dy: number } | null): CanvasTable {
-    if (!off) return t;
-    return {
-      ...t,
-      x_position: (t.x_position || 0) + off.dx,
-      y_position: (t.y_position || 0) + off.dy,
-    };
   }
 
   private resetJoinProximityGesture(): void {
@@ -2135,10 +2106,7 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   private updateJoinProximityDuringDrag(draggedId: number): void {
     const fresh = this.tables().find(t => t.id === draggedId);
     if (!fresh) return;
-    const effective = this.activeDragIsLayoutMove
-      ? fresh
-      : this.applyGroupingOffsetToTable(fresh, this.groupingDragOffset());
-    const candidate = this.findJoinProximityTarget(effective);
+    const candidate = this.findJoinProximityTarget(fresh);
     const cid = candidate?.id ?? null;
     if (cid !== this.joinProximityCandidateId) {
       this.joinProximityCandidateId = cid;
@@ -2150,17 +2118,12 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   /** After drag release: if overlap + hold time satisfied, show join confirmation (no API until confirm). */
   private finishTableDragInteraction(): void {
     const dragged = this.draggedTable;
-    const wasLayoutMove = this.activeDragIsLayoutMove;
-    this.activeDragIsLayoutMove = false;
-
     const fresh = dragged?.id != null ? this.tables().find(t => t.id === dragged.id) : null;
-    const offSnapshot = this.groupingDragOffset();
 
     let joinCandidate: CanvasTable | null = null;
     let heldLongEnough = false;
-    if (!wasLayoutMove && fresh) {
-      const effective = this.applyGroupingOffsetToTable(fresh, offSnapshot);
-      joinCandidate = this.findJoinProximityTarget(effective);
+    if (fresh) {
+      joinCandidate = this.findJoinProximityTarget(fresh);
       heldLongEnough =
         !!joinCandidate &&
         joinCandidate.id === this.joinProximityCandidateId &&
@@ -2173,16 +2136,10 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
 
     this.isDragging = false;
     this.draggedTable = null;
-    this.groupingDragOffset.set(null);
 
     this.resetJoinProximityGesture();
 
     if (!dragged?.id) {
-      this.preJoinGesturePositions = null;
-      return;
-    }
-
-    if (wasLayoutMove) {
       this.preJoinGesturePositions = null;
       return;
     }
@@ -2457,8 +2414,6 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     this.isDragging = false;
     this.draggedTable = null;
-    this.activeDragIsLayoutMove = false;
-    this.groupingDragOffset.set(null);
     this.resetJoinProximityGesture();
     this.isPanning = false;
     document.body.style.cursor = '';
@@ -2487,8 +2442,6 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
       this.selectedTableSeats = table.seat_count || 4;
       this.isDragging = false;
       this.draggedTable = null;
-      this.activeDragIsLayoutMove = false;
-      this.groupingDragOffset.set(null);
       return;
     }
 
@@ -2497,15 +2450,9 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     this.selectedTableName = table.name;
     this.selectedTableSeats = table.seat_count || 4;
 
-    this.activeDragIsLayoutMove = event.altKey || this.layoutArrangeMode();
-    this.groupingDragOffset.set(null);
     this.isDragging = true;
     this.draggedTable = table;
-    if (!this.activeDragIsLayoutMove) {
-      this.capturePreJoinGestureLayout();
-    } else {
-      this.preJoinGesturePositions = null;
-    }
+    this.capturePreJoinGestureLayout();
     this.resetJoinProximityGesture();
     document.body.style.userSelect = 'none'; // Prevent text selection globally
     document.body.style.cursor = 'grabbing';
@@ -2532,15 +2479,9 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     this.selectedTableSeats = table.seat_count || 4;
     this.propertiesPanelExpanded = false; // Start collapsed on mobile
 
-    this.activeDragIsLayoutMove = this.layoutArrangeMode();
-    this.groupingDragOffset.set(null);
     this.isDragging = true;
     this.draggedTable = table;
-    if (!this.activeDragIsLayoutMove) {
-      this.capturePreJoinGestureLayout();
-    } else {
-      this.preJoinGesturePositions = null;
-    }
+    this.capturePreJoinGestureLayout();
     this.resetJoinProximityGesture();
 
     const svgPoint = this.getSvgPoint(touch.clientX, touch.clientY);
@@ -2610,21 +2551,13 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     const clampedY = Math.max(50, Math.min(this.canvasHeight - 50, y));
 
     const tid = this.draggedTable.id;
-    if (this.activeDragIsLayoutMove && tid != null) {
+    if (tid != null) {
       this.tables.update(tables =>
         tables.map(t =>
           t.id === tid ? { ...t, x_position: clampedX, y_position: clampedY } : t
         )
       );
       this.markLayoutDirty();
-    } else if (tid != null) {
-      const base = this.tables().find(t => t.id === tid);
-      if (base) {
-        this.groupingDragOffset.set({
-          dx: clampedX - (base.x_position || 0),
-          dy: clampedY - (base.y_position || 0),
-        });
-      }
       this.updateJoinProximityDuringDrag(tid);
     }
   };
@@ -2644,8 +2577,6 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
 
     this.isDragging = false;
     this.draggedTable = null;
-    this.activeDragIsLayoutMove = false;
-    this.groupingDragOffset.set(null);
   };
 
   // Touch move handler for mobile dragging and pinch-to-zoom
@@ -2684,21 +2615,13 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     const clampedY = Math.max(50, Math.min(this.canvasHeight - 50, y));
 
     const tid = this.draggedTable.id;
-    if (this.activeDragIsLayoutMove && tid != null) {
+    if (tid != null) {
       this.tables.update(tables =>
         tables.map(t =>
           t.id === tid ? { ...t, x_position: clampedX, y_position: clampedY } : t
         )
       );
       this.markLayoutDirty();
-    } else if (tid != null) {
-      const base = this.tables().find(t => t.id === tid);
-      if (base) {
-        this.groupingDragOffset.set({
-          dx: clampedX - (base.x_position || 0),
-          dy: clampedY - (base.y_position || 0),
-        });
-      }
       this.updateJoinProximityDuringDrag(tid);
     }
   };
@@ -2710,8 +2633,6 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     } else {
       this.isDragging = false;
       this.draggedTable = null;
-      this.activeDragIsLayoutMove = false;
-      this.groupingDragOffset.set(null);
       this.resetJoinProximityGesture();
     }
     this.lastPinchDistance = 0; // Reset pinch tracking
@@ -2908,10 +2829,14 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   }
 
   onConfirmationCancel() {
+    const m = this.confirmationModal();
+    if (m.action === 'joinTables') {
+      this.restorePreJoinGestureLayoutFromSnapshot();
+    }
     this.preJoinGesturePositions = null;
     this.pendingPostJoinLayoutRestore = null;
-    this.confirmationModal.update(m => ({
-      ...m,
+    this.confirmationModal.update(modal => ({
+      ...modal,
       show: false,
       action: null,
       joinPairIds: undefined,
