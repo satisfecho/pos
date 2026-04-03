@@ -14,3 +14,13 @@ Owner settings for venue location (latitude, longitude, radius, location check t
 - Validate inputs: sensible lat/lon bounds, non-negative radius; reject or 422 invalid combinations per existing API style.
 - Add or extend tests (e.g. `tests/test_work_session.py` or tenant settings tests): a settings update persists coordinates; with `clock_qr_location_verify` and coords set, clock-in path that needs venue GPS succeeds (or equivalent API-level assertion).
 - Run targeted pytest and any relevant smoke path; do not log secrets or full env in commits.
+
+## Implementation summary
+- **`back/app/main.py` — `update_tenant_settings`:** Applies `latitude`, `longitude`, `location_radius_meters`, and `location_check_enabled` when each field is non-null in the request body; validates finite lat ∈ [-90, 90], lon ∈ [-180, 180], radius ≥ 0 (HTTP **400** on violation).
+- **`back/tests/test_work_session.py`:** `test_put_tenant_settings_persists_gps_fields`, `test_put_tenant_settings_rejects_invalid_gps`, `test_clock_in_succeeds_when_gps_required_and_venue_coords_set_via_settings`.
+
+## Testing instructions
+1. From repo root, with dev stack DB reachable:  
+   `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T back python3 -m pytest tests/test_work_session.py -q`  
+   Expect **6 passed** (includes three new tests).
+2. Optional manual: as owner/admin, **Settings** → set venue coordinates and radius, enable **Require GPS at venue** for clock QR if applicable; staff **clock in** with QR + location should no longer fail with “Venue coordinates must be set” when coords were saved.

@@ -7,6 +7,7 @@ from datetime import date, datetime, timedelta, timezone
 from pg_client_mixin import PgClientTestCase
 
 from app import models, security
+from app.clock_qr_util import hash_clock_qr_token
 from app.work_session_serialization import WORK_SESSION_CONTRACT_THRESHOLD_MINUTES, serialize_work_session
 
 
@@ -135,6 +136,88 @@ class TestWorkSession(PgClientTestCase):
         self.assertTrue(d["over_contract"])
         d2 = serialize_work_session(ws, "Waiter", now_utc=started + timedelta(minutes=30))
         self.assertFalse(d2["over_contract"])
+
+    def test_put_tenant_settings_persists_gps_fields(self):
+        ah = _bearer_headers(self.admin)
+        r = self.client.put(
+            "/tenant/settings",
+            headers=ah,
+            json={
+                "latitude": 52.520008,
+                "longitude": 13.404954,
+                "location_radius_meters": 250,
+                "location_check_enabled": True,
+            },
+        )
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        self.assertAlmostEqual(body["latitude"], 52.520008, places=5)
+        self.assertAlmostEqual(body["longitude"], 13.404954, places=5)
+        self.assertEqual(body["location_radius_meters"], 250)
+        self.assertTrue(body["location_check_enabled"])
+
+        t = self.session.get(models.Tenant, self.tenant_id)
+        self.assertIsNotNone(t)
+        assert t is not None
+        self.assertAlmostEqual(float(t.latitude or 0), 52.520008, places=5)
+        self.assertAlmostEqual(float(t.longitude or 0), 13.404954, places=5)
+        self.assertEqual(t.location_radius_meters, 250)
+        self.assertTrue(t.location_check_enabled)
+
+    def test_put_tenant_settings_rejects_invalid_gps(self):
+        ah = _bearer_headers(self.admin)
+        r = self.client.put(
+            "/tenant/settings",
+            headers=ah,
+            json={"latitude": 91.0},
+        )
+        self.assertEqual(r.status_code, 400, r.text)
+        r2 = self.client.put(
+            "/tenant/settings",
+            headers=ah,
+            json={"longitude": -200.0},
+        )
+        self.assertEqual(r2.status_code, 400, r2.text)
+        r3 = self.client.put(
+            "/tenant/settings",
+            headers=ah,
+            json={"location_radius_meters": -1},
+        )
+        self.assertEqual(r3.status_code, 400, r3.text)
+
+    def test_clock_in_succeeds_when_gps_required_and_venue_coords_set_via_settings(self):
+        token = "venue-test-qr-token"
+        tenant = self.session.get(models.Tenant, self.tenant_id)
+        self.assertIsNotNone(tenant)
+        assert tenant is not None
+        tenant.clock_qr_token_hash = hash_clock_qr_token(token)
+        tenant.clock_qr_location_verify = True
+        self.session.add(tenant)
+        self.session.commit()
+
+        ah = _bearer_headers(self.admin)
+        r = self.client.put(
+            "/tenant/settings",
+            headers=ah,
+            json={
+                "latitude": 40.7128,
+                "longitude": -74.0060,
+                "location_radius_meters": 500,
+            },
+        )
+        self.assertEqual(r.status_code, 200, r.text)
+
+        wh = _bearer_headers(self.waiter)
+        r2 = self.client.post(
+            "/users/me/work-session/start",
+            headers=wh,
+            json={
+                "clock_qr": token,
+                "latitude": 40.7129,
+                "longitude": -74.0061,
+            },
+        )
+        self.assertEqual(r2.status_code, 200, r2.text)
 
 
 if __name__ == "__main__":

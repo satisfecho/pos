@@ -5,6 +5,7 @@ import hashlib
 import hmac
 import json
 import logging
+import math
 import os
 import secrets
 import time as _time
@@ -2804,6 +2805,34 @@ def update_tenant_settings(
         tenant.ui_modules = merge_tenant_ui_modules_patch(
             tenant.ui_modules, tenant_update.ui_modules
         )
+
+    # Venue GPS (clock QR location verify, public order location checks, etc.)
+    if tenant_update.latitude is not None:
+        lat = float(tenant_update.latitude)
+        if not math.isfinite(lat) or lat < -90.0 or lat > 90.0:
+            raise HTTPException(
+                status_code=400,
+                detail="latitude must be a finite number between -90 and 90",
+            )
+        tenant.latitude = lat
+    if tenant_update.longitude is not None:
+        lon = float(tenant_update.longitude)
+        if not math.isfinite(lon) or lon < -180.0 or lon > 180.0:
+            raise HTTPException(
+                status_code=400,
+                detail="longitude must be a finite number between -180 and 180",
+            )
+        tenant.longitude = lon
+    if tenant_update.location_radius_meters is not None:
+        r = tenant_update.location_radius_meters
+        if r < 0:
+            raise HTTPException(
+                status_code=400,
+                detail="location_radius_meters must be non-negative",
+            )
+        tenant.location_radius_meters = int(r)
+    if tenant_update.location_check_enabled is not None:
+        tenant.location_check_enabled = tenant_update.location_check_enabled
 
     if tenant_update.clock_qr_location_verify is not None:
         tenant.clock_qr_location_verify = tenant_update.clock_qr_location_verify
