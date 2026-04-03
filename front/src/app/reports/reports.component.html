@@ -26,6 +26,26 @@
         </button>
       </div>
     </div>
+    <div class="date-presets-bar" data-testid="reports-date-presets" role="group" [attr.aria-label]="'REPORTS.PRESETS_LABEL' | translate">
+      <span class="presets-label">{{ 'REPORTS.PRESETS_LABEL' | translate }}</span>
+      <div class="date-presets">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="applyDatePreset('today')" [disabled]="loading()">
+          {{ 'REPORTS.PRESET_TODAY' | translate }}
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" (click)="applyDatePreset('last7')" [disabled]="loading()">
+          {{ 'REPORTS.PRESET_LAST_7_DAYS' | translate }}
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" (click)="applyDatePreset('thisWeek')" [disabled]="loading()">
+          {{ 'REPORTS.PRESET_THIS_WEEK' | translate }}
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" (click)="applyDatePreset('thisMonth')" [disabled]="loading()">
+          {{ 'REPORTS.PRESET_THIS_MONTH' | translate }}
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" (click)="applyDatePreset('previousMonth')" [disabled]="loading()">
+          {{ 'REPORTS.PRESET_PREVIOUS_MONTH' | translate }}
+        </button>
+      </div>
+    </div>
   </div>
 
   @if (error()) {

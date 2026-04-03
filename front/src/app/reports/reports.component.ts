@@ -17,6 +17,13 @@ import { LanguageService } from '../services/language.service';
 import { intlLocaleFromTranslate } from '../shared/intl-locale';
 import { currencySymbolFromIsoCode } from '../shared/currency-symbol';
 
+export type ReportsDatePreset =
+  | 'today'
+  | 'last7'
+  | 'thisWeek'
+  | 'thisMonth'
+  | 'previousMonth';
+
 @Component({
   selector: 'app-reports',
   standalone: true,
@@ -82,18 +89,75 @@ export class ReportsComponent implements OnInit {
   private reportIntlRevision = signal(0);
 
   ngOnInit() {
-    const to = new Date();
-    const from = new Date(to);
-    from.setDate(from.getDate() - 30);
+    const today = this.startOfLocalDay(new Date());
+    const from = this.addLocalDays(today, -30);
     this.fromDate.set(this.fmtDate(from));
-    this.toDate.set(this.fmtDate(to));
+    this.toDate.set(this.fmtDate(today));
     this.loadTenantCurrency();
     this.loadReport();
     this.translate.onLangChange.subscribe(() => this.reportIntlRevision.update((n) => n + 1));
   }
 
+  /** Local calendar date as `YYYY-MM-DD` (not UTC midnight from `toISOString`). */
   private fmtDate(d: Date): string {
-    return d.toISOString().slice(0, 10);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  private startOfLocalDay(d: Date): Date {
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+
+  private addLocalDays(d: Date, delta: number): Date {
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate() + delta);
+  }
+
+  /** Monday (local) as first day of the ISO-style week containing `ref`. */
+  private mondayOfWeekContaining(ref: Date): Date {
+    const s = this.startOfLocalDay(ref);
+    const dow = s.getDay();
+    const delta = dow === 0 ? -6 : 1 - dow;
+    return this.addLocalDays(s, delta);
+  }
+
+  applyDatePreset(preset: ReportsDatePreset): void {
+    const today = this.startOfLocalDay(new Date());
+    let from: Date;
+    let to: Date;
+    switch (preset) {
+      case 'today':
+        from = today;
+        to = today;
+        break;
+      case 'last7':
+        from = this.addLocalDays(today, -6);
+        to = today;
+        break;
+      case 'thisWeek': {
+        const mon = this.mondayOfWeekContaining(today);
+        from = mon;
+        to = this.addLocalDays(mon, 6);
+        break;
+      }
+      case 'thisMonth':
+        from = new Date(today.getFullYear(), today.getMonth(), 1);
+        to = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        break;
+      case 'previousMonth': {
+        const firstThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastPrev = this.addLocalDays(firstThisMonth, -1);
+        from = new Date(lastPrev.getFullYear(), lastPrev.getMonth(), 1);
+        to = lastPrev;
+        break;
+      }
+      default:
+        return;
+    }
+    this.fromDate.set(this.fmtDate(from));
+    this.toDate.set(this.fmtDate(to));
+    this.loadReport();
   }
 
   private loadTenantCurrency() {

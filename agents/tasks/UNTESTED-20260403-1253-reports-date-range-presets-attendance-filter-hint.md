@@ -15,3 +15,14 @@ Improve the Reports screen with quick date-range presets (Today, Last 7 days, Th
 - Add the attendance-section hint (and optional second date range + wiring) per issue; keep UX consistent with existing Reports styling.
 - Add translation keys for all new user-visible strings in every locale file under `front/public/i18n/`.
 - Smoke-test Reports after changes (e.g. relevant Puppeteer or manual: presets, refresh, attendance table).
+
+## Implementation notes
+- **Separate attendance-only date range:** Not implemented; sales and attendance share the header **From** / **To** and **Refresh** (same as before).
+- **This week:** Monday–Sunday in the **local** calendar containing today.
+
+## Testing instructions
+1. Stack up (e.g. Docker dev on **4202**). Owner/admin with **`report:read`**.
+2. **`npm run test:reports --prefix front`** with `BASE_URL=http://127.0.0.1:4202`, `LOGIN_EMAIL` / `LOGIN_PASSWORD` — expects **`[data-testid="reports-date-presets"]`** and ≥5 preset buttons; existing by-product layout checks unchanged.
+3. Manual: open **Reports**; click each preset; confirm **From** / **To** match the preset (spot-check **Today** = same date; **Last 7 days** = 7-day inclusive window ending today); data reloads without an extra **Refresh** click.
+4. Manual: confirm **Staff attendance (clock in/out)** hint mentions header dates and **Refresh** (translated per locale).
+5. **`docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=80 front`** — no Angular/TS errors after edits.

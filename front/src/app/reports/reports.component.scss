@@ -52,6 +52,30 @@
     display: flex;
     gap: var(--space-2);
   }
+
+  .date-presets-bar {
+    flex: 1 1 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--color-border);
+    margin-top: var(--space-1);
+  }
+
+  .presets-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    margin-right: var(--space-1);
+  }
+
+  .date-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
 }
 
 .error-banner {

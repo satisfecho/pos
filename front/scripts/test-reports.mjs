@@ -104,6 +104,23 @@ async function main() {
     }
     console.log('   Reports page loaded; date range present.');
 
+    const presetBar = await page.$('[data-testid="reports-date-presets"]');
+    if (!presetBar) {
+      console.log('   FAIL: Date preset bar (reports-date-presets) not found.');
+      await browser.close();
+      process.exit(1);
+    }
+    const presetBtnCount = await page.evaluate(() => {
+      const bar = document.querySelector('[data-testid="reports-date-presets"]');
+      return bar ? bar.querySelectorAll('button[type="button"]').length : 0;
+    });
+    if (presetBtnCount < 5) {
+      console.log('   FAIL: Expected at least 5 date-preset buttons, got', presetBtnCount);
+      await browser.close();
+      process.exit(1);
+    }
+    console.log('   Date presets bar present (' + presetBtnCount + ' buttons).');
+
     // Wait for report data to load (summary or by-product section)
     await page.waitForSelector('.report-section', { timeout: 15000 }).catch(() => null);
     await sleep(2000);
