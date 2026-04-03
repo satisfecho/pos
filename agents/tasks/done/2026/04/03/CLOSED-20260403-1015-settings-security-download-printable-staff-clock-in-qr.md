@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Tester verified the Settings → Security “Download QR for printing” feature for staff clock-in (issue #155).
+- **What was done:** High-res PNG download (`qrcode`, 1200px, testid `settings-download-clock-qr-png`), i18n keys, and regression/smoke runs were confirmed per task; backend clock-qr regenerate/delete calls succeeded during the run.
+- **What was tested:** `ng build` in the front container, Puppeteer flow (download + BarcodeDetector decode vs `/my-shift?clock_qr=`), `test:my-shift-clock-qr`, and `test:landing-version` — all **PASS**.
+- **Why closed:** All acceptance criteria and test-report items passed; handoff complete.
+- **Closed at (UTC):** 2026-04-03 10:21
+---
+
 # Settings → Security: download printable staff clock-in QR
 
 ## GitHub Issues
