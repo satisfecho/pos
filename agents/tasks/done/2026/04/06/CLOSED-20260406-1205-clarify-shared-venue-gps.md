@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue #166 asked for clearer settings copy so managers understand that one venue coordinate set applies to both order location checks and optional staff clock-in GPS.
+- **What was done:** i18n strings for Location verification and Staff clock-in QR hints were updated across `front/public/i18n/*.json` to describe a single shared venue pin; the tester verified EN and DE on Settings (Payment + Security).
+- **What was tested:** Manual checks plus optional `test:landing-version` — **PASS** per test report (2026-04-06T13:46Z–13:51Z UTC); front build healthy.
+- **Why closed:** Test report overall **PASS**; acceptance criteria met.
+- **Closed at (UTC):** 2026-04-06 13:52
+---
+
 # Clarify shared venue GPS for orders and clock-in (settings copy)
 
 ## GitHub Issues
