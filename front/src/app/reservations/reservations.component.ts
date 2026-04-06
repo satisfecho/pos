@@ -12,6 +12,8 @@ import {
   CanvasTable,
   OverbookingReport,
   TenantSummary,
+  ReservationBookZone,
+  ReservationBookZonesResponse,
 } from '../services/api.service';
 import { PermissionService } from '../services/permission.service';
 import { SidebarComponent } from '../shared/sidebar.component';
@@ -197,15 +199,15 @@ import { ApiErrorMessageService } from '../services/api-error-message.service';
                     <span class="label-block">{{ 'BOOK.SEATING_PREFERENCE' | translate }}</span>
                     <div class="radio-row">
                       <label class="radio-label">
-                        <input type="radio" name="resSeating" [(ngModel)]="formSeating" value="no_preference" />
+                        <input type="radio" name="resSeating" [(ngModel)]="formSeating" (ngModelChange)="loadSlotCapacity()" value="no_preference" />
                         {{ 'BOOK.SEATING_ANY' | translate }}
                       </label>
                       <label class="radio-label">
-                        <input type="radio" name="resSeating" [(ngModel)]="formSeating" value="indoor" />
+                        <input type="radio" name="resSeating" [(ngModel)]="formSeating" (ngModelChange)="loadSlotCapacity()" value="indoor" />
                         {{ 'BOOK.SEATING_INDOOR' | translate }}
                       </label>
                       <label class="radio-label">
-                        <input type="radio" name="resSeating" [(ngModel)]="formSeating" value="terrace" />
+                        <input type="radio" name="resSeating" [(ngModel)]="formSeating" (ngModelChange)="loadSlotCapacity()" value="terrace" />
                         {{ 'BOOK.SEATING_TERRACE' | translate }}
                       </label>
                     </div>
@@ -230,6 +232,7 @@ import { ApiErrorMessageService } from '../services/api-error-message.service';
                     [weekAnchorSeed]="formDate"
                     [excludeReservationId]="editingReservation()?.id ?? null"
                     [serviceType]="hasMealSplit() ? formService : 'all'"
+                    [bookFloorId]="weekGridBookFloorId()"
                     [(selectedDate)]="formDate"
                     [(selectedTime)]="formTime"
                     (selectedDateChange)="loadSlotCapacity()"
@@ -461,6 +464,9 @@ export class ReservationsComponent implements OnInit, OnDestroy {
   /** Allergies / special requirements (synced to allergies_* and customer_notes on save). */
   formDietaryNotes = '';
   formSeating: 'no_preference' | 'indoor' | 'terrace' = 'no_preference';
+  /** When editing: original seating from the reservation; used to scope the week grid to preferred_floor_id until staff changes zone. */
+  editBaselineSeating: 'no_preference' | 'indoor' | 'terrace' | null = null;
+  bookZones = signal<ReservationBookZone[]>([]);
   formError = signal<string | null>(null);
   reservationToSeat = signal<Reservation | null>(null);
   reservationToCancel = signal<Reservation | null>(null);
@@ -494,7 +500,13 @@ export class ReservationsComponent implements OnInit, OnDestroy {
     const tid = this.permissions.getCurrentUser()?.tenant_id;
     if (tid) {
       this.api.getPublicTenant(tid).subscribe({
-        next: (t) => this.tenantSummary.set(t),
+        next: (t) => {
+          this.tenantSummary.set(t);
+          this.api.getReservationBookZones(tid).subscribe({
+            next: (z) => this.bookZones.set(z.floors),
+            error: () => this.bookZones.set([]),
+          });
+        },
         error: () => this.tenantSummary.set(null),
       });
     }
@@ -608,8 +620,17 @@ export class ReservationsComponent implements OnInit, OnDestroy {
     return this.localCalendarTodayYyyyMmDd();
   }
 
+  /** Public book zone for slot APIs: same as /book when editing an unchanged zone+seating pair. */
+  weekGridBookFloorId(): number | null {
+    const ed = this.editingReservation();
+    if (!ed) return null;
+    if (this.formSeating !== this.editBaselineSeating) return null;
+    return ed.preferred_floor_id ?? null;
+  }
+
   openCreate() {
     this.editingReservation.set(null);
+    this.editBaselineSeating = null;
     this.formName = '';
     this.formPhone = '';
     this.formEmail = '';
@@ -632,7 +653,8 @@ export class ReservationsComponent implements OnInit, OnDestroy {
     if (!this.formDate?.trim() || !this.formTime?.trim() || !this.showForm()) return;
     const timeNorm = this.formTime.length >= 5 ? this.formTime.slice(0, 5) : this.formTime;
     const excludeId = this.editingReservation()?.id;
-    this.api.getSlotCapacity(this.formDate, timeNorm, excludeId).subscribe({
+    const floorId = this.weekGridBookFloorId();
+    this.api.getSlotCapacity(this.formDate, timeNorm, excludeId, floorId ?? undefined).subscribe({
       next: (cap) => this.slotCapacity.set({ seats_left: cap.seats_left, tables_left: cap.tables_left }),
       error: () => this.slotCapacity.set(null),
     });
@@ -687,6 +709,7 @@ export class ReservationsComponent implements OnInit, OnDestroy {
     this.formDietaryNotes = reservationDietaryNotesFormValue(r);
     const sp = (r.seating_preference || 'no_preference').toLowerCase();
     this.formSeating = sp === 'indoor' || sp === 'terrace' ? sp : 'no_preference';
+    this.editBaselineSeating = this.formSeating;
     this.formError.set(null);
     this.slotCapacity.set(null);
     this.showForm.set(true);
@@ -696,6 +719,7 @@ export class ReservationsComponent implements OnInit, OnDestroy {
   closeForm() {
     this.showForm.set(false);
     this.editingReservation.set(null);
+    this.editBaselineSeating = null;
     this.prefillMessage.set(null);
   }
 

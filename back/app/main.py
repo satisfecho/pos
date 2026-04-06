@@ -38,6 +38,7 @@ from .db import check_db_connection, create_db_and_tables, get_session, engine
 from .settings import settings
 from .inventory_routes import router as inventory_router
 from .reports_routes import router as reports_router
+from .attendance_routes import router as attendance_router
 from .tenant_lifecycle_routes import router as tenant_lifecycle_router
 from .staff_contract_routes import router as staff_contract_router
 from .staff_contract_template_routes import router as staff_contract_template_router
@@ -8689,16 +8690,20 @@ def update_reservation(
             ).first()
             if not fl:
                 raise HTTPException(status_code=400, detail=api_error_payload("floor_not_found", lang))
+            _validate_floor_seating_pair_or_raise(fl, reservation.seating_preference, lang)
             reservation.preferred_floor_id = body.preferred_floor_id
     ah_ok, ad_ok = _normalize_allergies_for_booking(
         reservation.allergies_has, reservation.allergies_detail
     )
     reservation.allergies_has = ah_ok
     reservation.allergies_detail = ad_ok
+    # Drop zone if it no longer matches seating (e.g. staff changed indoor/terrace without sending preferred_floor_id).
     if reservation.preferred_floor_id is not None:
         fl_pf = session.get(models.Floor, reservation.preferred_floor_id)
-        if fl_pf and fl_pf.tenant_id == current_user.tenant_id:
-            _validate_floor_seating_pair_or_raise(fl_pf, reservation.seating_preference, lang)
+        if not fl_pf or fl_pf.tenant_id != current_user.tenant_id:
+            reservation.preferred_floor_id = None
+        elif not _floor_matches_seating_preference(fl_pf, reservation.seating_preference):
+            reservation.preferred_floor_id = None
     tenant = session.get(models.Tenant, reservation.tenant_id)
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")

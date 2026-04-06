@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **Staff reservation edit (PUT `/reservations/{id}`):** Avoid **400** when the guest had a **book zone** (`preferred_floor_id`) and staff changes **seating preference** — the zone is dropped if it no longer matches the preference; explicit `preferred_floor_id` in the body is validated against seating. Staff **week grid** and **slot-capacity** use the same **floor** scope while editing until seating is changed from the opened baseline.
+
 - **Obsolete agent loop script:** Removed `agents/pi-pos-loop.sh`.
 
 ### Changed
