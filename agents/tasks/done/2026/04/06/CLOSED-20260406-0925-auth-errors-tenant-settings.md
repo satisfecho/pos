@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** HAProxy showed intermittent 401/403 on `/api/token` and `/api/tenant/settings`; investigation targeted auth refresh races and expected RBAC/credential behaviour.
+- **What was done:** Documented expected backend statuses; the frontend auth interceptor was updated to coordinate refresh with `ReplaySubject<boolean>(1)` so late subscribers after a completed refresh still receive success/failure and retry correctly.
+- **What was tested:** Front build health, `test:landing-version` (pass), and authenticated GET/PUT `/api/tenant/settings` after token login (pass); optional parallel-401 stress test not run.
+- **Why closed:** Tester overall **PASS**; pass/fail criteria met with no regression observed for authorized settings flows.
+- **Closed at (UTC):** 2026-04-06 15:27
+---
+
 # Investigate 401/403 errors on /api/tenant/settings and /api/token
 
 ## Source
