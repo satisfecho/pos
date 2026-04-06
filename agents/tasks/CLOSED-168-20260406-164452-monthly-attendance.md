@@ -73,3 +73,48 @@ File "/app/app/attendance_routes.py", line 63, in export_attendance_excel
 UnboundLocalError: cannot access local variable 'col' where it is not associated with a value
 INFO: ... "GET /reports/attendance-excel?year=2026&month=3&staff_ids=1 HTTP/1.1" 500 Internal Server Error
 ```
+
+---
+
+## Test report — post-fix verification (re-run)
+
+1. **Date/time (UTC):** 2026-04-06 — verification **~18:05–18:15 UTC**; `pos-back` access log window for `GET /reports/attendance-excel` matches the same interval.
+
+2. **Environment:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml`; **`BASE_URL`** `http://127.0.0.1:4202` for Puppeteer. Branch **`development`**, commit **`dcc580c`**. API checks: `urllib` from inside **`pos-back`** to `http://127.0.0.1:8020` with Bearer token for tenant **1** owner (user id **1**). Pytest: `docker compose … exec back python3 -m pytest tests/test_attendance_excel.py -q`.
+
+3. **What was tested:** **Testing instructions** 1 (pytest), 2–3 (login + Reports + Monthly attendance section via `test-reports.mjs`), 7 (live API: filtered / invalid / empty month), plus openpyxl parsing of XLSX bodies for **instruction 4–6** equivalence on this database. **Note:** Local tenant **1** only has **one** employee name (**Ralf Roeber**, user **2**) with work sessions in **2026-03**; user **2** alone in that month returns **404** (no rows), which matches the “no matching sessions” rule. Multi-name “two staff in one file” behaviour was confirmed by **`staff_ids=1&staff_ids=2`** returning **200** XLSX (same name set as all-staff export for this dataset). The **Download Excel** button was not clicked in a browser session; export bytes were validated via API (same endpoint the UI calls).
+
+4. **Results:**
+   - **Pytest `tests/test_attendance_excel.py`:** **PASS** — **2 passed** in ~2.1s.
+   - **No `500` with valid `staff_ids`:** **PASS** — filtered and multi-id requests returned **200**/**400**/**404** only; `pos-back` log shows **200**/**404**/**400** for the exercised URLs, no **500**.
+   - **Invalid tenant user id → 400:** **PASS** — `staff_ids=999999` → **400** JSON detail *One or more staff_ids are not valid users in this tenant*.
+   - **Filtered month with no matching sessions → 404:** **PASS** — `year=2020&month=3&staff_ids=2` → **404** *No attendance records found for this period*; `staff_ids=2` alone for **2026-03** → **404** (no sessions for that user in-range).
+   - **XLSX content-type and filter narrowing:** **PASS** — `Content-Type` `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`; column B names for `?year=2026&month=3`, `…&staff_ids=1`, and `…&staff_ids=1&staff_ids=2` all **{Ralf Roeber}** (expected given data).
+   - **Puppeteer `test-reports.mjs` (owner/admin via `.env` demo login):** **PASS** — `/login` → `/reports`, `[data-testid="reports-page"]`, date presets, `[data-testid="reports-attendance-excel"]` present.
+   - **Empty `staff_ids=` query:** **PASS (optional / doc drift)** — still **422** int parse (FastAPI), not **400**; not listed in **Pass/fail criteria**; no **500**.
+
+5. **Overall:** **PASS** — pytest green; `staff_ids` path no longer errors; API matches expected **200**/**400**/**404**; Reports UI exposes the attendance Excel block. Caveat: full manual **Download** ×3 and two distinct employee blocks in one spreadsheet were not reproduced in-browser (single active employee in test month); API + pytest cover the export contract.
+
+6. **Product owner feedback:** The regression that broke filtered exports is resolved: filtered and multi-ID requests succeed and invalid IDs are rejected cleanly. On a tenant with several people clocked in the same month, use the staff multi-select on Reports → Monthly attendance (Excel) as intended; if anything looks off, compare with the same month via API using repeated `staff_ids` query parameters.
+
+7. **URLs tested:**
+   1. `http://127.0.0.1:4202/login`
+   2. `http://127.0.0.1:4202/reports`
+   3. `http://127.0.0.1:8020/reports/attendance-excel?year=2026&month=3` (in-container)
+   4. `http://127.0.0.1:8020/reports/attendance-excel?year=2026&month=3&staff_ids=2`
+   5. `http://127.0.0.1:8020/reports/attendance-excel?year=2026&month=3&staff_ids=1&staff_ids=2`
+   6. `http://127.0.0.1:8020/reports/attendance-excel?year=2026&month=3&staff_ids=999999`
+   7. `http://127.0.0.1:8020/reports/attendance-excel?year=2020&month=3&staff_ids=2`
+   8. `http://127.0.0.1:8020/reports/attendance-excel?year=2026&month=3&staff_ids=1`
+   9. `http://127.0.0.1:8020/reports/attendance-excel?year=2026&month=3&staff_ids=` (optional)
+
+8. **Relevant log excerpts (last section)** — `pos-back`:
+
+```
+INFO:     127.0.0.1:56424 - "GET /reports/attendance-excel?year=2026&month=3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56440 - "GET /reports/attendance-excel?year=2026&month=3&staff_ids=2 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56446 - "GET /reports/attendance-excel?year=2026&month=3&staff_ids=1&staff_ids=2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56448 - "GET /reports/attendance-excel?year=2026&month=3&staff_ids=999999 HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:56450 - "GET /reports/attendance-excel?year=2020&month=3&staff_ids=2 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56472 - "GET /reports/attendance-excel?year=2026&month=3&staff_ids=1 HTTP/1.1" 200 OK
+```
