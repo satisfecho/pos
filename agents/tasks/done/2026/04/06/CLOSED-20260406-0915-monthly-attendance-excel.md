@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** The monthly per-employee attendance Excel export for Reports was delivered and a backend regression that returned HTTP 500 when work sessions existed (`WorkSession` had no `notes`) was fixed and re-verified.
+- **What was done:** `GET /reports/attendance-excel` (openpyxl), Reports UI with month picker and download for `report:read`, API client, i18n, and smoke coverage in `test-reports`; notes column outputs empty string instead of reading `sess.notes`.
+- **What was tested:** Puppeteer `npm run test:reports` exited 0; export with real work sessions returned 200 and a valid `.xlsx`; no 500 on the export path — all PASS per tester report (~14:25 UTC).
+- **Why closed:** All pass/fail criteria met; task marked CLOSED (PASS).
+- **Closed at (UTC):** 2026-04-06 14:26
+---
+
 # Monthly per-employee attendance Excel (legal-style timesheet)
 
 ## GitHub Issues
