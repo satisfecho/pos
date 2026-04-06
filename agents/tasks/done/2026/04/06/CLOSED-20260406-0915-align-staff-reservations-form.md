@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** The staff `/reservations` modal was brought in line with public `/book` for seating-driven zone selection and the week slot grid, including persisting `preferred_floor_id` on create/update.
+- **What was done:** Implementation added shared zone logic (`bookZonesForSeating`, `formFloorId`, `app-reservation-week-slot-grid` floor binding, prefill from last reservation) in `reservations.component.ts`; the tester ran the staff modal, API checks, and landing smoke on `development`.
+- **What was tested:** **PASS** — Angular build clean for reservations component; zone dropdown when ≥2 book zones; valid save without spurious `BOOK.*` errors; `POST /reservations` included `preferred_floor_id` (200 OK); `npm run test:landing-version` exit 0. `BOOK.NO_ZONE_FOR_SEATING` not exercised (demo tenant data).
+- **Why closed:** Tester overall **PASS**; all exercised criteria met; remaining gap is environment/seed limitation, not a reported code defect.
+- **Closed at (UTC):** 2026-04-06 14:46
+---
+
 # Align staff /reservations form with public /book (zones & slot grid)
 
 ## GitHub Issues
