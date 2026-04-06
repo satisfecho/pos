@@ -1,13 +1,13 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, throwError, switchMap, Observable, Subject, filter, take } from 'rxjs';
+import { catchError, throwError, switchMap, ReplaySubject, take } from 'rxjs';
 import { ApiService } from '../services/api.service';
 
 // Flag to prevent multiple simultaneous refresh attempts
 let isRefreshing = false;
-// Subject that emits when refresh completes (true = success, false = failure)
-let refreshResult$ = new Subject<boolean>();
+// Replay last refresh outcome so subscribers that attach after refresh finishes still retry or fail (avoids hang)
+let refreshResult$ = new ReplaySubject<boolean>(1);
 
 /** Routes that do not require auth; never redirect to login on 401 when on these. */
 function isPublicRoute(url: string): boolean {
@@ -77,7 +77,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         if (!isRefreshing) {
           // First 401 - initiate token refresh
           isRefreshing = true;
-          refreshResult$ = new Subject<boolean>();
+          refreshResult$ = new ReplaySubject<boolean>(1);
 
           return apiService.refreshToken().pipe(
             switchMap(() => {
@@ -103,7 +103,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         } else {
           // Another request got 401 while refresh is in progress - wait for it
           return refreshResult$.pipe(
-            filter((result) => result !== undefined),
             take(1),
             switchMap((success) => {
               if (success) {
