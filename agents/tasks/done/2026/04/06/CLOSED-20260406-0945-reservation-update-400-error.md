@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Staff `PUT /api/reservations/{id}` could return **400** when seating was changed but a stored public-book `preferred_floor_id` no longer matched `seating_preference` (localized `reservation_seating_floor_mismatch`).
+- **What was done:** Backend now clears an incompatible `preferred_floor_id` after applying the update body, validates explicit `preferred_floor_id` with `_validate_floor_seating_pair_or_raise` on assign; frontend aligns slot-capacity calls with zone context via `bookFloorId` when seating matches the edit baseline; HAProxy’s `400 304` log field was clarified as format noise, not HTTP 304.
+- **What was tested:** Tester **PASS** on forced mismatch **PUT** (200, zone nulled), restore **PUT** with valid pair (200), backend import, front bundle completion after a transient TS rebuild; staff UI capacity line and **PUT …/seat** were not fully exercised in this run (noted in test report).
+- **Why closed:** Core pass/fail criteria met — seating/zone mismatch no longer yields **400** on update; optional UI and seat-assign checks left for follow-up manual verification.
+- **Closed at (UTC):** 2026-04-06 13:31
+---
+
 # 400 Error on Reservation Update (PUT /api/reservations/{id})
 
 ## Source
