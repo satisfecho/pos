@@ -1169,6 +1169,8 @@
     "CLOCK_QR_DISABLED": "Clock QR requirement disabled.",
     "CLOCK_QR_LOCATION_VERIFY": "Require GPS at venue for clock",
     "CLOCK_QR_LOCATION_VERIFY_HINT": "Si està actiu, el fitxatge usa la mateixa latitud, longitud i radi que la verificació d'ubicació en aquesta pàgina: un sol punt del local per a comandes i fitxatge.",
+    "CLOCK_QR_LEGACY_REGENERATE_HINT": "This QR was created before persistent download was available. Generate a new token to enable copy, download, and reload-safe access.",
+    "CLOCK_QR_TOKEN_LOADING": "Loading token…",
     "RESERVATIONS": "Reserves",
     "RESERVATIONS_SUBTITLE": "Prepagament, normes i recordatoris per a reserves",
     "RESERVATION_PREPAYMENT": "Import de prepagament",

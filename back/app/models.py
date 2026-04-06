@@ -209,6 +209,8 @@ class Tenant(SQLModel, table=True):
 
     # Staff clock-in: venue QR secret (hex digest of HMAC-SHA256); null = QR not required for clock actions
     clock_qr_token_hash: str | None = Field(default=None, max_length=128)
+    # Fernet ciphertext of the plain token (same secret as hash pepper); enables admin re-download in Settings
+    clock_qr_token_encrypted: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
     # When clock QR is active, optionally require GPS within tenant latitude/longitude + location_radius_meters
     clock_qr_location_verify: bool = Field(default=False)
 

@@ -1369,7 +1369,9 @@
     "CLOCK_QR_SAVED": "New clock QR token generated.",
     "CLOCK_QR_DISABLED": "Clock QR requirement disabled.",
     "CLOCK_QR_LOCATION_VERIFY": "Require GPS at venue for clock",
-    "CLOCK_QR_LOCATION_VERIFY_HINT": "Wenn aktiv, nutzen Stempelaktionen dieselbe Breite, Länge und denselben Radius wie die Standortprüfung auf dieser Seite—ein gemeinsamer Standort für Bestellprüfung und Stempeln."
+    "CLOCK_QR_LOCATION_VERIFY_HINT": "Wenn aktiv, nutzen Stempelaktionen dieselbe Breite, Länge und denselben Radius wie die Standortprüfung auf dieser Seite—ein gemeinsamer Standort für Bestellprüfung und Stempeln.",
+    "CLOCK_QR_LEGACY_REGENERATE_HINT": "Dieser QR-Code stammt von vor der dauerhaften Download-Funktion. Erzeugen Sie ein neues Token, um Kopieren, Download und Zugriff nach einem Neuladen zu ermöglichen.",
+    "CLOCK_QR_TOKEN_LOADING": "Token wird geladen…"
   },
   "PAYMENTS": {
     "PAYMENT": "Zahlung",

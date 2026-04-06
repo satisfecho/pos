@@ -1442,6 +1442,8 @@
     "CLOCK_QR_DISABLED": "Clock QR requirement disabled.",
     "CLOCK_QR_LOCATION_VERIFY": "Require GPS at venue for clock",
     "CLOCK_QR_LOCATION_VERIFY_HINT": "When on, clock actions use the same latitude, longitude, and radius as Location verification on this page—one shared venue pin for ordering checks and clock-in.",
+    "CLOCK_QR_LEGACY_REGENERATE_HINT": "This QR was created before persistent download was available. Generate a new token to enable copy, download, and reload-safe access.",
+    "CLOCK_QR_TOKEN_LOADING": "Loading token…",
     "RESERVATIONS": "Reservations",
     "RESERVATIONS_SUBTITLE": "Pre-payment, policies and reminders for table reservations",
     "RESERVATION_PREPAYMENT": "Reservation pre-payment",

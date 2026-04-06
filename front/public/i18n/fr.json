@@ -1234,6 +1234,8 @@
     "CLOCK_QR_DISABLED": "Clock QR requirement disabled.",
     "CLOCK_QR_LOCATION_VERIFY": "Require GPS at venue for clock",
     "CLOCK_QR_LOCATION_VERIFY_HINT": "Si activé, le pointage utilise la même latitude, longitude et rayon que la vérification de localisation sur cette page—un seul repère partagé pour les commandes et le pointage.",
+    "CLOCK_QR_LEGACY_REGENERATE_HINT": "This QR was created before persistent download was available. Generate a new token to enable copy, download, and reload-safe access.",
+    "CLOCK_QR_TOKEN_LOADING": "Loading token…",
     "RESERVATIONS": "Réservations",
     "RESERVATIONS_SUBTITLE": "Prépaiement, règles et rappels pour les réservations",
     "CONTRACT_TEMPLATES_TAB": "Modèles de contrat",

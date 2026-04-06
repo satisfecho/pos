@@ -1346,6 +1346,8 @@
     "CLOCK_QR_DISABLED": "Clock QR requirement disabled.",
     "CLOCK_QR_LOCATION_VERIFY": "Require GPS at venue for clock",
     "CLOCK_QR_LOCATION_VERIFY_HINT": "Si está activo, el fichaje usa la misma latitud, longitud y radio que la verificación de ubicación en esta página: un único punto del local para pedidos y fichaje.",
+    "CLOCK_QR_LEGACY_REGENERATE_HINT": "Este QR se creó antes de la descarga persistente. Genere un token nuevo para poder copiar, descargar y volver a acceder tras recargar la página.",
+    "CLOCK_QR_TOKEN_LOADING": "Cargando token…",
     "SECURITY_SUBTITLE": "Autenticación de dos factores (OTP) opcional para tu cuenta",
     "OTP_DESCRIPTION": "Añade una capa extra de seguridad pidiendo un código de un solo uso de una app de autenticación (p. ej. Google Authenticator) al iniciar sesión.",
     "OTP_ENABLE_BUTTON": "Activar autenticación de dos factores (OTP)",

@@ -1442,6 +1442,8 @@
     "CLOCK_QR_DISABLED": "Clock QR requirement disabled.",
     "CLOCK_QR_LOCATION_VERIFY": "Require GPS at venue for clock",
     "CLOCK_QR_LOCATION_VERIFY_HINT": "Когато е включено, отчитането използва същата ширина, дължина и радиус като проверката на местоположение на тази страница—един споделен пункт за поръчки и отчитане.",
+    "CLOCK_QR_LEGACY_REGENERATE_HINT": "This QR was created before persistent download was available. Generate a new token to enable copy, download, and reload-safe access.",
+    "CLOCK_QR_TOKEN_LOADING": "Loading token…",
     "RESERVATIONS": "Резерви",
     "RESERVATIONS_SUBTITLE": "Предплащане, правила и напомняния за резервации на маси",
     "RESERVATION_PREPAYMENT": "Предплащане на резервацията",

@@ -569,6 +569,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               } @else {
                 <p class="muted">{{ 'SETTINGS.CLOCK_QR_OFF' | translate }}</p>
               }
+              @if (settings()?.clock_qr_active && settings()?.clock_qr_downloadable === false) {
+                <p class="hint" style="margin-top: 0.5rem;">{{ 'SETTINGS.CLOCK_QR_LEGACY_REGENERATE_HINT' | translate }}</p>
+              }
               <div class="form-group checkbox-row" style="margin-top: 1rem;">
                 <label class="switch">
                   <input
@@ -596,7 +599,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                   {{ 'SETTINGS.CLOCK_QR_DISABLE' | translate }}
                 </button>
               </div>
-              @if (clockQrLastToken()) {
+              @if (clockQrTokenLoading()) {
+                <p class="hint" style="margin-top: 1rem;">{{ 'SETTINGS.CLOCK_QR_TOKEN_LOADING' | translate }}</p>
+              } @else if (clockQrLastToken()) {
                 <p class="hint" style="margin-top: 1rem;">{{ 'SETTINGS.CLOCK_QR_URL_HINT' | translate }}</p>
                 <code class="otp-secret" style="word-break: break-all;">{{ clockQrLastToken() }}</code>
                 <div class="clock-qr-token-actions" style="margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
@@ -2703,7 +2708,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   clockQrBusy = signal(false);
   clockQrDownloadBusy = signal(false);
-  /** Plain token shown once after regenerate (not stored on server). */
+  clockQrTokenLoading = signal(false);
+  /** Plain token: from regenerate response or loaded via GET /tenant/settings/clock-qr/token when encrypted backup exists. */
   clockQrLastToken = signal<string | null>(null);
 
   purgeConfirmTenantName = '';
@@ -2917,6 +2923,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
           clock_qr_location_verify: settings.clock_qr_location_verify ?? false,
         };
         this.clockQrLastToken.set(null);
+        this.clockQrTokenLoading.set(false);
+        if (settings.clock_qr_active && settings.clock_qr_downloadable) {
+          this.loadPersistedClockQrToken();
+        }
         const tip = settings.tip_preset_percents;
         if (Array.isArray(tip) && tip.length > 0) {
           this.tipPresetEdit = [...tip.map((x) => Math.min(100, Math.max(0, Math.floor(Number(x) || 0))))];
@@ -3756,6 +3766,30 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Load plain token after page load when server has an encrypted backup (persistent download). */
+  private loadPersistedClockQrToken(): void {
+    this.clockQrTokenLoading.set(true);
+    this.api.getTenantClockQrToken().subscribe({
+      next: (r) => {
+        this.clockQrLastToken.set(r.token);
+        this.settings.update((s) =>
+          s
+            ? {
+                ...s,
+                clock_qr_active: r.clock_qr_active,
+                clock_qr_downloadable: r.clock_qr_downloadable ?? true,
+              }
+            : s,
+        );
+        this.clockQrTokenLoading.set(false);
+      },
+      error: () => {
+        this.clockQrLastToken.set(null);
+        this.clockQrTokenLoading.set(false);
+      },
+    });
+  }
+
   regenerateClockQr(): void {
     this.clockQrBusy.set(true);
     this.error.set(null);
@@ -3763,7 +3797,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
       next: (r) => {
         this.formData.clock_qr_active = r.clock_qr_active;
         this.clockQrLastToken.set(r.token);
-        this.settings.update((s) => (s ? { ...s, clock_qr_active: r.clock_qr_active } : s));
+        this.settings.update((s) =>
+          s
+            ? {
+                ...s,
+                clock_qr_active: r.clock_qr_active,
+                clock_qr_downloadable: r.clock_qr_downloadable ?? true,
+              }
+            : s,
+        );
         this.success.set(this.translate.instant('SETTINGS.CLOCK_QR_SAVED'));
         this.scheduleSuccessDismiss();
         this.clockQrBusy.set(false);
@@ -3782,7 +3824,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
       next: (r) => {
         this.formData.clock_qr_active = r.clock_qr_active;
         this.clockQrLastToken.set(null);
-        this.settings.update((s) => (s ? { ...s, clock_qr_active: r.clock_qr_active } : s));
+        this.settings.update((s) =>
+          s
+            ? {
+                ...s,
+                clock_qr_active: r.clock_qr_active,
+                clock_qr_downloadable: r.clock_qr_downloadable ?? false,
+              }
+            : s,
+        );
         this.success.set(this.translate.instant('SETTINGS.CLOCK_QR_DISABLED'));
         this.scheduleSuccessDismiss();
         this.clockQrBusy.set(false);

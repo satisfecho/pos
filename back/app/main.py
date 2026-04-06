@@ -43,7 +43,13 @@ from .tenant_lifecycle_routes import router as tenant_lifecycle_router
 from .staff_contract_routes import router as staff_contract_router
 from .staff_contract_template_routes import router as staff_contract_template_router
 from .work_session_serialization import serialize_work_session, work_session_net_duration_minutes
-from .clock_qr_util import clock_qr_tokens_equal, generate_clock_qr_token, hash_clock_qr_token
+from .clock_qr_util import (
+    clock_qr_tokens_equal,
+    decrypt_clock_qr_token_from_storage,
+    encrypt_clock_qr_token_for_storage,
+    generate_clock_qr_token,
+    hash_clock_qr_token,
+)
 from .inventory_service import deduct_inventory_for_order
 from . import inventory_models
 from .translation_service import TranslationService
@@ -2445,7 +2451,11 @@ def get_tenant_settings(
     tenant_dict["ui_modules"] = resolve_tenant_ui_modules(tenant.ui_modules)
 
     tenant_dict.pop("clock_qr_token_hash", None)
+    tenant_dict.pop("clock_qr_token_encrypted", None)
     tenant_dict["clock_qr_active"] = bool(tenant.clock_qr_token_hash)
+    tenant_dict["clock_qr_downloadable"] = bool(
+        tenant.clock_qr_token_hash and (tenant.clock_qr_token_encrypted or "").strip()
+    )
 
     return tenant_dict
 
@@ -2878,7 +2888,11 @@ def update_tenant_settings(
     tenant_dict["ui_modules"] = resolve_tenant_ui_modules(tenant.ui_modules)
 
     tenant_dict.pop("clock_qr_token_hash", None)
+    tenant_dict.pop("clock_qr_token_encrypted", None)
     tenant_dict["clock_qr_active"] = bool(tenant.clock_qr_token_hash)
+    tenant_dict["clock_qr_downloadable"] = bool(
+        tenant.clock_qr_token_hash and (tenant.clock_qr_token_encrypted or "").strip()
+    )
 
     return tenant_dict
 
@@ -2896,9 +2910,38 @@ def regenerate_tenant_clock_qr(
         raise HTTPException(status_code=404, detail="Tenant not found")
     token = generate_clock_qr_token()
     tenant.clock_qr_token_hash = hash_clock_qr_token(token)
+    tenant.clock_qr_token_encrypted = encrypt_clock_qr_token_for_storage(token)
     session.add(tenant)
     session.commit()
-    return {"token": token, "clock_qr_active": True}
+    return {"token": token, "clock_qr_active": True, "clock_qr_downloadable": True}
+
+
+@app.get("/tenant/settings/clock-qr/token")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def get_tenant_clock_qr_token(
+    request: Request,
+    response: Response,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Return the venue clock QR plain token for printing (decrypted server-side; requires settings update)."""
+    tenant = session.exec(
+        select(models.Tenant).where(models.Tenant.id == current_user.tenant_id)
+    ).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    if not tenant.clock_qr_token_hash:
+        raise HTTPException(status_code=404, detail="clock_qr_not_active")
+    plain = decrypt_clock_qr_token_from_storage(tenant.clock_qr_token_encrypted)
+    if not plain or not clock_qr_tokens_equal(tenant.clock_qr_token_hash, plain):
+        raise HTTPException(
+            status_code=409,
+            detail="clock_qr_regenerate_required",
+        )
+    return {"token": plain, "clock_qr_active": True, "clock_qr_downloadable": True}
 
 
 @app.delete("/tenant/settings/clock-qr")
@@ -2913,9 +2956,10 @@ def disable_tenant_clock_qr(
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
     tenant.clock_qr_token_hash = None
+    tenant.clock_qr_token_encrypted = None
     session.add(tenant)
     session.commit()
-    return {"status": "ok", "clock_qr_active": False}
+    return {"status": "ok", "clock_qr_active": False, "clock_qr_downloadable": False}
 
 
 # Kitchen/Bar display timer settings (read/update by anyone with order access)

@@ -1010,6 +1010,8 @@ export interface TenantSettings {
   logo_size_formatted?: string | null;
   /** Staff clock QR is configured (no secret exposed). */
   clock_qr_active?: boolean;
+  /** True when the server can return the plain token again (encrypted copy stored). */
+  clock_qr_downloadable?: boolean;
   /** When clock QR is on, require GPS near venue coordinates for clock actions. */
   clock_qr_location_verify?: boolean;
   // Location verification settings
@@ -2784,19 +2786,43 @@ export class ApiService {
     return this.http.get<WorkSession[]>(`${this.apiUrl}/reports/work-sessions/live`);
   }
 
-  /** Owner/admin: generate venue clock QR token (returned once). */
-  regenerateTenantClockQr(): Observable<{ token: string; clock_qr_active: boolean }> {
-    return this.http.post<{ token: string; clock_qr_active: boolean }>(
-      `${this.apiUrl}/tenant/settings/clock-qr/regenerate`,
-      {}
-    );
+  /** Owner/admin: generate venue clock QR token (returned once; also stored encrypted for re-download). */
+  regenerateTenantClockQr(): Observable<{
+    token: string;
+    clock_qr_active: boolean;
+    clock_qr_downloadable?: boolean;
+  }> {
+    return this.http.post<{
+      token: string;
+      clock_qr_active: boolean;
+      clock_qr_downloadable?: boolean;
+    }>(`${this.apiUrl}/tenant/settings/clock-qr/regenerate`, {});
+  }
+
+  /** Owner/admin: fetch plain venue clock QR token (decrypted server-side; Settings security). */
+  getTenantClockQrToken(): Observable<{
+    token: string;
+    clock_qr_active: boolean;
+    clock_qr_downloadable?: boolean;
+  }> {
+    return this.http.get<{
+      token: string;
+      clock_qr_active: boolean;
+      clock_qr_downloadable?: boolean;
+    }>(`${this.apiUrl}/tenant/settings/clock-qr/token`);
   }
 
   /** Owner/admin: disable venue clock QR requirement. */
-  disableTenantClockQr(): Observable<{ status: string; clock_qr_active: boolean }> {
-    return this.http.delete<{ status: string; clock_qr_active: boolean }>(
-      `${this.apiUrl}/tenant/settings/clock-qr`
-    );
+  disableTenantClockQr(): Observable<{
+    status: string;
+    clock_qr_active: boolean;
+    clock_qr_downloadable?: boolean;
+  }> {
+    return this.http.delete<{
+      status: string;
+      clock_qr_active: boolean;
+      clock_qr_downloadable?: boolean;
+    }>(`${this.apiUrl}/tenant/settings/clock-qr`);
   }
 
   /** Owner/admin: manual payroll correction (audit trail on server). */

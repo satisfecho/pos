@@ -7,7 +7,11 @@ from datetime import date, datetime, timedelta, timezone
 from pg_client_mixin import PgClientTestCase
 
 from app import models, security
-from app.clock_qr_util import hash_clock_qr_token
+from app.clock_qr_util import (
+    decrypt_clock_qr_token_from_storage,
+    encrypt_clock_qr_token_for_storage,
+    hash_clock_qr_token,
+)
 from app.work_session_serialization import WORK_SESSION_CONTRACT_THRESHOLD_MINUTES, serialize_work_session
 
 
@@ -184,6 +188,39 @@ class TestWorkSession(PgClientTestCase):
             json={"location_radius_meters": -1},
         )
         self.assertEqual(r3.status_code, 400, r3.text)
+
+    def test_clock_qr_encrypt_roundtrip(self):
+        plain = "abc123test"
+        ct = encrypt_clock_qr_token_for_storage(plain)
+        self.assertNotIn(plain, ct)
+        self.assertEqual(decrypt_clock_qr_token_from_storage(ct), plain)
+
+    def test_regenerate_clock_qr_persists_encrypted_get_token_matches(self):
+        ah = _bearer_headers(self.admin)
+        r = self.client.post("/tenant/settings/clock-qr/regenerate", headers=ah, json={})
+        self.assertEqual(r.status_code, 200, r.text)
+        token = r.json().get("token")
+        self.assertIsInstance(token, str)
+        self.assertGreater(len(token), 10)
+        self.assertTrue(r.json().get("clock_qr_downloadable", False))
+
+        r2 = self.client.get("/tenant/settings/clock-qr/token", headers=ah)
+        self.assertEqual(r2.status_code, 200, r2.text)
+        self.assertEqual(r2.json().get("token"), token)
+
+    def test_get_clock_qr_token_409_when_legacy_hash_only(self):
+        tenant = self.session.get(models.Tenant, self.tenant_id)
+        self.assertIsNotNone(tenant)
+        assert tenant is not None
+        tenant.clock_qr_token_hash = hash_clock_qr_token("legacy-only")
+        tenant.clock_qr_token_encrypted = None
+        self.session.add(tenant)
+        self.session.commit()
+
+        ah = _bearer_headers(self.admin)
+        r = self.client.get("/tenant/settings/clock-qr/token", headers=ah)
+        self.assertEqual(r.status_code, 409, r.text)
+        self.assertEqual(r.json().get("detail"), "clock_qr_regenerate_required")
 
     def test_clock_in_succeeds_when_gps_required_and_venue_coords_set_via_settings(self):
         token = "venue-test-qr-token"

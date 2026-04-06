@@ -1175,6 +1175,8 @@
     "CLOCK_QR_DISABLED": "Clock QR requirement disabled.",
     "CLOCK_QR_LOCATION_VERIFY": "Require GPS at venue for clock",
     "CLOCK_QR_LOCATION_VERIFY_HINT": "चालू होने पर क्लॉक क्रियाएँ इस पृष्ठ पर स्थान सत्यापन जैसी ही अक्षांश, देशांतर और त्रिज्या उपयोग करती हैं—ऑर्डर जाँच और क्लॉक-इन के लिए एक ही स्थल बिंदु।",
+    "CLOCK_QR_LEGACY_REGENERATE_HINT": "This QR was created before persistent download was available. Generate a new token to enable copy, download, and reload-safe access.",
+    "CLOCK_QR_TOKEN_LOADING": "Loading token…",
     "STRIPE_SECRET_HINT": "आपकी Stripe गुप्त कुंजी। वर्तमान मान रखने के लिए खाली छोड़ें।",
     "IMMEDIATE_PAYMENT_HINT": "सक्षम होने पर, ग्राहकों को ऑर्डर देने के लिए भुगतान करना होगा।",
     "TIP_PRESETS_TITLE": "POS टिप विकल्प",
