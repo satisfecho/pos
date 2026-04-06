@@ -8,6 +8,7 @@
 set -euo pipefail
 
 SCRIPTDIR="$(cd "$(dirname "$0")" && pwd)"
+echo "SCRIPTDIR: $SCRIPTDIR"
 TASKDIR="${SCRIPTDIR}/tasks"
 REPO_ROOT="$(cd "${SCRIPTDIR}/.." && pwd)"
 sleepminutes="${AGENT_LOOP_SLEEP_MINUTES:-5}"
@@ -21,7 +22,7 @@ LAST_REVIEW_FILE="${SCRIPTDIR}/001-log-reviewer/time-of-last-review.txt"
 OLLAMA_URL="http://localhost:11434/api/generate"
 TRIAGE_MODEL="qwen2.5:1.5b"
 
-cd "$SCRIPTDIR" || exit 1
+cd "$REPO_ROOT" || exit 1
 
 have_pi() {
   command -v pi >/dev/null 2>&1
@@ -295,7 +296,7 @@ run_agent() {
     echo "msg: $msg"
     echo "---"
     set +e
-    pi -p "$prompt" "$msg"
+    pi --tools read,bash,edit,write,grep,find,ls -p "$prompt" "$msg"
     local _pi_rc=$?
     set -e
     if ((_pi_rc != 0)); then
@@ -337,8 +338,11 @@ step_log_reviewer() {
   # SMART TRIAE STEP
   if [[ "$G001_LOG_SIGNALS" == "1" ]]; then
     if ! triage_logs_with_ollama "$ctx"; then
-       echo "----- log reviewer (001) (skip: Ollama triage says logs are fine)"
-       return 0
+       if [[ "$G001_UNTRACKED_ISSUES" -eq 0 ]]; then
+          echo "----- log reviewer (001) (skip: Ollama triage says logs are fine and no GitHub issues pending)"
+          return 0
+       fi
+       echo "----- log reviewer (001) (Ollama triage says logs are fine, but GitHub issues pending. Continuing...)"
     fi
   fi
 
@@ -356,7 +360,7 @@ step_log_reviewer() {
     local msg
     if (( G001_UNTRACKED_ISSUES > 0 )); then
       msg="URGENT: You have $G001_UNTRACKED_ISSUES untracked GitHub issues in the preflight digest.
-Your FIRST priority is to convert these untracked issues into FEAT-*.md tasks in agents/tasks/.
+Your FIRST priority is to convert these untracked issues into FEAT-*.md tasks in "tasks/" folder.
 Only after addressing the GitHub queue should you proceed to (B) Docker logs -> NEW-*.md.
 Read the preflight digest first: $ctx
 Follow 001-log-reviewer/LOG-REVIEWER-PROMPT.md. Do your job."
@@ -374,19 +378,29 @@ Then follow 001-log-reviewer/LOG-REVIEWER-PROMPT.md — (A) GitHub (none pending
 }
 
 step_feat() {
-  if ! any_root_task_glob 'FEAT-*.md'; then
+  local feat_files
+  feat_files=($(shopt -s nullglob; ls "${TASKDIR}"/FEAT-*.md 2>/dev/null))
+
+  if [[ ${#feat_files[@]} -eq 0 ]]; then
     echo "----- feature coding (FEAT) (skip: no FEAT-*.md)"
     return 0
   fi
+
+  local target_task="${feat_files[0]}"
+  local task_name
+  task_name=$(basename "$target_task")
+
   if ! sync_repo; then
     echo "----- feature coding (FEAT) (skip: git sync failed)" >&2
     return 0
   fi
+
   echo "-----> feature coding (FEAT) <----"
+  echo "Target task: $task_name"
   run_agent "feature coding (FEAT)" \
-    "any_root_task_glob 'FEAT-*.md'" \
+    "true" \
     "006-feature-coder/FEATURE-CODER.md" \
-    "Start feature coding now. Pick up a FEAT task if any. Do your job."
+    "Start feature coding now on the specific task: ${target_task#$TASKDIR/} ($task_name). Read it carefully and do your job."
 }
 
 step_coder() {
@@ -434,7 +448,7 @@ step_closing_review() {
   run_agent "closing" \
     "any_root_task_glob 'CLOSED-*.md'" \
     "004-closing-reviewer/CLOSING-REVIEWER-PROMPT.md" \
-    "Start closing review now. Process CLOSED-*.md in agents/tasks/; prepend summary; move to done/YYYY/MM/DD with scripts/move-agent-task-to-done.sh when done. Do your job."
+    "Start closing review now. Process CLOSED-*.md in tasks/; prepend summary; move to done/YYYY/MM/DD with scripts/move-agent-task-to-done.sh when done. Do your job."
 }
 
 step_committer() {
@@ -488,10 +502,10 @@ Usage: $(basename "$0") [COMMAND]
 
   Single run:
     log, log-reviewer, 001   Log / incident reviewer (001; runs first in full cycle)
-    feat, feature   Feature coder (FEAT-*.md in agents/tasks/)
+    feat, feature   Feature coder (FEAT-*.md in tasks/)
     coder           Coder (NEW-*.md or WIP-*.md)
     tester          Tester (UNTESTED-*.md or in-progress TESTING-*.md)
-    closing-review  Closing reviewer (CLOSED-*.md still in agents/tasks/)
+    closing-review  Closing reviewer (CLOSED-*.md still in tasks/)
     committer       Changelog + commit when POS repo has local changes
 
     help, -h, --help   Show this help
