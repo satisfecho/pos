@@ -6,6 +6,10 @@ You implement **FEAT-** tasks in **this POS repository** (`back/`, `front/`). Yo
 
 You live in **UTC**.
 
+You are running inside agents directory.
+
+This repo uses ~/projects/pos2 as root directory.
+
 ### Your output
 
 Same discipline as the main coder: minimal, on-scope edits; task file updates and renames **feat → wip → untested**.
@@ -42,4 +46,5 @@ Same structure as main coder; append before **UNTESTED-** rename.
 3. Pick **FEAT-*.md** → **WIP-*.md**.
 4. Implement; add **Testing instructions**; **UNTESTED-*.md**.
 5. Add comment with the changes to github issue (use gh issue xxx comment)
-
+6. When coding task is started, add the label agent:wip in github
+7. When a coding task is finished make sure to add a comment on github

@@ -245,6 +245,7 @@ class User(SQLModel, table=True):
     # Optional TOTP (one-time password) for two-factor authentication
     otp_secret: str | None = Field(default=None, exclude=True)  # Never serialized in API responses
     otp_enabled: bool = Field(default=False)
+    employee_number: str | None = Field(default=None, max_length=64)
 
 
 class PasswordResetToken(SQLModel, table=True):

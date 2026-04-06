@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.72] - 2026-04-06
+
+### Added
+
+- **Reports / attendance (Excel):** `GET /reports/attendance-excel` for users with **`report:read`** — monthly XLSX export of work sessions per staff member (employee number, name, date, clock in/out, break minutes, net hours, notes). Requires **openpyxl**. **`User.employee_number`** (optional, max 64 chars) for spreadsheet labeling; migration **`20260406131500_add_user_employee_number.sql`**.
+
 ## [2.0.71] - 2026-04-03
 
 ### Added
