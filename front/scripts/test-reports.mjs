@@ -121,6 +121,14 @@ async function main() {
     }
     console.log('   Date presets bar present (' + presetBtnCount + ' buttons).');
 
+    const attendanceExcel = await page.$('[data-testid="reports-attendance-excel"]');
+    if (!attendanceExcel) {
+      console.log('   FAIL: Monthly attendance Excel block (reports-attendance-excel) not found.');
+      await browser.close();
+      process.exit(1);
+    }
+    console.log('   Monthly attendance Excel section present.');
+
     // Wait for report data to load (summary or by-product section)
     await page.waitForSelector('.report-section', { timeout: 15000 }).catch(() => null);
     await sleep(2000);

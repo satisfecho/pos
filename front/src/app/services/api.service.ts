@@ -2054,6 +2054,14 @@ export class ApiService {
     });
   }
 
+  /** Monthly per-staff attendance timesheet (XLSX). Requires `report:read`. */
+  getReportsAttendanceExcel(year: number, month: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/reports/attendance-excel`, {
+      params: { year: String(year), month: String(month) },
+      responseType: 'blob',
+    });
+  }
+
   // Public Menu (no auth). staffAccess: when set (from staff link), backend returns table_requires_pin false.
   getMenu(tableToken: string, staffAccess?: string): Observable<MenuResponse> {
     let params = new HttpParams();

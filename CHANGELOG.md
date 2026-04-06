@@ -24,6 +24,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Reports → Monthly attendance (Excel) (GitHub #165):** Users with **`report:read`** can pick a calendar month and **Download Excel** (`GET /reports/attendance-excel`) from the Reports page. New **`REPORTS.ATTENDANCE_EXCEL_*`** strings in all **`front/public/i18n/*.json`** files.
+
 ### Changed
 
 - **Settings (GitHub #166):** Clarified that **Location verification** coordinates and radius are **shared** with **Require GPS at venue for clock** under Staff clock-in QR—one venue pin for order checks and clock-in, not separate pins. Updated **`SETTINGS.LOCATION_VERIFICATION_DESC`**, **`ENABLE_LOCATION_CHECK_HINT`**, and **`CLOCK_QR_LOCATION_VERIFY_HINT`** in all **`front/public/i18n/*.json`** files.

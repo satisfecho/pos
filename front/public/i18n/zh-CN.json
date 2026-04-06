@@ -985,7 +985,15 @@
     "WORK_SESSION_ADJUST_INVALID_START": "请输入有效的上班日期和时间。",
     "WORK_SESSION_ADJUST_INVALID_END": "请输入有效的下班时间，或在未结束班次时留空。",
     "WORK_SESSION_ADJUST_INVALID_RANGE": "下班时间必须晚于或等于上班时间。",
-    "WORK_SESSION_ADJUST_ERROR": "无法保存调整。请检查填写内容后重试。"
+    "WORK_SESSION_ADJUST_ERROR": "无法保存调整。请检查填写内容后重试。",
+    "ATTENDANCE_EXCEL_TITLE": "月度考勤（Excel）",
+    "ATTENDANCE_EXCEL_HINT": "下载一个自然月的工时报表：每个工作会话一行（UTC 开始时间）。若在用户档案中设置了员工编号，将显示可选的员工编号。",
+    "ATTENDANCE_EXCEL_MONTH": "月份",
+    "ATTENDANCE_EXCEL_DOWNLOAD": "下载 Excel",
+    "ATTENDANCE_EXCEL_EXPORTING": "正在下载...",
+    "ATTENDANCE_EXCEL_NO_DATA": "该月没有考勤记录。",
+    "ATTENDANCE_EXCEL_ERROR": "无法下载考勤导出。请重试。",
+    "ATTENDANCE_EXCEL_INVALID_MONTH": "请选择有效月份。"
   },
   "WORKING_PLAN": {
     "TITLE": "排班计划",

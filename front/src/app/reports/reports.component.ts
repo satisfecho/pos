@@ -56,6 +56,10 @@ export class ReportsComponent implements OnInit {
   workSessionAdjustNote = signal('');
   workSessionAdjustSaving = signal(false);
   workSessionAdjustError = signal<string | null>(null);
+  /** `YYYY-MM` for monthly attendance Excel (calendar month, local). */
+  attendanceExcelMonth = signal('');
+  attendanceExcelExporting = signal(false);
+  attendanceExcelError = signal<string | null>(null);
   fromDate = signal('');
   toDate = signal('');
   currency = signal('€');
@@ -95,6 +99,10 @@ export class ReportsComponent implements OnInit {
     this.toDate.set(this.fmtDate(today));
     this.loadTenantCurrency();
     this.loadReport();
+    const now = new Date();
+    this.attendanceExcelMonth.set(
+      `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`,
+    );
     this.translate.onLangChange.subscribe(() => this.reportIntlRevision.update((n) => n + 1));
   }
 
@@ -196,6 +204,63 @@ export class ReportsComponent implements OnInit {
 
   canViewAttendance(): boolean {
     return this.permissions.hasPermission(this.api.getCurrentUser(), 'report:read');
+  }
+
+  downloadAttendanceExcel(): void {
+    if (!this.canViewAttendance()) return;
+    const ym = (this.attendanceExcelMonth() || '').trim();
+    const m = /^(\d{4})-(\d{2})$/.exec(ym);
+    if (!m) {
+      this.attendanceExcelError.set(this.translate.instant('REPORTS.ATTENDANCE_EXCEL_INVALID_MONTH'));
+      return;
+    }
+    const year = parseInt(m[1], 10);
+    const month = parseInt(m[2], 10);
+    this.attendanceExcelExporting.set(true);
+    this.attendanceExcelError.set(null);
+    this.api.getReportsAttendanceExcel(year, month).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `attendance_${year}_${String(month).padStart(2, '0')}.xlsx`;
+        a.click();
+        URL.revokeObjectURL(url);
+        this.attendanceExcelExporting.set(false);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.attendanceExcelExporting.set(false);
+        if (err.status === 404) {
+          this.attendanceExcelError.set(this.translate.instant('REPORTS.ATTENDANCE_EXCEL_NO_DATA'));
+          return;
+        }
+        const body = err.error;
+        if (body instanceof Blob) {
+          body
+            .text()
+            .then((text) => {
+              try {
+                const parsed = JSON.parse(text) as { detail?: unknown };
+                const d = parsed?.detail;
+                this.attendanceExcelError.set(
+                  typeof d === 'string' && d.trim()
+                    ? d
+                    : this.translate.instant('REPORTS.ATTENDANCE_EXCEL_ERROR'),
+                );
+              } catch {
+                this.attendanceExcelError.set(this.translate.instant('REPORTS.ATTENDANCE_EXCEL_ERROR'));
+              }
+            })
+            .catch(() =>
+              this.attendanceExcelError.set(this.translate.instant('REPORTS.ATTENDANCE_EXCEL_ERROR')),
+            );
+          return;
+        }
+        this.attendanceExcelError.set(
+          this.apiErr.fromHttpError(err, 'REPORTS.ATTENDANCE_EXCEL_ERROR'),
+        );
+      },
+    });
   }
 
   loadWorkSessions(): void {

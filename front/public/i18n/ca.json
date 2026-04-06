@@ -975,7 +975,15 @@
     "WORK_SESSION_ADJUST_INVALID_START": "Introdueix una data i hora d’entrada vàlides.",
     "WORK_SESSION_ADJUST_INVALID_END": "Introdueix una sortida vàlida o buida el camp si el torn segueix obert.",
     "WORK_SESSION_ADJUST_INVALID_RANGE": "La sortida ha de ser igual o posterior a l’entrada.",
-    "WORK_SESSION_ADJUST_ERROR": "No s’ha pogut desar la correcció. Revisa els valors i torna-ho a provar."
+    "WORK_SESSION_ADJUST_ERROR": "No s’ha pogut desar la correcció. Revisa els valors i torna-ho a provar.",
+    "ATTENDANCE_EXCEL_TITLE": "Assistència mensual (Excel)",
+    "ATTENDANCE_EXCEL_HINT": "Baixa un full d’hores d’un mes natural: una fila per sessió de treball (inici en UTC). Els números d’empleat opcionals es mostren si consten als perfils.",
+    "ATTENDANCE_EXCEL_MONTH": "Mes",
+    "ATTENDANCE_EXCEL_DOWNLOAD": "Baixa Excel",
+    "ATTENDANCE_EXCEL_EXPORTING": "S’està baixant...",
+    "ATTENDANCE_EXCEL_NO_DATA": "No hi ha registres d’assistència per a aquest mes.",
+    "ATTENDANCE_EXCEL_ERROR": "No s’ha pogut baixar l’exportació. Torna-ho a provar.",
+    "ATTENDANCE_EXCEL_INVALID_MONTH": "Trieu un mes vàlid."
   },
   "WORKING_PLAN": {
     "TITLE": "Pla de treball",

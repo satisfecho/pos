@@ -766,7 +766,15 @@
     "WORK_SESSION_ADJUST_INVALID_START": "Saisissez une date et heure d’entrée valides.",
     "WORK_SESSION_ADJUST_INVALID_END": "Saisissez une sortie valide ou videz le champ pour un service ouvert.",
     "WORK_SESSION_ADJUST_INVALID_RANGE": "La sortie doit être au même moment ou après l’entrée.",
-    "WORK_SESSION_ADJUST_ERROR": "Impossible d’enregistrer la correction. Vérifiez les valeurs et réessayez."
+    "WORK_SESSION_ADJUST_ERROR": "Impossible d’enregistrer la correction. Vérifiez les valeurs et réessayez.",
+    "ATTENDANCE_EXCEL_TITLE": "Présence mensuelle (Excel)",
+    "ATTENDANCE_EXCEL_HINT": "Téléchargez un relevé pour un mois civil : une ligne par session (début en UTC). Les numéros d’employé optionnels s’affichent s’ils sont renseignés sur les profils.",
+    "ATTENDANCE_EXCEL_MONTH": "Mois",
+    "ATTENDANCE_EXCEL_DOWNLOAD": "Télécharger Excel",
+    "ATTENDANCE_EXCEL_EXPORTING": "Téléchargement...",
+    "ATTENDANCE_EXCEL_NO_DATA": "Aucune présence pour ce mois.",
+    "ATTENDANCE_EXCEL_ERROR": "Impossible de télécharger l’export. Réessayez.",
+    "ATTENDANCE_EXCEL_INVALID_MONTH": "Choisissez un mois valide."
   },
   "TABLES": {
     "TITLE": "Tables",

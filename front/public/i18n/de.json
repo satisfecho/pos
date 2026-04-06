@@ -1013,7 +1013,15 @@
     "WORK_SESSION_ADJUST_INVALID_START": "Bitte gültiges Einstech-Datum und -Uhrzeit eingeben.",
     "WORK_SESSION_ADJUST_INVALID_END": "Bitte gültiges Ausstech-Datum eingeben oder Feld bei offener Schicht leeren.",
     "WORK_SESSION_ADJUST_INVALID_RANGE": "Ausstechen muss am oder nach dem Einstechen liegen.",
-    "WORK_SESSION_ADJUST_ERROR": "Korrektur konnte nicht gespeichert werden. Bitte prüfen und erneut versuchen."
+    "WORK_SESSION_ADJUST_ERROR": "Korrektur konnte nicht gespeichert werden. Bitte prüfen und erneut versuchen.",
+    "ATTENDANCE_EXCEL_TITLE": "Monatliche Anwesenheit (Excel)",
+    "ATTENDANCE_EXCEL_HINT": "Zeiterfassung für einen Kalendermonat herunterladen: eine Zeile pro Arbeitssitzung (UTC-Start). Optionale Personalnummern erscheinen, wenn sie in Benutzerprofilen gesetzt sind.",
+    "ATTENDANCE_EXCEL_MONTH": "Monat",
+    "ATTENDANCE_EXCEL_DOWNLOAD": "Excel herunterladen",
+    "ATTENDANCE_EXCEL_EXPORTING": "Wird heruntergeladen...",
+    "ATTENDANCE_EXCEL_NO_DATA": "Für diesen Monat liegen keine Anwesenheitsdaten vor.",
+    "ATTENDANCE_EXCEL_ERROR": "Export konnte nicht heruntergeladen werden. Bitte erneut versuchen.",
+    "ATTENDANCE_EXCEL_INVALID_MONTH": "Bitte einen gültigen Monat wählen."
   },
   "WORKING_PLAN": {
     "TITLE": "Schichtplan",

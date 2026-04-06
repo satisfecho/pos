@@ -792,7 +792,15 @@
     "WORK_SESSION_ADJUST_INVALID_START": "Enter a valid clock-in date and time.",
     "WORK_SESSION_ADJUST_INVALID_END": "Enter a valid clock-out date and time, or clear the field for an open shift.",
     "WORK_SESSION_ADJUST_INVALID_RANGE": "Clock out must be on or after clock in.",
-    "WORK_SESSION_ADJUST_ERROR": "Could not save this adjustment. Check the values and try again."
+    "WORK_SESSION_ADJUST_ERROR": "Could not save this adjustment. Check the values and try again.",
+    "ATTENDANCE_EXCEL_TITLE": "Monthly attendance (Excel)",
+    "ATTENDANCE_EXCEL_HINT": "Download a timesheet for one calendar month: one row per work session (UTC start). Optional employee numbers appear when set on user profiles.",
+    "ATTENDANCE_EXCEL_MONTH": "Month",
+    "ATTENDANCE_EXCEL_DOWNLOAD": "Download Excel",
+    "ATTENDANCE_EXCEL_EXPORTING": "Downloading...",
+    "ATTENDANCE_EXCEL_NO_DATA": "No attendance records for that month.",
+    "ATTENDANCE_EXCEL_ERROR": "Could not download the attendance export. Try again.",
+    "ATTENDANCE_EXCEL_INVALID_MONTH": "Choose a valid month."
   },
   "TABLES": {
     "TITLE": "Tables",

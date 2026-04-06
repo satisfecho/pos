@@ -792,7 +792,15 @@
     "WORK_SESSION_ADJUST_INVALID_START": "Въведете валидна дата и час за влизане.",
     "WORK_SESSION_ADJUST_INVALID_END": "Въведете валидно излизане или изчистете полето за отворена смяна.",
     "WORK_SESSION_ADJUST_INVALID_RANGE": "Излизането трябва да е след или в същия момент като влизането.",
-    "WORK_SESSION_ADJUST_ERROR": "Корекцията не можа да бъде запазена. Проверете стойностите и опитайте отново."
+    "WORK_SESSION_ADJUST_ERROR": "Корекцията не можа да бъде запазена. Проверете стойностите и опитайте отново.",
+    "ATTENDANCE_EXCEL_TITLE": "Месечно присъствие (Excel)",
+    "ATTENDANCE_EXCEL_HINT": "Изтеглете табел за един календарен месец: по един ред за работна сесия (начало UTC). Опционалните номера на служители се показват, ако са зададени в профилите.",
+    "ATTENDANCE_EXCEL_MONTH": "Месец",
+    "ATTENDANCE_EXCEL_DOWNLOAD": "Изтегляне на Excel",
+    "ATTENDANCE_EXCEL_EXPORTING": "Изтегляне...",
+    "ATTENDANCE_EXCEL_NO_DATA": "Няма записи за присъствие за този месец.",
+    "ATTENDANCE_EXCEL_ERROR": "Експортът не можа да бъде изтеглен. Опитайте отново.",
+    "ATTENDANCE_EXCEL_INVALID_MONTH": "Изберете валиден месец."
   },
   "TABLES": {
     "TITLE": "Маси",

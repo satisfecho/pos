@@ -791,7 +791,15 @@
     "WORK_SESSION_ADJUST_INVALID_START": "Introduce una fecha y hora de entrada válidas.",
     "WORK_SESSION_ADJUST_INVALID_END": "Introduce una salida válida o deja el campo vacío si el turno sigue abierto.",
     "WORK_SESSION_ADJUST_INVALID_RANGE": "La salida debe ser igual o posterior a la entrada.",
-    "WORK_SESSION_ADJUST_ERROR": "No se pudo guardar la corrección. Revisa los valores e inténtalo de nuevo."
+    "WORK_SESSION_ADJUST_ERROR": "No se pudo guardar la corrección. Revisa los valores e inténtalo de nuevo.",
+    "ATTENDANCE_EXCEL_TITLE": "Asistencia mensual (Excel)",
+    "ATTENDANCE_EXCEL_HINT": "Descarga un parte de horas de un mes natural: una fila por sesión de trabajo (inicio en UTC). Los números de empleado opcionales aparecen si están definidos en los perfiles.",
+    "ATTENDANCE_EXCEL_MONTH": "Mes",
+    "ATTENDANCE_EXCEL_DOWNLOAD": "Descargar Excel",
+    "ATTENDANCE_EXCEL_EXPORTING": "Descargando...",
+    "ATTENDANCE_EXCEL_NO_DATA": "No hay registros de asistencia para ese mes.",
+    "ATTENDANCE_EXCEL_ERROR": "No se pudo descargar el export. Inténtalo de nuevo.",
+    "ATTENDANCE_EXCEL_INVALID_MONTH": "Elige un mes válido."
   },
   "TABLES": {
     "TITLE": "Mesas",

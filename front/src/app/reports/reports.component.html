@@ -345,6 +345,39 @@
     }
 
     @if (canViewAttendance()) {
+      <section class="report-section" data-testid="reports-attendance-excel">
+        <h2>{{ 'REPORTS.ATTENDANCE_EXCEL_TITLE' | translate }}</h2>
+        <p class="muted work-sessions-hint">{{ 'REPORTS.ATTENDANCE_EXCEL_HINT' | translate }}</p>
+        <div class="attendance-excel-toolbar">
+          <div class="attendance-excel-month">
+            <label for="attendance-excel-month">{{ 'REPORTS.ATTENDANCE_EXCEL_MONTH' | translate }}</label>
+            <input
+              id="attendance-excel-month"
+              type="month"
+              [ngModel]="attendanceExcelMonth()"
+              (ngModelChange)="attendanceExcelMonth.set($event); attendanceExcelError.set(null)"
+            />
+          </div>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="downloadAttendanceExcel()"
+            [disabled]="attendanceExcelExporting()"
+          >
+            {{
+              attendanceExcelExporting()
+                ? ('REPORTS.ATTENDANCE_EXCEL_EXPORTING' | translate)
+                : ('REPORTS.ATTENDANCE_EXCEL_DOWNLOAD' | translate)
+            }}
+          </button>
+        </div>
+        @if (attendanceExcelError()) {
+          <div class="error-banner">{{ attendanceExcelError() }}</div>
+        }
+      </section>
+    }
+
+    @if (canViewAttendance()) {
       <section class="report-section" data-testid="reports-work-sessions-live">
         <h2>{{ 'REPORTS.WORK_SESSIONS_LIVE_TITLE' | translate }}</h2>
         <p class="muted work-sessions-hint">{{ 'REPORTS.WORK_SESSIONS_LIVE_HINT' | translate }}</p>
