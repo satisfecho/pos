@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue #168 added optional staff filtering for the monthly attendance Excel export; a backend bug shadowing `sqlmodel.col` caused 500s on `staff_ids` until the loop variable was renamed and tests were added.
+- **What was done:** `GET /reports/attendance-excel` supports optional `staff_ids`; Reports UI has a staff multi-select; `tests/test_attendance_excel.py` covers filtered export and invalid IDs; duplicate FEAT task was removed per feature-coder notes.
+- **What was tested:** Pytest passed (2 tests); API verified 200/400/404 for filtered paths; Puppeteer `test-reports.mjs` reached Reports and attendance Excel UI; post-fix verification overall **PASS**.
+- **Why closed:** Tester post-fix report confirms pass criteria; implementation complete and verified.
+- **Closed at (UTC):** 2026-04-06 17:12
+---
+
 # Monthly attendance Excel — optional staff filter before download
 
 ## GitHub Issues
