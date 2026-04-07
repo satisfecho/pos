@@ -4,7 +4,16 @@
  * Date range, summary, by product/category/table/waiter.
  * Simple catchy CSS charts; export CSV/Excel.
  */
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  OnInit,
+  HostListener,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -69,6 +78,21 @@ export class ReportsComponent implements OnInit {
   attendanceExcelStaffUsers = signal<User[]>([]);
   /** Empty = all tenant staff with data; non-empty = filter export to these user IDs. */
   attendanceExcelStaffFilterIds: number[] = [];
+  /** Collapsible staff filter panel (replaces native multi-select). */
+  attendanceExcelStaffPanelOpen = signal(false);
+  attendanceExcelStaffSearch = signal('');
+  filteredAttendanceExcelStaffUsers = computed(() => {
+    const q = this.attendanceExcelStaffSearch().trim().toLowerCase();
+    const users = this.attendanceExcelStaffUsers();
+    if (!q) return users;
+    return users.filter((u) => {
+      const n = (u.full_name || '').toLowerCase();
+      const e = (u.email || '').toLowerCase();
+      return n.includes(q) || e.includes(q);
+    });
+  });
+
+  @ViewChild('attendanceStaffDropdownRoot') attendanceStaffDropdownRoot?: ElementRef<HTMLElement>;
   fromDate = signal('');
   toDate = signal('');
   currency = signal('€');
@@ -228,6 +252,66 @@ export class ReportsComponent implements OnInit {
 
   canViewAttendance(): boolean {
     return this.permissions.hasPermission(this.api.getCurrentUser(), 'report:read');
+  }
+
+  @HostListener('document:click', ['$event'])
+  onAttendanceStaffDocumentClick(ev: MouseEvent): void {
+    if (!this.attendanceExcelStaffPanelOpen()) return;
+    const root = this.attendanceStaffDropdownRoot?.nativeElement;
+    if (root && !root.contains(ev.target as Node)) {
+      this.attendanceExcelStaffPanelOpen.set(false);
+      this.attendanceExcelStaffSearch.set('');
+    }
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onAttendanceStaffDocumentKeydown(ev: KeyboardEvent): void {
+    if (ev.key === 'Escape' && this.attendanceExcelStaffPanelOpen()) {
+      this.attendanceExcelStaffPanelOpen.set(false);
+      this.attendanceExcelStaffSearch.set('');
+    }
+  }
+
+  toggleAttendanceStaffPanel(): void {
+    const next = !this.attendanceExcelStaffPanelOpen();
+    this.attendanceExcelStaffPanelOpen.set(next);
+    if (!next) {
+      this.attendanceExcelStaffSearch.set('');
+    }
+  }
+
+  onAttendanceStaffTriggerKeydown(ev: KeyboardEvent): void {
+    if (ev.key === 'Enter' || ev.key === ' ') {
+      ev.preventDefault();
+      this.toggleAttendanceStaffPanel();
+    }
+  }
+
+  toggleAttendanceStaffFilter(id: number | undefined, ev?: Event): void {
+    ev?.stopPropagation();
+    if (id == null || !Number.isFinite(id)) return;
+    const cur = [...this.attendanceExcelStaffFilterIds];
+    const i = cur.indexOf(id);
+    if (i >= 0) {
+      cur.splice(i, 1);
+    } else {
+      cur.push(id);
+    }
+    cur.sort((a, b) => a - b);
+    this.attendanceExcelStaffFilterIds = cur;
+    this.attendanceExcelError.set(null);
+  }
+
+  isAttendanceStaffFilterSelected(id: number | undefined): boolean {
+    if (id == null || !Number.isFinite(id)) return false;
+    return this.attendanceExcelStaffFilterIds.includes(id);
+  }
+
+  attendanceExcelSingleStaffLabel(): string {
+    const ids = this.attendanceExcelStaffFilterIds;
+    if (ids.length !== 1) return '';
+    const u = this.attendanceExcelStaffUsers().find((x) => x.id === ids[0]);
+    return (u?.full_name || u?.email || String(ids[0])).trim();
   }
 
   downloadAttendanceExcel(): void {

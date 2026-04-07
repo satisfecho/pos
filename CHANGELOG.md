@@ -40,6 +40,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Reports → Monthly attendance Excel (GitHub #169):** Optional **staff** filter uses a compact **dropdown** (checkbox list, search when more than ten users) instead of a tall native `<select multiple>`; export behavior unchanged (no selection = all staff with attendance that month; specific checkboxes = `staff_ids` query).
+
 - **Agents:** **`agents/001-log-reviewer/LOG-REVIEWER-PROMPT.md`** — GitHub sweep step explicitly requires **`agent:planned`** on each touched issue.
 
 - **Agents:** Removed misplaced stubs under **`agents/agents/tasks/`** (`FEAT-20260406-1108-clarify-shared-venue-gps`, `NEW-20260406-1115-api-errors-auth-routes`); canonical tasks live under **`agents/tasks/`**.

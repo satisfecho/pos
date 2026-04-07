@@ -359,21 +359,76 @@
             />
           </div>
           @if (attendanceExcelStaffUsers().length > 0) {
-            <div class="attendance-excel-staff">
-              <label for="attendance-excel-staff">{{ 'REPORTS.ATTENDANCE_EXCEL_STAFF_FILTER' | translate }}</label>
-              <select
-                id="attendance-excel-staff"
-                class="attendance-excel-staff-select"
-                multiple
-                size="6"
-                [(ngModel)]="attendanceExcelStaffFilterIds"
-                (ngModelChange)="attendanceExcelError.set(null)"
-                [attr.aria-label]="'REPORTS.ATTENDANCE_EXCEL_STAFF_FILTER' | translate"
-              >
-                @for (u of attendanceExcelStaffUsers(); track u.id) {
-                  <option [ngValue]="u.id">{{ u.full_name || u.email }}</option>
+            <div class="attendance-excel-staff" #attendanceStaffDropdownRoot>
+              <div class="attendance-excel-staff-field" id="attendance-excel-staff-label">
+                {{ 'REPORTS.ATTENDANCE_EXCEL_STAFF_FILTER' | translate }}
+              </div>
+              <div class="attendance-excel-staff-dropdown">
+                <button
+                  type="button"
+                  id="attendance-excel-staff-trigger"
+                  class="attendance-excel-staff-trigger"
+                  data-testid="attendance-excel-staff-trigger"
+                  [attr.aria-expanded]="attendanceExcelStaffPanelOpen()"
+                  aria-haspopup="true"
+                  [attr.aria-controls]="
+                    attendanceExcelStaffPanelOpen() ? 'attendance-excel-staff-panel' : null
+                  "
+                  [attr.aria-labelledby]="'attendance-excel-staff-label'"
+                  (click)="$event.stopPropagation(); toggleAttendanceStaffPanel()"
+                  (keydown)="onAttendanceStaffTriggerKeydown($event)"
+                >
+                  <span class="attendance-excel-staff-trigger-text">
+                    @if (attendanceExcelStaffFilterIds.length === 0) {
+                      {{ 'REPORTS.ATTENDANCE_EXCEL_STAFF_SUMMARY_ALL' | translate }}
+                    } @else if (attendanceExcelStaffFilterIds.length === 1) {
+                      {{ attendanceExcelSingleStaffLabel() }}
+                    } @else {
+                      {{
+                        'REPORTS.ATTENDANCE_EXCEL_STAFF_SUMMARY_COUNT'
+                          | translate: { count: attendanceExcelStaffFilterIds.length }
+                      }}
+                    }
+                  </span>
+                  <span class="attendance-excel-staff-chevron" aria-hidden="true"></span>
+                </button>
+                @if (attendanceExcelStaffPanelOpen()) {
+                  <div
+                    id="attendance-excel-staff-panel"
+                    class="attendance-excel-staff-panel"
+                    role="dialog"
+                    [attr.aria-label]="'REPORTS.ATTENDANCE_EXCEL_STAFF_FILTER' | translate"
+                    (click)="$event.stopPropagation()"
+                  >
+                    @if (attendanceExcelStaffUsers().length > 10) {
+                      <div class="attendance-excel-staff-search">
+                        <input
+                          type="search"
+                          class="attendance-excel-staff-search-input"
+                          [ngModel]="attendanceExcelStaffSearch()"
+                          (ngModelChange)="attendanceExcelStaffSearch.set($event)"
+                          [placeholder]="'REPORTS.ATTENDANCE_EXCEL_STAFF_SEARCH_PLACEHOLDER' | translate"
+                          (click)="$event.stopPropagation()"
+                        />
+                      </div>
+                    }
+                    <ul class="attendance-excel-staff-list">
+                      @for (u of filteredAttendanceExcelStaffUsers(); track u.id) {
+                        <li>
+                          <label class="attendance-excel-staff-option">
+                            <input
+                              type="checkbox"
+                              [checked]="isAttendanceStaffFilterSelected(u.id)"
+                              (change)="toggleAttendanceStaffFilter(u.id, $event)"
+                            />
+                            <span>{{ u.full_name || u.email }}</span>
+                          </label>
+                        </li>
+                      }
+                    </ul>
+                  </div>
                 }
-              </select>
+              </div>
               <p class="muted attendance-excel-staff-hint">
                 {{ 'REPORTS.ATTENDANCE_EXCEL_STAFF_FILTER_HINT' | translate }}
               </p>
