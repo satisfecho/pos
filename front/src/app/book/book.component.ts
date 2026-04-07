@@ -89,6 +89,27 @@ export class BookComponent implements OnInit {
   termsOfServiceUrl = computed(() => this.tenant()?.terms_of_service_url?.trim() || null);
   privacyPolicyUrl = computed(() => this.tenant()?.privacy_policy_url?.trim() || null);
 
+  /** Public booking: ensure http(s) href so the link works when settings omit the scheme. */
+  websiteHref = computed((): string | null => {
+    const w = this.tenant()?.website?.trim();
+    if (!w) return null;
+    if (/^https?:\/\//i.test(w)) return w;
+    return `https://${w}`;
+  });
+
+  /** Show hostname (no www) as link text so the destination is visible; fallback to i18n label. */
+  websiteLinkText = computed((): string => {
+    const href = this.websiteHref();
+    if (!href) return '';
+    try {
+      const u = new URL(href);
+      const host = u.hostname.replace(/^www\./i, '');
+      return host || this.translate.instant('BOOK.WEBSITE');
+    } catch {
+      return this.translate.instant('BOOK.WEBSITE');
+    }
+  });
+
   constructor() {
     const id = this.route.snapshot.paramMap.get('tenantId');
     const n = id ? parseInt(id, 10) : 0;

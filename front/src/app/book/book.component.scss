@@ -127,23 +127,36 @@
   z-index: 1;
   max-width: 600px;
   margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 var(--space-2);
 }
 
 /** Readable panel over hero background image (and subtle lift on solid hero). */
 .hero-content-panel {
   border-radius: var(--radius-lg);
   padding: var(--space-5) var(--space-4);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(0, 0, 0, 0.22);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+  margin-top: var(--space-1);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .hero-header.has-bg-image .hero-content-panel {
-  background: rgba(0, 0, 0, 0.52);
-  border-color: rgba(255, 255, 255, 0.14);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.38);
+  background: rgba(0, 0, 0, 0.58);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.hero-header.has-bg-image .restaurant-name,
+.hero-header.has-bg-image .restaurant-tagline {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
 }
 
 .hero-top-row {
@@ -230,9 +243,27 @@
 }
 
 .restaurant-website-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
+
+  &:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.95);
+    outline-offset: 3px;
+    border-radius: var(--radius-sm);
+  }
+}
+
+.restaurant-website-text {
+  word-break: break-all;
+}
+
+.external-link-icon {
+  flex-shrink: 0;
+  opacity: 0.92;
 }
 
 .restaurant-contact {

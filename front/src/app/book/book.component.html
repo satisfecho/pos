@@ -38,15 +38,30 @@
           @if (tenant()?.description) {
             <p class="restaurant-tagline">{{ tenant()!.description }}</p>
           }
-          @if (tenant()?.website) {
+          @if (websiteHref()) {
             <p class="restaurant-website">
               <a
-                [href]="tenant()!.website!"
+                [href]="websiteHref()!"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="contact-link restaurant-website-link"
+                [attr.title]="websiteHref()"
               >
-                {{ 'BOOK.WEBSITE' | translate }}
+                <span class="restaurant-website-text">{{ websiteLinkText() }}</span>
+                <svg
+                  class="external-link-icon"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  aria-hidden="true"
+                >
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
+                </svg>
               </a>
             </p>
           }
