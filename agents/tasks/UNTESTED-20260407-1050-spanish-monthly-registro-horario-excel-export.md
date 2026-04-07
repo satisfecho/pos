@@ -27,3 +27,10 @@ Per employee and calendar month, the workbook should include:
 - Build the **Excel** with stable column layout, signature column on **each** day row, footer totals, and optional legal text block; set column widths and number/date formats appropriately for Spanish locale expectations.
 - Add or extend tests (backend and/or smoke) so the new export generates valid `.xlsx` and does not break existing export routes.
 - See `docs/` for reports, attendance, and tenant settings patterns if present; align with i18n and security rules (no secrets in exports).
+
+## Testing instructions
+
+1. **Migrate:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back python -m app.migrate` (expect **`20260407120000_tenant_ccc`** applied).
+2. **Backend:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back python3 -m pytest tests/test_registro_horario_excel.py tests/test_attendance_excel.py -q`
+3. **Manual:** Log in as a user with **`report:read`**, open **Reports**, pick a month with attendance (or select staff), click **Download registro horario (ES)** — file `registro_horario_YYYY_MM.xlsx` should open with one sheet per employee, **Firma del empleado** column on each day row, header/totals/footer. Optionally set **Settings → Business → CCC** and confirm it appears in the export header.
+4. **Frontend build:** After `front/` edits, `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=80 front` — no Angular/TS errors.

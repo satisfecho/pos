@@ -779,7 +779,11 @@
     "ATTENDANCE_EXCEL_EXPORTING": "Téléchargement...",
     "ATTENDANCE_EXCEL_NO_DATA": "Aucune présence pour ce mois.",
     "ATTENDANCE_EXCEL_ERROR": "Impossible de télécharger l’export. Réessayez.",
-    "ATTENDANCE_EXCEL_INVALID_MONTH": "Choisissez un mois valide."
+    "ATTENDANCE_EXCEL_INVALID_MONTH": "Choisissez un mois valide.",
+    "ATTENDANCE_REGISTRO_HORARIO_HINT": "« Registro horario » espagnol (.xlsx) : grille mensuelle (prévu vs pointé, colonne signature). Une feuille par employé. Fuseau du site et CIF/CCC optionnels depuis les réglages.",
+    "ATTENDANCE_REGISTRO_HORARIO_DOWNLOAD": "Télécharger registro horario (ES)",
+    "ATTENDANCE_REGISTRO_HORARIO_NO_DATA": "Aucun personnel avec présence ce mois-ci (ou aucun enregistrement). Sélectionnez du personnel ou enregistrez des pointages.",
+    "ATTENDANCE_REGISTRO_HORARIO_ERROR": "Impossible de télécharger le registro horario. Réessayez."
   },
   "TABLES": {
     "TITLE": "Tables",
@@ -1143,6 +1147,9 @@
     "TAX_ID_PLACEHOLDER": "ex. FR12345678901",
     "CIF": "CIF / NIF",
     "CIF_PLACEHOLDER": "ex. B12345678",
+    "CCC": "CCC (compte cotisation sociale)",
+    "CCC_PLACEHOLDER": "ex. 12/12345678/12",
+    "CCC_HINT": "Facultatif. Código Cuenta de Cotización (ES) — affiché dans l’export Excel « registro horario ».",
     "OPENING_HOURS": "Horaires d'ouverture",
     "OPENING_HOURS_SUBTITLE": "Définir les horaires pour chaque jour",
     "OPENING_HOURS_HINT": "Définissez vos horaires. Vous pouvez ajouter une coupure entre deux services.",

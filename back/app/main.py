@@ -2519,6 +2519,10 @@ def update_tenant_settings(
         tenant.cif = (
             tenant_update.cif.strip() if tenant_update.cif else None
         )
+    if tenant_update.ccc is not None:
+        tenant.ccc = (
+            tenant_update.ccc.strip() if tenant_update.ccc else None
+        )
     if tenant_update.opening_hours is not None:
         tenant.opening_hours = (
             tenant_update.opening_hours.strip() if tenant_update.opening_hours else None

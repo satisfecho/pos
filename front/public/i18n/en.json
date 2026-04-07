@@ -805,7 +805,11 @@
     "ATTENDANCE_EXCEL_EXPORTING": "Downloading...",
     "ATTENDANCE_EXCEL_NO_DATA": "No attendance records for that month.",
     "ATTENDANCE_EXCEL_ERROR": "Could not download the attendance export. Try again.",
-    "ATTENDANCE_EXCEL_INVALID_MONTH": "Choose a valid month."
+    "ATTENDANCE_EXCEL_INVALID_MONTH": "Choose a valid month.",
+    "ATTENDANCE_REGISTRO_HORARIO_HINT": "Spanish «registro horario» (.xlsx): paper-style monthly grid (planned vs clocked, signature column). One sheet per employee. Uses tenant timezone and optional CIF/CCC from settings.",
+    "ATTENDANCE_REGISTRO_HORARIO_DOWNLOAD": "Download registro horario (ES)",
+    "ATTENDANCE_REGISTRO_HORARIO_NO_DATA": "No staff with attendance in that month (or no records). Select staff or clock time first.",
+    "ATTENDANCE_REGISTRO_HORARIO_ERROR": "Could not download the registro horario export. Try again."
   },
   "TABLES": {
     "TITLE": "Tables",
@@ -1262,6 +1266,9 @@
     "TAX_ID_PLACEHOLDER": "e.g. DE123456789",
     "CIF": "CIF / NIF",
     "CIF_PLACEHOLDER": "e.g. B12345678",
+    "CCC": "CCC (social security account)",
+    "CCC_PLACEHOLDER": "e.g. 12/12345678/12",
+    "CCC_HINT": "Optional. Spanish Código Cuenta de Cotización — shown on the registro horario Excel export.",
     "DEFAULT_TAX": "Default tax (IVA)",
     "NO_DEFAULT_TAX": "None (no default)",
     "DEFAULT_TAX_HINT": "Applied to products unless overridden per product.",

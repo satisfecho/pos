@@ -14,6 +14,7 @@ from sqlmodel import Session, select, col
 from . import models
 from .db import get_session
 from .permissions import Permission, require_permission
+from .registro_horario_excel import build_registro_horario_xlsx_bytes
 from .work_session_serialization import _total_break_seconds
 
 router = APIRouter()
@@ -176,4 +177,95 @@ def export_attendance_excel(
         buf,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+
+@router.get("/attendance-registro-horario-excel")
+def export_attendance_registro_horario_excel(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.REPORT_READ))],
+    session: Session = Depends(get_session),
+    year: int = Query(..., description="Year (YYYY)"),
+    month: int = Query(..., ge=1, le=12, description="Month (1-12)"),
+    staff_ids: Annotated[list[int] | None, Query(description="Optional staff user IDs (tenant must match)")] = None,
+) -> StreamingResponse:
+    """
+    Spanish-style monthly «registro horario» workbook (.xlsx), one sheet per employee.
+    Distinct from `/attendance-excel` (session rows). Includes planned shifts, clocked blocks
+    split mañana/tarde, signature column on each day row (empty), totals and legal footer.
+    """
+    if current_user.tenant_id is None:
+        raise HTTPException(status_code=403, detail="Tenant required")
+
+    tenant_id = current_user.tenant_id
+    tenant = session.get(models.Tenant, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    filter_user_ids: list[int] | None = None
+    if staff_ids is not None:
+        unique_ids = list(dict.fromkeys(staff_ids))
+        if not unique_ids:
+            raise HTTPException(
+                status_code=400,
+                detail="staff_ids cannot be empty when provided; omit the parameter to export all staff with sessions",
+            )
+        valid_stmt = (
+            select(models.User.id)
+            .where(models.User.tenant_id == tenant_id)
+            .where(col(models.User.id).in_(unique_ids))
+        )
+        found = set(session.exec(valid_stmt).all())
+        if found != set(unique_ids):
+            raise HTTPException(
+                status_code=400,
+                detail="One or more staff_ids are not valid users in this tenant",
+            )
+        filter_user_ids = unique_ids
+
+    users_out: list[models.User] = []
+    if filter_user_ids is not None:
+        rows = session.exec(
+            select(models.User)
+            .where(models.User.tenant_id == tenant_id)
+            .where(col(models.User.id).in_(filter_user_ids))
+        ).all()
+        id_order = {uid: i for i, uid in enumerate(filter_user_ids)}
+        users_out = sorted(rows, key=lambda u: (id_order.get(u.id or 0, 999), (u.full_name or u.email or "").lower()))
+    else:
+        start_date = date(year, month, 1)
+        if month == 12:
+            end_date = date(year + 1, 1, 1) - timedelta(days=1)
+        else:
+            end_date = date(year, month + 1, 1) - timedelta(days=1)
+        start_dt = datetime.combine(start_date, time.min, tzinfo=timezone.utc)
+        end_dt = datetime.combine(end_date, time.max, tzinfo=timezone.utc)
+        stmt = (
+            select(models.WorkSession.user_id)
+            .where(models.WorkSession.tenant_id == tenant_id)
+            .where(models.WorkSession.started_at >= start_dt)
+            .where(models.WorkSession.started_at <= end_dt)
+            .distinct()
+        )
+        uids = list(session.exec(stmt).all())
+        if not uids:
+            raise HTTPException(status_code=404, detail="No attendance records found for this period")
+        rows = session.exec(
+            select(models.User)
+            .where(models.User.tenant_id == tenant_id)
+            .where(col(models.User.id).in_(uids))
+        ).all()
+        users_out = sorted(rows, key=lambda u: ((u.full_name or u.email or "").lower(), u.id or 0))
+
+    try:
+        buf = build_registro_horario_xlsx_bytes(session, tenant, users_out, year, month)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+    filename = f"registro_horario_{year}_{month:02d}.xlsx"
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )

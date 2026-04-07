@@ -348,6 +348,7 @@
       <section class="report-section" data-testid="reports-attendance-excel">
         <h2>{{ 'REPORTS.ATTENDANCE_EXCEL_TITLE' | translate }}</h2>
         <p class="muted work-sessions-hint">{{ 'REPORTS.ATTENDANCE_EXCEL_HINT' | translate }}</p>
+        <p class="muted work-sessions-hint">{{ 'REPORTS.ATTENDANCE_REGISTRO_HORARIO_HINT' | translate }}</p>
         <div class="attendance-excel-toolbar">
           <div class="attendance-excel-month">
             <label for="attendance-excel-month">{{ 'REPORTS.ATTENDANCE_EXCEL_MONTH' | translate }}</label>
@@ -438,12 +439,24 @@
             type="button"
             class="btn btn-secondary"
             (click)="downloadAttendanceExcel()"
-            [disabled]="attendanceExcelExporting()"
+            [disabled]="attendanceExcelExporting() || attendanceRegistroExporting()"
           >
             {{
               attendanceExcelExporting()
                 ? ('REPORTS.ATTENDANCE_EXCEL_EXPORTING' | translate)
                 : ('REPORTS.ATTENDANCE_EXCEL_DOWNLOAD' | translate)
+            }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="downloadAttendanceRegistroHorarioExcel()"
+            [disabled]="attendanceExcelExporting() || attendanceRegistroExporting()"
+          >
+            {{
+              attendanceRegistroExporting()
+                ? ('REPORTS.ATTENDANCE_EXCEL_EXPORTING' | translate)
+                : ('REPORTS.ATTENDANCE_REGISTRO_HORARIO_DOWNLOAD' | translate)
             }}
           </button>
         </div>

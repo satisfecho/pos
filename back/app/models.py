@@ -86,6 +86,7 @@ class Tenant(SQLModel, table=True):
     website: str | None = None
     tax_id: str | None = None  # Tax ID / VAT number (e.g. DE123456789)
     cif: str | None = None  # CIF / NIF (Spain: B12345678)
+    ccc: str | None = None  # Código Cuenta de Cotización (ES social security account); optional legal header
     logo_filename: str | None = None  # Stored in uploads/{tenant_id}/logo/
     header_background_filename: str | None = None  # Stored in uploads/{tenant_id}/header/
     # Public-facing pages (book, menu, reservation view): background color as hex (e.g. #1E22AA for RAL5002 Azul)
@@ -1077,6 +1078,7 @@ class TenantUpdate(SQLModel):
     website: str | None = None
     tax_id: str | None = None
     cif: str | None = None
+    ccc: str | None = None
     opening_hours: str | None = None  # JSON string
     immediate_payment_required: bool | None = None
 

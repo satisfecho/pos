@@ -1026,7 +1026,11 @@
     "ATTENDANCE_EXCEL_EXPORTING": "Wird heruntergeladen...",
     "ATTENDANCE_EXCEL_NO_DATA": "Für diesen Monat liegen keine Anwesenheitsdaten vor.",
     "ATTENDANCE_EXCEL_ERROR": "Export konnte nicht heruntergeladen werden. Bitte erneut versuchen.",
-    "ATTENDANCE_EXCEL_INVALID_MONTH": "Bitte einen gültigen Monat wählen."
+    "ATTENDANCE_EXCEL_INVALID_MONTH": "Bitte einen gültigen Monat wählen.",
+    "ATTENDANCE_REGISTRO_HORARIO_HINT": "Spanisches «registro horario» (.xlsx): monatliches Raster (Plan vs. gestempelt, Spalte für Unterschrift). Ein Blatt pro Mitarbeitendem. Nutzt Mandanten-Zeitzone und optionale CIF/CCC aus den Einstellungen.",
+    "ATTENDANCE_REGISTRO_HORARIO_DOWNLOAD": "Registro horario (ES) herunterladen",
+    "ATTENDANCE_REGISTRO_HORARIO_NO_DATA": "Keine Anwesenheit in diesem Monat (oder keine Datensätze). Personal wählen oder Zeiten erfassen.",
+    "ATTENDANCE_REGISTRO_HORARIO_ERROR": "Registro-Horario-Export konnte nicht heruntergeladen werden. Bitte erneut versuchen."
   },
   "WORKING_PLAN": {
     "TITLE": "Schichtplan",
@@ -1195,6 +1199,9 @@
     "TAX_ID_PLACEHOLDER": "z.B. DE123456789",
     "CIF": "CIF / NIF",
     "CIF_PLACEHOLDER": "z.B. B12345678",
+    "CCC": "CCC (Sozialversicherungskonto)",
+    "CCC_PLACEHOLDER": "z.B. 12/12345678/12",
+    "CCC_HINT": "Optional. Spanisches Código Cuenta de Cotización — erscheint im Registro-Horario-Excel-Export.",
     "OPENING_HOURS_HINT": "Legen Sie Ihre Geschäftszeiten für jeden Wochentag fest.",
     "DAY_MONDAY": "Montag",
     "DAY_TUESDAY": "Dienstag",

@@ -998,7 +998,11 @@
     "ATTENDANCE_EXCEL_EXPORTING": "正在下载...",
     "ATTENDANCE_EXCEL_NO_DATA": "该月没有考勤记录。",
     "ATTENDANCE_EXCEL_ERROR": "无法下载考勤导出。请重试。",
-    "ATTENDANCE_EXCEL_INVALID_MONTH": "请选择有效月份。"
+    "ATTENDANCE_EXCEL_INVALID_MONTH": "请选择有效月份。",
+    "ATTENDANCE_REGISTRO_HORARIO_HINT": "西班牙语 «registro horario»（.xlsx）：月度纸质风格表格（计划与实际打卡、签名列）。每位员工一张工作表。使用租户时区及设置中的可选 CIF/CCC。",
+    "ATTENDANCE_REGISTRO_HORARIO_DOWNLOAD": "下载 registro horario（ES）",
+    "ATTENDANCE_REGISTRO_HORARIO_NO_DATA": "该月没有员工考勤记录（或无记录）。请选择员工或先打卡。",
+    "ATTENDANCE_REGISTRO_HORARIO_ERROR": "无法下载 registro horario 导出。请重试。"
   },
   "WORKING_PLAN": {
     "TITLE": "排班计划",
@@ -1128,6 +1132,9 @@
     "TAX_ID_PLACEHOLDER": "例如 DE123456789",
     "CIF": "CIF / NIF",
     "CIF_PLACEHOLDER": "例如 B12345678",
+    "CCC": "CCC（社保账户，西班牙）",
+    "CCC_PLACEHOLDER": "例如 12/12345678/12",
+    "CCC_HINT": "选填。西班牙 Código Cuenta de Cotización — 显示在 registro horario Excel 导出中。",
     "OPENING_HOURS_HINT": "设置您一周中每一天的营业时间。",
     "DAY_MONDAY": "星期一",
     "DAY_TUESDAY": "星期二",

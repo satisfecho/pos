@@ -932,6 +932,18 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                     </div>
                   </div>
                   <div class="form-group">
+                    <label for="ccc">{{ 'SETTINGS.CCC' | translate }}</label>
+                    <input
+                      type="text"
+                      id="ccc"
+                      [(ngModel)]="formData.ccc"
+                      name="ccc"
+                      [placeholder]="'SETTINGS.CCC_PLACEHOLDER' | translate"
+                      autocomplete="off"
+                    />
+                    <small class="field-hint">{{ 'SETTINGS.CCC_HINT' | translate }}</small>
+                  </div>
+                  <div class="form-group">
                     <label for="default_tax_id">{{ 'SETTINGS.DEFAULT_TAX' | translate }}</label>
                     <select
                       id="default_tax_id"
@@ -2777,6 +2789,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     website: null,
     tax_id: null,
     cif: null,
+    ccc: null,
     default_tax_id: null,
     opening_hours: null,
     currency_code: 'EUR',
@@ -2877,6 +2890,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           website: settings.website || null,
           tax_id: settings.tax_id || null,
           cif: settings.cif || null,
+          ccc: settings.ccc || null,
           default_tax_id: settings.default_tax_id ?? null,
           opening_hours: settings.opening_hours || null,
           currency_code: settings.currency_code || 'EUR',

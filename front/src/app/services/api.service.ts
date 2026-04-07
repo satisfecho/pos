@@ -992,6 +992,8 @@ export interface TenantSettings {
   website?: string | null;
   tax_id?: string | null;
   cif?: string | null;
+  /** Spanish labour: Código Cuenta de Cotización (optional; registro horario export). */
+  ccc?: string | null;
   default_tax_id?: number | null;
   logo_filename?: string | null;
   header_background_filename?: string | null;
@@ -2069,6 +2071,24 @@ export class ApiService {
       }
     }
     return this.http.get(`${this.apiUrl}/reports/attendance-excel`, {
+      params,
+      responseType: 'blob',
+    });
+  }
+
+  /** Spanish «registro horario» monthly workbook (.xlsx); one sheet per staff. Requires `report:read`. */
+  getReportsAttendanceRegistroHorarioExcel(
+    year: number,
+    month: number,
+    staffIds?: number[] | null,
+  ): Observable<Blob> {
+    let params = new HttpParams().set('year', String(year)).set('month', String(month));
+    if (staffIds?.length) {
+      for (const id of staffIds) {
+        params = params.append('staff_ids', String(id));
+      }
+    }
+    return this.http.get(`${this.apiUrl}/reports/attendance-registro-horario-excel`, {
       params,
       responseType: 'blob',
     });

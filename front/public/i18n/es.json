@@ -804,7 +804,11 @@
     "ATTENDANCE_EXCEL_EXPORTING": "Descargando...",
     "ATTENDANCE_EXCEL_NO_DATA": "No hay registros de asistencia para ese mes.",
     "ATTENDANCE_EXCEL_ERROR": "No se pudo descargar el export. Inténtalo de nuevo.",
-    "ATTENDANCE_EXCEL_INVALID_MONTH": "Elige un mes válido."
+    "ATTENDANCE_EXCEL_INVALID_MONTH": "Elige un mes válido.",
+    "ATTENDANCE_REGISTRO_HORARIO_HINT": "«Registro horario» (.xlsx): cuadrícula mensual tipo papel (plan vs fichado, columna de firma). Una hoja por empleado. Usa la zona horaria del local y CIF/CCC opcionales en ajustes.",
+    "ATTENDANCE_REGISTRO_HORARIO_DOWNLOAD": "Descargar registro horario (ES)",
+    "ATTENDANCE_REGISTRO_HORARIO_NO_DATA": "No hay personal con asistencia ese mes (o sin registros). Selecciona personal o registra fichajes.",
+    "ATTENDANCE_REGISTRO_HORARIO_ERROR": "No se pudo descargar el registro horario. Inténtalo de nuevo."
   },
   "TABLES": {
     "TITLE": "Mesas",
@@ -1388,6 +1392,9 @@
     "TAX_ID_PLACEHOLDER": "ej. B12345678",
     "CIF": "CIF",
     "CIF_PLACEHOLDER": "ej. B12345678",
+    "CCC": "CCC (cuenta de cotización)",
+    "CCC_PLACEHOLDER": "ej. 12/12345678/12",
+    "CCC_HINT": "Opcional. Código Cuenta de Cotización — se muestra en la exportación Excel de registro horario.",
     "DEFAULT_TAX": "IVA por defecto",
     "NO_DEFAULT_TAX": "Ninguno",
     "DEFAULT_TAX_HINT": "Se aplica a los productos salvo que se indique otro en el producto.",

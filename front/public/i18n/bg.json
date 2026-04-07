@@ -805,7 +805,11 @@
     "ATTENDANCE_EXCEL_EXPORTING": "Изтегляне...",
     "ATTENDANCE_EXCEL_NO_DATA": "Няма записи за присъствие за този месец.",
     "ATTENDANCE_EXCEL_ERROR": "Експортът не можа да бъде изтеглен. Опитайте отново.",
-    "ATTENDANCE_EXCEL_INVALID_MONTH": "Изберете валиден месец."
+    "ATTENDANCE_EXCEL_INVALID_MONTH": "Изберете валиден месец.",
+    "ATTENDANCE_REGISTRO_HORARIO_HINT": "Испански «registro horario» (.xlsx): месечна таблица (план срещу отчетено време, колона за подпис). Един лист на служител. Часова зона на обекта и по избор CIF/CCC от настройки.",
+    "ATTENDANCE_REGISTRO_HORARIO_DOWNLOAD": "Изтегляне на registro horario (ES)",
+    "ATTENDANCE_REGISTRO_HORARIO_NO_DATA": "Няма персонал с присъствие за този месец (или няма записи). Изберете персонал или отчетете часове.",
+    "ATTENDANCE_REGISTRO_HORARIO_ERROR": "Експортът registro horario не можа да бъде изтеглен. Опитайте отново."
   },
   "TABLES": {
     "TITLE": "Маси",
@@ -1262,6 +1266,9 @@
     "TAX_ID_PLACEHOLDER": "напр. DE123456789",
     "CIF": "CIF / NIF",
     "CIF_PLACEHOLDER": "напр. B12345678",
+    "CCC": "CCC (сметка за осигуровки, ES)",
+    "CCC_PLACEHOLDER": "напр. 12/12345678/12",
+    "CCC_HINT": "По желание. Испански Código Cuenta de Cotización — в Excel износа registro horario.",
     "DEFAULT_TAX": "Данък по подразбиране (IVA)",
     "NO_DEFAULT_TAX": "Няма (няма по подразбиране)",
     "DEFAULT_TAX_HINT": "Прилага се за продуктите, освен ако не е презаписано за продукт.",

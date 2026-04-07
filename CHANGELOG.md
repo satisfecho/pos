@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.73] - 2026-04-07
+
+### Added
+
+- **Reports / Spanish registro horario (GitHub #170):** `GET /reports/attendance-registro-horario-excel` — monthly `.xlsx` with paper-style layout (company/CIF/CCC header from tenant settings, **tenant timezone** for days and planned vs clocked split at 12:00 local, **Firma** column on every day row, totals, RD-ley 8/2019 footer text). One sheet per employee; optional **`staff_ids`** like the session-based export. **`Tenant.ccc`** (migration **`20260407120000_tenant_ccc.sql`**) with **`TenantUpdate.ccc`** and **Settings → Business** field **`SETTINGS.CCC`**. Reports UI: second download button; **`REPORTS.ATTENDANCE_REGISTRO_HORARIO_*`** in all **`front/public/i18n/*.json`**. Tests: **`tests/test_registro_horario_excel.py`**.
+
 ## [2.0.72] - 2026-04-06
 
 ### Added

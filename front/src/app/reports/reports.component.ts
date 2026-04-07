@@ -74,6 +74,7 @@ export class ReportsComponent implements OnInit {
   /** `YYYY-MM` for monthly attendance Excel (calendar month, local). */
   attendanceExcelMonth = signal('');
   attendanceExcelExporting = signal(false);
+  attendanceRegistroExporting = signal(false);
   attendanceExcelError = signal<string | null>(null);
   attendanceExcelStaffUsers = signal<User[]>([]);
   /** Empty = all tenant staff with data; non-empty = filter export to these user IDs. */
@@ -368,6 +369,69 @@ export class ReportsComponent implements OnInit {
         }
         this.attendanceExcelError.set(
           this.apiErr.fromHttpError(err, 'REPORTS.ATTENDANCE_EXCEL_ERROR'),
+        );
+      },
+    });
+  }
+
+  downloadAttendanceRegistroHorarioExcel(): void {
+    if (!this.canViewAttendance()) return;
+    const ym = (this.attendanceExcelMonth() || '').trim();
+    const m = /^(\d{4})-(\d{2})$/.exec(ym);
+    if (!m) {
+      this.attendanceExcelError.set(this.translate.instant('REPORTS.ATTENDANCE_EXCEL_INVALID_MONTH'));
+      return;
+    }
+    const year = parseInt(m[1], 10);
+    const month = parseInt(m[2], 10);
+    this.attendanceRegistroExporting.set(true);
+    this.attendanceExcelError.set(null);
+    const staffIds =
+      this.attendanceExcelStaffFilterIds.length > 0 ? this.attendanceExcelStaffFilterIds : undefined;
+    this.api.getReportsAttendanceRegistroHorarioExcel(year, month, staffIds).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `registro_horario_${year}_${String(month).padStart(2, '0')}.xlsx`;
+        a.click();
+        URL.revokeObjectURL(url);
+        this.attendanceRegistroExporting.set(false);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.attendanceRegistroExporting.set(false);
+        if (err.status === 404) {
+          this.attendanceExcelError.set(this.translate.instant('REPORTS.ATTENDANCE_REGISTRO_HORARIO_NO_DATA'));
+          return;
+        }
+        const body = err.error;
+        if (body instanceof Blob) {
+          body
+            .text()
+            .then((text) => {
+              try {
+                const parsed = JSON.parse(text) as { detail?: unknown };
+                const d = parsed?.detail;
+                this.attendanceExcelError.set(
+                  typeof d === 'string' && d.trim()
+                    ? d
+                    : this.translate.instant('REPORTS.ATTENDANCE_REGISTRO_HORARIO_ERROR'),
+                );
+              } catch {
+                this.attendanceExcelError.set(
+                  this.translate.instant('REPORTS.ATTENDANCE_REGISTRO_HORARIO_ERROR'),
+                );
+              }
+            })
+            .catch(() =>
+              this.attendanceExcelError.set(
+                this.translate.instant('REPORTS.ATTENDANCE_REGISTRO_HORARIO_ERROR'),
+              ),
+            );
+          return;
+        }
+        this.attendanceExcelError.set(
+          this.apiErr.fromHttpError(err, 'REPORTS.ATTENDANCE_REGISTRO_HORARIO_ERROR'),
         );
       },
     });

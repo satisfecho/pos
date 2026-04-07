@@ -998,7 +998,11 @@
     "ATTENDANCE_EXCEL_EXPORTING": "डाउनलोड हो रहा है...",
     "ATTENDANCE_EXCEL_NO_DATA": "उस माह के लिए कोई उपस्थिति रिकॉर्ड नहीं।",
     "ATTENDANCE_EXCEL_ERROR": "उपस्थिति निर्यात डाउनलोड नहीं हो सका। पुनः प्रयास करें।",
-    "ATTENDANCE_EXCEL_INVALID_MONTH": "एक वैध माह चुनें।"
+    "ATTENDANCE_EXCEL_INVALID_MONTH": "एक वैध माह चुनें।",
+    "ATTENDANCE_REGISTRO_HORARIO_HINT": "स्पेनिश «registro horario» (.xlsx): मासिक ग्रिड (योजना बनाम घड़ी, हस्ताक्षर कॉलम)। प्रति कर्मचारी एक शीट। किरायेदार समय क्षेत्र और सेटिंग्स से वैकल्पिक CIF/CCC।",
+    "ATTENDANCE_REGISTRO_HORARIO_DOWNLOAD": "registro horario (ES) डाउनलोड करें",
+    "ATTENDANCE_REGISTRO_HORARIO_NO_DATA": "उस माह कोई स्टाफ उपस्थिति नहीं (या कोई रिकॉर्ड नहीं)। स्टाफ चुनें या समय दर्ज करें।",
+    "ATTENDANCE_REGISTRO_HORARIO_ERROR": "registro horario निर्यात डाउनलोड नहीं हो सका। पुनः प्रयास करें।"
   },
   "WORKING_PLAN": {
     "TITLE": "कार्य योजना",
@@ -1128,6 +1132,9 @@
     "TAX_ID_PLACEHOLDER": "जैसे DE123456789",
     "CIF": "CIF / NIF",
     "CIF_PLACEHOLDER": "जैसे B12345678",
+    "CCC": "CCC (सामाजिक सुरक्षा खाता, ES)",
+    "CCC_PLACEHOLDER": "जैसे 12/12345678/12",
+    "CCC_HINT": "वैकल्पिक। स्पेनिश Código Cuenta de Cotización — registro horario Excel निर्यात में दिखता है।",
     "OPENING_HOURS_HINT": "सप्ताह के प्रत्येक दिन के लिए अपना व्यावसायिक समय निर्धारित करें।",
     "DAY_MONDAY": "सोमवार",
     "DAY_TUESDAY": "मंगलवार",
