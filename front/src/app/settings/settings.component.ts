@@ -868,9 +868,17 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                       id="public_google_review_url"
                       [(ngModel)]="formData.public_google_review_url"
                       name="public_google_review_url"
+                      (ngModelChange)="autoGenerateReviewUrlFromPlaceId()"
                       [placeholder]="'SETTINGS.PUBLIC_GOOGLE_REVIEW_PLACEHOLDER' | translate"
                     />
-                    <small class="field-hint">{{ 'SETTINGS.PUBLIC_GOOGLE_REVIEW_HINT' | translate }}</small>
+                    <small class="field-hint">
+                      @if (publicGoogleReviewAutoHint()) {
+                        {{ 'SETTINGS.PUBLIC_GOOGLE_REVIEW_HINT' | translate }}
+                      }
+                      @if (publicGoogleReviewUrlHint()) {
+                        {{ 'SETTINGS.PUBLIC_GOOGLE_REVIEW_URL_HINT' | translate }}
+                      }
+                    </small>
                   </div>
 
                   <div class="form-group">
@@ -2682,6 +2690,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
   headerBackgroundPreview = signal<string | null>(null);
   headerBackgroundFile: File | null = null;
 
+  /** Google Review auto-hint signals (GitHub #176) */
+  publicGoogleReviewAutoHint = signal(false);
+  publicGoogleReviewHint = signal<string>('');
+  publicGoogleReviewUrlHint = signal<string>('');
+
   providers = signal<Provider[]>([]);
   providersLoading = signal(false);
   providersError = signal('');
@@ -2957,6 +2970,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.parseOpeningHours(settings.opening_hours);
         this.syncPrepaymentFieldsFromCents();
         this.loadTaxes();
+        this.autoGenerateReviewUrlFromPlaceId();
         this.loading.set(false);
       },
       error: (err) => {
@@ -3692,6 +3706,29 @@ export class SettingsComponent implements OnInit, OnDestroy {
       });
     } else {
       doLogoUpload();
+    }
+  }
+
+  /** Auto-generate Google review URL from Place ID only.
+   * Input: "0x1234..." (Google's internal Place ID format).
+   * Output: "https://search.google.com/local/writereview?placeid=0x1234..."
+   * See Google Place ID Finder: https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder
+   */
+  autoGenerateReviewUrlFromPlaceId(): void {
+    const input = this.formData.public_google_review_url?.toString().trim();
+    if (!input) return;
+
+    // Check if it looks like a Pure Place ID (starts with 0x)
+    // Pure Place IDs are used by Google Place API, not the display Place IDs with /
+    const purePlaceIdRegex = /^[0-9a-f]{32,}(?:-[0-9a-f]{24})?$/i;
+    if (purePlaceIdRegex.test(input)) {
+      this.formData.public_google_review_url = `https://search.google.com/local/writereview?placeid=${input}`;
+      this.publicGoogleReviewAutoHint.set(true);
+      this.publicGoogleReviewHint.set('');
+    } else {
+      // Not a Pure Place ID, keep user input as-is
+      this.publicGoogleReviewAutoHint.set(false);
+      this.publicGoogleReviewHint.set('');
     }
   }
 
