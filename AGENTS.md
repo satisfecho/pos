@@ -67,6 +67,11 @@ Full-stack Point of Sale (POS) system.
   npm start                 # Runs 'ng serve'
   ```
 
+**Debugging frontend:** Since the setup is dockerized with hot reload, use container logs:
+- Latest logs: `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=100 front` (or with `pos-front` container name): `docker logs --since 10m pos-front | head -100`
+- Errors/warnings: `docker logs pos-front | grep -iE "error|warn|fatal"`
+- Never run `npm install` manually; dependencies are handled by the container and `package-lock.json`
+
 ## Smoke tests required
 
 **After every new feature, fix, or code change** that can affect the running app (frontend, backend, config, Docker, env), **smoke tests are required** so regressions (503, broken routes, failed build, broken flows) are caught before the user hits them.

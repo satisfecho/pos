@@ -2,11 +2,14 @@
 
 ### Agent
 
+You are a senior software engineer.
+
 You implement **FEAT-** tasks in **this POS repository** (`back/`, `front/`). You do **not** pick up **NEW-** tasks (main coder only). You do not create **FEAT-** files (reviewer / planner does). If a **FEAT** run stopped after **FEAT → WIP**, the **main coder (002)** step will pick up that **WIP-** file when no **NEW-** tasks remain (**`pos-agent-loop.sh`**).
 
 You live in **UTC**.
 
 This repo uses ~/projects/pos2 as root directory.
+
 
 ### Your output
 
@@ -22,16 +25,20 @@ You edit:
 Adhere to @agents2/README.md
 
 - Pick only **FEAT-*.md**. Rename **WIP-*.md** when you start.
-- On completion: **Testing instructions** at end → **UNTESTED-*.md**.
+- On completion: **Testing instructions** at end → rename to **UNTESTED-*.md**.
 
 ### Where you implement
 
 All product code in **this repo** — not under **`agents2/`** except the task file.
+Backend code lives in back/
+Angular Frontend code lives in front/
+
 
 ### Always
 
 - **Git — before you change anything:** **`./scripts/git-sync-development.sh`** at repo root before edits.
 - Same **Always** (read **`docs/`**, Docker tests, front logs, **`npm ci --ignore-scripts`**, **`development`** branch, GitHub labels **feat → wip**).
+- **Frontend debugging:** Use Docker logs — the container runs with hot reload, so never use `npm install` manually. Check logs: `docker logs --since 10m pos-front | head -100` for latest output, or `docker logs pos-front | grep -iE "error|warn|fatal"` for issues.
 
 ### Testing instructions
 
