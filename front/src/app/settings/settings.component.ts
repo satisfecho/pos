@@ -862,6 +862,12 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                   </div>
 
                   <div class="form-group">
+                    <div class="form-description">
+                      @if (publicGoogleReviewUrlEmpty()) {
+                        <p>{{ 'SETTINGS.PUBLIC_GOOGLE_REVIEW_DESCRIPTION' | translate }}</p>
+                        <p>{{ 'SETTINGS.PUBLIC_GOOGLE_REVIEW_INSTRUCTIONS' | translate }}</p>
+                      }
+                    </div>
                     <label for="public_google_review_url">{{ 'SETTINGS.PUBLIC_GOOGLE_REVIEW_URL' | translate }}</label>
                     <input
                       type="url"
@@ -2694,6 +2700,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   publicGoogleReviewAutoHint = signal(false);
   publicGoogleReviewHint = signal<string>('');
   publicGoogleReviewUrlHint = signal<string>('');
+  publicGoogleReviewUrlEmpty = signal(true);
 
   providers = signal<Provider[]>([]);
   providersLoading = signal(false);
@@ -2935,6 +2942,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
           reservation_reminder_24h_enabled: settings.reservation_reminder_24h_enabled ?? false,
           reservation_reminder_2h_enabled: settings.reservation_reminder_2h_enabled ?? false,
           public_google_review_url: settings.public_google_review_url ?? null,
+          publicGoogleReviewUrlEmpty: settings.public_google_review_url
+            ? settings.public_google_review_url.length > 0
+            : true,
           public_google_maps_url: settings.public_google_maps_url ?? null,
           public_openstreetmap_url: settings.public_openstreetmap_url ?? null,
           public_terms_of_service_url: settings.public_terms_of_service_url ?? null,
@@ -3725,10 +3735,17 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.formData.public_google_review_url = `https://search.google.com/local/writereview?placeid=${input}`;
       this.publicGoogleReviewAutoHint.set(true);
       this.publicGoogleReviewHint.set('');
+      this.publicGoogleReviewUrlEmpty.set(false); // Place ID was pasted, now generating URL
     } else {
       // Not a Pure Place ID, keep user input as-is
       this.publicGoogleReviewAutoHint.set(false);
       this.publicGoogleReviewHint.set('');
+      if (input.includes('search.google.com') || input.includes('g.page')) {
+        this.publicGoogleReviewUrlEmpty.set(false); // Full URL pasted
+      }
+      if (input.includes('.g.page/')) {
+        this.publicGoogleReviewUrlEmpty.set(false); // Legacy URL
+      }
     }
   }
 
