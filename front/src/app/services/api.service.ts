@@ -461,20 +461,20 @@ export interface TenantSummary {
   /** Mailing / street address (shown on public book and reservation pages when set). */
   address?: string | null;
   opening_hours?: string | null;
+  /** Google review URL (tenant settings). */
+  public_google_review_url?: string | null;
   /** Background color for public pages (hex, e.g. #1E22AA for RAL5002 Azul). */
   public_background_color?: string | null;
-  /** Token for take-away/home ordering menu when a table is configured (e.g. named "Take away"). */
+  /** Google Maps URL (tenant settings). */
+  public_google_maps_url?: string | null;
+  /** Token for take-away/home ordering when a table is configured (e.g. named "Take away"). */
   take_away_table_token?: string | null;
-  /** Reservation rules (for book page and reservation view) */
+  /** Reservation rules (public book and reservation view; mirrors backend TenantSummary). */
   reservation_prepayment_cents?: number | null;
   reservation_prepayment_text?: string | null;
   reservation_cancellation_policy?: string | null;
   reservation_arrival_tolerance_minutes?: number | null;
   reservation_dress_code?: string | null;
-  /** Google Maps / Business Profile "Write a review" URL (thank-you page on public feedback form). */
-  public_google_review_url?: string | null;
-  /** Google Maps place or directions URL (Share link). */
-  public_google_maps_url?: string | null;
   /** OpenStreetMap share URL (openstreetmap.org). */
   public_openstreetmap_url?: string | null;
   /** Restaurant website (http(s), from tenant settings). */
@@ -1035,6 +1035,7 @@ export interface TenantSettings {
   reservation_confirmation_email_subject?: string | null;
   reservation_confirmation_email_body?: string | null;
   /** Background color for public-facing pages (hex, e.g. #1E22AA for RAL5002 Azul). */
+  public_google_review_url?: string | null;
   public_background_color?: string | null;
   /** Reservation options (pre-payment, policies, reminders) */
   reservation_prepayment_cents?: number | null;
@@ -1052,7 +1053,6 @@ export interface TenantSettings {
   reservation_dress_code?: string | null;
   reservation_reminder_24h_enabled?: boolean | null;
   reservation_reminder_2h_enabled?: boolean | null;
-  public_google_review_url?: string | null;
   public_google_maps_url?: string | null;
   public_openstreetmap_url?: string | null;
   public_terms_of_service_url?: string | null;
