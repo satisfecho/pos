@@ -9,7 +9,8 @@
 #   LLAMA_CPP_MODEL        Default Bonsai-8B.gguf
 #   LLAMA_CPP_REQUEST_TIMEOUT  Seconds for HTTP request (default 180)
 #   AGENT_001_SKIP_LLAMA_CPP   If 1, only use Ollama (skip llama.cpp attempt)
-#   OLLAMA_MODEL           Default qwen2.5:1.5b; OLLAMA_HOST if daemon is remote
+#   OLLAMA_MODEL           Default qwen2.5:1.5b
+#   OLLAMA_HOST            Default http://127.0.0.1:11434 (local daemon; saves Cursor usage)
 #
 # Exit: 0 = ESCALATE (keep log incident flag for 001)
 #       1 = SKIP    (clear log flag; do not call cursor for logs-only triage)
@@ -19,6 +20,9 @@ set -euo pipefail
 
 ctx="${1:?usage: $0 /path/to/001-latest-context.txt}"
 ollama_model="${OLLAMA_MODEL:-qwen2.5:1.5b}"
+# Pin local Ollama HTTP API unless the user overrides OLLAMA_HOST (e.g. remote daemon).
+: "${OLLAMA_HOST:=http://127.0.0.1:11434}"
+export OLLAMA_HOST
 llama_base="${LLAMA_CPP_BASE_URL:-http://127.0.0.1:8080/v1}"
 llama_model="${LLAMA_CPP_MODEL:-Bonsai-8B.gguf}"
 llama_timeout="${LLAMA_CPP_REQUEST_TIMEOUT:-180}"

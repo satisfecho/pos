@@ -216,14 +216,16 @@ should_run_001_cursor_agent() {
 
 # True when local LLM triage can run: llama.cpp OpenAI API up (/v1/models) + python3, or Ollama with ≥1 model.
 # Disable triage entirely with AGENT_001_OLLAMA_LOG_TRIAGE=0.
+# Ollama checks use OLLAMA_HOST (default http://127.0.0.1:11434) to match scripts/agent-ollama-log-triage.sh.
 local_llm_triage_available() {
   [[ "${AGENT_001_OLLAMA_LOG_TRIAGE:-}" != "0" ]] || return 1
   local base="${LLAMA_CPP_BASE_URL:-http://127.0.0.1:8080/v1}"
+  local oh="${OLLAMA_HOST:-http://127.0.0.1:11434}"
   base="${base%/}"
   if curl -sfS -m 3 -o /dev/null "${base}/models" 2>/dev/null && command -v python3 >/dev/null 2>&1; then
     return 0
   fi
-  if command -v ollama >/dev/null 2>&1 && ollama list 2>/dev/null | tail -n +2 | head -1 | grep -q '[[:graph:]]'; then
+  if command -v ollama >/dev/null 2>&1 && OLLAMA_HOST="$oh" ollama list 2>/dev/null | tail -n +2 | head -1 | grep -q '[[:graph:]]'; then
     return 0
   fi
   return 1
@@ -522,7 +524,7 @@ Environment:
   AGENT_LOG_REVIEWER_ALWAYS  If 1, always invoke 001 cursor-agent (skip preflight gate).
   AGENT_001_SKIP_PREFLIGHT   If 1, always invoke 001 (legacy); digest still written when built.
   AGENT_001_RUN_WHEN_GH_UNKNOWN  If 1, run 001 when gh failed/missing and digest otherwise empty.
-  AGENT_001_OLLAMA_LOG_TRIAGE  If 0, never run local LLM triage. Otherwise (default) triage runs when llama.cpp OpenAI API responds (GET \$LLAMA_CPP_BASE_URL/models, default http://127.0.0.1:8080/v1) and python3 exists, or when ollama list shows ≥1 model — only for log-only 001 signals. LLAMA_CPP_MODEL (default Bonsai-8B.gguf); OLLAMA_MODEL (default qwen2.5:1.5b). AGENT_001_SKIP_LLAMA_CPP=1 forces Ollama only.
+  AGENT_001_OLLAMA_LOG_TRIAGE  If 0, never run local LLM triage. Otherwise (default) triage runs when llama.cpp OpenAI API responds (GET \$LLAMA_CPP_BASE_URL/models, default http://127.0.0.1:8080/v1) and python3 exists, or when ollama list shows ≥1 model at OLLAMA_HOST (default http://127.0.0.1:11434) — only for log-only 001 signals. LLAMA_CPP_MODEL (default Bonsai-8B.gguf); OLLAMA_MODEL (default qwen2.5:1.5b in triage script). AGENT_001_SKIP_LLAMA_CPP=1 forces Ollama only.
 
 Docker / app stack: start separately from repo root with ./run.sh -dev
 
