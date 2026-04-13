@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** The marketing landing hero inner content could stretch too wide on large viewports.
+- **What was done:** `.landing-hero__inner` **max-width** was raised from **42rem** to **50rem** in `landing.component.ts`, preserving existing centering and padding.
+- **What was tested:** Wide viewport (1600×900) computed **max-width** / centering, `npm run test:landing-version`, and `pos-front` build logs — all **PASS**.
+- **Why closed:** Tester **Test report** overall **PASS**; layout matches the **50rem** readability goal.
+- **Closed at (UTC):** 2026-04-13 14:41
+---
+
 # Landing hero: cap inner width at 50rem
 
 ## GitHub Issues

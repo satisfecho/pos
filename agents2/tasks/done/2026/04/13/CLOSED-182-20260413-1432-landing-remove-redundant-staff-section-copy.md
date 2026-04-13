@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** The landing staff panel repeated messaging between the section heading and a secondary hint line.
+- **What was done:** The redundant hint paragraph and `.landing-panel__hint` styling were removed; register/login guidance was consolidated into a single `LANDING.SECTION_TEAM_LEDE` string across shipped locales, with unused `SECTION_TEAM_HINT` keys removed.
+- **What was tested:** Headless checks on `/` (hint count 0, lede present, CTA), `aria-labelledby` on the team section, EN copy for new and returning staff, `npm run test:landing-version`, and `pos-front` logs — all **PASS**.
+- **Why closed:** Tester **Test report** overall **PASS**; acceptance criteria satisfied.
+- **Closed at (UTC):** 2026-04-13 14:41
+---
+
 # Landing: remove redundant staff section copy
 
 ## GitHub Issues
