@@ -23,6 +23,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **English locale (GitHub #178):** Restored full **`front/public/i18n/en.json`**. A prior chore commit had replaced it with a tiny fragment, so English showed **raw translation keys** (`NAV.*`, `AUTH.*`, etc.) while other locales worked.
+
 - **Frontend public tenant type:** `TenantSummary` in **`front/src/app/services/api.service.ts`** now includes **`take_away_table_token`** and reservation fields (**`reservation_prepayment_*`**, **`reservation_cancellation_policy`**, **`reservation_arrival_tolerance_minutes`**, **`reservation_dress_code`**) to match the backend, fixing Angular compile errors on book and reservation-view templates.
 
 - **Reports → Monthly attendance Excel (GitHub #171):** Staff filter hint is shown **above** the staff dropdown (template order: label → hint → control); no i18n changes.
