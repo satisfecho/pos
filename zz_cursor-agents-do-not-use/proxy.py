@@ -4,8 +4,8 @@ import socketserver
 import requests
 import json
 
-TARGET = "http://127.0.0.1:8080"  # llama-server
-PORT = 8081                      # Pi points here
+TARGET = "http://127.0.0.1:11434"  # llama-server
+PORT = 12345                      # Pi points here
 
 class ProxyHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):

@@ -8,10 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Agents (agents2):** `pos-cursor-loop.sh` orchestrator (Cursor agent loop; reviewer state file **`time-of-last-review.txt`** under `agents2/001-gh-reviewer/` is **gitignored**, local only). Root `run-agents.sh` runs the goose-based agent pipeline (`agents/001` … `agents/040-committer`).
+- **Task file (GitHub #177):** `agents2/tasks/WIP-177-20260408-1339.md` (Google review link / i18n work in progress).
+
 - **Settings → Google Review (GitHub #176):** Added i18n keys for public Google review description and instructions. Updated settings UI to show these as labels instead of just descriptions for better clarity.
 - **AGENTS.md:** Updated tool preference instruction (prefer shell commands over Execute_typescript).
 
 ### Changed
+
+- **Local dev proxy (`zz_cursor-agents-do-not-use/proxy.py`):** Default upstream **`http://127.0.0.1:11434`** (Ollama) and listen **port `12345`** (was 8080 / 8081).
 
 - **Staff tables list & tiles (GitHub #174):** Joined table groups show as **one list row** and **one tile card** per group (combined names and seat total; expand list rows for per-table actions). **Activate** / **Open menu** warn when another group member already has a session or open order; optional **activity** badges and a **floor-plan dot** for the same case. i18n: **`TABLES.GROUP_*`**. Files: **`front/src/app/tables/tables.component.ts`**, **`front/src/app/tables/tables-canvas.component.ts`**, **`front/public/i18n/*.json`**.
 
@@ -20,6 +25,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Tables / floor plan (GitHub #172):** On first load and when switching floors (or after adding a floor / deleting the current floor), the canvas **fits and centers** all tables on that floor with padding; empty floors show the full canvas at 1×. The **reset** control uses the same fit logic. Repeated `loadData` refreshes (e.g. after join) no longer reset pan/zoom. **`front/src/app/tables/tables-canvas.component.ts`**.
 
 - **Agents:** Recorded latest **`001-log-reviewer`** sweep in **`agents/001-log-reviewer/time-of-last-review.txt`**.
+
+### Removed
+
+- **`agents2/tasks/UNTESTED-177-20260408-1339.md`** (superseded by the WIP task file for #177).
 
 ### Fixed
 
