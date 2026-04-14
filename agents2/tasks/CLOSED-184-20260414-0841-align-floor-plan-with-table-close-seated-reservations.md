@@ -34,3 +34,28 @@ Staff closing a table from the tile grid clears the table session (`is_active`, 
 1. From repo root with dev stack up:  
    `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T back python3 -m pytest tests/test_close_table_finishes_seated_reservation.py -q`
 2. Manual: seat a reservation on a table, close the table from the staff tile flow, confirm floor plan (**GET /tables/with-status**) shows **available** for that table when there is no active order and no other seated reservation.
+
+## Test report
+
+**Date/time (UTC):** 2026-04-14 08:48–08:49 (pytest run ~08:48; landing smoke finished 08:49:02 UTC). Log window for container review: last ~30 minutes UTC.
+
+**Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; `BASE_URL=http://127.0.0.1:4202`; branch `development` @ `ea7a2f7`.
+
+**What was tested:** Task **Testing instructions** — (1) pytest `tests/test_close_table_finishes_seated_reservation.py`; (2) parity of **POST /tables/{id}/close** with **GET /tables/with-status** (same contract the floor plan uses; staff tiles call `closeTable()` to that endpoint). Supplementary: `npm run test:landing-version` (staff login + navigation including `/tables`).
+
+**Results:**
+- Pytest `tests/test_close_table_finishes_seated_reservation.py`: **PASS** — `1 passed in 0.98s` (`docker compose … exec -T back python3 -m pytest … -q`).
+- Close + **GET /tables/with-status** shows `available` / non-occupied: **PASS** — covered by `test_close_table_finishes_seated_reservation_and_clears_occupied_status` (asserts `status` and `operational_status` are `available`).
+- Staff app smoke (`test-landing-version.mjs`, tenant=1): **PASS** — script ended with `Landing version OK; demo login (tenant=1) OK; sidebar nav OK.`
+
+**Overall:** **PASS** (no failed criteria).
+
+**Product owner feedback:** Server-side close now finishes seated reservations tied to the table, so the floor plan’s busy state matches what staff expect after closing from tiles. The new pytest prevents this alignment from regressing silently.
+
+**URLs tested (numbered):**
+1. `http://127.0.0.1:4202/`
+2. `http://127.0.0.1:4202/dashboard`
+3. `http://127.0.0.1:4202/tables` (and other staff routes exercised by the landing nav script per `test-landing-version.mjs`)
+4. API (in-container): `POST /tables/{table_id}/close`, `GET /tables/with-status` — exercised by pytest.
+
+**Relevant log excerpts:** `docker logs pos-back` (last 30m): no lines matching `error|exception|traceback|500`. Pytest stdout: `1 passed in 0.98s`.
