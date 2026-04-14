@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** After staff toggled an order Paid then Unpaid in Orders, the Tables floor view stopped showing the Payment pending chip because `bill_requested_at` was cleared on mark-paid/finish and never restored on unmark-paid.
+- **What was done:** The fix stops clearing `bill_requested_at` on mark-paid/finish so tables-with-status can still reflect an outstanding bill request after paid/unpaid toggles; a regression test was added in `back/tests/test_tables_with_status_operational.py`.
+- **What was tested:** `pytest` on `test_tables_with_status_operational.py` (8 passed, including the new regression); optional `test:landing-version` smoke passed; tester noted full browser click-through was not run but risk is low given server-side root cause.
+- **Why closed:** Tester **Overall: PASS** — all listed criteria met.
+- **Closed at (UTC):** 2026-04-14 15:02
+---
+
 # Fix payment-pending chip lost after marking order unpaid in Orders; restore correct persistence on Tables view
 
 ## GitHub Issues
