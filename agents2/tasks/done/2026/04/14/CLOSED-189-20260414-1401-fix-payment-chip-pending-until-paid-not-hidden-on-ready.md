@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** The floor-plan “Payment pending” chip could disappear when the kitchen advanced the order to ready because `/tables/with-status` sometimes resolved the wrong in-flight row or dropped bill-request state relative to the active session.
+- **What was done:** The backend now prefers `table.active_order_id` when resolving the in-flight order, treats completed-but-unpaid sessions consistently, and applies bill-request fallback from the active order; the canvas chip already keys off API `payment_status` only. Targeted pytest coverage was added for multiple in-flight orders and ready/completed + bill requested.
+- **What was tested:** Tester ran the operational suite (7 passed), the seated-reservation regression (1 passed), and a floor-plan smoke script; overall **PASS** with API contract covering pending payment through ready/completed states.
+- **Why closed:** All verification criteria in the test report passed; behavior matches the product rule that payment collection is independent of food readiness.
+- **Closed at (UTC):** 2026-04-14 14:11
+---
+
 # Fix payment chip: keep “Payment pending” until paid; do not hide when order status becomes ready
 
 ## GitHub Issues
