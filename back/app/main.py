@@ -11326,10 +11326,9 @@ def mark_order_paid(
     )
 
     # Allow pre-pay: staff can mark as paid even when not all items are delivered (e.g. customer pays before food is ready).
-    # Mark as paid
+    # Do not clear bill_requested_at here — unmark-paid needs it for /tables/with-status payment_pending (GitHub #190).
     order.status = models.OrderStatus.paid
     order.paid_at = datetime.now(timezone.utc)
-    order.bill_requested_at = None
     order.paid_by_user_id = current_user.id
     order.payment_method = payment_data.payment_method
     order.tip_percent_applied = tip_pct
@@ -11406,7 +11405,6 @@ def finish_order(
 
     order.status = models.OrderStatus.paid
     order.paid_at = now
-    order.bill_requested_at = None
     order.paid_by_user_id = current_user.id
     order.payment_method = payment_data.payment_method
     order.tip_percent_applied = tip_pct

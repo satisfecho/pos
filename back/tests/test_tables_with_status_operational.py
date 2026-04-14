@@ -179,6 +179,37 @@ class TestTablesWithStatusOperational(PgClientTestCase):
         self.assertEqual(row["operational_status"], "ready_to_serve")
         self.assertEqual(row["payment_status"], "pending")
 
+    def test_payment_pending_after_unmark_paid_when_bill_was_requested(self) -> None:
+        """GitHub #190: mark-paid must not wipe bill_requested_at or unmark cannot restore floor chip."""
+        order = models.Order(
+            table_id=self.table_id,
+            tenant_id=self.tenant_id,
+            status=models.OrderStatus.ready,
+            bill_requested_at=datetime.now(timezone.utc),
+        )
+        self.session.add(order)
+        self.session.commit()
+        self.session.refresh(order)
+
+        table = self.session.get(models.Table, self.table_id)
+        assert table is not None
+        table.active_order_id = order.id
+        self.session.add(table)
+        self.session.commit()
+
+        h = _bearer_headers(self.owner)
+        r = self.client.put(
+            f"/orders/{order.id}/mark-paid",
+            json={"payment_method": "cash", "tip_percent": None},
+            headers=h,
+        )
+        self.assertEqual(r.status_code, 200, r.text)
+        r2 = self.client.put(f"/orders/{order.id}/unmark-paid", headers=h)
+        self.assertEqual(r2.status_code, 200, r2.text)
+
+        row = self._row()
+        self.assertEqual(row["payment_status"], "pending")
+
     def test_payment_paid_when_table_links_paid_order_only(self) -> None:
         """No in-flight kitchen order, but table still references a paid order (session clearing)."""
         order = models.Order(

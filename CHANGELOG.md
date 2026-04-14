@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Orders / tables floor (GitHub #190):** Staff **mark paid** and **finish order** no longer clear `bill_requested_at`, so after **unmark paid** the floor plan still shows **payment pending** when a bill was requested. Regression: **`back/tests/test_tables_with_status_operational.py`**.
+
 - **Tables floor plan (GitHub #188):** Payment chip on the floor SVG is anchored with its **vertical center on the table shape’s bottom edge** (half inside / half below the fill); pill height and label font scale slightly on very small shapes. **`front/src/app/tables/tables-canvas.component.ts`**.
 
 - **Agent 001 local LLM triage:** `scripts/agent-ollama-log-triage.sh` defaults **`OLLAMA_HOST`** to **`http://127.0.0.1:11434`** so Ollama fallback targets the local daemon (consistent with `agents2/pos-cursor-loop.sh` availability checks). Override **`OLLAMA_HOST`** if the daemon is not on localhost.
