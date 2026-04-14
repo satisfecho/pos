@@ -20,3 +20,16 @@ See issue for suggested test matrix (ready only; ready + bill requested; paid/cl
 - Add `bill_requested_at` (or chosen field) on `Order`; set it from existing request-payment path(s) with idempotency; add staff hook if product needs it.
 - Update `/tables/with-status` rules and enum naming so legend colors match intent; document behavior in OpenAPI/comments.
 - Update Angular types, legend entries/colors, and translations; add backend tests for `operational_status` combinations; optional frontend tests if the repo pattern supports them.
+
+## Implementation summary (coder)
+- **`order.bill_requested_at`** column + SQLModel field; set on **`POST /menu/{table_token}/order/{order_id}/request-payment`** if null; cleared when order marked paid (mark-paid, finish, Stripe confirm, Revolut verify).
+- **`GET /tables/with-status`:** `bill_issued` only when `bill_requested_at` set; **`ready_to_serve`** when `Order.status == ready` and no bill request; else **`open_order`**.
+- Frontend: **`TableOperationalStatus`** includes **`ready_to_serve`**; legend + canvas colors; i18n **`TABLES.OP_READY_TO_SERVE`** / **`TABLES.OP_BILL_ISSUED`** (payment pending).
+- Backend tests: **`back/tests/test_tables_with_status_operational.py`**.
+
+## Testing instructions
+1. **Migrate:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back python -m app.migrate` (expect version **20260414103000** or newer).
+2. **Backend:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back python3 -m pytest tests/test_tables_with_status_operational.py -q`
+3. **Regression:** `docker compose ... exec back python3 -m pytest tests/test_close_table_finishes_seated_reservation.py -q`
+4. **Frontend build:** confirm `docker logs --since 5m pos-front` has no TS errors after pull.
+5. **Manual floor plan:** With an active order — kitchen **ready** → table shows **Ready to serve** (purple). From public menu, **request payment** → **Payment pending** (orange). After staff marks paid → table returns to available/occupied as before.

@@ -6697,7 +6697,8 @@ def list_tables_with_status(
 
     Each row also includes ``operational_status`` for the floor canvas: available, reserved,
     occupied (seated/session without an in-flight kitchen order), open_order (active order
-    not yet all-ready), or bill_issued (active order in ``ready`` — pay/collect).
+    not yet kitchen-ready), ready_to_serve (order ``ready`` and no bill request), or
+    bill_issued (``bill_requested_at`` set — payment / bill pending; takes precedence).
     Reserved tables may include ``upcoming_reservation`` when the booking is still in the future.
     """
     tables = session.exec(
@@ -6757,11 +6758,12 @@ def list_tables_with_status(
         if table.is_active or active_order or seated_here:
             status = "occupied"
             if active_order:
-                operational_status = (
-                    "bill_issued"
-                    if active_order.status == models.OrderStatus.ready
-                    else "open_order"
-                )
+                if active_order.bill_requested_at is not None:
+                    operational_status = "bill_issued"
+                elif active_order.status == models.OrderStatus.ready:
+                    operational_status = "ready_to_serve"
+                else:
+                    operational_status = "open_order"
             else:
                 operational_status = "occupied"
         else:
@@ -7468,7 +7470,8 @@ _OP_STATUS_RANK = {
     "reserved": 2,
     "occupied": 3,
     "open_order": 4,
-    "bill_issued": 5,
+    "ready_to_serve": 5,
+    "bill_issued": 6,
 }
 
 
@@ -10733,6 +10736,9 @@ def request_payment(
     if order.status == models.OrderStatus.paid:
         raise HTTPException(status_code=400, detail="Order is already paid.")
 
+    if order.bill_requested_at is None:
+        order.bill_requested_at = datetime.now(timezone.utc)
+
     # Store the requested payment method on the order
     order.payment_method = payment_request.payment_method
 
@@ -11277,6 +11283,7 @@ def mark_order_paid(
     # Mark as paid
     order.status = models.OrderStatus.paid
     order.paid_at = datetime.now(timezone.utc)
+    order.bill_requested_at = None
     order.paid_by_user_id = current_user.id
     order.payment_method = payment_data.payment_method
     order.tip_percent_applied = tip_pct
@@ -11353,6 +11360,7 @@ def finish_order(
 
     order.status = models.OrderStatus.paid
     order.paid_at = now
+    order.bill_requested_at = None
     order.paid_by_user_id = current_user.id
     order.payment_method = payment_data.payment_method
     order.tip_percent_applied = tip_pct
@@ -12588,6 +12596,7 @@ def confirm_payment(
 
         # Mark order as paid
         order.status = models.OrderStatus.paid
+        order.bill_requested_at = None
         order.notes = f"{order.notes or ''}\n[PAID: {payment_intent_id}]".strip()
         session.add(order)
         session.commit()
@@ -12781,6 +12790,7 @@ def confirm_revolut_payment(
     order.status = models.OrderStatus.paid
     order.payment_method = "revolut"
     order.paid_at = datetime.now(timezone.utc)
+    order.bill_requested_at = None
     order.notes = f"{order.notes or ''}\n[PAID: Revolut {order.revolut_order_id}]".strip()
     session.add(order)
     session.commit()

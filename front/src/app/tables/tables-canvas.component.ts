@@ -451,7 +451,8 @@ const STAFF_ORDERS_ROLES = new Set([
                     [class.op-reserved]="operationalKey(selectedTable()!) === 'reserved'"
                     [class.op-occupied]="operationalKey(selectedTable()!) === 'occupied'"
                     [class.op-open-order]="operationalKey(selectedTable()!) === 'open_order'"
-                    [class.op-bill]="operationalKey(selectedTable()!) === 'bill_issued'">
+                    [class.op-ready-serve]="operationalKey(selectedTable()!) === 'ready_to_serve'"
+                    [class.op-payment-pending]="operationalKey(selectedTable()!) === 'bill_issued'">
                     {{ operationalStatusLabelKey(selectedTable()!) | translate }}
                   </div>
                 </div>
@@ -711,9 +712,13 @@ const STAFF_ORDERS_ROLES = new Set([
       background: rgba(37, 99, 235, 0.28);
       color: #bfdbfe;
     }
-    .status-badge.op-bill {
+    .status-badge.op-ready-serve {
       background: rgba(124, 58, 237, 0.28);
       color: #ddd6fe;
+    }
+    .status-badge.op-payment-pending {
+      background: rgba(234, 88, 12, 0.28);
+      color: #fed7aa;
     }
 
     .table-caption {
@@ -1844,7 +1849,8 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
     { key: 'reserved', swatch: '#d97706', labelKey: 'TABLES.OP_RESERVED' },
     { key: 'occupied', swatch: '#059669', labelKey: 'TABLES.OP_OCCUPIED' },
     { key: 'open_order', swatch: '#2563eb', labelKey: 'TABLES.OP_OPEN_ORDER' },
-    { key: 'bill_issued', swatch: '#7c3aed', labelKey: 'TABLES.OP_BILL_ISSUED' },
+    { key: 'ready_to_serve', swatch: '#7c3aed', labelKey: 'TABLES.OP_READY_TO_SERVE' },
+    { key: 'bill_issued', swatch: '#ea580c', labelKey: 'TABLES.OP_BILL_ISSUED' },
   ];
 
   operationalKey(table: CanvasTable): TableOperationalStatus {
@@ -1860,6 +1866,7 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
       reserved: 'TABLES.OP_RESERVED',
       occupied: 'TABLES.OP_OCCUPIED',
       open_order: 'TABLES.OP_OPEN_ORDER',
+      ready_to_serve: 'TABLES.OP_READY_TO_SERVE',
       bill_issued: 'TABLES.OP_BILL_ISSUED',
     };
     return m[this.operationalKey(table)];
@@ -1871,7 +1878,8 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
       reserved: { fill: '#92400e', stroke: '#fbbf24' },
       occupied: { fill: '#065f46', stroke: '#34d399' },
       open_order: { fill: '#1e40af', stroke: '#93c5fd' },
-      bill_issued: { fill: '#5b21b6', stroke: '#c4b5fd' },
+      ready_to_serve: { fill: '#5b21b6', stroke: '#c4b5fd' },
+      bill_issued: { fill: '#c2410c', stroke: '#fdba74' },
     };
     return map[key];
   }

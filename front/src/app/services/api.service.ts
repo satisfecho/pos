@@ -756,6 +756,7 @@ export type TableOperationalStatus =
   | 'reserved'
   | 'occupied'
   | 'open_order'
+  | 'ready_to_serve'
   | 'bill_issued';
 
 export interface CanvasTable extends Table {

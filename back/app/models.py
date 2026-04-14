@@ -693,6 +693,9 @@ class Order(TenantMixin, table=True):
     cancelled_at: datetime | None = None
     cancelled_by: str | None = None  # 'customer' or 'staff'
     
+    # Customer requested bill / card terminal (public menu); idempotent timestamp
+    bill_requested_at: datetime | None = None
+
     # Payment tracking
     paid_at: datetime | None = None
     paid_by_user_id: int | None = None  # Who marked it as paid (staff)

@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- **Tables floor plan (GitHub #185):** Legend and badges using **`TABLES.OP_BILL_ISSUED`** now read **ready to serve** (and locale equivalents) instead of bill/payment wording; API **`bill_issued`** unchanged. **`front/public/i18n/*.json`**.
+- **Tables floor plan (GitHub #186):** **`GET /tables/with-status`** now distinguishes **`ready_to_serve`** (kitchen-ready order, no bill request) from **`bill_issued`** (customer requested payment — **`bill_requested_at`** set). Public **`POST .../request-payment`** sets **`bill_requested_at`** idempotently; it is cleared when the order is marked paid (cash/finish/Stripe/Revolut). Floor legend: purple **ready to serve**, orange **payment pending**. Migration **`order.bill_requested_at`**. Tests: **`back/tests/test_tables_with_status_operational.py`**.
 
 - **Agent 001 local LLM triage:** `scripts/agent-ollama-log-triage.sh` defaults **`OLLAMA_HOST`** to **`http://127.0.0.1:11434`** so Ollama fallback targets the local daemon (consistent with `agents2/pos-cursor-loop.sh` availability checks). Override **`OLLAMA_HOST`** if the daemon is not on localhost.
 
