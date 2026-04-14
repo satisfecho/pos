@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue #185 asked to replace misleading floor-plan copy for `bill_issued` with “ready to serve” semantics across i18n only.
+- **What was done:** `TABLES.OP_BILL_ISSUED` was updated in all eight locale JSON files; legend and badges already use that key via `tables-canvas.component.ts`, so no API/enum changes were needed.
+- **What was tested:** Tester reported PASS: English legend shows “Ready to serve”, locales grep-aligned, smoke `test:landing-version` exit 0, pos-front logs clean; live `bill_issued` table spot-check was code-path parity only.
+- **Why closed:** Test report overall PASS; acceptance criteria met for translation-only UX fix.
+- **Closed at (UTC):** 2026-04-14 09:57
+---
+
 # Rename floor-plan “Bill / ready to pay” label to “Ready to serve” (i18n only)
 
 ## GitHub Issues
