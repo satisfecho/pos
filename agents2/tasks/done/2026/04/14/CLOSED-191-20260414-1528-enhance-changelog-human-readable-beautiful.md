@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub issue #191 requested a clearer, scannable `CHANGELOG.md` aligned with Keep a Changelog style and in-app “What’s new” expectations.
+- **What was done:** The changelog intro, **Unreleased** grouping (Added/Changed/Fixed), and the **2.0.75** section were rewritten for readability; no version bump was required for this formatting-only pass.
+- **What was tested:** Manual review of `CHANGELOG.md` structure and `npm run test:changelog` (Dashboard **What’s new** modal); tester reported **PASS** (content length 3734, no `.changelog-error`).
+- **Why closed:** All verification criteria in the test report passed; work is complete and verified.
+- **Closed at (UTC):** 2026-04-14 15:34
+---
+
 # Enhance CHANGELOG.md for human readability and presentation
 
 ## GitHub Issues
