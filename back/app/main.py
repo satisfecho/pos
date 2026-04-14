@@ -9231,6 +9231,7 @@ def close_table(
     """
     Close a table session.
     Clears the PIN and deactivates the table. Deletes the active order if it has no items.
+    Finishes any seated reservation on this table so floor status matches staff closing the session.
     """
     table = session.exec(
         select(models.Table).where(
@@ -9241,20 +9242,6 @@ def close_table(
 
     if not table:
         raise HTTPException(status_code=404, detail="Table not found")
-
-    seated_at_table = session.exec(
-        select(models.Reservation).where(
-            models.Reservation.tenant_id == current_user.tenant_id,
-            models.Reservation.table_id == table_id,
-            models.Reservation.status == models.ReservationStatus.seated,
-        )
-    ).all()
-    finished_reservation_ids: list[int] = []
-    for res in seated_at_table:
-        _mark_reservation_finished(res)
-        session.add(res)
-        if res.id is not None:
-            finished_reservation_ids.append(res.id)
 
     # If there is an active order with no (active) items, delete it so we don't keep empty orders
     if table.active_order_id:
@@ -9276,6 +9263,20 @@ def close_table(
     table.order_pin = None
     table.is_active = False
     table.active_order_id = None
+
+    seated_at_table = session.exec(
+        select(models.Reservation).where(
+            models.Reservation.tenant_id == current_user.tenant_id,
+            models.Reservation.table_id == table_id,
+            models.Reservation.status == models.ReservationStatus.seated,
+        )
+    ).all()
+    finished_reservation_ids: list[int] = []
+    for res in seated_at_table:
+        _mark_reservation_finished(res)
+        session.add(res)
+        if res.id is not None:
+            finished_reservation_ids.append(res.id)
 
     session.commit()
     session.refresh(table)
