@@ -1,3 +1,5 @@
+2026-04-14 21:22 UTC; FEAT: 0, NEW: 0
+FEAT created: 0, NEW created: 0. Open issues: 0 (`gh issue list --repo satisfecho/pos --state open --limit 40`). Preflight digest read: `/var/folders/pm/lvxj2qcj03v2qqtb8sf5rryc0000gn/T/pos-agent-loop/001-latest-context.txt` — empty GitHub list (`[]`), G001_GH_OK=1, G001_UNTRACKED_ISSUES=0, G001_LOG_SIGNALS=1 (heuristic). Docker: `docker logs pos-front` tail — last line Application bundle generation complete (2026-04-14T12:52:05.025Z) after a brief failed rebuild (TS2551/TS2339 `paymentChipRectY`/`paymentChipHeight`/`paymentChipFontSize` at 2026-04-14T12:52:03.337Z); immediate successful rebuild — not a standing incident. Older digest TS blocks (`bill_issued`, missing TablesCanvas payment helpers) are scrollback from earlier edits (11:42Z) superseded by successful bundles. pos-back: no heuristic matches. pos-postgres FATAL scrollback in digest is old noise — no NEW-*. No `gh` comment/label (no open issues).
 2026-04-08 13:15 UTC; FEAT: 1, NEW: 0
 FEAT created: 1, NEW created: 0
 2026-04-08 13:38 UTC; FEAT: 1, NEW: 0
