@@ -25,7 +25,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Agent tooling: `scripts/agent-ollama-log-triage.sh` defaults `OLLAMA_HOST` to `http://127.0.0.1:11434` (override if Ollama is not local).
 - Local dev proxy (`zz_cursor-agents-do-not-use/proxy.py`): default upstream `http://127.0.0.1:11434`, listen port `12345`.
 - Documentation: `AGENTS.md` now prefers shell commands over ad hoc TypeScript execution for tooling.
-- Agent tooling: GitHub sweep reviewer log updated (`agents2/001-gh-reviewer/time-of-last-review.txt`).
+- Agent tooling: GitHub sweep reviewer log appended (2026-04-16 UTC; `agents2/001-gh-reviewer/time-of-last-review.txt`).
 
 ### Fixed
 
