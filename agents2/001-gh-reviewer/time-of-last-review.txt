@@ -1385,3 +1385,13 @@ Docker (verified live): `docker logs pos-front` latest lines show **Application 
 `./scripts/git-sync-development.sh` — already up to date.
 Counts this run: FEAT=0, NEW=0.
 
+
+---
+2026-04-18T17:06:32Z — 001 gh-reviewer run (preflight digest + sweep)
+Preflight digest read: `/var/folders/pm/lvxj2qcj03v2qqtb8sf5rryc0000gn/T/pos-agent-loop/001-latest-context.txt` — repo satisfecho/pos; GitHub open `[]`; G001_GH_OK=1 G001_LOG_SIGNALS=1 (digest: archived pos-front TS noise from **2026-04-14**).
+GitHub: `gh issue list --repo satisfecho/pos --state open --limit 40 --json number` → `[]` — **0 × FEAT-***; **no** `gh issue comment` / `agent:planned`.
+Dedupe: N/A (no open issues); `agents2/tasks/` root has no pending `FEAT-*` / `NEW-*` / `WIP-*` (TEMPLATE + `done/` only).
+Docker (verified live): `docker logs pos-front --since 96h` — **no** `ERROR` / `bundle generation failed` lines; full tail ends **`Application bundle generation complete`** (2026-04-14T12:52:05Z) — digest heuristics are **not** a current stuck incident → **0 × NEW-***. `pos-back` / `pos-postgres` — no new standing failures sampled.
+`./scripts/git-sync-development.sh` — already up to date (before this edit).
+Counts this run: FEAT=0, NEW=0.
+
