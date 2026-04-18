@@ -1474,3 +1474,13 @@ Dedupe: N/A (no open issues); `agents2/tasks/` active queue: `TEMPLATE.md` + `do
 Docker (B, verified live): `docker logs pos-front 2>&1 --since 48h | grep -iE '\[ERROR\]|Application bundle generation failed'` → **no matches**; live `docker logs pos-front` tail ends with **`Application bundle generation complete`** (historical Apr 14 fail immediately followed by successful rebuild — not a standing stuck build) → **0 × NEW-***. `docker logs pos-back` tail — routine requests, no standing error incident for a NEW task.
 `./scripts/git-sync-development.sh` — already up to date (before this edit).
 Counts this run: FEAT=0, NEW=0.
+
+
+---
+2026-04-18T18:25:17Z — 001 gh-reviewer run (preflight digest + sweep)
+Preflight digest read first: `/var/folders/pm/lvxj2qcj03v2qqtb8sf5rryc0000gn/T/pos-agent-loop/001-latest-context.txt` (2026-04-18T18:24:39Z) — repo satisfecho/pos; GitHub open `[]`; G001_GH_OK=1 G001_LOG_SIGNALS=1 (digest: pos-front Apr 14 Angular TS/bundle-fail scrollback — heuristic only; pos-back none; pos-haproxy routine; pos-postgres historical FATAL/`terminating connection` samples).
+GitHub (A): `gh issue list --repo satisfecho/pos --state open --limit 40` → empty; `python3 agents2/issue_checker_agent.py` → PASS — **0 × FEAT-***; **no** `gh issue comment` / `agent:planned`.
+Dedupe: N/A (no open issues); `agents2/tasks/` active queue: no pending FEAT-/WIP-/NEW- at root (TEMPLATE + `done/` only).
+Docker (B, verified live): `docker logs pos-front --since 72h 2>&1 | grep -iE '\[ERROR\]|Application bundle generation failed'` → **no matches**; `docker logs pos-front --tail 120` shows Apr 14 transient failure immediately followed by **`Application bundle generation complete`** — not a standing stuck build → **0 × NEW-***.
+`./scripts/git-sync-development.sh` — already up to date (before this edit).
+Counts this run: FEAT=0, NEW=0.
