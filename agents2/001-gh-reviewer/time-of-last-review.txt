@@ -1433,3 +1433,13 @@ Docker (verified live): `docker logs pos-front --since 96h` — **no** `ERROR` /
 `./scripts/git-sync-development.sh` — already up to date (before this edit).
 Counts this run: FEAT=0, NEW=0.
 
+
+---
+2026-04-18T18:00:58Z — 001 gh-reviewer run (preflight digest + sweep)
+Preflight digest read first: `/var/folders/pm/lvxj2qcj03v2qqtb8sf5rryc0000gn/T/pos-agent-loop/001-latest-context.txt` (2026-04-18T18:00:29Z) — repo satisfecho/pos tasks `agents/tasks`; GitHub open `[]`; G001_GH_OK=1 G001_LOG_SIGNALS=1 (digest: pos-front **Apr 14** Angular TS/heuristic scrollback; pos-back none; pos-haproxy routine; pos-postgres historical `FATAL`/`terminating connection` samples — **not** interpreted as current standing incidents without verification).
+GitHub (A): `gh issue list --repo satisfecho/pos --state open --limit 40` → empty; `agents2/issue_checker_agent.py` → PASS — **0 × FEAT-***; **no** `gh issue comment` / `agent:planned` (nothing to annotate).
+Dedupe: N/A (no open issues); `agents2/tasks/` active queue unchanged (TEMPLATE + `done/` only).
+Docker (B, verified live): `docker logs pos-front --tail 30` ends **`Application bundle generation complete`** (2026-04-14T12:52:05Z); historical `[ERROR]` / `bundle generation failed` lines in buffer are **before** that successful rebuild (hot-reload churn on **Apr 14**, not a stuck failing build now). `docker logs pos-front --since 48h` → empty (no new lines in window). `docker logs pos-back` / `pos-postgres` **last 24h** grep `error|exception|fatal` → **empty** → **0 × NEW-***.
+`./scripts/git-sync-development.sh` — already up to date (before this edit).
+Counts this run: FEAT=0, NEW=0.
+
