@@ -1443,3 +1443,13 @@ Docker (B, verified live): `docker logs pos-front --tail 30` ends **`Application
 `./scripts/git-sync-development.sh` — already up to date (before this edit).
 Counts this run: FEAT=0, NEW=0.
 
+
+---
+2026-04-18T18:07:05Z — 001 gh-reviewer run (preflight digest + sweep)
+Preflight digest read first: `/var/folders/pm/lvxj2qcj03v2qqtb8sf5rryc0000gn/T/pos-agent-loop/001-latest-context.txt` (2026-04-18T18:06:32Z) — repo satisfecho/pos; GitHub open `[]`; G001_GH_OK=1 G001_LOG_SIGNALS=1 (digest: pos-front Apr 14 TS/bundle-fail scrollback; pos-back none matched; pos-haproxy routine; pos-postgres historical FATAL/checkpoints — heuristic only).
+GitHub (A): `gh issue list --repo satisfecho/pos --state open --limit 40` → empty — **0 × FEAT-***; **no** `gh issue comment` / `agent:planned`.
+Dedupe: N/A (no open issues); `agents2/tasks/` active queue unchanged (TEMPLATE + `done/` only).
+Docker (B, verified live): `docker ps` — pos-front/back/haproxy/postgres **Up 5 days**. `docker logs pos-front --since 48h | grep -iE '\\[ERROR\\]|bundle generation failed'` → none; recent tail ends **`Application bundle generation complete`** — digest Angular errors are **not** a current stuck failure → **0 × NEW-***. `docker logs pos-back` tail — no error matches; `docker logs pos-postgres` tail — checkpoints only (no recurring ERROR in sample).
+`./scripts/git-sync-development.sh` — already up to date (before this edit).
+Counts this run: FEAT=0, NEW=0.
+
