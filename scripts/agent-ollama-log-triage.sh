@@ -9,8 +9,9 @@
 #   LLAMA_CPP_MODEL        Default Bonsai-8B.gguf
 #   LLAMA_CPP_REQUEST_TIMEOUT  Seconds for HTTP request (default 180)
 #   AGENT_001_SKIP_LLAMA_CPP   If 1, only use Ollama (skip llama.cpp attempt)
+#   AGENT_001_LOG_TRIAGE_DEBUG If 1, print llama.cpp / ollama stderr (default suppresses stderr)
 #   OLLAMA_MODEL           Default qwen2.5:1.5b
-#   OLLAMA_HOST            Default http://127.0.0.1:11434 (local daemon; saves Cursor usage)
+#   OLLAMA_HOST            Defaults to http://127.0.0.1:11434 only when unset; if set in the environment (e.g. remote daemon), that value is used.
 #
 # Exit: 0 = ESCALATE (keep log incident flag for 001)
 #       1 = SKIP    (clear log flag; do not call cursor for logs-only triage)
@@ -20,9 +21,13 @@ set -euo pipefail
 
 ctx="${1:?usage: $0 /path/to/001-latest-context.txt}"
 ollama_model="${OLLAMA_MODEL:-qwen2.5:1.5b}"
-# Pin local Ollama HTTP API unless the user overrides OLLAMA_HOST (e.g. remote daemon).
 : "${OLLAMA_HOST:=http://127.0.0.1:11434}"
 export OLLAMA_HOST
+
+_log_dbg=0
+[[ "${AGENT_001_LOG_TRIAGE_DEBUG:-}" == "1" ]] && _log_dbg=1
+_err_sink=/dev/null
+((_log_dbg)) && _err_sink=/dev/stderr
 llama_base="${LLAMA_CPP_BASE_URL:-http://127.0.0.1:8080/v1}"
 llama_model="${LLAMA_CPP_MODEL:-Bonsai-8B.gguf}"
 llama_timeout="${LLAMA_CPP_REQUEST_TIMEOUT:-180}"
@@ -86,7 +91,7 @@ except (KeyError, IndexError, TypeError, json.JSONDecodeError):
 if not (text and str(text).strip()):
     sys.exit(1)
 sys.stdout.write(str(text))
-' "$llama_base" "$llama_model" "$llama_timeout" 2>/dev/null
+' "$llama_base" "$llama_model" "$llama_timeout" 2>"$_err_sink"
   ) || true
   out=$(printf '%s' "$out" | tr -d '\r')
 fi
@@ -95,7 +100,7 @@ if [[ -z "$out" ]] && command -v ollama >/dev/null 2>&1; then
   if ((llama_attempted)); then
     echo "agent-ollama-log-triage: llama.cpp failed or empty, using Ollama (${ollama_model})" >&2
   fi
-  out=$(printf '%s' "$prompt" | ollama run "$ollama_model" 2>/dev/null | tr -d '\r' || true)
+  out=$(printf '%s' "$prompt" | ollama run "$ollama_model" 2>"$_err_sink" | tr -d '\r' || true)
 fi
 
 head_lines=$(printf '%s\n' "$out" | head -n 20)

@@ -232,7 +232,7 @@ local_llm_triage_available() {
 # If only Docker heuristics fired (no untracked issues), local LLM may clear G001_LOG_SIGNALS (llama.cpp first, else Ollama).
 maybe_local_llm_downgrade_log_signals() {
   local ctx="$1"
-  local ollama_model="${OLLAMA_MODEL:-Gemma4:latest}"
+  local ollama_model="${OLLAMA_MODEL:-qwen2.5:1.5b}"
   local llama_model="${LLAMA_CPP_MODEL:-Bonsai-8B.gguf}"
   local llama_base="${LLAMA_CPP_BASE_URL:-http://127.0.0.1:8080/v1}"
   local triage_label="llama.cpp @ ${llama_base} (${llama_model}) → Ollama fallback (${ollama_model})"
@@ -243,7 +243,7 @@ maybe_local_llm_downgrade_log_signals() {
   [[ -f "$triage_script" ]] || return 0
   echo "----- 001 local LLM log triage: auto (${triage_label})"
   set +e
-  bash "$triage_script" "$ctx"
+  OLLAMA_MODEL="$ollama_model" bash "$triage_script" "$ctx"
   local trc=$?
   set -e
   if ((trc == 1)); then
@@ -504,7 +504,7 @@ Environment:
   AGENT_LOG_REVIEWER_ALWAYS  If 1, always invoke 001 cursor-agent (skip preflight gate).
   AGENT_001_SKIP_PREFLIGHT   If 1, always invoke 001 (legacy); digest still written when built.
   AGENT_001_RUN_WHEN_GH_UNKNOWN  If 1, run 001 when gh failed/missing and digest otherwise empty.
-  AGENT_001_OLLAMA_LOG_TRIAGE  If 0, never run local LLM triage. Otherwise (default) triage runs when llama.cpp OpenAI API responds (GET \$LLAMA_CPP_BASE_URL/models, default http://127.0.0.1:8080/v1) and python3 exists, or when ollama list shows ≥1 model — only for log-only 001 signals. LLAMA_CPP_MODEL (default Bonsai-8B.gguf); OLLAMA_MODEL (default qwen2.5:1.5b). AGENT_001_SKIP_LLAMA_CPP=1 forces Ollama only.
+  AGENT_001_OLLAMA_LOG_TRIAGE  If 0, never run local LLM triage. Otherwise (default) triage runs when llama.cpp OpenAI API responds (GET \$LLAMA_CPP_BASE_URL/models, default http://127.0.0.1:8080/v1) and python3 exists, or when ollama list shows ≥1 model — only for log-only 001 signals. LLAMA_CPP_MODEL (default Bonsai-8B.gguf); OLLAMA_MODEL (default qwen2.5:1.5b). AGENT_001_SKIP_LLAMA_CPP=1 forces Ollama only. AGENT_001_LOG_TRIAGE_DEBUG=1 prints triage script stderr (llama.cpp / ollama errors).
 
 Docker / app stack: start separately from repo root with ./run.sh -dev
 

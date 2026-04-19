@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- Agents: 001 local log triage uses the same default **`OLLAMA_MODEL`** as **`scripts/agent-ollama-log-triage.sh`**; the loop passes **`OLLAMA_MODEL`** explicitly; optional **`AGENT_001_LOG_TRIAGE_DEBUG=1`** surfaces llama.cpp / Ollama stderr; **`docs/agent-loop.md`** documents Ollama-only-when-llama-empty and **`OLLAMA_HOST`** inheritance.
 - Agents: GitHub reviewer (001) recorded latest preflight run in `agents2/001-gh-reviewer/time-of-last-review.txt`.
 - Tables floor plan: payment chip on the SVG aligned with the bottom of the table shape; pill and label scale on very small shapes (#188).
 
