@@ -2855,3 +2855,17 @@ FEAT created: 0, NEW created: 0. Preflight digest (read first): `/var/folders/pm
 
 
 2026-04-19T08:05:00Z UTC | Agent 001 | FEAT created: 0 | NEW created: 0 | Open GitHub issues: 0 | Docker standing incident: none (24h / 48h windows)
+
+
+---
+2026-04-19T08:10:59Z UTC | Agent 001 (Run: preflight digest + 001-gh-reviewer.md)
+
+**Preflight digest (read first):** `/var/folders/pm/lvxj2qcj03v2qqtb8sf5rryc0000gn/T/pos-agent-loop/001-latest-context.txt` — header **2026-04-19T08:10:18Z** UTC — GitHub open **`[]`**; `G001_GH_OK=1`, `G001_LOG_SIGNALS=1` (digest `--tail 800`: historical **2026-04-14** pos-front Angular **`[ERROR]`** scrollback + older postgres **`FATAL`** samples — heuristic only).
+
+**(A) GitHub:** `./scripts/git-sync-development.sh` — OK. `gh issue list --repo satisfecho/pos --state open --limit 40` → **0** issues. `python3 agents2/issue_checker_agent.py` → **PASS** (no open issues). **0 × `FEAT-*`** — **Dedupe:** N/A (no pending `FEAT-<n>-*` in **`agents2/tasks/`** root). **No** `gh issue comment` / **`agent:planned`** (nothing to touch).
+
+**(B) Docker (live):** `docker logs pos-front --since 24h 2>&1 | grep -iE '\[ERROR\]|bundle generation failed'` → **0** matches; last `docker logs pos-front --tail 120` only shows **2026-04-14** ring-buffer noise; `docker logs pos-back --since 120` (error grep) → **empty**; `docker logs pos-postgres --since 48h 2>&1 | grep -iE 'FATAL|ERROR'` → **0** matches; `curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:4202/` → **200** → **no standing incident** → **0 × `NEW-*`**.
+
+**Counts this run:** FEAT=0, NEW=0.
+
+2026-04-19T08:10:59Z UTC | Agent 001 | FEAT created: 0 | NEW created: 0 | Open GitHub issues: 0 | Docker standing incident: none (24h/48h live + 200)
