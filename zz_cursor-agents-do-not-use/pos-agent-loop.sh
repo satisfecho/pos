@@ -229,13 +229,19 @@ local_llm_triage_available() {
   return 1
 }
 
-# If only Docker heuristics fired (no untracked issues), local LLM may clear G001_LOG_SIGNALS (llama.cpp first, else Ollama).
+# If only Docker heuristics fired (no untracked issues), local LLM may clear G001_LOG_SIGNALS.
+# Default: Ollama first, then llama.cpp (AGENT_001_LLAMA_CPP_FIRST=1 for legacy llama-first order).
 maybe_local_llm_downgrade_log_signals() {
   local ctx="$1"
   local ollama_model="${OLLAMA_MODEL:-Gemma4:latest}"
   local llama_model="${LLAMA_CPP_MODEL:-Bonsai-8B.gguf}"
   local llama_base="${LLAMA_CPP_BASE_URL:-http://127.0.0.1:8080/v1}"
-  local triage_label="llama.cpp @ ${llama_base} (${llama_model}) → Ollama fallback (${ollama_model})"
+  local triage_label
+  if [[ "${AGENT_001_LLAMA_CPP_FIRST:-}" == "1" ]]; then
+    triage_label="llama.cpp @ ${llama_base} (${llama_model}) → Ollama (${ollama_model})"
+  else
+    triage_label="Ollama (${ollama_model}) → llama.cpp @ ${llama_base} (${llama_model})"
+  fi
   local_llm_triage_available || return 0
   [[ "$G001_LOG_SIGNALS" == "1" ]] || return 0
   [[ "${G001_UNTRACKED_ISSUES:-0}" -eq 0 ]] || return 0
@@ -504,7 +510,7 @@ Environment:
   AGENT_LOG_REVIEWER_ALWAYS  If 1, always invoke 001 cursor-agent (skip preflight gate).
   AGENT_001_SKIP_PREFLIGHT   If 1, always invoke 001 (legacy); digest still written when built.
   AGENT_001_RUN_WHEN_GH_UNKNOWN  If 1, run 001 when gh failed/missing and digest otherwise empty.
-  AGENT_001_OLLAMA_LOG_TRIAGE  If 0, never run local LLM triage. Otherwise (default) triage runs when llama.cpp OpenAI API responds (GET \$LLAMA_CPP_BASE_URL/models, default http://127.0.0.1:8080/v1) and python3 exists, or when ollama list shows ≥1 model — only for log-only 001 signals. LLAMA_CPP_MODEL (default Bonsai-8B.gguf); OLLAMA_MODEL (default Gemma4:latest). AGENT_001_SKIP_LLAMA_CPP=1 forces Ollama only. AGENT_001_LOG_TRIAGE_DEBUG=1 prints triage script stderr (llama.cpp / ollama errors).
+  AGENT_001_OLLAMA_LOG_TRIAGE  If 0, never run local LLM triage. Otherwise (default) triage runs when llama.cpp OpenAI API responds (GET \$LLAMA_CPP_BASE_URL/models, default http://127.0.0.1:8080/v1) and python3 exists, or when ollama list shows ≥1 model — only for log-only 001 signals. LLAMA_CPP_MODEL (default Bonsai-8B.gguf); OLLAMA_MODEL (default Gemma4:latest). Default triage order is Ollama first, then llama.cpp; AGENT_001_LLAMA_CPP_FIRST=1 restores llama-first. AGENT_001_SKIP_LLAMA_CPP=1 forces Ollama only. AGENT_001_LOG_TRIAGE_DEBUG=1 prints triage script stderr (llama.cpp / ollama errors).
 
 Docker / app stack: start separately from repo root with ./run.sh -dev
 

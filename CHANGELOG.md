@@ -10,7 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- Agents: 001 local log triage default **`OLLAMA_MODEL`** is **`Gemma4:latest`** (**`scripts/agent-ollama-log-triage.sh`** and loop); loop passes **`OLLAMA_MODEL`** explicitly; optional **`AGENT_001_LOG_TRIAGE_DEBUG=1`** surfaces llama.cpp / Ollama stderr; **`docs/agent-loop.md`** documents Ollama-only-when-llama-empty and **`OLLAMA_HOST`** inheritance.
+- Agents: 001 log triage (**`scripts/agent-ollama-log-triage.sh`**): **Ollama first** by default, then llama.cpp (**`AGENT_001_LLAMA_CPP_FIRST=1`** restores llama-first); one **alternate-backend** attempt if the primary reply is ambiguous; stricter **SKIP**/**ESCALATE** prompt and last-word parse; default **`OLLAMA_MODEL`** **`Gemma4:latest`** (loop passes it explicitly); optional **`AGENT_001_LOG_TRIAGE_DEBUG=1`**; **`docs/agent-loop.md`** updated for triage order and when **`cursor-agent`** still runs for **001**.
 - Agents: GitHub reviewer (001) recorded latest preflight run in `agents2/001-gh-reviewer/time-of-last-review.txt`.
 - Tables floor plan: payment chip on the SVG aligned with the bottom of the table shape; pill and label scale on very small shapes (#188).
 
