@@ -2052,3 +2052,12 @@ Dedupe: N/A (no open issues); `agents2/tasks/` active queue has no pending `FEAT
 Docker (B, verified live): `docker logs pos-front --since 48h 2>&1 | grep -iE '\[ERROR\]|Application bundle generation failed'` → **no matches**; `docker logs pos-front 2>&1 | tail -n 35` ends with **Application bundle generation complete** + **Page reload sent**; `curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:4202/` → **200**. Historic TS lines remain in older buffer — **not** a standing incident. **0 × NEW-***.
 `./scripts/git-sync-development.sh` — already up to date before append.
 Counts this run: FEAT=0, NEW=0.
+
+---
+2026-04-19T00:52:04Z — 001-gh-reviewer run (Run 001; preflight digest read first)
+Preflight digest: `/var/folders/pm/lvxj2qcj03v2qqtb8sf5rryc0000gn/T/pos-agent-loop/001-latest-context.txt` (header 2026-04-19T00:51:27Z UTC) — GitHub open `[]`; digest `pos-front` Apr-14 TS/bill_issued/payment-chip scrollback; `pos-back` no matches; `pos-haproxy` access; `pos-postgres` legacy FATAL/role noise (heuristic).
+GitHub (A): `gh issue list --repo satisfecho/pos --state open --limit 40` → **no rows**; `python3 issue_checker_agent.py` (cwd `agents2/`) → **PASS** — **0 × FEAT-***; **no** `gh issue comment` / `agent:planned` (nothing to touch).
+Dedupe: N/A (no open issues).
+Docker (B, verified live): `docker logs pos-front 2>&1 | tail -30` ends with **Application bundle generation complete** + **Page reload sent**; `docker logs pos-front --since 72h 2>&1 | grep -iE '\[ERROR\]|bundle generation failed'` → **empty**; `curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:4202/` → **200**. Digest incidents are historical — **not** standing. **0 × NEW-***.
+`./scripts/git-sync-development.sh` — already up to date before append.
+Counts this run: FEAT=0, NEW=0.
