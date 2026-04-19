@@ -2983,3 +2983,17 @@ Preflight digest read: /var/folders/pm/lvxj2qcj03v2qqtb8sf5rryc0000gn/T/pos-agen
 **Counts this run:** FEAT=0, NEW=0.
 
 2026-04-19T08:49:30Z UTC | Agent 001 | FEAT created: 0 | NEW created: 0 | Open GitHub issues: 0 | Docker standing incident: none (24h/48h live + 200)
+
+---
+2026-04-19T09:21:55Z UTC | Agent 001 (Run: preflight digest + 001-gh-reviewer.md)
+
+**Preflight digest (read first):** `/var/folders/pm/lvxj2qcj03v2qqtb8sf5rryc0000gn/T/pos-agent-loop/001-latest-context.txt` — **2026-04-19T09:21:20Z** UTC — GitHub open **`[]`**; `G001_GH_OK=1`, `G001_LOG_SIGNALS=1` (digest heuristics: historical **2026-04-14** pos-front TS scrollback).
+
+**(A) GitHub:** `./scripts/git-sync-development.sh` — OK. `gh issue list --repo satisfecho/pos --state open --limit 40` → **0** issues. **0 × `FEAT-*`** — dedupe N/A (no candidates; no **`FEAT-<n>-*.md`** in **`agents2/tasks/`** root). **No** `gh issue comment` / **`agent:planned`** (nothing to attach).
+
+**(B) Docker (live):** `docker logs pos-front --since 24h` (`[ERROR]` / bundle generation failed) → **0** matches; container tail still contains **2026-04-14** transient failures immediately followed by **Application bundle generation complete** — **not** a standing incident; `curl http://127.0.0.1:4202/` → **200** → **0 × `NEW-*`**.
+
+**Counts this run:** FEAT=0, NEW=0.
+
+2026-04-19T09:21:55Z UTC | Agent 001 | FEAT created: 0 | NEW created: 0 | Open GitHub issues: 0 | Docker standing incident: none
+
