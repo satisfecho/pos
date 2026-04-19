@@ -2765,3 +2765,15 @@ Dedupe: N/A (no open issues); `agents2/tasks/` root has **no** active `FEAT-*` (
 
 2026-04-19T07:08:38Z UTC | Agent 001 | FEAT created: 0 | NEW created: 0 | Open GitHub issues: 0 | Docker standing incident: none (72h grep + tails; digest signals historical)
 
+
+---
+2026-04-19T07:21:13Z UTC | Agent 001 | Preflight digest: `/var/folders/pm/lvxj2qcj03v2qqtb8sf5rryc0000gn/T/pos-agent-loop/001-latest-context.txt` (header **2026-04-19T07:20:46Z** UTC).
+
+**(A) GitHub:** `gh issue list --repo satisfecho/pos --state open --limit 40` → **`[]`**. `python3 issue_checker_agent.py` (cwd **`agents2/`**) → **PASS**. **0 × `FEAT-*`** — no **`gh issue comment`** / **`agent:planned`**.
+
+**(B) Docker (live):** Preflight **`G001_LOG_SIGNALS=1`** is heuristic (Apr‑14 Angular **`[ERROR]`** / **`bill_issued`** / **`paymentChip*`** in **--tail 800** scrollback; postgres **`role "postgres" does not exist`** / **`terminating connection`** in older samples). Live: `docker logs pos-front --since 72h` grep **`\[ERROR\]`** / **`Application bundle generation failed`** → **0** matches each; `docker logs pos-postgres --since 72h` grep **`FATAL|ERROR`** → **0** matches; `docker logs pos-front --tail 120` ends with **`Application bundle generation complete`** after a transient Apr‑14 rebuild → **no standing incident** → **0 × `NEW-*`**.
+
+**Counts this run:** FEAT=0, NEW=0.
+
+2026-04-19T07:21:13Z UTC | Agent 001 | FEAT created: 0 | NEW created: 0 | Open GitHub issues: 0 | Docker standing incident: none (72h grep=0; digest historical)
+
