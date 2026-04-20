@@ -5,7 +5,7 @@
 #   cd agents && ./pos-agent-loop.sh [COMMAND]
 #
 # Starts Docker stack: use ./run.sh -dev at repo root (separate from this file).
-# Requires: cursor-agent on PATH (Cursor CLI), unless you only use subcommands that skip.
+# Requires: cursor-agent on PATH for steps that invoke it (001 can skip cursor when AGENT_001_LOCAL_LOG_REVIEWER is on and only Docker heuristics fire with no untracked GitHub issues).
 #
 # Task dir: agents/tasks/ (sibling of this script).
 
@@ -203,6 +203,9 @@ should_run_001_cursor_agent() {
     return 0
   fi
   if [[ "$G001_LOG_SIGNALS" == "1" ]]; then
+    if [[ "${AGENT_001_LOCAL_LOG_REVIEWER:-1}" != "0" ]] && [[ "$G001_GH_OK" == "1" ]] && [[ "${G001_UNTRACKED_ISSUES:-0}" -eq 0 ]]; then
+      return 1
+    fi
     return 0
   fi
   if [[ "$G001_GH_OK" == "1" ]] && [[ "${G001_UNTRACKED_ISSUES:-0}" -gt 0 ]]; then
@@ -330,6 +333,21 @@ run_agent() {
   echo ""
 }
 
+append_001_local_no_cursor_stamp() {
+  local ctx="$1"
+  local iso line
+  iso=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+  line="${iso} UTC | 001 local (no cursor-agent) | FEAT: 0 | NEW: 0 | G001_GH_OK=${G001_GH_OK} G001_UNTRACKED_ISSUES=${G001_UNTRACKED_ISSUES} G001_LOG_SIGNALS=${G001_LOG_SIGNALS} | digest: ${ctx}"
+  mkdir -p "$(dirname "$LAST_REVIEW_FILE")"
+  printf '%s\n\n' "$line" >>"$LAST_REVIEW_FILE"
+  {
+    echo ""
+    echo "=== 001 cursor-agent skipped (local log reviewer) ==="
+    echo "$line"
+    echo "cursor-agent was not invoked: GitHub preflight succeeded, zero untracked issues, and AGENT_001_LOCAL_LOG_REVIEWER is not 0 (default 1). Set AGENT_001_LOCAL_LOG_REVIEWER=0 to allow cursor-agent when only Docker heuristics fire alone."
+  } >>"$ctx"
+}
+
 warn_001_github_auth_if_needed() {
   local d="${AGENT_LOOP_TMP:-${TMPDIR:-/tmp}/pos-agent-loop}"
   if [[ "${G001_GH_AUTH_FAILED:-0}" == "1" ]]; then
@@ -350,11 +368,11 @@ step_log_reviewer() {
   maybe_local_llm_downgrade_log_signals "$ctx"
   echo "----- 001 preflight digest: $ctx"
   warn_001_github_auth_if_needed
-  if ! have_cursor_agent; then
-    echo "----- log reviewer (001) (skip: cursor-agent not on PATH)"
-    return 0
-  fi
   if should_run_001_cursor_agent; then
+    if ! have_cursor_agent; then
+      echo "----- log reviewer (001) (skip: cursor-agent not on PATH — this run wanted cursor-agent)" >&2
+      return 0
+    fi
     if ! sync_repo; then
       echo "----- log reviewer (001) (skip this run: git sync failed — loop continues)" >&2
       return 0
@@ -373,9 +391,12 @@ Then follow 001-log-reviewer/LOG-REVIEWER-PROMPT.md — (A) GitHub → up to 3 �
       "true" \
       "001-log-reviewer/LOG-REVIEWER-PROMPT.md" \
       "$msg"
+  elif [[ "$G001_LOG_SIGNALS" == "1" ]] && [[ "$G001_GH_OK" == "1" ]] && [[ "${G001_UNTRACKED_ISSUES:-0}" -eq 0 ]] && [[ "${AGENT_001_LOCAL_LOG_REVIEWER:-1}" != "0" ]]; then
+    echo "----- log reviewer (001) (skip cursor-agent: local log review — Docker heuristics only, GitHub ok, zero untracked issues)"
+    append_001_local_no_cursor_stamp "$ctx"
   else
     echo "----- log reviewer (001) (skip: nothing for 001 — no open issues missing a task link, no log incident heuristics)"
-    echo "----- Override: AGENT_LOG_REVIEWER_ALWAYS=1 or AGENT_001_SKIP_PREFLIGHT=1 (always invoke); AGENT_001_RUN_WHEN_GH_UNKNOWN=1 if gh failed but you still want a run."
+    echo "----- Override: AGENT_LOG_REVIEWER_ALWAYS=1 or AGENT_001_SKIP_PREFLIGHT=1 (always invoke); AGENT_001_RUN_WHEN_GH_UNKNOWN=1 if gh failed but you still want a run; AGENT_001_LOCAL_LOG_REVIEWER=0 to invoke cursor-agent when only Docker heuristics fire."
   fi
 }
 
@@ -510,6 +531,7 @@ Environment:
   AGENT_LOG_REVIEWER_ALWAYS  If 1, always invoke 001 cursor-agent (skip preflight gate).
   AGENT_001_SKIP_PREFLIGHT   If 1, always invoke 001 (legacy); digest still written when built.
   AGENT_001_RUN_WHEN_GH_UNKNOWN  If 1, run 001 when gh failed/missing and digest otherwise empty.
+  AGENT_001_LOCAL_LOG_REVIEWER  If not 0 (default 1), never invoke cursor-agent for 001 when only Docker log heuristics fired and GitHub preflight succeeded with zero untracked issues (fully local digest + optional Ollama triage). Set to 0 to allow cursor-agent for that case.
   AGENT_001_OLLAMA_LOG_TRIAGE  If 0, never run local LLM triage. Otherwise (default) triage runs when llama.cpp OpenAI API responds (GET \$LLAMA_CPP_BASE_URL/models, default http://127.0.0.1:8080/v1) and python3 exists, or when ollama list shows ≥1 model — only for log-only 001 signals. LLAMA_CPP_MODEL (default Bonsai-8B.gguf); OLLAMA_MODEL (default Gemma4:latest). Default triage order is Ollama first, then llama.cpp; AGENT_001_LLAMA_CPP_FIRST=1 restores llama-first. AGENT_001_SKIP_LLAMA_CPP=1 forces Ollama only. AGENT_001_LOG_TRIAGE_DEBUG=1 prints triage script stderr (llama.cpp / ollama errors).
 
 Docker / app stack: start separately from repo root with ./run.sh -dev
