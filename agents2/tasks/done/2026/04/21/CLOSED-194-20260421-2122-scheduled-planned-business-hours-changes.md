@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue #194 delivered scheduled opening hours with effective-dated weekly baselines, date-range overrides, centralized effective-hours resolution, and staff Settings UX aligned with public booking and validation.
+- **What was done:** Database migration for baseline and override tables; `opening_hours_effective` resolution; reservation and tenant APIs wired to `_opening_service_windows_for_date`; Settings → Opening hours lists and forms per the implementation summary.
+- **What was tested:** Migration applied; `tests/test_opening_hours_effective.py` passed (4 tests); API checks confirmed future baselines and closed overrides change public slot grids as expected; smoke HTTP 200 and successful front bundle generation per test report — overall **PASS**.
+- **Why closed:** Tester marked overall **PASS**; verification criteria met.
+- **Closed at (UTC):** 2026-04-21 21:33
+---
+
 # Scheduled / planned business hours changes
 
 ## GitHub Issues
