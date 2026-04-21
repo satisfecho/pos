@@ -1562,3 +1562,48 @@ class StaffContractTemplatePresetRead(SQLModel):
 class StaffContractTemplateImportPreset(SQLModel):
     preset_id: int = Field(ge=1)
     template_key: str | None = Field(default=None, max_length=64)
+
+
+# ============ OPENING HOURS SCHEDULE (baseline + date overrides) ============
+
+
+class OpeningHoursBaselineSchedule(SQLModel, table=True):
+    """Weekly opening-hours JSON that applies from effective_from onward until a later baseline."""
+
+    __tablename__ = "opening_hours_baseline_schedule"
+
+    id: int | None = Field(default=None, primary_key=True)
+    tenant_id: int = Field(foreign_key="tenant.id", index=True)
+    effective_from: date = Field(sa_column=Column(Date, nullable=False))
+    opening_hours: str = Field(sa_column=Column(Text, nullable=False))
+    note: str | None = Field(default=None, max_length=512)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class OpeningHoursDateOverride(SQLModel, table=True):
+    """Closed day/range or alternate weekly-pattern hours between date_from and date_to (inclusive)."""
+
+    __tablename__ = "opening_hours_date_override"
+
+    id: int | None = Field(default=None, primary_key=True)
+    tenant_id: int = Field(foreign_key="tenant.id", index=True)
+    date_from: date = Field(sa_column=Column(Date, nullable=False))
+    date_to: date = Field(sa_column=Column(Date, nullable=False))
+    closed: bool = Field(default=False)
+    opening_hours: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    note: str | None = Field(default=None, max_length=512)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class OpeningHoursBaselineCreate(SQLModel):
+    effective_from: date
+    opening_hours: str = Field(min_length=2)
+    note: str | None = Field(default=None, max_length=512)
+
+
+class OpeningHoursOverrideCreate(SQLModel):
+    date_from: date
+    date_to: date
+    closed: bool = Field(default=False)
+    opening_hours: str | None = None
+    note: str | None = Field(default=None, max_length=512)

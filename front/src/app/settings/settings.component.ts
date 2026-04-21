@@ -14,6 +14,8 @@ import {
   TenantSettings,
   DEFAULT_TENANT_UI_MODULES,
   TenantUiModuleKey,
+  OpeningHoursBaselineRow,
+  OpeningHoursOverrideRow,
 } from '../services/api.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
@@ -1087,6 +1089,121 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                           <span class="closed-badge">{{ 'SETTINGS.CLOSED' | translate }}</span>
                         }
                       </div>
+                    }
+                  </div>
+
+                  <div class="divider"></div>
+                  <div class="section-header">
+                    <h3>{{ 'SETTINGS.OPENING_HOURS_PLANNED_TITLE' | translate }}</h3>
+                    <p>{{ 'SETTINGS.OPENING_HOURS_PLANNED_HELP' | translate }}</p>
+                  </div>
+
+                  <div class="oh-schedule-card">
+                    <h4>{{ 'SETTINGS.OPENING_HOURS_BASELINE_SECTION' | translate }}</h4>
+                    <p class="hint">{{ 'SETTINGS.OPENING_HOURS_BASELINE_HINT' | translate }}</p>
+                    <div class="form-row oh-schedule-form">
+                      <div class="form-group">
+                        <label for="baseline_eff">{{ 'SETTINGS.OPENING_HOURS_EFFECTIVE_FROM' | translate }}</label>
+                        <input id="baseline_eff" type="date" [(ngModel)]="baselineScheduleEffectiveDate" name="baseline_eff" />
+                      </div>
+                      <div class="form-group flex-grow">
+                        <label for="baseline_note">{{ 'SETTINGS.OPENING_HOURS_BASELINE_NOTE' | translate }}</label>
+                        <input id="baseline_note" type="text" [(ngModel)]="baselineScheduleNote" name="baseline_note" />
+                      </div>
+                      <button type="button" class="btn btn-secondary" (click)="addBaselineSchedule()" [disabled]="saving()">
+                        {{ 'SETTINGS.OPENING_HOURS_ADD_BASELINE' | translate }}
+                      </button>
+                    </div>
+                    <h4>{{ 'SETTINGS.OPENING_HOURS_BASELINES_LIST' | translate }}</h4>
+                    @if (loadingOpeningHoursSchedule()) {
+                      <p>{{ 'COMMON.LOADING' | translate }}</p>
+                    } @else if (openingHoursScheduleBaselines().length === 0) {
+                      <p class="hint">{{ 'SETTINGS.OPENING_HOURS_NO_BASELINES' | translate }}</p>
+                    } @else {
+                      <table class="oh-schedule-table">
+                        <thead>
+                          <tr>
+                            <th>{{ 'SETTINGS.OPENING_HOURS_EFFECTIVE_FROM' | translate }}</th>
+                            <th>{{ 'SETTINGS.OPENING_HOURS_NOTE_SHORT' | translate }}</th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (b of openingHoursScheduleBaselines(); track b.id) {
+                            <tr>
+                              <td>{{ b.effective_from }}</td>
+                              <td>{{ b.note || '—' }}</td>
+                              <td>
+                                <button type="button" class="btn btn-link danger" (click)="deleteBaselineSchedule(b.id)">
+                                  {{ 'COMMON.DELETE' | translate }}
+                                </button>
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    }
+                  </div>
+
+                  <div class="oh-schedule-card">
+                    <h4>{{ 'SETTINGS.OPENING_HOURS_OVERRIDE_SECTION' | translate }}</h4>
+                    <p class="hint">{{ 'SETTINGS.OPENING_HOURS_OVERRIDE_HINT' | translate }}</p>
+                    <div class="form-group checkbox-row">
+                      <label class="switch">
+                        <input type="checkbox" [(ngModel)]="overrideClosedOnly" name="override_closed" />
+                        <span class="slider round"></span>
+                      </label>
+                      <span>{{ 'SETTINGS.OPENING_HOURS_OVERRIDE_CLOSED' | translate }}</span>
+                    </div>
+                    <div class="form-row oh-schedule-form">
+                      <div class="form-group">
+                        <label for="ov_from">{{ 'SETTINGS.OPENING_HOURS_DATE_FROM' | translate }}</label>
+                        <input id="ov_from" type="date" [(ngModel)]="overrideDateFrom" name="ov_from" />
+                      </div>
+                      <div class="form-group">
+                        <label for="ov_to">{{ 'SETTINGS.OPENING_HOURS_DATE_TO' | translate }}</label>
+                        <input id="ov_to" type="date" [(ngModel)]="overrideDateTo" name="ov_to" />
+                      </div>
+                      <div class="form-group flex-grow">
+                        <label for="ov_note">{{ 'SETTINGS.OPENING_HOURS_BASELINE_NOTE' | translate }}</label>
+                        <input id="ov_note" type="text" [(ngModel)]="overrideScheduleNote" name="ov_note" />
+                      </div>
+                      <button type="button" class="btn btn-secondary" (click)="addOverrideSchedule()" [disabled]="saving()">
+                        {{ 'SETTINGS.OPENING_HOURS_ADD_OVERRIDE' | translate }}
+                      </button>
+                    </div>
+                    <h4>{{ 'SETTINGS.OPENING_HOURS_OVERRIDES_LIST' | translate }}</h4>
+                    @if (loadingOpeningHoursSchedule()) {
+                      <p>{{ 'COMMON.LOADING' | translate }}</p>
+                    } @else if (openingHoursScheduleOverrides().length === 0) {
+                      <p class="hint">{{ 'SETTINGS.OPENING_HOURS_NO_OVERRIDES' | translate }}</p>
+                    } @else {
+                      <table class="oh-schedule-table">
+                        <thead>
+                          <tr>
+                            <th>{{ 'SETTINGS.OPENING_HOURS_DATE_FROM' | translate }}</th>
+                            <th>{{ 'SETTINGS.OPENING_HOURS_DATE_TO' | translate }}</th>
+                            <th>{{ 'SETTINGS.OPENING_HOURS_OVERRIDE_TYPE' | translate }}</th>
+                            <th>{{ 'SETTINGS.OPENING_HOURS_NOTE_SHORT' | translate }}</th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (o of openingHoursScheduleOverrides(); track o.id) {
+                            <tr>
+                              <td>{{ o.date_from }}</td>
+                              <td>{{ o.date_to }}</td>
+                              <td>{{ o.closed ? ('SETTINGS.OPENING_HOURS_TYPE_CLOSED' | translate) : ('SETTINGS.OPENING_HOURS_TYPE_HOURS' | translate) }}</td>
+                              <td>{{ o.note || '—' }}</td>
+                              <td>
+                                <button type="button" class="btn btn-link danger" (click)="deleteOverrideSchedule(o.id)">
+                                  {{ 'COMMON.DELETE' | translate }}
+                                </button>
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
                     }
                   </div>
                 </div>
@@ -2508,6 +2625,47 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       margin-bottom: var(--space-4);
     }
 
+    .oh-schedule-card {
+      margin-top: var(--space-4);
+      padding: var(--space-4);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+    }
+    .oh-schedule-card h4 {
+      margin-top: var(--space-3);
+      margin-bottom: var(--space-2);
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .oh-schedule-form {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+    }
+    .flex-grow {
+      flex: 1;
+      min-width: 140px;
+    }
+    .oh-schedule-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    .oh-schedule-table th,
+    .oh-schedule-table td {
+      text-align: left;
+      padding: var(--space-2) var(--space-3);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .btn-link.danger {
+      color: var(--color-danger, #c62828);
+      padding: 0;
+      font-size: 0.875rem;
+    }
+
     @keyframes settingsToastEnter {
       from {
         transform: translate(-50%, calc(-100% - 12px));
@@ -2749,6 +2907,18 @@ export class SettingsComponent implements OnInit, OnDestroy {
   purging = signal(false);
   purgeError = signal<string | null>(null);
 
+  openingHoursScheduleBaselines = signal<OpeningHoursBaselineRow[]>([]);
+  openingHoursScheduleOverrides = signal<OpeningHoursOverrideRow[]>([]);
+  loadingOpeningHoursSchedule = signal(false);
+
+  baselineScheduleEffectiveDate = '';
+  baselineScheduleNote = '';
+
+  overrideDateFrom = '';
+  overrideDateTo = '';
+  overrideClosedOnly = false;
+  overrideScheduleNote = '';
+
   daysOfWeek = [
     { key: 'monday', label: 'SETTINGS.DAY_MONDAY' },
     { key: 'tuesday', label: 'SETTINGS.DAY_TUESDAY' },
@@ -2975,6 +3145,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         }
         this.timezoneSearch = settings.timezone || '';
         this.parseOpeningHours(settings.opening_hours);
+        this.loadOpeningHoursSchedule();
         this.syncPrepaymentFieldsFromCents();
         this.loadTaxes();
         this.autoGenerateReviewUrlFromPlaceId();
@@ -2994,6 +3165,111 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.api.getTaxes(false).subscribe({
       next: (list) => this.taxes.set(list),
       error: () => this.taxes.set([]),
+    });
+  }
+
+  loadOpeningHoursSchedule(): void {
+    this.loadingOpeningHoursSchedule.set(true);
+    this.api.getOpeningHoursSchedule().subscribe({
+      next: (res) => {
+        this.openingHoursScheduleBaselines.set(res.baselines || []);
+        this.openingHoursScheduleOverrides.set(res.overrides || []);
+        this.loadingOpeningHoursSchedule.set(false);
+      },
+      error: () => {
+        this.openingHoursScheduleBaselines.set([]);
+        this.openingHoursScheduleOverrides.set([]);
+        this.loadingOpeningHoursSchedule.set(false);
+      },
+    });
+  }
+
+  /** Snapshot of the weekly grid as stored JSON (same shape as tenant.opening_hours). */
+  private weeklyOpeningHoursJsonFromGrid(): string {
+    this.serializeOpeningHours();
+    const s = this.formData.opening_hours;
+    return (s && String(s).trim()) ? String(s).trim() : '{}';
+  }
+
+  addBaselineSchedule(): void {
+    const eff = (this.baselineScheduleEffectiveDate || '').trim();
+    if (!eff) {
+      this.error.set(this.translate.instant('SETTINGS.OPENING_HOURS_EFFECTIVE_FROM_REQUIRED'));
+      return;
+    }
+    const oh = this.weeklyOpeningHoursJsonFromGrid();
+    this.saving.set(true);
+    this.error.set(null);
+    this.api
+      .createOpeningHoursBaseline({
+        effective_from: eff,
+        opening_hours: oh,
+        note: this.baselineScheduleNote.trim() || null,
+      })
+      .subscribe({
+        next: () => {
+          this.baselineScheduleEffectiveDate = '';
+          this.baselineScheduleNote = '';
+          this.loadOpeningHoursSchedule();
+          this.saving.set(false);
+        },
+        error: (err) => {
+          this.saving.set(false);
+          const d = err?.error?.detail;
+          this.error.set(typeof d === 'string' ? d : this.translate.instant('COMMON.ERROR'));
+        },
+      });
+  }
+
+  deleteBaselineSchedule(id: number): void {
+    if (!confirm(this.translate.instant('SETTINGS.OPENING_HOURS_CONFIRM_DELETE'))) return;
+    this.api.deleteOpeningHoursBaseline(id).subscribe({
+      next: () => this.loadOpeningHoursSchedule(),
+      error: () => {},
+    });
+  }
+
+  addOverrideSchedule(): void {
+    const df = (this.overrideDateFrom || '').trim();
+    const dt = (this.overrideDateTo || '').trim();
+    if (!df || !dt) {
+      this.error.set(this.translate.instant('SETTINGS.OPENING_HOURS_DATES_REQUIRED'));
+      return;
+    }
+    const closed = this.overrideClosedOnly;
+    const oh = closed ? null : this.weeklyOpeningHoursJsonFromGrid();
+    this.saving.set(true);
+    this.error.set(null);
+    this.api
+      .createOpeningHoursOverride({
+        date_from: df,
+        date_to: dt,
+        closed,
+        opening_hours: oh,
+        note: this.overrideScheduleNote.trim() || null,
+      })
+      .subscribe({
+        next: () => {
+          this.overrideDateFrom = '';
+          this.overrideDateTo = '';
+          this.overrideScheduleNote = '';
+          this.overrideClosedOnly = false;
+          this.loadOpeningHoursSchedule();
+          this.saving.set(false);
+        },
+        error: (err) => {
+          this.saving.set(false);
+          const d = err?.error?.detail;
+          this.error.set(typeof d === 'string' ? d : this.translate.instant('COMMON.ERROR'));
+        },
+      });
+  }
+
+  deleteOverrideSchedule(id: number): void {
+    if (!confirm(this.translate.instant('SETTINGS.OPENING_HOURS_CONFIRM_DELETE'))) return;
+    this.api.deleteOpeningHoursOverride(id).subscribe({
+      next: () => this.loadOpeningHoursSchedule(),
+      error: () => {},
     });
   }
 

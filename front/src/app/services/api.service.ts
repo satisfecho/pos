@@ -488,6 +488,30 @@ export interface TenantSummary {
   reservation_max_guests_per_slot?: number | null;
 }
 
+/** Planned opening-hours baselines and date overrides (issue #194). */
+export interface OpeningHoursBaselineRow {
+  id: number;
+  effective_from: string;
+  opening_hours: string;
+  note?: string | null;
+  created_at?: string | null;
+}
+
+export interface OpeningHoursOverrideRow {
+  id: number;
+  date_from: string;
+  date_to: string;
+  closed: boolean;
+  opening_hours?: string | null;
+  note?: string | null;
+  created_at?: string | null;
+}
+
+export interface OpeningHoursScheduleResponse {
+  baselines: OpeningHoursBaselineRow[];
+  overrides: OpeningHoursOverrideRow[];
+}
+
 /** GET /public/legal-urls — product-wide defaults from server config. */
 export interface PublicLegalUrls {
   terms_of_service_url: string | null;
@@ -2236,6 +2260,36 @@ export class ApiService {
 
   updateTenantSettings(settings: Partial<TenantSettings>): Observable<TenantSettings> {
     return this.http.put<TenantSettings>(`${this.apiUrl}/tenant/settings`, settings);
+  }
+
+  getOpeningHoursSchedule(): Observable<OpeningHoursScheduleResponse> {
+    return this.http.get<OpeningHoursScheduleResponse>(`${this.apiUrl}/tenant/opening-hours/schedule`);
+  }
+
+  createOpeningHoursBaseline(body: {
+    effective_from: string;
+    opening_hours: string;
+    note?: string | null;
+  }): Observable<{ id: number }> {
+    return this.http.post<{ id: number }>(`${this.apiUrl}/tenant/opening-hours/baselines`, body);
+  }
+
+  deleteOpeningHoursBaseline(id: number): Observable<{ status: string }> {
+    return this.http.delete<{ status: string }>(`${this.apiUrl}/tenant/opening-hours/baselines/${id}`);
+  }
+
+  createOpeningHoursOverride(body: {
+    date_from: string;
+    date_to: string;
+    closed: boolean;
+    opening_hours?: string | null;
+    note?: string | null;
+  }): Observable<{ id: number }> {
+    return this.http.post<{ id: number }>(`${this.apiUrl}/tenant/opening-hours/overrides`, body);
+  }
+
+  deleteOpeningHoursOverride(id: number): Observable<{ status: string }> {
+    return this.http.delete<{ status: string }>(`${this.apiUrl}/tenant/opening-hours/overrides/${id}`);
   }
 
   /** Kitchen/Bar display: wait-time thresholds (minutes) for card color. */

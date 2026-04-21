@@ -85,6 +85,10 @@ from .kitchen_stations_util import (
     validate_kitchen_station_belongs,
 )
 from .schedule_export_i18n import planned_vs_export_labels, schedule_export_labels
+from .opening_hours_effective import (
+    effective_weekly_json_preview,
+    opening_service_windows_for_date as _opening_service_windows_for_date,
+)
 
 from .rate_limits import (
     _rate_limit_key,
@@ -2947,6 +2951,218 @@ def disable_tenant_clock_qr(
     session.add(tenant)
     session.commit()
     return {"status": "ok", "clock_qr_active": False, "clock_qr_downloadable": False}
+
+
+def _validate_weekly_opening_hours_json(raw: str | None, *, required: bool) -> str | None:
+    if raw is None or not str(raw).strip():
+        if required:
+            raise HTTPException(status_code=400, detail="opening_hours JSON is required")
+        return None
+    s = str(raw).strip()
+    try:
+        obj = json.loads(s)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="opening_hours must be valid JSON") from None
+    if not isinstance(obj, dict):
+        raise HTTPException(status_code=400, detail="opening_hours must be a JSON object")
+    return s
+
+
+@app.get("/tenant/opening-hours/schedule")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def list_opening_hours_schedule(
+    request: Request,
+    response: Response,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_READ))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """List baseline schedules and date overrides for the tenant (planned opening hours)."""
+    tid = current_user.tenant_id
+    baselines = session.exec(
+        select(models.OpeningHoursBaselineSchedule)
+        .where(models.OpeningHoursBaselineSchedule.tenant_id == tid)
+        .order_by(models.OpeningHoursBaselineSchedule.effective_from.asc())
+    ).all()
+    overrides = session.exec(
+        select(models.OpeningHoursDateOverride)
+        .where(models.OpeningHoursDateOverride.tenant_id == tid)
+        .order_by(models.OpeningHoursDateOverride.date_from.asc(), models.OpeningHoursDateOverride.id.asc())
+    ).all()
+    return {
+        "baselines": [
+            {
+                "id": b.id,
+                "effective_from": b.effective_from.isoformat(),
+                "opening_hours": b.opening_hours,
+                "note": b.note,
+                "created_at": b.created_at.isoformat() if b.created_at else None,
+            }
+            for b in baselines
+            if b.id is not None
+        ],
+        "overrides": [
+            {
+                "id": o.id,
+                "date_from": o.date_from.isoformat(),
+                "date_to": o.date_to.isoformat(),
+                "closed": o.closed,
+                "opening_hours": o.opening_hours,
+                "note": o.note,
+                "created_at": o.created_at.isoformat() if o.created_at else None,
+            }
+            for o in overrides
+            if o.id is not None
+        ],
+    }
+
+
+@app.post("/tenant/opening-hours/baselines")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def create_opening_hours_baseline(
+    request: Request,
+    response: Response,
+    body: models.OpeningHoursBaselineCreate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Schedule a weekly opening-hours pattern from effective_from onward."""
+    oh = _validate_weekly_opening_hours_json(body.opening_hours, required=True)
+    row = models.OpeningHoursBaselineSchedule(
+        tenant_id=current_user.tenant_id,
+        effective_from=body.effective_from,
+        opening_hours=oh or "",
+        note=(body.note or "").strip() or None,
+    )
+    session.add(row)
+    try:
+        session.commit()
+        session.refresh(row)
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="A baseline for this effective_from date already exists.",
+        ) from None
+    return {"id": row.id}
+
+
+@app.delete("/tenant/opening-hours/baselines/{baseline_id}")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def delete_opening_hours_baseline(
+    baseline_id: int,
+    request: Request,
+    response: Response,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Remove a planned baseline schedule row."""
+    row = session.exec(
+        select(models.OpeningHoursBaselineSchedule).where(
+            models.OpeningHoursBaselineSchedule.id == baseline_id,
+            models.OpeningHoursBaselineSchedule.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Baseline not found")
+    session.delete(row)
+    session.commit()
+    return {"status": "ok"}
+
+
+@app.post("/tenant/opening-hours/overrides")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def create_opening_hours_override(
+    request: Request,
+    response: Response,
+    body: models.OpeningHoursOverrideCreate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Date-range override (closed or alternate weekly-style hours)."""
+    if body.date_to < body.date_from:
+        raise HTTPException(status_code=400, detail="date_to must be on or after date_from")
+    oh: str | None = None
+    if body.closed:
+        if body.opening_hours is not None and str(body.opening_hours).strip():
+            raise HTTPException(status_code=400, detail="closed overrides must not include opening_hours")
+    else:
+        oh = _validate_weekly_opening_hours_json(body.opening_hours, required=True)
+    row = models.OpeningHoursDateOverride(
+        tenant_id=current_user.tenant_id,
+        date_from=body.date_from,
+        date_to=body.date_to,
+        closed=bool(body.closed),
+        opening_hours=None if body.closed else oh,
+        note=(body.note or "").strip() or None,
+    )
+    session.add(row)
+    session.commit()
+    session.refresh(row)
+    return {"id": row.id}
+
+
+@app.delete("/tenant/opening-hours/overrides/{override_id}")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def delete_opening_hours_override(
+    override_id: int,
+    request: Request,
+    response: Response,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Remove a date-range override."""
+    row = session.exec(
+        select(models.OpeningHoursDateOverride).where(
+            models.OpeningHoursDateOverride.id == override_id,
+            models.OpeningHoursDateOverride.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Override not found")
+    session.delete(row)
+    session.commit()
+    return {"status": "ok"}
+
+
+@app.get("/tenant/opening-hours/effective-preview")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_admin_per_minute', 30)}/minute",
+    key_func=_rate_limit_key_user,
+)
+def preview_opening_hours_effective(
+    request: Request,
+    response: Response,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_READ))],
+    session: Session = Depends(get_session),
+    on_date: str = Query(..., description="Calendar date YYYY-MM-DD"),
+) -> dict:
+    """Weekly JSON effective for tenant settings preview on a calendar date."""
+    tenant = session.exec(
+        select(models.Tenant).where(models.Tenant.id == current_user.tenant_id)
+    ).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    try:
+        d = _parse_reservation_date(on_date.strip())
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    preview = effective_weekly_json_preview(session, tenant, d)
+    return {"date": d.isoformat(), "opening_hours": preview}
 
 
 # Kitchen/Bar display timer settings (read/update by anyone with order access)
@@ -7188,56 +7404,6 @@ def _parse_reservation_time(s: str) -> time:
         raise ValueError(f"Invalid time format: {s[:8]!r}. Use HH:MM or HH:MM:SS.") from e
 
 
-def _parse_hh_mm_to_time(value) -> time | None:
-    if value is None:
-        return None
-    s = str(value).strip()
-    if not s:
-        return None
-    parts = s.split(":")
-    try:
-        h = int(parts[0])
-        m = int(parts[1]) if len(parts) > 1 else 0
-        return time(h, m)
-    except (ValueError, IndexError):
-        return None
-
-
-def _service_windows_from_day_hours(day_hours: dict) -> List[Tuple[time, time]]:
-    """Service intervals (open, close) for one weekday. Empty list = closed or unparseable."""
-    if not day_hours or day_hours.get("closed"):
-        return []
-    if day_hours.get("hasBreak"):
-        mo = _parse_hh_mm_to_time(day_hours.get("morningOpen") or day_hours.get("open"))
-        mc = _parse_hh_mm_to_time(day_hours.get("morningClose"))
-        eo = _parse_hh_mm_to_time(day_hours.get("eveningOpen"))
-        ec = _parse_hh_mm_to_time(day_hours.get("eveningClose") or day_hours.get("close"))
-        if not all((mo, mc, eo, ec)):
-            return []
-        return [(mo, mc), (eo, ec)]
-    o = _parse_hh_mm_to_time(day_hours.get("open"))
-    c = _parse_hh_mm_to_time(day_hours.get("eveningClose") or day_hours.get("close"))
-    if not o or not c:
-        return []
-    return [(o, c)]
-
-
-def _opening_service_windows_for_date(tenant: models.Tenant, res_date: date) -> List[Tuple[time, time]] | None:
-    """None = opening hours not configured (do not enforce). [] = closed. Else list of (open, close) segments."""
-    if not tenant.opening_hours or not str(tenant.opening_hours).strip():
-        return None
-    try:
-        oh = json.loads(tenant.opening_hours)
-    except (json.JSONDecodeError, TypeError):
-        return None
-    day_names = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
-    day_key = day_names[res_date.weekday()]
-    day_hours = oh.get(day_key)
-    if not isinstance(day_hours, dict):
-        return []
-    return _service_windows_from_day_hours(day_hours)
-
-
 def _filter_windows_by_service(
     windows: List[Tuple[time, time]], service: str | None
 ) -> List[Tuple[time, time]]:
@@ -7255,9 +7421,13 @@ def _filter_windows_by_service(
 
 
 def _raise_if_reservation_time_invalid_for_opening_hours(
-    tenant: models.Tenant, res_date: date, res_time: time, service: str | None = None
+    session: Session,
+    tenant: models.Tenant,
+    res_date: date,
+    res_time: time,
+    service: str | None = None,
 ) -> None:
-    windows = _opening_service_windows_for_date(tenant, res_date)
+    windows = _opening_service_windows_for_date(session, tenant, res_date)
     if windows is None:
         return
     if len(windows) == 0:
@@ -7307,9 +7477,9 @@ def _grid_slot_times_for_windows(
     return out
 
 
-def _closing_time_for_date(tenant: models.Tenant, res_date: date) -> time | None:
+def _closing_time_for_date(session: Session, tenant: models.Tenant, res_date: date) -> time | None:
     """Last segment closing time for the day, or None if not configured / closed / unparseable."""
-    windows = _opening_service_windows_for_date(tenant, res_date)
+    windows = _opening_service_windows_for_date(session, tenant, res_date)
     if not windows:
         return None
     return windows[-1][1]
@@ -8098,7 +8268,9 @@ def create_reservation(
     ah_raw = getattr(data, "allergies_has", None)
     ad_raw = getattr(data, "allergies_detail", None)
     allergies_has, allergies_detail = _normalize_allergies_for_booking(ah_raw, ad_raw)
-    _raise_if_reservation_time_invalid_for_opening_hours(tenant, res_date, res_time, service_type)
+    _raise_if_reservation_time_invalid_for_opening_hours(
+        session, tenant, res_date, res_time, service_type
+    )
     bookable = _bookable_floors_for_public(session, tenant_id)
     matching = _bookable_floors_matching_seating(session, tenant_id, seating_pref)
     matching_ids = {f.id for f in matching if f.id is not None}
@@ -8260,7 +8432,7 @@ def get_reservation_book_calendar(
     days: list[dict] = []
     for dom in range(1, last_day + 1):
         d = date(year, month, dom)
-        windows = _opening_service_windows_for_date(tenant, d)
+        windows = _opening_service_windows_for_date(session, tenant, d)
         if windows is None:
             state = "open"
         elif len(windows) == 0:
@@ -8289,7 +8461,7 @@ def _public_book_slot_cells_for_single_date(
 ) -> dict[str, str]:
     """Per time-slot state for one calendar day (same rules as book-week-slots)."""
     slot_step = _effective_reservation_slot_minutes(tenant)
-    windows = _opening_service_windows_for_date(tenant, d)
+    windows = _opening_service_windows_for_date(session, tenant, d)
     if windows is None:
         windows = [(time(8, 0), time(23, 0))]
     windows_f = _filter_windows_by_service(windows, svc)
@@ -8410,7 +8582,7 @@ def get_reservation_book_week_slots(
     all_slot_times: set[time] = set()
     for i in range(7):
         d = anchor_monday + timedelta(days=i)
-        windows = _opening_service_windows_for_date(tenant, d)
+        windows = _opening_service_windows_for_date(session, tenant, d)
         if windows is None:
             windows = [(time(8, 0), time(23, 0))]
         if len(windows) == 0:
@@ -8428,7 +8600,7 @@ def get_reservation_book_week_slots(
     for i in range(7):
         d = anchor_monday + timedelta(days=i)
         cells: dict[str, str] = {}
-        windows = _opening_service_windows_for_date(tenant, d)
+        windows = _opening_service_windows_for_date(session, tenant, d)
         if windows is None:
             windows = [(time(8, 0), time(23, 0))]
         windows_f = _filter_windows_by_service(windows, svc)
@@ -8636,7 +8808,7 @@ def get_next_available_reservation_time(
     slot_step = _effective_reservation_slot_minutes(tenant)
     for day_offset in range(8):
         d = check_date + timedelta(days=day_offset)
-        windows = _opening_service_windows_for_date(tenant, d)
+        windows = _opening_service_windows_for_date(session, tenant, d)
         if windows is None:
             windows = [(time(8, 0), time(23, 0))]
         if len(windows) == 0:
@@ -8798,7 +8970,11 @@ def update_reservation(
     if reservation.reservation_date and reservation.reservation_date > max_ahead_date:
         raise HTTPException(status_code=400, detail=api_error_payload("reservation_date_too_far", lang))
     _raise_if_reservation_time_invalid_for_opening_hours(
-        tenant, reservation.reservation_date, reservation.reservation_time, reservation.service_type
+        session,
+        tenant,
+        reservation.reservation_date,
+        reservation.reservation_time,
+        reservation.service_type,
     )
     cap_floor = reservation.preferred_floor_id
     total_seats, total_tables = _reservable_capacity_for_tenant(
