@@ -22,11 +22,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Tables / payments: `GET /tables/with-status` preserves **`payment_status: pending`** when kitchen orders are ready or completed and a bill was still relevant; improved detection of active order and `bill_requested_at` (#189).
 - Orders / tables: staff **mark paid** and **finish order** no longer cleared `bill_requested_at`, so after **unmark paid** the floor plan still showed **payment pending** when a bill had been requested (#190).
 
+## [2.0.80] - 2026-04-21
+
+### Fixed
+
+- **Production nginx:** **`marketing-sites.generated.conf`** is written to **`/etc/nginx/snippets/`**, not **`conf.d/`**. Files under **`conf.d/*.conf`** are merged at **`http`** context; **`location`** blocks there are invalid (**`directive is not allowed here`**). **`default.conf`** now **`include`**s the snippets file only inside the **`server`** block.
+
 ## [2.0.79] - 2026-04-21
 
 ### Fixed
 
-- **Production nginx:** **`include`** for marketing static sites now points to **`/etc/nginx/conf.d/marketing-sites.generated.conf`** (where **`Dockerfile.prod`** writes it). The previous relative **`include marketing-sites.generated.conf`** resolved to **`/etc/nginx/marketing-sites.generated.conf`** and nginx failed to start (**`open() … failed (2: No such file or directory)`**), **`pos-front`** restarted in a loop, HAProxy **`frontend_backend`** returned **503** on **`/`**.
+- **Production nginx:** **`include`** for marketing static sites now uses an absolute path (see **2.0.80** for **`conf.d`** vs **`snippets`**). The previous relative **`include marketing-sites.generated.conf`** resolved to **`/etc/nginx/marketing-sites.generated.conf`** and nginx failed to start (**`open() … failed (2: No such file or directory)`**), **`pos-front`** restarted in a loop, HAProxy **`frontend_backend`** returned **503** on **`/`**.
 
 ## [2.0.78] - 2026-04-21
 

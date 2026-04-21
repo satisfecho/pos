@@ -38,7 +38,9 @@ COPY --from=builder /app/dist/front/browser /usr/share/nginx/html
 # Marketing sites: front/sites/<slug>/ → /usr/share/nginx/html/sites/<slug>/ (URLs /slug/)
 COPY sites/ /usr/share/nginx/html/sites/
 COPY scripts/generate-marketing-nginx-include.sh /docker-gen-marketing.sh
-RUN chmod +x /docker-gen-marketing.sh && /docker-gen-marketing.sh > /etc/nginx/conf.d/marketing-sites.generated.conf
+RUN chmod +x /docker-gen-marketing.sh \
+  && mkdir -p /etc/nginx/snippets \
+  && /docker-gen-marketing.sh > /etc/nginx/snippets/marketing-sites.generated.conf
 
 # Copy custom Nginx configuration (includes marketing-sites.generated.conf)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
