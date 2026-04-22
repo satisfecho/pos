@@ -84,3 +84,34 @@ GH_TOKEN:
    2. `https://satisfecho.de/api/health` — **200**, **`{"status":"ok"}`**.
 
 8. **Relevant log excerpts:** **`gh run view 24773000757 --json`** → **`"conclusion":"failure"`**, **`"status":"completed"`**, **`"updatedAt":"2026-04-22T10:18:30Z"`**.
+
+## Test report — verification (2026-04-22 session)
+
+1. **Date/time (UTC)** and log window: **2026-04-22T10:35Z** through **2026-04-22T10:36Z** (`git fetch`, **`gh run list`**, **`gh run view`**, **`curl`**).
+
+2. **Environment:** Repo **`/Users/raro42/projects/pos2`** after **`./scripts/git-sync-development.sh`**; local branch **`development`** (synced); **`BASE_URL`** not used (no Puppeteer); **`gh`** authenticated.
+
+3. **What was tested:** **Testing instructions** items **1–3** (remote **`origin/master`** vs **`origin/development`**; latest **`Deploy to amvara9`** on **`master`** via **`gh`**; optional **`https://satisfecho.de/api/health`**).
+
+4. **Results:**
+   - **Git remotes:** **PASS** — **`git fetch origin`** then **`git rev-parse origin/master`** → **`7a2c2bd59b2cfb6cbc6a55ac407993494b17256f`**; **`git rev-parse origin/development`** → **`309a2e87f3210aca200514eb1d048b06d57c9eb2`**. **`git merge-base --is-ancestor origin/master origin/development`** exits **0** (**`master`** tip is contained in **`development`** history).
+   - **GitHub Actions Deploy to amvara9:** **FAIL** — **`gh run list --workflow "Deploy to amvara9" --branch master --limit 5`** shows **`24773000757`** (push **2026-04-22T10:18:20Z**) as the **latest** **`master`** deploy, **`completed`**, **`failure`**. **`gh run view 24773000757 --json`** → **`conclusion":"failure"`**, **`updatedAt":"2026-04-22T10:18:30Z`**. No newer green **`master`** deploy after that push.
+   - **Optional live check after green deploy:** **N/A** — pipeline for the promoted **`master`** push did not succeed; **`curl -sS https://satisfecho.de/api/health`** → **HTTP 200**, **`{"status":"ok"}`** (existing production only).
+
+5. **Overall:** **FAIL** — **`Deploy to amvara9`** for the **`master`** promotion is still **not green**; success criteria require a passing workflow through marketing artifacts, SSH, build, and smoke.
+
+6. **Product owner feedback:** **`MARKETING_ARTIFACT_TOKEN`** / **`GH_TOKEN`** (or equivalent) must be set in Actions with **Actions read** on every repo in **`config/marketing-sites.json`**, then **re-run failed jobs** or trigger a fresh **`master`** deploy; return task to **UNTESTED** when ready for another verification pass.
+
+7. **URLs tested:**
+   1. `https://github.com/satisfecho/pos/actions/runs/24773000757` — failed **`Deploy to amvara9`** run (latest **`master`** deploy).
+   2. `https://satisfecho.de/api/health` — **200**, **`{"status":"ok"}`**.
+
+8. **Relevant log excerpts:**
+
+```
+gh run list --workflow "Deploy to amvara9" --branch master --limit 3
+24773000757  failure  ...  master  push  2026-04-22T10:18:20Z
+
+gh run view 24773000757 --json conclusion,status
+{"conclusion":"failure","status":"completed"}
+```
