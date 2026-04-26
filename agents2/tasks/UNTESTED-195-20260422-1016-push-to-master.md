@@ -200,3 +200,46 @@ Follow repo branching rules: routine promotion timing vs urgent production fixes
 8. **Relevant log excerpts (last section)**  
    - `gh run view 24773000757 --json url,conclusion,displayTitle` (2026-04-26T16:50Z): **`conclusion: failure`**, `url` as in §7.1.  
    - Step-level failure text unchanged from prior reports; re-fetch with `gh run view 24773000757 --log-failed` if full CI logs are needed (marketing token empty / placeholder slugs).
+
+## Test report (2026-04-26, tester)
+
+1. **Date/time (UTC) and log window**  
+   - **Window:** 2026-04-26T17:05Z–17:06Z.  
+   - **Commands:** `git` / `gh` / `curl` on host at `/Users/raro42/projects/pos2` (not `docker logs` — not required by Testing instructions).
+
+2. **Environment**  
+   - **Branch:** `development` after `./scripts/git-sync-development.sh` (fetched; up to date with `origin/development` before this step).  
+   - **Remotes (after `git fetch origin`):** `origin/master` = `7a2c2bd59b2cfb6cbc6a55ac407993494b17256f`, `origin/development` = `75e2499620faa4b09293a11d27e2d2cd20247add`.  
+   - **Compose / local app:** N/A.  
+   - **Evidence:** `gh` to `satisfecho/pos` Actions.
+
+3. **What was tested (from “Testing instructions”)**  
+   - (1) `git rev-parse origin/master origin/development` and ancestor check.  
+   - (2) **Deploy to amvara9** — latest workflow run for **`master`**; status of **24773000757** and any newer run.  
+   - (3) Optional after **green** — N/A (no green **master** deploy).  
+   - (4) Manual server deploy — N/A (not run).
+
+4. **Results**
+
+   | Criterion | Result | Evidence line |
+   |---|---|---|
+   | 1. Git: `origin/master` / `origin/development` and lineage | **PASS** | SHAs above; `git merge-base --is-ancestor origin/master origin/development` → exit **0** (promoted **master** tip is an ancestor of **development**). |
+   | 2. GitHub Actions: **green** for latest **`master`** **Deploy to amvara9** | **FAIL** | `gh run list --repo satisfecho/pos --workflow "Deploy to amvara9" --branch master --limit 8` — most recent is still **24773000757** (2026-04-22T10:18:20Z) with **conclusion: failure**. `gh run view 24773000757 --json conclusion` → **`"failure"`**. No newer **success** on `master` supersedes this in the listed runs. |
+   | 3. Optional after green | **N/A** | Not applicable until (2) passes. |
+   | 4. Manual fallback | **N/A** | Not run. |
+   | Sanity (HTTP) | **INFO** | `curl` — `https://satisfecho.de/api/health` **200**, `https://satisfecho.de/` **200**; does not prove a green deploy pipeline. |
+
+5. **Overall: FAIL**  
+   - Criterion **2** fails: the **Deploy to amvara9** run for the **`master`**-line check remains **24773000757** with **failure** (unchanged: marketing token / placeholder bundles; downstream deploy/smoke not completed). Criterion **1** passes. **Not loop protection** (single check; no change in latest `master` deploy list vs prior WIP/UNTESTED state). **Next:** configure **Actions secrets** per task (`MARKETING_ARTIFACT_TOKEN` / `GH_TOKEN` / PAT scope on repos in `config/marketing-sites.json`), re-run the workflow or trigger a new **`master`** push deploy; return task to **UNTESTED-** when ready for re-verification.
+
+6. **Product owner feedback**  
+   `origin/master` is correctly behind **development** with a valid ancestry (promotion line intact), but the latest **`master`** **Deploy to amvara9** in GitHub is still the same failed run from 22 Apr; the issue’s bar for a **successful** deploy workflow is not met. **Public health/homepage 200s** are informative only; they do not replace a green **Deploy to amvara9** run.
+
+7. **URLs tested (numbered list)**  
+   1. `https://github.com/satisfecho/pos/actions/runs/24773000757` (run `conclusion: failure`, `updatedAt` 2026-04-22T10:18:30Z)  
+   2. `https://satisfecho.de/api/health` (200)  
+   3. `https://satisfecho.de/` (200)
+
+8. **Relevant log excerpts (last section)**  
+   - `gh run view 24773000757 --json conclusion,url,updatedAt` (2026-04-26T17:05Z): **`"conclusion":"failure"`**, `url` **https://github.com/satisfecho/pos/actions/runs/24773000757**.  
+   - Step-level logs: unchanged from prior reports; use `gh run view 24773000757 --log-failed` for **Fetch marketing site artifacts** (empty token / placeholder slugs) if needed.
