@@ -96,19 +96,33 @@ import {
             <p class="social-card-desc">{{ 'SETTINGS.SOCIAL_POSTS_SECTION_COMPOSE_DESC' | translate }}</p>
           </header>
 
-          <div class="compose-grid">
-            <div class="form-group">
-              <label for="social-posts-file">{{ 'SETTINGS.SOCIAL_POSTS_IMAGE' | translate }}</label>
-              <input
-                #composeFileInput
-                id="social-posts-file"
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                (change)="onFile($event)"
-              />
-              <p class="hint" id="social-posts-image-hint">{{ 'SETTINGS.SOCIAL_POSTS_IMAGE_HINT' | translate }}</p>
+          <div class="form-group">
+            <span class="social-image-field-label">{{ 'SETTINGS.SOCIAL_POSTS_IMAGE' | translate }}</span>
+            <input
+              #composeFileInput
+              id="social-posts-file"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              (change)="onFile($event)"
+              style="display: none"
+            />
+            <div class="image-upload-row social-compose-upload-row">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                (click)="composeFileInput.click()"
+                [attr.aria-describedby]="'social-posts-image-hint'"
+              >
+                {{
+                  selectedFile
+                    ? ('SETTINGS.SOCIAL_POSTS_CHANGE_IMAGE' | translate)
+                    : ('SETTINGS.SOCIAL_POSTS_SELECT_IMAGE' | translate)
+                }}
+              </button>
+              @if (selectedFile) {
+                <span class="pending-file-name">{{ selectedFile.name }}</span>
+              }
             </div>
-
             @if (previewUrl()) {
               <div class="image-preview" data-testid="social-posts-image-preview">
                 <img
@@ -124,6 +138,7 @@ import {
                 </button>
               </div>
             }
+            <p class="hint" id="social-posts-image-hint">{{ 'SETTINGS.SOCIAL_POSTS_IMAGE_HINT' | translate }}</p>
           </div>
 
           <div class="form-group">
@@ -160,22 +175,27 @@ import {
             </div>
           </fieldset>
 
-          <div class="form-group schedule-block">
-            <label class="chk publish-now-row">
-              <input type="checkbox" [(ngModel)]="publishNow" name="pubNow" />
-              <span>{{ 'SETTINGS.SOCIAL_POSTS_PUBLISH_NOW' | translate }}</span>
-            </label>
+          <div class="schedule-block">
+            <div class="publish-now-inline">
+              <input
+                type="checkbox"
+                id="social-posts-publish-now"
+                [(ngModel)]="publishNow"
+                name="pubNow"
+              />
+              <label for="social-posts-publish-now">{{ 'SETTINGS.SOCIAL_POSTS_PUBLISH_NOW' | translate }}</label>
+            </div>
             @if (!publishNow) {
-              <label class="schedule-label" for="social-posts-schedule">
-                <span>{{ 'SETTINGS.SOCIAL_POSTS_SCHEDULE_AT' | translate }}</span>
+              <div class="form-group schedule-datetime-field">
+                <label for="social-posts-schedule">{{ 'SETTINGS.SOCIAL_POSTS_SCHEDULE_AT' | translate }}</label>
                 <input
                   id="social-posts-schedule"
                   type="datetime-local"
                   [(ngModel)]="scheduleLocal"
                   name="schedLoc"
                 />
-              </label>
-              <p class="hint" id="social-posts-schedule-hint">{{ 'SETTINGS.SOCIAL_POSTS_SCHEDULE_HINT' | translate }}</p>
+                <p class="hint" id="social-posts-schedule-hint">{{ 'SETTINGS.SOCIAL_POSTS_SCHEDULE_HINT' | translate }}</p>
+              </div>
             }
           </div>
 
@@ -318,21 +338,16 @@ import {
         justify-content: flex-end;
       }
 
-      .compose-grid {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-4);
+      .social-image-field-label {
+        display: block;
         margin-bottom: var(--space-2);
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--color-text);
       }
-      @media (min-width: 640px) {
-        .compose-grid {
-          flex-direction: row;
-          align-items: flex-start;
-        }
-        .compose-grid .form-group {
-          flex: 1;
-          min-width: 0;
-        }
+
+      .social-compose-upload-row {
+        margin-bottom: var(--space-2);
       }
 
       .caption-area {
@@ -395,26 +410,36 @@ import {
         opacity: 0.65;
       }
 
-      .publish-now-row {
-        display: flex;
-        align-items: flex-start;
-        gap: var(--space-2);
-        font-weight: 500;
-        cursor: pointer;
-        margin-bottom: var(--space-3);
-      }
-      .publish-now-row input {
-        margin-top: 0.2rem;
+      .schedule-block {
+        margin-bottom: var(--space-4);
       }
 
-      .schedule-block .schedule-label {
+      .publish-now-inline {
         display: flex;
-        flex-direction: column;
+        align-items: center;
         gap: var(--space-2);
+        margin-bottom: var(--space-3);
       }
-      .schedule-label span {
+
+      .publish-now-inline input[type='checkbox'] {
+        width: auto;
+        min-height: unset;
+        margin: 0;
+        padding: 0;
+        flex-shrink: 0;
+        cursor: pointer;
+      }
+
+      .publish-now-inline label {
+        margin: 0;
         font-size: 0.875rem;
-        font-weight: 500;
+        font-weight: 400;
+        color: var(--color-text);
+        cursor: pointer;
+      }
+
+      .schedule-datetime-field {
+        margin-bottom: 0;
       }
 
       .form-actions {

@@ -1341,6 +1341,8 @@
     "SOCIAL_POSTS_IG_NOT_LINKED": "No hay cuenta de Instagram Business vinculada a la página (solo publicación en la página de Facebook).",
     "SOCIAL_POSTS_COMPOSE": "Redactar publicación",
     "SOCIAL_POSTS_IMAGE": "Imagen",
+    "SOCIAL_POSTS_SELECT_IMAGE": "Elegir imagen",
+    "SOCIAL_POSTS_CHANGE_IMAGE": "Cambiar imagen",
     "SOCIAL_POSTS_CAPTION": "Pie de foto",
     "SOCIAL_POSTS_CH_PAGE": "Página de Facebook",
     "SOCIAL_POSTS_CH_IG": "Instagram Business",

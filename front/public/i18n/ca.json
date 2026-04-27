@@ -1330,6 +1330,8 @@
     "SOCIAL_POSTS_IG_NOT_LINKED": "No Instagram Business account linked to the Page (only Facebook Page posting available).",
     "SOCIAL_POSTS_COMPOSE": "Compose post",
     "SOCIAL_POSTS_IMAGE": "Image",
+    "SOCIAL_POSTS_SELECT_IMAGE": "Triar imatge",
+    "SOCIAL_POSTS_CHANGE_IMAGE": "Canviar imatge",
     "SOCIAL_POSTS_CAPTION": "Caption",
     "SOCIAL_POSTS_CH_PAGE": "Facebook Page",
     "SOCIAL_POSTS_CH_IG": "Instagram Business",

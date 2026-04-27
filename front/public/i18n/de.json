@@ -1396,6 +1396,8 @@
     "SOCIAL_POSTS_IG_NOT_LINKED": "Kein Instagram-Business-Konto mit der Seite verknüpft (nur Posting auf die Facebook-Seite möglich).",
     "SOCIAL_POSTS_COMPOSE": "Beitrag erstellen",
     "SOCIAL_POSTS_IMAGE": "Bild",
+    "SOCIAL_POSTS_SELECT_IMAGE": "Bild wählen",
+    "SOCIAL_POSTS_CHANGE_IMAGE": "Bild ändern",
     "SOCIAL_POSTS_CAPTION": "Text",
     "SOCIAL_POSTS_CH_PAGE": "Facebook-Seite",
     "SOCIAL_POSTS_CH_IG": "Instagram Business",
