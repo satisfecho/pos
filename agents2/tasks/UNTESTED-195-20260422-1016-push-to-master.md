@@ -3881,6 +3881,47 @@ Follow repo branching rules: routine promotion timing vs urgent production fixes
    - **`gh run view 24773000757 --json conclusion,updatedAt`:** **`"conclusion":"failure"`**, **`"updatedAt":"2026-04-22T10:18:30Z"`**.  
    - **`git rev-parse`:** **`7a2c2bd…`** then **`bccbdf2…`**.
 
+## Test report (2026-04-28, tester)
+
+1. **Date/time (UTC) and log window**  
+   - **Window:** 2026-04-28T12:05Z–12:08Z (host: `git`, `gh`, `curl` from `/Users/raro42/projects/pos2`; not `docker logs` — not required by Testing instructions).
+
+2. **Environment**  
+   - **Compose / local app:** N/A.  
+   - **Branch:** `development` after `./scripts/git-sync-development.sh` (**Already up to date** with **`origin/development`**).  
+   - **Remotes (after `git fetch origin`):** `origin/master` = **`7a2c2bd59b2cfb6cbc6a55ac407993494b17256f`**, `origin/development` = **`6517d4f8996557f166ac1075cb420f4f365ab569`**.
+
+3. **What was tested (from Testing instructions)**  
+   - (1) `git rev-parse origin/master origin/development`; `git merge-base --is-ancestor origin/master origin/development`.  
+   - (2) **Deploy to amvara9** — `gh run list --workflow "Deploy to amvara9" --branch master --limit 8`; `gh run view 24773000757 --json conclusion,updatedAt`.  
+   - (3) Optional prod check after **green** — **N/A** (no green **`master`** deploy).  
+   - (4) Manual **`scripts/deploy-amvara9.sh`** — **N/A** (not run).
+
+4. **Results**
+
+   | Criterion | Result | Evidence line |
+   |---|---|---|
+   | 1. Git: refs / lineage | **PASS** | SHAs above; `git merge-base --is-ancestor origin/master origin/development` → exit **0**. |
+   | 2. GitHub Actions: **green** latest **`master`** **Deploy to amvara9** | **FAIL** | **`gh run list`** → newest **`master`** deploy is **`24773000757`** (**2026-04-22T10:18:20Z**, **failure**). **`gh run view 24773000757 --json conclusion`** → **`failure`**. No newer **`master`** **success** in the listed window (previous success remains **24708658534** / **2026-04-21**). |
+   | 3. Optional after **green** | **N/A** | Blocked until (2) passes. |
+   | 4. Manual fallback | **N/A** | Not run. |
+   | Sanity (HTTP) | **INFO** | **`curl`** → `https://satisfecho.de/api/health` **200**, **`/`** **200**; does not prove CI deploy success. |
+
+5. **Overall:** **FAIL** — criterion **2** not satisfied (**Deploy to amvara9** for latest **`master`** scope still **`24773000757`** **failure**). Criterion **1** **PASS**. **Loop protection:** repeated verification shows the same blocker (no post-**24773000757** **green** **`master`** deploy); stop cycling until **`MARKETING_ARTIFACT_TOKEN` / `GH_TOKEN`** is fixed and a **green** run exists or ops documents manual deploy parity.
+
+6. **Product owner feedback**  
+   **`origin/master`** remains an ancestor of **`origin/development`**, but GitHub still shows the April 22 **`master`** deploy run as **failed**, so issue **#195**’s “deployment action succeeded” check is **not** met. Public URLs returning **200** does not substitute for a **green** workflow.
+
+7. **URLs tested**  
+   1. **`https://github.com/satisfecho/pos/actions/runs/24773000757`**  
+   2. **`https://satisfecho.de/api/health`** — **200**  
+   3. **`https://satisfecho.de/`** — **200**
+
+8. **Relevant log excerpts (last section)**  
+   - **`gh run list --workflow "Deploy to amvara9" --branch master --limit 8`:** first row **`24773000757`**, **`failure`**, **`2026-04-22T10:18:20Z`**.  
+   - **`gh run view 24773000757 --json conclusion`:** **`"conclusion":"failure"`**, **`"updatedAt":"2026-04-22T10:18:30Z"`**.  
+   - **`git rev-parse`:** **`7a2c2bd59b2cfb6cbc6a55ac407993494b17256f`** then **`6517d4f8996557f166ac1075cb420f4f365ab569`**.
+
 ## Testing instructions
 
 (Required for **UNTESTED-** handoff: keep this as the last section. Historical test reports and duplicate blocks appear above; follow these four steps for the next verification run.)
