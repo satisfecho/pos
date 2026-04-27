@@ -74,13 +74,8 @@ def create_order_from_delivery_payload(
     for row in lines:
         pid = int(row["product_id"])
         qty = int(row["quantity"])
-        product = session.exec(
-            select(models.Product).where(
-                models.Product.id == pid,
-                models.Product.tenant_id == tenant_id,
-            )
-        ).first()
-        if not product:
+        product = session.get(models.Product, pid)
+        if not product or product.tenant_id != tenant_id:
             return None, {"status": "error", "detail": f"product_not_found:{pid}"}
         resolved_lines.append((product, max(1, qty)))
 
