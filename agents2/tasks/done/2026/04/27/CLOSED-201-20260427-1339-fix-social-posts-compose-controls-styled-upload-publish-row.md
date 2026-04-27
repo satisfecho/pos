@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub issue #201 requested restyling the Settings → Marketing → Social posts composer: hidden native file picker, styled image upload with preview, and a normal inline “Publish immediately” row instead of an oversized checkbox and highlighted strip.
+- **What was done:** Implementation aligned the compose UI with other settings forms (hidden `#social-posts-file`, button + filename + dashed preview, Remove/Change flow) and flattened publish-immediately into `.publish-now-inline` with standard checkbox sizing and no decorative border strip; Connected networks (Meta) section left intact.
+- **What was tested:** Tester ran the full Testing instructions on Docker dev (port 4202): navigation, DE locale upload flow, DOM/computed styles for publish row, Meta card sanity, and `pos-front` bundle logs — **overall PASS**.
+- **Why closed:** Test report **PASS**; criteria in the task satisfied; no further rework requested.
+- **Closed at (UTC):** 2026-04-27 13:46
+---
+
 # Fix Social posts compose controls: styled file upload + “Publish immediately” row
 
 ## GitHub Issues
