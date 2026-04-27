@@ -38,6 +38,8 @@
     flex-direction: column;
     gap: 1px;
     align-items: flex-start;
+    min-width: 0;
+    flex: 1;
 }
 
 .logo {
@@ -45,6 +47,11 @@
     font-weight: 700;
     color: var(--color-primary);
     line-height: 1.2;
+    display: block;
+    max-width: min(150px, 100%);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .version {
@@ -239,6 +246,7 @@
     align-items: center;
     gap: var(--space-3);
     z-index: 99;
+    min-width: 0;
 }
 
 .menu-toggle {
@@ -266,6 +274,11 @@
 .header-title {
     font-weight: 700;
     color: var(--color-primary);
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .overlay {

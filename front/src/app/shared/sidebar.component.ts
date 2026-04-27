@@ -21,13 +21,25 @@ import { StaffLayoutService } from '../services/staff-layout.service';
           <span></span>
           <span></span>
         </button>
-        <span class="header-title">POS</span>
+        <span class="header-title" [attr.title]="brandTitle()" [attr.aria-label]="brandTitle()">
+          @if (tenantOrgName()) {
+            POS ({{ tenantOrgName() }})
+          } @else {
+            POS
+          }
+        </span>
       </header>
 
       <aside class="sidebar">
         <div class="sidebar-header">
           <div class="logo-container">
-            <span class="logo">POS</span>
+            <span class="logo" [attr.title]="brandTitle()" [attr.aria-label]="brandTitle()">
+              @if (tenantOrgName()) {
+                POS ({{ tenantOrgName() }})
+              } @else {
+                POS
+              }
+            </span>
             <span class="version">{{ version }} <span class="commit-hash">{{ commitHash }}</span></span>
           </div>
           <button class="close-btn" (click)="closeSidebar()">
@@ -280,6 +292,15 @@ export class SidebarComponent implements OnInit {
   canViewMyShift = computed(() => {
     const u = this.user();
     return !!u && u.tenant_id != null && String(u.role).toLowerCase() !== 'provider';
+  });
+
+  /** Organization display name from tenant settings (Sidebar loads settings via ensureTenantUiModulesLoaded). */
+  tenantOrgName = computed(() => this.api.tenantDisplayName()?.trim() ?? '');
+
+  /** Full branding string for tooltip / a11y when the visible label may be truncated. */
+  brandTitle = computed(() => {
+    const org = this.tenantOrgName();
+    return org ? `POS (${org})` : 'POS';
   });
 
   ngOnInit() {

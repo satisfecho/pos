@@ -1291,6 +1291,8 @@ export class ApiService {
   private tenantUiModulesResolved = signal(false);
   /** Effective flags after GET /tenant/settings (defaults all true). */
   tenantUiModules = signal<Record<TenantUiModuleKey, boolean>>({ ...DEFAULT_TENANT_UI_MODULES });
+  /** Tenant `name` from settings (staff sidebar branding); cleared on logout. */
+  tenantDisplayName = signal<string | null>(null);
 
   private orderUpdates = new Subject<any>();
   private reservationUpdates = new Subject<any>();
@@ -1433,6 +1435,7 @@ export class ApiService {
     this.userSubject.next(null);
     this.tenantUiModulesResolved.set(false);
     this.tenantUiModules.set({ ...DEFAULT_TENANT_UI_MODULES });
+    this.tenantDisplayName.set(null);
     this.disconnectWebSocket();
     return this.http.post(`${this.apiUrl}/logout`, {}).pipe(
       catchError(() => of(undefined))
@@ -2253,13 +2256,24 @@ export class ApiService {
 
   // Tenant Settings
   getTenantSettings(): Observable<TenantSettings> {
-    return this.http
-      .get<TenantSettings>(`${this.apiUrl}/tenant/settings`)
-      .pipe(tap((s) => this.applyTenantUiModulesFromSettings(s)));
+    return this.http.get<TenantSettings>(`${this.apiUrl}/tenant/settings`).pipe(
+      tap((s) => {
+        this.applyTenantUiModulesFromSettings(s);
+        const n = typeof s?.name === 'string' ? s.name.trim() : '';
+        this.tenantDisplayName.set(n || null);
+      })
+    );
   }
 
   updateTenantSettings(settings: Partial<TenantSettings>): Observable<TenantSettings> {
-    return this.http.put<TenantSettings>(`${this.apiUrl}/tenant/settings`, settings);
+    return this.http.put<TenantSettings>(`${this.apiUrl}/tenant/settings`, settings).pipe(
+      tap((s) => {
+        if (typeof s?.name === 'string') {
+          const n = s.name.trim();
+          this.tenantDisplayName.set(n || null);
+        }
+      })
+    );
   }
 
   getOpeningHoursSchedule(): Observable<OpeningHoursScheduleResponse> {
