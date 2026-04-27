@@ -16,6 +16,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- **Settings / marketing — social posts (admin):** **Social posts** tab — compose **image + caption**, **Meta OAuth** (tokens encrypted server-side), **Facebook Page** and **Instagram Business** channels (IG needs **`PUBLIC_APP_BASE_URL`** for Graph image URL), **publish now / schedule**, **history** with per-channel status; background worker publishes due posts (#199).
 - **Settings / delivery marketplaces (admin):** **Integrations** tab for third-party delivery brands; per-tenant **encrypted** API credentials, **test connection** (stub adapters for Uber Eats, Glovo, Deliveroo + sandbox), **catalog mapping** (external item id → POS product), **event log**, and **webhook ingest** URL. Ingested orders use the same **Order** / kitchen flow (no `table_id`); list as **Delivery** in the orders UI (#198).
 
 ### Changed

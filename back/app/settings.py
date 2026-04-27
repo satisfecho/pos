@@ -119,6 +119,16 @@ class Settings(BaseSettings):
         validation_alias="PASSWORD_RESET_TOKEN_EXPIRE_MINUTES",
     )
 
+    # Meta (Facebook / Instagram marketing OAuth + Graph API)
+    meta_app_id: str = Field(default="", validation_alias="META_APP_ID")
+    meta_app_secret: str = Field(default="", validation_alias="META_APP_SECRET")
+    meta_graph_version: str = Field(default="v21.0", validation_alias="META_GRAPH_VERSION")
+    meta_oauth_redirect_uri: str = Field(
+        default="",
+        validation_alias="META_OAUTH_REDIRECT_URI",
+        description="Optional full OAuth redirect URL; if empty, derived from PUBLIC_APP_BASE_URL + ROOT_PATH.",
+    )
+
     # Production mode (enables secure cookies, stricter CORS, etc.)
     is_production: bool = Field(default=False, validation_alias="PRODUCTION")
 

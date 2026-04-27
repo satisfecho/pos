@@ -1682,3 +1682,68 @@ class DeliveryCatalogMappingWrite(SQLModel):
     external_item_id: str = Field(max_length=256)
     product_id: int | None = None
     notes: str | None = None
+
+
+# ============ SOCIAL MARKETING (OAuth + scheduled posts) ============
+
+
+class SocialOauthState(SQLModel, table=True):
+    """Short-lived CSRF/state row for OAuth redirect flows."""
+
+    __tablename__ = "social_oauth_state"
+
+    state: str = Field(primary_key=True, max_length=64)
+    tenant_id: int = Field(foreign_key="tenant.id", index=True)
+    user_id: int = Field(foreign_key="user.id", index=True)
+    provider_key: str = Field(max_length=32)
+    redirect_uri: str = Field(default="", sa_column=Column(Text, nullable=False))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class SocialConnection(SQLModel, table=True):
+    """Per-tenant provider connection (tokens encrypted at rest)."""
+
+    __tablename__ = "social_connection"
+
+    id: int | None = Field(default=None, primary_key=True)
+    tenant_id: int = Field(foreign_key="tenant.id", index=True)
+    provider_key: str = Field(max_length=32, index=True)
+    connection_status: str = Field(default="disconnected", max_length=32)
+    oauth_payload_encrypted: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    meta_page_id: str | None = Field(default=None, max_length=64)
+    meta_page_name: str | None = Field(default=None, max_length=512)
+    instagram_account_id: str | None = Field(default=None, max_length=64)
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class SocialPost(SQLModel, table=True):
+    """Composed marketing post (image + caption) with schedule time."""
+
+    __tablename__ = "social_post"
+
+    id: int | None = Field(default=None, primary_key=True)
+    tenant_id: int = Field(foreign_key="tenant.id", index=True)
+    caption: str = Field(default="", sa_column=Column(Text, nullable=False))
+    image_filename: str = Field(max_length=256)
+    schedule_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+    status: str = Field(default="queued", max_length=32)
+    error_message: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    created_by_user_id: int | None = Field(default=None, foreign_key="user.id")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class SocialPostTarget(SQLModel, table=True):
+    """One row per outbound channel (Meta Page, Instagram Business, …)."""
+
+    __tablename__ = "social_post_target"
+
+    id: int | None = Field(default=None, primary_key=True)
+    social_post_id: int = Field(foreign_key="social_post.id", index=True)
+    channel_key: str = Field(max_length=64)
+    status: str = Field(default="pending", max_length=32)
+    external_id: str | None = Field(default=None, max_length=256)
+    error_message: str | None = Field(default=None, sa_column=Column(Text, nullable=True))

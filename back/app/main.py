@@ -46,6 +46,7 @@ from .delivery_integration_routes import (
     router as delivery_integration_router,
     public_router as delivery_public_router,
 )
+from .social_routes import router as social_router
 from .work_session_serialization import serialize_work_session, work_session_net_duration_minutes
 from .clock_qr_util import (
     clock_qr_tokens_equal,
@@ -274,7 +275,27 @@ async def _app_lifespan(app: FastAPI):
     app.state.reservation_reminder_task = heartbeat_task
     logger.info("Reservation reminder heartbeat started (runs every 5 minutes)")
 
+    from .social_publish_worker import social_publish_worker_loop
+
+    stop_social = asyncio.Event()
+    social_task = asyncio.create_task(social_publish_worker_loop(stop=stop_social))
+    app.state.social_publish_stop = stop_social
+    app.state.social_publish_task = social_task
+    logger.info("Social publish worker started")
+
     yield
+
+    stop_soc = getattr(app.state, "social_publish_stop", None)
+    task_soc = getattr(app.state, "social_publish_task", None)
+    if stop_soc:
+        stop_soc.set()
+    if task_soc and not task_soc.done():
+        task_soc.cancel()
+        try:
+            await task_soc
+        except asyncio.CancelledError:
+            pass
+    logger.info("Social publish worker stopped")
 
     stop = getattr(app.state, "reservation_reminder_stop", None)
     task = getattr(app.state, "reservation_reminder_task", None)
@@ -453,6 +474,7 @@ app.include_router(tenant_lifecycle_router, prefix="/tenant", tags=["Tenant life
 app.include_router(staff_contract_router, prefix="/staff-contracts", tags=["Staff contracts"])
 app.include_router(delivery_integration_router, prefix="/tenant", tags=["Delivery integrations"])
 app.include_router(delivery_public_router, tags=["Delivery integrations"])
+app.include_router(social_router, prefix="/tenant", tags=["Marketing — social"])
 app.include_router(
     staff_contract_template_router,
     prefix="/staff-contract-templates",

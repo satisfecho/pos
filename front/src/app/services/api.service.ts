@@ -719,6 +719,43 @@ export interface DeliveryIntegrationEventRow {
   created_at: string | null;
 }
 
+/** Marketing — Meta / future networks (Settings → Social posts) */
+export interface SocialChannelInfo {
+  key: string;
+  label: string;
+}
+
+export interface SocialCatalogRow {
+  provider_key: string;
+  display_name: string;
+  channels: SocialChannelInfo[];
+}
+
+export interface SocialConnectionPublic {
+  provider_key: string;
+  connection_status: string;
+  meta_page_name: string | null;
+  instagram_configured: boolean;
+}
+
+export interface SocialPostTargetPublic {
+  channel_key: string;
+  status: string;
+  external_id: string | null;
+  error_message: string | null;
+}
+
+export interface SocialPostPublic {
+  id: number;
+  caption: string;
+  image_url: string;
+  schedule_at: string;
+  status: string;
+  error_message: string | null;
+  created_at: string;
+  targets: SocialPostTargetPublic[];
+}
+
 /** Product customization question (e.g. meat doneness, spice 1–10, multi toppings) */
 export interface ProductQuestion {
   id: number;
@@ -2418,6 +2455,51 @@ export class ApiService {
       `${this.apiUrl}/tenant/delivery-integrations/${integrationId}/events`,
       { params: { limit: String(limit) } }
     );
+  }
+
+  getSocialCatalog(): Observable<SocialCatalogRow[]> {
+    return this.http.get<SocialCatalogRow[]>(`${this.apiUrl}/tenant/social/catalog`);
+  }
+
+  getSocialConnections(): Observable<SocialConnectionPublic[]> {
+    return this.http.get<SocialConnectionPublic[]>(`${this.apiUrl}/tenant/social/connections`);
+  }
+
+  postSocialMetaAuthorizeUrl(): Observable<{ authorize_url: string }> {
+    return this.http.post<{ authorize_url: string }>(
+      `${this.apiUrl}/tenant/social/oauth/meta/authorize-url`,
+      {}
+    );
+  }
+
+  disconnectSocialProvider(providerKey: string): Observable<{ ok: boolean }> {
+    return this.http.delete<{ ok: boolean }>(
+      `${this.apiUrl}/tenant/social/connections/${encodeURIComponent(providerKey)}`
+    );
+  }
+
+  getSocialPosts(limit = 50): Observable<SocialPostPublic[]> {
+    return this.http.get<SocialPostPublic[]>(`${this.apiUrl}/tenant/social/posts`, {
+      params: { limit: String(limit) },
+    });
+  }
+
+  createSocialPost(opts: {
+    caption: string;
+    channels: string[];
+    publishNow: boolean;
+    scheduleAtIso?: string;
+    image: File;
+  }): Observable<SocialPostPublic> {
+    const fd = new FormData();
+    fd.append('caption', opts.caption);
+    fd.append('channels_json', JSON.stringify(opts.channels));
+    fd.append('publish_now', opts.publishNow ? 'true' : 'false');
+    if (opts.scheduleAtIso) {
+      fd.append('schedule_at_iso', opts.scheduleAtIso);
+    }
+    fd.append('image', opts.image, opts.image.name);
+    return this.http.post<SocialPostPublic>(`${this.apiUrl}/tenant/social/posts`, fd);
   }
 
   getKitchenDisplaySettings(): Observable<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }> {
