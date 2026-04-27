@@ -48,6 +48,16 @@
     color: var(--color-primary);
     line-height: 1.2;
     display: block;
+}
+
+.sidebar-org-name {
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    display: block;
+    margin-top: 2px;
     max-width: min(150px, 100%);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -271,11 +281,28 @@
     }
 }
 
-.header-title {
-    font-weight: 700;
-    color: var(--color-primary);
+.mobile-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
     min-width: 0;
     flex: 1;
+    line-height: 1.15;
+}
+
+.header-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--color-primary);
+    min-width: 0;
+}
+
+.header-org-name {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

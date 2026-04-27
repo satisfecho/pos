@@ -21,26 +21,26 @@ import { StaffLayoutService } from '../services/staff-layout.service';
           <span></span>
           <span></span>
         </button>
-        <span class="header-title" [attr.title]="brandTitle()" [attr.aria-label]="brandTitle()">
+        <div class="mobile-brand" [attr.title]="brandTitle()" [attr.aria-label]="brandTitle()">
+          <span class="header-title">POS</span>
           @if (tenantOrgName()) {
-            POS ({{ tenantOrgName() }})
-          } @else {
-            POS
+            <span class="header-org-name" [attr.title]="tenantOrgName()!" [attr.aria-label]="tenantOrgName()!">{{
+              tenantOrgName()
+            }}</span>
           }
-        </span>
+        </div>
       </header>
 
       <aside class="sidebar">
         <div class="sidebar-header">
-          <div class="logo-container">
-            <span class="logo" [attr.title]="brandTitle()" [attr.aria-label]="brandTitle()">
-              @if (tenantOrgName()) {
-                POS ({{ tenantOrgName() }})
-              } @else {
-                POS
-              }
-            </span>
+          <div class="logo-container" [attr.title]="brandTitle()" [attr.aria-label]="brandTitle()">
+            <span class="logo">POS</span>
             <span class="version">{{ version }} <span class="commit-hash">{{ commitHash }}</span></span>
+            @if (tenantOrgName()) {
+              <span class="sidebar-org-name" [attr.title]="tenantOrgName()!" [attr.aria-label]="tenantOrgName()!">{{
+                tenantOrgName()
+              }}</span>
+            }
           </div>
           <button class="close-btn" (click)="closeSidebar()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
