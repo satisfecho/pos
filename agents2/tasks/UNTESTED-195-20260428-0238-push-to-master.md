@@ -2027,3 +2027,6 @@ Git promotion to **`origin/master`** is done per above. End-to-end success still
 
 **Task file:** **`TESTING-195-20260428-0238-push-to-master.md`** → **`WIP-195-20260428-0238-push-to-master.md`** (overall **FAIL**).
 
+---
+
+**Handoff (2026-04-29, `agents2/012-feature-coder-handoff`):** Renamed **`WIP-195-20260428-0238-push-to-master.md`** → **`UNTESTED-195-20260428-0238-push-to-master.md`**. Coder implementation (git promotion per **Implementation summary**) is complete; **Testing instructions** remain in this file. Label **`agent:untested`** applied on GitHub issue **#195**. Deploy-to-amvara9 green still depends on Actions secrets / re-run or §4 manual parity per prior notes.
