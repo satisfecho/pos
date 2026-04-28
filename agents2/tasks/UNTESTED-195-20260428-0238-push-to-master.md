@@ -37,25 +37,3 @@ Git promotion to **`origin/master`** is done per above. End-to-end success still
 3. **Optional live check:** After a **green** deploy, verify **`https://satisfecho.de/`** (or documented prod URL) and API health per **`docs/0001-ci-cd-amvara9.md`** / smoke step output.
 
 4. **Manual fallback:** If CI cannot be fixed immediately, an operator may run **`scripts/deploy-amvara9.sh`** on the server per **`README.md`** / **`AGENTS.md`** (marketing bundles may still be required for full parity with CI).
-
-## Test report
-
-1. **Date/time (UTC) and log window:** Started **2026-04-28T05:07:40Z**; evidence gathered same window (no long-running local services).
-
-2. **Environment:** Host git against **`origin`** after **`git fetch origin`**; **`development`** branch checked via **`./scripts/git-sync-development.sh`** before edits. No local **`docker compose`** run required by testing instructions for this task (verification is git + GitHub Actions). **`BASE_URL`** not used for mandatory criteria.
-
-3. **What was tested:** Items 1–2 from **Testing instructions** (git tips / ancestor check; **Deploy to amvara9** latest **`master`** run). Item 3 skipped because deploy is not green. Item 4 not executed (no manual server deploy in this verification).
-
-4. **Results:**
-   - **Criterion 1 (Git remotes):** **PASS** — `git rev-parse origin/master origin/development` → **`7a2c2bd59b2cfb6cbc6a55ac407993494b17256f`** (master), **`aac733f5a9fccbbf42302b6dae995935cbdeaa29`** (development). `git merge-base --is-ancestor origin/master origin/development` exit **0** (master is ancestor of development; development has advanced since promotion tip **7a2c2bd**, consistent with ongoing work).
-   - **Criterion 2 (GitHub Actions — green Deploy to amvara9 on master):** **FAIL** — Latest **`master`** workflow run for **Deploy to amvara9** is still **`24773000757`** (conclusion **failure**). Job **deploy** failed at step **Fetch marketing site artifacts (curl + GitHub API)**; downstream steps (**Set up SSH**, **Build and restart stack on amvara9**, **Smoke test**) were **skipped**. No newer successful **`master`** run appeared in **`gh run list`** (workflow **Deploy to amvara9**, limit 5). Evidence: workflow run **`https://github.com/satisfecho/pos/actions/runs/24773000757`**, job URL in JSON output **`72484038503`**.
-   - **Criterion 3 (optional live after green deploy):** **N/A** — prerequisite green deploy not met.
-
-5. **Overall:** **FAIL** (failed criterion: GitHub Actions deploy not green).
-
-6. **Product owner feedback:** Promotion to **`origin/master`** is reflected in git history, but automated deployment from **`master`** still does not complete because the CI job stops before SSH and stack restart. Until repository **Actions** secrets supply **`MARKETING_ARTIFACT_TOKEN` / `GH_TOKEN`** as required by **`config/marketing-sites.json`**, operators should treat production updates from this pipeline as blocked or use the documented manual deploy path if appropriate.
-
-7. **URLs tested:**
-   1. `https://github.com/satisfecho/pos/actions/runs/24773000757` — inspected run status and job steps via **`gh run view`** / **`gh run list`**.
-
-8. **Relevant log excerpts:** **N/A** — no **`pos-front`** / **`pos-back`** container exercise for this task; evidence is **`gh`** API output (run **24773000757** conclusion **failure**, step 3 failed, steps 4–8 skipped).
