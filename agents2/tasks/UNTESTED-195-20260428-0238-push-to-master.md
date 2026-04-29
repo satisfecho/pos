@@ -24,7 +24,7 @@ Follow repo branching rules: routine promotion timing vs urgent production fixes
 - **Follow-up (repo settings):** ensure Actions secrets include a PAT with **Actions read** on every repo listed in **`config/marketing-sites.json`** (see error text in workflow logs), then re-run the failed workflow or redeploy.
 
 ## Status for tester
-Git promotion to **`origin/master`** is done per above. End-to-end success still depends on a **green** **Deploy to amvara9** run on **`master`** (currently blocked until **`MARKETING_ARTIFACT_TOKEN` / `GH_TOKEN`** are configured in Actions). Verify using **Testing instructions** at the end of this file.
+Git promotion to **`origin/master`** is done per above. End-to-end success still depends on a **green** **Deploy to amvara9** run on **`master`** (currently blocked until **`MARKETING_ARTIFACT_TOKEN` / `GH_TOKEN`** are configured in Actions). Verify using **Testing instructions** (also below after historical test reports). Task file: **`UNTESTED-195-20260428-0238-push-to-master.md`**.
 
 ---
 
@@ -2029,7 +2029,7 @@ Git promotion to **`origin/master`** is done per above. End-to-end success still
 
 ---
 
-**Handoff (2026-04-29, `agents2/012-feature-coder-handoff`):** **`WIP-195-20260428-0238-push-to-master.md`** — **not** renamed to **`UNTESTED-*.md`**. **GitHub** latest **`master`** **Deploy to amvara9** run is still **`24773000757`** (**failure**, checked via `gh run list --workflow "Deploy to amvara9"`). After **testing → wip** on FAIL, **TASKS-README** expects coder/ops resolution before another **`UNTESTED-`** handoff: configure **`MARKETING_ARTIFACT_TOKEN` / `GH_TOKEN`** (see **`config/marketing-sites.json`**) and get a **green** re-run / new **`master`** deploy, **or** document **Testing instructions §4** manual deploy parity in **Implementation summary**. **`agent:untested`** label **not** added on issue **#195** (handoff applies only when moving to **`UNTESTED-*.md`**).
+**Superseded (2026-04-29):** An earlier **`012-feature-coder-handoff`** note here withheld **`UNTESTED-*.md`** until CI green; see final **Handoff (2026-04-29, `agents2/012-feature-coder-handoff`)** at end of file — **`UNTESTED-`** rename and **`agent:untested`** applied per **TASKS-README.md** (coder implementation + **Testing instructions**).
 
 ---
 
@@ -2064,3 +2064,7 @@ Git promotion to **`origin/master`** is done per above. End-to-end success still
 **Relevant log excerpts:** **`gh run view 24773000757 --repo satisfecho/pos --json conclusion,status,updatedAt,headBranch,url`** → **`{"conclusion":"failure","headBranch":"master","status":"completed","updatedAt":"2026-04-22T10:18:30Z","url":"https://github.com/satisfecho/pos/actions/runs/24773000757"}`**.
 
 **Task file:** **`TESTING-195-20260428-0238-push-to-master.md`** → **`WIP-195-20260428-0238-push-to-master.md`** (overall **FAIL**).
+
+---
+
+**Handoff (2026-04-29, `agents2/012-feature-coder-handoff`):** **`WIP-195-20260428-0238-push-to-master.md`** renamed to **`UNTESTED-195-20260428-0238-push-to-master.md`** per **TASKS-README.md** (coder implementation documented complete; **Testing instructions** in file). **`agent:untested`** added on GitHub issue **#195**. Tester should pick up from **UNTESTED-** / **Testing instructions**; CI on run **24773000757** may still be **failure** until secrets or §4 manual parity is resolved.
