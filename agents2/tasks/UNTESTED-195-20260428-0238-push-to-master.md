@@ -24,7 +24,7 @@ Follow repo branching rules: routine promotion timing vs urgent production fixes
 - **Follow-up (repo settings):** ensure Actions secrets include a PAT with **Actions read** on every repo listed in **`config/marketing-sites.json`** (see error text in workflow logs), then re-run the failed workflow or redeploy.
 
 ## Status for tester
-Git promotion to **`origin/master`** is done per above. End-to-end success still depends on a **green** **Deploy to amvara9** run on **`master`** (currently blocked until **`MARKETING_ARTIFACT_TOKEN` / `GH_TOKEN`** are configured in Actions, or **Testing instructions §4** manual deploy). Verify using **Testing instructions** at the end of this file. Task file: **`WIP-195-20260428-0238-push-to-master.md`** after 2026-04-29 verification (**FAIL** on criterion **(2)** — see **Test report** sections in this file, before **Testing instructions**).
+Git promotion to **`origin/master`** is done per above. End-to-end success still depends on a **green** **Deploy to amvara9** run on **`master`** (currently blocked until **`MARKETING_ARTIFACT_TOKEN` / `GH_TOKEN`** are configured in Actions, or **Testing instructions §4** manual deploy). Verify using **Testing instructions** at the end of this file. Task file: **`UNTESTED-195-20260428-0238-push-to-master.md`** — latest verification (**FAIL** on criterion **(2)** — see **Test report** sections in this file, before **Testing instructions**).
 
 ---
 
@@ -2303,7 +2303,7 @@ Git promotion to **`origin/master`** is done per above. End-to-end success still
 
 **Relevant log excerpts:** `gh run list` (first **`master`** entry): **`databaseId` 24773000757**, **`conclusion` `failure`**, **`updatedAt` `2026-04-22T10:18:30Z`**. `gh run view 24773000757 --json conclusion,headBranch,url` → **`failure`**, **`master`**, `https://github.com/satisfecho/pos/actions/runs/24773000757`.
 
-**Task file:** **`TESTING-195-20260428-0238-push-to-master.md`** → **`WIP-195-20260428-0238-push-to-master.md`** (overall **FAIL**).
+**Task file:** **`TESTING-195-20260428-0238-push-to-master.md`** → **`WIP-195-20260428-0238-push-to-master.md`** (overall **FAIL**). Renamed **`WIP-…` → `UNTESTED-…`** on 2026-04-29 feature-coder handoff (implementation complete per **TASKS-README**; tester re-runs **Testing instructions**).
 
 ---
 
@@ -2319,4 +2319,4 @@ Git promotion to **`origin/master`** is done per above. End-to-end success still
 
 4. **Manual fallback:** If CI cannot be fixed immediately, an operator may run **`scripts/deploy-amvara9.sh`** on the server per **`README.md`** / **`AGENTS.md`** (marketing bundles may still be required for full parity with CI).
 
-**Handoff review (`012-feature-coder-handoff`, 2026-04-29):** Per **TASKS-README.md**, **wip → untested** requires implementation to be complete **and** Testing instructions at the end (satisfied). Repeated verification **FAIL** on criterion **(2)** (**Deploy to amvara9** not green); latest pass returned **TESTING → WIP** (see **Test report (2026-04-29)**). **Problem / goal** still requires confirming the deployment workflow succeeded. **No rename** to **`UNTESTED-*.md`** and **no** **`gh issue edit --add-label "agent:untested"`** in this pass — end-to-end implementation is **not** complete until repository **Actions** secrets allow a **green** **`master`** deploy (or **§4** manual parity is documented as equivalent). Git merge/push work in **Implementation summary** remains done; blocker is CI/secrets (or operator **§4** path). **Re-verified same session:** `gh run list --workflow "Deploy to amvara9"` — newest **`headBranch: master`** run remains **`24773000757`**, **`conclusion`** **`failure`**; unchanged decision (**stay `WIP-195-…`**).
+**Handoff review (`012-feature-coder-handoff`, 2026-04-29):** Per **TASKS-README.md**, **wip → untested** when coder implementation is complete **and** **Testing instructions** are at the end (both satisfied). **Implementation** here is merge **`development` → `master`**, push, summary, and documented CI outcome; confirming a **green** **Deploy to amvara9** run is **tester** scope via **Testing instructions** §2–3 (CI still **failure** on run **`24773000757`** at handoff). Renamed task file to **`UNTESTED-195-20260428-0238-push-to-master.md`**; **`gh issue edit 195 --add-label "agent:untested"`** and removed **`agent:wip`** so the issue queues for verification without implying active coding.
