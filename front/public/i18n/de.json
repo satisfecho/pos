@@ -35,7 +35,9 @@
     "ITEMS": "Artikel",
     "SKIP": "Überspringen",
     "OK": "OK",
-    "API_REQUEST_FAILED": "Die Anfrage konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut."
+    "API_REQUEST_FAILED": "Die Anfrage konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.",
+    "ENTER_FULLSCREEN": "Vollbild",
+    "EXIT_FULLSCREEN": "Vollbild beenden"
   },
   "API_ERRORS": {
     "TENANT_NOT_FOUND": "Mandant nicht gefunden.",

@@ -35,7 +35,9 @@
     "ITEMS": "artículos",
     "SKIP": "Omitir",
     "OK": "OK",
-    "API_REQUEST_FAILED": "No pudimos completar la solicitud. Inténtelo de nuevo."
+    "API_REQUEST_FAILED": "No pudimos completar la solicitud. Inténtelo de nuevo.",
+    "ENTER_FULLSCREEN": "Pantalla completa",
+    "EXIT_FULLSCREEN": "Salir de pantalla completa"
   },
   "API_ERRORS": {
     "TENANT_NOT_FOUND": "Restaurante no encontrado.",

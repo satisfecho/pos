@@ -3,13 +3,21 @@ import { Subject } from 'rxjs';
 import { KitchenDisplayComponent } from './kitchen-display.component';
 import { ApiService } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
+import { PermissionService } from '../services/permission.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 
 describe('KitchenDisplayComponent', () => {
   let orderUpdates$: Subject<unknown>;
-  let mockApi: { getOrders: jasmine.Spy; connectWebSocket: jasmine.Spy; orderUpdates$: Subject<unknown>; getCurrentUser: jasmine.Spy };
+  let mockApi: {
+    getOrders: jasmine.Spy;
+    connectWebSocket: jasmine.Spy;
+    orderUpdates$: Subject<unknown>;
+    getCurrentUser: jasmine.Spy;
+    getKitchenStations: jasmine.Spy;
+    getKitchenDisplaySettings: jasmine.Spy;
+  };
   let mockAudio: { setEnabled: jasmine.Spy; playRestaurantOrderChange: jasmine.Spy };
 
   beforeEach(async () => {
@@ -19,6 +27,10 @@ describe('KitchenDisplayComponent', () => {
       connectWebSocket: jasmine.createSpy('connectWebSocket'),
       orderUpdates$,
       getCurrentUser: jasmine.createSpy('getCurrentUser').and.returnValue({ id: 1, role: 'kitchen' }),
+      getKitchenStations: jasmine.createSpy('getKitchenStations').and.returnValue(of([])),
+      getKitchenDisplaySettings: jasmine
+        .createSpy('getKitchenDisplaySettings')
+        .and.returnValue(of({ yellow_minutes: 5, orange_minutes: 10, red_minutes: 15 })),
     };
     mockAudio = {
       setEnabled: jasmine.createSpy('setEnabled'),
@@ -34,6 +46,13 @@ describe('KitchenDisplayComponent', () => {
       providers: [
         { provide: ApiService, useValue: mockApi },
         { provide: AudioService, useValue: mockAudio },
+        {
+          provide: PermissionService,
+          useValue: {
+            getCurrentUser: () => ({ id: 1, role: 'kitchen' }),
+            hasPermission: () => false,
+          },
+        },
       ],
     }).compileComponents();
 
@@ -98,7 +117,16 @@ describe('KitchenDisplayComponent', () => {
         status: 'pending',
         table_name: 'T1',
         created_at: new Date().toISOString(),
-        items: [{ id: 1, product_name: 'Coffee', quantity: 1, status: 'pending', price_cents: 100 }],
+        items: [
+          {
+            id: 1,
+            product_name: 'Coffee',
+            quantity: 1,
+            status: 'pending',
+            price_cents: 100,
+            category: 'Main Course',
+          },
+        ],
         total_cents: 100,
       },
       {
@@ -106,7 +134,16 @@ describe('KitchenDisplayComponent', () => {
         status: 'pending',
         table_name: 'T2',
         created_at: new Date().toISOString(),
-        items: [{ id: 2, product_name: 'Tea', quantity: 1, status: 'ready', price_cents: 80 }],
+        items: [
+          {
+            id: 2,
+            product_name: 'Tea',
+            quantity: 1,
+            status: 'ready',
+            price_cents: 80,
+            category: 'Beverages',
+          },
+        ],
         total_cents: 80,
       },
       { id: 3, status: 'completed', table_name: 'T3', created_at: new Date().toISOString(), items: [], total_cents: 0 },
@@ -135,4 +172,17 @@ describe('KitchenDisplayComponent', () => {
     fixture.detectChanges();
     expect(mockApi.getOrders).toHaveBeenCalledWith(false);
   }));
+
+  it('should call requestFullscreen when toggleFullscreen and not already fullscreen', () => {
+    const fixture = TestBed.createComponent(KitchenDisplayComponent);
+    fixture.detectChanges();
+    const el = fixture.componentInstance.kitchenRootRef?.nativeElement as HTMLElement & {
+      requestFullscreen: jasmine.Spy;
+    };
+    expect(el).toBeTruthy();
+    const req = jasmine.createSpy('requestFullscreen').and.returnValue(Promise.resolve());
+    el.requestFullscreen = req;
+    fixture.componentInstance.toggleFullscreen();
+    expect(req).toHaveBeenCalled();
+  });
 });

@@ -35,7 +35,9 @@
     "ITEMS": "articles",
     "SKIP": "Passer",
     "OK": "OK",
-    "API_REQUEST_FAILED": "Impossible de terminer la requête. Veuillez réessayer."
+    "API_REQUEST_FAILED": "Impossible de terminer la requête. Veuillez réessayer.",
+    "ENTER_FULLSCREEN": "Plein écran",
+    "EXIT_FULLSCREEN": "Quitter le plein écran"
   },
   "API_ERRORS": {
     "TENANT_NOT_FOUND": "Établissement introuvable.",

@@ -21,3 +21,20 @@ Optional ops note (out of scope for pure web fix): dedicated kiosks can use **`-
 - Verify behavior on at least one Chromium-based browser and Safari if available; note limitations in **Testing instructions** when handing off.
 - Add or extend **i18n** strings if any new UI label is introduced for “full screen” / “exit full screen”.
 - Run smoke relevant to those routes (manual or existing Puppeteer if applicable).
+
+## Implementation summary
+
+- **`KitchenDisplayComponent`** (`/kitchen`, `/bar`): template ref on root `.kitchen-view`, header button **`data-testid="kitchen-fullscreen-toggle"`** calls `requestFullscreen` on that element (fallback `document.documentElement` if ref missing). Vendor fallbacks: `webkit*`, `moz*`, `ms*`. `fullscreenchange` + prefixed listeners update `isFullscreen`; `ngOnDestroy` removes listeners and calls `exitFullscreen` when a fullscreen element is present.
+- **i18n:** `COMMON.ENTER_FULLSCREEN`, `COMMON.EXIT_FULLSCREEN` in all `front/public/i18n/*.json`.
+- **Tests:** `kitchen-display.component.spec.ts` — extended API mocks (`getKitchenStations`, `getKitchenDisplaySettings`), `PermissionService` stub, category-aware order filter fixture, fullscreen toggle test.
+
+## Testing instructions
+
+1. Log in as staff with **kitchen/bar** access (module `kitchen_bar` enabled).
+2. Open **`/kitchen`**. In the header, click **Full screen** (icon + label). The display root should fill the monitor; the control should show **Exit full screen**.
+3. Leave fullscreen via the button, **Escape**, or **Back to orders** (route leave should tear down fullscreen).
+4. Repeat on **`/bar`** (beverage display) — same control and behavior.
+5. **Browsers:** **Chromium** — expected full support. **Safari (desktop)** — uses WebKit-prefixed APIs (implemented). **iOS Safari** — element fullscreen is often unavailable; the API may no-op without error; use OS kiosk / PWA if required.
+6. **Automated (from `front/`):**  
+   `npx ng test --no-watch --browsers=ChromeHeadless --include=src/app/kitchen-display/kitchen-display.component.spec.ts`
+7. Confirm **Angular build** clean: `docker logs --since 10m pos-front` (no `TS`/`NG` errors) after edits.

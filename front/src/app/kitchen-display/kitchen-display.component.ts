@@ -5,7 +5,10 @@ import {
   computed,
   OnInit,
   OnDestroy,
+  AfterViewInit,
   ChangeDetectionStrategy,
+  ViewChild,
+  ElementRef,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -18,6 +21,65 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 const REFRESH_INTERVAL_MS = 15000;
 const SOUND_STORAGE_KEY = 'kitchen-display-sound';
+
+type FullscreenCapableElement = HTMLElement & {
+  webkitRequestFullscreen?: () => Promise<void> | void;
+  mozRequestFullScreen?: () => Promise<void> | void;
+  msRequestFullscreen?: () => Promise<void> | void;
+};
+
+type FullscreenDocument = Document & {
+  webkitFullscreenElement?: Element | null;
+  mozFullScreenElement?: Element | null;
+  msFullscreenElement?: Element | null;
+  webkitExitFullscreen?: () => Promise<void> | void;
+  mozCancelFullScreen?: () => Promise<void> | void;
+  msExitFullscreen?: () => Promise<void> | void;
+};
+
+function getFullscreenElement(): Element | null {
+  const d = document as FullscreenDocument;
+  return (
+    document.fullscreenElement ??
+    d.webkitFullscreenElement ??
+    d.mozFullScreenElement ??
+    d.msFullscreenElement ??
+    null
+  );
+}
+
+function requestFullscreenOnElement(el: HTMLElement): Promise<void> | void {
+  const e = el as FullscreenCapableElement;
+  if (typeof e.requestFullscreen === 'function') {
+    return e.requestFullscreen();
+  }
+  if (typeof e.webkitRequestFullscreen === 'function') {
+    return Promise.resolve(e.webkitRequestFullscreen());
+  }
+  if (typeof e.mozRequestFullScreen === 'function') {
+    return Promise.resolve(e.mozRequestFullScreen());
+  }
+  if (typeof e.msRequestFullscreen === 'function') {
+    return Promise.resolve(e.msRequestFullscreen());
+  }
+}
+
+function exitDocumentFullscreen(): Promise<void> | void {
+  const d = document as FullscreenDocument;
+  if (typeof document.exitFullscreen === 'function') {
+    return document.exitFullscreen();
+  }
+  if (typeof d.webkitExitFullscreen === 'function') {
+    return Promise.resolve(d.webkitExitFullscreen());
+  }
+  if (typeof d.mozCancelFullScreen === 'function') {
+    return Promise.resolve(d.mozCancelFullScreen());
+  }
+  if (typeof d.msExitFullscreen === 'function') {
+    return Promise.resolve(d.msExitFullscreen());
+  }
+}
+
 /** Category filter: kitchen = main course only, bar = beverages only. */
 const VIEW_CATEGORY: Record<string, string> = {
   kitchen: 'Main Course',
@@ -30,7 +92,7 @@ const VIEW_CATEGORY: Record<string, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, TranslateModule, FormsModule, FocusFirstInputDirective],
   template: `
-    <div class="kitchen-view">
+    <div class="kitchen-view" #kitchenRoot>
       <header class="kitchen-header">
         <a routerLink="/staff/orders" class="back-link">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -55,6 +117,25 @@ const VIEW_CATEGORY: Record<string, string> = {
               </select>
             </label>
           }
+          <button
+            type="button"
+            class="fullscreen-btn"
+            data-testid="kitchen-fullscreen-toggle"
+            (click)="toggleFullscreen()"
+            [title]="(isFullscreen() ? 'COMMON.EXIT_FULLSCREEN' : 'COMMON.ENTER_FULLSCREEN') | translate"
+          >
+            @if (isFullscreen()) {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+              </svg>
+              {{ 'COMMON.EXIT_FULLSCREEN' | translate }}
+            } @else {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+              </svg>
+              {{ 'COMMON.ENTER_FULLSCREEN' | translate }}
+            }
+          </button>
           <button type="button" class="timer-settings-btn" (click)="openTimerSettingsModal()" [title]="'KITCHEN_DISPLAY.TIMER_SETTINGS' | translate">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
             {{ 'KITCHEN_DISPLAY.TIMER_SETTINGS' | translate }}
@@ -241,7 +322,8 @@ const VIEW_CATEGORY: Record<string, string> = {
       gap: var(--space-5);
       flex-wrap: wrap;
     }
-    .timer-settings-btn {
+    .timer-settings-btn,
+    .fullscreen-btn {
       display: inline-flex;
       align-items: center;
       gap: var(--space-2);
@@ -254,7 +336,8 @@ const VIEW_CATEGORY: Record<string, string> = {
       border-radius: var(--radius-md);
       cursor: pointer;
     }
-    .timer-settings-btn:hover { background: var(--color-bg); }
+    .timer-settings-btn:hover,
+    .fullscreen-btn:hover { background: var(--color-bg); }
     .sound-toggle {
       display: flex;
       align-items: center;
@@ -590,7 +673,9 @@ const VIEW_CATEGORY: Record<string, string> = {
     }
   `],
 })
-export class KitchenDisplayComponent implements OnInit, OnDestroy {
+export class KitchenDisplayComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('kitchenRoot', { read: ElementRef }) kitchenRootRef?: ElementRef<HTMLElement>;
+
   private api = inject(ApiService);
   private audio = inject(AudioService);
   private translate = inject(TranslateService);
@@ -629,6 +714,9 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
     red_minutes: 15,
   });
   private tickIntervalId: ReturnType<typeof setInterval> | null = null;
+
+  /** True when this view’s root element is the browser fullscreen element. */
+  isFullscreen = signal(false);
 
   canUpdateItemStatus = computed(() =>
     this.permissions.hasPermission(this.permissions.getCurrentUser(), 'order:item_status')
@@ -754,6 +842,15 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
     }
 
     document.addEventListener('click', this.closeItemStatusDropdown);
+
+    document.addEventListener('fullscreenchange', this.onFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', this.onFullscreenChange);
+    document.addEventListener('mozfullscreenchange', this.onFullscreenChange);
+    document.addEventListener('MSFullscreenChange', this.onFullscreenChange);
+  }
+
+  ngAfterViewInit(): void {
+    this.syncFullscreenState();
   }
 
   ngOnDestroy(): void {
@@ -769,6 +866,11 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
     this.routeDataSub?.unsubscribe();
     this.queryParamSub?.unsubscribe();
     document.removeEventListener('click', this.closeItemStatusDropdown);
+    document.removeEventListener('fullscreenchange', this.onFullscreenChange);
+    document.removeEventListener('webkitfullscreenchange', this.onFullscreenChange);
+    document.removeEventListener('mozfullscreenchange', this.onFullscreenChange);
+    document.removeEventListener('MSFullscreenChange', this.onFullscreenChange);
+    void this.exitFullscreenIfActive();
   }
 
   onStationSelectChange(value: number | 'all'): void {
@@ -877,6 +979,38 @@ export class KitchenDisplayComponent implements OnInit, OnDestroy {
       this.itemStatusDropdownOpen.set(null);
     }
   };
+
+  private onFullscreenChange = (): void => {
+    this.syncFullscreenState();
+  };
+
+  private syncFullscreenState(): void {
+    const root = this.kitchenRootRef?.nativeElement;
+    const fs = getFullscreenElement();
+    this.isFullscreen.set(!!root && fs === root);
+  }
+
+  toggleFullscreen(): void {
+    if (this.isFullscreen()) {
+      void this.exitFullscreenIfActive();
+      return;
+    }
+    const root = this.kitchenRootRef?.nativeElement;
+    const target = root ?? document.documentElement;
+    const p = requestFullscreenOnElement(target);
+    if (p && typeof (p as Promise<void>).catch === 'function') {
+      (p as Promise<void>).catch(() => {});
+    }
+  }
+
+  private exitFullscreenIfActive(): Promise<void> | void {
+    if (!getFullscreenElement()) return;
+    const p = exitDocumentFullscreen();
+    if (p && typeof (p as Promise<void>).catch === 'function') {
+      return (p as Promise<void>).catch(() => {});
+    }
+    return p;
+  }
 
   loadOrders(): void {
     this.loading.set(true);

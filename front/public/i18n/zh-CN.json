@@ -35,7 +35,9 @@
     "ITEMS": "\u9879",
     "SKIP": "\u8df3\u8fc7",
     "OK": "\u786e\u5b9a",
-    "API_REQUEST_FAILED": "\u65e0\u6cd5\u5b8c\u6210\u8bf7\u6c42\uff0c\u8bf7\u91cd\u8bd5\u3002"
+    "API_REQUEST_FAILED": "\u65e0\u6cd5\u5b8c\u6210\u8bf7\u6c42\uff0c\u8bf7\u91cd\u8bd5\u3002",
+    "ENTER_FULLSCREEN": "\u5168\u5c4f",
+    "EXIT_FULLSCREEN": "\u9000\u51fa\u5168\u5c4f"
   },
   "API_ERRORS": {
     "TENANT_NOT_FOUND": "\u672a\u627e\u5230\u9910\u5385\u3002",

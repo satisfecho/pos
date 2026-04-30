@@ -35,7 +35,9 @@
     "ITEMS": "items",
     "SKIP": "Skip",
     "OK": "OK",
-    "API_REQUEST_FAILED": "We could not complete the request. Please try again."
+    "API_REQUEST_FAILED": "We could not complete the request. Please try again.",
+    "ENTER_FULLSCREEN": "Full screen",
+    "EXIT_FULLSCREEN": "Exit full screen"
   },
   "API_ERRORS": {
     "TENANT_NOT_FOUND": "Restaurant not found.",

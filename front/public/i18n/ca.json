@@ -35,7 +35,9 @@
     "ITEMS": "elements",
     "SKIP": "Ometre",
     "OK": "OK",
-    "API_REQUEST_FAILED": "No hem pogut completar la sol\u00b7licitud. Torneu-ho a provar."
+    "API_REQUEST_FAILED": "No hem pogut completar la sol\u00b7licitud. Torneu-ho a provar.",
+    "ENTER_FULLSCREEN": "Pantalla completa",
+    "EXIT_FULLSCREEN": "Sortir de la pantalla completa"
   },
   "API_ERRORS": {
     "TENANT_NOT_FOUND": "Restaurant no trobat.",
