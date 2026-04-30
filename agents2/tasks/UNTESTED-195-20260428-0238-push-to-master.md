@@ -26,7 +26,7 @@ Follow repo branching rules: routine promotion timing vs urgent production fixes
 ## Status for tester
 Git promotion to **`origin/master`** is done per **Implementation summary**. End-to-end success still depends on a **green** **Deploy to amvara9** run on **`master`** (currently blocked until **`MARKETING_ARTIFACT_TOKEN` / `GH_TOKEN`** are configured in Actions, or **Testing instructions §4** manual deploy). Verify using **`## Testing instructions (EOF)`** at the **end** of this file (and earlier **`## Testing instructions`** blocks for historical context).
 
-**Handoff (`012-feature-coder-handoff.md`, 2026-04-30 — executed):** Per **`TASKS-README.md`**, **wip → untested** when coder **implementation** is complete and **Testing instructions** are present — merge/push to **`origin/master`** is done; CI/deploy acceptance is **tester** criterion **(2)**. Renamed **`WIP-195-20260428-0238-push-to-master.md`** → **`UNTESTED-195-20260428-0238-push-to-master.md`**. GitHub **#195**: **`agent:untested`** added, **`agent:wip`** removed. **Tester:** rename **`UNTESTED-…` → `TESTING-…`** when verification starts.
+**Handoff (`012-feature-coder-handoff.md`, 2026-04-30):** Per **`TASKS-README.md`**, **wip → untested** after coder **implementation** is complete and **Testing instructions** are at EOF — merge/push to **`origin/master`** is done; CI/deploy green is **tester** criterion **(2)**. Task file: **`UNTESTED-195-20260428-0238-push-to-master.md`**. **Tester:** **`UNTESTED-…` → `TESTING-…`** when verification starts.
 
 ---
 
@@ -3928,42 +3928,4 @@ Per **`TASKS-README.md`**, this section appears at the **end** of the task file 
 3. **Optional live:** After a **green** deploy, **`https://satisfecho.de/api/health`** (and UI per **`docs/0001-ci-cd-amvara9.md`**).
 4. **Manual fallback:** **`scripts/deploy-amvara9.sh`** on the server per **`README.md`** / **`AGENTS.md`** if CI cannot be fixed immediately (document parity if used in place of a green run).
 
-**012 handoff (2026-04-30):** Task filename **`UNTESTED-195-20260428-0238-push-to-master.md`**; issue **#195** labeled **`agent:untested`** (**`agent:wip`** removed).
-
----
-
-## Test report
-
-**Date/time (UTC):** 2026-04-30 08:24 UTC  
-**Log window:** `./scripts/git-sync-development.sh` (session start); `git fetch origin`; `gh run list` / `gh run view 24773000757`; `curl https://satisfecho.de/api/health` (~2 minutes, same session).
-
-**Environment:** Repo root **`pos2`**, local branch **`development`** after sync. Docker compose app tests **N/A** (criteria per **Testing instructions (EOF)**: git + GitHub Actions + optional health). **`BASE_URL` (optional):** `https://satisfecho.de/api/health`. **Deploy readiness:** `gh run list --repo satisfecho/pos --workflow "Deploy to amvara9" --branch master` and `gh run view 24773000757 --json` (polling via API; no fixed sleep; per **`agents2/020-test.md`**).
-
-**What was tested (from Testing instructions):**
-1. **`origin/master`** / **`origin/development`** after **`git fetch`**, and **`git merge-base --is-ancestor origin/master origin/development`**.  
-2. Latest **Deploy to amvara9** run for **`headBranch: master`** (reference **`24773000757`** until superseded).  
-3. Optional **`https://satisfecho.de/api/health`** (informational).
-
-**Results:**
-
-| Criterion | Result | Evidence |
-|-----------|--------|----------|
-| (1) Git | **PASS** | After **`git fetch origin`**: **`git rev-parse origin/master origin/development`** → **`7a2c2bd59b2cfb6cbc6a55ac407993494b17256f`**, **`53eff41f152682362da737ac308a7f9c29fe88f9`**. **`git merge-base --is-ancestor origin/master origin/development`** → exit **0**. |
-| (2) GitHub Actions: green **Deploy to amvara9** for latest **`master`** | **FAIL** | **`gh run list --repo satisfecho/pos --workflow "Deploy to amvara9" --branch master --limit 5`**: newest run **`24773000757`**, **`conclusion`** **`failure`**, **`updatedAt`** **`2026-04-22T10:18:30Z`**, **`headSha`** **`7a2c2bd59b2cfb6cbc6a55ac407993494b17256f`**. **`gh run view 24773000757 --repo satisfecho/pos --json conclusion,status,updatedAt,headBranch,url,headSha`** → **`failure`**, **`completed`**, **`headBranch: master`**. No newer **`success`** **`master`** deploy supersedes this run. Run URL: https://github.com/satisfecho/pos/actions/runs/24773000757 |
-| (3) Optional live after green deploy | **N/A** | Criterion **(2)** not **PASS**; **`curl -sS https://satisfecho.de/api/health`** → HTTP **200**, body **`{"status":"ok"}`** (does not prove **Deploy to amvara9** completed for promoted commit **`7a2c2bd`**). |
-
-**Overall:** **FAIL** — criterion **(2)**.
-
-**Loop protection (`agents2/020-test.md` §28–29):** Latest **`master`** **Deploy to amvara9** remains run **`24773000757`** (**failure**) since **2026-04-22**; outcome unchanged until **Actions** secrets (**`MARKETING_ARTIFACT_TOKEN` / `GH_TOKEN`** per **`config/marketing-sites.json`**) allow a **green** re-run or new **`master`** deploy, or **Testing instructions (EOF) §4** manual **`scripts/deploy-amvara9.sh`** parity is documented as equivalent.
-
-**Product owner feedback:** **`origin/master`** is still **`7a2c2bd`**; **`origin/development`** is ahead at **`53eff41`**. Branch ancestry is correct, but the **Deploy to amvara9** workflow for that **`master`** push has not turned **green** in GitHub Actions. Configure repository secrets and re-run the workflow, or document **§4** manual deploy parity; return **`UNTESTED-…`** when a **green** **`master`** deploy (or documented equivalent) is ready for re-check.
-
-**URLs tested:**  
-1. `https://github.com/satisfecho/pos/actions/runs/24773000757` (workflow run — **failure**)  
-2. `https://satisfecho.de/api/health` (HTTP **200** — informational)
-
-**Relevant log excerpts:** **`gh run view 24773000757 --repo satisfecho/pos --json conclusion,status,updatedAt,headBranch,url,headSha`** → **`{"conclusion":"failure","headBranch":"master","headSha":"7a2c2bd59b2cfb6cbc6a55ac407993494b17256f","status":"completed","updatedAt":"2026-04-22T10:18:30Z","url":"https://github.com/satisfecho/pos/actions/runs/24773000757"}`**.
-
-**GitHub issue #195 (this run, FAIL):** Set label **`agent:wip`**, remove **`agent:testing`** / **`agent:untested`** if present (per **`docs/agent-loop.md`**).
-
-**Task file rename (this run):** **`UNTESTED-195-20260428-0238-push-to-master.md` → `TESTING-195-20260428-0238-push-to-master.md`** (start) → **`WIP-195-20260428-0238-push-to-master.md`** (overall **FAIL**).
+**012 handoff (`012-feature-coder-handoff.md`, 2026-04-30):** Renamed **`WIP-195-20260428-0238-push-to-master.md` → `UNTESTED-195-20260428-0238-push-to-master.md`**. GitHub **`gh issue edit 195 --add-label "agent:untested"`** (remove **`agent:wip`** if present). Tester: **`UNTESTED-…` → `TESTING-…`** when verification starts.
