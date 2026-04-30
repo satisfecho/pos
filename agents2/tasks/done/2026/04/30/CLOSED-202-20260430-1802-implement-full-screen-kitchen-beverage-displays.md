@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub issue #202 delivered browser fullscreen for staff Kitchen and Beverage display routes, with vendor-prefixed Fullscreen API support and unit coverage.
+- **What was done:** `KitchenDisplayComponent` gained a header fullscreen toggle (test id `kitchen-fullscreen-toggle`), i18n keys `COMMON.ENTER_FULLSCREEN` / `COMMON.EXIT_FULLSCREEN`, listener cleanup on destroy, and extended `kitchen-display.component.spec.ts` mocks and tests as recorded in the task body.
+- **What was tested:** Tester reported **PASS**: host `ng test` (11 specs) green on Chrome Headless; `/kitchen` returns 200 and auth-guards to login without staff session; recent `pos-front` logs clean for the verification window; manual in-session kitchen/bar clicks were partial (no staff credentials).
+- **Why closed:** Test report overall **PASS** with acceptable documented residual risk (spot-check on real kiosk); task archived per closing-reviewer workflow.
+- **Closed at (UTC):** 2026-04-30 18:12
+---
+
 # Full screen for Kitchen and Beverage displays
 
 ## GitHub Issues
