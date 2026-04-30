@@ -4042,4 +4042,4 @@ Per **`TASKS-README.md`**, this section appears at the **end** of the task file 
 3. **Optional live:** After a **green** deploy, **`https://satisfecho.de/api/health`** (and UI per **`docs/0001-ci-cd-amvara9.md`**).
 4. **Manual fallback:** **`scripts/deploy-amvara9.sh`** on the server per **`README.md`** / **`AGENTS.md`** if CI cannot be fixed immediately (document parity if used in place of a green run).
 
-**012 handoff (`012-feature-coder-handoff.md`, 2026-04-30):** Renamed **`WIP-195-20260428-0238-push-to-master.md` → `UNTESTED-195-20260428-0238-push-to-master.md`**. GitHub **`gh issue edit 195 --add-label "agent:untested"`** (remove **`agent:wip`** if present). Tester: **`UNTESTED-…` → `TESTING-…`** when verification starts.
+**012 handoff (`012-feature-coder-handoff.md`, 2026-04-30):** Applied — renamed **`WIP-195-20260428-0238-push-to-master.md` → `UNTESTED-195-20260428-0238-push-to-master.md`**. GitHub: **`gh issue edit 195 --add-label "agent:untested"`**; removed **`agent:wip`**. Tester: **`UNTESTED-…` → `TESTING-…`** when verification starts.
