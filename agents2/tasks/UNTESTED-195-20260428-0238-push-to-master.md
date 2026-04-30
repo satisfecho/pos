@@ -26,7 +26,7 @@ Follow repo branching rules: routine promotion timing vs urgent production fixes
 ## Status for tester
 Git promotion to **`origin/master`** is done per **Implementation summary**. End-to-end success still depends on a **green** **Deploy to amvara9** run on **`master`** (currently blocked until **`MARKETING_ARTIFACT_TOKEN` / `GH_TOKEN`** are configured in Actions, or **Testing instructions §4** manual deploy). Verify using **Testing instructions** at the end of this file.
 
-**012 handoff (`012-feature-coder-handoff.md`, 2026-04-30 — executed):** Ran **`./scripts/git-sync-development.sh`**. **`gh run list --repo satisfecho/pos --workflow "Deploy to amvara9" --branch master --limit 5`**: latest **`master`** run **`24773000757`**, **`conclusion`** **`failure`** (unchanged). Per **`TASKS-README.md`** — **wip → untested** when coder implementation is complete and **Testing instructions** are present — renamed **`WIP-195-20260428-0238-push-to-master.md`** → **`UNTESTED-195-20260428-0238-push-to-master.md`**. Applied **`gh issue edit 195 --repo satisfecho/pos --add-label "agent:untested" --remove-label "agent:wip"`**. **Tester:** rename **UNTESTED → TESTING** when verification starts; criterion **(2)** likely **FAIL** until Actions secrets + green **`master`** deploy or documented **§4** parity.
+**012 handoff (`012-feature-coder-handoff.md`, 2026-04-30):** Ran **`./scripts/git-sync-development.sh`** (development already up to date). Snapshot: **`gh run list --repo satisfecho/pos --workflow "Deploy to amvara9" --branch master --limit 3`** — latest **`master`** run **`24773000757`**, **`conclusion`** **`failure`**, **`headSha`** **`7a2c2bd`**. Per **`TASKS-README.md`**, **wip → untested** because **Implementation summary** is complete and **Testing instructions** are at EOF. Renamed **`WIP-195-20260428-0238-push-to-master.md`** → **`UNTESTED-195-20260428-0238-push-to-master.md`**. **`gh issue edit 195 --repo satisfecho/pos --add-label "agent:untested" --remove-label "agent:wip"`**. **Tester:** rename **UNTESTED → TESTING** when verification starts; criterion **(2)** may **FAIL** until Actions secrets / green **`master`** deploy or **§4** parity.
 
 ---
 
@@ -2845,7 +2845,7 @@ Git promotion to **`origin/master`** is done per **Implementation summary**. End
 
 4. **Manual fallback:** If CI cannot be fixed immediately, an operator may run **`scripts/deploy-amvara9.sh`** on the server per **`README.md`** / **`AGENTS.md`** (marketing bundles may still be required for full parity with CI).
 
-**012 handoff (`012-feature-coder-handoff.md`, 2026-04-30 — end of file):** Task file is **`UNTESTED-195-20260428-0238-push-to-master.md`**; issue **#195** labels **`agent:untested`** ( **`agent:wip`** removed) after this handoff. Latest **`master`** **Deploy to amvara9** remains run **`24773000757`**, **`failure`** — tester criterion **(2)** likely **FAIL** until Actions secrets / green re-run or **§4** parity. **On tester FAIL:** **`testing` → `wip`** per **`TASKS-README.md`**; restore **`agent:wip`** on **#195** as **`docs/agent-loop.md`** describes for rework.
+**012 handoff (`012-feature-coder-handoff.md`, 2026-04-30 — end of file):** Same as **Status for tester** block above: task filename **`UNTESTED-195-20260428-0238-push-to-master.md`**; **#195** has **`agent:untested`**, not **`agent:wip`**. Latest **`master`** **Deploy to amvara9** still **`24773000757`** (**failure**). **On tester FAIL:** **`testing` → `wip`**; restore **`agent:wip`** on **#195** per **`TASKS-README.md`** / **`docs/agent-loop.md`**.
 
 ---
 
