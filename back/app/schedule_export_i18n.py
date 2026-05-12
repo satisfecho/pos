@@ -83,6 +83,17 @@ _HI: dict[str, str] = {
     "role": "भूमिका",
 }
 
+_UR: dict[str, str] = {
+    **_EN,
+    "sheet": "شیڈول",
+    "date": "تاریخ",
+    "start_time": "شروع",
+    "end_time": "ختم",
+    "label": "لیبل",
+    "employee": "ملازم",
+    "role": "کردار",
+}
+
 _BG: dict[str, str] = {
     **_EN,
     "sheet": "График",
@@ -103,6 +114,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "bg": _BG,
     "zh-CN": _ZH,
     "hi": _HI,
+    "ur": _UR,
 }
 
 
@@ -217,6 +229,18 @@ _PVA_HI: dict[str, str] = {
     "scope_all": "सभी कर्मचारी",
 }
 
+_PVA_UR: dict[str, str] = {
+    **_PVA_EN,
+    "sheet": "منصوبہ بمقابلہ کلاک شدہ",
+    "date": "تاریخ",
+    "staff": "عملہ",
+    "planned": "منصوبہ بند",
+    "clocked": "کلاک شدہ",
+    "variance": "فرق",
+    "totals": "کل",
+    "scope_all": "تمام عملہ",
+}
+
 _PVA_LABELS: dict[str, dict[str, str]] = {
     "en": _PVA_EN,
     "es": _PVA_ES,
@@ -226,6 +250,7 @@ _PVA_LABELS: dict[str, dict[str, str]] = {
     "bg": _PVA_BG,
     "zh-CN": _PVA_ZH,
     "hi": _PVA_HI,
+    "ur": _PVA_UR,
 }
 
 

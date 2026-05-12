@@ -11,6 +11,7 @@ SUPPORTED_LANGUAGES = [
     "bg",  # Bulgarian
     "zh-CN",  # Chinese Simplified
     "hi",  # Hindi
+    "ur",  # Urdu (RTL)
 ]
 
 

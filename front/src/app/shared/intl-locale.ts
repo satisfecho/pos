@@ -20,6 +20,7 @@ export function intlLocaleFromTranslate(translate: TranslateService): string {
     ca: 'ca-ES',
     bg: 'bg-BG',
     hi: 'hi-IN',
+    ur: 'ur-PK',
   };
   return map[base] || (typeof navigator !== 'undefined' && navigator.language) || 'en-US';
 }

@@ -223,6 +223,37 @@ _HI: dict[str, str] = {
     "res_status_no_show": "नहीं आए",
 }
 
+_UR: dict[str, str] = {
+    **_EN,
+    "sheet_summary": "خلاصہ",
+    "sheet_reservations": "بکنگز",
+    "sheet_by_product": "پروڈکٹ کے لحاظ سے",
+    "sheet_by_category": "زمرے کے لحاظ سے",
+    "sheet_by_table": "میز کے لحاظ سے",
+    "sheet_by_waiter": "ویٹر کے لحاظ سے",
+    "date": "تاریخ",
+    "revenue_cents": "آمدنی (سینٹ)",
+    "cost_cents": "لاگت (سینٹ)",
+    "profit_cents": "منافع (سینٹ)",
+    "orders": "آرڈرز",
+    "total": "کل",
+    "source": "ذریعہ",
+    "count": "گنتی",
+    "status": "حیثیت",
+    "product": "پروڈکٹ",
+    "category": "زمرہ",
+    "quantity": "مقدار",
+    "table": "میز",
+    "waiter": "ویٹر",
+    "source_public": "عوامی (آن لائن)",
+    "source_staff": "عملہ",
+    "res_status_booked": "بک شدہ",
+    "res_status_seated": "بٹھایا گیا",
+    "res_status_finished": "مکمل",
+    "res_status_cancelled": "منسوخ شدہ",
+    "res_status_no_show": "غیر حاضر",
+}
+
 _BG: dict[str, str] = {
     **_EN,
     "sheet_summary": "Обобщение",
@@ -263,6 +294,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "bg": _BG,
     "zh-CN": _ZH,
     "hi": _HI,
+    "ur": _UR,
 }
 
 

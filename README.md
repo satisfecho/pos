@@ -257,7 +257,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file config
 
 ## Internationalization (i18n)
 
-- **Languages:** English, Spanish, Catalan, German, Chinese (Simplified), Hindi (see `front/public/i18n/*.json`).
+- **Languages:** English, Spanish, Catalan, German, French, Bulgarian, Chinese (Simplified), Hindi, Urdu (RTL) — see `front/public/i18n/*.json`.
 - **Currency:** Per-tenant (e.g. EUR, USD, MXN, INR, CNY, TWD).
 - **Language picker:** In admin sidebar and on the public menu.
 - **API:** Use `?lang=es` (or other code) for localized API messages.

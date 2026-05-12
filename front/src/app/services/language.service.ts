@@ -10,12 +10,16 @@ export const SUPPORTED_LANGUAGES = [
   { code: 'bg', label: 'Български', locale: 'bg-BG' },
   { code: 'zh-CN', label: '中文（简体）', locale: 'zh-CN' },
   { code: 'hi', label: 'हिन्दी', locale: 'hi-IN' },
+  { code: 'ur', label: 'اردو', locale: 'ur-PK' },
 ] as const;
 
 export type LanguageCode = typeof SUPPORTED_LANGUAGES[number]['code'];
 
 const LANG_STORAGE_KEY = 'pos_language';
 const DEFAULT_LANGUAGE: LanguageCode = 'en';
+
+// Languages written right-to-left. Extend this list when new RTL languages are added.
+const RTL_LANGUAGES: readonly LanguageCode[] = ['ur'];
 
 @Injectable({
   providedIn: 'root'
@@ -73,10 +77,16 @@ export class LanguageService {
     this.currentLanguage.set(normalizedLang);
     this.currentLocale.set(langConfig.locale);
 
-    // Update document lang attribute for accessibility
+    // Update document lang and dir attributes for accessibility and layout direction
     if (typeof document !== 'undefined') {
       document.documentElement.lang = normalizedLang;
+      document.documentElement.dir = RTL_LANGUAGES.includes(normalizedLang) ? 'rtl' : 'ltr';
     }
+  }
+
+  /** True when the current language is written right-to-left (e.g. Urdu). */
+  isRtl(): boolean {
+    return RTL_LANGUAGES.includes(this.currentLanguage());
   }
 
   getLanguage(): LanguageCode {

@@ -10,7 +10,7 @@ The frontend uses the industry-standard `@ngx-translate` library to handle stati
 
 ### Core Components
 - **Library:** `@ngx-translate/core` and `@ngx-translate/http-loader`.
-- **Storage:** Translation files are located in `front/public/i18n/*.json` (e.g., `en.json`, `es.json`, `ca.json`, `de.json`, `zh-CN.json`, `hi.json`).
+- **Storage:** Translation files are located in `front/public/i18n/*.json` (e.g., `en.json`, `es.json`, `ca.json`, `de.json`, `zh-CN.json`, `hi.json`, `ur.json`).
 - **Service:** `LanguageService` (`front/src/app/services/language.service.ts`) acts as a wrapper around `@ngx-translate/core`.
 
 ### Initialization
@@ -92,8 +92,25 @@ The following languages are currently supported across the stack:
 - **es:** Español
 - **ca:** Català
 - **de:** Deutsch
+- **fr:** Français
+- **bg:** Български
 - **zh-CN:** 中文 (简体)
 - **hi:** हिन्दी
+- **ur:** اردو (RTL — right-to-left layout)
+
+### Right-to-left (RTL) languages
+
+`LanguageService.applyLanguage()` sets `document.documentElement.dir` to `rtl`
+for RTL language codes (currently `ur`) and `ltr` for everything else, in
+addition to `lang`. The `RTL_LANGUAGES` constant in
+`front/src/app/services/language.service.ts` lists the RTL codes so new
+languages such as Arabic or Hebrew can be added by appending their code.
+
+Templates should prefer logical CSS properties (`margin-inline-*`,
+`padding-inline-*`, `text-align: start/end`, `inset-inline-*`) so visual
+mirroring follows `dir` automatically. Icons that imply direction (arrows
+forward / back, calendar navigation) may stay LTR-shaped where that matches
+local convention.
 
 ---
 
