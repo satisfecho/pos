@@ -17,6 +17,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Added
 
 - **Internationalization — Urdu (RTL):** added **`ur`** (اردو) as a fully supported language across the stack. Frontend `LanguageService` registers `ur` (locale `ur-PK`), and `applyLanguage()` now sets `document.documentElement.dir` to `rtl` for Urdu (and any future RTL code listed in `RTL_LANGUAGES`) and `ltr` otherwise. New `front/public/i18n/ur.json` mirrors `en.json` key-for-key with Urdu translations and preserved `{{placeholders}}`. Backend `app/language_service.py`, `app/messages.py`, `app/report_export_i18n.py`, and `app/schedule_export_i18n.py` (including planned-vs-clocked labels) ship Urdu equivalents (#205).
+- **Login / tenant picker:** staff login now shows the selected restaurant name and logo when opened from `/login?tenant=…`, with a link back to choose a different restaurant (#206).
 - **Fiscal invoicing (Spain / VeriFactu preparation):** per-tenant **`fiscal_mode`** (off / test / live), **`fiscal_invoice`** table with series and sequential numbering, **POST/GET `/orders/{id}/fiscal-invoice`** (stub AEAT payloads; no production AEAT HTTP call), **Settings → Payments** fiscal section, and **Print Factura** / edit-order print with **QR + disclaimer** when fiscal mode is on (#203).
 - **Kitchen / bar displays:** header control to enter **browser fullscreen** (Fullscreen API with `webkit` / `moz` / `ms` fallbacks); exit via the same control, Escape, or leaving the page. Shared **`/kitchen`** and **`/bar`** view (`KitchenDisplayComponent`) (#202).
 - **Settings / marketing — social posts (admin):** **Social posts** tab — compose **image + caption**, **Meta OAuth** (tokens encrypted server-side), **Facebook Page** and **Instagram Business** channels (IG needs **`PUBLIC_APP_BASE_URL`** for Graph image URL), **publish now / schedule**, **history** with per-channel status; background worker publishes due posts (#199).
@@ -37,6 +38,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Tables floor plan: payment chip on the SVG aligned with the bottom of the table shape; pill and label scale on very small shapes (#188).
 
 ### Fixed
+
+- **Login (staff):** sign-in is no longer blocked when **iOS Safari / Keychain** autofills email and password without updating the reactive form; values are synced from the inputs on submit before validation, the submit button stays available when the form is not loading, and invalid empty submit shows field hints instead of a silent no-op (#204).
 
 - **Landing / mobile:** public **`/`** layout on narrow viewports — language picker sits in the hero toolbar, value bullets stack at a consistent width, and the table-code input row no longer overflows (~320px+); wide desktop layout unchanged (#207).
 

@@ -3,7 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
-import { ApiService } from '../services/api.service';
+import { ApiService, type TenantSummary } from '../services/api.service';
 import { ApiErrorMessageService } from '../services/api-error-message.service';
 import { LanguagePickerComponent } from '../shared/language-picker.component';
 import { LegalLinksComponent } from '../shared/legal-links.component';
@@ -24,6 +24,19 @@ import { LegalLinksComponent } from '../shared/legal-links.component';
             <app-language-picker></app-language-picker>
           </div>
         </div>
+
+        @if (selectedTenant()) {
+          <div class="tenant-context" data-testid="login-tenant-context">
+            @if (selectedTenantLogoUrl()) {
+              <img [src]="selectedTenantLogoUrl()!" [alt]="selectedTenant()!.name" class="tenant-context-logo" />
+            }
+            <div class="tenant-context-copy">
+              <span>{{ 'AUTH.LOGGING_INTO' | translate }}</span>
+              <strong>{{ selectedTenant()!.name }}</strong>
+            </div>
+            <a routerLink="/">{{ 'AUTH.CHANGE_RESTAURANT' | translate }}</a>
+          </div>
+        }
 
         @if (showOtpStep()) {
           <p class="otp-prompt">{{ 'AUTH.OTP_ENTER_CODE' | translate }}</p>
@@ -62,6 +75,9 @@ import { LegalLinksComponent } from '../shared/legal-links.component';
               [placeholder]="translate.instant('AUTH.EMAIL_PLACEHOLDER')"
               autocomplete="email"
             >
+            @if (form.get('username')?.touched && form.get('username')?.invalid) {
+              <div class="field-error">{{ 'AUTH.INVALID_EMAIL' | translate }}</div>
+            }
           </div>
 
           <div class="form-group">
@@ -92,7 +108,7 @@ import { LegalLinksComponent } from '../shared/legal-links.component';
             <div class="error-banner">{{ error() }}</div>
           }
 
-          <button type="submit" class="btn-submit" [disabled]="form.invalid || loading()">
+          <button type="submit" class="btn-submit" [disabled]="loading()">
             {{ loading() ? ('AUTH.SIGNING_IN' | translate) : ('AUTH.SIGN_IN' | translate) }}
           </button>
         </form>
@@ -140,11 +156,11 @@ import { LegalLinksComponent } from '../shared/legal-links.component';
     }
     .input-with-toggle input {
       flex: 1;
-      padding-right: 2.75rem;
+      padding-inline-end: 2.75rem;
     }
     .input-with-toggle .pw-toggle {
       position: absolute;
-      right: var(--space-2);
+      inset-inline-end: var(--space-2);
       top: 50%;
       transform: translateY(-50%);
       background: none;
@@ -181,6 +197,61 @@ import { LegalLinksComponent } from '../shared/legal-links.component';
         color: var(--color-text-muted);
         font-size: 0.9375rem;
       }
+    }
+
+    .tenant-context {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      margin-bottom: var(--space-5);
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+    }
+
+    .tenant-context-logo {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: var(--radius-md);
+      object-fit: contain;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      flex: 0 0 auto;
+    }
+
+    .tenant-context-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .tenant-context-copy span {
+      display: block;
+      color: var(--color-text-muted);
+      font-size: 0.8125rem;
+      line-height: 1.2;
+    }
+
+    .tenant-context-copy strong {
+      display: block;
+      color: var(--color-text);
+      font-size: 0.9375rem;
+      line-height: 1.35;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tenant-context a {
+      color: var(--color-primary);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .tenant-context a:hover {
+      text-decoration: underline;
     }
 
     .error-banner {
@@ -262,7 +333,7 @@ import { LegalLinksComponent } from '../shared/legal-links.component';
     }
     .forgot-row {
       margin-top: var(--space-2);
-      text-align: right;
+      text-align: end;
     }
     .forgot-row a {
       font-size: 0.875rem;
@@ -271,6 +342,12 @@ import { LegalLinksComponent } from '../shared/legal-links.component';
     }
     .forgot-row a:hover {
       text-decoration: underline;
+    }
+
+    .field-error {
+      margin-top: var(--space-2);
+      color: var(--color-error);
+      font-size: 0.8125rem;
     }
   `]
 })
@@ -284,6 +361,8 @@ export class LoginComponent implements OnInit {
 
   legalTermsUrl = signal<string | null>(null);
   legalPrivacyUrl = signal<string | null>(null);
+  selectedTenant = signal<TenantSummary | null>(null);
+  selectedTenantLogoUrl = signal<string | null>(null);
 
   ngOnInit(): void {
     this.api.getPublicLegalUrls().subscribe({
@@ -293,6 +372,7 @@ export class LoginComponent implements OnInit {
       },
       error: () => {},
     });
+    this.loadSelectedTenant();
   }
 
   error = signal<string>('');
@@ -313,33 +393,68 @@ export class LoginComponent implements OnInit {
     return t ? { tenant: t } : {};
   }
 
-  onSubmit() {
-    if (this.form.valid) {
-      this.error.set('');
-      this.loading.set(true);
+  private loadSelectedTenant(): void {
+    const tenantParam = this.route.snapshot.queryParamMap.get('tenant');
+    const tenantId = tenantParam != null ? Number.parseInt(tenantParam, 10) : NaN;
+    if (!Number.isInteger(tenantId) || tenantId <= 0) return;
 
-      const username = this.form.get('username')?.value ?? '';
-      const password = this.form.get('password')?.value ?? '';
-      const tenantId = this.route.snapshot.queryParams['tenant'];
-      const id = tenantId != null ? parseInt(tenantId, 10) : undefined;
-      this.api.login(username, password, isNaN(id as number) ? undefined : id).subscribe({
-        next: () => {
-          this.router.navigate(['/dashboard']);
-        },
-        error: (err) => {
-          this.loading.set(false);
-          if (err.status === 403 && err.error?.require_otp && err.error?.temp_token) {
-            this.otpTempToken.set(err.error.temp_token);
-            this.showOtpStep.set(true);
-            this.error.set('');
-          } else if (err.status === 429) {
-            this.error.set(this.apiErr.fromHttpError(err, 'AUTH.LOGIN_RATE_LIMITED'));
-          } else {
-            this.error.set(this.apiErr.fromHttpError(err, 'AUTH.LOGIN_FAILED'));
-          }
-        }
-      });
+    this.api.getPublicTenant(tenantId).subscribe({
+      next: (tenant) => {
+        this.selectedTenant.set(tenant);
+        this.selectedTenantLogoUrl.set(this.api.getTenantLogoUrl(tenant.logo_filename, tenant.id));
+      },
+      error: () => {
+        this.selectedTenant.set(null);
+        this.selectedTenantLogoUrl.set(null);
+      },
+    });
+  }
+
+  /** iOS Safari Keychain can fill inputs without updating the reactive form model. */
+  private syncLoginFieldsFromDom(): void {
+    const emailEl = document.getElementById('email') as HTMLInputElement | null;
+    const passwordEl = document.getElementById('password') as HTMLInputElement | null;
+    this.form.patchValue(
+      {
+        username: emailEl?.value ?? this.form.get('username')?.value ?? '',
+        password: passwordEl?.value ?? this.form.get('password')?.value ?? '',
+      },
+      { emitEvent: false },
+    );
+  }
+
+  onSubmit() {
+    this.syncLoginFieldsFromDom();
+    this.form.updateValueAndValidity({ emitEvent: false });
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
     }
+
+    this.error.set('');
+    this.loading.set(true);
+
+    const username = this.form.get('username')?.value ?? '';
+    const password = this.form.get('password')?.value ?? '';
+    const tenantId = this.route.snapshot.queryParams['tenant'];
+    const id = tenantId != null ? parseInt(tenantId, 10) : undefined;
+    this.api.login(username, password, isNaN(id as number) ? undefined : id).subscribe({
+      next: () => {
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        this.loading.set(false);
+        if (err.status === 403 && err.error?.require_otp && err.error?.temp_token) {
+          this.otpTempToken.set(err.error.temp_token);
+          this.showOtpStep.set(true);
+          this.error.set('');
+        } else if (err.status === 429) {
+          this.error.set(this.apiErr.fromHttpError(err, 'AUTH.LOGIN_RATE_LIMITED'));
+        } else {
+          this.error.set(this.apiErr.fromHttpError(err, 'AUTH.LOGIN_FAILED'));
+        }
+      },
+    });
   }
 
   onSubmitOtp() {
