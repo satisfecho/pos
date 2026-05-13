@@ -1,0 +1,121 @@
+.pricing-helper-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.pricing-helper-dialog {
+  width: min(100%, 32rem);
+  max-height: min(90vh, 40rem);
+  overflow: auto;
+  border-radius: 12px;
+  background: var(--surface-card, #fff);
+  color: var(--text-primary, #1a1a1a);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+}
+
+.pricing-helper-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1rem 0.5rem;
+  border-bottom: 1px solid var(--border-subtle, #e8e8e8);
+}
+
+.pricing-helper-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  text-align: start;
+}
+
+.pricing-helper-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mode-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.mode-tabs button {
+  flex: 1;
+  min-width: 7rem;
+}
+
+.target-segments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.target-segments button {
+  flex: 1;
+  min-width: 5.5rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 0.75rem;
+}
+
+.form-grid .full-row {
+  grid-column: 1 / -1;
+}
+
+label.field-label {
+  display: block;
+  font-size: 0.8rem;
+  margin-bottom: 0.15rem;
+  text-align: start;
+}
+
+.preview-panel {
+  margin-block-start: 0.25rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: var(--surface-muted, #f4f4f5);
+  font-size: 0.9rem;
+}
+
+.preview-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-block: 0.2rem;
+  text-align: start;
+}
+
+.preview-row span:last-child {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-block-start: 0.5rem;
+}
+
+.error-text {
+  color: var(--danger, #b42318);
+  font-size: 0.85rem;
+  text-align: start;
+}
+
+.unit-select {
+  width: 100%;
+}

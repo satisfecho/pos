@@ -330,3 +330,20 @@
     font-size: 0.875rem;
     cursor: pointer;
 }
+
+.price-row-with-helper {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--space-2);
+}
+
+.price-row-with-helper .price-input {
+    flex: 1;
+    min-width: 120px;
+}
+
+.pricing-ideal-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+}

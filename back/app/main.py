@@ -37,6 +37,7 @@ from . import models, security
 from .db import check_db_connection, create_db_and_tables, get_session, engine
 from .settings import settings
 from .inventory_routes import router as inventory_router
+from .pricing_routes import router as pricing_router
 from .reports_routes import router as reports_router
 from .attendance_routes import router as attendance_router
 from .tenant_lifecycle_routes import router as tenant_lifecycle_router
@@ -467,6 +468,7 @@ app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 # Register Inventory API router
 app.include_router(inventory_router, prefix="/inventory", tags=["Inventory"])
+app.include_router(pricing_router, prefix="/pricing", tags=["Pricing"])
 # Reports (sales / revenue analysis)
 app.include_router(reports_router, prefix="/reports", tags=["Reports"])
 app.include_router(attendance_router, prefix="/reports", tags=["Reports"])

@@ -9,11 +9,19 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { intlLocaleFromTranslate } from '../shared/intl-locale';
 import { currencySymbolFromIsoCode } from '../shared/currency-symbol';
 import { CategoriesComponent } from './categories.component';
+import { PricingHelperComponent } from './pricing-helper.component';
 
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [FormsModule, SidebarComponent, CommonModule, TranslateModule, CategoriesComponent],
+  imports: [
+    FormsModule,
+    SidebarComponent,
+    CommonModule,
+    TranslateModule,
+    CategoriesComponent,
+    PricingHelperComponent,
+  ],
   template: `
     <app-sidebar>
         <div class="page-header">
@@ -86,9 +94,16 @@ import { CategoriesComponent } from './categories.component';
                      </div>
                      <div class="form-group form-group-sm">
                        <label for="price">{{ 'PRODUCTS.PRODUCT_PRICE' | translate }} <span class="required" aria-hidden="true">*</span></label>
-                       <div class="price-input">
-                         <span class="currency">{{ currency() }}</span>
-                         <input id="price" type="number" step="0.01" [(ngModel)]="formData.price" name="price" required [placeholder]="'PRODUCTS.PRICE_PLACEHOLDER' | translate" [readonly]="!canEditProducts()" [class.input-error]="productFormErrors()?.price" (ngModelChange)="clearProductFormError('price')">
+                       <div class="price-row-with-helper">
+                         <div class="price-input">
+                           <span class="currency">{{ currency() }}</span>
+                           <input id="price" type="number" step="0.01" [(ngModel)]="formData.price" name="price" required [placeholder]="'PRODUCTS.PRICE_PLACEHOLDER' | translate" [readonly]="!canEditProducts()" [class.input-error]="productFormErrors()?.price" (ngModelChange)="clearProductFormError('price')">
+                         </div>
+                         @if (canEditProducts()) {
+                           <button type="button" class="btn btn-secondary btn-sm pricing-ideal-btn" (click)="openPricingHelper()">
+                             {{ 'PRICING.CALCULATE_IDEAL' | translate }}
+                           </button>
+                         }
                        </div>
                        @if (productFormErrors()?.price) {
                          <span class="field-error" role="alert">{{ 'PRODUCTS.PRICE_REQUIRED' | translate }}</span>
@@ -513,6 +528,16 @@ import { CategoriesComponent } from './categories.component';
                </div>
              </div>
            }
+           @if (pricingHelperOpen()) {
+             <app-pricing-helper
+               [productId]="pricingHelperProductId()"
+               [productCategory]="formData.category || null"
+               [currencyCode]="currencyCode()"
+               [currencySymbol]="currency()"
+               (closed)="closePricingHelper()"
+               (applyMajor)="onPricingHelperApply($event)"
+             />
+           }
         </div>
     </app-sidebar>
   `,
@@ -535,6 +560,8 @@ export class ProductsComponent implements OnInit {
   showAddForm = signal(false);
   editingProduct = signal<Product | null>(null);
   productToDelete = signal<Product | null>(null);
+  pricingHelperOpen = signal(false);
+  pricingHelperProductId = signal<number | null>(null);
   error = signal('');
   /** Set when submit was attempted with invalid required fields; cleared on edit or cancel */
   productFormErrors = signal<{ name?: boolean; price?: boolean } | null>(null);
@@ -930,6 +957,21 @@ export class ProductsComponent implements OnInit {
     this.productFormErrors.set(null);
     this.clearPendingImage();
     this.clearQuestionsState();
+    this.pricingHelperOpen.set(false);
+  }
+
+  openPricingHelper() {
+    this.pricingHelperProductId.set(this.editingProduct()?.id ?? null);
+    this.pricingHelperOpen.set(true);
+  }
+
+  closePricingHelper() {
+    this.pricingHelperOpen.set(false);
+  }
+
+  onPricingHelperApply(major: number) {
+    this.formData.price = major;
+    this.closePricingHelper();
   }
 
   private clearQuestionsState() {
