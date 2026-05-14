@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue #208 (align Settings label and gear icon between sidebar and dashboard) was implemented and handed off with a tester **PASS** report.
+- **What was done:** i18n keys `DASHBOARD.SETTINGS_TITLE` and `NAV.SETTINGS` were aligned across all nine locales; the sidebar Settings row SVG was replaced with the same gear icon as the dashboard card; `CHANGELOG.md` was updated under `[Unreleased]`.
+- **What was tested:** Build log grep (no TS/Angular errors), scripted equality of sidebar vs card titles per locale, icon path match in source, FR/DE spot-check, and optional `test:landing-version` with `SKIP_LANDING_PACKAGE_VERSION_CHECK=1` — all met or noted as pass with environment caveat.
+- **Why closed:** All acceptance criteria in the task and test report were satisfied; no further action required on this work item.
+- **Closed at (UTC):** 2026-05-14 08:16
+---
+
 # Align Settings name and icon between sidebar and dashboard card
 
 ## GitHub Issues
