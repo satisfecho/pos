@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub issue #209 delivered a **Pricing helper** (recipe/cost-based and container simulator) with backend math, admin API routes, Products UI modal, and nine-locale i18n; the tester filed a **PASS** test report and renamed the task to **CLOSED-**.
+- **What was done:** Implemented `pricing_service` + `GET/POST` pricing endpoints, Angular helper + `pricing.service.ts`, **Calculate ideal price** on Products, logical CSS for RTL, and `tests/test_pricing_service.py`; no DB migrations or new permissions per scope.
+- **What was tested:** Pytest (9 passed), authenticated `/api/pricing/product/{id}/suggest` and `/api/pricing/simulate`, headless Products flow (**Use this price** without auto-save), `PRICING` keys in all locale files + Urdu `dir=rtl`, smoke/landing with documented note on strict footer semver vs stale front image.
+- **Why closed:** Test report **overall PASS**; acceptance criteria met; remaining semver mismatch called out as environment staleness, not feature defect.
+- **Closed at (UTC):** 2026-05-14 08:36
+---
+
 # Pricing helper: suggest selling price from cost / pour cost target (drinks & food)
 
 ## GitHub Issues
