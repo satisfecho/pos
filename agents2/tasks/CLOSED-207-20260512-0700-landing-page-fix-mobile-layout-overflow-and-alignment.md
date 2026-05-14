@@ -28,3 +28,20 @@ On narrow mobile viewports, the public landing page (`/`) has three CSS-only pro
 2. **Desktop:** At **≥961px**, confirm picker remains top-right of the hero, value bullets in a horizontal wrap as before, guest panel unchanged.
 3. **Build:** `docker logs --since 10m pos-front 2>&1 | grep -iE 'error|NG8'` — expect no matches after a save/rebuild.
 4. **Smoke:** From repo root: `BASE_URL=http://127.0.0.1:4202 npm run test:landing-version --prefix front`. If the footer semver differs from `front/package.json` (stale `COMMIT_HASH` / image), use `SKIP_LANDING_PACKAGE_VERSION_CHECK=1` for the same run (see script header in `front/scripts/test-landing-version.mjs`).
+
+---
+
+## Test report
+
+1. **Date/time (UTC):** 2026-05-14T08:47Z–08:50Z (log window ~45m ending 08:50Z).
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; `BASE_URL=http://127.0.0.1:4202`; branch `development`, commit `00a84c9b`.
+3. **What was tested:** Responsive checks at **320px, 375px, 414px**, and desktop **1200px**; desktop layout sanity; `pos-front` log grep; `test:landing-version` smoke.
+4. **Results:**
+   - **Responsive (~375 / ~414 / ~320):** PASS — headless `puppeteer-core` against `/`: at 320/375/414, `document.documentElement.scrollWidth <= clientWidth + 2`; `.landing-hero` contains `app-language-picker`; `.table-code-row` bounding box did not extend past viewport; three `.landing-value` elements reported equal widths at each mobile width (256px @320, 311px @375, 320px @414).
+   - **Desktop (≥961 proxy 1200px):** PASS — same run at 1200px: no horizontal document overflow; picker still inside `.landing-hero` (desktop absolute positioning preserved within hero); value bullets intentionally differ in width on wide layout (expected horizontal wrap behaviour).
+   - **Build / pos-front:** PASS — `docker logs --since 45m pos-front 2>&1 | grep -iE 'error|NG8|Application bundle generation failed'` produced no lines.
+   - **Smoke `test:landing-version`:** PASS — `cd front && BASE_URL=http://127.0.0.1:4202 SKIP_LANDING_PACKAGE_VERSION_CHECK=1 HEADLESS=1 npm run test:landing-version` exited 0 (version check skipped for stale footer semver vs `package.json`).
+5. **Overall:** **PASS**
+6. **Product owner feedback:** The landing page stays within the viewport on narrow phones, the language control reads as part of the hero, and the table-code row no longer forces horizontal scrolling. Desktop behaviour remains acceptable at the tested wide width.
+7. **URLs tested:** (1) `http://127.0.0.1:4202/` at viewports 320×800, 375×800, 414×800, 1200×800.
+8. **Relevant log excerpts:** Same landing smoke as #204: `>>> RESULT: Landing version OK; demo login (tenant=1) OK; sidebar nav OK.` with `exit_code: 0`. No error/NG8 matches from `pos-front` grep in this window.
