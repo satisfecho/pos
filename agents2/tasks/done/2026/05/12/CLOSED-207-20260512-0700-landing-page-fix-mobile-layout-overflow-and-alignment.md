@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub #207 asked for mobile-only landing layout fixes (language picker, value bullets, table-code row) without changing desktop.
+- **What was done:** Coder updated `landing.component.ts` (hero toolbar flow, stacked value bullets, flex/min-width for table-code row) and logged the change in `CHANGELOG.md`; tester recorded PASS with evidence.
+- **What was tested:** Responsive checks at 320/375/414px and desktop 1200px, `pos-front` log grep, and `test:landing-version` smoke — all PASS per test report.
+- **Why closed:** Test report overall **PASS**; acceptance criteria met.
+- **Closed at (UTC):** 2026-05-14 08:56
+---
+
 # Landing page — fix mobile layout overflow and alignment issues
 
 ## GitHub Issues

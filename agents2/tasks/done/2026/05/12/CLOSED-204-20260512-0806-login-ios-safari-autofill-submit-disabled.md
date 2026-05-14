@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** GitHub #204 reported staff `/login` staying invalid after iOS Keychain autofill because input events did not run, leaving Sign In disabled.
+- **What was done:** Coder adjusted `login.component.ts` (submit not gated on `form.invalid`, DOM sync before validation, touched invalid email hint) and added a changelog entry; tester recorded PASS with evidence.
+- **What was tested:** Angular build logs, landing smoke, desktop login, empty-submit validation, and headless DOM-fill proxy for Keychain-style autofill — all PASS per test report.
+- **Why closed:** Test report overall **PASS**; acceptance criteria met.
+- **Closed at (UTC):** 2026-05-14 08:56
+---
+
 # Login — fix iOS Safari autofill leaving submit button disabled
 
 ## GitHub Issues
