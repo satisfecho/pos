@@ -3,7 +3,7 @@
 HAProxy is the single entry point for end-user traffic. There are two config files:
 
 - **`haproxy.cfg`** — Used with **docker-compose.dev.yml** (local). Listens on **80** and **4202** only; no HTTPS, no certs. Use `http://localhost:4202/`.
-- **`haproxy.prod.cfg`** — Used with **docker-compose.prod.yml** (amvara9/production). Listens on **80** and **443**; HTTP→HTTPS redirect; SSL certs from `certbot/haproxy-certs`. See `certbot/README.md` and `docs/0026-haproxy-ssl-amvara9.md`.
+- **`haproxy.prod.cfg`** — Used with **docker-compose.prod.yml** (amvara9/production). Listens on **80** and **443**; HTTP→HTTPS redirect; SSL certs from `certbot/haproxy-certs`; strips the **`Server`** response header on the public frontend. See `certbot/README.md` and `docs/0026-haproxy-ssl-amvara9.md`.
 
 ## Routing
 

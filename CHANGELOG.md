@@ -23,8 +23,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Settings / marketing — social posts (admin):** **Social posts** tab — compose **image + caption**, **Meta OAuth** (tokens encrypted server-side), **Facebook Page** and **Instagram Business** channels (IG needs **`PUBLIC_APP_BASE_URL`** for Graph image URL), **publish now / schedule**, **history** with per-channel status; background worker publishes due posts (#199).
 - **Settings / delivery marketplaces (admin):** **Integrations** tab for third-party delivery brands; per-tenant **encrypted** API credentials, **test connection** (stub adapters for Uber Eats, Glovo, Deliveroo + sandbox), **catalog mapping** (external item id → POS product), **event log**, and **webhook ingest** URL. Ingested orders use the same **Order** / kitchen flow (no `table_id`); list as **Delivery** in the orders UI (#198).
 
+### Fixed
+
+- **Public API / tenant discovery:** **`GET /public/tenants`** returned **500** on production when migration **`20260501120000_fiscal_invoice_verifactu`** was pending (ORM loaded **`tenant.fiscal_mode`** before columns existed). Migration SQL is now idempotent (**`IF NOT EXISTS`**); repair partial DBs with **`python -m app.migrate --sync-idempotent`** if needed (#211).
+
 ### Changed
 
+- **Security / HTTP headers (production):** nginx **`server_tokens off`** in **`front/nginx.conf`** (prod image) and HAProxy **`http-response del-header Server`** on the public prod frontend so responses no longer expose **`Server: nginx/1.x`** (#210).
 - **Dashboard / sidebar:** the home **Settings** card and the sidebar **Settings** entry now use the **same gear icon** and the **same translated title** in every locale (aligned `DASHBOARD.SETTINGS_TITLE` with `NAV.SETTINGS` where they differed) (#208).
 - **Frontend / dependencies:** aligned **`@angular/cli`**, **`@angular/build`**, and **`@angular/ssr`** to **21.0.6** and refreshed **`front/package-lock.json`** so the **`@angular/build`** peer dependency **`@angular/ssr@^21.0.6`** is satisfied (previously **21.0.5**).
 - **Settings / marketing — Social posts:** compose area uses a **secondary button + filename** (hidden file input) and preview below, matching other image pickers; **Publish immediately** is a standard inline checkbox row without the global full-width input styling on the control (#201).
