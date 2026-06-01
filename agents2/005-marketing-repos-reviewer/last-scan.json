@@ -1,1 +1,34 @@
-{"repos":{}}
+{
+  "repos": {
+    "satisfecho/010_antillana": {
+      "last_artifact": "dist",
+      "pushed_at": "2026-04-21T07:40:14Z"
+    },
+    "satisfecho/020_dilruba": {
+      "last_artifact": "dist",
+      "pushed_at": "2026-04-21T06:05:25Z"
+    },
+    "satisfecho/030_flamanapolitana": {
+      "last_artifact": "dist",
+      "pushed_at": "2026-04-21T06:05:30Z"
+    },
+    "satisfecho/040_gustazo": {
+      "last_artifact": "gustazo-dist",
+      "pushed_at": "2026-05-28T22:26:30Z"
+    },
+    "satisfecho/050_hakone": {
+      "last_artifact": "dist",
+      "pushed_at": "2026-04-21T06:05:35Z"
+    },
+    "satisfecho/082_la_moca": {
+      "last_artifact": "la-moca-dist",
+      "pushed_at": "2026-05-29T09:38:56Z"
+    },
+    "satisfecho/083_wimpi": {
+      "pushed_at": "2026-06-01T08:47:56Z"
+    },
+    "satisfecho/085_Bosskebabypizzeria": {
+      "pushed_at": "2026-06-01T09:25:00Z"
+    }
+  }
+}
