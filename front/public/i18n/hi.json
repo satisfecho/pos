@@ -197,7 +197,10 @@
     "LOAD_FAILED": "मेनू लोड नहीं हो सका। बाद में पुनः प्रयास करें।",
     "INVALID_TENANT": "अमान्य रेस्तरां लिंक।",
     "TENANT_NOT_FOUND": "रेस्तरां नहीं मिला।",
-    "BACK_HOME": "होम पर वापस"
+    "BACK_HOME": "होम पर वापस",
+    "CATEGORY_OTHER": "अन्य",
+    "EXPAND_CATEGORY": "{{category}} विस्तृत करें",
+    "COLLAPSE_CATEGORY": "{{category}} संक्षिप्त करें"
   },
   "DASHBOARD": {
     "TITLE": "डैशबोर्ड",
@@ -1825,6 +1828,11 @@
     "NO_USERS": "कोई उपयोगकर्ता नहीं मिला",
     "DELETE_CONFIRM_TITLE": "उपयोगकर्ता हटाएं",
     "DELETE_CONFIRM_MESSAGE": "क्या आप वाकई {{name}} को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+    "ADD_SUPPORT_ACCESS": "Satisfecho सहायता जोड़ें",
+    "ADD_SUPPORT_ACCESS_HINT": "एक अस्थायी पासवर्ड सेट करें और इसे Satisfecho सहायता के साथ सुरक्षित रूप से साझा करें। जब सहायता पहुँच की आवश्यकता न रहे तो इस उपयोगकर्ता को हटाएँ या बदलें।",
+    "SUPPORT_EDIT_EXISTING_HINT": "Satisfecho सहायता पहुँच पहले से सक्रिय है। जब आवश्यकता न रहे तो पासवर्ड अपडेट करें या इस उपयोगकर्ता को हटाएँ।",
+    "SUPPORT_BADGE": "सहायता",
+    "SUPPORT_DEFAULT_NAME": "Satisfecho सहायता",
     "ROLES": {
       "OWNER": "मालिक",
       "ADMIN": "व्यवस्थापक",

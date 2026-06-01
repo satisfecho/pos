@@ -46,6 +46,8 @@ export class PublicMenuComponent implements OnInit, OnDestroy {
   loading = signal(true);
   menuLoading = signal(false);
   errorKind = signal<'invalid_tenant' | 'tenant_not_found' | 'menu_load_failed' | null>(null);
+  /** Category ids collapsed by user toggle (default: all expanded). */
+  private collapsedCategoryIds = signal<Set<string>>(new Set());
 
   constructor() {
     afterNextRender(() => this.updateDocumentTitle());
@@ -134,6 +136,49 @@ export class PublicMenuComponent implements OnInit, OnDestroy {
 
   categories(): PublicTenantMenuCategory[] {
     return this.menu()?.categories ?? [];
+  }
+
+  isCategoryExpanded(categoryId: string): boolean {
+    return !this.collapsedCategoryIds().has(categoryId);
+  }
+
+  toggleCategory(categoryId: string): void {
+    this.collapsedCategoryIds.update((ids) => {
+      const next = new Set(ids);
+      if (next.has(categoryId)) {
+        next.delete(categoryId);
+      } else {
+        next.add(categoryId);
+      }
+      return next;
+    });
+  }
+
+  /** Translation key for known API category names; falls back to raw value. */
+  getCategoryLabel(category: string): string {
+    const keyMap: Record<string, string> = {
+      Starters: 'PRODUCTS.CATEGORY_STARTERS',
+      'Main Course': 'PRODUCTS.CATEGORY_MAIN_COURSE',
+      Desserts: 'PRODUCTS.CATEGORY_DESSERTS',
+      Beverages: 'PRODUCTS.CATEGORY_BEVERAGES',
+      Sides: 'PRODUCTS.CATEGORY_SIDES',
+      Other: 'PUBLIC_MENU.CATEGORY_OTHER',
+    };
+    const key = keyMap[category];
+    if (key) return this.translate.instant(key);
+    return category;
+  }
+
+  categoryPanelId(categoryId: string): string {
+    return `public-menu-cat-panel-${categoryId}`;
+  }
+
+  categoryToggleAriaLabel(category: PublicTenantMenuCategory): string {
+    const name = this.getCategoryLabel(category.name);
+    const key = this.isCategoryExpanded(category.id)
+      ? 'PUBLIC_MENU.COLLAPSE_CATEGORY'
+      : 'PUBLIC_MENU.EXPAND_CATEGORY';
+    return this.translate.instant(key, { category: name });
   }
 
   displayName(): string {

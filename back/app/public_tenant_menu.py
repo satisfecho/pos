@@ -185,6 +185,10 @@ def _load_flat_products(
 
     products: list[dict] = []
 
+    linked_legacy_product_ids = {
+        tp.product_id for tp in tenant_products if tp.product_id is not None
+    }
+
     for tp in tenant_products:
         catalog_item = session.get(models.ProductCatalog, tp.catalog_id)
         category = catalog_item.category if catalog_item else None
@@ -230,6 +234,8 @@ def _load_flat_products(
         )
 
     for lp in legacy_products:
+        if lp.id in linked_legacy_product_ids:
+            continue
         name = _translated_name(
             session, tenant_id, "product", lp.id, lp.name or "", lang
         )

@@ -197,7 +197,10 @@
     "LOAD_FAILED": "مینو لوڈ نہیں ہو سکا۔ بعد میں دوبارہ کوشش کریں۔",
     "INVALID_TENANT": "غلط ریسٹورانٹ لنک۔",
     "TENANT_NOT_FOUND": "ریسٹورانٹ نہیں ملا۔",
-    "BACK_HOME": "ہوم پر واپس"
+    "BACK_HOME": "ہوم پر واپس",
+    "CATEGORY_OTHER": "دیگر",
+    "EXPAND_CATEGORY": "{{category}} کھولیں",
+    "COLLAPSE_CATEGORY": "{{category}} بند کریں"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "ٹیک آوے اور گھر پر آرڈر",
@@ -2055,6 +2058,11 @@
     "NO_USERS": "کوئی صارف نہیں ملا",
     "DELETE_CONFIRM_TITLE": "صارف حذف کریں",
     "DELETE_CONFIRM_MESSAGE": "کیا آپ واقعی آپ چاہتے ہیں کو حذف کریں {{name}}? یہ عمل نہیں کر سکتا ہو واپس نہیں.",
+    "ADD_SUPPORT_ACCESS": "Satisfecho سپورٹ شامل کریں",
+    "ADD_SUPPORT_ACCESS_HINT": "عارضی پاس ورڈ مقرر کریں اور Satisfecho سپورٹ کے ساتھ محفوظ طریقے سے شیئر کریں۔ جب سپورٹ رسائی کی ضرورت نہ رہے تو اس صارف کو ہٹائیں یا تبدیل کریں۔",
+    "SUPPORT_EDIT_EXISTING_HINT": "Satisfecho سپورٹ رسائی پہلے سے فعال ہے۔ جب ضرورت نہ رہے تو پاس ورڈ اپ ڈیٹ کریں یا اس صارف کو ہٹائیں۔",
+    "SUPPORT_BADGE": "سپورٹ",
+    "SUPPORT_DEFAULT_NAME": "Satisfecho سپورٹ",
     "ROLES": {
       "OWNER": "مالک",
       "ADMIN": "ایڈمنسٹریٹر",

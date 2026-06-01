@@ -197,7 +197,10 @@
     "LOAD_FAILED": "Impossible de charger la carte. Réessayez plus tard.",
     "INVALID_TENANT": "Lien restaurant invalide.",
     "TENANT_NOT_FOUND": "Restaurant introuvable.",
-    "BACK_HOME": "Retour à l'accueil"
+    "BACK_HOME": "Retour à l'accueil",
+    "CATEGORY_OTHER": "Autres",
+    "EXPAND_CATEGORY": "Développer {{category}}",
+    "COLLAPSE_CATEGORY": "Réduire {{category}}"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "À emporter et livraison",
@@ -1867,6 +1870,11 @@
     "NO_USERS": "Aucun utilisateur",
     "DELETE_CONFIRM_TITLE": "Supprimer l'utilisateur",
     "DELETE_CONFIRM_MESSAGE": "Supprimer {{name}} ? Cette action est irréversible.",
+    "ADD_SUPPORT_ACCESS": "Ajouter le support Satisfecho",
+    "ADD_SUPPORT_ACCESS_HINT": "Définissez un mot de passe temporaire et communiquez-le en toute sécurité au support Satisfecho. Supprimez ou modifiez cet utilisateur lorsque l'accès support n'est plus nécessaire.",
+    "SUPPORT_EDIT_EXISTING_HINT": "L'accès support Satisfecho est déjà actif. Mettez à jour le mot de passe ou supprimez cet utilisateur lorsque l'accès n'est plus nécessaire.",
+    "SUPPORT_BADGE": "Support",
+    "SUPPORT_DEFAULT_NAME": "Support Satisfecho",
     "ROLES": {
       "OWNER": "Propriétaire",
       "ADMIN": "Administrateur",

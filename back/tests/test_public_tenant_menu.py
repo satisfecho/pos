@@ -167,6 +167,47 @@ class TestPublicTenantMenu(PgClientTestCase):
         self.assertEqual(response.status_code, 200, response.text)
         self.assertEqual(response.json()["categories"], [])
 
+    def test_linked_legacy_product_not_duplicated(self):
+        legacy = models.Product(
+            tenant_id=self.tenant.id,
+            name="Demo Burger",
+            price_cents=900,
+            description="Classic burger",
+            category="Main Course",
+        )
+        self.session.add(legacy)
+        self.session.commit()
+        self.session.refresh(legacy)
+
+        catalog = models.ProductCatalog(
+            name="Demo Burger Catalog",
+            category="Main Course",
+            description="Classic burger",
+        )
+        self.session.add(catalog)
+        self.session.commit()
+        self.session.refresh(catalog)
+
+        self.session.add(
+            models.TenantProduct(
+                tenant_id=self.tenant.id,
+                catalog_id=catalog.id,
+                product_id=legacy.id,
+                name="Demo Burger",
+                price_cents=900,
+                is_active=True,
+            )
+        )
+        self.session.commit()
+
+        response = self.client.get(f"/public/tenants/{self.tenant.id}/menu")
+        self.assertEqual(response.status_code, 200, response.text)
+        all_products = [
+            p for c in response.json()["categories"] for p in c["products"]
+        ]
+        self.assertEqual(len(all_products), 1)
+        self.assertEqual(all_products[0]["name"], "Demo Burger")
+
     def test_product_image_url_for_tenant_upload(self):
         self.session.add(
             models.Product(

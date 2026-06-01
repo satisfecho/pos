@@ -197,7 +197,10 @@
     "LOAD_FAILED": "Менюто не може да се зареди. Опитайте по-късно.",
     "INVALID_TENANT": "Невалидна връзка към ресторант.",
     "TENANT_NOT_FOUND": "Ресторантът не е намерен.",
-    "BACK_HOME": "Към началото"
+    "BACK_HOME": "Към началото",
+    "CATEGORY_OTHER": "Други",
+    "EXPAND_CATEGORY": "Разгъни {{category}}",
+    "COLLAPSE_CATEGORY": "Свий {{category}}"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Отнемане и поръчване на дома",
@@ -2030,6 +2033,11 @@
     "NO_USERS": "Няма намерени потребители",
     "DELETE_CONFIRM_TITLE": "Изтриване на потребител",
     "DELETE_CONFIRM_MESSAGE": "Сигурни ли сте, че искате да изтриете {{name}}? Действието е необратимо.",
+    "ADD_SUPPORT_ACCESS": "Добавяне на Satisfecho поддръжка",
+    "ADD_SUPPORT_ACCESS_HINT": "Задайте временна парола и я споделете сигурно с екипа за поддръжка на Satisfecho. Премахнете или променете този потребител, когато достъпът вече не е нужен.",
+    "SUPPORT_EDIT_EXISTING_HINT": "Достъпът за поддръжка на Satisfecho вече е активен. Актуализирайте паролата или премахнете този потребител, когато вече не е необходим.",
+    "SUPPORT_BADGE": "Поддръжка",
+    "SUPPORT_DEFAULT_NAME": "Satisfecho поддръжка",
     "ROLES": {
       "OWNER": "Собственик",
       "ADMIN": "Администратор",

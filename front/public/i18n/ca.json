@@ -197,7 +197,10 @@
     "LOAD_FAILED": "No s'ha pogut carregar la carta. Torneu-ho a provar més tard.",
     "INVALID_TENANT": "Enllaç de restaurant no vàlid.",
     "TENANT_NOT_FOUND": "Restaurant no trobat.",
-    "BACK_HOME": "Tornar a l'inici"
+    "BACK_HOME": "Tornar a l'inici",
+    "CATEGORY_OTHER": "Altres",
+    "EXPAND_CATEGORY": "Desplegar {{category}}",
+    "COLLAPSE_CATEGORY": "Plegar {{category}}"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Emportar i comanda a domicili",
@@ -1884,6 +1887,11 @@
     "NO_USERS": "No s'han trobat usuaris",
     "DELETE_CONFIRM_TITLE": "Eliminar Usuari",
     "DELETE_CONFIRM_MESSAGE": "Estàs segur que vols eliminar {{name}}? Aquesta acció no es pot desfer.",
+    "ADD_SUPPORT_ACCESS": "Afegir suport Satisfecho",
+    "ADD_SUPPORT_ACCESS_HINT": "Definiu una contrasenya temporal i compartiu-la de forma segura amb el suport de Satisfecho. Elimineu o canvieu aquest usuari quan ja no calgui accés de suport.",
+    "SUPPORT_EDIT_EXISTING_HINT": "L'accés de suport Satisfecho ja està actiu. Actualitzeu la contrasenya o elimineu aquest usuari quan ja no calgui.",
+    "SUPPORT_BADGE": "Suport",
+    "SUPPORT_DEFAULT_NAME": "Suport Satisfecho",
     "ROLES": {
       "OWNER": "Propietari",
       "ADMIN": "Administrador",

@@ -197,7 +197,10 @@
     "LOAD_FAILED": "Could not load the menu. Please try again later.",
     "INVALID_TENANT": "Invalid restaurant link.",
     "TENANT_NOT_FOUND": "Restaurant not found.",
-    "BACK_HOME": "Back to home"
+    "BACK_HOME": "Back to home",
+    "CATEGORY_OTHER": "Other",
+    "EXPAND_CATEGORY": "Expand {{category}}",
+    "COLLAPSE_CATEGORY": "Collapse {{category}}"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Take away & Home ordering",
@@ -2055,6 +2058,11 @@
     "NO_USERS": "No users found",
     "DELETE_CONFIRM_TITLE": "Delete User",
     "DELETE_CONFIRM_MESSAGE": "Are you sure you want to delete {{name}}? This action cannot be undone.",
+    "ADD_SUPPORT_ACCESS": "Add Satisfecho support",
+    "ADD_SUPPORT_ACCESS_HINT": "Set a temporary password and share it securely with Satisfecho support. Remove or change this user when support access is no longer needed.",
+    "SUPPORT_EDIT_EXISTING_HINT": "Satisfecho support access is already enabled. Update the password or remove this user when access is no longer needed.",
+    "SUPPORT_BADGE": "Support",
+    "SUPPORT_DEFAULT_NAME": "Satisfecho Support",
     "ROLES": {
       "OWNER": "Owner",
       "ADMIN": "Administrator",

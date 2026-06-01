@@ -1,0 +1,1 @@
+Placeholder directory for Wimpi static build. Populate via scripts/sync-all-marketing-sites.sh or CI. Do not commit downloaded bundle files.

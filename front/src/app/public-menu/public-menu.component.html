@@ -68,31 +68,52 @@
       } @else {
         @for (cat of categories(); track cat.id) {
           <section class="public-menu-category" [attr.aria-labelledby]="'cat-' + cat.id">
-            <h2 class="public-menu-category-title" [id]="'cat-' + cat.id">{{ cat.name }}</h2>
-            <ul class="public-menu-product-list">
-              @for (product of cat.products; track product.id) {
-                <li class="public-menu-product">
-                  @if (product.image_url) {
-                    <img
-                      class="public-menu-product-image"
-                      [src]="productImageUrl(product.image_url)"
-                      [alt]="product.name"
-                      loading="lazy"
-                      (error)="$any($event.target).style.display = 'none'"
-                    />
-                  }
-                  <div class="public-menu-product-body">
-                    <div class="public-menu-product-header">
-                      <span class="public-menu-product-name">{{ product.name }}</span>
-                      <span class="public-menu-product-price">{{ formatPrice(product) }}</span>
-                    </div>
-                    @if (product.description?.trim()) {
-                      <p class="public-menu-product-desc">{{ product.description }}</p>
+            <h2 class="public-menu-category-title" [id]="'cat-' + cat.id">
+              <button
+                type="button"
+                class="public-menu-category-toggle"
+                (click)="toggleCategory(cat.id)"
+                [attr.aria-expanded]="isCategoryExpanded(cat.id)"
+                [attr.aria-controls]="categoryPanelId(cat.id)"
+                [attr.aria-label]="categoryToggleAriaLabel(cat)"
+              >
+                <span class="public-menu-category-name">{{ getCategoryLabel(cat.name) }}</span>
+                <span class="public-menu-category-chevron" aria-hidden="true">{{
+                  isCategoryExpanded(cat.id) ? '▾' : '▸'
+                }}</span>
+              </button>
+            </h2>
+            @if (isCategoryExpanded(cat.id)) {
+              <ul
+                class="public-menu-product-list"
+                [id]="categoryPanelId(cat.id)"
+                role="region"
+                [attr.aria-labelledby]="'cat-' + cat.id"
+              >
+                @for (product of cat.products; track product.id) {
+                  <li class="public-menu-product">
+                    @if (product.image_url) {
+                      <img
+                        class="public-menu-product-image"
+                        [src]="productImageUrl(product.image_url)"
+                        [alt]="product.name"
+                        loading="lazy"
+                        (error)="$any($event.target).style.display = 'none'"
+                      />
                     }
-                  </div>
-                </li>
-              }
-            </ul>
+                    <div class="public-menu-product-body">
+                      <div class="public-menu-product-header">
+                        <span class="public-menu-product-name">{{ product.name }}</span>
+                        <span class="public-menu-product-price">{{ formatPrice(product) }}</span>
+                      </div>
+                      @if (product.description?.trim()) {
+                        <p class="public-menu-product-desc">{{ product.description }}</p>
+                      }
+                    </div>
+                  </li>
+                }
+              </ul>
+            }
           </section>
         }
       }

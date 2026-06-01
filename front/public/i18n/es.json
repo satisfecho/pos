@@ -197,7 +197,10 @@
     "LOAD_FAILED": "No se pudo cargar la carta. Inténtelo más tarde.",
     "INVALID_TENANT": "Enlace de restaurante no válido.",
     "TENANT_NOT_FOUND": "Restaurante no encontrado.",
-    "BACK_HOME": "Volver al inicio"
+    "BACK_HOME": "Volver al inicio",
+    "CATEGORY_OTHER": "Otros",
+    "EXPAND_CATEGORY": "Expandir {{category}}",
+    "COLLAPSE_CATEGORY": "Contraer {{category}}"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Para llevar y pedido a domicilio",
@@ -2041,6 +2044,11 @@
     "NO_USERS": "No se encontraron usuarios",
     "DELETE_CONFIRM_TITLE": "Eliminar Usuario",
     "DELETE_CONFIRM_MESSAGE": "¿Estás seguro de que quieres eliminar a {{name}}? Esta acción no se puede deshacer.",
+    "ADD_SUPPORT_ACCESS": "Añadir soporte Satisfecho",
+    "ADD_SUPPORT_ACCESS_HINT": "Establezca una contraseña temporal y compártala de forma segura con el soporte de Satisfecho. Elimine o cambie este usuario cuando ya no necesite acceso de soporte.",
+    "SUPPORT_EDIT_EXISTING_HINT": "El acceso de soporte de Satisfecho ya está activo. Actualice la contraseña o elimine este usuario cuando ya no sea necesario.",
+    "SUPPORT_BADGE": "Soporte",
+    "SUPPORT_DEFAULT_NAME": "Soporte Satisfecho",
     "ROLES": {
       "OWNER": "Propietario",
       "ADMIN": "Administrador",

@@ -1,6 +1,6 @@
 {
   "name": "front",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "scripts": {
     "ng": "ng",
     "prebuild": "node scripts/get-commit-hash.js",
@@ -33,6 +33,7 @@
     "test:settings-logo": "node scripts/test-settings-logo-upload.mjs",
     "test:settings-providers": "node scripts/test-settings-providers.mjs",
     "test:bartender-role": "node scripts/test-bartender-role.mjs",
+    "test:support-access": "node scripts/test-support-access.mjs",
     "test:kitchen-status-dropdown": "node scripts/test-kitchen-status-dropdown.mjs",
     "test:kitchen-timer": "node scripts/test-kitchen-timer.mjs",
     "test:rate-limit": "node scripts/test-rate-limit.mjs",

@@ -8,6 +8,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.2] - 2026-06-01
+
+### Changed
+
+- **Public menu:** Category sections on **`/public-menu/:tenantId`** collapse and expand via an accessible accordion (keyboard-friendly toggle, **`aria-expanded`**) (#258).
+- **Public menu:** Category headings follow the selected UI language (e.g. **Bebidas** in Spanish instead of raw API English) using existing product category i18n keys and new **`PUBLIC_MENU.*`** strings in all nine locales (#258).
+
+### Fixed
+
+- **Public menu:** Each product appears once when it is linked both as an active tenant product and a legacy **`Product`** row — public menu API dedupes before grouping (#258).
+
+## [2.1.1] - 2026-06-01
+
+### Added
+
+- **Users / support access:** Owners and admins can grant temporary Administrator access to **`support@satisfecho.de`** from **Users** via **Add Satisfecho support** — pre-filled create or edit modal, **Support** badge on the user card, and guidance hints in all locales (#257).
+
 ## [2.1.0] - 2026-06-01
 
 ### Added

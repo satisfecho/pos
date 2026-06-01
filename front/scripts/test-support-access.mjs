@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 /**
- * Puppeteer test: bartender role — Users page shows Bartender in role dropdown.
- * Logs in as admin/owner, opens /users, clicks Add user, asserts the role select
- * includes an option with value "bartender".
+ * Puppeteer test: /users "Add Satisfecho support" pre-fills support@satisfecho.de as admin.
  *
  * Env:
- *   BASE_URL       App URL (default: auto-detect 4203/4202/4200 or satisfecho.de)
+ *   BASE_URL       App URL (default: auto-detect 4203/4202/4200)
  *   LOGIN_EMAIL    Admin or owner user email (required)
  *   LOGIN_PASSWORD Password
- *   HEADLESS       Default headless; set 0, false, or no for a visible browser.
+ *   HEADLESS       Default headless; set 0 for visible browser.
  */
 
 import { isHeadless } from './puppeteer-headless.mjs';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const puppeteer = require('puppeteer-core');
+
+const SUPPORT_EMAIL = 'support@satisfecho.de';
 
 const CHROME_PATH =
   process.env.PUPPETEER_EXECUTABLE_PATH ||
@@ -35,7 +35,7 @@ async function main() {
         }
       } catch (_) {}
     }
-    baseUrl = baseUrl || 'http://satisfecho.de';
+    baseUrl = baseUrl || 'http://127.0.0.1:4202';
   }
 
   const headless = isHeadless();
@@ -43,12 +43,11 @@ async function main() {
   const loginPassword = process.env.LOGIN_PASSWORD;
 
   if (!loginEmail || !loginPassword) {
-    console.error('LOGIN_EMAIL and LOGIN_PASSWORD are required (use admin/owner credentials).');
+    console.error('LOGIN_EMAIL and LOGIN_PASSWORD are required (admin or owner).');
     process.exit(1);
   }
 
   console.log('BASE_URL:', baseUrl);
-  console.log('Headless:', headless);
   console.log('---');
 
   const browser = await puppeteer.launch({
@@ -59,12 +58,9 @@ async function main() {
   });
 
   const page = await browser.newPage();
-  page.on('console', (msg) => console.log('[browser]', msg.text()));
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   try {
-    // 1. Login
-    console.log('1. Logging in...');
     await page.goto(new URL('/login', baseUrl).href, { waitUntil: 'networkidle2', timeout: 15000 });
     await page.type('input[type="email"]', loginEmail);
     await page.type('input[type="password"]', loginPassword);
@@ -74,52 +70,49 @@ async function main() {
       await sleep(3000);
     }
     if (page.url().includes('/login')) {
-      console.log('   FAIL: Still on login page (check credentials; need admin or owner).');
+      console.log('FAIL: login failed');
       await browser.close();
       process.exit(1);
     }
-    console.log('   OK: Logged in');
 
-    // 2. Open /users (admin/owner only)
-    console.log('2. Opening /users...');
     await page.goto(new URL('/users', baseUrl).href, { waitUntil: 'networkidle2', timeout: 15000 });
     await sleep(1000);
-
-    const url = page.url();
-    if (!url.includes('/users')) {
-      console.log('   FAIL: Not on users page (redirected; need admin or owner). URL:', url);
+    if (!page.url().includes('/users')) {
+      console.log('FAIL: not on /users');
       await browser.close();
       process.exit(1);
     }
-    console.log('   OK: On users page');
 
-    // 3. Open "Add user" modal
-    console.log('3. Opening Add user modal...');
-    const addUserBtn = await page.$('[data-testid="add-user"]');
-    if (!addUserBtn) {
-      console.log('   FAIL: Add user button not found');
+    const supportBtn = await page.waitForSelector('[data-testid="add-support-access"]', {
+      timeout: 8000,
+    });
+    if (!supportBtn) {
+      console.log('FAIL: support access button not found');
       await browser.close();
       process.exit(1);
     }
-    await addUserBtn.click();
+    await supportBtn.click();
     await sleep(800);
 
-    // 4. Assert role select has "bartender" option
-    const hasBartenderOption = await page.evaluate(() => {
-      const select = document.querySelector('select#role');
-      if (!select) return false;
-      const option = Array.from(select.querySelectorAll('option')).find((o) => o.value === 'bartender');
-      return !!option;
-    });
-    if (!hasBartenderOption) {
-      console.log('   FAIL: Role select has no option value "bartender"');
+    const formValues = await page.evaluate((expectedEmail) => {
+      const email = document.querySelector('input#email');
+      const role = document.querySelector('select#role');
+      return {
+        email: email?.value ?? '',
+        role: role?.value ?? '',
+        emailOk: (email?.value ?? '').toLowerCase() === expectedEmail,
+        roleOk: role?.value === 'admin',
+      };
+    }, SUPPORT_EMAIL);
+
+    if (!formValues.emailOk || !formValues.roleOk) {
+      console.log('FAIL: form not pre-filled', formValues);
       await browser.close();
       process.exit(1);
     }
-    console.log('   OK: Bartender role present in role dropdown');
 
+    console.log('OK: support modal pre-fills', SUPPORT_EMAIL, 'as admin');
     await browser.close();
-    console.log('\n>>> RESULT: Bartender role test passed.');
     process.exit(0);
   } catch (err) {
     console.error('Error:', err.message);
