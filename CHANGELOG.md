@@ -8,14 +8,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-### Fixed
+## [2.1.0] - 2026-06-01
 
-- **CI / amvara9 deploy:** **Deploy to amvara9** uses forced checkout and **`git clean -fd`** on the server so a dirty working tree (e.g. local edits to **`front/nginx.conf`** or marketing bundles) no longer blocks branch reset during CI (#253).
+### Added
+
+- **Landing / public menu:** Scannable QR code on each restaurant card on **`/`** opens a read-only **`/public-menu/:tenantId`** page (grouped menu, language picker, tenant branding) via the public menu API (#254).
+- **Public API / marketing:** Read-only **`GET /public/tenants/{tenant_id}/menu`** for external marketing sites — grouped categories, optional **`lang`** query, tenant currency and price formatting, product images; no auth (#250).
 
 ### Changed
 
-- **Release / production:** Promoted **`development` → `master`** and confirmed green **Deploy to amvara9** on production (**satisfecho.de**, v2.0.86) (#253). Closes the pending promotion noted for #252.
 - **Landing / public menu:** Each tenant QR on **`/`** is now a link — desktop visitors can click through to **`/public-menu/:tenantId`** (same URL as scan); hint copy mentions scan or click and the link has a localized accessible name in all nine locales (#255).
+- **Release / production:** Promoted **`development` → `master`** and confirmed green **Deploy to amvara9** on production (**satisfecho.de**) (#253). Closes the pending promotion noted for #252.
+
+### Fixed
+
+- **CI / amvara9 deploy:** **Deploy to amvara9** uses forced checkout and **`git clean -fd`** on the server so a dirty working tree (e.g. local edits to **`front/nginx.conf`** or marketing bundles) no longer blocks branch reset during CI (#253).
+- **Staff UI / sidebar:** Mobile nav scroll no longer jumps back to the top after changing staff routes (#215).
 
 ## [2.0.87] - 2026-06-01
 
