@@ -43,12 +43,6 @@
       "repo": "satisfecho/083_wimpi",
       "branch": "main",
       "artifact": "wimpi-satisfecho-deploy"
-    },
-    {
-      "slug": "bosskebabypizzeria",
-      "repo": "satisfecho/085_Bosskebabypizzeria",
-      "branch": "main",
-      "artifact": "boss-kebab-satisfecho-deploy"
     }
   ]
 }
