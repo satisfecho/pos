@@ -31,6 +31,10 @@
     "satisfecho/085_Bosskebabypizzeria": {
       "last_artifact": "boss-kebab-satisfecho-deploy",
       "pushed_at": "2026-06-02T07:02:46Z"
+    },
+    "satisfecho/088_ricokebab": {
+      "last_artifact": "rico-kebab-satisfecho-deploy",
+      "pushed_at": "2026-06-02T15:24:32Z"
     }
   }
 }
