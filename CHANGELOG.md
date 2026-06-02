@@ -8,6 +8,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Added
+
+- **Marketing / Rico Kebab:** Registered **satisfecho.de/ricokebab/** — manifest entry and placeholder for **`088_ricokebab`** (artifact **`rico-kebab-satisfecho-deploy`**).
+
 ### Fixed
 
 - **Marketing / Boss Kebab:** Restored **satisfecho.de/bosskebabypizzeria/** — `baseHref` and deploy paths now match the live slug so Angular scripts and styles load instead of 404 (blank page) after marketing build and amvara9 sync (`085_Bosskebabypizzeria` #1).
