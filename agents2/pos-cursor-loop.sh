@@ -32,6 +32,68 @@ have_cursor_agent() {
   command -v cursor-agent >/dev/null 2>&1
 }
 
+# Wall-clock limit for cursor-agent (seconds). 0 = no limit (AGENT_CURSOR_TIMEOUT=0).
+# Per-step overrides: AGENT_TESTER_TIMEOUT_MINUTES (default 38), AGENT_FEAT_TIMEOUT_MINUTES,
+# AGENT_CODER_TIMEOUT_MINUTES; else AGENT_CURSOR_TIMEOUT_MINUTES (default 25).
+cursor_agent_timeout_seconds_for() {
+  local step="${1:-default}"
+  if [[ "${AGENT_CURSOR_TIMEOUT:-1}" == "0" ]]; then
+    echo 0
+    return 0
+  fi
+  local mins
+  case "$step" in
+    testing) mins="${AGENT_TESTER_TIMEOUT_MINUTES:-32}" ;;
+    feat) mins="${AGENT_FEAT_TIMEOUT_MINUTES:-${AGENT_CURSOR_TIMEOUT_MINUTES:-25}}" ;;
+    coding) mins="${AGENT_CODER_TIMEOUT_MINUTES:-${AGENT_CURSOR_TIMEOUT_MINUTES:-25}}" ;;
+    handoff) mins="${AGENT_HANDOFF_TIMEOUT_MINUTES:-${AGENT_CURSOR_TIMEOUT_MINUTES:-20}}" ;;
+    closing) mins="${AGENT_CLOSING_TIMEOUT_MINUTES:-${AGENT_CURSOR_TIMEOUT_MINUTES:-20}}" ;;
+    committer) mins="${AGENT_COMMITTER_TIMEOUT_MINUTES:-${AGENT_CURSOR_TIMEOUT_MINUTES:-20}}" ;;
+    log|marketing) mins="${AGENT_REVIEWER_TIMEOUT_MINUTES:-${AGENT_CURSOR_TIMEOUT_MINUTES:-25}}" ;;
+    *) mins="${AGENT_CURSOR_TIMEOUT_MINUTES:-25}" ;;
+  esac
+  echo $((mins * 60))
+}
+
+# Run cursor-agent with a wall-clock cap so the loop never blocks 30+ minutes on a hung step.
+invoke_cursor_agent() {
+  local step="$1"
+  shift
+  local secs
+  secs=$(cursor_agent_timeout_seconds_for "$step")
+  if ((secs <= 0)); then
+    cursor-agent "$@"
+    return $?
+  fi
+  local mins=$((secs / 60))
+  echo "cursor-agent wall-clock limit: ${mins}m (${secs}s, step=${step}; AGENT_CURSOR_TIMEOUT=0 disables)" >&2
+  if command -v timeout >/dev/null 2>&1; then
+    timeout --preserve-status --foreground "$secs" cursor-agent "$@"
+    return $?
+  fi
+  if command -v gtimeout >/dev/null 2>&1; then
+    gtimeout --preserve-status --foreground "$secs" cursor-agent "$@"
+    return $?
+  fi
+  # macOS / minimal env: poll and SIGTERM, then SIGKILL
+  cursor-agent "$@" &
+  local pid=$!
+  local waited=0
+  while kill -0 "$pid" 2>/dev/null && ((waited < secs)); do
+    sleep 1
+    waited=$((waited + 1))
+  done
+  if kill -0 "$pid" 2>/dev/null; then
+    echo "cursor-agent: no GNU timeout on PATH — sending SIGTERM after ${secs}s" >&2
+    kill -TERM "$pid" 2>/dev/null || true
+    sleep 3
+    kill -KILL "$pid" 2>/dev/null || true
+    wait "$pid" 2>/dev/null || true
+    return 124
+  fi
+  wait "$pid"
+}
+
 # True if issue #num is already referenced in a root-level task file (dedupe hint for 001 preflight).
 issue_linked_in_root_tasks() {
   local num="$1"
@@ -384,9 +446,11 @@ committer_notify_github_issues_if_new_commit() {
 }
 
 # Only invoke agent if condition is true and prompt file exists.
-# Usage: run_agent "description" "condition_cmd" "prompt_relative_path" "message"
+# Usage: run_agent "description" "condition_cmd" "prompt_relative_path" "message" [step_key]
+# step_key selects per-step timeout (testing, feat, coding, …); default "default".
 run_agent() {
   local desc="$1" cond="$2" prompt="$3" msg="$4"
+  local step="${5:-default}"
   local p="${SCRIPTDIR}/${prompt}"
   if [[ ! -f "$p" ]]; then
     echo "----- $desc (skip: missing prompt $prompt — see docs/agent-loop.md)"
@@ -402,10 +466,13 @@ run_agent() {
     echo "msg: $msg"
     echo "---"
     set +e
-    cursor-agent --yolo -p "$prompt" "$msg"
+    invoke_cursor_agent "$step" --yolo -p "$prompt" "$msg"
     local _ca_rc=$?
     set -e
-    if ((_ca_rc != 0)); then
+    if ((_ca_rc == 124)); then
+      echo "----- $desc: cursor-agent TIMED OUT (wall-clock limit; continuing loop — non-fatal)" >&2
+      echo "----- $desc: if a task stayed TESTING-/WIP-, the next cycle will retry or finish it" >&2
+    elif ((_ca_rc != 0)); then
       echo "----- $desc: cursor-agent exited ${_ca_rc} (continuing loop — non-fatal)" >&2
     fi
   else
@@ -474,7 +541,8 @@ Then follow 001-gh-reviewer.md — (A) GitHub → up to 3 × FEAT-*.md (dedupe a
     run_agent "log reviewer (001)" \
       "true" \
       "001-gh-reviewer.md" \
-      "$msg"
+      "$msg" \
+      "log"
   elif [[ "$G001_LOG_SIGNALS" == "1" ]] && [[ "$G001_GH_OK" == "1" ]] && [[ "${G001_UNTRACKED_ISSUES:-0}" -eq 0 ]] && [[ "${AGENT_001_LOCAL_LOG_REVIEWER:-1}" != "0" ]]; then
     echo "----- log reviewer (001) (skip cursor-agent: local log review — Docker heuristics only, GitHub ok, zero untracked issues)"
     append_001_local_no_cursor_stamp "$ctx"
@@ -544,7 +612,8 @@ Then follow 005-marketing-repos-reviewer.md — register new NNN_slug repos in c
     run_agent "marketing repos reviewer (005)" \
       "true" \
       "005-marketing-repos-reviewer.md" \
-      "$msg"
+      "$msg" \
+      "marketing"
     MARKETING_PREFLIGHT_READONLY=0 POS_REPO_ROOT="$REPO_ROOT" bash "$MKT_PREFLIGHT" "$ctx" >/dev/null 2>&1 || true
   else
     echo "----- marketing repos (005) (skip: no new/changed repos, deploy candidates, or untracked marketing issues)"
@@ -566,7 +635,8 @@ step_feat() {
   run_agent "feature coding (FEAT)" \
     "any_root_task_glob 'FEAT-*.md'" \
     "010-feature-coder.md" \
-    "Start feature coding now. Pick up a FEAT task if any. Do your job."
+    "Start feature coding now. Pick up a FEAT task if any. Do your job." \
+    "feat"
 }
 
 step_feature_coder_handoff() {
@@ -582,7 +652,8 @@ step_feature_coder_handoff() {
   run_agent "feature coder handoff (012)" \
     "any_root_task_glob 'WIP-*.md'" \
     "012-feature-coder-handoff.md" \
-    "Handoff pass: review WIP-*.md in agents2/tasks/; if implementation is complete per TASKS-README.md, rename to UNTESTED-*.md and apply gh labels as in the prompt. Do your job."
+    "Handoff pass: review WIP-*.md in agents2/tasks/; if implementation is complete per TASKS-README.md, rename to UNTESTED-*.md and apply gh labels as in the prompt. Do your job." \
+    "handoff"
 }
 
 step_coder() {
@@ -598,7 +669,8 @@ step_coder() {
   run_agent "coding" \
     "any_root_task_glob 'NEW-*.md' 'WIP-*.md'" \
     "002-coder/CODER.md" \
-    "Start coding now. Prefer a NEW task if any (rename to WIP on start); otherwise continue an existing WIP to UNTESTED. Implement in this repo (back/, front/). Do your job."
+    "Start coding now. Prefer a NEW task if any (rename to WIP on start); otherwise continue an existing WIP to UNTESTED. Implement in this repo (back/, front/). Do your job." \
+    "coding"
 }
 
 step_tester() {
@@ -614,7 +686,8 @@ step_tester() {
   run_agent "testing" \
     "any_root_task_glob 'UNTESTED-*.md' 'TESTING-*.md'" \
     "020-test.md" \
-    "Start testing now. Prefer an UNTESTED task (rename to TESTING on start); if only TESTING-*.md remains, finish it — append Test report, then CLOSED (pass) or WIP (fail). Do your job."
+    "Start testing now. Prefer an UNTESTED task (rename to TESTING on start); if only TESTING-*.md remains, finish it — append Test report, then CLOSED (pass) or WIP (fail). Do your job." \
+    "testing"
 }
 
 step_closing_review() {
@@ -630,7 +703,8 @@ step_closing_review() {
   run_agent "closing" \
     "any_root_task_glob 'CLOSED-*.md'" \
     "030-closing-reviewer.md" \
-    "Start closing review now. Process CLOSED-*.md in agents/tasks/; prepend summary; move to done/YYYY/MM/DD with scripts/move-agent-task-to-done.sh when done. Do your job."
+    "Start closing review now. Process CLOSED-*.md in agents/tasks/; prepend summary; move to done/YYYY/MM/DD with scripts/move-agent-task-to-done.sh when done. Do your job." \
+    "closing"
 }
 
 step_committer() {
@@ -670,7 +744,8 @@ step_committer() {
   run_agent "committer (changelog + commit)" \
     "has_pos_repo_uncommitted_changes" \
     "040-committer.md" \
-    "Run the 040-committer role on branch development. Review the diff: commit only when implementation looks complete and tests in task files are not failing. Write a clear, human-readable CHANGELOG.md [Unreleased] entry; bump front/package.json when warranted. Stage and commit all intended project files (not only changelog). Commit message: concise subject plus Refs #N for each related GitHub issue from agents2/tasks/*.md. Push origin development. After push, run ./scripts/link-commit-to-github-issues.sh if you did not already. Do not merge to master unless git-development-branch-workflow allows it."
+    "Run the 040-committer role on branch development. Review the diff: commit only when implementation looks complete and tests in task files are not failing. Write a clear, human-readable CHANGELOG.md [Unreleased] entry; bump front/package.json when warranted. Stage and commit all intended project files (not only changelog). Commit message: concise subject plus Refs #N for each related GitHub issue from agents2/tasks/*.md. Push origin development. After push, run ./scripts/link-commit-to-github-issues.sh if you did not already. Do not merge to master unless git-development-branch-workflow allows it." \
+    "committer"
   committer_notify_github_issues_if_new_commit "$head_before"
 }
 
@@ -731,6 +806,13 @@ Environment:
   AGENT_001_OLLAMA_LOG_TRIAGE  If 0, never run local LLM triage. Otherwise (default) triage runs when llama.cpp OpenAI API responds (GET \$LLAMA_CPP_BASE_URL/models, default http://127.0.0.1:8080/v1) and python3 exists, or when ollama list shows ≥1 model at OLLAMA_HOST (default http://127.0.0.1:11434) — only for log-only 001 signals. LLAMA_CPP_MODEL (default Bonsai-8B.gguf); OLLAMA_MODEL (default Gemma4:latest). Default triage order is Ollama first, then llama.cpp; AGENT_001_LLAMA_CPP_FIRST=1 restores llama-first. AGENT_001_SKIP_LLAMA_CPP=1 forces Ollama only.   AGENT_001_LOG_TRIAGE_DEBUG=1 prints triage script stderr (llama.cpp / ollama errors).
   AGENT_MARKETING_REVIEWER_ALWAYS  If 1, always invoke 005 cursor-agent.
   AGENT_005_SKIP_PREFLIGHT         If 1, always invoke 005 (legacy always-run).
+  AGENT_CURSOR_TIMEOUT             If 0, no wall-clock limit on cursor-agent (default: on).
+  AGENT_CURSOR_TIMEOUT_MINUTES     Default max minutes per step (default: 25).
+  AGENT_TESTER_TIMEOUT_MINUTES     Tester step limit (default: 32; deploy poll + prod checks).
+  AGENT_FEAT_TIMEOUT_MINUTES       Feature coder limit (default: same as AGENT_CURSOR_TIMEOUT_MINUTES).
+  AGENT_CODER_TIMEOUT_MINUTES      Main coder limit (default: same as AGENT_CURSOR_TIMEOUT_MINUTES).
+  AGENT_REVIEWER_TIMEOUT_MINUTES   001 / 005 limit (default: same as AGENT_CURSOR_TIMEOUT_MINUTES).
+  On timeout the loop continues (exit 124); TESTING-/WIP- tasks are retried on the next cycle.
 
 Docker / app stack: start separately from repo root with ./run.sh -dev
 
