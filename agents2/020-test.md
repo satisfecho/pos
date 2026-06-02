@@ -48,6 +48,7 @@ When **Testing instructions** (or the task scope) include **deployment to amvara
    - **Human handoff:** if a maintainer must deploy manually or CI is skipped, wait for **explicit confirmation** in the issue or chat before running production checks; record that in the **Test report**.
 3. **Polling pattern:** short interval at first (e.g. 10–20s), then back off (e.g. 30–60s), up to a **stated timeout** in the **Test report** (e.g. 15–20 minutes for a full image rebuild). Prefer `curl` / scripted checks over arbitrary sleep loops.
 4. **Evidence:** In the **Test report**, state **how** you knew deploy was done (workflow run, health responses, version/hash observed, timestamps UTC), not “waited 3 minutes”.
+5. **Loop wall-clock:** **`agents2/pos-cursor-loop.sh`** kills **`cursor-agent`** for the tester step after **`AGENT_TESTER_TIMEOUT_MINUTES`** (default **32**). Finish deploy polling and verification inside that budget, or leave the task **TESTING-** with a partial **Test report** so the next cycle can continue. Override with a higher value only when the task truly needs it (e.g. `AGENT_TESTER_TIMEOUT_MINUTES=45`).
 
 Local **Docker** testing is unchanged; this section applies when the **target environment is production post-deploy**.
 

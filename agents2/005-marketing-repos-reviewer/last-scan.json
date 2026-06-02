@@ -14,7 +14,7 @@
     },
     "satisfecho/040_gustazo": {
       "last_artifact": "gustazo-dist",
-      "pushed_at": "2026-05-28T22:26:30Z"
+      "pushed_at": "2026-06-01T17:10:56Z"
     },
     "satisfecho/050_hakone": {
       "last_artifact": "dist",
@@ -26,11 +26,15 @@
     },
     "satisfecho/083_wimpi": {
       "last_artifact": "wimpi-satisfecho-deploy",
-      "pushed_at": "2026-06-01T15:30:31Z"
+      "pushed_at": "2026-06-02T07:20:19Z"
     },
     "satisfecho/085_Bosskebabypizzeria": {
       "last_artifact": "boss-kebab-satisfecho-deploy",
-      "pushed_at": "2026-06-01T15:56:52Z"
+      "pushed_at": "2026-06-02T07:02:46Z"
+    },
+    "satisfecho/088_ricokebab": {
+      "last_artifact": "rico-kebab-satisfecho-deploy",
+      "pushed_at": "2026-06-02T15:24:32Z"
     }
   }
 }

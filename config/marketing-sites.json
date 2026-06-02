@@ -49,6 +49,12 @@
       "repo": "satisfecho/085_Bosskebabypizzeria",
       "branch": "main",
       "artifact": "boss-kebab-satisfecho-deploy"
+    },
+    {
+      "slug": "ricokebab",
+      "repo": "satisfecho/088_ricokebab",
+      "branch": "main",
+      "artifact": "rico-kebab-satisfecho-deploy"
     }
   ]
 }

@@ -20,9 +20,11 @@ fi
 TASK_PATH="$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
 BASENAME="$(basename "$TASK_PATH")"
 
-# YYYYMMDD is either right after CLOSED- (legacy) or after CLOSED-<issue>- (see agents/TASKS-README.md).
+# YYYYMMDD is either right after CLOSED- (legacy), CLOSED-<issue>-, or CLOSED-MKT-<repo>-<issue>- (marketing tasks).
 YYYYMMDD=""
-if [[ "$BASENAME" =~ ^CLOSED-[0-9]+-([0-9]{8})-[0-9]{4}- ]]; then
+if [[ "$BASENAME" =~ ^CLOSED-MKT-[0-9]+-[0-9]+-([0-9]{8})-[0-9]{4}- ]]; then
+  YYYYMMDD="${BASH_REMATCH[1]}"
+elif [[ "$BASENAME" =~ ^CLOSED-[0-9]+-([0-9]{8})-[0-9]{4}- ]]; then
   YYYYMMDD="${BASH_REMATCH[1]}"
 elif [[ "$BASENAME" =~ ^CLOSED-([0-9]{8})-[0-9]{4}- ]]; then
   YYYYMMDD="${BASH_REMATCH[1]}"
