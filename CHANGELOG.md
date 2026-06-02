@@ -14,6 +14,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- **Marketing / Wimpi:** Updated Google reviews copy on **satisfecho.de/wimpi/es/** — **4,8 / 5 · 239 valoraciones** (was 4,7 / 102) to match the current Google listing after marketing build and amvara9 deploy (`083_wimpi` #2).
 - **Agent loop:** Per-step wall-clock limits on **`cursor-agent`** in **`agents2/pos-cursor-loop.sh`** (default **25** minutes; tester **32** minutes for deploy polling) so a hung step does not block the whole cycle — on timeout the orchestrator logs and continues; **`TESTING-`** / **`WIP-`** tasks are retried on the next pass. Disable with **`AGENT_CURSOR_TIMEOUT=0`**.
 - **Marketing / Gustazo:** Removed gallery image **`local-04`** from live **satisfecho.de/gustazo/** after **`gustazo-dist`** bundle sync (`040_gustazo` #1).
 - **Agent tasks:** **`move-agent-task-to-done.sh`** now parses **`CLOSED-MKT-<repo>-<issue>-…`** filenames when archiving marketing tasks to **`agents2/tasks/done/`**.
