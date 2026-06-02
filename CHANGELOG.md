@@ -10,7 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- **Marketing / Rico Kebab:** Registered **satisfecho.de/ricokebab/** — manifest entry and placeholder for **`088_ricokebab`** (artifact **`rico-kebab-satisfecho-deploy`**).
+- **Marketing / Rico Kebab:** Registered **satisfecho.de/rico-kebab/** — manifest entry for **`088_ricokebab`** (slug matches SPA **`baseHref`** `/rico-kebab/`; artifact **`rico-kebab-satisfecho-deploy`**).
 
 ### Fixed
 
