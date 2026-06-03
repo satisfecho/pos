@@ -54,7 +54,8 @@
       "slug": "rico-kebab",
       "repo": "satisfecho/088_ricokebab",
       "branch": "main",
-      "artifact": "rico-kebab-satisfecho-deploy"
+      "artifact": "rico-kebab-satisfecho-deploy",
+      "deploySubpath": "es"
     }
   ]
 }

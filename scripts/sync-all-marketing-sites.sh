@@ -47,13 +47,22 @@ slug_mark() {
   echo "$1" >>"${PROCESSED_SLUGS_FILE}"
 }
 
+artifact_dir() {
+  local slug="$1" subpath="${2:-}"
+  local dir="$ROOT/front/sites/$slug"
+  [[ -n "$subpath" ]] && dir="${dir}/${subpath}"
+  echo "$dir"
+}
+
 site_needs_update() {
-  local target="$1"
+  local target="$1" subpath="${2:-}"
+  local check="${target}/index.html"
+  [[ -n "$subpath" ]] && check="${target}/${subpath}/index.html"
   [[ "$FORCE" == "1" ]] || [[ "$REFRESH" == "1" ]] && return 0
-  if [[ ! -f "${target}/index.html" ]]; then
+  if [[ ! -f "$check" ]]; then
     return 0
   fi
-  if grep -q "${PLACEHOLDER_SIG}" "${target}/index.html" 2>/dev/null; then
+  if grep -q "${PLACEHOLDER_SIG}" "$check" 2>/dev/null; then
     return 0
   fi
   return 1
@@ -64,9 +73,11 @@ infer_clone_dir() {
 }
 
 fetch_one() {
-  local slug="$1" repo="$2" branch="$3" artifact="$4"
+  local slug="$1" repo="$2" branch="$3" artifact="$4" subpath="${5:-}"
   local target="$ROOT/front/sites/$slug"
-  if ! site_needs_update "$target"; then
+  local artifact_target
+  artifact_target="$(artifact_dir "$slug" "$subpath")"
+  if ! site_needs_update "$target" "$subpath"; then
     log "up-to-date ${slug}"
     return 0
   fi
@@ -77,22 +88,23 @@ fetch_one() {
   export MARKETING_REPO="$repo"
   export MARKETING_BRANCH="${branch:-development}"
   export MARKETING_ARTIFACT_NAME="${artifact:-dist}"
-  export TARGET_DIR="front/sites/$slug"
+  export TARGET_DIR="${artifact_target#"$ROOT/"}"
   export POS_REPO_ROOT="$ROOT"
 
   if bash "$ROOT/scripts/fetch-marketing-artifact.sh"; then
-    log "artifact OK: ${slug}"
+    log "artifact OK: ${slug}${subpath:+/${subpath}}"
     return 0
   fi
   return 1
 }
 
 build_one_local() {
-  local slug="$1" local_dir="$2"
+  local slug="$1" local_dir="$2" subpath="${3:-}"
   local target="$ROOT/front/sites/$slug"
   local base_href="/${slug}/"
+  [[ -n "$subpath" ]] && base_href="/${slug}/${subpath}/"
 
-  if ! site_needs_update "$target"; then
+  if ! site_needs_update "$target" "$subpath"; then
     log "up-to-date ${slug} (local)"
     return 0
   fi
@@ -124,20 +136,27 @@ build_one_local() {
     return 1
   fi
 
-  mkdir -p "${target}"
-  find "${target}" -mindepth 1 -maxdepth 1 ! -name 'gitkeep.txt' -exec rm -rf {} +
-  cp -a "${BROWSER}/." "${target}/"
-  log "local build OK: ${slug}"
+  local dest="${target}"
+  [[ -n "$subpath" ]] && dest="${target}/${subpath}"
+  mkdir -p "${dest}"
+  find "${dest}" -mindepth 1 -maxdepth 1 ! -name 'gitkeep.txt' -exec rm -rf {} +
+  if [[ -n "$subpath" && -d "${BROWSER}/${subpath}" ]]; then
+    cp -a "${BROWSER}/${subpath}/." "${dest}/"
+  else
+    cp -a "${BROWSER}/." "${dest}/"
+  fi
+  log "local build OK: ${slug}${subpath:+/${subpath}}"
   return 0
 }
 
 process_manifest_site() {
-  local slug repo branch artifact clone_dir
+  local slug repo branch artifact clone_dir deploy_subpath
   slug=$(echo "$1" | jq -r '.slug')
   repo=$(echo "$1" | jq -r '.repo')
   branch=$(echo "$1" | jq -r '.branch // "development"')
   artifact=$(echo "$1" | jq -r '.artifact // "dist"')
   clone_dir=$(echo "$1" | jq -r '.cloneDir // empty')
+  deploy_subpath=$(echo "$1" | jq -r '.deploySubpath // empty')
 
   [[ -n "$slug" && "$slug" != "null" ]] || return 0
   slug_mark "$slug"
@@ -146,10 +165,10 @@ process_manifest_site() {
   [[ -n "$folder" ]] || folder="$(infer_clone_dir "$repo")"
   local sibling="$ROOT/../${folder}"
 
-  if fetch_one "$slug" "$repo" "$branch" "$artifact"; then
+  if fetch_one "$slug" "$repo" "$branch" "$artifact" "$deploy_subpath"; then
     return 0
   fi
-  build_one_local "$slug" "$sibling" || true
+  build_one_local "$slug" "$sibling" "$deploy_subpath" || true
 }
 
 discover_siblings() {
