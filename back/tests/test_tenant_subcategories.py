@@ -8,7 +8,8 @@ from datetime import timedelta
 from pg_client_mixin import PgClientTestCase
 
 from app import models, security
-from app.tenant_subcategories import tenant_categories_for_ui
+from app.category_codes import CATEGORY_CODES
+from app.tenant_subcategories import STANDARD_CATEGORY_ORDER, tenant_categories_for_ui
 
 
 def _owner_headers(user: models.User) -> dict[str, str]:
@@ -87,6 +88,20 @@ class TestTenantSubcategories(PgClientTestCase):
         )
         self.assertEqual(r2.status_code, 200, r2.text)
         self.assertNotIn("Loaded Fries", r2.json().get("Sides", []))
+
+    def test_tenant_with_no_products_has_all_standard_categories(self):
+        merged = tenant_categories_for_ui(self.session, self.tenant_id)
+        for name in CATEGORY_CODES.values():
+            self.assertIn(name, merged)
+            self.assertIsInstance(merged[name], list)
+        self.assertEqual(list(merged.keys())[:5], STANDARD_CATEGORY_ORDER)
+
+        r = self.client.get("/catalog/categories", headers=self.headers)
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        for name in CATEGORY_CODES.values():
+            self.assertIn(name, body)
+        self.assertEqual(list(body.keys())[:5], STANDARD_CATEGORY_ORDER)
 
     def test_product_subcategories_included_in_merge(self):
         self.session.add(

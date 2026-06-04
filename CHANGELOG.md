@@ -15,6 +15,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+- **Products / categories:** Staff **Products** category dropdowns and **Product categories** now always list all five standard categories (Starters, Main Course, Desserts, Beverages, Sides) even when the tenant has no products yet — `GET /catalog/categories` seeds empty subcategory lists for missing standard keys in fixed order (#263).
 - **Marketing / Rico Kebab:** Corrected manifest and **`front/sites/`** slug from **`ricokebab`** to **`rico-kebab`** so paths match production **`/rico-kebab/`** and the SPA **`baseHref`** (`088_ricokebab`).
 - **Marketing / Rico Kebab:** Sync **`rico-kebab-satisfecho-deploy`** into **`front/sites/rico-kebab/es/`** (manifest **`deploySubpath`**) so **`/rico-kebab/es/`** serves the current bundle instead of a stale root-only sync (`088_ricokebab` #2).
 - **Marketing / Boss Kebab:** Restored **satisfecho.de/bosskebabypizzeria/** — `baseHref` and deploy paths now match the live slug so Angular scripts and styles load instead of 404 (blank page) after marketing build and amvara9 sync (`085_Bosskebabypizzeria` #1).

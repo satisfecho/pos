@@ -7,8 +7,19 @@ from copy import deepcopy
 from sqlmodel import Session, select
 
 from . import models
+from .category_codes import CATEGORY_CODES
 
 MAX_NAME_LEN = 128
+
+# Fixed display order for staff UI category dropdowns.
+STANDARD_CATEGORY_ORDER: list[str] = [
+    CATEGORY_CODES["STARTERS"],
+    CATEGORY_CODES["MAIN_COURSE"],
+    CATEGORY_CODES["DESSERTS"],
+    CATEGORY_CODES["BEVERAGES"],
+    CATEGORY_CODES["SIDES"],
+]
+_STANDARD_CATEGORY_SET = set(STANDARD_CATEGORY_ORDER)
 
 
 def normalize_custom_subcategories(stored: dict | None) -> dict[str, list[str]]:
@@ -92,11 +103,19 @@ def tenant_categories_for_ui(session: Session, tenant_id: int) -> dict[str, list
     custom = normalize_custom_subcategories(
         tenant.custom_subcategories if tenant else None
     )
-    return merge_category_subcategory_maps(
+    merged = merge_category_subcategory_maps(
         catalog_subcategories(session),
         {k: set(v) for k, v in custom.items()},
         product_subcategories(session, tenant_id),
     )
+    # Always include all five standard categories (empty list when no subcategories yet).
+    result: dict[str, list[str]] = {
+        cat: merged.get(cat, []) for cat in STANDARD_CATEGORY_ORDER
+    }
+    for cat, subs in sorted(merged.items()):
+        if cat not in _STANDARD_CATEGORY_SET:
+            result[cat] = subs
+    return result
 
 
 def _validate_category_name(category: str) -> str:
