@@ -25,7 +25,8 @@ export type TenantUiModuleKey =
   | 'providers'
   | 'reservations'
   | 'kitchen_bar'
-  | 'inventory';
+  | 'inventory'
+  | 'events';
 
 export const DEFAULT_TENANT_UI_MODULES: Record<TenantUiModuleKey, boolean> = {
   tables: true,
@@ -34,7 +35,69 @@ export const DEFAULT_TENANT_UI_MODULES: Record<TenantUiModuleKey, boolean> = {
   reservations: true,
   kitchen_bar: true,
   inventory: true,
+  events: true,
 };
+
+export type InvitationStatus = 'pending' | 'confirmed' | 'declined' | 'maybe';
+
+export interface EventCounts {
+  total: number;
+  pending: number;
+  confirmed: number;
+  declined: number;
+  maybe: number;
+  confirmed_heads: number;
+  checked_in: number;
+}
+
+export interface EventItem {
+  id: number;
+  title: string;
+  event_date: string | null;
+  event_time: string | null;
+  location: string | null;
+  notes: string | null;
+  status: 'active' | 'cancelled';
+  counts?: EventCounts | null;
+}
+
+export interface EventGuestItem {
+  id: number;
+  event_id: number;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  party_size: number;
+  table_label: string | null;
+  notes: string | null;
+  status: InvitationStatus;
+  token: string | null;
+  invite_url: string | null;
+  invited_at: string | null;
+  responded_at: string | null;
+  checked_in_at: string | null;
+}
+
+export interface GuestImportRow {
+  row_index: number;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  party_size: number;
+  table_label: string | null;
+  notes: string | null;
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+  action: string;
+  duplicate_of_row: number | null;
+  duplicate_existing: boolean;
+}
+
+export interface GuestImportPreview {
+  items: GuestImportRow[];
+  summary: { total: number; valid: number; skipped: number; duplicates: number; create: number };
+}
 
 export interface User {
   id?: number;
@@ -1785,6 +1848,93 @@ export class ApiService {
     if (params?.status) httpParams = httpParams.set('status', params.status);
     if (params?.phone) httpParams = httpParams.set('phone', params.phone);
     return this.http.get<Reservation[]>(`${this.apiUrl}/reservations`, { params: httpParams });
+  }
+
+  // ===== Events module =====
+  getEvents(): Observable<EventItem[]> {
+    return this.http.get<EventItem[]>(`${this.apiUrl}/events`);
+  }
+
+  getEvent(id: number): Observable<EventItem> {
+    return this.http.get<EventItem>(`${this.apiUrl}/events/${id}`);
+  }
+
+  createEvent(body: { title: string; event_date?: string | null; event_time?: string | null; location?: string | null; notes?: string | null }): Observable<EventItem> {
+    return this.http.post<EventItem>(`${this.apiUrl}/events`, body);
+  }
+
+  updateEvent(id: number, body: Partial<{ title: string; event_date: string | null; event_time: string | null; location: string | null; notes: string | null; status: string }>): Observable<EventItem> {
+    return this.http.put<EventItem>(`${this.apiUrl}/events/${id}`, body);
+  }
+
+  cancelEvent(id: number): Observable<EventItem> {
+    return this.http.post<EventItem>(`${this.apiUrl}/events/${id}/cancel`, {});
+  }
+
+  deleteEvent(id: number): Observable<{ status: string; id: number }> {
+    return this.http.delete<{ status: string; id: number }>(`${this.apiUrl}/events/${id}`);
+  }
+
+  getEventGuestTemplate(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/events/guest-template`, { responseType: 'blob' });
+  }
+
+  getEventGuestsExport(eventId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/events/${eventId}/guests/export`, { responseType: 'blob' });
+  }
+
+  getEventGuests(eventId: number, params?: { status?: string; search?: string }): Observable<EventGuestItem[]> {
+    let httpParams = new HttpParams();
+    if (params?.status) httpParams = httpParams.set('status', params.status);
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    return this.http.get<EventGuestItem[]>(`${this.apiUrl}/events/${eventId}/guests`, { params: httpParams });
+  }
+
+  addEventGuest(eventId: number, body: { name: string; phone?: string | null; email?: string | null; party_size?: number | null; table_label?: string | null; notes?: string | null }): Observable<EventGuestItem> {
+    return this.http.post<EventGuestItem>(`${this.apiUrl}/events/${eventId}/guests`, body);
+  }
+
+  updateEventGuest(eventId: number, guestId: number, body: Partial<{ name: string; phone: string | null; email: string | null; party_size: number; table_label: string | null; notes: string | null }>): Observable<EventGuestItem> {
+    return this.http.put<EventGuestItem>(`${this.apiUrl}/events/${eventId}/guests/${guestId}`, body);
+  }
+
+  deleteEventGuest(eventId: number, guestId: number): Observable<{ status: string; id: number }> {
+    return this.http.delete<{ status: string; id: number }>(`${this.apiUrl}/events/${eventId}/guests/${guestId}`);
+  }
+
+  setEventGuestStatus(eventId: number, guestId: number, status: InvitationStatus): Observable<EventGuestItem> {
+    return this.http.put<EventGuestItem>(`${this.apiUrl}/events/${eventId}/guests/${guestId}/status`, { status });
+  }
+
+  markEventGuestInvited(eventId: number, guestId: number): Observable<EventGuestItem> {
+    return this.http.post<EventGuestItem>(`${this.apiUrl}/events/${eventId}/guests/${guestId}/invited`, {});
+  }
+
+  checkinEventGuest(eventId: number, guestId: number): Observable<{ already_checked_in: boolean; guest: EventGuestItem }> {
+    return this.http.post<{ already_checked_in: boolean; guest: EventGuestItem }>(`${this.apiUrl}/events/${eventId}/guests/${guestId}/checkin`, {});
+  }
+
+  checkinEventByToken(eventId: number, token: string): Observable<{ already_checked_in: boolean; guest: EventGuestItem }> {
+    return this.http.post<{ already_checked_in: boolean; guest: EventGuestItem }>(`${this.apiUrl}/events/${eventId}/checkin`, {}, { params: new HttpParams().set('token', token) });
+  }
+
+  previewEventGuestImport(eventId: number, file: File): Observable<GuestImportPreview> {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http.post<GuestImportPreview>(`${this.apiUrl}/events/${eventId}/guests/import/preview`, fd);
+  }
+
+  confirmEventGuestImport(eventId: number, guests: GuestImportRow[], skipDuplicates: boolean): Observable<{ created: number; skipped: number; counts: EventCounts }> {
+    return this.http.post<{ created: number; skipped: number; counts: EventCounts }>(`${this.apiUrl}/events/${eventId}/guests/import/confirm`, { guests, skip_duplicates: skipDuplicates });
+  }
+
+  // Public RSVP (no auth)
+  getInvitationByToken(token: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/public/events/invitation/by-token`, { params: new HttpParams().set('token', token) });
+  }
+
+  respondInvitation(token: string, status: InvitationStatus): Observable<{ status: string; guest_name: string }> {
+    return this.http.post<{ status: string; guest_name: string }>(`${this.apiUrl}/public/events/invitation/${token}/respond`, { status });
   }
 
   /** Get most recent reservation by phone for pre-filling new reservation form. Returns null if none found. */

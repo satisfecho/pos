@@ -12,6 +12,7 @@ TENANT_UI_MODULE_KEYS: tuple[str, ...] = (
     "reservations",
     "kitchen_bar",
     "inventory",
+    "events",
 )
 
 _TENANT_UI_MODULE_KEY_SET = frozenset(TENANT_UI_MODULE_KEYS)

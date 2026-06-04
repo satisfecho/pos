@@ -27,6 +27,9 @@ export type Permission =
   // Reservations
   | 'reservation:read'
   | 'reservation:write'
+  // Events (guest list / RSVP / check-in)
+  | 'event:read'
+  | 'event:write'
   // Floors
   | 'floor:read'
   | 'floor:write'
@@ -69,6 +72,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'catalog:read', 'catalog:write',
     'table:read', 'table:write', 'table:activate',
     'reservation:read', 'reservation:write',
+    'event:read', 'event:write',
     'floor:read', 'floor:write',
     'order:read', 'order:update_status', 'order:item_status',
     'order:mark_paid', 'order:cancel', 'order:remove_item', 'order:delete',
@@ -101,6 +105,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'catalog:read',
     'table:read', 'table:activate',
     'reservation:read', 'reservation:write',
+    'event:read', 'event:write',
     'floor:read',
     'order:read', 'order:update_status', 'order:item_status',
     'order:mark_paid', 'order:remove_item',
@@ -114,6 +119,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'catalog:read',
     'table:read', 'table:activate',
     'reservation:read', 'reservation:write',
+    'event:read', 'event:write',
     'floor:read',
     'order:read',
     'billing_customer:read',
@@ -134,6 +140,7 @@ const ROUTE_ROLES: Record<string, UserRole[]> = {
   '/tables': ['owner', 'admin', 'waiter', 'receptionist'],
   '/tables/canvas': ['owner', 'admin', 'waiter', 'receptionist'],
   '/reservations': ['owner', 'admin', 'waiter', 'receptionist'],
+  '/events': ['owner', 'admin', 'waiter', 'receptionist'],
   '/staff/orders': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],
   '/customers': ['owner', 'admin', 'waiter', 'receptionist'],
   '/kitchen': ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'],

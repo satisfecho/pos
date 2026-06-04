@@ -45,6 +45,8 @@ export const routes: Routes = [
   { path: 'reservations', canActivate: [authGuard, uiModuleGuard('reservations'), reservationAccessGuard], loadComponent: () => import('./reservations/reservations.component').then(m => m.ReservationsComponent) },
   { path: 'guest-feedback', canActivate: [authGuard, uiModuleGuard('reservations'), reservationAccessGuard], loadComponent: () => import('./guest-feedback/guest-feedback.component').then(m => m.GuestFeedbackComponent) },
   { path: 'reservation', loadComponent: () => import('./reservation-view/reservation-view.component').then(m => m.ReservationViewComponent) },
+  // Public guest RSVP page (per-guest token, no login)
+  { path: 'invitacion', loadComponent: () => import('./events/invitation-view.component').then(m => m.InvitationViewComponent) },
 
   // Protected routes - accessible by all authenticated users
   { path: 'dashboard', canActivate: [authGuard], loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent) },
@@ -83,6 +85,9 @@ export const routes: Routes = [
 
   // Inventory module (lazy loaded) - admin only
   { path: 'inventory', canActivate: [authGuard, adminGuard, uiModuleGuard('inventory')], loadChildren: () => import('./inventory/inventory.routes').then(m => m.INVENTORY_ROUTES) },
+
+  // Events module (lazy loaded) - guest list / RSVP / check-in
+  { path: 'events', canActivate: [authGuard, uiModuleGuard('events'), permissionGuard('event:read')], loadChildren: () => import('./events/events.routes').then(m => m.EVENTS_ROUTES) },
 
   // Reports (sales / revenue) - owner & admin
   { path: 'reports', canActivate: [authGuard, adminGuard], loadComponent: () => import('./reports/reports.component').then(m => m.ReportsComponent) },

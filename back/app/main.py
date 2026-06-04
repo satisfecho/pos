@@ -39,6 +39,7 @@ from .settings import settings
 from .inventory_routes import router as inventory_router
 from .pricing_routes import router as pricing_router
 from .product_bulk_import_routes import router as product_bulk_import_router
+from .event_routes import router as event_router, public_router as event_public_router
 from .tenant_subcategory_routes import router as tenant_subcategory_router
 from .reports_routes import router as reports_router
 from .attendance_routes import router as attendance_router
@@ -490,6 +491,9 @@ app.include_router(staff_contract_router, prefix="/staff-contracts", tags=["Staf
 app.include_router(delivery_integration_router, prefix="/tenant", tags=["Delivery integrations"])
 app.include_router(delivery_public_router, tags=["Delivery integrations"])
 app.include_router(social_router, prefix="/tenant", tags=["Marketing — social"])
+# Events (guest list + RSVP + check-in)
+app.include_router(event_router, prefix="/events", tags=["Events"])
+app.include_router(event_public_router, tags=["Events"])
 app.include_router(
     staff_contract_template_router,
     prefix="/staff-contract-templates",

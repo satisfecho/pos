@@ -672,6 +672,65 @@ class GuestFeedback(TenantMixin, table=True):
     client_user_agent: str | None = Field(default=None, max_length=512)
 
 
+# ============ EVENTS (guest list + RSVP + check-in) ============
+
+
+class EventStatus(str, Enum):
+    active = "active"
+    cancelled = "cancelled"
+
+
+class InvitationStatus(str, Enum):
+    """Guest invitation FSM (anchored on RFC 5545 PARTSTAT).
+
+    pending -> confirmed | declined | maybe; free between confirmed/declined/maybe.
+    Never reverts to pending once the guest responded (preserves response history).
+    """
+
+    pending = "pending"  # NEEDS-ACTION — initial state on import
+    confirmed = "confirmed"  # ACCEPTED
+    declined = "declined"  # DECLINED
+    maybe = "maybe"  # TENTATIVE
+
+
+class Event(TenantMixin, table=True):
+    """A standalone social event with its own guest list (not tied to tables/reservations)."""
+
+    __tablename__ = "event"
+    id: int | None = Field(default=None, primary_key=True)
+    tenant_id: int = Field(foreign_key="tenant.id", index=True)
+    title: str
+    event_date: date | None = Field(default=None, sa_column=Column(Date, nullable=True))
+    event_time: time | None = Field(default=None, sa_column=Column(Time, nullable=True))
+    location: str | None = None
+    notes: str | None = None
+    status: EventStatus = Field(default=EventStatus.active, index=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class EventGuest(TenantMixin, table=True):
+    """A single invitee on an event's guest list. Only `name` is mandatory."""
+
+    __tablename__ = "event_guest"
+    id: int | None = Field(default=None, primary_key=True)
+    tenant_id: int = Field(foreign_key="tenant.id", index=True)
+    event_id: int = Field(foreign_key="event.id", index=True)
+    name: str  # ONLY mandatory field
+    phone: str | None = Field(default=None, max_length=40)
+    email: str | None = Field(default=None, max_length=320)
+    party_size: int = Field(default=1)  # guest + companions (counts toward totals)
+    table_label: str | None = Field(default=None, max_length=80)  # free-text "Mesa/grupo"
+    notes: str | None = None
+    status: InvitationStatus = Field(default=InvitationStatus.pending, index=True)
+    token: str | None = Field(default=None, unique=True, index=True)  # RSVP link + QR payload
+    invited_at: datetime | None = Field(default=None)  # when the invite was sent
+    responded_at: datetime | None = Field(default=None)  # when the guest responded
+    checked_in_at: datetime | None = Field(default=None)  # attendance (timestamp, not a state)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 class BillingCustomer(TenantMixin, table=True):
     """Customer registered for tax invoicing (Factura). Company details for printing invoices."""
     __tablename__ = "billing_customer"
@@ -927,6 +986,72 @@ class ReservationStatusUpdate(SQLModel):
 
 class ReservationSeat(SQLModel):
     table_id: int
+
+
+# ---- Events API schemas ----
+
+
+class EventCreate(SQLModel):
+    title: str
+    event_date: str | None = None  # YYYY-MM-DD
+    event_time: str | None = None  # HH:MM
+    location: str | None = None
+    notes: str | None = None
+
+
+class EventUpdate(SQLModel):
+    title: str | None = None
+    event_date: str | None = None
+    event_time: str | None = None
+    location: str | None = None
+    notes: str | None = None
+    status: EventStatus | None = None
+
+
+class EventGuestCreate(SQLModel):
+    name: str
+    phone: str | None = None
+    email: str | None = None
+    party_size: int | None = None
+    table_label: str | None = None
+    notes: str | None = None
+
+
+class EventGuestUpdate(SQLModel):
+    name: str | None = None
+    phone: str | None = None
+    email: str | None = None
+    party_size: int | None = None
+    table_label: str | None = None
+    notes: str | None = None
+
+
+class EventGuestStatusUpdate(SQLModel):
+    status: InvitationStatus
+
+
+class EventGuestImportItem(SQLModel):
+    """One row from the uploaded guest-list spreadsheet (only name is required)."""
+
+    name: str | None = None
+    phone: str | None = None
+    email: str | None = None
+    party_size: int | None = None
+    table_label: str | None = None
+    notes: str | None = None
+
+
+class EventGuestImportConfirm(SQLModel):
+    """Confirmed rows to persist after preview."""
+
+    guests: list[EventGuestImportItem] = Field(default_factory=list)
+    skip_duplicates: bool = True
+
+
+class PublicInvitationRespond(SQLModel):
+    """Public RSVP by token: guest sets their own status."""
+
+    status: InvitationStatus
 
 
 class GuestFeedbackCreate(SQLModel):

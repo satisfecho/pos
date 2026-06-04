@@ -41,7 +41,11 @@ class Permission(str, Enum):
     # Reservations
     RESERVATION_READ = "reservation:read"
     RESERVATION_WRITE = "reservation:write"
-    
+
+    # Events (guest list / RSVP / check-in)
+    EVENT_READ = "event:read"
+    EVENT_WRITE = "event:write"
+
     # Floors
     FLOOR_READ = "floor:read"
     FLOOR_WRITE = "floor:write"
@@ -104,6 +108,9 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         # Reservations
         Permission.RESERVATION_READ,
         Permission.RESERVATION_WRITE,
+        # Events
+        Permission.EVENT_READ,
+        Permission.EVENT_WRITE,
         # Floors
         Permission.FLOOR_READ,
         Permission.FLOOR_WRITE,
@@ -170,6 +177,9 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         # Reservations
         Permission.RESERVATION_READ,
         Permission.RESERVATION_WRITE,
+        # Events
+        Permission.EVENT_READ,
+        Permission.EVENT_WRITE,
         # Orders (full order management except cancel)
         Permission.ORDER_READ,
         Permission.ORDER_UPDATE_STATUS,
@@ -195,6 +205,9 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         # Reservations
         Permission.RESERVATION_READ,
         Permission.RESERVATION_WRITE,
+        # Events
+        Permission.EVENT_READ,
+        Permission.EVENT_WRITE,
         # Orders (view only)
         Permission.ORDER_READ,
         Permission.BILLING_CUSTOMER_READ,
