@@ -56,6 +56,13 @@
       "branch": "main",
       "artifact": "rico-kebab-satisfecho-deploy",
       "deploySubpath": "es"
+    },
+    {
+      "slug": "pizzaluna",
+      "repo": "satisfecho/087_pizzalluna",
+      "branch": "main",
+      "artifact": "pizzaluna-satisfecho-deploy",
+      "deploySubpath": "es"
     }
   ]
 }
