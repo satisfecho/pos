@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** A one-off diagnostics archive (`diagnostics_20260408_4.zip`) was tracked at the repo root and needed removal from version control.
+- **What was done:** Deleted the zip, added `diagnostics_*.zip` to `.gitignore`, and committed the change on `development` (`8049a1c1`).
+- **What was tested:** Re-run on 2026-06-12: file gone, git index clean, no product references, ignore rule works — all criteria **PASS**.
+- **Why closed:** All testing criteria passed; prior FAIL (uncommitted deletion) resolved in commit `8049a1c1`.
+- **Closed at (UTC):** 2026-06-12 07:17
+---
+
 # Remove diagnostics zip from repository
 
 ## GitHub Issues
@@ -21,6 +31,10 @@ Remove **`diagnostics_20260408_4.zip`** from the repository. The file is tracked
 - Deleted **`diagnostics_20260408_4.zip`** from repo root.
 - Grep across the repo: no code, docs, or config references to this filename (only this task file).
 - Added **`diagnostics_*.zip`** to **`.gitignore`** (alongside other local scratch patterns like **`tmp/*`**) to prevent accidental re-commit of future diagnostics archives.
+
+## Handoff log
+
+- **Handoff (`012-feature-coder-handoff.md`, 2026-06-12, user `012` pass — Cursor):** `./scripts/git-sync-development.sh` (OK). **`origin/development`** @ **`8049a1c1`**: zip deleted, **`.gitignore`** updated, committed on **`development`**. Prior **Test report** criterion **(2)** **FAIL** (uncommitted deletion) resolved — `git ls-files | grep diagnostics` no longer lists the zip. **Testing instructions** present. Per **TASKS-README.md**, implementation **complete**. **`WIP-267-…` → `UNTESTED-267-…`**; **`gh issue edit 267 --add-label "agent:untested"`**.
 
 ## Testing instructions
 
@@ -55,3 +69,26 @@ Remove **`diagnostics_20260408_4.zip`** from the repository. The file is tracked
 7. **URLs tested:** N/A — no browser (optional curl smoke only).
 
 8. **Relevant log excerpts:** N/A — repo/git checks only; no container logs collected.
+
+## Test report (re-run)
+
+1. **Date/time (UTC):** Start 2026-06-12 07:12:59 UTC — End 2026-06-12 07:15:30 UTC. Log window: N/A (repo-hygiene change; no container log review required).
+
+2. **Environment:** Branch `development` @ `8049a1c1`; compose files `docker-compose.yml` + `docker-compose.dev.yml`; `BASE_URL=http://127.0.0.1:4202` (stack not running).
+
+3. **What was tested:** File removal, git index, reference grep, `.gitignore` rule for `diagnostics_*.zip`, optional landing smoke.
+
+4. **Results:**
+   - **File removed:** **PASS** — `test ! -f diagnostics_20260408_4.zip && echo OK` → `OK: file removed`.
+   - **Git no longer tracks it:** **PASS** — `git ls-files diagnostics_20260408_4.zip` empty (zip not in index). `git ls-files | grep diagnostics` matches only task markdown paths (`…remove-diagnostics-zip…`), not the archive.
+   - **No references:** **PASS** — `rg` (excluding `agents2/tasks/*`, `agents/tasks/*`) finds `.gitignore` (`diagnostics_*.zip`) and `CHANGELOG.md` release note for #267; no product/runtime code references the removed archive.
+   - **Ignore rule:** **PASS** — Created `diagnostics_test.zip`; `git status --porcelain diagnostics_test.zip` empty; dummy removed.
+   - **Smoke:** **N/A** — optional; `curl` to `http://127.0.0.1:4202/` timed out (dev stack not up); no runtime impact expected for this change.
+
+5. **Overall:** **PASS** — Prior FAIL (uncommitted deletion) resolved in commit `8049a1c1` on `development`.
+
+6. **Product owner feedback:** The diagnostics archive is gone from disk and git history going forward; `.gitignore` prevents accidental re-commit. Safe to close #267 after closer handoff.
+
+7. **URLs tested:** N/A — no browser (optional curl smoke skipped; stack down).
+
+8. **Relevant log excerpts:** N/A — git/filesystem checks only.
