@@ -3060,3 +3060,6 @@
 
 2026-06-15T11:20:11Z UTC | 005 preflight | new=0 changed=0 untracked_issues=0 deploy_candidates=0
 
+
+2026-06-15T11:32:00Z UTC | 005 run | registered=1 (089_amigokebab→amigo-kebab) deploy_triggered=1 (run 27543063406) FEAT-MKT=0
+  live: https://www.satisfecho.de/amigo-kebab/es/ → 200, bundle OK
