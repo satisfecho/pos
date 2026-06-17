@@ -84,6 +84,13 @@
       "branch": "main",
       "artifact": "amigo-kebab-satisfecho-deploy",
       "deploySubpath": "es"
+    },
+    {
+      "slug": "ariba-doner",
+      "repo": "satisfecho/090_aribakebab",
+      "branch": "main",
+      "artifact": "ariba-doner-satisfecho-deploy",
+      "deploySubpath": "es"
     }
   ]
 }
