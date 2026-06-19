@@ -429,6 +429,11 @@ export const SUPPORT_USER_EMAIL = 'support@satisfecho.de';
       color: #3730a3;
     }
 
+    .role-courier {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
     .user-actions {
       display: flex;
       gap: var(--space-2);
@@ -674,9 +679,9 @@ export class UsersComponent implements OnInit {
 
     if (user.role === 'owner') {
       // New accounts cannot be created as owner (virgin-tenant registration is separate).
-      this.availableRoles.set(['admin', 'kitchen', 'bartender', 'waiter', 'receptionist']);
+      this.availableRoles.set(['admin', 'kitchen', 'bartender', 'waiter', 'receptionist', 'courier']);
     } else if (user.role === 'admin') {
-      this.availableRoles.set(['admin', 'kitchen', 'bartender', 'waiter', 'receptionist']);
+      this.availableRoles.set(['admin', 'kitchen', 'bartender', 'waiter', 'receptionist', 'courier']);
     }
   }
 
@@ -685,7 +690,7 @@ export class UsersComponent implements OnInit {
     const cur = this.currentUser();
     const ed = this.editingUser();
     if (cur?.role === 'owner' && ed && ed.id !== cur.id) {
-      return ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist'];
+      return ['owner', 'admin', 'kitchen', 'bartender', 'waiter', 'receptionist', 'courier'];
     }
     return this.availableRoles();
   }

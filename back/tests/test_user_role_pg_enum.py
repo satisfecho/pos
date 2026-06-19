@@ -26,6 +26,7 @@ class TestUserRolePgEnum(PgClientTestCase):
             models.UserRole.bartender,
             models.UserRole.waiter,
             models.UserRole.receptionist,
+            models.UserRole.courier,
         ]
         for i, role in enumerate(tenant_roles):
             u = models.User(

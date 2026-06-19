@@ -182,6 +182,7 @@
     "BOOK_TABLE": "Tisch reservieren",
     "ORDER_TAKEAWAY": "Mitnahme / Bestellung nach Hause",
     "PROVIDER_LOGIN": "Anbieter-Login",
+    "COURIER_LOGIN": "Kurier-Login",
     "REGISTER_AS_PROVIDER": "Als Anbieter registrieren",
     "CONTACT_US": "Kontakt",
     "GITHUB_REPO": "Quellcode auf GitHub",
@@ -258,6 +259,18 @@
   "PROVIDER_AUTH": {
     "NO_ACCOUNT": "Noch kein Anbieterkonto?",
     "BACK_STAFF_LOGIN": "Zur Mitarbeiter-Anmeldung"
+  },
+  "COURIER_AUTH": {
+    "TITLE": "Kurier-Portal",
+    "SUBTITLE": "Melden Sie sich an, um Ihre Lieferungen zu sehen",
+    "BACK_STAFF_LOGIN": "Zur Mitarbeiter-Anmeldung"
+  },
+  "COURIER_HOME": {
+    "TITLE": "Lieferungen",
+    "WELCOME": "Angemeldet als",
+    "PLACEHOLDER": "Ihre Lieferliste erscheint hier in einem späteren Update.",
+    "LOGOUT": "Abmelden",
+    "LOAD_FAILED": "Profil konnte nicht geladen werden. Bitte erneut anmelden."
   },
   "AUTH": {
     "LOGIN": "Anmelden",
@@ -1982,7 +1995,8 @@
       "KITCHEN": "Küchenpersonal",
       "BARTENDER": "Barkeeper",
       "WAITER": "Kellner",
-      "RECEPTIONIST": "Empfangsmitarbeiter"
+      "RECEPTIONIST": "Empfangsmitarbeiter",
+      "COURIER": "Kurier"
     }
   },
   "TRANSLATIONS": {

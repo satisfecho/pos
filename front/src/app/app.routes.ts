@@ -4,6 +4,7 @@ import { roleGuard, adminGuard, tableAccessGuard, orderAccessGuard, scheduleGuar
 import { uiModuleGuard } from './auth/ui-module.guard';
 import { reservationAccessGuard } from './auth/reservation-access.guard';
 import { providerGuard } from './auth/provider.guard';
+import { courierGuard } from './auth/courier.guard';
 import { permissionGuard } from './auth/permission.guard';
 import { tablesCanvasCanDeactivate } from './tables/tables-canvas-deactivate.guard';
 
@@ -34,6 +35,9 @@ export const routes: Routes = [
   },
   // Provider portal (protected)
   { path: 'provider', canActivate: [providerGuard], loadComponent: () => import('./provider/provider-dashboard.component').then(m => m.ProviderDashboardComponent) },
+  // Courier portal (public auth + protected home)
+  { path: 'courier/login', loadComponent: () => import('./courier/courier-login.component').then(m => m.CourierLoginComponent) },
+  { path: 'courier', canActivate: [courierGuard], loadComponent: () => import('./courier/courier-home.component').then(m => m.CourierHomeComponent) },
   { path: 'menu/:token', loadComponent: () => import('./menu/menu.component').then(m => m.MenuComponent) },
   { path: 'menu/:token/payment-success', loadComponent: () => import('./menu/payment-success.component').then(m => m.PaymentSuccessComponent) },
   { path: 'public-menu/:tenantId', loadComponent: () => import('./public-menu/public-menu.component').then(m => m.PublicMenuComponent) },

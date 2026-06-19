@@ -203,6 +203,9 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         Permission.SCHEDULE_WRITE,
         Permission.STAFF_CONTRACT_READ,
     },
+
+    # Courier portal uses dedicated endpoints; no staff RBAC permissions in Phase 1.
+    UserRole.courier: set(),
 }
 
 

@@ -182,6 +182,7 @@
     "BOOK_TABLE": "Réserver une table",
     "ORDER_TAKEAWAY": "À emporter / Commande à domicile",
     "PROVIDER_LOGIN": "Connexion fournisseur",
+    "COURIER_LOGIN": "Connexion livreur",
     "REGISTER_AS_PROVIDER": "S'inscrire comme fournisseur",
     "CONTACT_US": "Nous contacter",
     "GITHUB_REPO": "Code source sur GitHub",
@@ -258,6 +259,18 @@
   "PROVIDER_AUTH": {
     "NO_ACCOUNT": "Pas encore de compte fournisseur ?",
     "BACK_STAFF_LOGIN": "Retour à la connexion équipe"
+  },
+  "COURIER_AUTH": {
+    "TITLE": "Portail livreur",
+    "SUBTITLE": "Connectez-vous pour voir vos livraisons",
+    "BACK_STAFF_LOGIN": "Retour à la connexion équipe"
+  },
+  "COURIER_HOME": {
+    "TITLE": "Livraisons",
+    "WELCOME": "Connecté en tant que",
+    "PLACEHOLDER": "Votre liste de livraisons apparaîtra ici dans une prochaine mise à jour.",
+    "LOGOUT": "Se déconnecter",
+    "LOAD_FAILED": "Impossible de charger votre profil. Veuillez vous reconnecter."
   },
   "AUTH": {
     "LOGIN": "Connexion",
@@ -1885,7 +1898,8 @@
       "KITCHEN": "Cuisine",
       "BARTENDER": "Barman",
       "WAITER": "Serveur",
-      "RECEPTIONIST": "Réception"
+      "RECEPTIONIST": "Réception",
+      "COURIER": "Livreur"
     }
   },
   "TRANSLATIONS": {

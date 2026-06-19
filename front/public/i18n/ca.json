@@ -182,6 +182,7 @@
     "BOOK_TABLE": "Reservar taula",
     "ORDER_TAKEAWAY": "Emportar / Comanda a domicili",
     "PROVIDER_LOGIN": "Inici de sessió de proveïdor",
+    "COURIER_LOGIN": "Inici de sessió de repartidor",
     "REGISTER_AS_PROVIDER": "Registrar-se com a proveïdor",
     "CONTACT_US": "Contacteu-nos",
     "GITHUB_REPO": "Codi a GitHub",
@@ -258,6 +259,18 @@
   "PROVIDER_AUTH": {
     "NO_ACCOUNT": "Encara no teniu compte de proveïdor?",
     "BACK_STAFF_LOGIN": "Tornar a l'inici de sessió de l'equip"
+  },
+  "COURIER_AUTH": {
+    "TITLE": "Portal de repartidors",
+    "SUBTITLE": "Inicieu sessió per veure les vostres entregues",
+    "BACK_STAFF_LOGIN": "Tornar a l'inici de sessió de l'equip"
+  },
+  "COURIER_HOME": {
+    "TITLE": "Entregues",
+    "WELCOME": "Sessió iniciada com a",
+    "PLACEHOLDER": "La vostra llista d'entregues apareixerà aquí en una actualització futura.",
+    "LOGOUT": "Tancar sessió",
+    "LOAD_FAILED": "No s'ha pogut carregar el perfil. Torneu a iniciar sessió."
   },
   "AUTH": {
     "LOGIN": "Iniciar sessió",
@@ -1902,7 +1915,8 @@
       "KITCHEN": "Personal de Cuina",
       "BARTENDER": "Cambrer de barra",
       "WAITER": "Cambrer",
-      "RECEPTIONIST": "Recepcionista"
+      "RECEPTIONIST": "Recepcionista",
+      "COURIER": "Repartidor"
     }
   },
   "TRANSLATIONS": {

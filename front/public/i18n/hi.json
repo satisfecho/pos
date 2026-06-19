@@ -182,6 +182,7 @@
     "BOOK_TABLE": "टेबल बुक करें",
     "ORDER_TAKEAWAY": "पार्सल / घर पर ऑर्डर",
     "PROVIDER_LOGIN": "प्रदाता लॉगिन",
+    "COURIER_LOGIN": "कूरियर लॉगिन",
     "REGISTER_AS_PROVIDER": "प्रदाता के रूप में पंजीकरण करें",
     "CONTACT_US": "संपर्क करें",
     "GITHUB_REPO": "GitHub पर स्रोत",
@@ -251,6 +252,18 @@
   "PROVIDER_AUTH": {
     "NO_ACCOUNT": "प्रदाता खाता नहीं है?",
     "BACK_STAFF_LOGIN": "स्टाफ लॉगिन पर वापस जाएँ"
+  },
+  "COURIER_AUTH": {
+    "TITLE": "कूरियर पोर्टल",
+    "SUBTITLE": "अपनी डिलीवरी देखने के लिए साइन इन करें",
+    "BACK_STAFF_LOGIN": "स्टाफ लॉगिन पर वापस जाएँ"
+  },
+  "COURIER_HOME": {
+    "TITLE": "डिलीवरी",
+    "WELCOME": "इस रूप में साइन इन",
+    "PLACEHOLDER": "आपकी डिलीवरी सूची भविष्य के अपडेट में यहाँ दिखेगी।",
+    "LOGOUT": "लॉग आउट",
+    "LOAD_FAILED": "प्रोफ़ाइल लोड नहीं हो सकी। कृपया फिर से साइन इन करें।"
   },
   "AUTH": {
     "LOGIN": "लॉग इन",
@@ -1843,7 +1856,8 @@
       "KITCHEN": "किचन स्टाफ",
       "BARTENDER": "बारटेंडर",
       "WAITER": "वेटर",
-      "RECEPTIONIST": "रिसेप्शनिस्ट"
+      "RECEPTIONIST": "रिसेप्शनिस्ट",
+      "COURIER": "कूरियर"
     }
   },
   "TRANSLATIONS": {

@@ -120,6 +120,8 @@ import { LegalLinksComponent } from '../shared/legal-links.component';
           <span class="auth-foot-sep" aria-hidden="true">·</span>
           <a routerLink="/provider/login" data-testid="login-provider-login">{{ 'LANDING.PROVIDER_LOGIN' | translate }}</a>
           <span class="auth-foot-sep" aria-hidden="true">·</span>
+          <a routerLink="/courier/login" data-testid="login-courier-login">{{ 'LANDING.COURIER_LOGIN' | translate }}</a>
+          <span class="auth-foot-sep" aria-hidden="true">·</span>
           <a routerLink="/provider/register" data-testid="login-provider-register">{{ 'LANDING.REGISTER_AS_PROVIDER' | translate }}</a>
           <span class="auth-foot-sep" aria-hidden="true">·</span>
           <a href="mailto:sales@satisfecho.de" data-testid="login-contact-us">{{ 'LANDING.CONTACT_US' | translate }}</a>
@@ -440,7 +442,15 @@ export class LoginComponent implements OnInit {
     const id = tenantId != null ? parseInt(tenantId, 10) : undefined;
     this.api.login(username, password, isNaN(id as number) ? undefined : id).subscribe({
       next: () => {
-        this.router.navigate(['/dashboard']);
+        this.api.checkAuth().subscribe(user => {
+          if (user?.role === 'courier') {
+            void this.router.navigate(['/courier']);
+          } else if (user?.provider_id != null) {
+            void this.router.navigate(['/provider']);
+          } else {
+            void this.router.navigate(['/dashboard']);
+          }
+        });
       },
       error: (err) => {
         this.loading.set(false);
@@ -464,7 +474,15 @@ export class LoginComponent implements OnInit {
     this.loading.set(true);
     this.api.loginWithOtp(token, this.otpCode).subscribe({
       next: () => {
-        this.router.navigate(['/dashboard']);
+        this.api.checkAuth().subscribe(user => {
+          if (user?.role === 'courier') {
+            void this.router.navigate(['/courier']);
+          } else if (user?.provider_id != null) {
+            void this.router.navigate(['/provider']);
+          } else {
+            void this.router.navigate(['/dashboard']);
+          }
+        });
       },
       error: (err) => {
         this.loading.set(false);

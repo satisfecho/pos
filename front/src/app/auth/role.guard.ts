@@ -44,10 +44,14 @@ export function roleGuard(allowedRoles: UserRole[]): CanActivateFn {
 
     // Check if user has one of the allowed roles
     if (!permissionService.hasRole(user, ...allowedRoles)) {
-      // User doesn't have permission - redirect to dashboard
-      // Could also show an access denied page
       console.warn(`Access denied to ${state.url}. User role: ${user.role}, Required: ${allowedRoles.join(', ')}`);
-      router.navigate(['/dashboard']);
+      if (user.role === 'courier') {
+        router.navigate(['/courier']);
+      } else if (user.provider_id != null) {
+        router.navigate(['/provider']);
+      } else {
+        router.navigate(['/dashboard']);
+      }
       return false;
     }
 

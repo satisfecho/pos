@@ -121,6 +121,8 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission | '*'>> = {
     'staff_contract:read',
   ]),
 
+  courier: new Set([]), // Courier portal uses dedicated endpoints, not staff RBAC
+
   provider: new Set([]), // Provider portal uses provider_id scoping, not tenant permissions
 };
 

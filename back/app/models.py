@@ -68,6 +68,7 @@ class UserRole(str, Enum):
     bartender = "bartender"  # Prepares drinks and beverages
     waiter = "waiter"
     receptionist = "receptionist"
+    courier = "courier"  # Delivery driver – tenant-scoped, dedicated courier portal
     provider = "provider"  # Product provider (supplier) – no tenant, has provider_id
 
 

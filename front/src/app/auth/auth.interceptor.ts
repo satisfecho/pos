@@ -15,11 +15,23 @@ function isPublicRoute(url: string): boolean {
   return (
     path === '/login' ||
     path === '/register' ||
+    path === '/courier/login' ||
+    path.startsWith('/provider/login') ||
+    path.startsWith('/provider/register') ||
+    path.startsWith('/provider/forgot-password') ||
     path.startsWith('/menu/') ||
     path.startsWith('/book/') ||
     path.startsWith('/feedback/') ||
     path === '/reservation'
   );
+}
+
+/** Login path for the current portal (staff vs courier vs provider). */
+function loginPathForCurrentRoute(routerUrl: string): string {
+  const path = getCurrentPath(routerUrl);
+  if (path.startsWith('/courier')) return '/courier/login';
+  if (path.startsWith('/provider')) return '/provider/login';
+  return '/login';
 }
 
 /** Current browser path (used when router.url not yet updated, e.g. on initial load). */
@@ -66,9 +78,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
         if (isAuthEndpoint) {
           // Auth endpoint itself failed - logout
+          const loginPath = loginPathForCurrentRoute(router.url);
           apiService.logout().subscribe(() => {
-            if (!router.url.startsWith('/login')) {
-              router.navigate(['/login']);
+            if (!router.url.startsWith(loginPath)) {
+              router.navigate([loginPath]);
             }
           });
           return throwError(() => error);
@@ -92,9 +105,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
               refreshResult$.next(false);
               refreshResult$.complete();
               // Refresh failed - logout and redirect to login
+              const loginPath = loginPathForCurrentRoute(router.url);
               apiService.logout().subscribe(() => {
-                if (!router.url.startsWith('/login')) {
-                  router.navigate(['/login']);
+                if (!router.url.startsWith(loginPath)) {
+                  router.navigate([loginPath]);
                 }
               });
               return throwError(() => refreshError);

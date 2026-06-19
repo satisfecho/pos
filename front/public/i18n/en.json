@@ -182,6 +182,7 @@
     "BOOK_TABLE": "Book a table",
     "ORDER_TAKEAWAY": "Take away / Home ordering",
     "PROVIDER_LOGIN": "Provider login",
+    "COURIER_LOGIN": "Courier login",
     "REGISTER_AS_PROVIDER": "Register as provider",
     "CONTACT_US": "Contact us",
     "GITHUB_REPO": "Source on GitHub",
@@ -258,6 +259,18 @@
   "PROVIDER_AUTH": {
     "NO_ACCOUNT": "Don't have a provider account?",
     "BACK_STAFF_LOGIN": "Back to staff login"
+  },
+  "COURIER_AUTH": {
+    "TITLE": "Courier portal",
+    "SUBTITLE": "Sign in to view your deliveries",
+    "BACK_STAFF_LOGIN": "Back to staff login"
+  },
+  "COURIER_HOME": {
+    "TITLE": "Deliveries",
+    "WELCOME": "Signed in as",
+    "PLACEHOLDER": "Your delivery list will appear here in a future update.",
+    "LOGOUT": "Log out",
+    "LOAD_FAILED": "Could not load your profile. Please sign in again."
   },
   "AUTH": {
     "LOGIN": "Login",
@@ -2073,7 +2086,8 @@
       "KITCHEN": "Kitchen Staff",
       "BARTENDER": "Bartender",
       "WAITER": "Waiter",
-      "RECEPTIONIST": "Receptionist"
+      "RECEPTIONIST": "Receptionist",
+      "COURIER": "Courier"
     }
   },
   "TRANSLATIONS": {

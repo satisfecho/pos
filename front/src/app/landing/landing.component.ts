@@ -166,6 +166,8 @@ import { ApiErrorMessageService } from '../services/api-error-message.service';
         <span class="footer-sep">·</span>
         <a routerLink="/provider/login" data-testid="landing-provider-login">{{ 'LANDING.PROVIDER_LOGIN' | translate }}</a>
         <span class="footer-sep">·</span>
+        <a routerLink="/courier/login" data-testid="landing-courier-login">{{ 'LANDING.COURIER_LOGIN' | translate }}</a>
+        <span class="footer-sep">·</span>
         <a routerLink="/provider/register" data-testid="landing-provider-register">{{ 'LANDING.REGISTER_AS_PROVIDER' | translate }}</a>
         <span class="footer-sep">·</span>
         <a href="mailto:sales@satisfecho.de" data-testid="landing-contact-us">{{ 'LANDING.CONTACT_US' | translate }}</a>
@@ -780,7 +782,13 @@ export class LandingComponent implements OnInit {
     this.api.waitForInitialAuthCheck().subscribe(() => {
       const user = this.api.getCurrentUser();
       if (user) {
-        void this.router.navigate(['/dashboard']);
+        if (user.role === 'courier') {
+          void this.router.navigate(['/courier']);
+        } else if (user.provider_id != null) {
+          void this.router.navigate(['/provider']);
+        } else {
+          void this.router.navigate(['/dashboard']);
+        }
         return;
       }
       this.loadTenants();

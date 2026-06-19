@@ -182,6 +182,7 @@
     "BOOK_TABLE": "Резервирайте маса",
     "ORDER_TAKEAWAY": "Отнемане /Поръчка в домашни условия",
     "PROVIDER_LOGIN": "Вход за доставчик",
+    "COURIER_LOGIN": "Вход за куриер",
     "REGISTER_AS_PROVIDER": "Регистрирайте се като доставчик",
     "CONTACT_US": "Свържете се с нас",
     "GITHUB_REPO": "Изходен код в GitHub",
@@ -258,6 +259,18 @@
   "PROVIDER_AUTH": {
     "NO_ACCOUNT": "Нямате акаунт на доставчик?",
     "BACK_STAFF_LOGIN": "Към вход за персонал"
+  },
+  "COURIER_AUTH": {
+    "TITLE": "Портал за куриери",
+    "SUBTITLE": "Влезте, за да видите доставките си",
+    "BACK_STAFF_LOGIN": "Към вход за персонал"
+  },
+  "COURIER_HOME": {
+    "TITLE": "Доставки",
+    "WELCOME": "Влезли сте като",
+    "PLACEHOLDER": "Списъкът с доставки ще се появи тук в бъдеща актуализация.",
+    "LOGOUT": "Изход",
+    "LOAD_FAILED": "Профилът не може да се зареди. Моля, влезте отново."
   },
   "AUTH": {
     "LOGIN": "Вход",
@@ -2048,7 +2061,8 @@
       "KITCHEN": "Кухненски персонал",
       "BARTENDER": "Барман",
       "WAITER": "Севритъор",
-      "RECEPTIONIST": "Рецепционист"
+      "RECEPTIONIST": "Рецепционист",
+      "COURIER": "Куриер"
     }
   },
   "TRANSLATIONS": {

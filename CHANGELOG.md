@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- **Courier portal (Phase 1):** New **Courier** role for tenant-scoped delivery drivers — owners/admins assign it in **Users**; couriers sign in at **`/courier/login`**, land on a placeholder **`/courier`** home, and use **`GET /courier/me`** for profile and tenant context; route guards keep couriers off staff pages and staff off courier routes (#270).
 - **Pricing helper:** Optional per-serving ice, lemon, and other garnish costs in a visible **Garnishes** section — amounts combine with **Extra fixed cost** before pour-cost or margin calculation (#269).
 - **Marketing / Ariba Döner:** Registered **satisfecho.de/ariba-doner/es/** — manifest entry for **`090_aribakebab`** (slug **`ariba-doner`** matches SPA **`baseHref`**; artifact **`ariba-doner-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
 - **Marketing / Amigo Kebab:** Registered **satisfecho.de/amigo-kebab/es/** — manifest entry for **`089_amigokebab`** (slug **`amigo-kebab`** matches SPA **`baseHref`**; artifact **`amigo-kebab-satisfecho-deploy`**; **`deploySubpath`** **`es`**).

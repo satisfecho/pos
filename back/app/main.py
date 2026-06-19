@@ -1346,7 +1346,7 @@ def login_for_access_token(
     request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     tenant_id: int | None = Query(None, description="Optional tenant id from tenant picker"),
-    scope: str | None = Query(None, description="Login scope: 'provider' for provider portal"),
+    scope: str | None = Query(None, description="Login scope: 'provider' for provider portal, 'courier' for courier portal"),
     lang: str = Depends(_get_requested_language),
     session: Session = Depends(get_session),
 ) -> dict:
@@ -1355,6 +1355,11 @@ def login_for_access_token(
         statement = statement.where(
             models.User.provider_id.is_not(None),
             models.User.tenant_id.is_(None),
+        )
+    elif scope == "courier":
+        statement = statement.where(
+            models.User.role == models.UserRole.courier,
+            models.User.tenant_id.is_not(None),
         )
     elif tenant_id is not None:
         statement = statement.where(models.User.tenant_id == tenant_id)
@@ -5272,6 +5277,26 @@ def provider_update_me(
         "bank_bic": provider.bank_bic,
         "bank_name": provider.bank_name,
         "bank_account_holder": provider.bank_account_holder,
+    }
+
+
+# ============ COURIER PORTAL (courier-scoped auth) ============
+
+
+@app.get("/courier/me")
+def courier_me(
+    current_user: Annotated[models.User, Depends(security.get_current_courier_user)],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Return current courier profile and tenant context."""
+    tenant = session.get(models.Tenant, current_user.tenant_id) if current_user.tenant_id else None
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "full_name": current_user.full_name,
+        "role": current_user.role.value,
+        "tenant_id": current_user.tenant_id,
+        "tenant_name": tenant.name if tenant else None,
     }
 
 

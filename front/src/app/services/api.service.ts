@@ -16,7 +16,7 @@ import { environment } from '../../environments/environment';
 import { LanguageService } from './language.service';
 
 // Interfaces
-export type UserRole = 'owner' | 'admin' | 'kitchen' | 'bartender' | 'waiter' | 'receptionist' | 'provider';
+export type UserRole = 'owner' | 'admin' | 'kitchen' | 'bartender' | 'waiter' | 'receptionist' | 'courier' | 'provider';
 
 /** Staff sidebar/dashboard/route modules (tenant owner toggles in Settings). */
 export type TenantUiModuleKey =
@@ -333,6 +333,16 @@ export interface ProviderInfo {
   bank_bic?: string | null;
   bank_name?: string | null;
   bank_account_holder?: string | null;
+}
+
+/** Courier portal types */
+export interface CourierInfo {
+  id: number;
+  email: string;
+  full_name?: string | null;
+  role: string;
+  tenant_id: number | null;
+  tenant_name?: string | null;
 }
 
 export interface ProviderRegisterData {
@@ -1514,10 +1524,12 @@ export class ApiService {
   }
 
   /** Login: sends username/password as application/x-www-form-urlencoded (required by backend OAuth2PasswordRequestForm). May return 403 with require_otp + temp_token when OTP is enabled. */
-  login(username: string, password: string, tenantId?: number, scope?: 'tenant' | 'provider'): Observable<any> {
+  login(username: string, password: string, tenantId?: number, scope?: 'tenant' | 'provider' | 'courier'): Observable<any> {
     let queryParams = new HttpParams();
     if (scope === 'provider') {
       queryParams = queryParams.set('scope', 'provider');
+    } else if (scope === 'courier') {
+      queryParams = queryParams.set('scope', 'courier');
     } else if (tenantId != null) {
       queryParams = queryParams.set('tenant_id', tenantId.toString());
     }
@@ -1619,6 +1631,11 @@ export class ApiService {
   // Provider portal (provider-scoped auth)
   getProviderMe(): Observable<ProviderInfo> {
     return this.http.get<ProviderInfo>(`${this.apiUrl}/provider/me`);
+  }
+
+  // Courier portal (courier-scoped auth)
+  getCourierMe(): Observable<CourierInfo> {
+    return this.http.get<CourierInfo>(`${this.apiUrl}/courier/me`);
   }
 
   getProviderCatalog(search?: string): Observable<ProviderCatalogItem[]> {

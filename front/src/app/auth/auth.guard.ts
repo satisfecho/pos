@@ -7,8 +7,21 @@ export const authGuard: CanActivateFn = (route, state) => {
   const apiService = inject(ApiService);
   const router = inject(Router);
 
+  const redirectForRole = (user: { role?: string; provider_id?: number | null } | null) => {
+    if (user?.role === 'courier') {
+      return router.createUrlTree(['/courier']);
+    }
+    if (user?.provider_id != null) {
+      return router.createUrlTree(['/provider']);
+    }
+    return null;
+  };
+
   // Check if we already have a user in memory
-  if (apiService.getCurrentUser()) {
+  const cached = apiService.getCurrentUser();
+  if (cached) {
+    const roleRedirect = redirectForRole(cached);
+    if (roleRedirect) return roleRedirect;
     return true;
   }
 
@@ -16,6 +29,8 @@ export const authGuard: CanActivateFn = (route, state) => {
   return apiService.checkAuth().pipe(
     map(user => {
       if (user) {
+        const roleRedirect = redirectForRole(user);
+        if (roleRedirect) return roleRedirect;
         return true;
       } else {
         return router.createUrlTree(['/login']);

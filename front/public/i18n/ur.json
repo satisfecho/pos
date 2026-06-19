@@ -182,6 +182,7 @@
     "BOOK_TABLE": "میز بک کریں",
     "ORDER_TAKEAWAY": "ٹیک آوے / گھر پر آرڈر",
     "PROVIDER_LOGIN": "فراہم کنندہ لاگ ان",
+    "COURIER_LOGIN": "کورئیر لاگ ان",
     "REGISTER_AS_PROVIDER": "رجسٹر بطور فراہم کنندہ",
     "CONTACT_US": "رابطہ ہم",
     "GITHUB_REPO": "ذریعہ پر GitHub",
@@ -258,6 +259,18 @@
   "PROVIDER_AUTH": {
     "NO_ACCOUNT": "Don't ہے فراہم کنندہ اکاؤنٹ?",
     "BACK_STAFF_LOGIN": "واپس کو عملہ لاگ ان"
+  },
+  "COURIER_AUTH": {
+    "TITLE": "کورئیر پورٹل",
+    "SUBTITLE": "اپنی ڈیلیوریز دیکھنے کے لیے سائن ان کریں",
+    "BACK_STAFF_LOGIN": "واپس کو عملہ لاگ ان"
+  },
+  "COURIER_HOME": {
+    "TITLE": "ڈیلیوریز",
+    "WELCOME": "سائن ان بطور",
+    "PLACEHOLDER": "آپ کی ڈیلیوری فہرست مستقبل کی اپ ڈیٹ میں یہاں ظاہر ہوگی۔",
+    "LOGOUT": "لاگ آؤٹ",
+    "LOAD_FAILED": "پروفائل لوڈ نہیں ہو سکی۔ براہ کرم دوبارہ سائن ان کریں۔"
   },
   "AUTH": {
     "LOGIN": "لاگ ان",
@@ -2073,7 +2086,8 @@
       "KITCHEN": "باورچی خانے کا عملہ",
       "BARTENDER": "بارٹینڈر",
       "WAITER": "ویٹر",
-      "RECEPTIONIST": "ریسپشنسٹ"
+      "RECEPTIONIST": "ریسپشنسٹ",
+      "COURIER": "کورئیر"
     }
   },
   "TRANSLATIONS": {

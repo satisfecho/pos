@@ -240,3 +240,15 @@ async def get_current_provider_user(
     if not provider:
         raise HTTPException(status_code=404, detail="Provider not found")
     return (current_user, provider)
+
+
+async def get_current_courier_user(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> User:
+    """Require that the current user is a tenant-scoped courier."""
+    if current_user.role != UserRole.courier or current_user.tenant_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Courier account required",
+        )
+    return current_user

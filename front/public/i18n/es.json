@@ -182,6 +182,7 @@
     "BOOK_TABLE": "Reservar mesa",
     "ORDER_TAKEAWAY": "Para llevar / Pedido a domicilio",
     "PROVIDER_LOGIN": "Inicio de sesión de proveedor",
+    "COURIER_LOGIN": "Inicio de sesión de repartidor",
     "REGISTER_AS_PROVIDER": "Registrarse como proveedor",
     "CONTACT_US": "Contáctenos",
     "GITHUB_REPO": "Código en GitHub",
@@ -258,6 +259,18 @@
   "PROVIDER_AUTH": {
     "NO_ACCOUNT": "¿No tiene cuenta de proveedor?",
     "BACK_STAFF_LOGIN": "Volver al inicio de sesión del personal"
+  },
+  "COURIER_AUTH": {
+    "TITLE": "Portal de repartidores",
+    "SUBTITLE": "Inicia sesión para ver tus entregas",
+    "BACK_STAFF_LOGIN": "Volver al inicio de sesión del personal"
+  },
+  "COURIER_HOME": {
+    "TITLE": "Entregas",
+    "WELCOME": "Conectado como",
+    "PLACEHOLDER": "Tu lista de entregas aparecerá aquí en una actualización futura.",
+    "LOGOUT": "Cerrar sesión",
+    "LOAD_FAILED": "No se pudo cargar tu perfil. Inicia sesión de nuevo."
   },
   "AUTH": {
     "LOGIN": "Iniciar sesión",
@@ -2059,7 +2072,8 @@
       "KITCHEN": "Personal de Cocina",
       "BARTENDER": "Camarero de barra",
       "WAITER": "Camarero",
-      "RECEPTIONIST": "Recepcionista"
+      "RECEPTIONIST": "Recepcionista",
+      "COURIER": "Repartidor"
     }
   },
   "TRANSLATIONS": {
