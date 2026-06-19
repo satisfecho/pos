@@ -2145,6 +2145,14 @@
     "WASTE_PCT_HINT": "Extra loss from spillage, foam, or trim, added to cost per serving.",
     "EXTRA_FIXED_COST_HINT": "Per-serving add-ons not in the recipe (garnish, to-go cup, etc.).",
     "ROUNDING_HINT": "Round the suggested price to the nearest step (e.g. 0.50).",
+    "SECTION_GARNISHES": "Garnishes",
+    "GARNISHES_HINT": "Optional per-serving costs for drink extras; added to cost before pour cost or margin.",
+    "GARNISH_ICE": "Ice",
+    "GARNISH_ICE_HINT": "Cost of ice per serving (e.g. 0.05).",
+    "GARNISH_LEMON": "Lemon",
+    "GARNISH_LEMON_HINT": "Cost of lemon wedge or slice per serving.",
+    "GARNISH_OTHER": "Other garnish",
+    "GARNISH_OTHER_HINT": "Mint, cherry, olive, or similar per serving.",
     "MORE_OPTIONS": "More options"
   },
   "NOTIFICATIONS": {

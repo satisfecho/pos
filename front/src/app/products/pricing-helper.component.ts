@@ -133,6 +133,49 @@ import {
             </section>
           }
 
+          <section class="pricing-helper-section" [attr.aria-label]="'PRICING.SECTION_GARNISHES' | translate">
+            <h3 class="pricing-helper-section-title">{{ 'PRICING.SECTION_GARNISHES' | translate }}</h3>
+            <p class="field-hint">{{ 'PRICING.GARNISHES_HINT' | translate }}</p>
+            <div class="form-grid garnish-grid">
+              <div class="form-group">
+                <label for="ph-garnish-ice">{{ 'PRICING.GARNISH_ICE' | translate }}</label>
+                <input
+                  id="ph-garnish-ice"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  [(ngModel)]="garnishIceMajor"
+                  (ngModelChange)="scheduleRefresh()"
+                />
+                <small class="field-hint">{{ 'PRICING.GARNISH_ICE_HINT' | translate }}</small>
+              </div>
+              <div class="form-group">
+                <label for="ph-garnish-lemon">{{ 'PRICING.GARNISH_LEMON' | translate }}</label>
+                <input
+                  id="ph-garnish-lemon"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  [(ngModel)]="garnishLemonMajor"
+                  (ngModelChange)="scheduleRefresh()"
+                />
+                <small class="field-hint">{{ 'PRICING.GARNISH_LEMON_HINT' | translate }}</small>
+              </div>
+              <div class="form-group">
+                <label for="ph-garnish-other">{{ 'PRICING.GARNISH_OTHER' | translate }}</label>
+                <input
+                  id="ph-garnish-other"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  [(ngModel)]="garnishOtherMajor"
+                  (ngModelChange)="scheduleRefresh()"
+                />
+                <small class="field-hint">{{ 'PRICING.GARNISH_OTHER_HINT' | translate }}</small>
+              </div>
+            </div>
+          </section>
+
           <section class="pricing-helper-section" [attr.aria-label]="'PRICING.SECTION_TARGET' | translate">
             <div class="section-title-row">
               <h3 class="pricing-helper-section-title">{{ 'PRICING.SECTION_TARGET' | translate }}</h3>
@@ -319,6 +362,9 @@ export class PricingHelperComponent implements OnInit, OnDestroy {
   targetValue = 25;
   wastePct = 0;
   extraFixedMajor = 0;
+  garnishIceMajor = 0;
+  garnishLemonMajor = 0;
+  garnishOtherMajor = 0;
   roundingMajor = 0.5;
 
   simContainerCostMajor = 50;
@@ -405,10 +451,19 @@ export class PricingHelperComponent implements OnInit, OnDestroy {
     this.targetValue = this.defaultPourPct();
   }
 
+  private totalExtraFixedCents(): number {
+    const garnish =
+      Math.round((this.garnishIceMajor || 0) * 100) +
+      Math.round((this.garnishLemonMajor || 0) * 100) +
+      Math.round((this.garnishOtherMajor || 0) * 100);
+    const advanced = Math.round((this.extraFixedMajor || 0) * 100);
+    return garnish + advanced;
+  }
+
   private buildQueryBase(): PricingSuggestQuery {
     const step = Math.max(1, Math.round(this.roundingMajor * 100));
     const q: PricingSuggestQuery = {
-      extraFixedCents: Math.round((this.extraFixedMajor || 0) * 100),
+      extraFixedCents: this.totalExtraFixedCents(),
       wastePct: this.wastePct || 0,
       roundingStepCents: step,
     };
@@ -450,7 +505,7 @@ export class PricingHelperComponent implements OnInit, OnDestroy {
       container_unit: this.simContainerUnit,
       serving_quantity: String(this.simServingQty),
       serving_unit: this.simServingUnit,
-      extra_fixed_cents: Math.round((this.extraFixedMajor || 0) * 100),
+      extra_fixed_cents: this.totalExtraFixedCents(),
       waste_pct: this.wastePct || 0,
       rounding_step_cents: Math.max(1, Math.round(this.roundingMajor * 100)),
     };

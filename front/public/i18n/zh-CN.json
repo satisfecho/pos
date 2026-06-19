@@ -1915,6 +1915,14 @@
     "WASTE_PCT_HINT": "因洒漏、泡沫或损耗增加的每份成本。",
     "EXTRA_FIXED_COST_HINT": "配方外的每份固定成本（装饰、外带杯等）。",
     "ROUNDING_HINT": "将建议价四舍五入到最近步长（如 0.50）。",
+    "SECTION_GARNISHES": "装饰配料",
+    "GARNISHES_HINT": "饮品配料的可选每份成本；在倒酒成本或毛利率计算前加入成本。",
+    "GARNISH_ICE": "冰块",
+    "GARNISH_ICE_HINT": "每份冰块成本（如 0.05）。",
+    "GARNISH_LEMON": "柠檬",
+    "GARNISH_LEMON_HINT": "每份柠檬片成本。",
+    "GARNISH_OTHER": "其他装饰",
+    "GARNISH_OTHER_HINT": "薄荷、樱桃、橄榄等每份成本。",
     "MORE_OPTIONS": "更多选项"
   },
   "NOTIFICATIONS": {

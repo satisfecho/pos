@@ -224,6 +224,14 @@
   }
 }
 
+.garnish-grid {
+  grid-template-columns: repeat(3, 1fr);
+
+  @include for-phone-only {
+    grid-template-columns: 1fr;
+  }
+}
+
 .qty-unit-pair {
   .qty-unit-row {
     display: flex;

@@ -1974,6 +1974,14 @@
     "WASTE_PCT_HINT": "Pèrdua extra per vessaments, escuma o merma, sumada al cost per ració.",
     "EXTRA_FIXED_COST_HINT": "Costos fixos per ració fora de la recepta (guarnició, got, etc.).",
     "ROUNDING_HINT": "Arrodoneix el preu suggerit al pas més proper (p. ex. 0,50).",
+    "SECTION_GARNISHES": "Guarnicions",
+    "GARNISHES_HINT": "Costos opcionals per ració per a extres de beguda; s'afegeixen al cost abans del pour cost o marge.",
+    "GARNISH_ICE": "Gel",
+    "GARNISH_ICE_HINT": "Cost del gel per ració (p. ex. 0,05).",
+    "GARNISH_LEMON": "Llimona",
+    "GARNISH_LEMON_HINT": "Cost de llesca de llimona per ració.",
+    "GARNISH_OTHER": "Altra guarnició",
+    "GARNISH_OTHER_HINT": "Menta, cirera, oliva o similar per ració.",
     "MORE_OPTIONS": "Més opcions"
   },
   "NOTIFICATIONS": {

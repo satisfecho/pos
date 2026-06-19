@@ -1957,6 +1957,14 @@
     "WASTE_PCT_HINT": "Perte supplémentaire (versements, mousse, parage) ajoutée au coût par portion.",
     "EXTRA_FIXED_COST_HINT": "Coûts fixes par portion hors recette (garniture, gobelet, etc.).",
     "ROUNDING_HINT": "Arrondir le prix suggéré au pas le plus proche (ex. 0,50).",
+    "SECTION_GARNISHES": "Garnitures",
+    "GARNISHES_HINT": "Coûts optionnels par portion pour les extras de boisson ; ajoutés au coût avant coût au verre ou marge.",
+    "GARNISH_ICE": "Glace",
+    "GARNISH_ICE_HINT": "Coût de la glace par portion (ex. 0,05).",
+    "GARNISH_LEMON": "Citron",
+    "GARNISH_LEMON_HINT": "Coût d'un quartier de citron par portion.",
+    "GARNISH_OTHER": "Autre garniture",
+    "GARNISH_OTHER_HINT": "Menthe, cerise, olive ou similaire par portion.",
     "MORE_OPTIONS": "Plus d'options"
   },
   "NOTIFICATIONS": {

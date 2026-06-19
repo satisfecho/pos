@@ -2054,6 +2054,14 @@
     "WASTE_PCT_HINT": "Zusätzlicher Verlust durch Verschütten, Schaum oder Trim, auf die Portion umgelegt.",
     "EXTRA_FIXED_COST_HINT": "Fixkosten pro Portion außerhalb des Rezepts (Garnitur, Becher usw.).",
     "ROUNDING_HINT": "Vorschlagspreis auf den nächsten Schritt runden (z. B. 0,50).",
+    "SECTION_GARNISHES": "Garnituren",
+    "GARNISHES_HINT": "Optionale Kosten pro Portion für Getränke-Extras; werden vor Pour-Cost oder Marge addiert.",
+    "GARNISH_ICE": "Eis",
+    "GARNISH_ICE_HINT": "Eiskosten pro Portion (z. B. 0,05).",
+    "GARNISH_LEMON": "Zitrone",
+    "GARNISH_LEMON_HINT": "Kosten für Zitronenscheibe pro Portion.",
+    "GARNISH_OTHER": "Sonstige Garnitur",
+    "GARNISH_OTHER_HINT": "Minze, Kirsche, Olive o. Ä. pro Portion.",
     "MORE_OPTIONS": "Weitere Optionen"
   },
   "NOTIFICATIONS": {

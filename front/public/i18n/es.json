@@ -2131,6 +2131,14 @@
     "WASTE_PCT_HINT": "Pérdida extra por derrames, espuma o merma, sumada al coste por ración.",
     "EXTRA_FIXED_COST_HINT": "Costes fijos por ración fuera de la receta (guarnición, vaso, etc.).",
     "ROUNDING_HINT": "Redondea el precio sugerido al paso más cercano (p. ej. 0,50).",
+    "SECTION_GARNISHES": "Guarniciones",
+    "GARNISHES_HINT": "Costes opcionales por ración para extras de bebida; se suman al coste antes del pour cost o margen.",
+    "GARNISH_ICE": "Hielo",
+    "GARNISH_ICE_HINT": "Coste del hielo por ración (p. ej. 0,05).",
+    "GARNISH_LEMON": "Limón",
+    "GARNISH_LEMON_HINT": "Coste de rodaja de limón por ración.",
+    "GARNISH_OTHER": "Otra guarnición",
+    "GARNISH_OTHER_HINT": "Menta, cereza, aceituna o similar por ración.",
     "MORE_OPTIONS": "Más opciones"
   },
   "NOTIFICATIONS": {

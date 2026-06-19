@@ -48,6 +48,14 @@ def test_extra_fixed():
     assert r["suggested_price_cents"] == 560
 
 
+def test_garnish_costs_summed_via_extra_fixed():
+    """Ice + lemon + other garnish per serving (UI sums into extra_fixed_cents)."""
+    garnish_cents = 5 + 10 + 3  # ice, lemon, other
+    r = suggest_price(100, target_pour_cost_pct=25.0, extra_fixed_cents=garnish_cents, rounding_step_cents=None)
+    assert r["cost_per_serving_cents"] == 118
+    assert r["suggested_price_cents"] == 472
+
+
 def test_rounding_step_applied_last():
     r = suggest_price(100, target_pour_cost_pct=25.0, rounding_step_cents=50)
     assert r["suggested_price_cents"] % 50 == 0
