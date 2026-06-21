@@ -10,8 +10,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- **Courier portal (Phase 1):** New **Courier** role for tenant-scoped delivery drivers — owners/admins assign it in **Users**; couriers sign in at **`/courier/login`**, land on a placeholder **`/courier`** home, and use **`GET /courier/me`** for profile and tenant context; route guards keep couriers off staff pages and staff off courier routes (#270).
-- **Pricing helper:** Optional per-serving ice, lemon, and other garnish costs in a visible **Garnishes** section — amounts combine with **Extra fixed cost** before pour-cost or margin calculation (#269).
 - **Marketing / Ariba Döner:** Registered **satisfecho.de/ariba-doner/es/** — manifest entry for **`090_aribakebab`** (slug **`ariba-doner`** matches SPA **`baseHref`**; artifact **`ariba-doner-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
 - **Marketing / Amigo Kebab:** Registered **satisfecho.de/amigo-kebab/es/** — manifest entry for **`089_amigokebab`** (slug **`amigo-kebab`** matches SPA **`baseHref`**; artifact **`amigo-kebab-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
 - **Marketing / La Bella Toscana:** Registered **satisfecho.de/labellatoscana/es/** — manifest entry for **`060_labellatoscana`** (slug **`labellatoscana`** matches SPA **`baseHref`**; artifact **`labellatoscana-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
@@ -20,7 +18,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
-- **Working plan / schedule:** Staff with `schedule:write` who are not owner or admin can create, edit, delete, and bulk-assign **only their own** shifts — cross-user writes return 403 on the API and edit/delete controls are hidden for others' shifts in **Working plan** (#271).
 - **Products / categories:** Translated category strings (e.g. **Entrantes**, **Plat principal**, **Vorspeisen**) are normalized to canonical English keys on product create/update, bulk import, and catalog merge — staff no longer see duplicate category options for the same logical category; existing data is repaired idempotently on migrate (#265).
 - **Products / categories:** Staff **Products** category dropdowns and **Product categories** now always list all five standard categories (Starters, Main Course, Desserts, Beverages, Sides) even when the tenant has no products yet — `GET /catalog/categories` seeds empty subcategory lists for missing standard keys in fixed order (#263).
 - **Marketing / Rico Kebab:** Corrected manifest and **`front/sites/`** slug from **`ricokebab`** to **`rico-kebab`** so paths match production **`/rico-kebab/`** and the SPA **`baseHref`** (`088_ricokebab`).
@@ -41,6 +38,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Release / production:** Promoted **`development` → `master`** and confirmed green **Deploy to amvara9** on production (**satisfecho.de**) — live **2.1.4** at merge **`41bc798a`** (#261).
 - **Marketing / Wimpi:** Mobile opening-hours layout on **satisfecho.de/wimpi/es/** — short weekday labels (LUN–DOM), wrapped rows on narrow viewports, full names from 720px up (`083_wimpi` #1).
 - **Agent loop:** Added **005 marketing repos reviewer** — preflight scans **`satisfecho/NNN_slug`** org repos for new sites, bundle updates, and untracked issues; registers **`config/marketing-sites.json`** and **`front/sites/<slug>/`**, can trigger **Deploy to amvara9**, and queues **`FEAT-MKT-*`** tasks for the feature coder. Wired into **`agents2/pos-cursor-loop.sh`** with gating env vars; **`010-feature-coder.md`** documents marketing-repo work.
+
+## [2.1.5] - 2026-06-21
+
+### Added
+
+- **Courier portal (Phase 1):** New **Courier** role for tenant-scoped delivery drivers — owners/admins assign it in **Users**; couriers sign in at **`/courier/login`**, land on a placeholder **`/courier`** home, and use **`GET /courier/me`** for profile and tenant context; route guards keep couriers off staff pages and staff off courier routes (#270).
+- **Pricing helper:** Optional per-serving ice, lemon, and other garnish costs in a visible **Garnishes** section — amounts combine with **Extra fixed cost** before pour-cost or margin calculation (#269).
+
+### Fixed
+
+- **Working plan / schedule:** Staff with `schedule:write` who are not owner or admin can create, edit, delete, and bulk-assign **only their own** shifts — cross-user writes return 403 on the API and edit/delete controls are hidden for others' shifts in **Working plan** (#271).
+
+### Changed
+
+- **Release / production:** Promoted **`development` → `master`** and deployed to amvara9 (**satisfecho.de**) — live **2.1.5** (#272; includes courier portal #270, pricing helper #269, schedule write auth #271).
 
 ## [2.1.4] - 2026-06-01
 
