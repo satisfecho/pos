@@ -2,12 +2,29 @@
 
 from __future__ import annotations
 
+from sqlalchemy import text
+
 from pg_client_mixin import PgClientTestCase
 
 from app import models, security
 
 
 class TestUserRolePgEnum(PgClientTestCase):
+    def test_role_column_uses_user_role_enum_type(self) -> None:
+        row = self.session.exec(
+            text(
+                """
+                SELECT c.udt_name
+                FROM information_schema.columns c
+                WHERE c.table_schema = 'public'
+                  AND c.table_name = 'user'
+                  AND c.column_name = 'role'
+                """
+            )
+        ).first()
+        self.assertIsNotNone(row)
+        self.assertEqual(row[0], "user_role")
+
     def test_insert_each_role_value(self) -> None:
         tenant = models.Tenant(name="UserRole enum regression")
         self.session.add(tenant)
