@@ -215,6 +215,11 @@ def has_permission(user: User, permission: Permission) -> bool:
     return permission in user_permissions
 
 
+def can_manage_all_schedules(user: User) -> bool:
+    """Owner/admin may manage any tenant member's shifts; other roles only their own."""
+    return user.role in (UserRole.owner, UserRole.admin)
+
+
 def has_any_permission(user: User, *permissions: Permission) -> bool:
     """Check if a user has any of the specified permissions."""
     user_permissions = ROLE_PERMISSIONS.get(user.role, set())

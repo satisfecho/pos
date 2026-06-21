@@ -67,7 +67,7 @@ from .api_errors import api_error_payload
 
 # Minimum advance booking for public (unauthenticated) reservations
 RESERVATION_PUBLIC_MIN_LEAD_MINUTES = 10
-from .permissions import Permission, require_permission, require_role, has_permission
+from .permissions import Permission, require_permission, require_role, has_permission, can_manage_all_schedules
 from . import email_service as email_svc
 from .reservation_email_template import MAX_BODY_LEN, MAX_SUBJECT_LEN
 from . import whatsapp_service as whatsapp_svc
@@ -6174,6 +6174,14 @@ _SCHEDULE_PLAN_USER_ROLES = frozenset(
 )
 
 
+def _require_schedule_shift_access(actor: models.User, shift_user_id: int) -> None:
+    """Non-owner/admin callers may only write shifts assigned to themselves."""
+    if can_manage_all_schedules(actor):
+        return
+    if shift_user_id != actor.id:
+        raise HTTPException(status_code=403, detail="Permission denied")
+
+
 @app.get("/schedule/export")
 def export_schedule_month(
     current_user: Annotated[models.User, Depends(require_permission(Permission.SCHEDULE_READ))],
@@ -6419,12 +6427,15 @@ def copy_schedule_week(
         raise HTTPException(status_code=400, detail="Source and target week must differ")
     delta_days = (tgt - src).days
     src_end = src + timedelta(days=6)
-    shifts = session.exec(
+    stmt = (
         select(models.Shift)
         .where(models.Shift.tenant_id == current_user.tenant_id)
         .where(models.Shift.shift_date >= src)
         .where(models.Shift.shift_date <= src_end)
-    ).all()
+    )
+    if not can_manage_all_schedules(current_user):
+        stmt = stmt.where(models.Shift.user_id == current_user.id)
+    shifts = session.exec(stmt).all()
     created_count = 0
     skipped_existing_count = 0
     for s in shifts:
@@ -6757,6 +6768,7 @@ def create_shift(
     ).first()
     if not user:
         raise HTTPException(status_code=400, detail="User not found")
+    _require_schedule_shift_access(current_user, body.user_id)
     if user.role not in (models.UserRole.owner, models.UserRole.admin, models.UserRole.kitchen, models.UserRole.bartender, models.UserRole.waiter, models.UserRole.receptionist):
         raise HTTPException(status_code=400, detail="User must have role owner, admin, kitchen, bartender, waiter, or receptionist")
     try:
@@ -6814,6 +6826,7 @@ def create_shifts_bulk(
     ).first()
     if not user:
         raise HTTPException(status_code=400, detail="User not found")
+    _require_schedule_shift_access(current_user, body.user_id)
     if user.role not in (
         models.UserRole.owner,
         models.UserRole.admin,
@@ -6890,8 +6903,10 @@ def update_shift(
     ).first()
     if not shift:
         raise HTTPException(status_code=404, detail="Shift not found")
+    _require_schedule_shift_access(current_user, shift.user_id)
     from datetime import datetime as dt_parse
     if body.user_id is not None:
+        _require_schedule_shift_access(current_user, body.user_id)
         user = session.exec(
             select(models.User).where(
                 models.User.id == body.user_id,
@@ -6948,6 +6963,7 @@ def delete_shift(
     ).first()
     if not shift:
         raise HTTPException(status_code=404, detail="Shift not found")
+    _require_schedule_shift_access(current_user, shift.user_id)
     _mark_working_plan_updated(session, current_user.tenant_id)
     session.delete(shift)
     session.commit()

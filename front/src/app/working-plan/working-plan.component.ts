@@ -355,7 +355,7 @@ function isValidView(v: string | null): v is ViewMode {
                         <ul class="calendar-shift-lines">
                           @for (line of cell.shiftLines; track calendarShiftLineTrack(line, $index)) {
                             @if (line.shift) {
-                              @if (canWriteSchedule()) {
+                              @if (canEditShift(line.shift)) {
                                 <li
                                   class="calendar-shift-line-row"
                                   [style.--wp-shift-h]="shiftHue(line.userId)"
@@ -429,8 +429,10 @@ function isValidView(v: string | null): v is ViewMode {
                   <span class="shift-user">{{ s.user_name }} ({{ getRoleLabel(s.user_role) }})</span>
                 </div>
                 <div class="shift-actions">
-                  <button class="btn btn-ghost btn-sm" (click)="openEdit(s)">{{ 'COMMON.EDIT' | translate }}</button>
-                  <button class="btn btn-ghost btn-sm danger" (click)="confirmDelete(s)">{{ 'COMMON.DELETE' | translate }}</button>
+                  @if (canEditShift(s)) {
+                    <button class="btn btn-ghost btn-sm" (click)="openEdit(s)">{{ 'COMMON.EDIT' | translate }}</button>
+                    <button class="btn btn-ghost btn-sm danger" (click)="confirmDelete(s)">{{ 'COMMON.DELETE' | translate }}</button>
+                  }
                 </div>
               </div>
             }
@@ -451,9 +453,9 @@ function isValidView(v: string | null): v is ViewMode {
               <p class="bulk-month-scope">{{ 'WORKING_PLAN.BULK_MONTH_SCOPE' | translate: { month: bulkMonthLabel() } }}</p>
               <div class="form-group">
                 <label for="bulk-user">{{ 'WORKING_PLAN.USER' | translate }}</label>
-                <select id="bulk-user" [(ngModel)]="bulkUserId" [disabled]="!scheduleUsers().length">
+                <select id="bulk-user" [(ngModel)]="bulkUserId" [disabled]="!assignableScheduleUsers().length">
                   <option [ngValue]="null">{{ 'WORKING_PLAN.SELECT_USER' | translate }}</option>
-                  @for (u of scheduleUsers(); track u.id) {
+                  @for (u of assignableScheduleUsers(); track u.id) {
                     <option [ngValue]="u.id">{{ u.full_name || u.email }} ({{ getRoleLabel(u.role) }})</option>
                   }
                 </select>
@@ -538,9 +540,9 @@ function isValidView(v: string | null): v is ViewMode {
             <div class="modal-body">
               <div class="form-group">
                 <label>{{ 'WORKING_PLAN.USER' | translate }}</label>
-                <select [(ngModel)]="formUserId" [disabled]="!scheduleUsers().length">
+                <select [(ngModel)]="formUserId" [disabled]="!assignableScheduleUsers().length || !canManageAllSchedules()">
                   <option [ngValue]="null">{{ 'WORKING_PLAN.SELECT_USER' | translate }}</option>
-                  @for (u of scheduleUsers(); track u.id) {
+                  @for (u of assignableScheduleUsers(); track u.id) {
                     <option [ngValue]="u.id">{{ u.full_name || u.email }} ({{ getRoleLabel(u.role) }})</option>
                   }
                 </select>
@@ -911,6 +913,15 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
 
   weekRange = computed(() => getWeekRange(this.weekStart()));
 
+  /** Staff the current user may assign shifts to (self only unless owner/admin). */
+  assignableScheduleUsers = computed(() => {
+    const users = this.scheduleUsers();
+    if (this.canManageAllSchedules()) return users;
+    const id = this.api.getCurrentUser()?.id;
+    if (id == null) return [];
+    return users.filter((u) => u.id === id);
+  });
+
   /** Time options for bulk apply (Monday opening hours as template, or full day). */
   timeOptsForBulk(): string[] {
     void this.openingHours();
@@ -1252,7 +1263,7 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
     this.bulkTargetYear.set(year);
     this.bulkTargetMonth.set(month);
     this.bulkWeekdays.set(new Set([1, 2, 3, 4, 5]));
-    const users = this.scheduleUsers();
+    const users = this.assignableScheduleUsers();
     const exp = this.exportUserId();
     this.bulkUserId =
       exp != null && users.some((u) => u.id === exp) ? exp : (users[0]?.id ?? null);
@@ -1698,6 +1709,18 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
     return this.permissions.hasPermission(this.api.getCurrentUser(), 'schedule:write');
   }
 
+  /** Owner/admin manage all shifts; other roles only their own. */
+  canManageAllSchedules(): boolean {
+    const role = String(this.api.getCurrentUser()?.role ?? '').toLowerCase();
+    return role === 'owner' || role === 'admin';
+  }
+
+  canEditShift(s: Shift): boolean {
+    if (!this.canWriteSchedule()) return false;
+    if (this.canManageAllSchedules()) return true;
+    return s.user_id === this.api.getCurrentUser()?.id;
+  }
+
   calendarShiftLineTrack(line: CalendarShiftLineRow, idx: number): string {
     if (line.shift) return `s-${line.shift.id}`;
     return `o-${idx}`;
@@ -1745,8 +1768,8 @@ export class WorkingPlanComponent implements OnInit, OnDestroy {
 
   openCreate(): void {
     this.editingShift.set(null);
+    const users = this.assignableScheduleUsers();
     const currentUser = this.api.getCurrentUser();
-    const users = this.scheduleUsers();
     const currentId = currentUser?.id;
     this.formUserId = currentId != null && users.some((u) => u.id === currentId) ? currentId : (users[0]?.id ?? null);
     this.formDate = this.getSuggestedDateForNewShift();
