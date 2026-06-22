@@ -17,12 +17,13 @@ The code fix is **already merged on `development`** (commit **`0f6ba00b`**, migr
 
 | Check | Value |
 |-------|-------|
-| **`origin/development`** | **`3ccf551e`** |
+| **`origin/development`** | **`5092c8c3`** |
 | **`origin/master`** | **`7405465c`** |
-| Commits **`master..development`** | **30** |
+| Commits **`master..development`** | **47** |
 | Latest **Deploy to amvara9** | run **27912680055** — **success** @ **`7405465c`** (2026-06-21, predates fix) |
 | Production courier token | **500** (`invalid input value for enum userrole: "courier"`) |
 | Fix commit on **`development`** | **`0f6ba00b`** (migration **20260621120000**) |
+| GitHub **#274** | **CLOSED** (stateReason: COMPLETED, 2026-06-22T08:38Z) — deploy not done |
 
 ## High-level instructions for coder
 
@@ -40,6 +41,7 @@ The code fix is **already merged on `development`** (commit **`0f6ba00b`**, migr
 ## Handoff log
 
 - **2026-06-22 (012 handoff):** Created from archived **WIP-272** / **WIP-273** after GitHub **#272** and **#273** **CLOSED**; **#274** **OPEN** (same deploy scope). Code fix already on **`development`**; blocker is **`development` → `master`** promotion + green **Deploy to amvara9**.
+- **2026-06-22 (012 handoff, pass 2):** **No WIP → UNTESTED** — deploy-blocker per **`012-feature-coder-handoff.md`**: **`master`** still **`7405465c`** (47 commits behind **`development`** @ **`5092c8c3`**); no post-fix **Deploy to amvara9** run; production `POST /api/token?scope=courier` still **500**. **Testing instructions** still pending. GitHub **#274** now **CLOSED** (no open successor) — feature coder must still promote + deploy before handoff can proceed.
 
 ## Testing instructions
 
