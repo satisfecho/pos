@@ -36,6 +36,7 @@ Follow **`.cursor/rules/git-development-branch-workflow.mdc`** — this is an ex
 - **2026-06-22 (012 handoff):** **Remain WIP** — do not rename to **UNTESTED**. **#273** enum fix is on **`development`** @ **`f990b865`** but not on **`master`** / amvara9 (**`7405465c`**, 19 commits behind). Coder must re-merge **`development` → `master`**, push, and confirm green **Deploy to amvara9** before handoff.
 - **2026-06-22 (012 handoff, pass 2):** **Remain WIP** — do not rename to **UNTESTED**. **`development`** @ **`184704a7`** (24 commits ahead of **`master`** **`7405465c`**); latest **Deploy to amvara9** still run **27912680055** on pre-fix **`7405465c`**; production `POST /api/token?scope=courier` → **500**. Coder must re-promote and redeploy before handoff.
 - **2026-06-22 (012 handoff, pass 3):** **Remain WIP** — do not rename to **UNTESTED**. **`development`** @ **`89bdeda1`** (25 commits ahead of **`master`** **`7405465c`**); **Deploy to amvara9** still run **27912680055** on pre-fix **`7405465c`**; production courier token → **500**. Coder must merge **`development` → `master`**, push, and confirm green deploy before handoff.
+- **2026-06-22 (012 handoff, pass 4):** **Remain WIP** — do not rename to **UNTESTED**. **`development`** @ **`4d71a470`** (28 commits ahead of **`master`** **`7405465c`**); **Deploy to amvara9** unchanged (run **27912680055** on **`7405465c`**); production `POST /api/token?scope=courier` → **500**. Coder must re-promote and redeploy before handoff.
 
 ## Testing instructions
 
