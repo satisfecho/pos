@@ -72,6 +72,17 @@ function readFrontPackageVersion() {
   }
 }
 
+function readLandingDemoRestaurantName() {
+  try {
+    const i18nPath = resolve(frontRoot, 'public/i18n/en.json');
+    const i18n = JSON.parse(readFileSync(i18nPath, 'utf8'));
+    const name = i18n?.LANDING?.RESTAURANT_DEMO_NAME;
+    return typeof name === 'string' ? name.trim() : null;
+  } catch {
+    return null;
+  }
+}
+
 function isLocalBaseUrl(baseUrl) {
   try {
     const u = new URL(baseUrl);
@@ -340,9 +351,51 @@ async function main() {
 
     console.log('   Version element text:', versionVisible.text);
 
+    console.log('1b. Landing restaurant demo card...');
+    const expectedDemoName = readLandingDemoRestaurantName();
+    await page.waitForFunction(
+      () => {
+        const loading = document.querySelector('.landing-restaurants .loading');
+        return !loading;
+      },
+      { timeout: 15000 }
+    );
+    const restaurantCards = await page.evaluate(() => {
+      const cards = Array.from(document.querySelectorAll('[data-testid="landing-tenant-card"]'));
+      const names = cards.map((c) => {
+        const el = c.querySelector('[data-testid="landing-tenant-name"]');
+        return (el?.textContent || '').trim();
+      });
+      return { count: cards.length, names };
+    });
+    if (restaurantCards.count !== 1) {
+      console.log(
+        '   FAIL: Expected exactly 1 restaurant card on landing, found',
+        restaurantCards.count
+      );
+      await browser.close();
+      process.exit(1);
+    }
+    if (!expectedDemoName) {
+      console.log('   FAIL: Could not read LANDING.RESTAURANT_DEMO_NAME from public/i18n/en.json');
+      await browser.close();
+      process.exit(1);
+    }
+    if (restaurantCards.names[0] !== expectedDemoName) {
+      console.log(
+        '   FAIL: Restaurant card name',
+        JSON.stringify(restaurantCards.names[0]),
+        '!== expected',
+        JSON.stringify(expectedDemoName)
+      );
+      await browser.close();
+      process.exit(1);
+    }
+    console.log('   OK: One restaurant card titled', JSON.stringify(expectedDemoName));
+
     if (!hasLoginCreds) {
       await browser.close();
-      console.log('\n>>> RESULT: Landing page shows version.');
+      console.log('\n>>> RESULT: Landing page shows version and demo restaurant card.');
       process.exit(0);
     }
 
@@ -429,7 +482,7 @@ async function main() {
     }
 
     await browser.close();
-    console.log('\n>>> RESULT: Landing version OK; demo login (tenant=' + tenantId + ') OK; sidebar nav OK.');
+    console.log('\n>>> RESULT: Landing version OK; demo restaurant card OK; demo login (tenant=' + tenantId + ') OK; sidebar nav OK.');
     process.exit(0);
   } catch (err) {
     console.error('Error:', err.message);

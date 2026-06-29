@@ -5300,6 +5300,167 @@ def courier_me(
     }
 
 
+def _courier_active_order_items(items: list[models.OrderItem]) -> list[models.OrderItem]:
+    return [
+        item
+        for item in items
+        if not item.removed_by_customer
+        and item.removed_by_user_id is None
+        and item.status != models.OrderItemStatus.cancelled
+    ]
+
+
+def _courier_item_summary(items: list[models.OrderItem]) -> str:
+    active = _courier_active_order_items(items)
+    return ", ".join(f"{item.quantity}× {item.product_name}" for item in active)
+
+
+def _courier_effective_order_status(
+    order: models.Order, all_items: list[models.OrderItem]
+) -> models.OrderStatus:
+    if order.status in (models.OrderStatus.paid, models.OrderStatus.cancelled):
+        return order.status
+    return compute_order_status_from_items(all_items)
+
+
+def _courier_pickup_context(session: Session, tenant_id: int) -> tuple[str | None, str | None]:
+    tenant = session.get(models.Tenant, tenant_id)
+    if not tenant:
+        return None, None
+    return tenant.name, tenant.address
+
+
+def _courier_order_base_query(tenant_id: int):
+    return (
+        select(models.Order)
+        .where(
+            models.Order.tenant_id == tenant_id,
+            models.Order.deleted_at.is_(None),
+            models.Order.delivery_integration_id.is_not(None),
+        )
+        .order_by(models.Order.created_at.desc())
+    )
+
+
+def _serialize_courier_order_summary(
+    session: Session,
+    order: models.Order,
+    *,
+    pickup_name: str | None,
+    pickup_address: str | None,
+) -> dict:
+    all_items = session.exec(
+        select(models.OrderItem).where(models.OrderItem.order_id == order.id)
+    ).all()
+    active_items = _courier_active_order_items(all_items)
+    if not active_items:
+        return {}
+    status = _courier_effective_order_status(order, all_items)
+    return {
+        "id": order.id,
+        "status": status.value,
+        "customer_name": order.customer_name,
+        "created_at": order.created_at.isoformat() if order.created_at else None,
+        "item_summary": _courier_item_summary(all_items),
+        "pickup_name": pickup_name,
+        "pickup_address": pickup_address,
+    }
+
+
+def _serialize_courier_order_detail(
+    session: Session,
+    order: models.Order,
+    *,
+    pickup_name: str | None,
+    pickup_address: str | None,
+) -> dict:
+    all_items = session.exec(
+        select(models.OrderItem).where(models.OrderItem.order_id == order.id)
+    ).all()
+    active_items = _courier_active_order_items(all_items)
+    if not active_items:
+        return {}
+    status = _courier_effective_order_status(order, all_items)
+    total_cents = sum(item.price_cents * item.quantity for item in active_items)
+    items_json = [
+        {
+            "product_name": item.product_name,
+            "quantity": item.quantity,
+            "notes": item.notes,
+            "customization_summary": getattr(item, "customization_summary", None),
+        }
+        for item in active_items
+    ]
+    return {
+        "id": order.id,
+        "status": status.value,
+        "customer_name": order.customer_name,
+        "created_at": order.created_at.isoformat() if order.created_at else None,
+        "item_summary": _courier_item_summary(all_items),
+        "pickup_name": pickup_name,
+        "pickup_address": pickup_address,
+        "delivery_notes": order.notes,
+        "delivery_address": None,
+        "external_order_ref": order.external_order_ref,
+        "total_cents": total_cents,
+        "items": items_json,
+    }
+
+
+@app.get("/courier/orders")
+def courier_list_orders(
+    current_user: Annotated[models.User, Depends(security.get_current_courier_user)],
+    session: Session = Depends(get_session),
+) -> list[dict]:
+    """List delivery orders for the courier's tenant (v1: all tenant delivery orders)."""
+    tenant_id = current_user.tenant_id
+    assert tenant_id is not None
+    pickup_name, pickup_address = _courier_pickup_context(session, tenant_id)
+    orders = session.exec(_courier_order_base_query(tenant_id)).all()
+    result: list[dict] = []
+    for order in orders:
+        row = _serialize_courier_order_summary(
+            session,
+            order,
+            pickup_name=pickup_name,
+            pickup_address=pickup_address,
+        )
+        if row:
+            result.append(row)
+    return result
+
+
+@app.get("/courier/orders/{order_id}")
+def courier_get_order(
+    order_id: int,
+    current_user: Annotated[models.User, Depends(security.get_current_courier_user)],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Return one delivery order for the courier's tenant."""
+    tenant_id = current_user.tenant_id
+    assert tenant_id is not None
+    order = session.exec(
+        select(models.Order).where(
+            models.Order.id == order_id,
+            models.Order.tenant_id == tenant_id,
+            models.Order.deleted_at.is_(None),
+            models.Order.delivery_integration_id.is_not(None),
+        )
+    ).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    pickup_name, pickup_address = _courier_pickup_context(session, tenant_id)
+    detail = _serialize_courier_order_detail(
+        session,
+        order,
+        pickup_name=pickup_name,
+        pickup_address=pickup_address,
+    )
+    if not detail:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return detail
+
+
 @app.get("/provider/catalog")
 def provider_list_catalog(
     current: Annotated[
