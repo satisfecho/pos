@@ -38,7 +38,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Release / production:** Promoted **`development` → `master`** and confirmed green **Deploy to amvara9** on production (**satisfecho.de**) — live **2.1.4** at merge **`41bc798a`** (#261).
 - **Marketing / Wimpi:** Mobile opening-hours layout on **satisfecho.de/wimpi/es/** — short weekday labels (LUN–DOM), wrapped rows on narrow viewports, full names from 720px up (`083_wimpi` #1).
 - **Agent loop:** Added **005 marketing repos reviewer** — preflight scans **`satisfecho/NNN_slug`** org repos for new sites, bundle updates, and untracked issues; registers **`config/marketing-sites.json`** and **`front/sites/<slug>/`**, can trigger **Deploy to amvara9**, and queues **`FEAT-MKT-*`** tasks for the feature coder. Wired into **`agents2/pos-cursor-loop.sh`** with gating env vars; **`010-feature-coder.md`** documents marketing-repo work.
-- **Agent tasks:** Archived closed deploy issues **#272** and **#273** to **`agents2/tasks/done/`**; opened **#274** to track promoting the courier enum fix (**2.1.6**) to production.
+- **Release / production:** Promoted **`development` → `master`** and confirmed green **Deploy to amvara9** on production (**satisfecho.de**) — live **2.1.6** at **`1bfafe84`**; courier token endpoint returns **401** (not **500**) after enum migration (#274; includes courier auth fix #273).
+- **Agent tasks:** Archived **#274** deploy verification task to **`agents2/tasks/done/`** after production PASS.
 
 ## [2.1.6] - 2026-06-22
 
