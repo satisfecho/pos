@@ -345,6 +345,31 @@ export interface CourierInfo {
   tenant_name?: string | null;
 }
 
+export interface CourierOrderSummary {
+  id: number;
+  status: string;
+  customer_name: string | null;
+  created_at: string;
+  item_summary: string;
+  pickup_name: string | null;
+  pickup_address: string | null;
+}
+
+export interface CourierOrderItem {
+  product_name: string;
+  quantity: number;
+  notes: string | null;
+  customization_summary: string | null;
+}
+
+export interface CourierOrderDetail extends CourierOrderSummary {
+  delivery_notes: string | null;
+  delivery_address: string | null;
+  external_order_ref: string | null;
+  total_cents: number;
+  items: CourierOrderItem[];
+}
+
 export interface ProviderRegisterData {
   provider_name: string;
   email: string;
@@ -1636,6 +1661,14 @@ export class ApiService {
   // Courier portal (courier-scoped auth)
   getCourierMe(): Observable<CourierInfo> {
     return this.http.get<CourierInfo>(`${this.apiUrl}/courier/me`);
+  }
+
+  getCourierOrders(): Observable<CourierOrderSummary[]> {
+    return this.http.get<CourierOrderSummary[]>(`${this.apiUrl}/courier/orders`);
+  }
+
+  getCourierOrder(orderId: number): Observable<CourierOrderDetail> {
+    return this.http.get<CourierOrderDetail>(`${this.apiUrl}/courier/orders/${orderId}`);
   }
 
   getProviderCatalog(search?: string): Observable<ProviderCatalogItem[]> {
