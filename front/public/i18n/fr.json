@@ -169,6 +169,7 @@
     "SECTION_GUESTS": "Pour les clients",
     "SECTION_GUESTS_LEDE": "Déjà à table ? Saisissez le nom de la table ou ouvrez le lien du QR code sur la table.",
     "RESTAURANTS_HEADING": "Choisissez votre restaurant",
+    "RESTAURANT_DEMO_NAME": "Restaurant démo",
     "LOGIN": "Connexion",
     "NO_TENANTS": "Aucun restaurant enregistré pour l'instant.",
     "AT_TABLE_LABEL": "Commander à table",

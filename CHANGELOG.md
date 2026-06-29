@@ -27,6 +27,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- **Landing page:** Public home now shows a single **Restaurant Demo** card for tenant 1 instead of listing every registered restaurant — localized title via **`LANDING.RESTAURANT_DEMO_NAME`**; Book, login, and public-menu QR links still target tenant 1 (#276).
 - **Repository:** Removed a committed diagnostics zip archive from the repo root and added **`diagnostics_*.zip`** to **`.gitignore`** so local diagnostics dumps are not tracked in version control (#267).
 - **Marketing / Wimpi:** Removed carta and booking CTAs from **satisfecho.de/wimpi/es/** per venue request after marketing build and amvara9 deploy (`083_wimpi`).
 - **Public menu API:** `GET /public/tenants/{id}/menu` groups sections by **subcategory** when set (e.g. Carta principal, Ensaladas); otherwise by the **localized** standard category label (Desserts → Postres for `lang=es`) — marketing sites and `/public-menu/:id` show restaurant-style section titles instead of raw English category keys.

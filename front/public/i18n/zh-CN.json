@@ -169,6 +169,7 @@
     "SECTION_GUESTS": "顾客",
     "SECTION_GUESTS_LEDE": "已在桌前？输入桌位名称，或打开桌上二维码中的链接。",
     "RESTAURANTS_HEADING": "选择您的餐厅",
+    "RESTAURANT_DEMO_NAME": "餐厅演示",
     "LOGIN": "登录",
     "NO_TENANTS": "暂无注册餐厅。",
     "AT_TABLE_LABEL": "在桌点餐",

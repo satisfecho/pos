@@ -8,6 +8,9 @@ import { LanguagePickerComponent } from '../shared/language-picker.component';
 import { environment } from '../../environments/environment';
 import { ApiErrorMessageService } from '../services/api-error-message.service';
 
+/** Only tenant 1 is shown on the public landing page (displayed as Restaurant Demo). */
+const LANDING_DEMO_TENANT_ID = 1;
+
 @Component({
   selector: 'app-landing',
   standalone: true,
@@ -123,17 +126,17 @@ import { ApiErrorMessageService } from '../services/api-error-message.service';
           } @else {
             <div class="tenant-grid">
               @for (tenant of tenants(); track tenant.id) {
-                <article class="tenant-card">
+                <article class="tenant-card" data-testid="landing-tenant-card">
                   @if (getLogoUrl(tenant)) {
-                    <img [src]="getLogoUrl(tenant)!" [alt]="tenant.name" class="tenant-logo" />
+                    <img [src]="getLogoUrl(tenant)!" [alt]="getTenantDisplayName(tenant)" class="tenant-logo" />
                   }
-                  <h3 class="tenant-name">{{ tenant.name }}</h3>
+                  <h3 class="tenant-name" data-testid="landing-tenant-name">{{ getTenantDisplayName(tenant) }}</h3>
                   <div class="tenant-qr-section">
                     <p class="tenant-qr-hint">{{ 'LANDING.PUBLIC_MENU_QR_HINT' | translate }}</p>
                     <a
                       class="tenant-qr-link"
                       [routerLink]="['/public-menu', tenant.id]"
-                      [attr.aria-label]="'LANDING.PUBLIC_MENU_QR_LINK_ARIA' | translate: { name: tenant.name }"
+                      [attr.aria-label]="'LANDING.PUBLIC_MENU_QR_LINK_ARIA' | translate: { name: getTenantDisplayName(tenant) }"
                     >
                       <div class="tenant-qr-wrapper">
                         <qrcode
@@ -800,7 +803,8 @@ export class LandingComponent implements OnInit {
     this.error.set(null);
     this.api.getPublicTenants().subscribe({
       next: (list) => {
-        this.tenants.set(list);
+        const demo = list.filter((t) => t.id === LANDING_DEMO_TENANT_ID);
+        this.tenants.set(demo);
         this.loading.set(false);
       },
       error: (err) => {
@@ -812,6 +816,10 @@ export class LandingComponent implements OnInit {
 
   getLogoUrl(tenant: TenantSummary): string | null {
     return this.api.getTenantLogoUrl(tenant.logo_filename ?? undefined, tenant.id);
+  }
+
+  getTenantDisplayName(_tenant: TenantSummary): string {
+    return this.translate.instant('LANDING.RESTAURANT_DEMO_NAME');
   }
 
   /** Absolute URL to the read-only public menu page (for landing QR codes). */

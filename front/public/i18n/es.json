@@ -169,6 +169,7 @@
     "SECTION_GUESTS": "Para clientes",
     "SECTION_GUESTS_LEDE": "¿Ya estás en la mesa? Escribe el nombre de la mesa o abre el enlace del código QR de la mesa.",
     "RESTAURANTS_HEADING": "Elige tu restaurante",
+    "RESTAURANT_DEMO_NAME": "Restaurante demo",
     "LOGIN": "Iniciar sesión",
     "NO_TENANTS": "Aún no hay restaurantes registrados.",
     "AT_TABLE_LABEL": "Pedir en tu mesa",

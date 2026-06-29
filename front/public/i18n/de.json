@@ -169,6 +169,7 @@
     "SECTION_GUESTS": "Für Gäste",
     "SECTION_GUESTS_LEDE": "Schon am Tisch? Geben Sie den Tischnamen ein oder öffnen Sie den Link aus dem QR-Code auf dem Tisch.",
     "RESTAURANTS_HEADING": "Restaurant wählen",
+    "RESTAURANT_DEMO_NAME": "Restaurant-Demo",
     "LOGIN": "Anmelden",
     "NO_TENANTS": "Noch keine Restaurants registriert.",
     "AT_TABLE_LABEL": "An Tisch bestellen",

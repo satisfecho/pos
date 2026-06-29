@@ -169,6 +169,7 @@
     "SECTION_GUESTS": "Per a clients",
     "SECTION_GUESTS_LEDE": "Ja ets a la taula? Escriu el nom de la taula o obre l'enllaç del codi QR de la taula.",
     "RESTAURANTS_HEADING": "Tria el teu restaurant",
+    "RESTAURANT_DEMO_NAME": "Restaurant demo",
     "LOGIN": "Iniciar sessió",
     "NO_TENANTS": "Encara no hi ha restaurants registrats.",
     "AT_TABLE_LABEL": "Comanda a la teva taula",
