@@ -10,7 +10,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- **Courier portal (Phase 2):** Couriers see a mobile-friendly delivery order list after login — **Available**, **Mine**, and **Completed** tabs with status badges and item summaries; tap an order for detail (customer, pickup context, notes, line items, total). New **`GET /courier/orders`** and **`GET /courier/orders/{id}`** APIs are tenant-scoped for delivery orders; **Mine** stays empty until assignment ships in a later phase (#275).
 - **Marketing / Ariba Döner:** Registered **satisfecho.de/ariba-doner/es/** — manifest entry for **`090_aribakebab`** (slug **`ariba-doner`** matches SPA **`baseHref`**; artifact **`ariba-doner-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
 - **Marketing / Amigo Kebab:** Registered **satisfecho.de/amigo-kebab/es/** — manifest entry for **`089_amigokebab`** (slug **`amigo-kebab`** matches SPA **`baseHref`**; artifact **`amigo-kebab-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
 - **Marketing / La Bella Toscana:** Registered **satisfecho.de/labellatoscana/es/** — manifest entry for **`060_labellatoscana`** (slug **`labellatoscana`** matches SPA **`baseHref`**; artifact **`labellatoscana-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
@@ -27,7 +26,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **Landing page:** Public home now shows a single **Restaurant Demo** card for tenant 1 instead of listing every registered restaurant — localized title via **`LANDING.RESTAURANT_DEMO_NAME`**; Book, login, and public-menu QR links still target tenant 1 (#276).
 - **Repository:** Removed a committed diagnostics zip archive from the repo root and added **`diagnostics_*.zip`** to **`.gitignore`** so local diagnostics dumps are not tracked in version control (#267).
 - **Marketing / Wimpi:** Removed carta and booking CTAs from **satisfecho.de/wimpi/es/** per venue request after marketing build and amvara9 deploy (`083_wimpi`).
 - **Public menu API:** `GET /public/tenants/{id}/menu` groups sections by **subcategory** when set (e.g. Carta principal, Ensaladas); otherwise by the **localized** standard category label (Desserts → Postres for `lang=es`) — marketing sites and `/public-menu/:id` show restaurant-style section titles instead of raw English category keys.
@@ -42,6 +40,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Agent loop:** Added **005 marketing repos reviewer** — preflight scans **`satisfecho/NNN_slug`** org repos for new sites, bundle updates, and untracked issues; registers **`config/marketing-sites.json`** and **`front/sites/<slug>/`**, can trigger **Deploy to amvara9**, and queues **`FEAT-MKT-*`** tasks for the feature coder. Wired into **`agents2/pos-cursor-loop.sh`** with gating env vars; **`010-feature-coder.md`** documents marketing-repo work.
 - **Release / production:** Promoted **`development` → `master`** and confirmed green **Deploy to amvara9** on production (**satisfecho.de**) — live **2.1.6** at **`1bfafe84`**; courier token endpoint returns **401** (not **500**) after enum migration (#274; includes courier auth fix #273).
 - **Agent tasks:** Archived **#274** deploy verification task to **`agents2/tasks/done/`** after production PASS.
+
+## [2.1.7] - 2026-06-29
+
+### Added
+
+- **Courier portal (Phase 2):** Couriers see a mobile-friendly delivery order list after login — **Available**, **Mine**, and **Completed** tabs with status badges and item summaries; tap an order for detail (customer, pickup context, notes, line items, total). New **`GET /courier/orders`** and **`GET /courier/orders/{id}`** APIs are tenant-scoped for delivery orders; **Mine** stays empty until assignment ships in a later phase (#275).
+
+### Changed
+
+- **Landing page:** Public home now shows a single **Restaurant Demo** card for tenant 1 instead of listing every registered restaurant — localized title via **`LANDING.RESTAURANT_DEMO_NAME`**; Book, login, and public-menu QR links still target tenant 1 (#276).
+- **Release / production:** Promoted **`development` → `master`** and confirmed green **Deploy to amvara9** on production (**satisfecho.de**) — live **2.1.7** at merge **`34e1eed4`** (#277; includes courier order list #275 and landing demo filter #276).
 
 ## [2.1.6] - 2026-06-22
 
