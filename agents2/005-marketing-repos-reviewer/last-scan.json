@@ -55,6 +55,10 @@
     "satisfecho/090_aribakebab": {
       "last_artifact": "ariba-doner-satisfecho-deploy",
       "pushed_at": "2026-06-17T12:58:16Z"
+    },
+    "satisfecho/091_frenchkebab": {
+      "last_artifact": "french-kebab-satisfecho-deploy",
+      "pushed_at": "2026-06-25T12:15:36Z"
     }
   }
 }
