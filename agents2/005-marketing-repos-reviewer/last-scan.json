@@ -53,7 +53,7 @@
       "pushed_at": "2026-06-15T11:20:32Z"
     },
     "satisfecho/090_aribakebab": {
-      "last_artifact": "ariba-doner-satisfecho-deploy",
+      "last_artifact": "{\r\n  \"message\": \"Bad credentials\",\r\n  \"documentation_url\": \"https://docs.github.com/rest\",\r\n  \"status\": \"401\"\r\n}",
       "pushed_at": "2026-06-17T12:58:16Z"
     },
     "satisfecho/091_frenchkebab": {
