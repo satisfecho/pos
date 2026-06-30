@@ -9,7 +9,7 @@
       "pushed_at": "2026-04-21T06:05:25Z"
     },
     "satisfecho/030_flamanapolitana": {
-      "last_artifact": "dist",
+      "last_artifact": "{\r\n  \"message\": \"Bad credentials\",\r\n  \"documentation_url\": \"https://docs.github.com/rest\",\r\n  \"status\": \"401\"\r\n}",
       "pushed_at": "2026-04-21T06:05:30Z"
     },
     "satisfecho/040_gustazo": {
