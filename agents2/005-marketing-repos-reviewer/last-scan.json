@@ -29,7 +29,7 @@
       "pushed_at": "2026-05-29T09:38:56Z"
     },
     "satisfecho/083_wimpi": {
-      "last_artifact": "{\r\n  \"message\": \"Bad credentials\",\r\n  \"documentation_url\": \"https://docs.github.com/rest\",\r\n  \"status\": \"401\"\r\n}",
+      "last_artifact": "wimpi-satisfecho-deploy",
       "pushed_at": "2026-06-05T12:46:54Z"
     },
     "satisfecho/085_Bosskebabypizzeria": {
