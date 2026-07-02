@@ -135,7 +135,7 @@ import { LegalLinksComponent } from '../shared/legal-links.component';
           <span class="auth-foot-sep" aria-hidden="true">·</span>
           <a routerLink="/provider/register" data-testid="register-provider-register">{{ 'LANDING.REGISTER_AS_PROVIDER' | translate }}</a>
           <span class="auth-foot-sep" aria-hidden="true">·</span>
-          <a href="mailto:sales@satisfecho.de" data-testid="register-contact-us">{{ 'LANDING.CONTACT_US' | translate }}</a>
+          <a href="mailto:hello@satisfecho.de" data-testid="register-contact-us">{{ 'LANDING.CONTACT_US' | translate }}</a>
           @if (legalTermsUrl() || legalPrivacyUrl()) {
             <span class="auth-foot-sep" aria-hidden="true">·</span>
             <app-legal-links [inline]="true" [termsUrl]="legalTermsUrl()" [privacyUrl]="legalPrivacyUrl()" />
