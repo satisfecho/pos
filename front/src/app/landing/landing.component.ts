@@ -184,8 +184,6 @@ const LANDING_DEMO_TABLE_NAME = 'Take Away';
                   <a [routerLink]="['/public-menu', tenant.id]" class="landing-qr-demo__action landing-qr-demo__action--primary">
                     {{ 'LANDING.QR_DEMO_OPEN_MENU' | translate }}
                   </a>
-                  <a [routerLink]="['/book', tenant.id]" class="landing-qr-demo__action">{{ 'LANDING.BOOK_TABLE' | translate }}</a>
-                  <a [routerLink]="['/login']" [queryParams]="{ tenant: tenant.id }" class="landing-qr-demo__action">{{ 'LANDING.LOGIN' | translate }}</a>
                 </div>
               </div>
             </article>
@@ -250,63 +248,70 @@ const LANDING_DEMO_TABLE_NAME = 'Take Away';
         </div>
       </section>
 
-      <section class="landing-bottom-cta" aria-labelledby="landing-bottom-cta-heading">
-        <h2 id="landing-bottom-cta-heading" class="landing-bottom-cta__title">
-          {{ 'LANDING.BOTTOM_CTA_TITLE' | translate }}
-        </h2>
-        <p class="landing-bottom-cta__text">{{ 'LANDING.BOTTOM_CTA_TEXT' | translate }}</p>
-        <a routerLink="/register" class="landing-btn landing-btn--primary landing-btn--large">
-          {{ 'LANDING.CTA_CREATE_QR_MENU' | translate }}
-        </a>
-      </section>
-
-      <div class="landing-footer">
-        <span>{{ 'AUTH.DONT_HAVE_ACCOUNT' | translate }}</span>
-        <a routerLink="/register">{{ 'AUTH.CREATE_ACCOUNT' | translate }}</a>
-        <span class="footer-sep">·</span>
-        <a routerLink="/provider/login" data-testid="landing-provider-login">{{ 'LANDING.PROVIDER_LOGIN' | translate }}</a>
-        <span class="footer-sep">·</span>
-        <a routerLink="/courier/login" data-testid="landing-courier-login">{{ 'LANDING.COURIER_LOGIN' | translate }}</a>
-        <span class="footer-sep">·</span>
-        <a routerLink="/provider/register" data-testid="landing-provider-register">{{ 'LANDING.REGISTER_AS_PROVIDER' | translate }}</a>
-        <span class="footer-sep">·</span>
-        <a href="mailto:hello@satisfecho.de" data-testid="landing-contact-us">{{ 'LANDING.CONTACT_US' | translate }}</a>
-        <span class="footer-sep">·</span>
-        <a routerLink="/terms" data-testid="landing-terms">{{ 'LEGAL.TERMS_OF_SERVICE' | translate }}</a>
-        <span class="footer-sep">·</span>
-        <a routerLink="/privacy" data-testid="landing-privacy">{{ 'LEGAL.PRIVACY_POLICY' | translate }}</a>
-      </div>
-
-      <div class="landing-version-bar" data-testid="landing-version">
-        <div class="landing-version-bar__row">
-          <span class="landing-version-meta"
-            >{{ version || '0.0.0' }} <span class="landing-commit">{{ commitHash || '' }}</span></span
-          >
-          <a
-            href="https://github.com/satisfecho/pos/"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="landing-version-github"
-            data-testid="landing-github"
-            [attr.aria-label]="'LANDING.GITHUB_REPO' | translate"
-          >
-            <svg
-              class="landing-github-icon"
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-              aria-hidden="true"
-              focusable="false"
-            >
-              <path
-                fill="currentColor"
-                d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.694.825.576C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12z"
-              />
-            </svg>
+      <footer class="landing-site-footer">
+        <section class="landing-site-footer__cta" aria-labelledby="landing-bottom-cta-heading">
+          <h2 id="landing-bottom-cta-heading" class="landing-site-footer__cta-title">
+            {{ 'LANDING.BOTTOM_CTA_TITLE' | translate }}
+          </h2>
+          <p class="landing-site-footer__cta-text">{{ 'LANDING.BOTTOM_CTA_TEXT' | translate }}</p>
+          <a routerLink="/register" class="landing-btn landing-btn--primary landing-btn--large">
+            {{ 'LANDING.CTA_CREATE_QR_MENU' | translate }}
           </a>
+        </section>
+
+        <div class="landing-footer">
+          <nav class="landing-footer__nav" aria-label="Footer">
+            <div class="landing-footer__group">
+              <span class="landing-footer__group-label">{{ 'LANDING.FOOTER_ACCOUNT' | translate }}</span>
+              <a routerLink="/register">{{ 'AUTH.CREATE_ACCOUNT' | translate }}</a>
+              <a routerLink="/login">{{ 'LANDING.LOGIN' | translate }}</a>
+            </div>
+            <div class="landing-footer__group">
+              <span class="landing-footer__group-label">{{ 'LANDING.FOOTER_PARTNERS' | translate }}</span>
+              <a routerLink="/provider/login" data-testid="landing-provider-login">{{ 'LANDING.PROVIDER_LOGIN' | translate }}</a>
+              <a routerLink="/provider/register" data-testid="landing-provider-register">{{ 'LANDING.REGISTER_AS_PROVIDER' | translate }}</a>
+              <a routerLink="/courier/login" data-testid="landing-courier-login">{{ 'LANDING.COURIER_LOGIN' | translate }}</a>
+            </div>
+            <div class="landing-footer__group">
+              <span class="landing-footer__group-label">{{ 'LANDING.FOOTER_SUPPORT' | translate }}</span>
+              <a href="mailto:hello@satisfecho.de" data-testid="landing-contact-us">{{ 'LANDING.CONTACT_US' | translate }}</a>
+              <a routerLink="/terms" data-testid="landing-terms">{{ 'LEGAL.TERMS_OF_SERVICE' | translate }}</a>
+              <a routerLink="/privacy" data-testid="landing-privacy">{{ 'LEGAL.PRIVACY_POLICY' | translate }}</a>
+            </div>
+          </nav>
         </div>
-        <p class="landing-version-tagline">{{ 'LANDING.OPEN_SOURCE_TAGLINE' | translate }}</p>
-      </div>
+
+        <div class="landing-version-bar" data-testid="landing-version">
+          <div class="landing-version-bar__row">
+            <span class="landing-version-meta"
+              >{{ version || '0.0.0' }} <span class="landing-commit">{{ commitHash || '' }}</span></span
+            >
+            <a
+              href="https://github.com/satisfecho/pos/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="landing-version-github"
+              data-testid="landing-github"
+              [attr.aria-label]="'LANDING.GITHUB_REPO' | translate"
+            >
+              <svg
+                class="landing-github-icon"
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path
+                  fill="currentColor"
+                  d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.694.825.576C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12z"
+                />
+              </svg>
+            </a>
+          </div>
+          <p class="landing-version-tagline">{{ 'LANDING.OPEN_SOURCE_TAGLINE' | translate }}</p>
+        </div>
+      </footer>
     </div>
   `,
   styles: [`
@@ -320,12 +325,9 @@ const LANDING_DEMO_TABLE_NAME = 'Take Away';
       --landing-muted: rgba(250, 250, 250, 0.62);
       --landing-accent: #ff6b47;
       --landing-accent-soft: rgba(255, 107, 71, 0.18);
-      --landing-light-bg: #faf9f7;
-      --landing-light-text: #1c1917;
-      --landing-light-muted: #78716c;
 
       min-height: 100vh;
-      padding-bottom: calc(var(--space-8) + 72px);
+      padding-bottom: var(--space-8);
       background: var(--landing-bg);
       color: var(--landing-text);
       position: relative;
@@ -1112,92 +1114,96 @@ const LANDING_DEMO_TABLE_NAME = 'Take Away';
       background: rgba(255, 255, 255, 0.92);
     }
 
-    .landing-bottom-cta {
+    .landing-site-footer {
       position: relative;
       z-index: 2;
-      text-align: center;
-      padding: var(--space-8) var(--space-5);
-      background: var(--landing-light-bg);
-      color: var(--landing-light-text);
+      margin-top: var(--space-4);
+      border-top: 1px solid var(--landing-border);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(0, 0, 0, 0.35) 100%);
     }
 
-    .landing-bottom-cta__title {
+    .landing-site-footer__cta {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: var(--space-8) var(--space-5) var(--space-6);
+      text-align: center;
+    }
+
+    .landing-site-footer__cta-title {
       margin: 0 0 var(--space-3);
       font-size: clamp(1.5rem, 4vw, 2rem);
       font-weight: 700;
       letter-spacing: -0.03em;
+      color: var(--landing-text);
     }
 
-    .landing-bottom-cta__text {
+    .landing-site-footer__cta-text {
       margin: 0 auto var(--space-6);
       max-width: 32rem;
-      color: var(--landing-light-muted);
+      color: var(--landing-muted);
       line-height: 1.55;
     }
 
-    .landing-bottom-cta .landing-btn--primary {
-      background: var(--color-primary);
-      color: #fff;
-      box-shadow: 0 12px 32px rgba(211, 82, 51, 0.28);
-    }
-
-    .landing-bottom-cta .landing-btn--primary:hover {
-      background: var(--color-primary-hover);
-    }
-
     .landing-footer {
-      position: relative;
-      z-index: 2;
-      padding: var(--space-6) var(--space-5);
-      align-self: center;
-      max-width: 960px;
-      width: 100%;
+      max-width: 72rem;
       margin: 0 auto;
-      text-align: center;
-      font-size: 0.9375rem;
-      color: var(--landing-light-muted);
-      background: var(--landing-light-bg);
+      padding: var(--space-6) var(--space-5);
+      border-top: 1px solid var(--landing-border);
+    }
+
+    .landing-footer__nav {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+    }
+
+    @media (min-width: 720px) {
+      .landing-footer__nav {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-5);
+      }
+    }
+
+    .landing-footer__group {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      column-gap: var(--space-2);
-      row-gap: var(--space-2);
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-2);
+    }
+
+    .landing-footer__group-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--landing-muted);
     }
 
     .landing-footer a {
-      color: var(--color-primary);
+      color: rgba(250, 250, 250, 0.88);
+      font-size: 0.875rem;
       font-weight: 500;
-      margin-left: 0;
       text-decoration: none;
+      transition: color 0.15s ease;
     }
 
     .landing-footer a:hover {
-      text-decoration: underline;
-    }
-
-    .landing-footer .footer-sep {
-      margin: 0;
-      color: var(--landing-light-muted);
+      color: var(--landing-text);
+      text-decoration: none;
     }
 
     .landing-version-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: var(--space-2) var(--space-4);
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: var(--space-4) var(--space-5) var(--space-6);
+      border-top: 1px solid var(--landing-border);
       font-size: 0.6875rem;
-      color: var(--color-text-muted);
-      background: var(--color-surface);
-      border-top: 1px solid var(--color-border);
+      color: var(--landing-muted);
       text-align: center;
-      opacity: 0.9;
-      z-index: 5;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--space-1);
+      gap: var(--space-2);
     }
 
     .landing-version-bar__row {
@@ -1219,7 +1225,7 @@ const LANDING_DEMO_TABLE_NAME = 'Take Away';
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: var(--color-text-muted);
+      color: var(--landing-muted);
       line-height: 1;
       flex-shrink: 0;
       border-radius: var(--radius-sm);
@@ -1227,8 +1233,8 @@ const LANDING_DEMO_TABLE_NAME = 'Take Away';
     }
 
     .landing-version-github:hover {
-      color: var(--color-primary);
-      background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+      color: var(--landing-text);
+      background: rgba(255, 255, 255, 0.08);
     }
 
     .landing-github-icon {
@@ -1240,7 +1246,7 @@ const LANDING_DEMO_TABLE_NAME = 'Take Away';
       max-width: 36rem;
       font-size: 0.625rem;
       line-height: 1.35;
-      color: var(--color-text-muted);
+      color: var(--landing-muted);
     }
   `],
 })
@@ -1293,10 +1299,6 @@ export class LandingComponent implements OnInit {
         this.loading.set(false);
       },
     });
-  }
-
-  getLogoUrl(tenant: TenantSummary): string | null {
-    return this.api.getTenantLogoUrl(tenant.logo_filename ?? undefined, tenant.id);
   }
 
   getTenantDisplayName(_tenant: TenantSummary): string {
