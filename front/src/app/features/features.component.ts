@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguagePickerComponent } from '../shared/language-picker.component';
+import { LandingSiteFooterComponent } from '../shared/landing-site-footer.component';
 
 interface FeatureItem {
   titleKey: string;
@@ -17,7 +18,7 @@ interface FeatureCategory {
 @Component({
   selector: 'app-features',
   standalone: true,
-  imports: [RouterLink, TranslateModule, LanguagePickerComponent],
+  imports: [RouterLink, TranslateModule, LanguagePickerComponent, LandingSiteFooterComponent],
   template: `
     <div class="features-page">
       <div class="features-page__bg" aria-hidden="true"></div>
@@ -62,10 +63,7 @@ interface FeatureCategory {
         }
       </main>
 
-      <footer class="features-footer">
-        <a routerLink="/" class="features-footer__back">{{ 'FEATURES_PAGE.BACK_HOME' | translate }}</a>
-        <a routerLink="/register" class="features-btn features-btn--primary">{{ 'LANDING.CTA_CREATE_QR_MENU' | translate }}</a>
-      </footer>
+      <app-landing-site-footer></app-landing-site-footer>
     </div>
   `,
   styles: [`
@@ -282,29 +280,6 @@ interface FeatureCategory {
       font-size: 0.875rem;
       line-height: 1.55;
       color: var(--fp-muted);
-    }
-
-    .features-footer {
-      position: relative;
-      z-index: 1;
-      max-width: 72rem;
-      margin: 0 auto;
-      padding: var(--space-8) var(--space-5);
-      border-top: 1px solid var(--fp-border);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--space-4);
-    }
-
-    .features-footer__back {
-      color: var(--fp-muted);
-      font-size: 0.9375rem;
-      text-decoration: none;
-    }
-
-    .features-footer__back:hover {
-      color: var(--fp-text);
     }
   `],
 })

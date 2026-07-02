@@ -28,6 +28,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- **Landing and features pages:** Extracted the dark marketing footer (bottom CTA, account/partners/support links, version bar) into a shared component — **`/features`** now shows the same footer as the home page instead of a minimal back-home strip.
 - **Landing page:** Hero headline now leads with **“Reduce your application costs by 50%”** and a subtitle about replacing multiple single-purpose apps with one open-source platform; the features preview section links to the full **`/features`** page.
 - **Landing page:** Restructured the site footer — bottom CTA, grouped **Account / Partners / Support** link columns, and version bar now share one dark footer block (no fixed overlay); QR demo card keeps a single **Open menu** action; new footer section labels in all locale files.
 - **Landing page:** Redesigned the **For guests** section with a dark two-column layout — clearer table-name label, **Try demo: Take Away** one-click ordering, and new localized strings in all locale files; table lookup and multi-restaurant picker behaviour unchanged.
