@@ -112,7 +112,7 @@ async function main() {
       const el = document.querySelector('[data-testid="landing-contact-us"]');
       return el ? el.getAttribute('href') || '' : '';
     });
-    const expectedMailto = 'mailto:sales@satisfecho.de';
+    const expectedMailto = 'mailto:hello@satisfecho.de';
     if (contactHref !== expectedMailto) {
       console.log('   FAIL: Contact link href expected', expectedMailto, 'got:', contactHref);
       await browser.close();
