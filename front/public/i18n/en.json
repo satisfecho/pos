@@ -204,7 +204,14 @@
     "OPEN_SOURCE_TAGLINE": "Open source with ♥ from El Masnou (Barcelona) & Los Mochis (Mexico).",
     "PUBLIC_MENU_QR_LABEL": "QR code for public menu",
     "PUBLIC_MENU_QR_HINT": "Scan or click for the menu (no login)",
-    "PUBLIC_MENU_QR_LINK_ARIA": "Open {{name}} public menu"
+    "PUBLIC_MENU_QR_LINK_ARIA": "Open {{name}} public menu",
+    "QR_DEMO_TITLE": "Your menu, one scan away",
+    "QR_DEMO_LEDE": "This QR code opens a live demo menu. No app to install and no login required — perfect for tables, windows, and flyers.",
+    "QR_DEMO_STEP_1": "Scan the code with your phone camera, or tap it on desktop.",
+    "QR_DEMO_STEP_2": "Guests browse categories, dishes, and prices instantly.",
+    "QR_DEMO_STEP_3": "Update your menu once — every printed QR always shows the latest version.",
+    "QR_DEMO_SCAN_HINT": "Scan with your phone",
+    "QR_DEMO_OPEN_MENU": "Open demo menu"
   },
   "PUBLIC_MENU": {
     "PAGE_TITLE": "Menu",

@@ -204,7 +204,14 @@
     "OPEN_SOURCE_TAGLINE": "Logiciel libre avec ♥ — El Masnou (Barcelone) et Los Mochis (Mexique).",
     "PUBLIC_MENU_QR_LABEL": "Code QR du menu public",
     "PUBLIC_MENU_QR_HINT": "Scannez ou cliquez pour la carte (sans connexion)",
-    "PUBLIC_MENU_QR_LINK_ARIA": "Ouvrir le menu public de {{name}}"
+    "PUBLIC_MENU_QR_LINK_ARIA": "Ouvrir le menu public de {{name}}",
+    "QR_DEMO_TITLE": "Votre carte, à un scan près",
+    "QR_DEMO_LEDE": "Ce code QR ouvre une carte démo en direct. Pas d'app, pas de connexion — idéal pour les tables, vitrines et flyers.",
+    "QR_DEMO_STEP_1": "Scannez le code avec l'appareil photo du téléphone, ou touchez-le sur ordinateur.",
+    "QR_DEMO_STEP_2": "Les clients consultent catégories, plats et prix instantanément.",
+    "QR_DEMO_STEP_3": "Mettez la carte à jour une fois — chaque QR imprimé affiche toujours la dernière version.",
+    "QR_DEMO_SCAN_HINT": "Scanner avec le téléphone",
+    "QR_DEMO_OPEN_MENU": "Ouvrir la carte démo"
   },
   "PUBLIC_MENU": {
     "PAGE_TITLE": "Carte",

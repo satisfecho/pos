@@ -26,7 +26,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **Landing page:** Redesigned the public home with a dark gradient hero, navigation bar, feature cards, and prominent **Create your QR-Menu now** call-to-action — guest table lookup, demo restaurant card, and footer links unchanged; new copy and keys in all locale files.
+- **Landing page:** Redesigned the public home with a dark gradient hero, navigation bar, feature cards, and a dedicated **QR demo** section — scannable code for tenant 1's live public menu with step-by-step copy, Book/Login actions, and localized strings in all locale files; guest table lookup and footer links unchanged.
 - **Repository:** Removed a committed diagnostics zip archive from the repo root and added **`diagnostics_*.zip`** to **`.gitignore`** so local diagnostics dumps are not tracked in version control (#267).
 - **Marketing / Wimpi:** Removed carta and booking CTAs from **satisfecho.de/wimpi/es/** per venue request after marketing build and amvara9 deploy (`083_wimpi`).
 - **Public menu API:** `GET /public/tenants/{id}/menu` groups sections by **subcategory** when set (e.g. Carta principal, Ensaladas); otherwise by the **localized** standard category label (Desserts → Postres for `lang=es`) — marketing sites and `/public-menu/:id` show restaurant-style section titles instead of raw English category keys.

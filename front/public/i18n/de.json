@@ -204,7 +204,14 @@
     "OPEN_SOURCE_TAGLINE": "Open Source mit ♥ aus El Masnou (Barcelona) und Los Mochis (Mexiko).",
     "PUBLIC_MENU_QR_LABEL": "QR-Code für die öffentliche Speisekarte",
     "PUBLIC_MENU_QR_HINT": "Scannen oder klicken für die Karte (ohne Anmeldung)",
-    "PUBLIC_MENU_QR_LINK_ARIA": "Öffentliche Speisekarte von {{name}} öffnen"
+    "PUBLIC_MENU_QR_LINK_ARIA": "Öffentliche Speisekarte von {{name}} öffnen",
+    "QR_DEMO_TITLE": "Ihre Karte — ein Scan entfernt",
+    "QR_DEMO_LEDE": "Dieser QR-Code öffnet eine Live-Demo-Karte. Keine App, kein Login — ideal für Tische, Fenster und Flyer.",
+    "QR_DEMO_STEP_1": "Code mit der Handy-Kamera scannen oder am Desktop antippen.",
+    "QR_DEMO_STEP_2": "Gäste sehen sofort Kategorien, Gerichte und Preise.",
+    "QR_DEMO_STEP_3": "Karte einmal aktualisieren — jeder gedruckte QR zeigt immer die neueste Version.",
+    "QR_DEMO_SCAN_HINT": "Mit dem Handy scannen",
+    "QR_DEMO_OPEN_MENU": "Demo-Karte öffnen"
   },
   "PUBLIC_MENU": {
     "PAGE_TITLE": "Speisekarte",

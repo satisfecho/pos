@@ -204,7 +204,14 @@
     "OPEN_SOURCE_TAGLINE": "Codi obert amb ♥ des d'El Masnou (Barcelona) i Los Mochis (Mèxic).",
     "PUBLIC_MENU_QR_LABEL": "Codi QR de la carta pública",
     "PUBLIC_MENU_QR_HINT": "Escanegeu o feu clic per veure la carta (sense iniciar sessió)",
-    "PUBLIC_MENU_QR_LINK_ARIA": "Obrir la carta pública de {{name}}"
+    "PUBLIC_MENU_QR_LINK_ARIA": "Obrir la carta pública de {{name}}",
+    "QR_DEMO_TITLE": "La vostra carta, a un escaneig",
+    "QR_DEMO_LEDE": "Aquest codi QR obre una carta demo en directe. Sense app ni inici de sessió — ideal per a taules, aparadors i fullets.",
+    "QR_DEMO_STEP_1": "Escanegeu el codi amb la càmera del mòbil o toqueu-lo a l'ordinador.",
+    "QR_DEMO_STEP_2": "Els clients veuen categories, plats i preus a l'instant.",
+    "QR_DEMO_STEP_3": "Actualitzeu la carta una vegada — cada QR imprès mostra sempre l'última versió.",
+    "QR_DEMO_SCAN_HINT": "Escanejar amb el mòbil",
+    "QR_DEMO_OPEN_MENU": "Obrir carta demo"
   },
   "PUBLIC_MENU": {
     "PAGE_TITLE": "Carta",

@@ -204,7 +204,14 @@
     "OPEN_SOURCE_TAGLINE": "开源 ♥ 来自西班牙巴塞罗那埃尔马斯诺与墨西哥洛斯莫奇斯。",
     "PUBLIC_MENU_QR_LABEL": "公开菜单二维码",
     "PUBLIC_MENU_QR_HINT": "扫码或点击查看菜单（无需登录）",
-    "PUBLIC_MENU_QR_LINK_ARIA": "打开{{name}}的公开菜单"
+    "PUBLIC_MENU_QR_LINK_ARIA": "打开{{name}}的公开菜单",
+    "QR_DEMO_TITLE": "您的菜单，一扫即达",
+    "QR_DEMO_LEDE": "此二维码打开在线演示菜单。无需安装应用或登录 — 适合餐桌、橱窗和传单。",
+    "QR_DEMO_STEP_1": "用手机相机扫描二维码，或在电脑上点击。",
+    "QR_DEMO_STEP_2": "顾客即时浏览分类、菜品和价格。",
+    "QR_DEMO_STEP_3": "菜单更新一次 — 每个印刷二维码始终显示最新版本。",
+    "QR_DEMO_SCAN_HINT": "用手机扫描",
+    "QR_DEMO_OPEN_MENU": "打开演示菜单"
   },
   "PUBLIC_MENU": {
     "PAGE_TITLE": "菜单",

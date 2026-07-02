@@ -143,6 +143,54 @@ const LANDING_DEMO_TENANT_ID = 1;
         </ul>
       </section>
 
+      <section id="demo" class="landing-qr-demo landing-restaurants" aria-labelledby="landing-qr-demo-heading">
+        @if (loading()) {
+          <p class="loading">{{ 'COMMON.LOADING' | translate }}</p>
+        } @else if (error()) {
+          <p class="error">{{ error() }}</p>
+        } @else if (tenants().length === 0) {
+          <p class="empty">{{ 'LANDING.NO_TENANTS' | translate }}</p>
+        } @else {
+          @for (tenant of tenants(); track tenant.id) {
+            <article class="landing-qr-demo__layout" data-testid="landing-tenant-card">
+              <figure class="landing-qr-demo__figure" aria-label="{{ 'LANDING.PUBLIC_MENU_QR_LABEL' | translate }}">
+                <a
+                  class="landing-qr-demo__qr-link"
+                  [routerLink]="['/public-menu', tenant.id]"
+                  [attr.aria-label]="'LANDING.PUBLIC_MENU_QR_LINK_ARIA' | translate: { name: getTenantDisplayName(tenant) }"
+                >
+                  <qrcode
+                    [qrdata]="getPublicMenuUrl(tenant.id)"
+                    [width]="196"
+                    [errorCorrectionLevel]="'M'"
+                    cssClass="landing-qr-demo__code"
+                  ></qrcode>
+                </a>
+                <figcaption class="landing-qr-demo__scan-hint">{{ 'LANDING.QR_DEMO_SCAN_HINT' | translate }}</figcaption>
+              </figure>
+
+              <div class="landing-qr-demo__content">
+                <p class="landing-qr-demo__label" data-testid="landing-tenant-name">{{ getTenantDisplayName(tenant) }}</p>
+                <h2 id="landing-qr-demo-heading" class="landing-qr-demo__title">{{ 'LANDING.QR_DEMO_TITLE' | translate }}</h2>
+                <p class="landing-qr-demo__lede">{{ 'LANDING.QR_DEMO_LEDE' | translate }}</p>
+                <ol class="landing-qr-demo__steps">
+                  <li>{{ 'LANDING.QR_DEMO_STEP_1' | translate }}</li>
+                  <li>{{ 'LANDING.QR_DEMO_STEP_2' | translate }}</li>
+                  <li>{{ 'LANDING.QR_DEMO_STEP_3' | translate }}</li>
+                </ol>
+                <div class="landing-qr-demo__actions">
+                  <a [routerLink]="['/public-menu', tenant.id]" class="landing-qr-demo__action landing-qr-demo__action--primary">
+                    {{ 'LANDING.QR_DEMO_OPEN_MENU' | translate }}
+                  </a>
+                  <a [routerLink]="['/book', tenant.id]" class="landing-qr-demo__action">{{ 'LANDING.BOOK_TABLE' | translate }}</a>
+                  <a [routerLink]="['/login']" [queryParams]="{ tenant: tenant.id }" class="landing-qr-demo__action">{{ 'LANDING.LOGIN' | translate }}</a>
+                </div>
+              </div>
+            </article>
+          }
+        }
+      </section>
+
       <main class="landing-main">
         <div id="guests" class="landing-guest">
           <section class="landing-panel landing-panel--guests" aria-labelledby="landing-guests-heading">
@@ -192,55 +240,6 @@ const LANDING_DEMO_TENANT_ID = 1;
             </div>
           </section>
         </div>
-
-        <section id="demo" class="landing-restaurants" aria-labelledby="landing-restaurants-heading">
-          <h2 id="landing-restaurants-heading" class="landing-section-heading">
-            {{ 'LANDING.RESTAURANTS_HEADING' | translate }}
-          </h2>
-          @if (loading()) {
-            <p class="loading">{{ 'COMMON.LOADING' | translate }}</p>
-          } @else if (error()) {
-            <p class="error">{{ error() }}</p>
-          } @else if (tenants().length === 0) {
-            <p class="empty">{{ 'LANDING.NO_TENANTS' | translate }}</p>
-          } @else {
-            <div class="tenant-grid">
-              @for (tenant of tenants(); track tenant.id) {
-                <article class="tenant-card" data-testid="landing-tenant-card">
-                  @if (getLogoUrl(tenant)) {
-                    <img [src]="getLogoUrl(tenant)!" [alt]="getTenantDisplayName(tenant)" class="tenant-logo" />
-                  }
-                  <h3 class="tenant-name" data-testid="landing-tenant-name">{{ getTenantDisplayName(tenant) }}</h3>
-                  <div class="tenant-qr-section">
-                    <p class="tenant-qr-hint">{{ 'LANDING.PUBLIC_MENU_QR_HINT' | translate }}</p>
-                    <a
-                      class="tenant-qr-link"
-                      [routerLink]="['/public-menu', tenant.id]"
-                      [attr.aria-label]="'LANDING.PUBLIC_MENU_QR_LINK_ARIA' | translate: { name: getTenantDisplayName(tenant) }"
-                    >
-                      <div class="tenant-qr-wrapper">
-                        <qrcode
-                          [qrdata]="getPublicMenuUrl(tenant.id)"
-                          [width]="140"
-                          [errorCorrectionLevel]="'M'"
-                          cssClass="tenant-qr-code"
-                        ></qrcode>
-                      </div>
-                    </a>
-                  </div>
-                  <div class="tenant-actions">
-                    <a [routerLink]="['/book', tenant.id]" class="btn-book">
-                      {{ 'LANDING.BOOK_TABLE' | translate }}
-                    </a>
-                    <a [routerLink]="['/login']" [queryParams]="{ tenant: tenant.id }" class="btn-login">
-                      {{ 'LANDING.LOGIN' | translate }}
-                    </a>
-                  </div>
-                </article>
-              }
-            </div>
-          }
-        </section>
       </main>
 
       <section class="landing-bottom-cta" aria-labelledby="landing-bottom-cta-heading">
@@ -263,7 +262,7 @@ const LANDING_DEMO_TENANT_ID = 1;
         <span class="footer-sep">·</span>
         <a routerLink="/provider/register" data-testid="landing-provider-register">{{ 'LANDING.REGISTER_AS_PROVIDER' | translate }}</a>
         <span class="footer-sep">·</span>
-        <a href="mailto:sales@satisfecho.de" data-testid="landing-contact-us">{{ 'LANDING.CONTACT_US' | translate }}</a>
+        <a href="mailto:hello@satisfecho.de" data-testid="landing-contact-us">{{ 'LANDING.CONTACT_US' | translate }}</a>
         <span class="footer-sep">·</span>
         <a routerLink="/terms" data-testid="landing-terms">{{ 'LEGAL.TERMS_OF_SERVICE' | translate }}</a>
         <span class="footer-sep">·</span>
@@ -803,6 +802,166 @@ const LANDING_DEMO_TENANT_ID = 1;
       margin: 0 0 var(--space-4);
     }
 
+    .landing-qr-demo {
+      position: relative;
+      z-index: 2;
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: var(--space-2) var(--space-5) var(--space-8);
+      scroll-margin-top: 5rem;
+    }
+
+    .landing-qr-demo .loading,
+    .landing-qr-demo .error,
+    .landing-qr-demo .empty {
+      color: var(--landing-muted);
+      margin: var(--space-4) 0;
+      text-align: center;
+    }
+
+    .landing-qr-demo .error {
+      color: #fca5a5;
+    }
+
+    .landing-qr-demo__layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+      align-items: center;
+    }
+
+    @media (min-width: 860px) {
+      .landing-qr-demo__layout {
+        grid-template-columns: minmax(220px, 280px) 1fr;
+        gap: var(--space-8);
+      }
+    }
+
+    .landing-qr-demo__figure {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .landing-qr-demo__qr-link {
+      display: inline-flex;
+      padding: var(--space-4);
+      background: #fff;
+      border-radius: 20px;
+      box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.35),
+        0 0 0 1px rgba(255, 255, 255, 0.08);
+      text-decoration: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .landing-qr-demo__qr-link:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 28px 70px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.12);
+    }
+
+    .landing-qr-demo__qr-link:focus-visible {
+      outline: 2px solid var(--landing-accent);
+      outline-offset: 4px;
+    }
+
+    :host ::ng-deep .landing-qr-demo__code img {
+      display: block;
+      pointer-events: none;
+    }
+
+    .landing-qr-demo__scan-hint {
+      font-size: 0.8125rem;
+      color: var(--landing-muted);
+      text-align: center;
+    }
+
+    .landing-qr-demo__content {
+      min-width: 0;
+    }
+
+    .landing-qr-demo__label {
+      margin: 0 0 var(--space-2);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--landing-accent);
+    }
+
+    .landing-qr-demo__title {
+      margin: 0 0 var(--space-3);
+      font-size: clamp(1.5rem, 3.5vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: var(--landing-text);
+    }
+
+    .landing-qr-demo__lede {
+      margin: 0 0 var(--space-5);
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--landing-muted);
+      max-width: 38rem;
+    }
+
+    .landing-qr-demo__steps {
+      margin: 0 0 var(--space-5);
+      padding-left: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      max-width: 38rem;
+    }
+
+    .landing-qr-demo__steps li {
+      font-size: 0.9375rem;
+      line-height: 1.55;
+      color: rgba(250, 250, 250, 0.82);
+    }
+
+    .landing-qr-demo__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .landing-qr-demo__action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.625rem 1rem;
+      border-radius: 999px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: 1px solid var(--landing-border);
+      color: var(--landing-text);
+      background: rgba(255, 255, 255, 0.04);
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .landing-qr-demo__action:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.18);
+      text-decoration: none;
+    }
+
+    .landing-qr-demo__action--primary {
+      background: #fff;
+      color: #0a0a0b;
+      border-color: transparent;
+    }
+
+    .landing-qr-demo__action--primary:hover {
+      background: rgba(255, 255, 255, 0.92);
+    }
+
     .landing-section-heading {
       font-size: 1.25rem;
       font-weight: 600;
@@ -811,54 +970,7 @@ const LANDING_DEMO_TENANT_ID = 1;
       text-align: center;
     }
 
-    .landing-restaurants {
-      width: 100%;
-      scroll-margin-top: 5rem;
-    }
-
-    .loading, .error, .empty {
-      color: var(--color-text-muted);
-      margin: var(--space-4) 0;
-      text-align: center;
-    }
-
-    .error {
-      color: var(--color-error);
-    }
-
-    .tenant-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: var(--space-5);
-      width: 100%;
-    }
-
-    .tenant-card {
-      background: var(--color-surface);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-md);
-      padding: var(--space-6);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--space-4);
-      border: 1px solid var(--color-border);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .tenant-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .tenant-logo {
-      width: 64px;
-      height: 64px;
-      object-fit: contain;
-      border-radius: var(--radius-md);
-    }
-
-    .table-code-section {
+    .landing-main {
       width: 100%;
       margin: 0;
       padding: var(--space-4);
@@ -989,106 +1101,6 @@ const LANDING_DEMO_TENANT_ID = 1;
 
     .link-takeaway:hover {
       text-decoration: underline;
-    }
-
-    .tenant-name {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: var(--color-text);
-      margin: 0;
-      text-align: center;
-    }
-
-    .tenant-qr-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--space-2);
-      width: 100%;
-    }
-
-    .tenant-qr-hint {
-      margin: 0;
-      font-size: 0.8125rem;
-      color: var(--color-text-muted);
-      text-align: center;
-      line-height: 1.35;
-    }
-
-    .tenant-qr-link {
-      display: inline-block;
-      text-decoration: none;
-      color: inherit;
-      border-radius: var(--radius-md);
-      cursor: pointer;
-    }
-
-    .tenant-qr-link:focus-visible {
-      outline: 2px solid var(--color-primary);
-      outline-offset: 2px;
-    }
-
-    .tenant-qr-link:hover .tenant-qr-wrapper,
-    .tenant-qr-link:focus-visible .tenant-qr-wrapper {
-      border-color: var(--color-primary);
-      box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 35%, transparent);
-    }
-
-    .tenant-qr-wrapper {
-      padding: var(--space-2);
-      background: white;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--color-border);
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    :host ::ng-deep .tenant-qr-code img {
-      display: block;
-      pointer-events: none;
-    }
-
-    .tenant-actions {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-2);
-      width: 100%;
-      align-items: stretch;
-    }
-
-    .btn-book {
-      display: inline-block;
-      padding: var(--space-3) var(--space-5);
-      background: transparent;
-      color: var(--color-primary);
-      border: 1px solid var(--color-primary);
-      border-radius: var(--radius-md);
-      font-weight: 500;
-      text-decoration: none;
-      text-align: center;
-      transition: background 0.15s ease, color 0.15s ease;
-    }
-
-    .btn-book:hover {
-      background: var(--color-primary);
-      color: white;
-      text-decoration: none;
-    }
-
-    .btn-login {
-      display: inline-block;
-      padding: var(--space-3) var(--space-5);
-      background: var(--color-primary);
-      color: white;
-      border-radius: var(--radius-md);
-      font-weight: 500;
-      text-decoration: none;
-      text-align: center;
-      transition: background 0.15s ease;
-    }
-
-    .btn-login:hover {
-      background: var(--color-primary-hover);
-      text-decoration: none;
     }
 
     .landing-bottom-cta {
