@@ -11,6 +11,7 @@ import { tablesCanvasCanDeactivate } from './tables/tables-canvas-deactivate.gua
 export const routes: Routes = [
   // Public routes
   { path: '', loadComponent: () => import('./landing/landing.component').then(m => m.LandingComponent) },
+  { path: 'features', loadComponent: () => import('./features/features.component').then(m => m.FeaturesComponent) },
   { path: 'login', loadComponent: () => import('./auth/login.component').then(m => m.LoginComponent) },
   { path: 'register', loadComponent: () => import('./auth/register.component').then(m => m.RegisterComponent) },
   {

@@ -31,7 +31,7 @@ const LANDING_DEMO_TABLE_NAME = 'Take Away';
           <span>{{ 'LANDING.BRAND_NAME' | translate }}</span>
         </a>
         <div class="landing-nav__links">
-          <a href="#features" class="landing-nav__link">{{ 'LANDING.NAV_FEATURES' | translate }}</a>
+          <a routerLink="/features" class="landing-nav__link">{{ 'LANDING.NAV_FEATURES' | translate }}</a>
           <a href="#guests" class="landing-nav__link">{{ 'LANDING.NAV_GUESTS' | translate }}</a>
           <a href="#demo" class="landing-nav__link">{{ 'LANDING.NAV_DEMO' | translate }}</a>
         </div>
@@ -102,9 +102,12 @@ const LANDING_DEMO_TABLE_NAME = 'Take Away';
       </header>
 
       <section id="features" class="landing-features" aria-labelledby="landing-features-heading">
-        <h2 id="landing-features-heading" class="landing-section-title">
-          {{ 'LANDING.FEATURES_HEADING' | translate }}
-        </h2>
+        <div class="landing-features__header">
+          <h2 id="landing-features-heading" class="landing-section-title">
+            {{ 'LANDING.FEATURES_HEADING' | translate }}
+          </h2>
+          <a routerLink="/features" class="landing-features__all-link">{{ 'LANDING.FEATURES_VIEW_ALL' | translate }}</a>
+        </div>
         <ul class="landing-feature-grid" aria-label="{{ 'LANDING.VALUES_LABEL' | translate }}">
           <li class="landing-feature-card">
             <span class="landing-feature-card__icon" aria-hidden="true">
@@ -703,6 +706,32 @@ const LANDING_DEMO_TABLE_NAME = 'Take Away';
       margin: 0 auto;
       padding: var(--space-2) var(--space-5) var(--space-8);
       scroll-margin-top: 5rem;
+    }
+
+    .landing-features__header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      margin-bottom: var(--space-6);
+    }
+
+    .landing-features__header .landing-section-title {
+      margin: 0;
+      text-align: left;
+    }
+
+    .landing-features__all-link {
+      color: var(--landing-muted);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .landing-features__all-link:hover {
+      color: var(--landing-text);
     }
 
     .landing-section-title {
