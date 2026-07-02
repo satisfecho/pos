@@ -15,6 +15,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Marketing / La Bella Toscana:** Registered **satisfecho.de/labellatoscana/es/** — manifest entry for **`060_labellatoscana`** (slug **`labellatoscana`** matches SPA **`baseHref`**; artifact **`labellatoscana-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
 - **Marketing / Pizza Luna:** Registered **satisfecho.de/pizzaluna/es/** — manifest entry for **`087_pizzalluna`** (slug **`pizzaluna`** matches SPA **`baseHref`**; artifact **`pizzaluna-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
 - **Marketing / Rico Kebab:** Registered **satisfecho.de/rico-kebab/** — manifest entry for **`088_ricokebab`** (slug matches SPA **`baseHref`** `/rico-kebab/`; artifact **`rico-kebab-satisfecho-deploy`**).
+- **Demo tables:** **`seed_demo_tables`** idempotently ensures a **Take Away** table on tenant 1 so visitors can try guest ordering from the public landing demo without a physical table QR.
 
 ### Fixed
 
@@ -26,6 +27,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- **Landing page:** Redesigned the **For guests** section with a dark two-column layout — clearer table-name label, **Try demo: Take Away** one-click ordering, and new localized strings in all locale files; table lookup and multi-restaurant picker behaviour unchanged.
 - **Contact us:** **Contact us** mailto links on login, register, and provider auth pages now use **hello@satisfecho.de**, matching the landing footer and current support address.
 - **Landing page:** Redesigned the public home with a dark gradient hero, navigation bar, feature cards, and a dedicated **QR demo** section — scannable code for tenant 1's live public menu with step-by-step copy, Book/Login actions, and localized strings in all locale files; guest table lookup and footer links unchanged.
 - **Repository:** Removed a committed diagnostics zip archive from the repo root and added **`diagnostics_*.zip`** to **`.gitignore`** so local diagnostics dumps are not tracked in version control (#267).

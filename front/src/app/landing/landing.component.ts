@@ -10,6 +10,8 @@ import { ApiErrorMessageService } from '../services/api-error-message.service';
 
 /** Only tenant 1 is shown on the public landing page (displayed as Restaurant Demo). */
 const LANDING_DEMO_TENANT_ID = 1;
+/** Demo table name for the landing guest ordering flow (must exist on demo tenant). */
+const LANDING_DEMO_TABLE_NAME = 'Take Away';
 
 @Component({
   selector: 'app-landing',
@@ -191,56 +193,62 @@ const LANDING_DEMO_TENANT_ID = 1;
         }
       </section>
 
-      <main class="landing-main">
-        <div id="guests" class="landing-guest">
-          <section class="landing-panel landing-panel--guests" aria-labelledby="landing-guests-heading">
-            <h2 id="landing-guests-heading" class="landing-panel__title">
-              {{ 'LANDING.SECTION_GUESTS' | translate }}
-            </h2>
-            <p class="landing-panel__lede">{{ 'LANDING.SECTION_GUESTS_LEDE' | translate }}</p>
-            <div class="table-code-section" aria-label="{{ 'LANDING.AT_TABLE_LABEL' | translate }}">
-              <p class="table-code-hint">{{ 'LANDING.AT_TABLE_HINT' | translate }}</p>
-              <div class="table-code-row">
-                <input
-                  type="text"
-                  [(ngModel)]="tableCode"
-                  [placeholder]="'LANDING.TABLE_CODE_PLACEHOLDER' | translate"
-                  class="table-code-input"
-                  (ngModelChange)="onTableCodeInput()"
-                  (keyup.enter)="goToTableMenu()"
-                />
-                <button
-                  type="button"
-                  class="btn-go"
-                  [disabled]="tableLookupLoading()"
-                  (click)="goToTableMenu()"
-                >
-                  {{ 'LANDING.GO' | translate }}
-                </button>
-              </div>
-              @if (tableLookupError()) {
-                <p class="table-lookup-error" role="alert">{{ tableLookupError() }}</p>
-              }
-              @if (tableLookupChoices().length > 0) {
-                <p class="table-lookup-pick-title">{{ 'LANDING.TABLE_MULTIPLE_TITLE' | translate }}</p>
-                <p class="table-lookup-pick-hint">{{ 'LANDING.TABLE_MULTIPLE_HINT' | translate }}</p>
-                <ul class="table-lookup-choices">
-                  @for (c of tableLookupChoices(); track c.tenant_id + '-' + c.table_token) {
-                    <li>
-                      <button type="button" class="table-lookup-choice-btn" (click)="selectRestaurantForTable(c)">
-                        {{ c.tenant_name }}
-                      </button>
-                    </li>
-                  }
-                </ul>
-              }
-              <p class="takeaway-hint">
-                <a routerLink="/orders" class="link-takeaway">{{ 'LANDING.ORDER_TAKEAWAY' | translate }}</a>
-              </p>
+      <section id="guests" class="landing-guests" aria-labelledby="landing-guests-heading">
+        <div class="landing-guests__layout">
+          <div class="landing-guests__copy">
+            <h2 id="landing-guests-heading" class="landing-guests__title">{{ 'LANDING.SECTION_GUESTS' | translate }}</h2>
+            <p class="landing-guests__lede">{{ 'LANDING.GUEST_LEDE' | translate }}</p>
+            <p class="landing-guests__demo-note">{{ 'LANDING.GUEST_DEMO_NOTE' | translate }}</p>
+          </div>
+
+          <div class="landing-guests__form" aria-label="{{ 'LANDING.AT_TABLE_LABEL' | translate }}">
+            <label class="landing-guests__label" for="landing-table-code">{{ 'LANDING.GUEST_TABLE_LABEL' | translate }}</label>
+            <div class="landing-guests__row">
+              <input
+                id="landing-table-code"
+                type="text"
+                [(ngModel)]="tableCode"
+                [placeholder]="'LANDING.TABLE_CODE_PLACEHOLDER' | translate"
+                class="landing-guests__input"
+                (ngModelChange)="onTableCodeInput()"
+                (keyup.enter)="goToTableMenu()"
+              />
+              <button
+                type="button"
+                class="landing-guests__submit"
+                [disabled]="tableLookupLoading()"
+                (click)="goToTableMenu()"
+              >
+                {{ 'LANDING.GO' | translate }}
+              </button>
             </div>
-          </section>
+            <button
+              type="button"
+              class="landing-guests__demo-btn"
+              [disabled]="tableLookupLoading()"
+              (click)="tryDemoTable()"
+            >
+              {{ 'LANDING.GUEST_TRY_DEMO' | translate }}
+            </button>
+            @if (tableLookupError()) {
+              <p class="landing-guests__error" role="alert">{{ tableLookupError() }}</p>
+            }
+            @if (tableLookupChoices().length > 0) {
+              <p class="landing-guests__pick-title">{{ 'LANDING.TABLE_MULTIPLE_TITLE' | translate }}</p>
+              <p class="landing-guests__pick-hint">{{ 'LANDING.TABLE_MULTIPLE_HINT' | translate }}</p>
+              <ul class="landing-guests__choices">
+                @for (c of tableLookupChoices(); track c.tenant_id + '-' + c.table_token) {
+                  <li>
+                    <button type="button" class="landing-guests__choice-btn" (click)="selectRestaurantForTable(c)">
+                      {{ c.tenant_name }}
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
         </div>
-      </main>
+      </section>
 
       <section class="landing-bottom-cta" aria-labelledby="landing-bottom-cta-heading">
         <h2 id="landing-bottom-cta-heading" class="landing-bottom-cta__title">
@@ -753,53 +761,195 @@ const LANDING_DEMO_TENANT_ID = 1;
       color: var(--landing-muted);
     }
 
-    .landing-main {
+    .landing-guests {
       position: relative;
       z-index: 2;
-      width: 100%;
-      max-width: 960px;
+      max-width: 72rem;
       margin: 0 auto;
-      padding: var(--space-8) var(--space-5);
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-8);
-      background: var(--landing-light-bg);
-      border-radius: 32px 32px 0 0;
-      color: var(--landing-light-text);
-    }
-
-    .landing-guest {
-      width: 100%;
-      display: flex;
-      justify-content: center;
+      padding: var(--space-2) var(--space-5) var(--space-8);
       scroll-margin-top: 5rem;
     }
 
-    .landing-panel--guests {
-      width: 100%;
-      max-width: 36rem;
+    .landing-guests__layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+      align-items: start;
+      padding: var(--space-6);
+      border-radius: 24px;
+      background: var(--landing-surface);
+      border: 1px solid var(--landing-border);
+      backdrop-filter: blur(12px);
     }
 
-    .landing-panel {
-      background: var(--color-surface);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--color-border);
-      box-shadow: var(--shadow-md);
-      padding: var(--space-5);
+    @media (min-width: 860px) {
+      .landing-guests__layout {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-8);
+        padding: var(--space-8);
+      }
     }
 
-    .landing-panel__title {
-      font-size: 1.0625rem;
-      font-weight: 600;
-      color: var(--color-text);
-      margin: 0 0 var(--space-2);
+    .landing-guests__title {
+      margin: 0 0 var(--space-3);
+      font-size: clamp(1.375rem, 3vw, 1.75rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--landing-text);
     }
 
-    .landing-panel__lede {
+    .landing-guests__lede {
+      margin: 0 0 var(--space-3);
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--landing-muted);
+      max-width: 34rem;
+    }
+
+    .landing-guests__demo-note {
+      margin: 0;
       font-size: 0.875rem;
-      color: var(--color-text-muted);
       line-height: 1.5;
-      margin: 0 0 var(--space-4);
+      color: rgba(250, 250, 250, 0.78);
+      max-width: 34rem;
+    }
+
+    .landing-guests__label {
+      display: block;
+      margin: 0 0 var(--space-2);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--landing-muted);
+    }
+
+    .landing-guests__row {
+      display: flex;
+      gap: var(--space-2);
+      min-width: 0;
+    }
+
+    .landing-guests__input {
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 0.875rem 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--landing-border);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--landing-text);
+      font-size: 1rem;
+    }
+
+    .landing-guests__input::placeholder {
+      color: rgba(250, 250, 250, 0.38);
+    }
+
+    .landing-guests__input:focus {
+      outline: none;
+      border-color: rgba(255, 255, 255, 0.24);
+      box-shadow: 0 0 0 3px rgba(255, 107, 71, 0.18);
+    }
+
+    .landing-guests__submit {
+      flex-shrink: 0;
+      padding: 0.875rem 1.25rem;
+      border: none;
+      border-radius: 12px;
+      background: #fff;
+      color: #0a0a0b;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+    }
+
+    .landing-guests__submit:hover:not(:disabled) {
+      opacity: 0.92;
+    }
+
+    .landing-guests__submit:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .landing-guests__demo-btn {
+      margin-top: var(--space-3);
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--landing-border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--landing-text);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .landing-guests__demo-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .landing-guests__demo-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 480px) {
+      .landing-guests__row {
+        flex-wrap: wrap;
+      }
+
+      .landing-guests__submit {
+        flex: 1 1 auto;
+      }
+    }
+
+    .landing-guests__error {
+      margin: var(--space-3) 0 0;
+      font-size: 0.875rem;
+      color: #fca5a5;
+    }
+
+    .landing-guests__pick-title {
+      margin: var(--space-4) 0 var(--space-2);
+      font-weight: 600;
+      font-size: 0.9375rem;
+      color: var(--landing-text);
+    }
+
+    .landing-guests__pick-hint {
+      margin: 0 0 var(--space-3);
+      font-size: 0.875rem;
+      color: var(--landing-muted);
+    }
+
+    .landing-guests__choices {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .landing-guests__choice-btn {
+      width: 100%;
+      padding: var(--space-3) var(--space-4);
+      text-align: center;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--landing-text);
+      border: 1px solid var(--landing-border);
+      border-radius: 12px;
+      font-weight: 500;
+      font-size: 0.9375rem;
+      cursor: pointer;
+    }
+
+    .landing-guests__choice-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
     }
 
     .landing-qr-demo {
@@ -960,147 +1110,6 @@ const LANDING_DEMO_TENANT_ID = 1;
 
     .landing-qr-demo__action--primary:hover {
       background: rgba(255, 255, 255, 0.92);
-    }
-
-    .landing-section-heading {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--color-text);
-      margin: 0 0 var(--space-4);
-      text-align: center;
-    }
-
-    .landing-main {
-      width: 100%;
-      margin: 0;
-      padding: var(--space-4);
-      background: var(--color-bg);
-      border-radius: var(--radius-md);
-      border: 1px dashed var(--color-border);
-    }
-
-    .table-code-hint {
-      margin: 0 0 var(--space-3);
-      font-size: 0.9375rem;
-      color: var(--color-text-muted);
-    }
-
-    .table-code-row {
-      display: flex;
-      flex-wrap: nowrap;
-      gap: var(--space-2);
-      min-width: 0;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .table-code-input {
-      flex: 1 1 0;
-      min-width: 0;
-      padding: var(--space-3) var(--space-4);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
-      font-size: 1rem;
-    }
-
-    .btn-go {
-      flex-shrink: 0;
-      padding: var(--space-3) var(--space-5);
-      background: var(--color-primary);
-      color: white;
-      border: none;
-      border-radius: var(--radius-md);
-      font-weight: 500;
-      cursor: pointer;
-    }
-
-    @media (max-width: 480px) {
-      .btn-go {
-        padding-inline: var(--space-3);
-      }
-    }
-
-    @media (max-width: 360px) {
-      .table-code-row {
-        flex-wrap: wrap;
-      }
-
-      .btn-go {
-        flex: 1 1 auto;
-        min-width: min(100%, 7rem);
-      }
-    }
-
-    .btn-go:hover {
-      background: var(--color-primary-hover);
-    }
-
-    .btn-go:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .table-lookup-error {
-      margin: var(--space-3) 0 0;
-      font-size: 0.875rem;
-      color: var(--color-error);
-    }
-
-    .table-lookup-pick-title {
-      margin: var(--space-4) 0 var(--space-2);
-      font-weight: 600;
-      font-size: 0.9375rem;
-      color: var(--color-text);
-    }
-
-    .table-lookup-pick-hint {
-      margin: 0 0 var(--space-3);
-      font-size: 0.875rem;
-      color: var(--color-text-muted);
-    }
-
-    .table-lookup-choices {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-2);
-    }
-
-    .table-lookup-choice-btn {
-      width: 100%;
-      padding: var(--space-3) var(--space-4);
-      text-align: center;
-      background: var(--color-surface);
-      color: var(--color-primary);
-      border: 1px solid var(--color-primary);
-      border-radius: var(--radius-md);
-      font-weight: 500;
-      font-size: 0.9375rem;
-      cursor: pointer;
-    }
-
-    .table-lookup-choice-btn:hover {
-      background: var(--color-primary);
-      color: white;
-    }
-
-    .takeaway-hint {
-      margin: var(--space-4) 0 0;
-      text-align: center;
-      font-size: 0.9375rem;
-      color: var(--color-text-muted);
-    }
-
-    .link-takeaway {
-      color: var(--color-primary);
-      font-weight: 500;
-      text-decoration: none;
-    }
-
-    .link-takeaway:hover {
-      text-decoration: underline;
     }
 
     .landing-bottom-cta {
@@ -1298,6 +1307,11 @@ export class LandingComponent implements OnInit {
   getPublicMenuUrl(tenantId: number): string {
     if (typeof window === 'undefined') return `/public-menu/${tenantId}`;
     return `${window.location.origin}/public-menu/${tenantId}`;
+  }
+
+  tryDemoTable(): void {
+    this.tableCode = LANDING_DEMO_TABLE_NAME;
+    this.goToTableMenu();
   }
 
   onTableCodeInput(): void {

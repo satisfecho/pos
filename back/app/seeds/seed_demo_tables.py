@@ -100,6 +100,36 @@ def _seed_tenant_tables(session, tenant_id: int) -> None:
         if updated:
             print(f"Tenant {tenant_id}: updated {updated} table(s) seat counts.")
 
+    _ensure_take_away_table(session, tenant_id, floor_id)
+
+
+def _ensure_take_away_table(session, tenant_id: int, floor_id: int) -> None:
+    """Ensure an active 'Take Away' table exists for landing/demo ordering."""
+    result = session.execute(
+        text(
+            '''SELECT id FROM "table"
+               WHERE tenant_id = :tid AND lower(trim(name)) = :name'''
+        ),
+        {"tid": tenant_id, "name": "take away"},
+    )
+    if result.fetchone():
+        return
+    token = str(uuid4())
+    session.execute(
+        text(
+            '''INSERT INTO "table" (tenant_id, name, token, floor_id, seat_count, x_position, y_position, rotation, shape, width, height, is_active)
+               VALUES (:tid, :name, :token, :floor_id, 2, 0, 0, 0, 'rectangle', 100, 60, true)'''
+        ),
+        {
+            "tid": tenant_id,
+            "name": "Take Away",
+            "token": token,
+            "floor_id": floor_id,
+        },
+    )
+    session.commit()
+    print(f"Tenant {tenant_id}: created Take Away table for demo ordering.")
+
 
 def run() -> None:
     with Session(engine) as session:
@@ -123,6 +153,14 @@ def run() -> None:
 
         for tenant_id in to_seed:
             _seed_tenant_tables(session, tenant_id)
+
+        # Ensure demo take-away table on tenant 1 even when tables already exist.
+        floor_row = session.execute(
+            text("SELECT id FROM floor WHERE tenant_id = :tid AND name = :name"),
+            {"tid": 1, "name": FLOOR_NAME},
+        ).fetchone()
+        if floor_row:
+            _ensure_take_away_table(session, 1, floor_row[0])
 
     print("Done.")
 
