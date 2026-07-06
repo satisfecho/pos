@@ -52,15 +52,86 @@ def _find_matching_provider_product(
     return None
 
 
+_CATALOG_STALE_MARKERS = (
+    "lager",
+    "stout",
+    "malt",
+    "vino",
+    "beer",
+    "wine",
+    "guinness",
+    "damm",
+    "espumoso",
+    "cava",
+    "rosado",
+    "tinto",
+    "blanco",
+    "winery",
+    "vintage",
+)
+
+
+def _looks_like_catalog_backfill(description: str | None) -> bool:
+    if not description:
+        return False
+    low = description.lower()
+    return any(marker in low for marker in _CATALOG_STALE_MARKERS)
+
+
+def _clear_stale_product_backfill(product: Product) -> bool:
+    """Reset Product fields left by /products backfill after a bad catalog link."""
+    changed = False
+    if product.image_filename:
+        product.image_filename = None
+        changed = True
+    if product.description:
+        product.description = None
+        changed = True
+    return changed
+
+
+def repair_stale_product_backfills(session: Session) -> int:
+    """
+    Clear image/description on Product rows with no TenantProduct link when values
+    look like stale catalog backfill (e.g. beer description on Coca Cola).
+    """
+    linked_product_ids = {
+        tp.product_id
+        for tp in session.exec(
+            select(TenantProduct).where(TenantProduct.product_id.is_not(None))
+        )
+        if tp.product_id is not None
+    }
+    repaired = 0
+    for product in session.exec(select(Product)):
+        if product.id in linked_product_ids:
+            continue
+        stale_image = bool(
+            product.image_filename
+            and str(product.image_filename).startswith("providers/")
+        )
+        stale_description = _looks_like_catalog_backfill(product.description)
+        if not stale_image and not stale_description:
+            continue
+        if _clear_stale_product_backfill(product):
+            session.add(product)
+            repaired += 1
+    if repaired:
+        session.commit()
+    return repaired
+
+
 def repair_mismatched_links(session: Session) -> int:
     """
     Remove TenantProduct rows linked to a Product whose name does not match
     the catalog or provider product (bad links from prior round-robin runs).
+    Also clears stale Product image/description backfilled via GET /products.
     """
     linked = session.exec(
         select(TenantProduct).where(TenantProduct.product_id.is_not(None))
     ).all()
     removed = 0
+    products_to_clear: list[Product] = []
     for tp in linked:
         product = session.get(Product, tp.product_id)
         if not product:
@@ -74,24 +145,31 @@ def repair_mismatched_links(session: Session) -> int:
         if _names_match(product.name, catalog, provider_product):
             continue
         session.delete(tp)
+        products_to_clear.append(product)
         removed += 1
-    if removed:
+    cleared = 0
+    for product in products_to_clear:
+        if _clear_stale_product_backfill(product):
+            session.add(product)
+            cleared += 1
+    if removed or cleared:
         session.commit()
     return removed
 
 
-def link_products(session: Session) -> tuple[int, int, int]:
+def link_products(session: Session) -> tuple[int, int, int, int]:
     """
     Repair bad links and create new name-matched TenantProduct rows.
-    Returns (removed_mismatched, created, skipped_no_match).
+    Returns (removed_mismatched, cleared_stale_backfills, created, skipped_no_match).
     """
     removed = repair_mismatched_links(session)
+    cleared = repair_stale_product_backfills(session)
 
     products_without_image = session.exec(
         select(Product).where(Product.image_filename.is_(None))
     ).all()
     if not products_without_image:
-        return removed, 0, 0
+        return removed, cleared, 0, 0
 
     linked = {
         (tp.tenant_id, tp.product_id)
@@ -100,13 +178,13 @@ def link_products(session: Session) -> tuple[int, int, int]:
     }
     to_link = [p for p in products_without_image if (p.tenant_id, p.id) not in linked]
     if not to_link:
-        return removed, 0, 0
+        return removed, cleared, 0, 0
 
     provider_products_with_image = session.exec(
         select(ProviderProduct).where(ProviderProduct.image_filename.is_not(None))
     ).all()
     if not provider_products_with_image:
-        return removed, 0, 0
+        return removed, cleared, 0, 0
 
     catalog_ids = {pp.catalog_id for pp in provider_products_with_image}
     catalogs = {
@@ -137,19 +215,21 @@ def link_products(session: Session) -> tuple[int, int, int]:
 
     if created:
         session.commit()
-    return removed, created, skipped
+    return removed, cleared, created, skipped
 
 
 def run() -> None:
     with Session(engine) as session:
-        removed, created, skipped = link_products(session)
+        removed, cleared, created, skipped = link_products(session)
         if removed:
             print(f"Removed {removed} mismatched TenantProduct link(s).")
+        if cleared:
+            print(f"Cleared stale backfill on {cleared} product(s).")
         if created:
             print(f"Created {created} TenantProduct link(s). Load /products to backfill images.")
         if skipped:
             print(f"Skipped {skipped} product(s) with no catalog name match.")
-        if removed == 0 and created == 0 and skipped == 0:
+        if removed == 0 and cleared == 0 and created == 0 and skipped == 0:
             print("Nothing to link or repair.")
 
     print("Done.")
