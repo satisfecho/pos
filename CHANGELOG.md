@@ -8,6 +8,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.10] - 2026-07-07
+
+### Fixed
+
+- **Demo Take Away menu:** Beverages no longer show wrong catalog images and descriptions (e.g. Coca Cola with a beer photo) — demo product linking now matches catalog names only and repairs mismatched links from prior round-robin runs (#280).
+
 ## [2.1.9] - 2026-07-06
 
 ### Fixed
