@@ -12,6 +12,7 @@ from app.seeds.link_demo_products_to_catalog import (
     _find_matching_provider_product,
     _names_match,
     repair_mismatched_links,
+    repair_stale_product_backfills,
 )
 
 
@@ -199,6 +200,33 @@ class TestLinkDemoProductsToCatalog(PgClientTestCase):
         self.assertIsNone(coca_item.get("image_filename"))
         self.assertNotIn("Strong Mediterranean beer", coca_item.get("description") or "")
         self.assertEqual(coca_item.get("_source"), "product")
+
+    def test_repair_stale_backfill_clears_orphaned_catalog_description(self):
+        """After a bad link was removed, stale Product.description/image must be cleared."""
+        coca = models.Product(
+            tenant_id=self.tenant.id,
+            name="Coca Cola",
+            price_cents=300,
+            category="Beverages",
+            image_filename="88e58b7c-0d90-4483-9c0c-aae6bb55680d.webp",
+            description="Strong double malt lager with a rich, full-bodied taste.",
+        )
+        self.session.add(coca)
+        self.session.commit()
+        self.session.refresh(coca)
+
+        cleared = repair_stale_product_backfills(self.session)
+        self.assertEqual(cleared, 1)
+        self.session.refresh(coca)
+        self.assertIsNone(coca.image_filename)
+        self.assertIsNone(coca.description)
+
+        response = self.client.get(f"/menu/{self.table.token}")
+        self.assertEqual(response.status_code, 200, response.text)
+        coca_items = [p for p in response.json()["products"] if p["name"] == "Coca Cola"]
+        self.assertEqual(len(coca_items), 1)
+        self.assertIsNone(coca_items[0].get("image_filename"))
+        self.assertIsNone(coca_items[0].get("description"))
 
 
 if __name__ == "__main__":
