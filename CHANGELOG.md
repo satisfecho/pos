@@ -8,6 +8,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Fixed
+
+- **Table menu:** Guests opening the ordering menu via table QR or the landing **Take Away** demo no longer see each dish twice — `GET /menu/{table_token}` now skips legacy `Product` rows already represented by linked `TenantProduct` entries, matching the public-menu dedup from #258 (#278).
+
 ## [2.1.8] - 2026-07-02
 
 ### Added

@@ -10077,9 +10077,15 @@ def get_menu(
     tenant_products = [tp for tp in tenant_products if _is_available(tp.available_from, tp.available_until)]
     legacy_products = [p for p in legacy_products if _is_available(p.available_from, p.available_until)]
 
+    linked_legacy_product_ids = {
+        tp.product_id for tp in tenant_products if tp.product_id is not None
+    }
+
     # Load product questions for all effective product IDs (for customization e.g. doneness, spice level)
     effective_product_ids = [tp.product_id for tp in tenant_products if tp.product_id is not None]
-    effective_product_ids.extend(lp.id for lp in legacy_products)
+    effective_product_ids.extend(
+        lp.id for lp in legacy_products if lp.id not in linked_legacy_product_ids
+    )
     questions_by_product: dict[int, list[dict]] = {}
     if effective_product_ids:
         product_questions = session.exec(
@@ -10360,8 +10366,10 @@ def get_menu(
 
         products_list.append(product_data)
 
-    # Add legacy Products
+    # Add legacy Products (skip rows already represented via TenantProduct.product_id)
     for lp in legacy_products:
+        if lp.id in linked_legacy_product_ids:
+            continue
         product_data = {
             "id": lp.id,
             "name": lp.name,
