@@ -8,9 +8,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.10] - 2026-07-07
+
+### Fixed
+
+- **Demo Take Away menu:** Beverages no longer show wrong catalog images and descriptions (e.g. Coca Cola with a beer photo) — demo product linking now matches catalog names only and repairs mismatched links from prior round-robin runs (#280).
+
+## [2.1.9] - 2026-07-06
+
 ### Fixed
 
 - **Table menu:** Guests opening the ordering menu via table QR or the landing **Take Away** demo no longer see each dish twice — `GET /menu/{table_token}` now skips legacy `Product` rows already represented by linked `TenantProduct` entries, matching the public-menu dedup from #258 (#278).
+
+### Changed
+
+- **Release / production:** Promoted **`development` → `master`** and confirmed green **Deploy to amvara9** on production (**satisfecho.de**) — live **2.1.9** includes the table-menu dedup fix (#279).
 
 ## [2.1.8] - 2026-07-02
 
