@@ -18,6 +18,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Changed
 
 - **New signups:** Fresh restaurants get a tighter default navigation — **Tables**, **Reservations**, and **Kitchen & bar** on; **Working plan**, **Product catalog**, **Inventory**, **Contracts**, and **Users** off — existing tenants are unchanged (#288).
+- **Release / production:** Promoted **`development` → `master`** and deployed to amvara9 (**satisfecho.de**) — live **2.1.13** at **`a8bfe7f9`** via manual SSH after GitHub Actions **deploy-amvara9** could not reach the server (SSH refused from runners); post-deploy smoke passed for waitlist, signup wizard, order comments, and **`/api/health`** (#285, #289).
 
 ## [2.1.12] - 2026-07-12
 
