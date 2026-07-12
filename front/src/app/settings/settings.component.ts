@@ -21,6 +21,7 @@ import { SidebarComponent } from '../shared/sidebar.component';
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { TranslationsComponent } from '../translations/translations.component';
 import { KitchenStationsSettingsComponent } from './kitchen-stations-settings.component';
+import { RestaurantGroupSettingsComponent } from './restaurant-group-settings.component';
 import { DeliveryIntegrationsSettingsComponent } from './delivery-integrations-settings.component';
 import { SocialPostsSettingsComponent } from './social-posts-settings.component';
 import { ContractTemplatesSettingsComponent } from './contract-templates-settings.component';
@@ -39,6 +40,7 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
     TranslateModule,
     TranslationsComponent,
     KitchenStationsSettingsComponent,
+    RestaurantGroupSettingsComponent,
     DeliveryIntegrationsSettingsComponent,
     ContractTemplatesSettingsComponent,
     SocialPostsSettingsComponent,
@@ -237,6 +239,20 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
             </svg>
             <span>{{ 'SETTINGS.SECURITY' | translate }}</span>
           </button>
+          @if (isTenantOwnerOrAdmin()) {
+          <button
+            type="button"
+            class="tab"
+            data-testid="settings-restaurant-group-tab"
+            [class.active]="activeSection() === 'restaurant-group'"
+            (click)="activeSection.set('restaurant-group')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            <span>{{ 'SETTINGS.RESTAURANT_GROUP_TAB' | translate }}</span>
+          </button>
+          }
           @if (isTenantOwner()) {
           <button
             type="button"
@@ -526,6 +542,8 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
               </div>
             </div>
           }
+        } @else if (activeSection() === 'restaurant-group') {
+          <app-restaurant-group-settings />
         } @else if (activeSection() === 'kitchen-stations') {
           <app-kitchen-stations-settings />
         } @else if (activeSection() === 'delivery-integrations') {
@@ -2885,6 +2903,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     | 'reservations'
     | 'taxes'
     | 'kitchen-stations'
+    | 'restaurant-group'
     | 'delivery-integrations'
     | 'social-posts'
     | 'contract-templates'
@@ -2913,6 +2932,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
       descKey: 'SETTINGS.UI_MODULE_KITCHEN_BAR_DESC',
     },
     { key: 'inventory', labelKey: 'SETTINGS.UI_MODULE_INVENTORY', descKey: 'SETTINGS.UI_MODULE_INVENTORY_DESC' },
+    {
+      key: 'contracts',
+      labelKey: 'SETTINGS.UI_MODULE_CONTRACTS',
+      descKey: 'SETTINGS.UI_MODULE_CONTRACTS_DESC',
+    },
+    { key: 'users', labelKey: 'SETTINGS.UI_MODULE_USERS', descKey: 'SETTINGS.UI_MODULE_USERS_DESC' },
   ];
   loading = signal<boolean>(false);
   saving = signal<boolean>(false);
@@ -3653,6 +3678,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   isTenantOwner(): boolean {
     return this.api.getCurrentUser()?.role === 'owner';
+  }
+
+  isTenantOwnerOrAdmin(): boolean {
+    const role = this.api.getCurrentUser()?.role;
+    return role === 'owner' || role === 'admin';
   }
 
   downloadTenantDataExport(): void {

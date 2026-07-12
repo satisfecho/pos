@@ -78,7 +78,12 @@ from .tenant_currency import (
     normalize_tenant_currency_fields,
     sync_tenant_currency_symbol_from_code,
 )
-from .tenant_ui_modules import merge_tenant_ui_modules_patch, resolve_tenant_ui_modules
+from . import restaurant_groups as rg
+from .tenant_ui_modules import (
+    merge_tenant_ui_modules_patch,
+    new_tenant_ui_modules_stored,
+    resolve_tenant_ui_modules,
+)
 from .line_modifiers import (
     line_modifiers_equal,
     validate_and_normalize_line_modifiers,
@@ -1329,7 +1334,10 @@ def register(
     if len(user_count) == 0 and len(tenant_count) == 1:
         tenant = tenant_count[0]
     else:
-        tenant = models.Tenant(name=tenant_name)
+        tenant = models.Tenant(
+            name=tenant_name,
+            ui_modules=new_tenant_ui_modules_stored(),
+        )
         session.add(tenant)
         session.commit()
         session.refresh(tenant)
@@ -4132,9 +4140,10 @@ def list_products(
     1. Creates Product entries for TenantProducts that don't have a linked Product entry
     2. Updates existing Product entries that are missing images but have a linked TenantProduct with provider_product
     """
-    # Get all Product entries
+    # Get all Product entries (own tenant + group-shared when enabled)
+    product_tenant_ids = rg.accessible_product_tenant_ids(session, current_user.tenant_id)
     products = session.exec(
-        select(models.Product).where(models.Product.tenant_id == current_user.tenant_id)
+        select(models.Product).where(models.Product.tenant_id.in_(product_tenant_ids))
     ).all()
     
     # Get TenantProducts that don't have a linked Product entry
@@ -5878,9 +5887,10 @@ def list_tenant_products(
     session: Session = Depends(get_session),
     active_only: bool = True,
 ) -> list[dict]:
-    """List products selected by the tenant (restaurant)."""
+    """List products selected by the tenant (restaurant). Includes group-shared catalog when enabled."""
+    product_tenant_ids = rg.accessible_product_tenant_ids(session, current_user.tenant_id)
     query = select(models.TenantProduct).where(
-        models.TenantProduct.tenant_id == current_user.tenant_id
+        models.TenantProduct.tenant_id.in_(product_tenant_ids)
     )
 
     if active_only:
@@ -5932,6 +5942,8 @@ def list_tenant_products(
                 "product_id": tp.product_id,  # For backward compatibility
                 "available_from": tp.available_from.isoformat() if tp.available_from else None,
                 "available_until": tp.available_until.isoformat() if tp.available_until else None,
+                "tenant_id": tp.tenant_id,
+                "is_shared": tp.tenant_id != current_user.tenant_id,
             }
         )
 
@@ -12267,7 +12279,7 @@ def set_order_billing_customer(
     customer_id = body.billing_customer_id
     if customer_id is not None:
         customer = session.get(models.BillingCustomer, customer_id)
-        if not customer or customer.tenant_id != current_user.tenant_id:
+        if not customer or not rg.billing_customer_accessible(session, current_user.tenant_id, customer):
             raise HTTPException(status_code=404, detail="Billing customer not found")
     order.billing_customer_id = customer_id
     session.add(order)
@@ -12368,6 +12380,108 @@ def set_order_staff_urgent(
     return {"order_id": order.id, "staff_urgent": order.staff_urgent}
 
 
+# ---------- Restaurant groups (multi-location) ----------
+
+
+def _billing_customer_dict(c: models.BillingCustomer, current_tenant_id: int) -> dict:
+    return {
+        "id": c.id,
+        "name": c.name,
+        "company_name": c.company_name,
+        "tax_id": c.tax_id,
+        "address": c.address,
+        "email": c.email,
+        "phone": c.phone,
+        "birth_date": c.birth_date.isoformat() if c.birth_date else None,
+        "created_at": c.created_at.isoformat(),
+        "tenant_id": c.tenant_id,
+        "is_shared": c.tenant_id != current_tenant_id,
+    }
+
+
+@app.get("/restaurant-group")
+def get_restaurant_group(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_READ))],
+    session: Session = Depends(get_session),
+) -> dict | None:
+    """Return the restaurant group for the current tenant, or null if none."""
+    rg.require_owner_or_admin(current_user)
+    return rg.group_detail(session, current_user.tenant_id)
+
+
+@app.post("/restaurant-group")
+def create_restaurant_group(
+    body: models.RestaurantGroupCreate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    rg.require_owner_or_admin(current_user)
+    name = body.name.strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Group name is required")
+    group = rg.create_group(
+        session,
+        tenant_id=current_user.tenant_id,
+        name=name,
+        share_products=body.share_products,
+        share_customers=body.share_customers,
+    )
+    _ = group
+    detail = rg.group_detail(session, current_user.tenant_id)
+    assert detail is not None
+    return detail
+
+
+@app.put("/restaurant-group")
+def update_restaurant_group(
+    body: models.RestaurantGroupUpdate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    rg.require_owner_or_admin(current_user)
+    group = rg.get_group_for_tenant(session, current_user.tenant_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="Restaurant group not found")
+    if body.name is not None:
+        name = body.name.strip()
+        if not name:
+            raise HTTPException(status_code=400, detail="Group name is required")
+        group.name = name
+    if body.share_products is not None:
+        group.share_products = body.share_products
+    if body.share_customers is not None:
+        group.share_customers = body.share_customers
+    session.add(group)
+    session.commit()
+    session.refresh(group)
+    detail = rg.group_detail(session, current_user.tenant_id)
+    assert detail is not None
+    return detail
+
+
+@app.post("/restaurant-group/join")
+def join_restaurant_group(
+    body: models.RestaurantGroupJoin,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    rg.require_owner_or_admin(current_user)
+    rg.join_group(session, tenant_id=current_user.tenant_id, join_code=body.join_code)
+    detail = rg.group_detail(session, current_user.tenant_id)
+    assert detail is not None
+    return detail
+
+
+@app.post("/restaurant-group/leave")
+def leave_restaurant_group(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.SETTINGS_UPDATE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    rg.require_owner_or_admin(current_user)
+    rg.leave_group(session, current_user.tenant_id)
+    return {"status": "left"}
+
+
 # ---------- Billing customers (Factura) ----------
 
 
@@ -12378,10 +12492,11 @@ def list_billing_customers(
     session: Session = Depends(get_session)
 ) -> list[dict]:
     from sqlalchemy import or_
+    tenant_ids = rg.accessible_billing_customer_tenant_ids(session, current_user.tenant_id)
     if search and search.strip():
         term = f"%{search.strip()}%"
         q = select(models.BillingCustomer).where(
-            models.BillingCustomer.tenant_id == current_user.tenant_id
+            models.BillingCustomer.tenant_id.in_(tenant_ids)
         ).where(
             or_(
                 models.BillingCustomer.name.ilike(term),
@@ -12392,23 +12507,10 @@ def list_billing_customers(
         ).order_by(models.BillingCustomer.name.asc())
     else:
         q = select(models.BillingCustomer).where(
-            models.BillingCustomer.tenant_id == current_user.tenant_id
+            models.BillingCustomer.tenant_id.in_(tenant_ids)
         ).order_by(models.BillingCustomer.name.asc())
     customers = session.exec(q).all()
-    return [
-        {
-            "id": c.id,
-            "name": c.name,
-            "company_name": c.company_name,
-            "tax_id": c.tax_id,
-            "address": c.address,
-            "email": c.email,
-            "phone": c.phone,
-            "birth_date": c.birth_date.isoformat() if c.birth_date else None,
-            "created_at": c.created_at.isoformat(),
-        }
-        for c in customers
-    ]
+    return [_billing_customer_dict(c, current_user.tenant_id) for c in customers]
 
 
 @app.post("/billing-customers")
@@ -12430,17 +12532,7 @@ def create_billing_customer(
     session.add(customer)
     session.commit()
     session.refresh(customer)
-    return {
-        "id": customer.id,
-        "name": customer.name,
-        "company_name": customer.company_name,
-        "tax_id": customer.tax_id,
-        "address": customer.address,
-        "email": customer.email,
-        "phone": customer.phone,
-        "birth_date": customer.birth_date.isoformat() if customer.birth_date else None,
-        "created_at": customer.created_at.isoformat(),
-    }
+    return _billing_customer_dict(customer, current_user.tenant_id)
 
 
 @app.get("/billing-customers/{customer_id}")
@@ -12449,25 +12541,10 @@ def get_billing_customer(
     current_user: Annotated[models.User, Depends(require_permission(Permission.BILLING_CUSTOMER_READ))],
     session: Session = Depends(get_session)
 ) -> dict:
-    customer = session.exec(
-        select(models.BillingCustomer).where(
-            models.BillingCustomer.id == customer_id,
-            models.BillingCustomer.tenant_id == current_user.tenant_id
-        )
-    ).first()
-    if not customer:
+    customer = session.get(models.BillingCustomer, customer_id)
+    if not customer or not rg.billing_customer_accessible(session, current_user.tenant_id, customer):
         raise HTTPException(status_code=404, detail="Billing customer not found")
-    return {
-        "id": customer.id,
-        "name": customer.name,
-        "company_name": customer.company_name,
-        "tax_id": customer.tax_id,
-        "address": customer.address,
-        "email": customer.email,
-        "phone": customer.phone,
-        "birth_date": customer.birth_date.isoformat() if customer.birth_date else None,
-        "created_at": customer.created_at.isoformat(),
-    }
+    return _billing_customer_dict(customer, current_user.tenant_id)
 
 
 @app.put("/billing-customers/{customer_id}")
@@ -12504,17 +12581,7 @@ def update_billing_customer(
     session.add(customer)
     session.commit()
     session.refresh(customer)
-    return {
-        "id": customer.id,
-        "name": customer.name,
-        "company_name": customer.company_name,
-        "tax_id": customer.tax_id,
-        "address": customer.address,
-        "email": customer.email,
-        "phone": customer.phone,
-        "birth_date": customer.birth_date.isoformat() if customer.birth_date else None,
-        "created_at": customer.created_at.isoformat(),
-    }
+    return _billing_customer_dict(customer, current_user.tenant_id)
 
 
 @app.delete("/billing-customers/{customer_id}")

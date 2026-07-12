@@ -25,8 +25,11 @@ export type TenantUiModuleKey =
   | 'providers'
   | 'reservations'
   | 'kitchen_bar'
-  | 'inventory';
+  | 'inventory'
+  | 'contracts'
+  | 'users';
 
+/** Legacy default when tenant.ui_modules is unset (existing tenants). New signups get backend defaults at registration. */
 export const DEFAULT_TENANT_UI_MODULES: Record<TenantUiModuleKey, boolean> = {
   tables: true,
   working_plan: true,
@@ -34,6 +37,8 @@ export const DEFAULT_TENANT_UI_MODULES: Record<TenantUiModuleKey, boolean> = {
   reservations: true,
   kitchen_bar: true,
   inventory: true,
+  contracts: true,
+  users: true,
 };
 
 export interface User {
@@ -1163,6 +1168,26 @@ export interface BillingCustomer {
   /** ISO date YYYY-MM-DD; optional CRM / occasions */
   birth_date?: string | null;
   created_at: string;
+  /** Present when listing group-shared customers from another location */
+  tenant_id?: number;
+  is_shared?: boolean;
+}
+
+export interface RestaurantGroupMember {
+  tenant_id: number;
+  tenant_name: string;
+  joined_at: string;
+  is_current: boolean;
+}
+
+export interface RestaurantGroup {
+  id: number;
+  name: string;
+  join_code: string;
+  share_products: boolean;
+  share_customers: boolean;
+  created_at: string;
+  members: RestaurantGroupMember[];
 }
 
 export interface Order {
@@ -2330,6 +2355,35 @@ export class ApiService {
 
   deleteBillingCustomer(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/billing-customers/${id}`);
+  }
+
+  // Restaurant groups (multi-location)
+  getRestaurantGroup(): Observable<RestaurantGroup | null> {
+    return this.http.get<RestaurantGroup | null>(`${this.apiUrl}/restaurant-group`);
+  }
+
+  createRestaurantGroup(data: {
+    name: string;
+    share_products?: boolean;
+    share_customers?: boolean;
+  }): Observable<RestaurantGroup> {
+    return this.http.post<RestaurantGroup>(`${this.apiUrl}/restaurant-group`, data);
+  }
+
+  updateRestaurantGroup(data: {
+    name?: string;
+    share_products?: boolean;
+    share_customers?: boolean;
+  }): Observable<RestaurantGroup> {
+    return this.http.put<RestaurantGroup>(`${this.apiUrl}/restaurant-group`, data);
+  }
+
+  joinRestaurantGroup(joinCode: string): Observable<RestaurantGroup> {
+    return this.http.post<RestaurantGroup>(`${this.apiUrl}/restaurant-group/join`, { join_code: joinCode });
+  }
+
+  leaveRestaurantGroup(): Observable<{ status: string }> {
+    return this.http.post<{ status: string }>(`${this.apiUrl}/restaurant-group/leave`, {});
   }
 
   resetItemStatus(orderId: number, itemId: number): Observable<any> {

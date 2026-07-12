@@ -12,7 +12,21 @@ TENANT_UI_MODULE_KEYS: tuple[str, ...] = (
     "reservations",
     "kitchen_bar",
     "inventory",
+    "contracts",
+    "users",
 )
+
+# Signup defaults for newly provisioned tenants (existing tenants keep null → all enabled).
+_NEW_TENANT_UI_MODULE_DEFAULTS: dict[str, bool] = {
+    "tables": True,
+    "working_plan": False,
+    "providers": False,
+    "reservations": True,
+    "kitchen_bar": True,
+    "inventory": False,
+    "contracts": False,
+    "users": False,
+}
 
 _TENANT_UI_MODULE_KEY_SET = frozenset(TENANT_UI_MODULE_KEYS)
 
@@ -31,6 +45,11 @@ def compact_tenant_ui_modules(effective: dict[str, bool]) -> dict[str, bool] | N
     """Persist only disabled modules; None means all enabled."""
     neg = {k: False for k in TENANT_UI_MODULE_KEYS if effective.get(k) is False}
     return neg or None
+
+
+def new_tenant_ui_modules_stored() -> dict[str, bool]:
+    """Compact JSONB for tenant.ui_modules at registration (disabled keys only)."""
+    return {k: False for k in TENANT_UI_MODULE_KEYS if not _NEW_TENANT_UI_MODULE_DEFAULTS[k]}
 
 
 def merge_tenant_ui_modules_patch(

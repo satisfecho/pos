@@ -8,6 +8,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.13] - 2026-07-12
+
+### Added
+
+- **Restaurant groups:** Multi-location operators can create a restaurant group with a join code and optionally share billing customers and products across linked tenants — sibling locations see shared data read-only; Settings includes a **Restaurant group** tab for owners (#283).
+- **Staff sidebar:** Grouped navigation with collapsible sections (**Operations**, **Planning**, **Catalog & inventory**, **Administration**) — primary links (Home, My shift, Orders) stay top-level; groups hide when all child modules are disabled (#287).
+
+### Changed
+
+- **New signups:** Fresh restaurants get a tighter default navigation — **Tables**, **Reservations**, and **Kitchen & bar** on; **Working plan**, **Product catalog**, **Inventory**, **Contracts**, and **Users** off — existing tenants are unchanged (#288).
+
 ## [2.1.12] - 2026-07-12
 
 ### Added
