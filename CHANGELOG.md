@@ -8,6 +8,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Changed
+
+- **Reservation user guide:** `docs/0011-table-reservation-user-guide.md` now documents the waiting list — guest flow at **`/waitlist/:tenantId`**, the link from **`/book/:tenantId`**, staff queue actions on **`/reservations`**, and local/production URL examples; **`README.md`** pointers updated to match (#282).
+
 ## [2.1.14] - 2026-07-12
 
 ### Added
