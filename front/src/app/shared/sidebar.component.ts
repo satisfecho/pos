@@ -116,6 +116,11 @@ type NavGroupKey = 'operations' | 'planning' | 'catalog' | 'admin';
                       <span>{{ 'NAV.BEVERAGES_DISPLAY' | translate }}</span>
                     </a>
                   }
+                  @if (canViewCustomers()) {
+                    <a routerLink="/customers" routerLinkActive="active" class="nav-sublink" (click)="closeSidebar()">
+                      <span>{{ 'NAV.CUSTOMERS' | translate }}</span>
+                    </a>
+                  }
                 </div>
               }
             </div>
@@ -187,11 +192,6 @@ type NavGroupKey = 'operations' | 'planning' | 'catalog' | 'admin';
                   @if (moduleEnabled('providers')) {
                     <a routerLink="/catalog" routerLinkActive="active" class="nav-sublink" (click)="closeSidebar()">
                       <span>{{ 'NAV.CATALOG' | translate }}</span>
-                    </a>
-                  }
-                  @if (canViewCustomers()) {
-                    <a routerLink="/customers" routerLinkActive="active" class="nav-sublink" (click)="closeSidebar()">
-                      <span>{{ 'NAV.CUSTOMERS' | translate }}</span>
                     </a>
                   }
                   @if (canViewInventory() && moduleEnabled('inventory')) {
@@ -344,7 +344,10 @@ export class SidebarComponent implements OnInit, AfterViewInit, OnDestroy {
   });
 
   showOperationsGroup = computed(
-    () => (this.canViewTables() && this.moduleEnabled('tables')) || this.moduleEnabled('kitchen_bar')
+    () =>
+      (this.canViewTables() && this.moduleEnabled('tables')) ||
+      this.moduleEnabled('kitchen_bar') ||
+      this.canViewCustomers()
   );
   showPlanningGroup = computed(
     () =>
@@ -446,7 +449,8 @@ export class SidebarComponent implements OnInit, AfterViewInit, OnDestroy {
       path === '/tables' ||
       path.startsWith('/tables/') ||
       path === '/kitchen' ||
-      path === '/bar'
+      path === '/bar' ||
+      path.startsWith('/customers')
     ) {
       this.operationsOpen.set(true);
     }
@@ -460,7 +464,6 @@ export class SidebarComponent implements OnInit, AfterViewInit, OnDestroy {
     if (
       path.startsWith('/products') ||
       path.startsWith('/catalog') ||
-      path.startsWith('/customers') ||
       path.startsWith('/inventory')
     ) {
       this.catalogOpen.set(true);

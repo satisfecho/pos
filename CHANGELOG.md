@@ -8,6 +8,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Changed
+
+- **Staff sidebar:** **Customers (Invoice)** (`/customers`) now appears under **Operations** alongside tables and kitchen/bar displays instead of under Catalog & inventory — the Operations group also shows when customers is the only visible sub-item (#290).
+
 ## [2.1.13] - 2026-07-12
 
 ### Added
