@@ -1564,11 +1564,20 @@ export class ApiService {
   register(data: any): Observable<RegisterResponse> {
     let params = new HttpParams();
     Object.keys(data).forEach(key => {
-      if (data[key] !== null && data[key] !== undefined) {
+      if (data[key] !== null && data[key] !== undefined && data[key] !== '') {
         params = params.set(key, data[key]);
       }
     });
     return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, null, { params });
+  }
+
+  seedOnboardingStarterProducts(
+    products: { name: string; price_cents: number; enabled: boolean }[],
+  ): Observable<{ status: string; products: { id: number; name: string; price_cents: number; image_filename: string | null }[] }> {
+    return this.http.post<{ status: string; products: { id: number; name: string; price_cents: number; image_filename: string | null }[] }>(
+      `${this.apiUrl}/onboarding/starter-products`,
+      { products },
+    );
   }
 
   /** Login: sends username/password as application/x-www-form-urlencoded (required by backend OAuth2PasswordRequestForm). May return 403 with require_otp + temp_token when OTP is enabled. */

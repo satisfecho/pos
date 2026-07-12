@@ -8,6 +8,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.12] - 2026-07-12
+
+### Added
+
+- **Order comments:** Guests can add optional free-text notes per cart line and for the whole order on the table menu — comments appear on the current-order tracker, kitchen and bar displays (highlighted), and staff order cards with inline edit (#284).
+- **Guided signup:** New multi-step restaurant onboarding at **`/register`** and **`/signup`** — collect address, phone, and maps link; confirm default starter beverages (coffee, Coca Cola, water) with prices; optional product photos; finish with a QR code for the public menu (#286).
+
 ## [2.1.11] - 2026-07-12
 
 ### Added

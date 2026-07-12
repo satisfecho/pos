@@ -390,7 +390,35 @@
     "SAVING": "Записване…",
     "RESET_SUCCESS": "Паролата ви е обновена. Може да влезете.",
     "RESET_TOKEN_MISSING": "Линкът за нулиране липсва или е невалиден. Поискайте нов от страницата за вход.",
-    "BACK_TO_LOGIN": "Назад, за да влезете?"
+    "BACK_TO_LOGIN": "Назад, за да влезете?",
+    "SIGNUP_TITLE": "Настройте ресторанта си",
+    "SIGNUP_STEP_TITLE_INTRO": "QR меню за минути",
+    "SIGNUP_STEP_TITLE_ACCOUNT": "Данни за ресторанта и акаунт",
+    "SIGNUP_STEP_TITLE_PRODUCTS": "Стартово меню",
+    "SIGNUP_STEP_TITLE_PHOTOS": "Снимки и цени",
+    "SIGNUP_STEP_TITLE_DONE": "Менюто е готово",
+    "SIGNUP_INTRO_LEAD": "Създайте акаунт и публикувайте страница за поръчки с QR код.",
+    "SIGNUP_STEP1_TITLE": "Разкажете за ресторанта",
+    "SIGNUP_STEP1_DESC": "Адрес, телефон и по избор линк към карта.",
+    "SIGNUP_STEP2_TITLE": "Потвърдете напитките",
+    "SIGNUP_STEP2_DESC": "Кафе, кола и вода са предварително избрани — коригирайте цените.",
+    "SIGNUP_STEP3_TITLE": "Добавете снимки (по избор)",
+    "SIGNUP_STEP3_DESC": "Качете до три снимки и получете QR кода.",
+    "SIGNUP_GET_STARTED": "Започнете",
+    "SIGNUP_ADDRESS": "Адрес",
+    "SIGNUP_ADDRESS_PLACEHOLDER": "Улица, град",
+    "SIGNUP_PHONE": "Телефон",
+    "SIGNUP_PHONE_PLACEHOLDER": "+359 88 000 0000",
+    "SIGNUP_MAPS_URL": "Линк към карта (по избор)",
+    "SIGNUP_MAPS_URL_PLACEHOLDER": "Google Maps или OpenStreetMap URL",
+    "SIGNUP_MAPS_URL_HINT": "Поставете споделен линк от Google Maps или OpenStreetMap.",
+    "SIGNUP_PRODUCTS_HINT": "Тези напитки се добавят автоматично. Премахнете нежеланите.",
+    "SIGNUP_PHOTOS_HINT": "По избор: добавете снимка и коригирайте цената.",
+    "SIGNUP_PRODUCT_COFFEE": "Кафе",
+    "SIGNUP_PRODUCT_COKE": "Coca Cola",
+    "SIGNUP_PRODUCT_WATER": "Вода",
+    "SIGNUP_COMPLETE_LEAD": "Споделете този QR код, за да виждат менюто и да поръчват.",
+    "SIGNUP_GO_DASHBOARD": "Отвори таблото"
   },
   "MENU": {
     "TITLE": "Меню",
@@ -432,7 +460,12 @@
     "PIN_HINT": "Попитайте сървъра си за 4 - цифрения PIN",
     "TABLE_CLOSED_TITLE": "Таблицата е затворена",
     "TABLE_CLOSED_MESSAGE": "Масата в момента не приема поръчки. Помолете персонал за помощ.",
-    "CUSTOMIZE_OPTIONS": "Как ще ви хареса?"
+    "CUSTOMIZE_OPTIONS": "Как ще ви хареса?",
+    "ITEM_COMMENT": "Коментар към артикула (по избор)",
+    "ITEM_COMMENT_PLACEHOLDER": "напр. много лед, студено мляко, само моцарела",
+    "ORDER_NOTES_PLACEHOLDER": "Незадължителна бележка за цялата поръчка",
+    "ADD_COMMENT": "Добави коментар",
+    "HIDE_COMMENT": "Скрий коментар"
   },
   "PRODUCTS": {
     "TITLE": "Продукта",
@@ -780,7 +813,10 @@
     "INVOICE_OSS_PREFIX": "Отворен код · Създадено с ♥ в Барселона и Мексико",
     "FISCAL_INVOICE_LABEL": "Fiscal verification (VeriFactu preparation)",
     "FISCAL_INVOICE_NUMBER": "Fiscal document no.",
-    "FISCAL_ISSUE_FAILED": "Could not issue fiscal invoice. The order may need to be paid first."
+    "FISCAL_ISSUE_FAILED": "Could not issue fiscal invoice. The order may need to be paid first.",
+    "ITEM_NOTES": "Коментар към артикула",
+    "ITEM_NOTES_PLACEHOLDER": "напр. много лед, без захар",
+    "ORDER_NOTES": "Бележки към поръчката"
   },
   "CUSTOMERS": {
     "TITLE": "Клиенти (фактура)",
@@ -844,7 +880,8 @@
     "URGENT": "Спешно",
     "TIMER_BAR_HINT": "Wait time progress toward red threshold",
     "STATION": "Станция",
-    "ALL_STATIONS": "Всички репери"
+    "ALL_STATIONS": "Всички репери",
+    "ITEM_COMMENT": "Коментар"
   },
   "BAR_DISPLAY": {
     "TITLE": "Бар дисплей"

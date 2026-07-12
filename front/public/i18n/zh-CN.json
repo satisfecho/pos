@@ -376,7 +376,35 @@
     "SAVING": "正在保存…",
     "RESET_SUCCESS": "密码已更新，您现在可以登录。",
     "RESET_TOKEN_MISSING": "重置链接无效或不完整，请从登录页重新申请。",
-    "BACK_TO_LOGIN": "返回登录"
+    "BACK_TO_LOGIN": "返回登录",
+    "SIGNUP_TITLE": "设置您的餐厅",
+    "SIGNUP_STEP_TITLE_INTRO": "几分钟获得二维码菜单",
+    "SIGNUP_STEP_TITLE_ACCOUNT": "餐厅信息与账户",
+    "SIGNUP_STEP_TITLE_PRODUCTS": "初始菜单",
+    "SIGNUP_STEP_TITLE_PHOTOS": "照片与价格",
+    "SIGNUP_STEP_TITLE_DONE": "菜单已就绪",
+    "SIGNUP_INTRO_LEAD": "创建餐厅账户，通过二维码发布公开点餐页面。",
+    "SIGNUP_STEP1_TITLE": "介绍您的餐厅",
+    "SIGNUP_STEP1_DESC": "地址、电话及可选地图链接。",
+    "SIGNUP_STEP2_TITLE": "确认初始饮品",
+    "SIGNUP_STEP2_DESC": "咖啡、可乐和水已预选——可调整价格或取消。",
+    "SIGNUP_STEP3_TITLE": "添加照片（可选）",
+    "SIGNUP_STEP3_DESC": "上传最多三张照片，然后获取二维码。",
+    "SIGNUP_GET_STARTED": "开始",
+    "SIGNUP_ADDRESS": "地址",
+    "SIGNUP_ADDRESS_PLACEHOLDER": "街道、城市",
+    "SIGNUP_PHONE": "电话",
+    "SIGNUP_PHONE_PLACEHOLDER": "+86 138 0000 0000",
+    "SIGNUP_MAPS_URL": "地图链接（可选）",
+    "SIGNUP_MAPS_URL_PLACEHOLDER": "Google 地图或 OpenStreetMap 链接",
+    "SIGNUP_MAPS_URL_HINT": "粘贴 Google 地图或 OpenStreetMap 的分享链接。",
+    "SIGNUP_PRODUCTS_HINT": "这些饮品会自动添加。不需要的可取消勾选。",
+    "SIGNUP_PHOTOS_HINT": "可选：添加照片并调整每项价格。",
+    "SIGNUP_PRODUCT_COFFEE": "咖啡",
+    "SIGNUP_PRODUCT_COKE": "可口可乐",
+    "SIGNUP_PRODUCT_WATER": "水",
+    "SIGNUP_COMPLETE_LEAD": "分享此二维码，顾客即可查看菜单并下单。",
+    "SIGNUP_GO_DASHBOARD": "打开员工后台"
   },
   "MENU": {
     "TITLE": "菜单",
@@ -416,7 +444,12 @@
     "PIN_TABLE_CONTEXT": "餐桌：{{name}}",
     "PIN_HINT": "请向服务员索取4位数PIN码",
     "TABLE_CLOSED_TITLE": "餐桌已关闭",
-    "TABLE_CLOSED_MESSAGE": "此餐桌目前不接受点单。请向工作人员寻求帮助。"
+    "TABLE_CLOSED_MESSAGE": "此餐桌目前不接受点单。请向工作人员寻求帮助。",
+    "ITEM_COMMENT": "单品备注（可选）",
+    "ITEM_COMMENT_PLACEHOLDER": "例如：多冰、冰牛奶、只要马苏里拉",
+    "ORDER_NOTES_PLACEHOLDER": "整单可选备注（例如一起上菜）",
+    "ADD_COMMENT": "添加备注",
+    "HIDE_COMMENT": "隐藏备注"
   },
   "PRODUCTS": {
     "TITLE": "产品",
@@ -753,7 +786,10 @@
     "INVOICE_OSS_PREFIX": "开源 · 用心打造于巴塞罗那与墨西哥",
     "FISCAL_INVOICE_LABEL": "财务核验（VeriFactu 前置准备）",
     "FISCAL_INVOICE_NUMBER": "财务单据编号",
-    "FISCAL_ISSUE_FAILED": "无法开具财务发票。订单可能先要已付款。"
+    "FISCAL_ISSUE_FAILED": "无法开具财务发票。订单可能先要已付款。",
+    "ITEM_NOTES": "单品备注",
+    "ITEM_NOTES_PLACEHOLDER": "例如：多冰、不加糖",
+    "ORDER_NOTES": "订单备注"
   },
   "CUSTOMERS": {
     "TITLE": "客户（发票）",
@@ -817,7 +853,8 @@
     "URGENT": "加急",
     "TIMER_BAR_HINT": "等待时间相对红色阈值的进度",
     "STATION": "工位",
-    "ALL_STATIONS": "全部工位"
+    "ALL_STATIONS": "全部工位",
+    "ITEM_COMMENT": "备注"
   },
   "BAR_DISPLAY": {
     "TITLE": "酒吧显示屏"

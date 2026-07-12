@@ -203,6 +203,9 @@
                 @if (formatCustomizationSummary(item.customization_answers, item.customization_summary)) {
                 <span class="item-customization">{{ formatCustomizationSummary(item.customization_answers, item.customization_summary) }}</span>
                 }
+                @if (item.notes?.trim()) {
+                <span class="item-comment">{{ item.notes }}</span>
+                }
               </div>
               <span class="item-price">{{ formatPrice(item.product.price_cents * item.quantity) }}</span>
               @if (item.status) {
@@ -220,6 +223,9 @@
             </div>
             }
           </div>
+          @if (order.notes?.trim()) {
+          <div class="order-notes-row">{{ 'MENU.ORDER_NOTES' | translate }}: {{ order.notes }}</div>
+          }
 
           <div class="order-actions">
             @if (isPaid()) {
@@ -486,16 +492,24 @@
     @if (cartExpanded()) {
     <div class="cart-expanded-content">
       <div class="cart-items-list">
-        @for (item of cart(); track getProductKey(item.product, item.customization_answers)) {
+        @for (item of cart(); track getCartLineKey(item)) {
         <div class="cart-item-card" [class.just-added]="isCartLineJustAdded(item)">
+          <div class="cart-item-main">
           <div class="cart-item-info">
             <span class="cart-item-name">{{ item.product.name }}</span>
             @if (formatCustomizationSummary(item.customization_answers, item.customization_summary)) {
             <span class="cart-item-customization">{{ formatCustomizationSummary(item.customization_answers, item.customization_summary) }}</span>
             }
+            @if (item.notes?.trim()) {
+            <span class="cart-item-comment">{{ item.notes }}</span>
+            }
             <span class="cart-item-price">{{ formatPrice(item.product.price_cents * item.quantity) }}</span>
           </div>
           <div class="cart-item-controls">
+            <button type="button" class="comment-toggle-btn" (click)="toggleCartItemComment(item)"
+              [attr.aria-expanded]="isCartItemCommentExpanded(item)">
+              {{ (isCartItemCommentExpanded(item) || item.notes?.trim()) ? ('MENU.HIDE_COMMENT' | translate) : ('MENU.ADD_COMMENT' | translate) }}
+            </button>
             <button class="qty-control-btn minus" (click)="decrementItem(item)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                 <line x1="5" y1="12" x2="19" y2="12" />
@@ -509,8 +523,25 @@
               </svg>
             </button>
           </div>
+          </div>
+          @if (isCartItemCommentExpanded(item)) {
+          <label class="cart-item-comment-field">
+            <span class="sr-only">{{ 'MENU.ITEM_COMMENT' | translate }}</span>
+            <textarea class="cart-comment-input" rows="2" [value]="item.notes"
+              [placeholder]="'MENU.ITEM_COMMENT_PLACEHOLDER' | translate"
+              [attr.maxlength]="maxNoteLength"
+              (input)="updateCartItemNotes(item, $any($event.target).value)"></textarea>
+          </label>
+          }
         </div>
         }
+      </div>
+
+      <div class="cart-order-notes">
+        <label class="cart-order-notes-label" for="cart-order-notes">{{ 'MENU.ORDER_NOTES' | translate }}</label>
+        <textarea id="cart-order-notes" class="cart-comment-input" rows="2" [(ngModel)]="orderNotes"
+          [placeholder]="'MENU.ORDER_NOTES_PLACEHOLDER' | translate"
+          [attr.maxlength]="maxNoteLength"></textarea>
       </div>
 
       <div class="cart-totals">

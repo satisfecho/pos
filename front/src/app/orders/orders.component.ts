@@ -152,6 +152,9 @@ ModuleRegistry.registerModules([
                             @if (hasItemModifiersLine(item)) {
                               <span class="item-customization">{{ formatItemModifiersLine(item) }}</span>
                             }
+                            @if (item.notes?.trim()) {
+                              <span class="item-notes">{{ item.notes }}</span>
+                            }
                           </div>
                           <div class="item-details-row">
                             <span class="item-price">
@@ -229,6 +232,10 @@ ModuleRegistry.registerModules([
                         </div>
                       }
                     </div>
+
+                    @if (displayOrderNotes(order.notes)) {
+                      <div class="order-notes-banner">{{ 'ORDERS.ORDER_NOTES' | translate }}: {{ displayOrderNotes(order.notes) }}</div>
+                    }
 
                     <div class="order-footer">
                       <div class="order-footer-left">
@@ -430,6 +437,9 @@ ModuleRegistry.registerModules([
                               <span class="item-name">{{ item.product_name }}</span>
                               @if (hasItemModifiersLine(item)) {
                                 <span class="item-customization">{{ formatItemModifiersLine(item) }}</span>
+                              }
+                              @if (item.notes?.trim()) {
+                                <span class="item-notes">{{ item.notes }}</span>
                               }
                             </div>
                             <div class="item-details-row">
@@ -751,6 +761,10 @@ ModuleRegistry.registerModules([
                             </button>
                           </div>
                         }
+                        <label class="modifier-label">{{ 'ORDERS.ITEM_NOTES' | translate }}</label>
+                        <textarea class="form-input modifier-textarea" rows="2" [(ngModel)]="item.notes" [name]="'item-notes-' + item.id"
+                          [placeholder]="'ORDERS.ITEM_NOTES_PLACEHOLDER' | translate" maxlength="500"
+                          (blur)="saveEditItemNotes(order.id, item)"></textarea>
                       </div>
                     }
                   }
@@ -772,6 +786,9 @@ ModuleRegistry.registerModules([
                       </button>
                     </div>
                     <div class="add-modifiers-fields">
+                      <label class="modifier-label">{{ 'ORDERS.ITEM_NOTES' | translate }}</label>
+                      <textarea class="form-input modifier-textarea" rows="2" [(ngModel)]="addItemNotes" name="addItemNotes"
+                        [placeholder]="'ORDERS.ITEM_NOTES_PLACEHOLDER' | translate" maxlength="500"></textarea>
                       <label class="modifier-label">{{ 'ORDERS.LINE_MODIFIERS_REMOVE' | translate }}</label>
                       <input type="text" class="form-input" [(ngModel)]="addItemModifiersRemove" name="addModRem" [placeholder]="'ORDERS.LINE_MODIFIERS_REMOVE_PLACEHOLDER' | translate" />
                       <label class="modifier-label">{{ 'ORDERS.LINE_MODIFIERS_ADD' | translate }}</label>
@@ -1274,6 +1291,25 @@ ModuleRegistry.registerModules([
       width: 100%;
       font-size: 0.8125rem;
       color: var(--color-text-muted);
+    }
+    .item-notes {
+      width: 100%;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--color-warning);
+      font-style: italic;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .order-notes-banner {
+      margin: 0 var(--space-4) var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      background: rgba(245, 158, 11, 0.1);
+      border-left: 3px solid var(--color-warning);
+      font-size: 0.875rem;
+      color: var(--color-text);
+      white-space: pre-wrap;
+      word-break: break-word;
     }
     .item-price { 
       color: var(--color-text-muted); 
@@ -2024,6 +2060,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   editOrderBillingId: number | null = null;
   addItemProductId: number | null = null;
   addItemQuantity = 1;
+  addItemNotes = '';
   addItemModifiersRemove = '';
   addItemModifiersAdd = '';
   addItemModifiersSubstitute = '';
@@ -2500,6 +2537,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
       quantity: this.addItemQuantity,
       source: 'tenant_product',
     };
+    const note = this.addItemNotes.trim();
+    if (note) row.notes = note;
     if (lm) row.line_modifiers = lm;
     const items: OrderItemCreate[] = [row];
     this.api.submitOrder(order.table_token, { items, staff_access: this.staffMenuToken }).subscribe({
@@ -2507,6 +2546,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
         this.addingItem.set(false);
         this.addItemProductId = null;
         this.addItemQuantity = 1;
+        this.addItemNotes = '';
         this.addItemModifiersRemove = '';
         this.addItemModifiersAdd = '';
         this.addItemModifiersSubstitute = '';
@@ -2589,6 +2629,25 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   getItemStatusLabel(status: string): string {
     return this.translate.instant(`ITEM_STATUS.${status}`) || status;
+  }
+
+  /** Hide internal payment markers when showing customer order notes to staff. */
+  displayOrderNotes(notes?: string | null): string | null {
+    if (!notes?.trim()) return null;
+    const cleaned = notes
+      .split('\n')
+      .filter(line => !/^\[PAID:/i.test(line.trim()))
+      .join('\n')
+      .trim();
+    return cleaned || null;
+  }
+
+  saveEditItemNotes(orderId: number, item: OrderItem) {
+    const notes = (item.notes ?? '').trim();
+    this.api.updateOrderItemStaff(orderId, item.id!, { notes: notes || null }).subscribe({
+      next: () => this.refreshEditOrder(orderId),
+      error: () => this.showToast(this.translate.instant('ORDERS.FAILED_TO_UPDATE_ITEM'), 'error'),
+    });
   }
 
   hasItemCustomization(item: {
@@ -2839,6 +2898,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.editOrderBillingId = order.billing_customer_id ?? null;
     this.addItemProductId = null;
     this.addItemQuantity = 1;
+    this.addItemNotes = '';
     this.addItemModifiersRemove = '';
     this.addItemModifiersAdd = '';
     this.addItemModifiersSubstitute = '';

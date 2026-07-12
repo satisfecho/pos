@@ -88,6 +88,7 @@ from .product_customization import (
     customization_dicts_equal,
     validate_and_normalize_customization_answers,
 )
+from .order_notes import normalize_order_note, order_notes_equal
 from .kitchen_stations_util import (
     normalize_display_route,
     resolve_order_item_kds,
@@ -1286,6 +1287,16 @@ def list_tenant_guest_feedback(
 # ============ AUTH ============
 
 
+class OnboardingStarterProductItem(_BaseModel):
+    name: str
+    price_cents: int | None = None
+    enabled: bool = True
+
+
+class OnboardingStarterProductsBody(_BaseModel):
+    products: list[OnboardingStarterProductItem]
+
+
 @app.post("/register")
 @limiter.limit(f"{getattr(settings, 'rate_limit_register_per_hour', 3)}/hour")
 def register(
@@ -1294,6 +1305,9 @@ def register(
     email: str,
     password: str,
     full_name: str | None = None,
+    address: str | None = None,
+    phone: str | None = None,
+    maps_url: str | None = None,
     lang: str = Depends(_get_requested_language),
     session: Session = Depends(get_session),
 ) -> JSONResponse:
@@ -1320,6 +1334,23 @@ def register(
         session.commit()
         session.refresh(tenant)
 
+    if address and str(address).strip():
+        tenant.address = str(address).strip()
+    if phone and str(phone).strip():
+        try:
+            tenant.phone = normalize_phone_e164(phone, settings.default_phone_country)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=api_error_payload("invalid_phone", lang))
+    if maps_url and str(maps_url).strip():
+        from .onboarding import assign_maps_url
+
+        normalized_maps = _normalize_public_http_url(str(maps_url).strip())
+        if normalized_maps:
+            assign_maps_url(tenant, normalized_maps)
+    session.add(tenant)
+    session.commit()
+    session.refresh(tenant)
+
     hashed_password = security.get_password_hash(password)
     user = models.User(
         email=email,
@@ -1335,6 +1366,44 @@ def register(
     return JSONResponse(
         content={"status": "created", "tenant_id": tenant.id, "email": email},
         status_code=status.HTTP_201_CREATED,
+    )
+
+
+@app.post("/onboarding/starter-products")
+@limiter.limit(f"{getattr(settings, 'rate_limit_register_per_hour', 10)}/hour", key_func=_rate_limit_key_user)
+def onboarding_starter_products(
+    request: Request,
+    body: OnboardingStarterProductsBody,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.PRODUCT_WRITE))],
+    session: Session = Depends(get_session),
+) -> JSONResponse:
+    """Create or update default beverage products during guided signup (idempotent)."""
+    from .onboarding import STARTER_PRODUCTS, seed_starter_products
+
+    if not body.products:
+        raise HTTPException(status_code=400, detail="At least one product selection is required")
+    for item in body.products:
+        if item.name.strip() not in STARTER_PRODUCTS:
+            raise HTTPException(status_code=400, detail=f"Unknown starter product: {item.name}")
+
+    products = seed_starter_products(
+        session,
+        current_user.tenant_id,
+        [p.model_dump() for p in body.products],
+    )
+    return JSONResponse(
+        content={
+            "status": "ok",
+            "products": [
+                {
+                    "id": p.id,
+                    "name": p.name,
+                    "price_cents": p.price_cents,
+                    "image_filename": p.image_filename,
+                }
+                for p in products
+            ],
+        }
     )
 
 
@@ -11148,8 +11217,9 @@ def create_order(
         order.customer_name = order_data.customer_name
 
     # Append notes if provided
-    if order_data.notes:
-        order.notes = f"{order.notes or ''}\n{order_data.notes}".strip()
+    order_note = normalize_order_note(order_data.notes)
+    if order_note:
+        order.notes = f"{order.notes or ''}\n{order_note}".strip()
 
     # Add order items
     order_date = order.created_at.date() if order.created_at else date.today()
@@ -11309,20 +11379,19 @@ def create_order(
             )
         ).all()
         existing_item = None
+        item_note = normalize_order_note(item.notes)
         for ei in existing_items:
             ei_answers = ei.customization_answers or {}
-            if customization_dicts_equal(ei_answers, item_answers or {}) and line_modifiers_equal(
-                getattr(ei, "line_modifiers", None), norm_modifiers
+            if (
+                customization_dicts_equal(ei_answers, item_answers or {})
+                and line_modifiers_equal(getattr(ei, "line_modifiers", None), norm_modifiers)
+                and order_notes_equal(ei.notes, item_note)
             ):
                 existing_item = ei
                 break
 
         if existing_item:
             existing_item.quantity += item.quantity
-            if item.notes:
-                existing_item.notes = (
-                    f"{existing_item.notes or ''}, {item.notes}".strip(", ")
-                )
             if location_flagged:
                 existing_item.location_flagged = True
             # Recompute tax for new total quantity
@@ -11340,7 +11409,7 @@ def create_order(
                 quantity=item.quantity,
                 price_cents=price_cents,
                 cost_cents=cost_cents,
-                notes=item.notes,
+                notes=item_note,
                 customization_answers=item_answers if item_answers else None,
                 customization_summary=cust_summary,
                 line_modifiers=norm_modifiers,
@@ -12739,7 +12808,7 @@ def update_order_item_staff(
             item.modified_at = datetime.now(timezone.utc)
     
     if item_update.notes is not None:
-        item.notes = item_update.notes
+        item.notes = normalize_order_note(item_update.notes)
         item.modified_by_user_id = current_user.id
         item.modified_at = datetime.now(timezone.utc)
 

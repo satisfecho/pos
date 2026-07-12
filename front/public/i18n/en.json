@@ -446,7 +446,35 @@
     "SAVING": "Saving…",
     "RESET_SUCCESS": "Your password was updated. You can sign in now.",
     "RESET_TOKEN_MISSING": "This reset link is missing or invalid. Request a new reset from the login page.",
-    "BACK_TO_LOGIN": "Back to sign in"
+    "BACK_TO_LOGIN": "Back to sign in",
+    "SIGNUP_TITLE": "Set up your restaurant",
+    "SIGNUP_STEP_TITLE_INTRO": "Get your QR menu in minutes",
+    "SIGNUP_STEP_TITLE_ACCOUNT": "Restaurant details & account",
+    "SIGNUP_STEP_TITLE_PRODUCTS": "Starter menu",
+    "SIGNUP_STEP_TITLE_PHOTOS": "Photos & prices",
+    "SIGNUP_STEP_TITLE_DONE": "Your menu is ready",
+    "SIGNUP_INTRO_LEAD": "Create your restaurant account and launch a public order page guests can open from a QR code.",
+    "SIGNUP_STEP1_TITLE": "Tell us about your restaurant",
+    "SIGNUP_STEP1_DESC": "Address, phone, and an optional maps link for guests.",
+    "SIGNUP_STEP2_TITLE": "Confirm starter drinks",
+    "SIGNUP_STEP2_DESC": "Coffee, cola, and water are pre-selected — adjust prices or turn items off.",
+    "SIGNUP_STEP3_TITLE": "Add photos (optional)",
+    "SIGNUP_STEP3_DESC": "Upload up to three product photos, then get your QR code.",
+    "SIGNUP_GET_STARTED": "Get started",
+    "SIGNUP_ADDRESS": "Address",
+    "SIGNUP_ADDRESS_PLACEHOLDER": "Street, city",
+    "SIGNUP_PHONE": "Phone",
+    "SIGNUP_PHONE_PLACEHOLDER": "+34 600 000 000",
+    "SIGNUP_MAPS_URL": "Maps link (optional)",
+    "SIGNUP_MAPS_URL_PLACEHOLDER": "Google Maps or OpenStreetMap share URL",
+    "SIGNUP_MAPS_URL_HINT": "Paste a share link from Google Maps or OpenStreetMap.",
+    "SIGNUP_PRODUCTS_HINT": "These drinks are added to your menu automatically. Uncheck any you do not want.",
+    "SIGNUP_PHOTOS_HINT": "Optional: add a photo and fine-tune the price for each product.",
+    "SIGNUP_PRODUCT_COFFEE": "Coffee",
+    "SIGNUP_PRODUCT_COKE": "Coca Cola",
+    "SIGNUP_PRODUCT_WATER": "Water",
+    "SIGNUP_COMPLETE_LEAD": "Share this QR code so guests can view your menu and order.",
+    "SIGNUP_GO_DASHBOARD": "Open staff dashboard"
   },
   "MENU": {
     "TITLE": "Menu",
@@ -488,7 +516,12 @@
     "PIN_HINT": "Ask your server for the 4-digit PIN",
     "TABLE_CLOSED_TITLE": "Table Closed",
     "TABLE_CLOSED_MESSAGE": "This table is not currently accepting orders. Please ask a member of staff for assistance.",
-    "CUSTOMIZE_OPTIONS": "How would you like it?"
+    "CUSTOMIZE_OPTIONS": "How would you like it?",
+    "ITEM_COMMENT": "Item comment (optional)",
+    "ITEM_COMMENT_PLACEHOLDER": "e.g. lots of ice, cold milk, cheese only mozzarella",
+    "ORDER_NOTES_PLACEHOLDER": "Optional note for the whole order (e.g. serve together)",
+    "ADD_COMMENT": "Add comment",
+    "HIDE_COMMENT": "Hide comment"
   },
   "PRODUCTS": {
     "TITLE": "Products",
@@ -837,7 +870,10 @@
     "INVOICE_OSS_PREFIX": "Open source · Made with ♥ in Barcelona and Mexico",
     "FISCAL_INVOICE_LABEL": "Fiscal verification (VeriFactu preparation)",
     "FISCAL_INVOICE_NUMBER": "Fiscal document no.",
-    "FISCAL_ISSUE_FAILED": "Could not issue fiscal invoice. The order may need to be paid first."
+    "FISCAL_ISSUE_FAILED": "Could not issue fiscal invoice. The order may need to be paid first.",
+    "ITEM_NOTES": "Item comment",
+    "ITEM_NOTES_PLACEHOLDER": "e.g. lots of ice, no sugar",
+    "ORDER_NOTES": "Order notes"
   },
   "CUSTOMERS": {
     "TITLE": "Customers (Invoice)",
@@ -901,7 +937,8 @@
     "URGENT": "Urgent",
     "TIMER_BAR_HINT": "Wait time progress toward red threshold",
     "STATION": "Station",
-    "ALL_STATIONS": "All stations"
+    "ALL_STATIONS": "All stations",
+    "ITEM_COMMENT": "Comment"
   },
   "BAR_DISPLAY": {
     "TITLE": "Bar display"

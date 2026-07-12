@@ -383,7 +383,35 @@
     "SAVING": "S'està desant…",
     "RESET_SUCCESS": "Contrasenya actualitzada. Ja pots iniciar sessió.",
     "RESET_TOKEN_MISSING": "Aquest enllaç no és vàlid o està incomplet. Sol·licita un nou restabliment des de l'inici de sessió.",
-    "BACK_TO_LOGIN": "Tornar a iniciar sessió"
+    "BACK_TO_LOGIN": "Tornar a iniciar sessió",
+    "SIGNUP_TITLE": "Configura el teu restaurant",
+    "SIGNUP_STEP_TITLE_INTRO": "El teu menú QR en minuts",
+    "SIGNUP_STEP_TITLE_ACCOUNT": "Dades del restaurant i compte",
+    "SIGNUP_STEP_TITLE_PRODUCTS": "Menú inicial",
+    "SIGNUP_STEP_TITLE_PHOTOS": "Fotos i preus",
+    "SIGNUP_STEP_TITLE_DONE": "El teu menú està llest",
+    "SIGNUP_INTRO_LEAD": "Crea el compte del restaurant i publica una pàgina de comandes amb codi QR.",
+    "SIGNUP_STEP1_TITLE": "Explica'ns el teu restaurant",
+    "SIGNUP_STEP1_DESC": "Adreça, telèfon i enllaç de mapes opcional.",
+    "SIGNUP_STEP2_TITLE": "Confirma les begudes inicials",
+    "SIGNUP_STEP2_DESC": "Cafè, cola i aigua preseleccionats — ajusta preus o desactiva articles.",
+    "SIGNUP_STEP3_TITLE": "Afegeix fotos (opcional)",
+    "SIGNUP_STEP3_DESC": "Puja fins a tres fotos i obtén el codi QR.",
+    "SIGNUP_GET_STARTED": "Començar",
+    "SIGNUP_ADDRESS": "Adreça",
+    "SIGNUP_ADDRESS_PLACEHOLDER": "Carrer, ciutat",
+    "SIGNUP_PHONE": "Telèfon",
+    "SIGNUP_PHONE_PLACEHOLDER": "+34 600 000 000",
+    "SIGNUP_MAPS_URL": "Enllaç de mapes (opcional)",
+    "SIGNUP_MAPS_URL_PLACEHOLDER": "URL de Google Maps o OpenStreetMap",
+    "SIGNUP_MAPS_URL_HINT": "Enganxa un enllaç compartit de Google Maps o OpenStreetMap.",
+    "SIGNUP_PRODUCTS_HINT": "Aquestes begudes s'afegeixen automàticament. Desmarca les que no vulguis.",
+    "SIGNUP_PHOTOS_HINT": "Opcional: afegeix una foto i ajusta el preu de cada producte.",
+    "SIGNUP_PRODUCT_COFFEE": "Cafè",
+    "SIGNUP_PRODUCT_COKE": "Coca Cola",
+    "SIGNUP_PRODUCT_WATER": "Aigua",
+    "SIGNUP_COMPLETE_LEAD": "Comparteix aquest codi QR perquè els clients vegin el menú i demanin.",
+    "SIGNUP_GO_DASHBOARD": "Obrir tauler de personal"
   },
   "MENU": {
     "TITLE": "Menú",
@@ -424,7 +452,12 @@
     "PIN_TABLE_CONTEXT": "Taula: {{name}}",
     "PIN_HINT": "Demana el PIN de 4 dígits al teu cambrer",
     "TABLE_CLOSED_TITLE": "Taula tancada",
-    "TABLE_CLOSED_MESSAGE": "Aquesta taula no accepta comandes en aquest moment. Si us plau, demaneu ajuda al personal."
+    "TABLE_CLOSED_MESSAGE": "Aquesta taula no accepta comandes en aquest moment. Si us plau, demaneu ajuda al personal.",
+    "ITEM_COMMENT": "Comentari de l'article (opcional)",
+    "ITEM_COMMENT_PLACEHOLDER": "p. ex. molt gel, llet freda, només mozzarella",
+    "ORDER_NOTES_PLACEHOLDER": "Nota opcional per a tota la comanda (p. ex. servir junts)",
+    "ADD_COMMENT": "Afegir comentari",
+    "HIDE_COMMENT": "Amagar comentari"
   },
   "PRODUCTS": {
     "TITLE": "Productes",
@@ -761,7 +794,10 @@
     "INVOICE_OSS_PREFIX": "Open source · Fet amb ♥ a Barcelona i Mèxic",
     "FISCAL_INVOICE_LABEL": "Verificació fiscal (preparació VeriFactu)",
     "FISCAL_INVOICE_NUMBER": "Núm. document fiscal",
-    "FISCAL_ISSUE_FAILED": "No s'ha pogut emetre la factura fiscal. Potser la comanda ha d'estar pagada primer."
+    "FISCAL_ISSUE_FAILED": "No s'ha pogut emetre la factura fiscal. Potser la comanda ha d'estar pagada primer.",
+    "ITEM_NOTES": "Comentari de l'article",
+    "ITEM_NOTES_PLACEHOLDER": "p. ex. molt gel, sense sucre",
+    "ORDER_NOTES": "Notes de la comanda"
   },
   "CUSTOMERS": {
     "TITLE": "Clients (Factura)",
@@ -1912,7 +1948,8 @@
     "URGENT": "Urgent",
     "TIMER_BAR_HINT": "Progrés del temps d'espera fins al llindar vermell",
     "STATION": "Estació",
-    "ALL_STATIONS": "Totes les estacions"
+    "ALL_STATIONS": "Totes les estacions",
+    "ITEM_COMMENT": "Comentari"
   },
   "BAR_DISPLAY": {
     "TITLE": "Pantalla bar"

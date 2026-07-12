@@ -79,6 +79,9 @@ export class MenuComponent implements OnInit, OnDestroy {
   // Cart & Orders
   cart = signal<CartItem[]>([]);
   orderNotes = '';
+  /** Cart line keys with expanded per-item comment field */
+  expandedCommentKeys = signal<Set<string>>(new Set());
+  readonly maxNoteLength = 500;
   submitting = signal(false);
   placedOrders = signal<PlacedOrder[]>([]);
   orderHistory = signal<OrderHistoryItem[]>([]);
@@ -638,6 +641,41 @@ export class MenuComponent implements OnInit, OnDestroy {
     return `${source}-${id}-${name}-${price}${answersKey ? '-' + answersKey : ''}`;
   }
 
+  getCartLineKey(item: Pick<CartItem, 'product' | 'customization_answers' | 'notes'>): string {
+    const notePart = (item.notes || '').trim();
+    return `${this.getProductKey(item.product, item.customization_answers)}|${notePart}`;
+  }
+
+  toggleCartItemComment(item: CartItem): void {
+    const key = this.getCartLineKey(item);
+    this.expandedCommentKeys.update(set => {
+      const next = new Set(set);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  isCartItemCommentExpanded(item: CartItem): boolean {
+    return this.expandedCommentKeys().has(this.getCartLineKey(item));
+  }
+
+  updateCartItemNotes(item: CartItem, notes: string): void {
+    const trimmed = notes.slice(0, this.maxNoteLength);
+    const oldKey = this.getCartLineKey(item);
+    this.cart.update(items =>
+      items.map(i => (this.getCartLineKey(i) === oldKey ? { ...i, notes: trimmed } : i))
+    );
+    if (trimmed.trim()) {
+      this.expandedCommentKeys.update(set => {
+        const next = new Set(set);
+        next.add(`${this.getProductKey(item.product, item.customization_answers)}|${trimmed.trim()}`);
+        next.delete(oldKey);
+        return next;
+      });
+    }
+  }
+
   getWineTypeClass(wineType: string): string {
     const type = wineType.toLowerCase();
     if (type.includes('red')) return 'red';
@@ -721,15 +759,16 @@ export class MenuComponent implements OnInit, OnDestroy {
   // CART OPERATIONS
   // ============================================
   addToCart(product: Product, customizationAnswers?: Record<string, string | number | string[]>) {
-    const productKey = this.getProductKey(product, customizationAnswers);
+    const newLine: CartItem = { product, quantity: 1, notes: '', customization_answers: customizationAnswers };
+    const lineKey = this.getCartLineKey(newLine);
     this.cart.update(items => {
-      const existing = items.find(i => this.getProductKey(i.product, i.customization_answers) === productKey);
+      const existing = items.find(i => this.getCartLineKey(i) === lineKey);
       if (existing) {
-        return items.map(i => this.getProductKey(i.product, i.customization_answers) === productKey ? { ...i, quantity: i.quantity + 1 } : i);
+        return items.map(i => this.getCartLineKey(i) === lineKey ? { ...i, quantity: i.quantity + 1 } : i);
       }
-      return [...items, { product, quantity: 1, notes: '', customization_answers: customizationAnswers }];
+      return [...items, newLine];
     });
-    this.flashProductAdded(product, productKey);
+    this.flashProductAdded(product, lineKey);
     // Auto-expand cart when adding first item
     if (this.cart().length === 1) {
       this.cartExpanded.set(true);
@@ -830,17 +869,17 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   incrementItem(item: CartItem) {
-    const productKey = this.getProductKey(item.product, item.customization_answers);
-    this.cart.update(items => items.map(i => this.getProductKey(i.product, i.customization_answers) === productKey ? { ...i, quantity: i.quantity + 1 } : i));
-    this.flashProductAdded(item.product, productKey);
+    const lineKey = this.getCartLineKey(item);
+    this.cart.update(items => items.map(i => this.getCartLineKey(i) === lineKey ? { ...i, quantity: i.quantity + 1 } : i));
+    this.flashProductAdded(item.product, lineKey);
   }
 
   decrementItem(item: CartItem) {
-    const productKey = this.getProductKey(item.product, item.customization_answers);
+    const lineKey = this.getCartLineKey(item);
     if (item.quantity <= 1) {
-      this.cart.update(items => items.filter(i => this.getProductKey(i.product, i.customization_answers) !== productKey));
+      this.cart.update(items => items.filter(i => this.getCartLineKey(i) !== lineKey));
     } else {
-      this.cart.update(items => items.map(i => this.getProductKey(i.product, i.customization_answers) === productKey ? { ...i, quantity: i.quantity - 1 } : i));
+      this.cart.update(items => items.map(i => this.getCartLineKey(i) === lineKey ? { ...i, quantity: i.quantity - 1 } : i));
     }
   }
 
@@ -857,7 +896,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   isCartLineJustAdded(item: CartItem): boolean {
-    return this.justAddedCartKeys().has(this.getProductKey(item.product, item.customization_answers));
+    return this.justAddedCartKeys().has(this.getCartLineKey(item));
   }
 
   /** Subtle tint while in cart + short pulse when quantity changes from the menu. */
@@ -957,7 +996,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     const items: OrderItemCreate[] = this.cart().map(item => ({
       product_id: item.product.id!,
       quantity: item.quantity,
-      notes: item.notes || undefined,
+      notes: item.notes?.trim() || undefined,
       source: item.product._source || undefined,
       customization_answers: item.customization_answers && Object.keys(item.customization_answers).length > 0 ? item.customization_answers : undefined
     }));
@@ -984,7 +1023,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.submitting.set(true);
     this.api.submitOrder(this.tableToken, {
       items,
-      notes: this.orderNotes || undefined,
+      notes: this.orderNotes.trim() || undefined,
       session_id: this.sessionId,
       customer_name: this.customerName() || undefined,
       pin: this.currentPin || undefined,
@@ -1007,6 +1046,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         this.cart.set([]);
         this.cartExpanded.set(false);
         this.orderNotes = '';
+        this.expandedCommentKeys.set(new Set());
         this.lastOrderId.set(orderId);
         this.showSuccessToast.set(true);
         setTimeout(() => this.showSuccessToast.set(false), 3000);

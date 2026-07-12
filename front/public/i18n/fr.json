@@ -383,7 +383,35 @@
     "SAVING": "Enregistrement…",
     "RESET_SUCCESS": "Mot de passe mis à jour. Vous pouvez vous connecter.",
     "RESET_TOKEN_MISSING": "Ce lien est manquant ou invalide. Demandez une nouvelle réinitialisation depuis la page de connexion.",
-    "BACK_TO_LOGIN": "Retour à la connexion"
+    "BACK_TO_LOGIN": "Retour à la connexion",
+    "SIGNUP_TITLE": "Configurez votre restaurant",
+    "SIGNUP_STEP_TITLE_INTRO": "Votre menu QR en quelques minutes",
+    "SIGNUP_STEP_TITLE_ACCOUNT": "Détails du restaurant et compte",
+    "SIGNUP_STEP_TITLE_PRODUCTS": "Menu de démarrage",
+    "SIGNUP_STEP_TITLE_PHOTOS": "Photos et prix",
+    "SIGNUP_STEP_TITLE_DONE": "Votre menu est prêt",
+    "SIGNUP_INTRO_LEAD": "Créez le compte de votre restaurant et lancez une page de commande publique via QR code.",
+    "SIGNUP_STEP1_TITLE": "Parlez-nous de votre restaurant",
+    "SIGNUP_STEP1_DESC": "Adresse, téléphone et lien de carte optionnel.",
+    "SIGNUP_STEP2_TITLE": "Confirmez les boissons de base",
+    "SIGNUP_STEP2_DESC": "Café, cola et eau sont présélectionnés — ajustez les prix ou désactivez des articles.",
+    "SIGNUP_STEP3_TITLE": "Ajoutez des photos (optionnel)",
+    "SIGNUP_STEP3_DESC": "Téléversez jusqu'à trois photos puis obtenez votre QR code.",
+    "SIGNUP_GET_STARTED": "Commencer",
+    "SIGNUP_ADDRESS": "Adresse",
+    "SIGNUP_ADDRESS_PLACEHOLDER": "Rue, ville",
+    "SIGNUP_PHONE": "Téléphone",
+    "SIGNUP_PHONE_PLACEHOLDER": "+33 6 00 00 00 00",
+    "SIGNUP_MAPS_URL": "Lien carte (optionnel)",
+    "SIGNUP_MAPS_URL_PLACEHOLDER": "URL Google Maps ou OpenStreetMap",
+    "SIGNUP_MAPS_URL_HINT": "Collez un lien de partage Google Maps ou OpenStreetMap.",
+    "SIGNUP_PRODUCTS_HINT": "Ces boissons sont ajoutées automatiquement. Décochez celles que vous ne voulez pas.",
+    "SIGNUP_PHOTOS_HINT": "Optionnel : ajoutez une photo et ajustez le prix de chaque produit.",
+    "SIGNUP_PRODUCT_COFFEE": "Café",
+    "SIGNUP_PRODUCT_COKE": "Coca Cola",
+    "SIGNUP_PRODUCT_WATER": "Eau",
+    "SIGNUP_COMPLETE_LEAD": "Partagez ce QR code pour que les clients voient votre menu et commandent.",
+    "SIGNUP_GO_DASHBOARD": "Ouvrir le tableau de bord"
   },
   "MENU": {
     "TITLE": "Menu",
@@ -424,7 +452,12 @@
     "PIN_TABLE_CONTEXT": "Table : {{name}}",
     "PIN_HINT": "Demandez le code à 4 chiffres au serveur",
     "TABLE_CLOSED_TITLE": "Table fermée",
-    "TABLE_CLOSED_MESSAGE": "Cette table n'accepte pas de commandes pour le moment. Demandez à un membre du personnel."
+    "TABLE_CLOSED_MESSAGE": "Cette table n'accepte pas de commandes pour le moment. Demandez à un membre du personnel.",
+    "ITEM_COMMENT": "Commentaire sur l'article (facultatif)",
+    "ITEM_COMMENT_PLACEHOLDER": "ex. beaucoup de glace, lait froid, mozzarella uniquement",
+    "ORDER_NOTES_PLACEHOLDER": "Note optionnelle pour toute la commande (ex. servir ensemble)",
+    "ADD_COMMENT": "Ajouter un commentaire",
+    "HIDE_COMMENT": "Masquer le commentaire"
   },
   "PRODUCTS": {
     "TITLE": "Produits",
@@ -757,7 +790,10 @@
     "INVOICE_OSS_PREFIX": "Open source · Fait avec ♥ à Barcelone et au Mexique",
     "FISCAL_INVOICE_LABEL": "Vérification fiscale (préparation VeriFactu)",
     "FISCAL_INVOICE_NUMBER": "N° document fiscal",
-    "FISCAL_ISSUE_FAILED": "Impossible d'émettre la facture fiscale. La commande doit peut‑être d'abord être payée."
+    "FISCAL_ISSUE_FAILED": "Impossible d'émettre la facture fiscale. La commande doit peut‑être d'abord être payée.",
+    "ITEM_NOTES": "Commentaire article",
+    "ITEM_NOTES_PLACEHOLDER": "ex. beaucoup de glace, sans sucre",
+    "ORDER_NOTES": "Notes de commande"
   },
   "CUSTOMERS": {
     "TITLE": "Clients (Facture)",
@@ -819,7 +855,8 @@
     "TIMER_ORANGE_MINUTES": "Orange après (min)",
     "TIMER_RED_MINUTES": "Rouge après (min)",
     "URGENT": "Urgent",
-    "TIMER_BAR_HINT": "Progression du temps d'attente vers le seuil rouge"
+    "TIMER_BAR_HINT": "Progression du temps d'attente vers le seuil rouge",
+    "ITEM_COMMENT": "Commentaire"
   },
   "BAR_DISPLAY": {
     "TITLE": "Écran bar"

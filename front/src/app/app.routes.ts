@@ -14,6 +14,7 @@ export const routes: Routes = [
   { path: 'features', loadComponent: () => import('./features/features.component').then(m => m.FeaturesComponent) },
   { path: 'login', loadComponent: () => import('./auth/login.component').then(m => m.LoginComponent) },
   { path: 'register', loadComponent: () => import('./auth/register.component').then(m => m.RegisterComponent) },
+  { path: 'signup', loadComponent: () => import('./auth/register.component').then(m => m.RegisterComponent) },
   {
     path: 'terms',
     loadComponent: () => import('./legal/legal-document.component').then(m => m.LegalDocumentComponent),

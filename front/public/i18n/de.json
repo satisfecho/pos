@@ -383,7 +383,35 @@
     "SAVING": "Wird gespeichert…",
     "RESET_SUCCESS": "Passwort aktualisiert. Sie können sich jetzt anmelden.",
     "RESET_TOKEN_MISSING": "Dieser Link ist ungültig oder unvollständig. Fordern Sie auf der Anmeldeseite einen neuen Link an.",
-    "BACK_TO_LOGIN": "Zur Anmeldung"
+    "BACK_TO_LOGIN": "Zur Anmeldung",
+    "SIGNUP_TITLE": "Restaurant einrichten",
+    "SIGNUP_STEP_TITLE_INTRO": "Ihr QR-Menü in wenigen Minuten",
+    "SIGNUP_STEP_TITLE_ACCOUNT": "Restaurantdaten & Konto",
+    "SIGNUP_STEP_TITLE_PRODUCTS": "Starter-Menü",
+    "SIGNUP_STEP_TITLE_PHOTOS": "Fotos & Preise",
+    "SIGNUP_STEP_TITLE_DONE": "Ihr Menü ist bereit",
+    "SIGNUP_INTRO_LEAD": "Erstellen Sie Ihr Restaurantkonto und starten Sie eine öffentliche Bestellseite per QR-Code.",
+    "SIGNUP_STEP1_TITLE": "Erzählen Sie uns von Ihrem Restaurant",
+    "SIGNUP_STEP1_DESC": "Adresse, Telefon und optional ein Kartenlink für Gäste.",
+    "SIGNUP_STEP2_TITLE": "Startergetränke bestätigen",
+    "SIGNUP_STEP2_DESC": "Kaffee, Cola und Wasser sind vorausgewählt — Preise anpassen oder abwählen.",
+    "SIGNUP_STEP3_TITLE": "Fotos hinzufügen (optional)",
+    "SIGNUP_STEP3_DESC": "Laden Sie bis zu drei Produktfotos hoch und erhalten Sie Ihren QR-Code.",
+    "SIGNUP_GET_STARTED": "Loslegen",
+    "SIGNUP_ADDRESS": "Adresse",
+    "SIGNUP_ADDRESS_PLACEHOLDER": "Straße, Stadt",
+    "SIGNUP_PHONE": "Telefon",
+    "SIGNUP_PHONE_PLACEHOLDER": "+49 170 0000000",
+    "SIGNUP_MAPS_URL": "Kartenlink (optional)",
+    "SIGNUP_MAPS_URL_PLACEHOLDER": "Google Maps oder OpenStreetMap Link",
+    "SIGNUP_MAPS_URL_HINT": "Fügen Sie einen Teilen-Link von Google Maps oder OpenStreetMap ein.",
+    "SIGNUP_PRODUCTS_HINT": "Diese Getränke werden automatisch hinzugefügt. Deaktivieren Sie unerwünschte Artikel.",
+    "SIGNUP_PHOTOS_HINT": "Optional: Foto hinzufügen und Preis pro Produkt anpassen.",
+    "SIGNUP_PRODUCT_COFFEE": "Kaffee",
+    "SIGNUP_PRODUCT_COKE": "Coca Cola",
+    "SIGNUP_PRODUCT_WATER": "Wasser",
+    "SIGNUP_COMPLETE_LEAD": "Teilen Sie diesen QR-Code, damit Gäste Ihr Menü sehen und bestellen können.",
+    "SIGNUP_GO_DASHBOARD": "Personal-Dashboard öffnen"
   },
   "MENU": {
     "TITLE": "Speisekarte",
@@ -424,7 +452,12 @@
     "PIN_TABLE_CONTEXT": "Tisch: {{name}}",
     "PIN_HINT": "Fragen Sie Ihren Kellner nach der 4-stelligen PIN",
     "TABLE_CLOSED_TITLE": "Tisch geschlossen",
-    "TABLE_CLOSED_MESSAGE": "Dieser Tisch nimmt derzeit keine Bestellungen an. Bitte wenden Sie sich an das Personal."
+    "TABLE_CLOSED_MESSAGE": "Dieser Tisch nimmt derzeit keine Bestellungen an. Bitte wenden Sie sich an das Personal.",
+    "ITEM_COMMENT": "Artikelkommentar (optional)",
+    "ITEM_COMMENT_PLACEHOLDER": "z. B. viel Eis, kalte Milch, nur Mozzarella",
+    "ORDER_NOTES_PLACEHOLDER": "Optionale Notiz für die gesamte Bestellung (z. B. zusammen servieren)",
+    "ADD_COMMENT": "Kommentar hinzufügen",
+    "HIDE_COMMENT": "Kommentar ausblenden"
   },
   "PRODUCTS": {
     "TITLE": "Produkte",
@@ -764,7 +797,10 @@
     "INVOICE_OSS_PREFIX": "Open Source · Mit ♥ in Barcelona und Mexiko",
     "FISCAL_INVOICE_LABEL": "Steuerliche Nachweisführung (VeriFactu-Vorbereitung)",
     "FISCAL_INVOICE_NUMBER": "Steuerbeleg-Nr.",
-    "FISCAL_ISSUE_FAILED": "Steuerbeleg konnte nicht ausgestellt werden. Die Bestellung ist möglicherweise noch nicht bezahlt."
+    "FISCAL_ISSUE_FAILED": "Steuerbeleg konnte nicht ausgestellt werden. Die Bestellung ist möglicherweise noch nicht bezahlt.",
+    "ITEM_NOTES": "Artikelkommentar",
+    "ITEM_NOTES_PLACEHOLDER": "z. B. viel Eis, ohne Zucker",
+    "ORDER_NOTES": "Bestellnotizen"
   },
   "CUSTOMERS": {
     "TITLE": "Kunden (Rechnung)",
@@ -1991,7 +2027,8 @@
     "URGENT": "Dringend",
     "TIMER_BAR_HINT": "Wartezeit-Fortschritt bis zur roten Schwelle",
     "STATION": "Station",
-    "ALL_STATIONS": "Alle Stationen"
+    "ALL_STATIONS": "Alle Stationen",
+    "ITEM_COMMENT": "Kommentar"
   },
   "BAR_DISPLAY": {
     "TITLE": "Bar-Anzeige"
