@@ -14,6 +14,7 @@ export const routes: Routes = [
   { path: 'features', loadComponent: () => import('./features/features.component').then(m => m.FeaturesComponent) },
   { path: 'login', loadComponent: () => import('./auth/login.component').then(m => m.LoginComponent) },
   { path: 'register', loadComponent: () => import('./auth/register.component').then(m => m.RegisterComponent) },
+  { path: 'signup', loadComponent: () => import('./auth/register.component').then(m => m.RegisterComponent) },
   {
     path: 'terms',
     loadComponent: () => import('./legal/legal-document.component').then(m => m.LegalDocumentComponent),
@@ -81,10 +82,10 @@ export const routes: Routes = [
   // Admin-only routes
   { path: 'translations', redirectTo: 'settings', pathMatch: 'full' },
   { path: 'settings', canActivate: [authGuard, adminGuard], loadComponent: () => import('./settings/settings.component').then(m => m.SettingsComponent) },
-  { path: 'users', canActivate: [authGuard, adminGuard], loadComponent: () => import('./users/users.component').then(m => m.UsersComponent) },
+  { path: 'users', canActivate: [authGuard, adminGuard, uiModuleGuard('users')], loadComponent: () => import('./users/users.component').then(m => m.UsersComponent) },
   {
     path: 'contracts',
-    canActivate: [authGuard, permissionGuard('staff_contract:read')],
+    canActivate: [authGuard, uiModuleGuard('contracts'), permissionGuard('staff_contract:read')],
     loadComponent: () => import('./staff-contracts/staff-contracts.component').then(m => m.StaffContractsComponent),
   },
 

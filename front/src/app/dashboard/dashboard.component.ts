@@ -188,6 +188,7 @@ import {
               <span class="action-label">{{ 'DASHBOARD.REPORTS_TITLE' | translate }}</span>
               <span class="action-desc">{{ 'DASHBOARD.REPORTS_DESC' | translate }}</span>
             </a>
+            @if (moduleEnabled('users')) {
             <a routerLink="/users" class="action-card">
               <div class="action-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -199,6 +200,7 @@ import {
               <span class="action-label">{{ 'DASHBOARD.USERS_TITLE' | translate }}</span>
               <span class="action-desc">{{ 'DASHBOARD.USERS_DESC' | translate }}</span>
             </a>
+            }
             <a routerLink="/settings" class="action-card">
               <div class="action-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

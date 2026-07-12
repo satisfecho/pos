@@ -15,6 +15,7 @@ function isPublicRoute(url: string): boolean {
   return (
     path === '/login' ||
     path === '/register' ||
+    path === '/signup' ||
     path === '/courier/login' ||
     path.startsWith('/provider/login') ||
     path.startsWith('/provider/register') ||

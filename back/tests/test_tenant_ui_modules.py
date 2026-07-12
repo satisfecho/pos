@@ -1,6 +1,7 @@
 from app.tenant_ui_modules import (
     compact_tenant_ui_modules,
     merge_tenant_ui_modules_patch,
+    new_tenant_ui_modules_stored,
     resolve_tenant_ui_modules,
 )
 
@@ -13,6 +14,8 @@ def test_resolve_defaults_all_true():
         "reservations": True,
         "kitchen_bar": True,
         "inventory": True,
+        "contracts": True,
+        "users": True,
     }
 
 
@@ -34,3 +37,23 @@ def test_compact_keeps_false_only():
 def test_merge_patch():
     assert merge_tenant_ui_modules_patch(None, {"tables": False}) == {"tables": False}
     assert merge_tenant_ui_modules_patch({"tables": False}, {"tables": True}) is None
+
+
+def test_new_tenant_ui_modules_stored():
+    stored = new_tenant_ui_modules_stored()
+    assert stored == {
+        "working_plan": False,
+        "providers": False,
+        "inventory": False,
+        "contracts": False,
+        "users": False,
+    }
+    resolved = resolve_tenant_ui_modules(stored)
+    assert resolved["tables"] is True
+    assert resolved["reservations"] is True
+    assert resolved["kitchen_bar"] is True
+    assert resolved["working_plan"] is False
+    assert resolved["providers"] is False
+    assert resolved["inventory"] is False
+    assert resolved["contracts"] is False
+    assert resolved["users"] is False

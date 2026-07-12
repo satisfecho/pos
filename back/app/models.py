@@ -714,6 +714,44 @@ class BillingCustomer(TenantMixin, table=True):
     orders: list["Order"] = Relationship(back_populates="billing_customer")
 
 
+class RestaurantGroup(SQLModel, table=True):
+    """Multi-location organization: member tenants may share products and/or billing customers."""
+
+    __tablename__ = "restaurant_group"
+    id: int | None = Field(default=None, primary_key=True)
+    name: str = Field(max_length=256)
+    join_code: str = Field(max_length=32, unique=True, index=True)
+    share_products: bool = Field(default=False)
+    share_customers: bool = Field(default=False)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class RestaurantGroupMember(SQLModel, table=True):
+    """Links a tenant to a restaurant group (one group per tenant)."""
+
+    __tablename__ = "restaurant_group_member"
+    id: int | None = Field(default=None, primary_key=True)
+    group_id: int = Field(foreign_key="restaurant_group.id", index=True)
+    tenant_id: int = Field(foreign_key="tenant.id", unique=True, index=True)
+    joined_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class RestaurantGroupCreate(SQLModel):
+    name: str = Field(max_length=256)
+    share_products: bool = False
+    share_customers: bool = False
+
+
+class RestaurantGroupUpdate(SQLModel):
+    name: str | None = Field(default=None, max_length=256)
+    share_products: bool | None = None
+    share_customers: bool | None = None
+
+
+class RestaurantGroupJoin(SQLModel):
+    join_code: str = Field(max_length=32)
+
+
 class FiscalInvoice(SQLModel, table=True):
     """Server-issued fiscal document row for an order (VeriFactu preparation; not a substitute for AEAT filing)."""
 

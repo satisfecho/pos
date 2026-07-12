@@ -198,7 +198,7 @@ const VIEW_CATEGORY: Record<string, string> = {
                           <span class="item-customization">{{ formatCustomizationItem(item) }}</span>
                         }
                         @if (item.notes) {
-                          <span class="item-notes">{{ item.notes }}</span>
+                          <span class="item-notes"><strong>{{ 'KITCHEN_DISPLAY.ITEM_COMMENT' | translate }}:</strong> {{ item.notes }}</span>
                         }
                         @if (canUpdateItemStatus() && item.id != null && item.status !== 'delivered' && item.status !== 'cancelled') {
                           <div class="item-status-control">
@@ -496,10 +496,17 @@ const VIEW_CATEGORY: Record<string, string> = {
     }
     .item-name { font-weight: 600; color: var(--color-text); }
     .item-notes {
-      grid-column: 2 / 4;
-      font-size: 0.9375rem;
-      color: var(--color-text-muted);
-      font-style: italic;
+      grid-column: 1 / -1;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #b45309;
+      background: rgba(245, 158, 11, 0.12);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-sm);
+      border-left: 3px solid var(--color-warning);
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-style: normal;
     }
     .item-customization {
       grid-column: 2 / 4;
@@ -604,10 +611,14 @@ const VIEW_CATEGORY: Record<string, string> = {
     }
     .order-notes {
       padding: var(--space-3) var(--space-5);
-      background: rgba(245, 158, 11, 0.08);
+      background: rgba(245, 158, 11, 0.12);
       font-size: 1rem;
+      font-weight: 600;
       color: var(--color-text);
       border-top: 1px solid var(--color-border);
+      border-left: 4px solid var(--color-warning);
+      white-space: pre-wrap;
+      word-break: break-word;
     }
     .modal-backdrop {
       position: fixed;
