@@ -1077,6 +1077,29 @@ export interface PublicReservationUpdate {
   customer_notes?: string | null;
 }
 
+export type WaitingListStatus = 'waiting' | 'notified' | 'seated' | 'cancelled' | 'no_show';
+
+export interface WaitingListEntry {
+  id: number;
+  tenant_id: number;
+  customer_name: string;
+  customer_phone: string;
+  party_size: number;
+  status: WaitingListStatus;
+  notified_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  client_ip?: string | null;
+  client_user_agent?: string | null;
+}
+
+export interface WaitingListEntryCreate {
+  customer_name: string;
+  customer_phone: string;
+  party_size: number;
+  tenant_id?: number;
+}
+
 /** Structured pizza-style modifiers (remove / add / substitute); optional with product questions */
 export interface OrderLineModifiers {
   remove?: string[];
@@ -1835,6 +1858,22 @@ export class ApiService {
     if (params?.status) httpParams = httpParams.set('status', params.status);
     if (params?.phone) httpParams = httpParams.set('phone', params.phone);
     return this.http.get<Reservation[]>(`${this.apiUrl}/reservations`, { params: httpParams });
+  }
+
+  getWaitingList(params?: { status?: string; phone?: string; active_only?: boolean }): Observable<WaitingListEntry[]> {
+    let httpParams = new HttpParams();
+    if (params?.status) httpParams = httpParams.set('status', params.status);
+    if (params?.phone) httpParams = httpParams.set('phone', params.phone);
+    if (params?.active_only === false) httpParams = httpParams.set('active_only', 'false');
+    return this.http.get<WaitingListEntry[]>(`${this.apiUrl}/waiting-list`, { params: httpParams });
+  }
+
+  createWaitingListEntry(data: WaitingListEntryCreate): Observable<WaitingListEntry> {
+    return this.http.post<WaitingListEntry>(`${this.apiUrl}/waiting-list`, data);
+  }
+
+  updateWaitingListStatus(id: number, status: WaitingListStatus): Observable<WaitingListEntry> {
+    return this.http.put<WaitingListEntry>(`${this.apiUrl}/waiting-list/${id}/status`, { status });
   }
 
   /** Get most recent reservation by phone for pre-filling new reservation form. Returns null if none found. */
@@ -2790,6 +2829,16 @@ export class ApiService {
   ): Observable<{ ok: boolean; id: number }> {
     return this.http.post<{ ok: boolean; id: number }>(
       `${this.apiUrl}/public/tenants/${tenantId}/guest-feedback`,
+      body,
+    );
+  }
+
+  submitPublicWaitingList(
+    tenantId: number,
+    body: WaitingListEntryCreate,
+  ): Observable<WaitingListEntry> {
+    return this.http.post<WaitingListEntry>(
+      `${this.apiUrl}/public/tenants/${tenantId}/waiting-list`,
       body,
     );
   }

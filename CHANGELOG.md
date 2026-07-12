@@ -8,6 +8,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.11] - 2026-07-12
+
+### Added
+
+- **Waiting list:** Guests can join a tenant waiting queue with name, party size, and phone — public form at **`/waitlist/:tenantId`** and a link from **`/book/:tenantId`** when no table is available; staff manage the queue on **`/reservations`** (Waiting list tab) with mark notified, book table, seated, and cancel actions (#282).
+
 ## [2.1.10] - 2026-07-07
 
 ### Fixed

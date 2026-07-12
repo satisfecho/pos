@@ -183,6 +183,11 @@ class Settings(BaseSettings):
         validation_alias="RATE_LIMIT_GUEST_FEEDBACK_PER_HOUR",
         description="Max guest feedback submissions per IP per hour (public form)",
     )
+    rate_limit_waiting_list_per_hour: int = Field(
+        default=10,
+        validation_alias="RATE_LIMIT_WAITING_LIST_PER_HOUR",
+        description="Max waiting-list submissions per IP per hour (public form)",
+    )
     rate_limit_password_reset_per_hour: int = Field(
         default=5,
         validation_alias="RATE_LIMIT_PASSWORD_RESET_PER_HOUR",
@@ -203,6 +208,7 @@ class Settings(BaseSettings):
             self.rate_limit_payment_per_order_per_hour = 100
             self.rate_limit_reservation_delay_per_hour = 200
             self.rate_limit_guest_feedback_per_hour = 200
+            self.rate_limit_waiting_list_per_hour = 200
             self.rate_limit_password_reset_per_hour = 100
         return self
 

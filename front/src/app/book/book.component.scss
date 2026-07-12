@@ -630,3 +630,13 @@
   margin-top: var(--space-4);
 }
 
+.book-waitlist-link {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+
+  a {
+    color: var(--color-primary);
+  }
+}
+

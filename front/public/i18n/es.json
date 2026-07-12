@@ -1163,7 +1163,8 @@
     "LOCATION_ZONE_PLACEHOLDER": "Elige zona",
     "LOCATION_ZONE_REQUIRED": "Elige una zona.",
     "NO_ZONE_FOR_SEATING": "Ninguna zona coincide con esta preferencia. Elige otra opción o contacta con el restaurante.",
-    "WEBSITE": "Sitio web"
+    "WEBSITE": "Sitio web",
+    "LINK_WAITLIST": "¿Sin mesa? Únase a la lista de espera"
   },
   "FEEDBACK": {
     "TITLE": "¿Cómo fue tu visita?",
@@ -1288,7 +1289,22 @@
     "NOTIFY_DELAY_PLACEHOLDER": "ej. Llegaremos 1 hora tarde",
     "SEND_DELAY": "Enviar aviso de retraso",
     "SENDING": "Enviando...",
-    "DELAY_SENT": "Aviso enviado. Hemos sido informados."
+    "DELAY_SENT": "Aviso enviado. Hemos sido informados.",
+    "TAB_RESERVATIONS": "Reservas",
+    "TAB_WAITLIST": "Lista de espera",
+    "VIEW_WAITLIST_PAGE": "Lista de espera pública",
+    "WL_NONE": "Nadie en la lista de espera",
+    "WL_ACTIVE_ONLY": "Cola activa",
+    "WL_STATUS_WAITING": "En espera",
+    "WL_STATUS_NOTIFIED": "Avisado",
+    "WL_STATUS_SEATED": "Sentado",
+    "WL_STATUS_CANCELLED": "Cancelado",
+    "WL_STATUS_NO_SHOW": "No presentado",
+    "WL_MARK_NOTIFIED": "Marcar como avisado",
+    "WL_MARK_SEATED": "Marcar como sentado",
+    "WL_JOINED": "Registrado",
+    "WL_NOTIFIED": "Avisado a las",
+    "WL_BOOK_TABLE": "Reservar mesa"
   },
   "WORKING_PLAN": {
     "TITLE": "Plan de trabajo",
@@ -2275,5 +2291,17 @@
     "FEAT_I18N_DESC": "Interfaz en varios idiomas con valores por defecto del tenant.",
     "FEAT_OPEN_SOURCE_TITLE": "Código abierto",
     "FEAT_OPEN_SOURCE_DESC": "Autoaloje o use la nube — sin dependencia del proveedor."
+  },
+  "WAITLIST": {
+    "TITLE": "Lista de espera",
+    "INTRO": "¿No hay mesa disponible? Deje su nombre, número de comensales y teléfono; le contactaremos cuando haya mesa.",
+    "SUBMIT": "Unirse a la lista de espera",
+    "SUBMITTING": "Enviando…",
+    "SUCCESS_TITLE": "Está en la lista de espera",
+    "SUCCESS_MESSAGE": "Le llamaremos o escribiremos cuando su mesa esté lista.",
+    "LINK_BOOK_TABLE": "Reservar mesa en su lugar",
+    "INVALID_PHONE": "Introduzca un número de teléfono válido (con prefijo internacional si hace falta).",
+    "ERROR_INVALID_LINK": "Enlace no válido. Use el enlace del restaurante.",
+    "ERROR_FAILED": "No se pudo unir a la lista de espera. Inténtelo de nuevo."
   }
 }

@@ -9,6 +9,8 @@ import {
   ReservationCreate,
   ReservationUpdate,
   ReservationStatus,
+  WaitingListEntry,
+  WaitingListStatus,
   CanvasTable,
   OverbookingReport,
   TenantSummary,
@@ -51,6 +53,7 @@ import { ApiErrorMessageService } from '../services/api-error-message.service';
           </a>
           @if (tenantId != null) {
             <a [routerLink]="['/book', tenantId]" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">{{ 'RESERVATIONS.VIEW_PUBLIC_PAGE' | translate }}</a>
+            <a [routerLink]="['/waitlist', tenantId]" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">{{ 'RESERVATIONS.VIEW_WAITLIST_PAGE' | translate }}</a>
             <a [routerLink]="['/feedback', tenantId]" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">{{ 'RESERVATIONS.VIEW_FEEDBACK_PAGE' | translate }}</a>
           }
           @if (canWrite()) {
@@ -64,6 +67,16 @@ import { ApiErrorMessageService } from '../services/api-error-message.service';
         </div>
       </div>
 
+      <div class="view-tabs">
+        <button type="button" class="view-tab" [class.active]="viewTab() === 'reservations'" (click)="setViewTab('reservations')">
+          {{ 'RESERVATIONS.TAB_RESERVATIONS' | translate }}
+        </button>
+        <button type="button" class="view-tab" [class.active]="viewTab() === 'waitlist'" (click)="setViewTab('waitlist')">
+          {{ 'RESERVATIONS.TAB_WAITLIST' | translate }}
+        </button>
+      </div>
+
+      @if (viewTab() === 'reservations') {
       <div class="filters">
         <input type="date" [(ngModel)]="filterDate" (ngModelChange)="load()" class="filter-input" />
         <input type="text" [(ngModel)]="filterPhone" (ngModelChange)="load()" placeholder="{{ 'RESERVATIONS.SEARCH_PHONE' | translate }}" class="filter-input" />
@@ -155,6 +168,61 @@ import { ApiErrorMessageService } from '../services/api-error-message.service';
             </div>
           }
         </div>
+      }
+      }
+
+      @if (viewTab() === 'waitlist') {
+        <div class="filters">
+          <input type="text" [(ngModel)]="waitlistFilterPhone" (ngModelChange)="loadWaitlist()" placeholder="{{ 'RESERVATIONS.SEARCH_PHONE' | translate }}" class="filter-input" />
+          <select [(ngModel)]="waitlistFilterStatus" (ngModelChange)="loadWaitlist()" class="filter-select">
+            <option value="">{{ 'RESERVATIONS.WL_ACTIVE_ONLY' | translate }}</option>
+            <option value="waiting">{{ 'RESERVATIONS.WL_STATUS_WAITING' | translate }}</option>
+            <option value="notified">{{ 'RESERVATIONS.WL_STATUS_NOTIFIED' | translate }}</option>
+            <option value="seated">{{ 'RESERVATIONS.WL_STATUS_SEATED' | translate }}</option>
+            <option value="cancelled">{{ 'RESERVATIONS.WL_STATUS_CANCELLED' | translate }}</option>
+            <option value="no_show">{{ 'RESERVATIONS.WL_STATUS_NO_SHOW' | translate }}</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" (click)="loadWaitlist()">{{ 'ORDERS.REFRESH' | translate }}</button>
+        </div>
+
+        @if (waitlistLoading()) {
+          <div class="empty-state"><p>{{ 'RESERVATIONS.LOADING' | translate }}</p></div>
+        } @else if (waitingList().length === 0) {
+          <div class="empty-state"><p>{{ 'RESERVATIONS.WL_NONE' | translate }}</p></div>
+        } @else {
+          <div class="reservation-grid">
+            @for (w of waitingList(); track w.id) {
+              <div class="reservation-card" [class]="'status-' + w.status">
+                <div class="card-header">
+                  <span class="res-id">#{{ w.id }}</span>
+                  <span class="res-name">{{ w.customer_name }}</span>
+                  <span class="status-badge" [class]="w.status">{{ getWaitlistStatusLabel(w.status) | translate }}</span>
+                </div>
+                <div class="card-body">
+                  <div>{{ 'RESERVATIONS.PARTY_SIZE' | translate }}: {{ w.party_size }}</div>
+                  <div>{{ w.customer_phone }}</div>
+                  @if (w.created_at) {
+                    <div class="res-meta">{{ 'RESERVATIONS.WL_JOINED' | translate }}: {{ formatWaitlistTime(w.created_at) }}</div>
+                  }
+                  @if (w.notified_at) {
+                    <div class="res-meta">{{ 'RESERVATIONS.WL_NOTIFIED' | translate }}: {{ formatWaitlistTime(w.notified_at) }}</div>
+                  }
+                </div>
+                @if (canWrite() && (w.status === 'waiting' || w.status === 'notified')) {
+                  <div class="card-actions">
+                    @if (w.status === 'waiting') {
+                      <button class="btn btn-ghost btn-sm" (click)="updateWaitlistStatus(w, 'notified')">{{ 'RESERVATIONS.WL_MARK_NOTIFIED' | translate }}</button>
+                    }
+                    <button class="btn btn-ghost btn-sm" (click)="convertWaitlistToReservation(w)">{{ 'RESERVATIONS.WL_BOOK_TABLE' | translate }}</button>
+                    <button class="btn btn-ghost btn-sm" (click)="updateWaitlistStatus(w, 'seated')">{{ 'RESERVATIONS.WL_MARK_SEATED' | translate }}</button>
+                    <button class="btn btn-ghost btn-sm no-show-btn" (click)="updateWaitlistStatus(w, 'no_show')">{{ 'RESERVATIONS.NO_SHOW' | translate }}</button>
+                    <button class="btn btn-ghost btn-sm danger" (click)="updateWaitlistStatus(w, 'cancelled')">{{ 'RESERVATIONS.CANCEL' | translate }}</button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
       }
 
       <!-- Create/Edit modal -->
@@ -402,6 +470,11 @@ import { ApiErrorMessageService } from '../services/api-error-message.service';
     .status-badge.finished { background: #f3f4f6; color: #4b5563; }
     .status-badge.cancelled { background: #fee2e2; color: #b91c1c; }
     .status-badge.no_show { background: #ffedd5; color: #c2410c; }
+    .status-badge.waiting { background: #fef3c7; color: #b45309; }
+    .status-badge.notified { background: #dbeafe; color: #1d4ed8; }
+    .view-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid #e5e7eb; }
+    .view-tab { padding: 0.5rem 1rem; border: none; background: transparent; cursor: pointer; font-weight: 500; color: #6b7280; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .view-tab.active { color: var(--color-primary, #2563eb); border-bottom-color: var(--color-primary, #2563eb); }
     .card-body { font-size: 0.9rem; color: #4b5563; margin-bottom: 0.75rem; }
     .table-assigned { font-weight: 500; }
     .card-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
@@ -459,6 +532,11 @@ export class ReservationsComponent implements OnInit, OnDestroy {
 
   loading = signal(false);
   reservations = signal<Reservation[]>([]);
+  viewTab = signal<'reservations' | 'waitlist'>('reservations');
+  waitlistLoading = signal(false);
+  waitingList = signal<WaitingListEntry[]>([]);
+  waitlistFilterPhone = '';
+  waitlistFilterStatus = '';
   tablesWithStatus = signal<CanvasTable[]>([]);
   filterDate = '';
   filterPhone = '';
@@ -534,8 +612,12 @@ export class ReservationsComponent implements OnInit, OnDestroy {
     try {
       this.api.connectWebSocket();
       this.wsSub = this.api.reservationUpdates$.subscribe(() => {
-        this.load();
-        this.loadTables();
+        if (this.viewTab() === 'waitlist') {
+          this.loadWaitlist();
+        } else {
+          this.load();
+          this.loadTables();
+        }
       });
     } catch {
       // continue without WebSocket
@@ -544,6 +626,69 @@ export class ReservationsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.wsSub?.unsubscribe();
+  }
+
+  setViewTab(tab: 'reservations' | 'waitlist') {
+    this.viewTab.set(tab);
+    if (tab === 'waitlist') {
+      this.loadWaitlist();
+    } else {
+      this.load();
+    }
+  }
+
+  loadWaitlist() {
+    this.waitlistLoading.set(true);
+    const status = this.waitlistFilterStatus || undefined;
+    this.api.getWaitingList({
+      phone: this.waitlistFilterPhone || undefined,
+      status,
+      active_only: !status,
+    }).subscribe({
+      next: (list) => {
+        this.waitingList.set(list);
+        this.waitlistLoading.set(false);
+      },
+      error: () => this.waitlistLoading.set(false),
+    });
+  }
+
+  getWaitlistStatusLabel(s: WaitingListStatus): string {
+    const key: Record<string, string> = {
+      waiting: 'RESERVATIONS.WL_STATUS_WAITING',
+      notified: 'RESERVATIONS.WL_STATUS_NOTIFIED',
+      seated: 'RESERVATIONS.WL_STATUS_SEATED',
+      cancelled: 'RESERVATIONS.WL_STATUS_CANCELLED',
+      no_show: 'RESERVATIONS.WL_STATUS_NO_SHOW',
+    };
+    return key[s] ?? s;
+  }
+
+  formatWaitlistTime(iso: string): string {
+    try {
+      return new Date(iso).toLocaleString();
+    } catch {
+      return iso;
+    }
+  }
+
+  updateWaitlistStatus(entry: WaitingListEntry, status: WaitingListStatus) {
+    this.api.updateWaitingListStatus(entry.id, status).subscribe({
+      next: () => this.loadWaitlist(),
+      error: () => {},
+    });
+  }
+
+  convertWaitlistToReservation(entry: WaitingListEntry) {
+    this.setViewTab('reservations');
+    this.openCreate();
+    this.formName = entry.customer_name;
+    this.formPhone = entry.customer_phone;
+    this.formPartySize = entry.party_size;
+    this.api.updateWaitingListStatus(entry.id, 'seated').subscribe({
+      next: () => this.loadWaitlist(),
+      error: () => {},
+    });
   }
 
   load() {

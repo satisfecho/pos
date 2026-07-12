@@ -1168,7 +1168,8 @@
     "LOCATION_ZONE_PLACEHOLDER": "Изберете зона",
     "LOCATION_ZONE_REQUIRED": "Моля, изберете зона.",
     "NO_ZONE_FOR_SEATING": "Няма зона, която да съответства на тази предпочитание. Изберете друга опция или се свържете с ресторанта.",
-    "WEBSITE": "Уебсайт"
+    "WEBSITE": "Уебсайт",
+    "LINK_WAITLIST": "Няма маса? Запишете се в списъка на чакане"
   },
   "FEEDBACK": {
     "TITLE": "Как мина посещението ви?",
@@ -1295,7 +1296,22 @@
     "SEND_DELAY": "Изпращане на известие за закъснение",
     "SENDING": "Изпращане...",
     "DELAY_SENT": "Delay notice sent. We will be informed.",
-    "DELAY_RATE_LIMITED": "Изпратени са твърде много известия за забавяне. Опитайте по-късно."
+    "DELAY_RATE_LIMITED": "Изпратени са твърде много известия за забавяне. Опитайте по-късно.",
+    "TAB_RESERVATIONS": "Reservations",
+    "TAB_WAITLIST": "Waiting list",
+    "VIEW_WAITLIST_PAGE": "Public waiting list",
+    "WL_NONE": "No one on the waiting list",
+    "WL_ACTIVE_ONLY": "Active queue",
+    "WL_STATUS_WAITING": "Waiting",
+    "WL_STATUS_NOTIFIED": "Notified",
+    "WL_STATUS_SEATED": "Seated",
+    "WL_STATUS_CANCELLED": "Cancelled",
+    "WL_STATUS_NO_SHOW": "No-show",
+    "WL_MARK_NOTIFIED": "Mark notified",
+    "WL_MARK_SEATED": "Mark seated",
+    "WL_JOINED": "Joined",
+    "WL_NOTIFIED": "Notified at",
+    "WL_BOOK_TABLE": "Book table"
   },
   "WORKING_PLAN": {
     "TITLE": "Работен план",
@@ -2264,5 +2280,17 @@
     "FEAT_I18N_DESC": "Guest and staff UI in multiple languages with per-tenant defaults.",
     "FEAT_OPEN_SOURCE_TITLE": "Open source",
     "FEAT_OPEN_SOURCE_DESC": "Self-host or run in the cloud — inspect, extend, and avoid vendor lock-in."
+  },
+  "WAITLIST": {
+    "TITLE": "Списък на чакане",
+    "INTRO": "Няма свободна маса? Оставете име, брой гости и телефон — ще се свържем, когато има маса.",
+    "SUBMIT": "Запиши се в списъка",
+    "SUBMITTING": "Изпращане…",
+    "SUCCESS_TITLE": "Вие сте в списъка на чакане",
+    "SUCCESS_MESSAGE": "Ще се обадим или пишем, когато масата е готова.",
+    "LINK_BOOK_TABLE": "Резервирай маса вместо това",
+    "INVALID_PHONE": "Въведете валиден телефонен номер (с код на държавата при нужда).",
+    "ERROR_INVALID_LINK": "Невалиден линк. Използвайте линка от ресторанта.",
+    "ERROR_FAILED": "Неуспешно записване в списъка. Опитайте отново."
   }
 }
