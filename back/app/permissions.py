@@ -206,6 +206,9 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
 
     # Courier portal uses dedicated endpoints; no staff RBAC permissions in Phase 1.
     UserRole.courier: set(),
+
+    # Platform operator portal uses /platform endpoints; no tenant RBAC.
+    UserRole.platform_operator: set(),
 }
 
 

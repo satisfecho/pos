@@ -299,6 +299,32 @@
     "SUBTITLE": "اپنی ڈیلیوریز دیکھنے کے لیے سائن ان کریں",
     "BACK_STAFF_LOGIN": "واپس کو عملہ لاگ ان"
   },
+  "PLATFORM_AUTH": {
+    "TITLE": "پلیٹ فارم آپریٹر",
+    "SUBTITLE": "پلیٹ فارم میٹرکس دیکھنے کے لیے سائن ان کریں",
+    "BACK_STAFF_LOGIN": "واپس کو عملہ لاگ ان"
+  },
+  "PLATFORM_DASHBOARD": {
+    "TITLE": "پلیٹ فارم جائزہ",
+    "SIGNED_IN_AS": "سائن ان بطور",
+    "LOGOUT": "لاگ آؤٹ",
+    "TENANT_COUNT": "کرایہ دار (کلائنٹس)",
+    "SIGNUPS_30D": "سائن اپ (30 دن)",
+    "LOGINS_24H": "لاگ ان (24 گھنٹے)",
+    "LOGINS_7D": "لاگ ان (7 دن)",
+    "RECENT_TENANTS": "حالیہ کرایہ دار",
+    "RECENT_LOGINS": "حالیہ لاگ ان",
+    "NO_TENANTS": "ابھی تک کوئی کرایہ دار نہیں۔",
+    "NO_LOGINS": "ابھی تک کوئی لاگ ان واقعہ نہیں۔",
+    "COL_ID": "ID",
+    "COL_NAME": "نام",
+    "COL_CREATED": "بنایا گیا",
+    "COL_TIME": "وقت",
+    "COL_ROLE": "کردار",
+    "COL_TENANT": "کرایہ دار",
+    "COL_SCOPE": "دائرہ",
+    "LOAD_FAILED": "پلیٹ فارم ڈیٹا لوڈ نہیں ہو سکا۔ براہ کرم دوبارہ سائن ان کریں۔"
+  },
   "COURIER_HOME": {
     "TITLE": "ڈیلیوریز",
     "WELCOME": "سائن ان بطور",

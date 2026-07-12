@@ -8,6 +8,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.14] - 2026-07-12
+
+### Added
+
+- **Platform operator portal:** SaaS operators sign in at **`/platform/login`** (platform auth scope) and view a read-only dashboard — tenant count, sign-ups in the last 30 days, login activity (24h and 7d), and tables of recent tenants and logins; accounts use the **`platform_operator`** role and are provisioned via **`ensure_platform_operator`** seed + env (#292).
+
+### Changed
+
+- **Staff sidebar:** **Customers (Invoice)** (`/customers`) now appears under **Operations** alongside tables and kitchen/bar displays instead of under Catalog & inventory — the Operations group also shows when customers is the only visible sub-item (#290).
+- **Agent loop:** Weekly **enhancement reviewer** (agent **008**) scans docs/changelog drift, demo seed health, and the task queue — emits preflight signals and creates up to three **`FEAT-0-*`** / **`NEW-0-*`** follow-up tasks; **`pos-cursor-loop.sh`** adds an **`enhancement`** step (#291).
+- **Release / production:** Promoted **`development` → `master`** and deployed to amvara9 (**satisfecho.de**) — live **2.1.14** (#293).
+
 ## [2.1.13] - 2026-07-12
 
 ### Added
@@ -18,6 +30,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Changed
 
 - **New signups:** Fresh restaurants get a tighter default navigation — **Tables**, **Reservations**, and **Kitchen & bar** on; **Working plan**, **Product catalog**, **Inventory**, **Contracts**, and **Users** off — existing tenants are unchanged (#288).
+- **Release / production:** Promoted **`development` → `master`** and deployed to amvara9 (**satisfecho.de**) — live **2.1.13** at **`a8bfe7f9`** via manual SSH after GitHub Actions **deploy-amvara9** could not reach the server (SSH refused from runners); post-deploy smoke passed for waitlist, signup wizard, order comments, and **`/api/health`** (#285, #289).
 
 ## [2.1.12] - 2026-07-12
 

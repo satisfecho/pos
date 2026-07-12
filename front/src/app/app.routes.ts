@@ -5,6 +5,7 @@ import { uiModuleGuard } from './auth/ui-module.guard';
 import { reservationAccessGuard } from './auth/reservation-access.guard';
 import { providerGuard } from './auth/provider.guard';
 import { courierGuard } from './auth/courier.guard';
+import { platformGuard } from './auth/platform.guard';
 import { permissionGuard } from './auth/permission.guard';
 import { tablesCanvasCanDeactivate } from './tables/tables-canvas-deactivate.guard';
 
@@ -41,6 +42,9 @@ export const routes: Routes = [
   { path: 'courier/login', loadComponent: () => import('./courier/courier-login.component').then(m => m.CourierLoginComponent) },
   { path: 'courier/orders/:id', canActivate: [courierGuard], loadComponent: () => import('./courier/courier-order-detail.component').then(m => m.CourierOrderDetailComponent) },
   { path: 'courier', canActivate: [courierGuard], loadComponent: () => import('./courier/courier-home.component').then(m => m.CourierHomeComponent) },
+  // Platform operator portal (public auth + protected dashboard)
+  { path: 'platform/login', loadComponent: () => import('./platform/platform-login.component').then(m => m.PlatformLoginComponent) },
+  { path: 'platform', canActivate: [platformGuard], loadComponent: () => import('./platform/platform-dashboard.component').then(m => m.PlatformDashboardComponent) },
   { path: 'menu/:token', loadComponent: () => import('./menu/menu.component').then(m => m.MenuComponent) },
   { path: 'menu/:token/payment-success', loadComponent: () => import('./menu/payment-success.component').then(m => m.PaymentSuccessComponent) },
   { path: 'public-menu/:tenantId', loadComponent: () => import('./public-menu/public-menu.component').then(m => m.PublicMenuComponent) },

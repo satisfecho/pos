@@ -41,6 +41,7 @@ from .pricing_routes import router as pricing_router
 from .product_bulk_import_routes import router as product_bulk_import_router
 from .tenant_subcategory_routes import router as tenant_subcategory_router
 from .reports_routes import router as reports_router
+from .platform_routes import router as platform_router
 from .attendance_routes import router as attendance_router
 from .tenant_lifecycle_routes import router as tenant_lifecycle_router
 from .staff_contract_routes import router as staff_contract_router
@@ -490,6 +491,7 @@ app.include_router(
 # Reports (sales / revenue analysis)
 app.include_router(reports_router, prefix="/reports", tags=["Reports"])
 app.include_router(attendance_router, prefix="/reports", tags=["Reports"])
+app.include_router(platform_router, prefix="/platform", tags=["Platform"])
 # Owner-only data export & tenant purge (GitHub #96)
 app.include_router(tenant_lifecycle_router, prefix="/tenant", tags=["Tenant lifecycle"])
 app.include_router(staff_contract_router, prefix="/staff-contracts", tags=["Staff contracts"])
@@ -1484,13 +1486,39 @@ def register_provider(
 
 
 def _token_data_for_user(user: models.User) -> dict:
-    """Build JWT payload for user (tenant or provider)."""
+    """Build JWT payload for user (tenant, provider, or platform operator)."""
+    is_platform = user.role == models.UserRole.platform_operator
     return {
         "sub": user.email,
         "tenant_id": user.tenant_id,
         "provider_id": getattr(user, "provider_id", None),
         "token_version": user.token_version,
+        "is_platform_operator": is_platform,
     }
+
+
+def _login_scope_label(user: models.User, scope: str | None) -> str:
+    if scope:
+        return scope
+    if user.role == models.UserRole.platform_operator:
+        return "platform"
+    if user.provider_id is not None:
+        return "provider"
+    if user.role == models.UserRole.courier:
+        return "courier"
+    return "tenant"
+
+
+def _record_login_event(session: Session, user: models.User, scope: str | None) -> None:
+    event = models.LoginEvent(
+        user_id=user.id,
+        role=user.role,
+        tenant_id=user.tenant_id,
+        provider_id=user.provider_id,
+        login_scope=_login_scope_label(user, scope),
+    )
+    session.add(event)
+    session.commit()
 
 
 @app.post("/token")
@@ -1499,7 +1527,7 @@ def login_for_access_token(
     request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     tenant_id: int | None = Query(None, description="Optional tenant id from tenant picker"),
-    scope: str | None = Query(None, description="Login scope: 'provider' for provider portal, 'courier' for courier portal"),
+    scope: str | None = Query(None, description="Login scope: 'provider' for provider portal, 'courier' for courier portal, 'platform' for platform operator"),
     lang: str = Depends(_get_requested_language),
     session: Session = Depends(get_session),
 ) -> dict:
@@ -1513,6 +1541,12 @@ def login_for_access_token(
         statement = statement.where(
             models.User.role == models.UserRole.courier,
             models.User.tenant_id.is_not(None),
+        )
+    elif scope == "platform":
+        statement = statement.where(
+            models.User.role == models.UserRole.platform_operator,
+            models.User.tenant_id.is_(None),
+            models.User.provider_id.is_(None),
         )
     elif tenant_id is not None:
         statement = statement.where(models.User.tenant_id == tenant_id)
@@ -1551,6 +1585,8 @@ def login_for_access_token(
         data=token_data,
         expires_delta=security.timedelta(days=settings.refresh_token_expire_days),
     )
+
+    _record_login_event(session, user, scope)
 
     response = JSONResponse(content={"status": "success", "message": "Logged in"})
     
@@ -1614,6 +1650,12 @@ def login_with_otp(
         statement = statement.where(models.User.tenant_id == tenant_id)
     elif provider_id is not None:
         statement = statement.where(models.User.provider_id == provider_id)
+    elif payload.get("is_platform_operator"):
+        statement = (
+            statement.where(models.User.role == models.UserRole.platform_operator)
+            .where(models.User.tenant_id.is_(None))
+            .where(models.User.provider_id.is_(None))
+        )
     else:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -1641,6 +1683,10 @@ def login_with_otp(
         data=token_data,
         expires_delta=security.timedelta(days=settings.refresh_token_expire_days),
     )
+    login_scope = "platform" if payload.get("is_platform_operator") else (
+        "provider" if provider_id is not None else "tenant"
+    )
+    _record_login_event(session, user, login_scope)
     response = JSONResponse(content={"status": "success", "message": "Logged in"})
     response.set_cookie(
         key="access_token",

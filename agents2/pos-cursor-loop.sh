@@ -25,6 +25,8 @@ GH_REPO="${AGENT_GH_REPO:-satisfecho/pos}"
 LAST_REVIEW_FILE="${SCRIPTDIR}/001-gh-reviewer/time-of-last-review.txt"
 MKT_REVIEW_FILE="${SCRIPTDIR}/005-marketing-repos-reviewer/time-of-last-review.txt"
 MKT_PREFLIGHT="${REPO_ROOT}/scripts/marketing-repos-preflight.sh"
+ENH_REVIEW_FILE="${SCRIPTDIR}/008-enhancement-reviewer/time-of-last-review.txt"
+ENH_PREFLIGHT="${REPO_ROOT}/scripts/enhancement-reviewer-preflight.sh"
 
 cd "$SCRIPTDIR" || exit 1
 
@@ -49,7 +51,7 @@ cursor_agent_timeout_seconds_for() {
     handoff) mins="${AGENT_HANDOFF_TIMEOUT_MINUTES:-${AGENT_CURSOR_TIMEOUT_MINUTES:-20}}" ;;
     closing) mins="${AGENT_CLOSING_TIMEOUT_MINUTES:-${AGENT_CURSOR_TIMEOUT_MINUTES:-20}}" ;;
     committer) mins="${AGENT_COMMITTER_TIMEOUT_MINUTES:-${AGENT_CURSOR_TIMEOUT_MINUTES:-20}}" ;;
-    log|marketing) mins="${AGENT_REVIEWER_TIMEOUT_MINUTES:-${AGENT_CURSOR_TIMEOUT_MINUTES:-25}}" ;;
+    log|marketing|enhancement) mins="${AGENT_REVIEWER_TIMEOUT_MINUTES:-${AGENT_CURSOR_TIMEOUT_MINUTES:-25}}" ;;
     *) mins="${AGENT_CURSOR_TIMEOUT_MINUTES:-25}" ;;
   esac
   echo $((mins * 60))
@@ -385,6 +387,8 @@ committer_paths_all_local_stamp_allowlist() {
       agents2/001-gh-reviewer/time-of-last-review.txt) ;;
       agents2/005-marketing-repos-reviewer/time-of-last-review.txt) ;;
       agents2/005-marketing-repos-reviewer/last-scan.json) ;;
+      agents2/008-enhancement-reviewer/time-of-last-review.txt) ;;
+      agents2/008-enhancement-reviewer/last-scan.json) ;;
       *) return 1 ;;
     esac
   done < <(committer_changed_paths)
@@ -409,6 +413,7 @@ committer_try_local_stamp_only() {
     cd "$REPO_ROOT" || exit 1
     git add -- agents2/001-gh-reviewer/time-of-last-review.txt
     git add -- agents2/005-marketing-repos-reviewer/time-of-last-review.txt agents2/005-marketing-repos-reviewer/last-scan.json 2>/dev/null || true
+    git add -- agents2/008-enhancement-reviewer/time-of-last-review.txt agents2/008-enhancement-reviewer/last-scan.json 2>/dev/null || true
     if git diff --staged --quiet; then
       exit 1
     fi
@@ -622,6 +627,73 @@ Then follow 005-marketing-repos-reviewer.md — register new NNN_slug repos in c
   fi
 }
 
+# G008_* set by scripts/enhancement-reviewer-preflight.sh (sourced via eval of Summary lines).
+prepare_008_preflight_context() {
+  local ctx="$1"
+  G008_OK=0
+  G008_DAYS_SINCE_LAST_REVIEW=999
+  G008_WEEKLY_DUE=0
+  G008_DOC_DRIFT=0
+  G008_TASK_SIGNALS=0
+  G008_DEMO_SIGNALS=0
+  G008_SIGNALS=0
+  mkdir -p "$(dirname "$ctx")"
+  if [[ ! -x "$ENH_PREFLIGHT" ]]; then
+    echo "G008 preflight script missing: $ENH_PREFLIGHT" >"$ctx"
+    return 0
+  fi
+  ENHANCEMENT_PREFLIGHT_READONLY="${2:-1}" POS_REPO_ROOT="$REPO_ROOT" bash "$ENH_PREFLIGHT" "$ctx" || true
+  local line
+  while IFS= read -r line; do
+    case "$line" in
+      G008_OK=*) eval "$line" 2>/dev/null || true ;;
+      G008_DAYS_SINCE_LAST_REVIEW=*) eval "$line" 2>/dev/null || true ;;
+      G008_WEEKLY_DUE=*) eval "$line" 2>/dev/null || true ;;
+      G008_DOC_DRIFT=*) eval "$line" 2>/dev/null || true ;;
+      G008_TASK_SIGNALS=*) eval "$line" 2>/dev/null || true ;;
+      G008_DEMO_SIGNALS=*) eval "$line" 2>/dev/null || true ;;
+      G008_SIGNALS=*) eval "$line" 2>/dev/null || true ;;
+    esac
+  done < <(grep -E '^G008_' "$ctx" 2>/dev/null || true)
+}
+
+should_run_008_cursor_agent() {
+  [[ "${AGENT_ENHANCEMENT_REVIEWER_ALWAYS:-0}" == "1" ]] && return 0
+  [[ "${AGENT_008_SKIP_PREFLIGHT:-0}" == "1" ]] && return 0
+  [[ "${G008_OK:-0}" != "1" ]] && return 1
+  (( G008_WEEKLY_DUE + G008_DOC_DRIFT + G008_TASK_SIGNALS + G008_DEMO_SIGNALS > 0 ))
+}
+
+step_enhancement_reviewer() {
+  echo "-----> enhancement reviewer (008) <----"
+  local ctx="${AGENT_LOOP_TMP}/008-latest-context.txt"
+  prepare_008_preflight_context "$ctx"
+  echo "----- 008 preflight digest: $ctx"
+  if should_run_008_cursor_agent; then
+    if ! have_cursor_agent; then
+      echo "----- enhancement (008) (skip: cursor-agent not on PATH)" >&2
+      ENHANCEMENT_PREFLIGHT_READONLY=0 POS_REPO_ROOT="$REPO_ROOT" prepare_008_preflight_context "$ctx" 0
+      return 0
+    fi
+    if ! sync_repo; then
+      echo "----- enhancement (008) (skip: git sync failed)" >&2
+      return 0
+    fi
+    local msg="Run 008: Read the preflight digest first (absolute path): $ctx
+Then follow 008-enhancement-reviewer.md — weekly improvement sweep; create up to 3 FEAT-0-* or NEW-0-* tasks from SIGNAL lines (no bulk doc rewrites). Task conventions: TASKS-README.md. Do your job."
+    run_agent "enhancement reviewer (008)" \
+      "true" \
+      "008-enhancement-reviewer.md" \
+      "$msg" \
+      "enhancement"
+    ENHANCEMENT_PREFLIGHT_READONLY=0 POS_REPO_ROOT="$REPO_ROOT" prepare_008_preflight_context "$ctx" 0
+  else
+    echo "----- enhancement (008) (skip: weekly not due and no preflight signals; days=${G008_DAYS_SINCE_LAST_REVIEW:-?})"
+    echo "----- Override: AGENT_ENHANCEMENT_REVIEWER_ALWAYS=1 or AGENT_008_SKIP_PREFLIGHT=1"
+    ENHANCEMENT_PREFLIGHT_READONLY=0 POS_REPO_ROOT="$REPO_ROOT" prepare_008_preflight_context "$ctx" 0
+  fi
+}
+
 step_feat() {
   if ! any_root_task_glob 'FEAT-*.md'; then
     echo "----- feature coding (FEAT) (skip: no FEAT-*.md — no sync, no agent)"
@@ -753,6 +825,7 @@ run_full_cycle() {
   echo "$(date)"
   step_log_reviewer
   step_marketing_repos
+  step_enhancement_reviewer
   local i=0
   local has_feat
   while (( i < 5 )); do
@@ -783,6 +856,7 @@ Usage: $(basename "$0") [COMMAND]
   Single run:
     log, log-reviewer, 001   Log / incident reviewer (001; runs first in full cycle)
     marketing, mkt, 005      Marketing repos reviewer (NNN_slug org repos → deploy / FEAT-MKT)
+    enhancement, enhance, 008  Enhancement reviewer (weekly docs/demo/queue sweep → FEAT-0 / NEW-0)
     feat, feature   Feature coder (FEAT-*.md in agents/tasks/)
     coder           Coder (NEW-*.md or WIP-*.md)
     handoff, 012    Feature-coder handoff (WIP-*.md → verify complete → UNTESTED-*.md)
@@ -811,14 +885,16 @@ Environment:
   AGENT_TESTER_TIMEOUT_MINUTES     Tester step limit (default: 32; deploy poll + prod checks).
   AGENT_FEAT_TIMEOUT_MINUTES       Feature coder limit (default: same as AGENT_CURSOR_TIMEOUT_MINUTES).
   AGENT_CODER_TIMEOUT_MINUTES      Main coder limit (default: same as AGENT_CURSOR_TIMEOUT_MINUTES).
-  AGENT_REVIEWER_TIMEOUT_MINUTES   001 / 005 limit (default: same as AGENT_CURSOR_TIMEOUT_MINUTES).
+  AGENT_REVIEWER_TIMEOUT_MINUTES   001 / 005 / 008 limit (default: same as AGENT_CURSOR_TIMEOUT_MINUTES).
+  AGENT_ENHANCEMENT_REVIEWER_ALWAYS  If 1, always invoke 008 cursor-agent.
+  AGENT_008_SKIP_PREFLIGHT         If 1, always invoke 008 (legacy always-run).
   On timeout the loop continues (exit 124); TESTING-/WIP- tasks are retried on the next cycle.
 
 Docker / app stack: start separately from repo root with ./run.sh -dev
 
 Git: FEAT/NEW-WIP/tester/closing/committer run scripts/git-sync-development.sh only when that step has work (queue or uncommitted changes). 001 syncs when its gate opens.
 
-Prompt files in this directory (agents2/): 001-gh-reviewer.md, 005-marketing-repos-reviewer.md, 010-feature-coder.md, 012-feature-coder-handoff.md (runs after coder when WIP-*.md exists), 020-test.md, 030-closing-reviewer.md, 040-committer.md; task naming: TASKS-README.md. Main coder (NEW/WIP): 002-coder/CODER.md if present. See docs/agent-loop.md.
+Prompt files in this directory (agents2/): 001-gh-reviewer.md, 005-marketing-repos-reviewer.md, 008-enhancement-reviewer.md, 010-feature-coder.md, 012-feature-coder-handoff.md (runs after coder when WIP-*.md exists), 020-test.md, 030-closing-reviewer.md, 040-committer.md; task naming: TASKS-README.md. Main coder (NEW/WIP): 002-coder/CODER.md if present. See docs/agent-loop.md.
 EOF
 }
 
@@ -830,6 +906,7 @@ if [[ -n "${1:-}" ]]; then
       ;;
     log | log-reviewer | 001) step_log_reviewer ;;
     marketing | mkt | 005) step_marketing_repos ;;
+    enhancement | enhance | 008) step_enhancement_reviewer ;;
     feat | feature) step_feat ;;
     coder) step_coder ;;
     handoff | 012 | feature-handoff) step_feature_coder_handoff ;;

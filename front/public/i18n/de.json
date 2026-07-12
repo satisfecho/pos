@@ -299,6 +299,32 @@
     "SUBTITLE": "Melden Sie sich an, um Ihre Lieferungen zu sehen",
     "BACK_STAFF_LOGIN": "Zur Mitarbeiter-Anmeldung"
   },
+  "PLATFORM_AUTH": {
+    "TITLE": "Plattform-Betreiber",
+    "SUBTITLE": "Anmelden für Plattform-Kennzahlen",
+    "BACK_STAFF_LOGIN": "Zur Mitarbeiter-Anmeldung"
+  },
+  "PLATFORM_DASHBOARD": {
+    "TITLE": "Plattform-Übersicht",
+    "SIGNED_IN_AS": "Angemeldet als",
+    "LOGOUT": "Abmelden",
+    "TENANT_COUNT": "Mandanten (Kunden)",
+    "SIGNUPS_30D": "Registrierungen (30 Tage)",
+    "LOGINS_24H": "Anmeldungen (24 Stunden)",
+    "LOGINS_7D": "Anmeldungen (7 Tage)",
+    "RECENT_TENANTS": "Neueste Mandanten",
+    "RECENT_LOGINS": "Letzte Anmeldungen",
+    "NO_TENANTS": "Noch keine Mandanten.",
+    "NO_LOGINS": "Noch keine Anmeldeereignisse erfasst.",
+    "COL_ID": "ID",
+    "COL_NAME": "Name",
+    "COL_CREATED": "Erstellt",
+    "COL_TIME": "Zeit",
+    "COL_ROLE": "Rolle",
+    "COL_TENANT": "Mandant",
+    "COL_SCOPE": "Bereich",
+    "LOAD_FAILED": "Plattformdaten konnten nicht geladen werden. Bitte erneut anmelden."
+  },
   "COURIER_HOME": {
     "TITLE": "Lieferungen",
     "WELCOME": "Angemeldet als",

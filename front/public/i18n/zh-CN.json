@@ -292,6 +292,32 @@
     "SUBTITLE": "登录以查看您的配送任务",
     "BACK_STAFF_LOGIN": "返回员工登录"
   },
+  "PLATFORM_AUTH": {
+    "TITLE": "平台运营",
+    "SUBTITLE": "登录以查看平台指标",
+    "BACK_STAFF_LOGIN": "返回员工登录"
+  },
+  "PLATFORM_DASHBOARD": {
+    "TITLE": "平台概览",
+    "SIGNED_IN_AS": "当前登录",
+    "LOGOUT": "退出登录",
+    "TENANT_COUNT": "租户（客户）",
+    "SIGNUPS_30D": "注册（30 天）",
+    "LOGINS_24H": "登录（24 小时）",
+    "LOGINS_7D": "登录（7 天）",
+    "RECENT_TENANTS": "最近租户",
+    "RECENT_LOGINS": "最近登录",
+    "NO_TENANTS": "尚无租户。",
+    "NO_LOGINS": "尚无登录记录。",
+    "COL_ID": "ID",
+    "COL_NAME": "名称",
+    "COL_CREATED": "创建时间",
+    "COL_TIME": "时间",
+    "COL_ROLE": "角色",
+    "COL_TENANT": "租户",
+    "COL_SCOPE": "范围",
+    "LOAD_FAILED": "无法加载平台数据，请重新登录。"
+  },
   "COURIER_HOME": {
     "TITLE": "配送",
     "WELCOME": "当前登录",

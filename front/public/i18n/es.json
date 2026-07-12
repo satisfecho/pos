@@ -299,6 +299,32 @@
     "SUBTITLE": "Inicia sesión para ver tus entregas",
     "BACK_STAFF_LOGIN": "Volver al inicio de sesión del personal"
   },
+  "PLATFORM_AUTH": {
+    "TITLE": "Operador de plataforma",
+    "SUBTITLE": "Inicia sesión para ver métricas de la plataforma",
+    "BACK_STAFF_LOGIN": "Volver al inicio de sesión del personal"
+  },
+  "PLATFORM_DASHBOARD": {
+    "TITLE": "Resumen de plataforma",
+    "SIGNED_IN_AS": "Conectado como",
+    "LOGOUT": "Cerrar sesión",
+    "TENANT_COUNT": "Inquilinos (clientes)",
+    "SIGNUPS_30D": "Registros (30 días)",
+    "LOGINS_24H": "Inicios de sesión (24 h)",
+    "LOGINS_7D": "Inicios de sesión (7 días)",
+    "RECENT_TENANTS": "Inquilinos recientes",
+    "RECENT_LOGINS": "Inicios de sesión recientes",
+    "NO_TENANTS": "Aún no hay inquilinos.",
+    "NO_LOGINS": "Aún no hay eventos de inicio de sesión.",
+    "COL_ID": "ID",
+    "COL_NAME": "Nombre",
+    "COL_CREATED": "Creado",
+    "COL_TIME": "Hora",
+    "COL_ROLE": "Rol",
+    "COL_TENANT": "Inquilino",
+    "COL_SCOPE": "Ámbito",
+    "LOAD_FAILED": "No se pudieron cargar los datos de la plataforma. Inicia sesión de nuevo."
+  },
   "COURIER_HOME": {
     "TITLE": "Entregas",
     "WELCOME": "Conectado como",
