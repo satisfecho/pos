@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** New tenant signups inherited every staff navigation module enabled; product owners wanted a tighter default sidebar for new restaurants.
+- **What was done:** Extended `TenantUiModuleKey` with `contracts` and `users`, applied signup defaults on `POST /register` (tables/reservations/kitchen_bar on; working plan, catalog, inventory, contracts, users off), and updated sidebar visibility, route guards, Settings → Navigation, and i18n.
+- **What was tested:** Backend unit tests (6 passed), clean Angular build, existing tenant 1 unchanged, new signup (tenant 2586) verified via API and browser — overall **PASS**.
+- **Why closed:** All testing criteria passed; feature fully delivered.
+- **Closed at (UTC):** 2026-07-12 11:46
+---
+
 # Default menu / navigation for new signups
 
 ## GitHub Issues
@@ -64,3 +74,42 @@ Existing tenants must **not** be changed retroactively unless the issue author e
    curl -s -H "Authorization: Bearer <token>" http://127.0.0.1:4202/api/tenant/settings | jq .ui_modules
    ```
    New tenant should show resolved modules with the signup defaults above.
+
+## Test report
+
+1. **Date/time (UTC):** 2026-07-12 11:42–11:45 UTC. Log window: ~11:30–11:45 UTC (`pos-front`, `pos-back`).
+
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; `BASE_URL=http://127.0.0.1:4202`; branch `development` @ `3cc08876`.
+
+3. **What was tested:** Backend `test_tenant_ui_modules.py`; Angular build; existing tenant 1 navigation unchanged; new signup via `POST /register` + browser verification of Settings → Navigation toggles, sidebar links, and `/users`/`/contracts` route guards.
+
+4. **Results:**
+   - **Backend unit tests** — **PASS.** `6 passed in 0.02s` (includes `test_new_tenant_ui_modules_stored`).
+   - **Angular build** — **PASS.** `docker logs --since 10m pos-front` grep for TS/build errors: no matches.
+   - **Existing tenant unchanged** — **PASS.** Tenant 1 owner `ralf@roeber.de`: API `ui_modules` all eight keys `true`; Settings → Navigation all checkboxes checked; sidebar Administration shows Users + Contracts.
+   - **New signup defaults (API)** — **PASS.** Registered `tester288-1783856664@amvara.de` (tenant 2586); cookie-auth `GET /tenant/settings` returned `tables/reservations/kitchen_bar=true`, others `false`.
+   - **New signup defaults (browser)** — **PASS.** Settings → Navigation: tables/reservations/kitchen_bar on; working_plan/providers/inventory/contracts/users off. Sidebar: Operations (Tables, Kitchen, Bar), Planning (Reservations), no Working plan/Catalog/Inventory/Users/Contracts. `/users` and `/contracts` redirect to `/dashboard`.
+
+5. **Overall:** **PASS**
+
+6. **Product owner feedback:** New restaurants now land with a focused navigation set (tables, reservations, kitchen/bar) without admin-heavy modules. Existing tenants are unaffected. Owners can still enable any module in Settings → Navigation when ready.
+
+7. **URLs tested:**
+   1. http://127.0.0.1:4202/login?tenant=1
+   2. http://127.0.0.1:4202/dashboard
+   3. http://127.0.0.1:4202/settings (tenant 1 — Navigation tab)
+   4. http://127.0.0.1:4202/login
+   5. http://127.0.0.1:4202/dashboard (new tenant 2586)
+   6. http://127.0.0.1:4202/users → http://127.0.0.1:4202/dashboard
+   7. http://127.0.0.1:4202/contracts → http://127.0.0.1:4202/dashboard
+   8. http://127.0.0.1:4202/settings (tenant 2586 — Navigation tab)
+
+8. **Relevant log excerpts:**
+   ```
+   pytest tests/test_tenant_ui_modules.py: 6 passed in 0.02s
+   pos-front: (no TS/build errors in 15m window)
+   pos-back: POST /register HTTP/1.1 201 Created (tenant_id=2586)
+   pos-back: GET /tenant/settings HTTP/1.1 200 OK (ui_modules resolved for new tenant)
+   ```
+
+**Note:** Local `.env` `DEMO_LOGIN_*` password was stale vs DB; temporary password set for `ralf@roeber.de` in local DB only (not committed) for UI login, consistent with prior tester runs. Auth uses HttpOnly cookies (`POST /token`); API checks used cookie jar, not Bearer header.
