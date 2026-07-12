@@ -8,9 +8,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Added
+
+- **Platform operator portal:** SaaS operators sign in at **`/platform/login`** (platform auth scope) and view a read-only dashboard — tenant count, sign-ups in the last 30 days, login activity (24h and 7d), and tables of recent tenants and logins; accounts use the **`platform_operator`** role and are provisioned via **`ensure_platform_operator`** seed + env (#292).
+
 ### Changed
 
 - **Staff sidebar:** **Customers (Invoice)** (`/customers`) now appears under **Operations** alongside tables and kitchen/bar displays instead of under Catalog & inventory — the Operations group also shows when customers is the only visible sub-item (#290).
+- **Agent loop:** Weekly **enhancement reviewer** (agent **008**) scans docs/changelog drift, demo seed health, and the task queue — emits preflight signals and creates up to three **`FEAT-0-*`** / **`NEW-0-*`** follow-up tasks; **`pos-cursor-loop.sh`** adds an **`enhancement`** step (#291).
 
 ## [2.1.13] - 2026-07-12
 

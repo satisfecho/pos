@@ -70,6 +70,7 @@ class UserRole(str, Enum):
     receptionist = "receptionist"
     courier = "courier"  # Delivery driver – tenant-scoped, dedicated courier portal
     provider = "provider"  # Product provider (supplier) – no tenant, has provider_id
+    platform_operator = "platform_operator"  # SaaS platform admin – no tenant, no provider
 
 
 class Tenant(SQLModel, table=True):
@@ -277,6 +278,57 @@ class PasswordResetToken(SQLModel, table=True):
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(DateTime(timezone=True), nullable=False),
     )
+
+
+class LoginEvent(SQLModel, table=True):
+    """Successful login audit row for platform operator metrics (no PII in API responses)."""
+
+    __tablename__ = "login_event"
+
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int | None = Field(default=None, foreign_key="user.id", index=True)
+    role: UserRole | None = Field(
+        default=None,
+        sa_column=Column(
+            SAEnum(
+                UserRole,
+                name="user_role",
+                native_enum=True,
+                create_type=False,
+                values_callable=lambda cls: [m.value for m in cls],
+            ),
+            nullable=True,
+        ),
+    )
+    tenant_id: int | None = Field(default=None, foreign_key="tenant.id", index=True)
+    provider_id: int | None = Field(default=None, foreign_key="provider.id")
+    login_scope: str | None = Field(default=None, max_length=32)
+    logged_in_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+
+
+class PlatformTenantSummary(SQLModel):
+    id: int
+    name: str
+    created_at: datetime
+
+
+class PlatformLoginSummary(SQLModel):
+    logged_in_at: datetime
+    role: str | None = None
+    tenant_id: int | None = None
+    login_scope: str | None = None
+
+
+class PlatformMetricsResponse(SQLModel):
+    tenant_count: int
+    signups_last_30_days: int
+    logins_last_24_hours: int
+    logins_last_7_days: int
+    recent_tenants: list[PlatformTenantSummary]
+    recent_logins: list[PlatformLoginSummary]
 
 
 class TenantMixin(SQLModel):

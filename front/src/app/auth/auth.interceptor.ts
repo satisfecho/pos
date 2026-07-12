@@ -20,6 +20,7 @@ function isPublicRoute(url: string): boolean {
     path.startsWith('/provider/login') ||
     path.startsWith('/provider/register') ||
     path.startsWith('/provider/forgot-password') ||
+    path.startsWith('/platform/login') ||
     path.startsWith('/menu/') ||
     path.startsWith('/book/') ||
     path.startsWith('/feedback/') ||
@@ -32,6 +33,7 @@ function loginPathForCurrentRoute(routerUrl: string): string {
   const path = getCurrentPath(routerUrl);
   if (path.startsWith('/courier')) return '/courier/login';
   if (path.startsWith('/provider')) return '/provider/login';
+  if (path.startsWith('/platform')) return '/platform/login';
   return '/login';
 }
 

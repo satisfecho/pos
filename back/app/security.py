@@ -40,6 +40,8 @@ def get_rate_limit_user_key(request: Request) -> str | None:
         sub = payload.get("sub") or ""
         tid = payload.get("tenant_id")
         pid = payload.get("provider_id")
+        if payload.get("is_platform_operator"):
+            return f"u:platform:{sub}"
         if tid is not None:
             return f"u:{tid}:{sub}"
         if pid is not None:
@@ -151,6 +153,14 @@ def _user_from_payload(session: Session, payload: dict) -> User | None:
         statement = select(User).where(User.email == email).where(User.tenant_id == tenant_id)
     elif provider_id is not None:
         statement = select(User).where(User.email == email).where(User.provider_id == provider_id)
+    elif payload.get("is_platform_operator"):
+        statement = (
+            select(User)
+            .where(User.email == email)
+            .where(User.role == UserRole.platform_operator)
+            .where(User.tenant_id.is_(None))
+            .where(User.provider_id.is_(None))
+        )
     else:
         return None
     user = session.exec(statement).first()
@@ -250,5 +260,21 @@ async def get_current_courier_user(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Courier account required",
+        )
+    return current_user
+
+
+async def get_current_platform_operator(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> User:
+    """Require that the current user is a platform operator (no tenant or provider)."""
+    if (
+        current_user.role != UserRole.platform_operator
+        or current_user.tenant_id is not None
+        or current_user.provider_id is not None
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Platform operator account required",
         )
     return current_user

@@ -292,6 +292,32 @@
     "SUBTITLE": "अपनी डिलीवरी देखने के लिए साइन इन करें",
     "BACK_STAFF_LOGIN": "स्टाफ लॉगिन पर वापस जाएँ"
   },
+  "PLATFORM_AUTH": {
+    "TITLE": "प्लेटफ़ॉर्म ऑपरेटर",
+    "SUBTITLE": "प्लेटफ़ॉर्म मेट्रिक्स देखने के लिए साइन इन करें",
+    "BACK_STAFF_LOGIN": "स्टाफ लॉगिन पर वापस जाएँ"
+  },
+  "PLATFORM_DASHBOARD": {
+    "TITLE": "प्लेटफ़ॉर्म अवलोकन",
+    "SIGNED_IN_AS": "इस रूप में साइन इन",
+    "LOGOUT": "लॉग आउट",
+    "TENANT_COUNT": "टेनants (ग्राहक)",
+    "SIGNUPS_30D": "साइन-अप (30 दिन)",
+    "LOGINS_24H": "लॉगिन (24 घंटे)",
+    "LOGINS_7D": "लॉगिन (7 दिन)",
+    "RECENT_TENANTS": "हाल के टेनants",
+    "RECENT_LOGINS": "हाल के लॉगिन",
+    "NO_TENANTS": "अभी तक कोई टेनant नहीं।",
+    "NO_LOGINS": "अभी तक कोई लॉगिन इवेंट नहीं।",
+    "COL_ID": "ID",
+    "COL_NAME": "नाम",
+    "COL_CREATED": "बनाया गया",
+    "COL_TIME": "समय",
+    "COL_ROLE": "भूमिका",
+    "COL_TENANT": "टेनant",
+    "COL_SCOPE": "स्कोप",
+    "LOAD_FAILED": "प्लेटफ़ॉर्म डेटा लोड नहीं हो सका। कृपया फिर से साइन इन करें।"
+  },
   "COURIER_HOME": {
     "TITLE": "डिलीवरी",
     "WELCOME": "इस रूप में साइन इन",

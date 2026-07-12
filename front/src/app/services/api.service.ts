@@ -16,7 +16,7 @@ import { environment } from '../../environments/environment';
 import { LanguageService } from './language.service';
 
 // Interfaces
-export type UserRole = 'owner' | 'admin' | 'kitchen' | 'bartender' | 'waiter' | 'receptionist' | 'courier' | 'provider';
+export type UserRole = 'owner' | 'admin' | 'kitchen' | 'bartender' | 'waiter' | 'receptionist' | 'courier' | 'provider' | 'platform_operator';
 
 /** Staff sidebar/dashboard/route modules (tenant owner toggles in Settings). */
 export type TenantUiModuleKey =
@@ -348,6 +348,35 @@ export interface CourierInfo {
   role: string;
   tenant_id: number | null;
   tenant_name?: string | null;
+}
+
+export interface PlatformInfo {
+  id: number;
+  email: string;
+  full_name?: string | null;
+  role: string;
+}
+
+export interface PlatformTenantSummary {
+  id: number;
+  name: string;
+  created_at: string;
+}
+
+export interface PlatformLoginSummary {
+  logged_in_at: string;
+  role?: string | null;
+  tenant_id?: number | null;
+  login_scope?: string | null;
+}
+
+export interface PlatformMetrics {
+  tenant_count: number;
+  signups_last_30_days: number;
+  logins_last_24_hours: number;
+  logins_last_7_days: number;
+  recent_tenants: PlatformTenantSummary[];
+  recent_logins: PlatformLoginSummary[];
 }
 
 export interface CourierOrderSummary {
@@ -1606,12 +1635,14 @@ export class ApiService {
   }
 
   /** Login: sends username/password as application/x-www-form-urlencoded (required by backend OAuth2PasswordRequestForm). May return 403 with require_otp + temp_token when OTP is enabled. */
-  login(username: string, password: string, tenantId?: number, scope?: 'tenant' | 'provider' | 'courier'): Observable<any> {
+  login(username: string, password: string, tenantId?: number, scope?: 'tenant' | 'provider' | 'courier' | 'platform'): Observable<any> {
     let queryParams = new HttpParams();
     if (scope === 'provider') {
       queryParams = queryParams.set('scope', 'provider');
     } else if (scope === 'courier') {
       queryParams = queryParams.set('scope', 'courier');
+    } else if (scope === 'platform') {
+      queryParams = queryParams.set('scope', 'platform');
     } else if (tenantId != null) {
       queryParams = queryParams.set('tenant_id', tenantId.toString());
     }
@@ -1718,6 +1749,15 @@ export class ApiService {
   // Courier portal (courier-scoped auth)
   getCourierMe(): Observable<CourierInfo> {
     return this.http.get<CourierInfo>(`${this.apiUrl}/courier/me`);
+  }
+
+  // Platform operator portal
+  getPlatformMe(): Observable<PlatformInfo> {
+    return this.http.get<PlatformInfo>(`${this.apiUrl}/platform/me`);
+  }
+
+  getPlatformMetrics(): Observable<PlatformMetrics> {
+    return this.http.get<PlatformMetrics>(`${this.apiUrl}/platform/metrics`);
   }
 
   getCourierOrders(): Observable<CourierOrderSummary[]> {

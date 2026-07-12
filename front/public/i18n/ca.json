@@ -299,6 +299,32 @@
     "SUBTITLE": "Inicieu sessió per veure les vostres entregues",
     "BACK_STAFF_LOGIN": "Tornar a l'inici de sessió de l'equip"
   },
+  "PLATFORM_AUTH": {
+    "TITLE": "Operador de plataforma",
+    "SUBTITLE": "Inicieu sessió per veure mètriques de la plataforma",
+    "BACK_STAFF_LOGIN": "Tornar a l'inici de sessió de l'equip"
+  },
+  "PLATFORM_DASHBOARD": {
+    "TITLE": "Resum de plataforma",
+    "SIGNED_IN_AS": "Sessió iniciada com a",
+    "LOGOUT": "Tancar sessió",
+    "TENANT_COUNT": "Inquilins (clients)",
+    "SIGNUPS_30D": "Registres (30 dies)",
+    "LOGINS_24H": "Inicis de sessió (24 h)",
+    "LOGINS_7D": "Inicis de sessió (7 dies)",
+    "RECENT_TENANTS": "Inquilins recents",
+    "RECENT_LOGINS": "Inicis de sessió recents",
+    "NO_TENANTS": "Encara no hi ha inquilins.",
+    "NO_LOGINS": "Encara no hi ha esdeveniments d'inici de sessió.",
+    "COL_ID": "ID",
+    "COL_NAME": "Nom",
+    "COL_CREATED": "Creat",
+    "COL_TIME": "Hora",
+    "COL_ROLE": "Rol",
+    "COL_TENANT": "Inquilí",
+    "COL_SCOPE": "Àmbit",
+    "LOAD_FAILED": "No s'han pogut carregar les dades de la plataforma. Torneu a iniciar sessió."
+  },
   "COURIER_HOME": {
     "TITLE": "Entregues",
     "WELCOME": "Sessió iniciada com a",

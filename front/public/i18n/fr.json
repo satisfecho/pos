@@ -299,6 +299,32 @@
     "SUBTITLE": "Connectez-vous pour voir vos livraisons",
     "BACK_STAFF_LOGIN": "Retour à la connexion équipe"
   },
+  "PLATFORM_AUTH": {
+    "TITLE": "Opérateur plateforme",
+    "SUBTITLE": "Connectez-vous pour voir les métriques de la plateforme",
+    "BACK_STAFF_LOGIN": "Retour à la connexion équipe"
+  },
+  "PLATFORM_DASHBOARD": {
+    "TITLE": "Vue d'ensemble plateforme",
+    "SIGNED_IN_AS": "Connecté en tant que",
+    "LOGOUT": "Se déconnecter",
+    "TENANT_COUNT": "Locataires (clients)",
+    "SIGNUPS_30D": "Inscriptions (30 jours)",
+    "LOGINS_24H": "Connexions (24 h)",
+    "LOGINS_7D": "Connexions (7 jours)",
+    "RECENT_TENANTS": "Locataires récents",
+    "RECENT_LOGINS": "Connexions récentes",
+    "NO_TENANTS": "Aucun locataire pour l'instant.",
+    "NO_LOGINS": "Aucun événement de connexion enregistré.",
+    "COL_ID": "ID",
+    "COL_NAME": "Nom",
+    "COL_CREATED": "Créé",
+    "COL_TIME": "Heure",
+    "COL_ROLE": "Rôle",
+    "COL_TENANT": "Locataire",
+    "COL_SCOPE": "Portée",
+    "LOAD_FAILED": "Impossible de charger les données plateforme. Veuillez vous reconnecter."
+  },
   "COURIER_HOME": {
     "TITLE": "Livraisons",
     "WELCOME": "Connecté en tant que",

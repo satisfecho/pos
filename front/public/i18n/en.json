@@ -355,6 +355,32 @@
     "SUBTITLE": "Sign in to view your deliveries",
     "BACK_STAFF_LOGIN": "Back to staff login"
   },
+  "PLATFORM_AUTH": {
+    "TITLE": "Platform operator",
+    "SUBTITLE": "Sign in to view platform metrics",
+    "BACK_STAFF_LOGIN": "Back to staff login"
+  },
+  "PLATFORM_DASHBOARD": {
+    "TITLE": "Platform overview",
+    "SIGNED_IN_AS": "Signed in as",
+    "LOGOUT": "Log out",
+    "TENANT_COUNT": "Tenants (clients)",
+    "SIGNUPS_30D": "Sign-ups (30 days)",
+    "LOGINS_24H": "Logins (24 hours)",
+    "LOGINS_7D": "Logins (7 days)",
+    "RECENT_TENANTS": "Recent tenants",
+    "RECENT_LOGINS": "Recent logins",
+    "NO_TENANTS": "No tenants yet.",
+    "NO_LOGINS": "No login events recorded yet.",
+    "COL_ID": "ID",
+    "COL_NAME": "Name",
+    "COL_CREATED": "Created",
+    "COL_TIME": "Time",
+    "COL_ROLE": "Role",
+    "COL_TENANT": "Tenant",
+    "COL_SCOPE": "Scope",
+    "LOAD_FAILED": "Could not load platform data. Please sign in again."
+  },
   "COURIER_HOME": {
     "TITLE": "Deliveries",
     "WELCOME": "Signed in as",
