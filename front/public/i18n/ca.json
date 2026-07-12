@@ -981,7 +981,8 @@
     "LOCATION_ZONE_PLACEHOLDER": "Tria la zona",
     "LOCATION_ZONE_REQUIRED": "Tria una zona.",
     "NO_ZONE_FOR_SEATING": "Cap zona coincideix amb aquesta preferència. Tria una altra opció o contacta el restaurant.",
-    "WEBSITE": "Lloc web"
+    "WEBSITE": "Lloc web",
+    "LINK_WAITLIST": "Sense taula? Uniu-vos a la llista d'espera"
   },
   "RESERVATIONS": {
     "TITLE": "Reserves",
@@ -1053,7 +1054,22 @@
     "SENDING": "Enviant...",
     "DELAY_SENT": "Avis enviat. Ens han informat.",
     "VIEW_PUBLIC_PAGE": "View public booking page",
-    "VIEW_FEEDBACK_PAGE": "Pàgina pública de comentaris"
+    "VIEW_FEEDBACK_PAGE": "Pàgina pública de comentaris",
+    "TAB_RESERVATIONS": "Reservations",
+    "TAB_WAITLIST": "Waiting list",
+    "VIEW_WAITLIST_PAGE": "Public waiting list",
+    "WL_NONE": "No one on the waiting list",
+    "WL_ACTIVE_ONLY": "Active queue",
+    "WL_STATUS_WAITING": "Waiting",
+    "WL_STATUS_NOTIFIED": "Notified",
+    "WL_STATUS_SEATED": "Seated",
+    "WL_STATUS_CANCELLED": "Cancelled",
+    "WL_STATUS_NO_SHOW": "No-show",
+    "WL_MARK_NOTIFIED": "Mark notified",
+    "WL_MARK_SEATED": "Mark seated",
+    "WL_JOINED": "Joined",
+    "WL_NOTIFIED": "Notified at",
+    "WL_BOOK_TABLE": "Book table"
   },
   "MY_SHIFT": {
     "TITLE": "El meu torn",
@@ -2157,5 +2173,17 @@
     "FEAT_I18N_DESC": "Interfície en diversos idiomes.",
     "FEAT_OPEN_SOURCE_TITLE": "Codi obert",
     "FEAT_OPEN_SOURCE_DESC": "Autoallotjament o núvol — sense dependència del proveïdor."
+  },
+  "WAITLIST": {
+    "TITLE": "Llista d'espera",
+    "INTRO": "No hi ha taula disponible? Deixeu el nom, el nombre de comensals i el telèfon; us contactarem quan hi hagi taula.",
+    "SUBMIT": "Unir-se a la llista d'espera",
+    "SUBMITTING": "S'està enviant…",
+    "SUCCESS_TITLE": "Sou a la llista d'espera",
+    "SUCCESS_MESSAGE": "Us trucarem o escriurem quan la taula estigui preparada.",
+    "LINK_BOOK_TABLE": "Reservar taula en comptes d'això",
+    "INVALID_PHONE": "Introduïu un número de telèfon vàlid (amb prefix internacional si cal).",
+    "ERROR_INVALID_LINK": "Enllaç no vàlid. Utilitzeu l'enllaç del restaurant.",
+    "ERROR_FAILED": "No s'ha pogut unir a la llista d'espera. Torneu-ho a provar."
   }
 }

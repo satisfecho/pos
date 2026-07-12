@@ -272,6 +272,9 @@
             <button type="submit" class="btn btn-primary" [disabled]="submitting()">
               {{ submitting() ? ('BOOK.SUBMITTING' | translate) : ('BOOK.SUBMIT' | translate) }}
             </button>
+            <p class="book-waitlist-link">
+              <a [routerLink]="['/waitlist', tenantId()]">{{ 'BOOK.LINK_WAITLIST' | translate }}</a>
+            </p>
           </form>
         </div>
       } @else {

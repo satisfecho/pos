@@ -1225,7 +1225,8 @@
     "LOCATION_ZONE_PLACEHOLDER": "Choose area",
     "LOCATION_ZONE_REQUIRED": "Please choose a seating area.",
     "NO_ZONE_FOR_SEATING": "No seating area matches this preference. Choose another option or contact the restaurant.",
-    "WEBSITE": "Website"
+    "WEBSITE": "Website",
+    "LINK_WAITLIST": "No table now? Join the waiting list"
   },
   "FEEDBACK": {
     "TITLE": "How was your visit?",
@@ -1352,7 +1353,22 @@
     "SEND_DELAY": "Send delay notice",
     "SENDING": "Sending...",
     "DELAY_SENT": "Delay notice sent. We will be informed.",
-    "DELAY_RATE_LIMITED": "Too many delay notices were sent. Please try again later."
+    "DELAY_RATE_LIMITED": "Too many delay notices were sent. Please try again later.",
+    "TAB_RESERVATIONS": "Reservations",
+    "TAB_WAITLIST": "Waiting list",
+    "VIEW_WAITLIST_PAGE": "Public waiting list",
+    "WL_NONE": "No one on the waiting list",
+    "WL_ACTIVE_ONLY": "Active queue",
+    "WL_STATUS_WAITING": "Waiting",
+    "WL_STATUS_NOTIFIED": "Notified",
+    "WL_STATUS_SEATED": "Seated",
+    "WL_STATUS_CANCELLED": "Cancelled",
+    "WL_STATUS_NO_SHOW": "No-show",
+    "WL_MARK_NOTIFIED": "Mark notified",
+    "WL_MARK_SEATED": "Mark seated",
+    "WL_JOINED": "Joined",
+    "WL_NOTIFIED": "Notified at",
+    "WL_BOOK_TABLE": "Book table"
   },
   "WORKING_PLAN": {
     "TITLE": "Working plan",
@@ -2289,5 +2305,17 @@
     "PAYMENT_REQUEST_YOURS": "is requesting payment!",
     "CALL_WAITER_OTHER": "Customer is calling a waiter",
     "PAYMENT_REQUEST_OTHER": "Customer is requesting payment"
+  },
+  "WAITLIST": {
+    "TITLE": "Join the waiting list",
+    "INTRO": "No table available right now? Leave your name, party size, and phone number and we will contact you when a table is ready.",
+    "SUBMIT": "Join waiting list",
+    "SUBMITTING": "Submitting…",
+    "SUCCESS_TITLE": "You are on the waiting list",
+    "SUCCESS_MESSAGE": "We will call or message you when your table is ready.",
+    "LINK_BOOK_TABLE": "Book a table instead",
+    "INVALID_PHONE": "Enter a valid phone number (including country code if needed).",
+    "ERROR_INVALID_LINK": "Invalid link. Please use the link provided by the restaurant.",
+    "ERROR_FAILED": "Could not join the waiting list. Please try again."
   }
 }

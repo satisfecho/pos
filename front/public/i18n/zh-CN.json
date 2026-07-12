@@ -1006,7 +1006,8 @@
     "LOCATION_ZONE_PLACEHOLDER": "选择区域",
     "LOCATION_ZONE_REQUIRED": "请选择区域。",
     "NO_ZONE_FOR_SEATING": "没有符合此偏好的座位区域。请选择其他选项或联系餐厅。",
-    "WEBSITE": "网站"
+    "WEBSITE": "网站",
+    "LINK_WAITLIST": "没有空桌？加入等候名单"
   },
   "RESERVATIONS": {
     "TITLE": "预订管理",
@@ -1063,7 +1064,22 @@
     "ERROR_MISSING_TOKEN": "缺少预订令牌。请使用确认中的链接。",
     "ERROR_NOT_FOUND": "未找到预订或链接已过期。",
     "VIEW_PUBLIC_PAGE": "View public booking page",
-    "VIEW_FEEDBACK_PAGE": "公开反馈页面"
+    "VIEW_FEEDBACK_PAGE": "公开反馈页面",
+    "TAB_RESERVATIONS": "Reservations",
+    "TAB_WAITLIST": "Waiting list",
+    "VIEW_WAITLIST_PAGE": "Public waiting list",
+    "WL_NONE": "No one on the waiting list",
+    "WL_ACTIVE_ONLY": "Active queue",
+    "WL_STATUS_WAITING": "Waiting",
+    "WL_STATUS_NOTIFIED": "Notified",
+    "WL_STATUS_SEATED": "Seated",
+    "WL_STATUS_CANCELLED": "Cancelled",
+    "WL_STATUS_NO_SHOW": "No-show",
+    "WL_MARK_NOTIFIED": "Mark notified",
+    "WL_MARK_SEATED": "Mark seated",
+    "WL_JOINED": "Joined",
+    "WL_NOTIFIED": "Notified at",
+    "WL_BOOK_TABLE": "Book table"
   },
   "MY_SHIFT": {
     "TITLE": "我的班次",
@@ -2098,5 +2114,17 @@
     "FEAT_I18N_DESC": "Guest and staff UI in multiple languages with per-tenant defaults.",
     "FEAT_OPEN_SOURCE_TITLE": "Open source",
     "FEAT_OPEN_SOURCE_DESC": "Self-host or run in the cloud — inspect, extend, and avoid vendor lock-in."
+  },
+  "WAITLIST": {
+    "TITLE": "加入等候名单",
+    "INTRO": "暂时没有空桌？留下姓名、人数和电话，有桌位时我们会联系您。",
+    "SUBMIT": "加入等候名单",
+    "SUBMITTING": "提交中…",
+    "SUCCESS_TITLE": "您已加入等候名单",
+    "SUCCESS_MESSAGE": "有桌位时我们会致电或发消息通知您。",
+    "LINK_BOOK_TABLE": "改为预订餐桌",
+    "INVALID_PHONE": "请输入有效的电话号码（如需请含国家区号）。",
+    "ERROR_INVALID_LINK": "链接无效，请使用餐厅提供的链接。",
+    "ERROR_FAILED": "无法加入等候名单，请重试。"
   }
 }

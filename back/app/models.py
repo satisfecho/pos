@@ -657,6 +657,30 @@ class Reservation(TenantMixin, table=True):
     locale: str | None = Field(default=None, max_length=16)
 
 
+class WaitingListStatus(str, Enum):
+    waiting = "waiting"
+    notified = "notified"
+    seated = "seated"
+    cancelled = "cancelled"
+    no_show = "no_show"
+
+
+class WaitingListEntry(TenantMixin, table=True):
+    """Walk-in waiting list queue (no reservation date/time)."""
+
+    __tablename__ = "waiting_list_entry"
+    id: int | None = Field(default=None, primary_key=True)
+    customer_name: str = Field(max_length=200)
+    customer_phone: str = Field(max_length=40)
+    party_size: int = Field(ge=1, le=99)
+    status: WaitingListStatus = Field(default=WaitingListStatus.waiting, index=True)
+    notified_at: datetime | None = Field(default=None)
+    client_ip: str | None = Field(default=None, max_length=45)
+    client_user_agent: str | None = Field(default=None, max_length=512)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 class GuestFeedback(TenantMixin, table=True):
     """Anonymous guest feedback submitted from the public /feedback/:tenantId page."""
 
@@ -928,6 +952,17 @@ class ReservationStatusUpdate(SQLModel):
 
 class ReservationSeat(SQLModel):
     table_id: int
+
+
+class WaitingListEntryCreate(SQLModel):
+    customer_name: str
+    customer_phone: str
+    party_size: int = Field(ge=1, le=99)
+    tenant_id: int | None = None  # Required for public create; staff use tenant from auth
+
+
+class WaitingListStatusUpdate(SQLModel):
+    status: WaitingListStatus
 
 
 class GuestFeedbackCreate(SQLModel):

@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit, ViewChild } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl, SafeStyle } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   ApiService,
   Reservation,
@@ -20,7 +20,7 @@ import { ApiErrorMessageService } from '../services/api-error-message.service';
 @Component({
   selector: 'app-book',
   standalone: true,
-  imports: [FormsModule, TranslateModule, LanguagePickerComponent, ReservationWeekSlotGridComponent, LegalLinksComponent],
+  imports: [FormsModule, TranslateModule, LanguagePickerComponent, ReservationWeekSlotGridComponent, LegalLinksComponent, RouterLink],
   templateUrl: './book.component.html',
   styleUrl: './book.component.scss',
 })

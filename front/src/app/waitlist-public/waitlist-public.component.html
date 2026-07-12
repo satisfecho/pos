@@ -1,0 +1,80 @@
+<div class="book-page" [style.--color-bg]="tenant()?.public_background_color ?? null" [style.--hero-header-bg]="tenant()?.public_background_color ?? null">
+  @if (loading()) {
+    <div class="loading-screen">
+      <div class="loading-content">
+        <div class="skeleton-header">
+          <div class="skeleton-logo"></div>
+          <div class="skeleton-text skeleton-title"></div>
+        </div>
+      </div>
+    </div>
+  } @else if (success()) {
+    <header class="hero-header" [class.has-bg-image]="tenant()?.header_background_filename" [style.background-image]="headerBackgroundStyle()">
+      <div class="hero-overlay"></div>
+      <app-language-picker class="book-language-picker"></app-language-picker>
+      <div class="hero-content">
+        <div class="hero-info">
+          <h1 class="restaurant-name">{{ tenant()?.name }}</h1>
+        </div>
+      </div>
+    </header>
+    <main class="book-content">
+      <div class="book-card book-success-card">
+        <h2 class="success-title">{{ 'WAITLIST.SUCCESS_TITLE' | translate }}</h2>
+        <p class="success-message">{{ 'WAITLIST.SUCCESS_MESSAGE' | translate }}</p>
+        <p class="waitlist-alt-link">
+          <a [routerLink]="['/book', tenantId()]">{{ 'WAITLIST.LINK_BOOK_TABLE' | translate }}</a>
+        </p>
+      </div>
+    </main>
+  } @else {
+    <header class="hero-header" [class.has-bg-image]="tenant()?.header_background_filename" [style.background-image]="headerBackgroundStyle()">
+      <div class="hero-overlay"></div>
+      <app-language-picker class="book-language-picker"></app-language-picker>
+      <div class="hero-content">
+        <div class="hero-top-row">
+          @if (logoUrl()) {
+            <div class="logo-container">
+              <img [src]="getLogoSafeUrl(logoUrl())" [alt]="tenant()?.name || ''" class="tenant-logo" />
+            </div>
+          }
+        </div>
+        <div class="hero-info">
+          <h1 class="restaurant-name">{{ tenant()?.name || ('WAITLIST.TITLE' | translate) }}</h1>
+          <div class="table-pill book-pill">
+            <span>{{ 'WAITLIST.TITLE' | translate }}</span>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="book-content">
+      <div class="book-card">
+        <div class="book-form">
+          <p class="waitlist-intro">{{ 'WAITLIST.INTRO' | translate }}</p>
+          <div class="form-group">
+            <label for="wl-name">{{ 'RESERVATIONS.CUSTOMER_NAME' | translate }}</label>
+            <input id="wl-name" type="text" name="name" required maxlength="200" [(ngModel)]="formName" />
+          </div>
+          <div class="form-group">
+            <label for="wl-party">{{ 'RESERVATIONS.PARTY_SIZE' | translate }}</label>
+            <input id="wl-party" type="number" name="partySize" min="1" max="20" required [(ngModel)]="formPartySize" />
+          </div>
+          <div class="form-group">
+            <label for="wl-phone">{{ 'RESERVATIONS.CUSTOMER_PHONE' | translate }}</label>
+            <input id="wl-phone" type="tel" name="phone" required [(ngModel)]="formPhone" />
+          </div>
+          @if (error()) {
+            <p class="form-error">{{ error() }}</p>
+          }
+          <app-legal-links [termsUrl]="termsOfServiceUrl()" [privacyUrl]="privacyPolicyUrl()" />
+          <button type="button" class="btn btn-primary" [disabled]="submitting()" (click)="submit()">
+            {{ submitting() ? ('WAITLIST.SUBMITTING' | translate) : ('WAITLIST.SUBMIT' | translate) }}
+          </button>
+          <p class="waitlist-alt-link">
+            <a [routerLink]="['/book', tenantId()]">{{ 'WAITLIST.LINK_BOOK_TABLE' | translate }}</a>
+          </p>
+        </div>
+      </div>
+    </main>
+  }
+</div>

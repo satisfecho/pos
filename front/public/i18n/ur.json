@@ -1169,7 +1169,8 @@
     "LOCATION_ZONE_PLACEHOLDER": "علاقہ منتخب کریں",
     "LOCATION_ZONE_REQUIRED": "براہ کرم منتخب کریں نشست علاقہ.",
     "NO_ZONE_FOR_SEATING": "نہیں نشست علاقہ میچ کرتا ہے یہ ترجیح. ایک منتخب کریںدیگر آپشن یا رابطہ ریستوران.",
-    "WEBSITE": "ویب سائٹ"
+    "WEBSITE": "ویب سائٹ",
+    "LINK_WAITLIST": "میز نہیں؟ انتظار کی فہرست میں شامل ہوں"
   },
   "FEEDBACK": {
     "TITLE": "آپ کی وزٹ کیسی رہی؟",
@@ -1296,7 +1297,22 @@
     "SEND_DELAY": "تاخیر کی اطلاع بھیجیں",
     "SENDING": "بھیجا جا رہا ہے...",
     "DELAY_SENT": "Delay اطلاع بھیج دیا. ہم گا ہو informed.",
-    "DELAY_RATE_LIMITED": "بھی بہت delay اطلاعات تھے بھیج دیا. براہ کرم بعد میں کوشش کریں۔"
+    "DELAY_RATE_LIMITED": "بھی بہت delay اطلاعات تھے بھیج دیا. براہ کرم بعد میں کوشش کریں۔",
+    "TAB_RESERVATIONS": "Reservations",
+    "TAB_WAITLIST": "Waiting list",
+    "VIEW_WAITLIST_PAGE": "Public waiting list",
+    "WL_NONE": "No one on the waiting list",
+    "WL_ACTIVE_ONLY": "Active queue",
+    "WL_STATUS_WAITING": "Waiting",
+    "WL_STATUS_NOTIFIED": "Notified",
+    "WL_STATUS_SEATED": "Seated",
+    "WL_STATUS_CANCELLED": "Cancelled",
+    "WL_STATUS_NO_SHOW": "No-show",
+    "WL_MARK_NOTIFIED": "Mark notified",
+    "WL_MARK_SEATED": "Mark seated",
+    "WL_JOINED": "Joined",
+    "WL_NOTIFIED": "Notified at",
+    "WL_BOOK_TABLE": "Book table"
   },
   "WORKING_PLAN": {
     "TITLE": "کام کا پلان",
@@ -2289,5 +2305,17 @@
     "FEAT_I18N_DESC": "Guest and staff UI in multiple languages with per-tenant defaults.",
     "FEAT_OPEN_SOURCE_TITLE": "Open source",
     "FEAT_OPEN_SOURCE_DESC": "Self-host or run in the cloud — inspect, extend, and avoid vendor lock-in."
+  },
+  "WAITLIST": {
+    "TITLE": "انتظار کی فہرست",
+    "INTRO": "ابھی میز دستیاب نہیں؟ اپنا نام، مہمانوں کی تعداد اور فون نمبر چھوڑیں — میز تیار ہوتے ہی رابطہ کریں گے۔",
+    "SUBMIT": "انتظار کی فہرست میں شامل ہوں",
+    "SUBMITTING": "بھیجا جا رہا ہے…",
+    "SUCCESS_TITLE": "آپ انتظار کی فہرست میں ہیں",
+    "SUCCESS_MESSAGE": "میز تیار ہوتے ہی کال یا پیغام کریں گے۔",
+    "LINK_BOOK_TABLE": "اس کے بجائے میز بک کریں",
+    "INVALID_PHONE": "درست فون نمبر درج کریں (ضرورت ہو تو ملک کا کوڈ)۔",
+    "ERROR_INVALID_LINK": "غلط لنک۔ ریستوران کا لنک استعمال کریں۔",
+    "ERROR_FAILED": "انتظار کی فہرست میں شامل نہیں ہو سکے۔ دوبارہ کوشش کریں۔"
   }
 }

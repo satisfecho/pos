@@ -980,7 +980,8 @@
     "LOCATION_ZONE_PLACEHOLDER": "Bereich wählen",
     "LOCATION_ZONE_REQUIRED": "Bitte einen Bereich wählen.",
     "NO_ZONE_FOR_SEATING": "Kein Bereich passt zu dieser Präferenz. Wählen Sie eine andere Option oder kontaktieren Sie das Restaurant.",
-    "WEBSITE": "Webseite"
+    "WEBSITE": "Webseite",
+    "LINK_WAITLIST": "Kein Tisch frei? Zur Warteliste"
   },
   "FEEDBACK": {
     "TITLE": "Wie war Ihr Besuch?",
@@ -1091,7 +1092,22 @@
     "NOTIFY_DELAY_PLACEHOLDER": "z. B. Wir kommen 1 Stunde später",
     "SEND_DELAY": "Verspätung senden",
     "SENDING": "Wird gesendet...",
-    "DELAY_SENT": "Verspätung gemeldet. Wir wurden informiert."
+    "DELAY_SENT": "Verspätung gemeldet. Wir wurden informiert.",
+    "TAB_RESERVATIONS": "Reservierungen",
+    "TAB_WAITLIST": "Warteliste",
+    "VIEW_WAITLIST_PAGE": "Öffentliche Warteliste",
+    "WL_NONE": "Niemand auf der Warteliste",
+    "WL_ACTIVE_ONLY": "Aktive Warteschlange",
+    "WL_STATUS_WAITING": "Wartend",
+    "WL_STATUS_NOTIFIED": "Benachrichtigt",
+    "WL_STATUS_SEATED": "Platziert",
+    "WL_STATUS_CANCELLED": "Storniert",
+    "WL_STATUS_NO_SHOW": "Nicht erschienen",
+    "WL_MARK_NOTIFIED": "Als benachrichtigt markieren",
+    "WL_MARK_SEATED": "Als platziert markieren",
+    "WL_JOINED": "Beigetreten",
+    "WL_NOTIFIED": "Benachrichtigt um",
+    "WL_BOOK_TABLE": "Tisch buchen"
   },
   "MY_SHIFT": {
     "TITLE": "Meine Schicht",
@@ -2198,5 +2214,17 @@
     "FEAT_I18N_DESC": "Gäste- und Team-Oberfläche in mehreren Sprachen.",
     "FEAT_OPEN_SOURCE_TITLE": "Open Source",
     "FEAT_OPEN_SOURCE_DESC": "Self-Hosting oder Cloud — ohne Vendor Lock-in."
+  },
+  "WAITLIST": {
+    "TITLE": "Warteliste",
+    "INTRO": "Gerade kein Tisch frei? Hinterlassen Sie Name, Personenzahl und Telefonnummer — wir melden uns, sobald ein Tisch frei ist.",
+    "SUBMIT": "Zur Warteliste",
+    "SUBMITTING": "Wird gesendet…",
+    "SUCCESS_TITLE": "Sie stehen auf der Warteliste",
+    "SUCCESS_MESSAGE": "Wir rufen Sie an oder schreiben Ihnen, sobald ein Tisch bereit ist.",
+    "LINK_BOOK_TABLE": "Stattdessen Tisch reservieren",
+    "INVALID_PHONE": "Bitte geben Sie eine gültige Telefonnummer ein (ggf. mit Ländervorwahl).",
+    "ERROR_INVALID_LINK": "Ungültiger Link. Bitte den Link des Restaurants verwenden.",
+    "ERROR_FAILED": "Warteliste konnte nicht beigetragen werden. Bitte erneut versuchen."
   }
 }

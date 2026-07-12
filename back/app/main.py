@@ -1163,6 +1163,62 @@ def submit_public_guest_feedback(
     return {"ok": True, "id": row.id}
 
 
+@app.post("/public/tenants/{tenant_id}/waiting-list")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_waiting_list_per_hour', 10)}/hour",
+    key_func=_rate_limit_key,
+)
+def submit_public_waiting_list(
+    request: Request,
+    response: Response,
+    tenant_id: int,
+    body: models.WaitingListEntryCreate,
+    session: Session = Depends(get_session),
+    lang: str = Depends(_get_requested_language),
+) -> dict:
+    """Public waiting-list signup: name, party size, phone (no login)."""
+    tenant = session.get(models.Tenant, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail=api_error_payload("tenant_not_found", lang))
+
+    name = str(body.customer_name or "").replace("\x00", "").strip()
+    if not name:
+        raise HTTPException(status_code=400, detail=api_error_payload("customer_name_required", lang))
+    if len(name) > 200:
+        name = name[:200]
+
+    try:
+        phone_e164 = normalize_phone_e164(body.customer_phone, settings.default_phone_country)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=api_error_payload("invalid_phone", lang))
+
+    party_size = int(body.party_size)
+    if party_size < 1 or party_size > 99:
+        raise HTTPException(status_code=400, detail=api_error_payload("invalid_party_size", lang))
+
+    client_ip = _client_ip_from_request(request)
+    user_agent = (request.headers.get("user-agent") or "")[:512]
+    now = datetime.now(timezone.utc)
+
+    row = models.WaitingListEntry(
+        tenant_id=tenant_id,
+        customer_name=name,
+        customer_phone=phone_e164,
+        party_size=party_size,
+        status=models.WaitingListStatus.waiting,
+        client_ip=client_ip,
+        client_user_agent=user_agent or None,
+        created_at=now,
+        updated_at=now,
+    )
+    session.add(row)
+    session.commit()
+    session.refresh(row)
+    out = _waiting_list_entry_to_dict(row, include_client_tech=False)
+    publish_reservation_update(tenant_id, {"type": "waiting_list_update", "entry": out})
+    return out
+
+
 def _guest_feedback_to_dict(session: Session, gf: models.GuestFeedback) -> dict:
     out: dict = {
         "id": gf.id,
@@ -1182,6 +1238,26 @@ def _guest_feedback_to_dict(session: Session, gf: models.GuestFeedback) -> dict:
             out["reservation_date"] = str(r.reservation_date)
             out["reservation_time"] = str(r.reservation_time)
             out["reservation_customer_name"] = r.customer_name
+    return out
+
+
+def _waiting_list_entry_to_dict(
+    entry: models.WaitingListEntry, include_client_tech: bool = False
+) -> dict:
+    out = {
+        "id": entry.id,
+        "tenant_id": entry.tenant_id,
+        "customer_name": entry.customer_name,
+        "customer_phone": entry.customer_phone,
+        "party_size": entry.party_size,
+        "status": entry.status.value,
+        "notified_at": entry.notified_at.isoformat() if entry.notified_at else None,
+        "created_at": entry.created_at.isoformat() if entry.created_at else None,
+        "updated_at": entry.updated_at.isoformat() if entry.updated_at else None,
+    }
+    if include_client_tech:
+        out["client_ip"] = entry.client_ip
+        out["client_user_agent"] = entry.client_user_agent
     return out
 
 
@@ -8742,6 +8818,104 @@ def list_reservations(
     q = q.order_by(models.Reservation.reservation_date, models.Reservation.reservation_time)
     reservations = session.exec(q).all()
     return [_reservation_to_dict(r, session, include_client_tech=True) for r in reservations]
+
+
+@app.get("/waiting-list")
+def list_waiting_list(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.RESERVATION_READ))],
+    session: Session = Depends(get_session),
+    status: str | None = Query(None, description="Filter by status"),
+    phone: str | None = Query(None, description="Search by phone (partial)"),
+    active_only: bool = Query(True, description="When true, exclude seated/cancelled/no_show"),
+) -> list[dict]:
+    """List waiting-list entries for the tenant. Staff only."""
+    q = select(models.WaitingListEntry).where(
+        models.WaitingListEntry.tenant_id == current_user.tenant_id
+    )
+    if status:
+        q = q.where(models.WaitingListEntry.status == status)
+    elif active_only:
+        q = q.where(
+            models.WaitingListEntry.status.in_(
+                [
+                    models.WaitingListStatus.waiting,
+                    models.WaitingListStatus.notified,
+                ]
+            )
+        )
+    if phone and phone.strip():
+        q = q.where(models.WaitingListEntry.customer_phone.contains(phone.strip()))
+    q = q.order_by(models.WaitingListEntry.created_at)
+    rows = session.exec(q).all()
+    return [_waiting_list_entry_to_dict(r, include_client_tech=True) for r in rows]
+
+
+@app.post("/waiting-list")
+def create_waiting_list_entry_staff(
+    request: Request,
+    body: models.WaitingListEntryCreate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.RESERVATION_WRITE))],
+    session: Session = Depends(get_session),
+    lang: str = Depends(_get_requested_language),
+) -> dict:
+    """Staff creates a waiting-list entry."""
+    name = str(body.customer_name or "").replace("\x00", "").strip()
+    if not name:
+        raise HTTPException(status_code=400, detail=api_error_payload("customer_name_required", lang))
+    try:
+        phone_e164 = normalize_phone_e164(body.customer_phone, settings.default_phone_country)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=api_error_payload("invalid_phone", lang))
+    party_size = int(body.party_size)
+    if party_size < 1 or party_size > 99:
+        raise HTTPException(status_code=400, detail=api_error_payload("invalid_party_size", lang))
+    now = datetime.now(timezone.utc)
+    row = models.WaitingListEntry(
+        tenant_id=current_user.tenant_id,
+        customer_name=name[:200],
+        customer_phone=phone_e164,
+        party_size=party_size,
+        status=models.WaitingListStatus.waiting,
+        client_ip=_client_ip_from_request(request),
+        client_user_agent=(request.headers.get("user-agent") or "")[:512] or None,
+        created_at=now,
+        updated_at=now,
+    )
+    session.add(row)
+    session.commit()
+    session.refresh(row)
+    out = _waiting_list_entry_to_dict(row, include_client_tech=True)
+    publish_reservation_update(current_user.tenant_id, {"type": "waiting_list_update", "entry": out})
+    return out
+
+
+@app.put("/waiting-list/{entry_id}/status")
+def update_waiting_list_status(
+    entry_id: int,
+    body: models.WaitingListStatusUpdate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.RESERVATION_WRITE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Update waiting-list entry status. Staff only."""
+    entry = session.exec(
+        select(models.WaitingListEntry).where(
+            models.WaitingListEntry.id == entry_id,
+            models.WaitingListEntry.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not entry:
+        raise HTTPException(status_code=404, detail="Waiting list entry not found")
+    now = datetime.now(timezone.utc)
+    entry.status = body.status
+    if body.status == models.WaitingListStatus.notified:
+        entry.notified_at = now
+    entry.updated_at = now
+    session.add(entry)
+    session.commit()
+    session.refresh(entry)
+    out = _waiting_list_entry_to_dict(entry, include_client_tech=True)
+    publish_reservation_update(current_user.tenant_id, {"type": "waiting_list_update", "entry": out})
+    return out
 
 
 @app.get("/reservations/prefill-by-phone")

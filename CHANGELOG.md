@@ -8,11 +8,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.11] - 2026-07-12
+
+### Added
+
+- **Waiting list:** Guests can join a tenant waiting queue with name, party size, and phone — public form at **`/waitlist/:tenantId`** and a link from **`/book/:tenantId`** when no table is available; staff manage the queue on **`/reservations`** (Waiting list tab) with mark notified, book table, seated, and cancel actions (#282).
+
 ## [2.1.10] - 2026-07-07
 
 ### Fixed
 
-- **Demo Take Away menu:** Beverages no longer show wrong catalog images and descriptions (e.g. Coca Cola with a beer photo) — demo product linking now matches catalog names only and repairs mismatched links from prior round-robin runs (#280).
+- **Demo Take Away menu:** Beverages no longer show wrong catalog images and descriptions (e.g. Coca Cola with a beer photo) — demo product linking now matches catalog names only, repairs mismatched links from prior round-robin runs, and clears stale `Product` image/description backfills when no catalog link remains (#280).
+
+### Changed
+
+- **Release / production:** Promoted **`development` → `master`** (including hotfix for stale demo product backfills) and confirmed green **Deploy to amvara9** on production (**satisfecho.de**) — live **2.1.10** at **`f0433b5a`** (#281).
 
 ## [2.1.9] - 2026-07-06
 
