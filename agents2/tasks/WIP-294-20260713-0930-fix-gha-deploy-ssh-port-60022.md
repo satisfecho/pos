@@ -28,6 +28,10 @@ Because SSH never connects, later steps are skipped: marketing-site rsync, `scri
 - Updated **`docs/0001-ci-cd-amvara9.md`** optional secrets/variables table and workflow steps summary.
 - Local YAML parse check passed (`python3 -c "import yaml; yaml.safe_load(...)"`).
 
+## Handoff log
+
+- **Handoff (`012-feature-coder-handoff.md`, 2026-07-13, user `012` pass — Cursor):** `./scripts/git-sync-development.sh` (OK). **`origin/development`** @ **`2dd5cb6a`**: workflow + docs committed (**`DEPLOY_SSH_PORT`** / **`-p`** on all SSH/rsync paths). Resolves embedded **Test report** “uncommitted” **FAIL**. **`origin/master`** @ **`0923c654`** still lacks the fix; latest **Deploy to amvara9** run **`29200152615`** still **failure** (port 22 `Connection refused`); **`https://www.satisfecho.de/bosskebabypizzeria/`** still placeholder. **`gh issue view 294`**: **OPEN**, **`agent:wip`**. Per **012-feature-coder-handoff.md** deploy-blocker: criterion **(2)** **FAIL** — **no** **`WIP-294-…` → `UNTESTED-*`**; **no** `gh issue edit 294 --add-label "agent:untested"`. Feature coder / committer must merge **`development` → `master`** and confirm green deploy before handoff.
+
 ## Testing instructions
 
 1. **Merge to `master`** (deploy workflow only runs on **`master`** push or **`workflow_dispatch`**).
