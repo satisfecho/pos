@@ -22,3 +22,31 @@ This is an explicit production-promotion request. Follow **`.cursor/rules/git-de
 - Post-deploy smoke: landing **app-version** meta, **`/api/health`** 200, spot-check marketing sites (e.g. **`https://www.satisfecho.de/bosskebabypizzeria/`** no longer placeholder if marketing rsync ran), and any routes touched by recent work.
 - This is **deploy/ops**, not feature coding — fix blocking defects on **`development`** only if deploy reveals them, then re-test and re-promote.
 - Append **Testing instructions** when promotion and production verification are complete (include workflow run URL and smoke results).
+
+## Implementation notes
+
+- Synced **`development`**; local landing smoke **200**.
+- Bumped **2.1.14 → 2.1.15** in **`CHANGELOG.md`**, **`front/package.json`**, **`front/package-lock.json`** (deploy SSH fix + waiting-list docs + release note).
+- Committed on **`development`**: **`6b32a14a`** (`Release 2.1.15: GHA deploy SSH port fix, waiting-list docs (#295)`).
+- Merged **`development` → `master`**; pushed **`master`** @ **`59bd1dec`** (`Merge development: release 2.1.15 to production (#295)`).
+- **Deploy to amvara9** run **29255611539** — **success** (2m19s); all steps green including SSH checkout on port **60022**, marketing rsync, build/restart, and workflow smoke test.
+
+## Testing instructions
+
+1. **Git promotion**
+   - `git fetch origin && git rev-parse --short origin/master origin/development`
+   - Expect **`origin/master`** @ **`59bd1dec`** (or descendant) includes **`2dd5cb6a`** (SSH port fix) and **`6b32a14a`** / release **2.1.15** changelog.
+
+2. **GitHub Actions — Deploy to amvara9**
+   - Run: https://github.com/satisfecho/pos/actions/runs/29255611539
+   - Conclusion: **success**
+   - Verify steps: **Set up SSH**, **Checkout latest code on amvara9**, **Sync marketing sites**, **Build and restart stack**, **Smoke test** — all ✓.
+
+3. **Production smoke (manual)**
+   - `curl -s -o /dev/null -w "%{http_code}" https://www.satisfecho.de/` → **200**
+   - `curl -s -o /dev/null -w "%{http_code}" https://www.satisfecho.de/api/health` → **200**
+   - `curl -s https://www.satisfecho.de/ | grep app-version` → **`content="2.1.15"`**
+   - `curl -s -o /dev/null -w "%{http_code}" https://www.satisfecho.de/bosskebabypizzeria/` → **200** (marketing SPA, not placeholder)
+
+4. **Local dev (optional)**
+   - `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:4202/` → **200**
