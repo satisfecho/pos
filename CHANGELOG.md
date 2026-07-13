@@ -8,6 +8,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Fixed
+
+- **Deploy to amvara9 (GitHub Actions):** CI now connects over SSH port **60022** (amvara9 default) instead of port 22 — `ssh-keyscan`, `ssh`, and marketing-site `rsync` all honor optional repository Variable **`DEPLOY_SSH_PORT`**; restores checkout, bundle sync, and post-deploy smoke after the server moved SSH off port 22 (#294).
+
 ### Changed
 
 - **Reservation user guide:** `docs/0011-table-reservation-user-guide.md` now documents the waiting list — guest flow at **`/waitlist/:tenantId`**, the link from **`/book/:tenantId`**, staff queue actions on **`/reservations`**, and local/production URL examples; **`README.md`** pointers updated to match (#282).

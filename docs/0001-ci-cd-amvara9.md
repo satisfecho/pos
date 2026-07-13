@@ -35,18 +35,19 @@ The workflow accepts **either** the raw private key (with `-----BEGIN ... END---
 
 You can override defaults with these repository secrets:
 
-| Secret         | Default          | Use when |
-|----------------|------------------|----------|
-| `DEPLOY_HOST`  | `167.235.138.59` | Override if the server IP or hostname changes |
-| `DEPLOY_USER`  | `root`           | Deploy runs as another user |
-| `DEPLOY_PATH`  | `/development/pos` | Project is in a different directory |
+| Secret / variable | Default          | Use when |
+|-------------------|------------------|----------|
+| `DEPLOY_HOST`     | `167.235.138.59` | Override if the server IP or hostname changes |
+| `DEPLOY_USER`     | `root`           | Deploy runs as another user |
+| `DEPLOY_PATH`     | `/development/pos` | Project is in a different directory |
+| `DEPLOY_SSH_PORT` | `60022`          | SSH port on amvara9 (repository **Variable**; not port 22) |
 
 ## Workflow
 
 - **File:** `.github/workflows/deploy-amvara9.yml`
 - **Trigger:** Push to **`master`** only (not **`development`**); **`workflow_dispatch`** for manual deploy
 - **Concurrency:** A single **`deploy-amvara9`** group queues jobs so two pushes cannot overlap on the same server checkout.
-- **Steps:** SSH to amvara9 → `git fetch` → **`git checkout` + `reset --hard` to the pushed branch** (`${{ github.ref_name }}`, e.g. `master`) → **`bash scripts/deploy-amvara9.sh`**
+- **Steps:** SSH to amvara9 (port **`DEPLOY_SSH_PORT`**, default **60022**) → `git fetch` → **`git checkout` + `reset --hard` to the pushed branch** (`${{ github.ref_name }}`, e.g. `master`) → marketing rsync → **`bash scripts/deploy-amvara9.sh`**
 - **Deploy script behaviour (GitHub #49):**
   - **`docker compose build`** for **back** and **front** runs **before** stopping app containers; a failed build leaves the previous stack running.
   - By default, **`docker compose down` is not used**; only **front**, **haproxy**, **ws-bridge**, and **back** are stopped so **db** and **redis** stay up. Override with **`DEPLOY_FULL_DOWN=1`** on the server for a full teardown.
