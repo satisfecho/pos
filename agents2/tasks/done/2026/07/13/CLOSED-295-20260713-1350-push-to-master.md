@@ -50,3 +50,64 @@ This is an explicit production-promotion request. Follow **`.cursor/rules/git-de
 
 4. **Local dev (optional)**
    - `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:4202/` → **200**
+
+---
+
+## Test report
+
+**Date/time (UTC):** 2026-07-13 13:57–13:58 UTC  
+**Log window:** Production HTTP checks + GHA run 29255611539 (completed 13:55:59 UTC); local landing curl only (no Docker log scrape required for this deploy task).
+
+### Environment
+
+- **Branch:** `development` (synced); promotion verified on **`origin/master`** @ **`59bd1dec`**, **`origin/development`** @ **`218b50f6`**.
+- **BASE_URL:** `https://www.satisfecho.de` (production); optional local `http://127.0.0.1:4202`.
+- **Compose:** N/A for primary criteria; local dev overlay available.
+
+### What was tested
+
+Per **Testing instructions**: git promotion includes SSH port fix and release 2.1.15; green **Deploy to amvara9** run with all deploy steps; production landing, health, app-version, marketing SPA; optional local landing.
+
+### Results
+
+| Criterion | Result | Evidence |
+|-----------|--------|----------|
+| Git promotion on `master` | **PASS** | `origin/master` @ **`59bd1dec`**; **`2dd5cb6a`** and **`6b32a14a`** are ancestors of `origin/master`. |
+| GHA Deploy to amvara9 | **PASS** | Run https://github.com/satisfecho/pos/actions/runs/29255611539 — **success** (2m19s). All steps green: Set up SSH (`DEPLOY_SSH_PORT: 60022`), Checkout latest code on amvara9, Sync marketing sites, Build and restart stack, Smoke test. |
+| Production landing HTTP 200 | **PASS** | `curl -sf -o /dev/null -w "%{http_code}" https://www.satisfecho.de/` → `200`. |
+| Production `/api/health` HTTP 200 | **PASS** | `curl` → `200`. |
+| App version 2.1.15 | **PASS** | `curl -s https://www.satisfecho.de/ \| grep app-version` → `content="2.1.15"`. |
+| Marketing bosskebabypizzeria (not placeholder) | **PASS** | HTTP `200`; title `Boss Kebab y Pizzería` (no “bundle not loaded” / placeholder). |
+| Local dev landing (optional) | **PASS** | `curl http://127.0.0.1:4202/` → `200`. |
+
+### Overall
+
+**PASS** — all criteria met. Production is on release **2.1.15** @ **`59bd1dec`**; deploy pipeline uses SSH port **60022** and completed successfully.
+
+### Product owner feedback
+
+Release **2.1.15** is live on production with a green CI deploy after the #294 SSH port fix. Marketing sites were refreshed (bosskebab serves the real SPA). No follow-up deploy work needed for this task.
+
+### URLs tested
+
+1. https://www.satisfecho.de/
+2. https://www.satisfecho.de/api/health
+3. https://www.satisfecho.de/bosskebabypizzeria/
+4. http://127.0.0.1:4202/ (optional local)
+
+### Relevant log excerpts
+
+**GHA deploy (run 29255611539, job deploy):**
+```
+Set up SSH: success (DEPLOY_SSH_PORT: 60022)
+Checkout latest code on amvara9: success
+Sync marketing sites to server: success
+Build and restart stack on amvara9: success
+Smoke test (landing, version, API health): success
+```
+
+**Production curl (2026-07-13 13:58 UTC):**
+```
+Landing: 200 | Health: 200 | app-version content="2.1.15" | bosskebab: 200
+<title>Boss Kebab y Pizzería</title>
+```

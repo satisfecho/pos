@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** **Deploy to amvara9** failed at SSH because the workflow still used port **22** after amvara9 moved SSH to **60022**; marketing rsync and post-deploy smoke were skipped.
+- **What was done:** Added job-level **`DEPLOY_SSH_PORT`** (default **60022**) and **`-p $DEPLOY_SSH_PORT`** on all **`ssh-keyscan`**, **`ssh`**, and **`rsync -e ssh`** steps in **`.github/workflows/deploy-amvara9.yml`**; updated **`docs/0001-ci-cd-amvara9.md`**. Fix landed on **`master`** via **#295** promotion (**`59bd1dec`**, release **2.1.15**).
+- **What was tested:** GHA run **29255611539** — **success** (SSH checkout, marketing rsync, deploy, smoke). Production: landing **`200`**, **`/api/health`** **`200`**, **`app-version`** **2.1.15**; **`https://www.satisfecho.de/bosskebabypizzeria/`** serves the SPA (no placeholder).
+- **Why closed:** **#294** closed; deploy-blocker resolved after **`development` → `master`** merge. Follow-up promotion tracking continues on **#295** (**`UNTESTED-295-…`**).
+- **Closed at (UTC):** 2026-07-13 13:53
+---
+
 # Fix GHA deploy: use SSH port 60022 for amvara9 (was 22)
 
 ## GitHub Issues
@@ -31,6 +41,7 @@ Because SSH never connects, later steps are skipped: marketing-site rsync, `scri
 ## Handoff log
 
 - **Handoff (`012-feature-coder-handoff.md`, 2026-07-13, user `012` pass — Cursor):** `./scripts/git-sync-development.sh` (OK). **`origin/development`** @ **`2dd5cb6a`**: workflow + docs committed (**`DEPLOY_SSH_PORT`** / **`-p`** on all SSH/rsync paths). Resolves embedded **Test report** “uncommitted” **FAIL**. **`origin/master`** @ **`0923c654`** still lacks the fix; latest **Deploy to amvara9** run **`29200152615`** still **failure** (port 22 `Connection refused`); **`https://www.satisfecho.de/bosskebabypizzeria/`** still placeholder. **`gh issue view 294`**: **OPEN**, **`agent:wip`**. Per **012-feature-coder-handoff.md** deploy-blocker: criterion **(2)** **FAIL** — **no** **`WIP-294-…` → `UNTESTED-*`**; **no** `gh issue edit 294 --add-label "agent:untested"`. Feature coder / committer must merge **`development` → `master`** and confirm green deploy before handoff.
+- **Handoff (`012-feature-coder-handoff.md`, 2026-07-13, Cursor):** `./scripts/git-sync-development.sh` (OK). **#294** **CLOSED**; fix on **`origin/master`** @ **`59bd1dec`**; **Deploy to amvara9** **`29255611539`** **success**; production smoke **PASS** (landing **`200`**, health **`200`**, **`app-version`** **2.1.15**, marketing **bosskebabypizzeria** no placeholder). Successor **#295** → **`UNTESTED-295-…`**. Per **012** closed-issue rule: archive **`WIP-294-…` → `CLOSED-294-…`** → **`done/2026/07/13/`** — **not** **`UNTESTED`**, **no** `agent:untested` on **#294**.
 
 ## Testing instructions
 
