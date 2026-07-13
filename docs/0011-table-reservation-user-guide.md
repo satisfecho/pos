@@ -9,13 +9,15 @@ This document describes how table reservations work for **staff** and **end user
 ### Staff (admin dashboard)
 
 - **Reservations list** (`/reservations`): Filter by date, phone, status; create, edit, cancel, **seat at table**, and finish reservations. Table column shows assigned table name or "—" when not assigned.
+- **Waiting list tab** (`/reservations` → **Waiting list**): View the walk-in queue; filter by phone or status. Actions on active entries (`waiting` / `notified`): **Mark notified**, **Book table** (opens reservation form prefilled with guest details), **Mark seated**, **No show**, and **Cancel**.
 - **Tables canvas** (`/tables/canvas`): Table status **Reserved** (amber) when a reservation is assigned; **Available** / **Occupied** as before.
 - **Permissions**: `reservation:read` and `reservation:write` for owner, admin, waiter, receptionist.
 - **API**: List/create/update reservations; seat (assign table), finish, cancel; reservation responses include `table_name` when `table_id` is set.
 
 ### End users (public, no login)
 
-- **Book a table**: Public page at **`/book/:tenantId`**. Form: date, time, party size, name, phone. Submit creates a reservation (status `booked`). Success screen shows a link to view/cancel.
+- **Book a table**: Public page at **`/book/:tenantId`**. Form: date, time, party size, name, phone. Submit creates a reservation (status `booked`). Success screen shows a link to view/cancel. When no slot is available, guests can follow **“Join the waiting list”** to **`/waitlist/:tenantId`**.
+- **Join the waiting list**: Public page at **`/waitlist/:tenantId`**. Form: name, party size, phone (no date/time). Submit adds the guest to the tenant queue (status `waiting`). Also reachable from the book page link above.
 - **View or cancel**: Public page at **`/reservation?token=...`**. Shows reservation details and status; allows cancelling if status is `booked` or `seated`.
 
 ### Backend
@@ -24,6 +26,7 @@ This document describes how table reservations work for **staff** and **end user
 - **Table status**: `available` | `reserved` | `occupied` (reserved = assigned to a booked reservation, no order yet).
 - **Migrations**: `reservation` table; fix for `reservation_date` / `reservation_time` column types (DATE, TIME).
 - **Public API**: `POST /reservations` with `tenant_id` (no auth); `GET /reservations/by-token?token=...`; `PUT /reservations/{id}/cancel?token=...`.
+- **Waiting list**: `waiting_list_entry` table (tenant-scoped; no reservation date/time). Statuses: `waiting` → `notified` → `seated` / `cancelled` / `no_show`. Public `POST /public/tenants/{tenant_id}/waiting-list` (rate-limited); staff `GET /waiting-list`, `POST /waiting-list`, `PUT /waiting-list/{id}/status` (same `reservation:read` / `reservation:write` permissions as reservations).
 
 ---
 
@@ -58,15 +61,49 @@ This document describes how table reservations work for **staff** and **end user
 - The **booking link** (`/book/<tenantId>`) to create a reservation.
 - The **view link** (`/reservation?token=...`) to see or cancel it (this link is shown after booking and can be sent by email/SMS by the restaurant if implemented later).
 
+When a table is not available for a chosen slot, the book page shows **“No table now? Join the waiting list”** linking to the waiting-list form (see section 3).
+
 ---
 
-## 3. URL reference
+## 3. Waiting list
+
+The waiting list is for **walk-in guests** who want a table **without** picking a date/time slot. It complements timed reservations; staff manage both from **`/reservations`**.
+
+### Guest flow (public, no login)
+
+1. **Get the waiting-list link**  
+   Share **`/waitlist/:tenantId`** (same tenant ID as booking), or send guests to **`/book/:tenantId`** and have them click **Join the waiting list** when no table is free.
+   - **Local example**: `http://127.0.0.1:4202/waitlist/1`
+   - **Production example**: `https://www.satisfecho.de/waitlist/1`
+
+2. **Open the form**  
+   The guest sees name, party size, and phone (same contact validation as booking). No account required.
+
+3. **Submit**  
+   On success the page confirms they are on the waiting list. There is no public token page for waiting-list entries — the restaurant contacts the guest when a table is ready (staff mark entries **notified** in the admin).
+
+### Staff flow
+
+1. Open **`/reservations`** and select the **Waiting list** tab.
+2. The queue lists active entries (default filter: `waiting` and `notified`). Filter by phone or status as needed.
+3. For each active entry:
+   - **Mark notified** — guest has been called or messaged (`waiting` → `notified`).
+   - **Book table** — opens the new-reservation modal with name, phone, and party size prefilled; after saving, the entry is marked **seated**.
+   - **Mark seated** — guest seated without creating a timed reservation.
+   - **No show** / **Cancel** — remove the guest from the active queue.
+
+Staff can also add waiting-list entries manually via the staff API (`POST /waiting-list`). See **`docs/0010-table-reservation-implementation-plan.md`** for API and schema detail.
+
+---
+
+## 4. URL reference
 
 | Purpose | URL | Who |
 |--------|-----|-----|
 | Book a table (public) | `/book/:tenantId` e.g. `/book/1` | End user |
+| Join waiting list (public) | `/waitlist/:tenantId` e.g. `/waitlist/1` | End user |
 | View / cancel reservation (public) | `/reservation?token=<uuid>` | End user |
-| Reservations list (staff) | `/reservations` | Staff (logged in) |
+| Reservations + waiting list (staff) | `/reservations` (Reservations / Waiting list tabs) | Staff (logged in) |
 | Tables canvas (staff) | `/tables/canvas` | Staff (admin) |
 
 **Base URL**: Use the same host and port as the rest of the app (e.g. `http://localhost:4203` or `https://your-domain.com`). The booking and view pages are served by the same Angular app and API.
@@ -75,19 +112,24 @@ This document describes how table reservations work for **staff** and **end user
 
 ---
 
-## 4. Testing the end-user flow
+## 5. Testing the end-user flow
 
-- **Book**: Open `http://localhost:4203/book/1` (or your app URL), fill the form, submit. You should see the success screen and the “View or cancel” link.
-- **View**: Open the link shown after booking, or `http://localhost:4203/reservation?token=<paste-token>`. You should see the reservation and, if status is booked/seated, the Cancel button.
+- **Book**: Open `http://127.0.0.1:4202/book/1` (or your app URL), fill the form, submit. You should see the success screen and the “View or cancel” link.
+- **Waiting list link from book**: On `/book/1`, follow **Join the waiting list** → `/waitlist/1`.
+- **Waiting list form**: Open `http://127.0.0.1:4202/waitlist/1`, submit name, party size, phone → success message.
+- **View**: Open the link shown after booking, or `http://127.0.0.1:4202/reservation?token=<paste-token>`. You should see the reservation and, if status is booked/seated, the Cancel button.
+- **Staff waiting list**: Log in → `/reservations` → **Waiting list** tab. Test **Mark notified**, **Book table**, **Mark seated**, **Cancel**.
 - **API (no UI)**:  
-  - Create: `POST /api/reservations` with body `{ "tenant_id": 1, "customer_name": "...", "customer_phone": "...", "reservation_date": "YYYY-MM-DD", "reservation_time": "HH:MM", "party_size": 2 }` (no auth).  
+  - Create reservation: `POST /api/reservations` with body `{ "tenant_id": 1, "customer_name": "...", "customer_phone": "...", "reservation_date": "YYYY-MM-DD", "reservation_time": "HH:MM", "party_size": 2 }` (no auth).  
+  - Join waiting list: `POST /api/public/tenants/1/waiting-list` with body `{ "customer_name": "...", "customer_phone": "...", "party_size": 2 }` (no auth).  
   - Get by token: `GET /api/reservations/by-token?token=<uuid>`.  
-  - Cancel: `PUT /api/reservations/<id>/cancel?token=<uuid>`.
+  - Cancel reservation: `PUT /api/reservations/<id>/cancel?token=<uuid>`.
 
 ---
 
-## 5. Related files
+## 6. Related files
 
 - **Changelog**: `CHANGELOG.md` (reservation feature and fixes).
-- **Implementation plan**: `docs/0010-table-reservation-implementation-plan.md`.
+- **Implementation plan**: `docs/0010-table-reservation-implementation-plan.md` (reservations and waiting-list API/schema).
+- **Waiting list migration**: `back/migrations/20260712120000_waiting_list_entry.sql`.
 - **Agent instructions**: `AGENTS.md` (Docker, logs, ports).

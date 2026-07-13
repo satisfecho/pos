@@ -2,7 +2,7 @@
 # Pushes to `development` do not run this workflow (merge to `master` to deploy). Use workflow_dispatch for manual runs.
 # Repository: https://github.com/satisfecho/pos — workflow must run from satisfecho/pos; server clone must have origin = satisfecho/pos.
 # Requires repository secret: SSH_PRIVATE_KEY_AMVARA9 (private key for root@amvara9; raw PEM or base64).
-# Optional: DEPLOY_HOST (default 167.235.138.59), DEPLOY_USER (default root), DEPLOY_PATH (default /development/pos).
+# Optional: DEPLOY_HOST (default 167.235.138.59), DEPLOY_USER (default root), DEPLOY_PATH (default /development/pos), DEPLOY_SSH_PORT (default 60022; amvara9 SSH is not on port 22).
 # Marketing sites under /<slug>/ (see config/marketing-sites.json): optional GUSTAZO_ARTIFACT_TOKEN / MARKETING_ARTIFACT_TOKEN (PAT with Actions read on each repo). CI rsync runs after git reset so bundles are not wiped.
 # Optional repo Variables: GUSTAZO_BRANCH, GUSTAZO_ARTIFACT_NAME per legacy Gustazo defaults.
 # Smoke test uses SMOKE_TEST_BASE_URL (default https://www.satisfecho.de) so SSL validates.
@@ -24,6 +24,7 @@ jobs:
       cancel-in-progress: false
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      DEPLOY_SSH_PORT: ${{ vars.DEPLOY_SSH_PORT || '60022' }}
       GUSTAZO_REPO: satisfecho/040_gustazo
       GUSTAZO_BRANCH: ${{ vars.GUSTAZO_BRANCH }}
       GUSTAZO_ARTIFACT_NAME: ${{ vars.GUSTAZO_ARTIFACT_NAME }}
@@ -57,7 +58,7 @@ jobs:
             echo "::error::Invalid SSH_PRIVATE_KEY_AMVARA9: ssh-keygen could not read the key. Paste the full raw key (-----BEGIN...END-----) or a single-line base64 string (base64 -w 0 keyfile)."
             exit 1
           fi
-          ssh-keyscan -H "${{ secrets.DEPLOY_HOST || '167.235.138.59' }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+          ssh-keyscan -H -p "$DEPLOY_SSH_PORT" "${{ secrets.DEPLOY_HOST || '167.235.138.59' }}" >> ~/.ssh/known_hosts 2>/dev/null || true
 
       # Git reset must run BEFORE rsync of marketing bundles: deploy-amvara9.sh uses `docker compose build`
       # which COPYs front/sites/*. If we rsync before `git reset --hard`, placeholders from Git overwrite
@@ -69,10 +70,10 @@ jobs:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/development/pos' }}
         run: |
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new \
+          ssh -p "$DEPLOY_SSH_PORT" -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new \
             "${DEPLOY_USER}@${DEPLOY_HOST}" "mkdir -p '${DEPLOY_PATH}/front/sites'"
           BRANCH="${{ github.ref_name }}"
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new \
+          ssh -p "$DEPLOY_SSH_PORT" -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
             "cd '${DEPLOY_PATH}' && git fetch origin && git checkout -f '${BRANCH}' && git reset --hard 'origin/${BRANCH}' && git clean -fd"
 
@@ -82,7 +83,7 @@ jobs:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/development/pos' }}
         run: |
-          rsync -az -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=60" \
+          rsync -az -e "ssh -p $DEPLOY_SSH_PORT -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=60" \
             ./front/sites/ "${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/front/sites/"
 
       - name: Build and restart stack on amvara9
@@ -92,7 +93,7 @@ jobs:
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/development/pos' }}
         timeout-minutes: 20
         run: |
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=60 -o ServerAliveCountMax=10 \
+          ssh -p "$DEPLOY_SSH_PORT" -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=60 -o ServerAliveCountMax=10 \
             "${DEPLOY_USER}@${DEPLOY_HOST}" "cd '${DEPLOY_PATH}' && bash scripts/deploy-amvara9.sh"
 
       - name: Smoke test (landing, version, API health)

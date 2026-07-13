@@ -166,7 +166,7 @@ Key variables in `config.env` (see `config.env.example` for the full list):
 | [docs/0008-order-management-logic.md](docs/0008-order-management-logic.md) | Order lifecycle, session rules, status reset |
 | [docs/0007-implementation-verification.md](docs/0007-implementation-verification.md) | What’s implemented vs Phase 4 (batch, audit, etc.) |
 | [docs/0010-table-reservation-implementation-plan.md](docs/0010-table-reservation-implementation-plan.md) | Reservations design and backend |
-| [docs/0011-table-reservation-user-guide.md](docs/0011-table-reservation-user-guide.md) | URLs and flows for staff and public booking |
+| [docs/0011-table-reservation-user-guide.md](docs/0011-table-reservation-user-guide.md) | URLs and flows for staff and public booking / waiting list |
 | [docs/0019-no-show-implementation-plan.md](docs/0019-no-show-implementation-plan.md) | No-show status and reminder emails: plan and implementation guide |
 | [docs/0024-whatsapp-reminder-notes.md](docs/0024-whatsapp-reminder-notes.md) | WhatsApp reservation reminder: design, Twilio config, E.164 phone normalization |
 | [docs/0009-table-pin-security.md](docs/0009-table-pin-security.md) | Table activation and PIN validation |
@@ -269,7 +269,7 @@ See [docs/0012-translation-implementation.md](docs/0012-translation-implementati
 ## Table Reservations
 
 - **Staff:** Sign in → **Reservations** in the sidebar. List, create, edit, seat at a table, finish, or cancel. Tables canvas shows status **Reserved** (amber) when a reservation is assigned.
-- **Public:** Book at **`/book/:tenantId`** (e.g. `http://localhost:4202/book/1`). After booking, use the link to **view or cancel** at `/reservation?token=...`. No login required.
+- **Public:** Book at **`/book/:tenantId`** (e.g. `http://localhost:4202/book/1`). After booking, use the link to **view or cancel** at `/reservation?token=...`. **Waiting list:** **`/waitlist/:tenantId`** (linked from the book page). No login required.
 
 Details: [docs/0011-table-reservation-user-guide.md](docs/0011-table-reservation-user-guide.md).
 
