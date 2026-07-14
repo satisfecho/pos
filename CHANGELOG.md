@@ -12,11 +12,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- **Platform operator portal:** Tenant list and detail pages for operators — owner/staff contact emails, activity stats, and links to each tenant's public menu, booking, and waitlist pages (`/platform/tenants/{id}`).
+- **Platform operator portal:** Tenant list and detail pages for operators — owner/staff contact emails, activity stats (products, tables, users, orders, reservations), and links to each tenant's public menu, booking, and waitlist pages at **`/platform/tenants/{id}`** (#292).
 
 ### Changed
 
-- **Release / production:** Promoted **`development` → `master`** and deployed to amvara9 (**satisfecho.de**) — live **2.1.16**.
+- **Platform operator dashboard:** All-tenants table with owner contact and public-menu shortcuts; recent logins show user email and tenant name with links to tenant detail (#292).
 
 ## [2.1.15] - 2026-07-13
 
