@@ -361,13 +361,38 @@ export interface PlatformTenantSummary {
   id: number;
   name: string;
   created_at: string;
+  owner_email?: string | null;
+  owner_name?: string | null;
+  tenant_email?: string | null;
+  tenant_phone?: string | null;
+  product_count: number;
+  table_count: number;
+  user_count: number;
+  order_count: number;
+  reservation_count: number;
+}
+
+export interface PlatformStaffContact {
+  email: string;
+  full_name?: string | null;
+  role: string;
+}
+
+export interface PlatformTenantDetail extends PlatformTenantSummary {
+  business_type?: string | null;
+  description?: string | null;
+  address?: string | null;
+  website?: string | null;
+  staff_users: PlatformStaffContact[];
 }
 
 export interface PlatformLoginSummary {
   logged_in_at: string;
   role?: string | null;
   tenant_id?: number | null;
+  tenant_name?: string | null;
   login_scope?: string | null;
+  user_email?: string | null;
 }
 
 export interface PlatformMetrics {
@@ -1758,6 +1783,14 @@ export class ApiService {
 
   getPlatformMetrics(): Observable<PlatformMetrics> {
     return this.http.get<PlatformMetrics>(`${this.apiUrl}/platform/metrics`);
+  }
+
+  getPlatformTenants(): Observable<PlatformTenantSummary[]> {
+    return this.http.get<PlatformTenantSummary[]>(`${this.apiUrl}/platform/tenants`);
+  }
+
+  getPlatformTenant(tenantId: number): Observable<PlatformTenantDetail> {
+    return this.http.get<PlatformTenantDetail>(`${this.apiUrl}/platform/tenants/${tenantId}`);
   }
 
   getCourierOrders(): Observable<CourierOrderSummary[]> {

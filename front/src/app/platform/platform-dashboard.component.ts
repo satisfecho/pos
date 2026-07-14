@@ -1,12 +1,12 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { ApiService, PlatformInfo, PlatformMetrics } from '../services/api.service';
+import { ApiService, PlatformInfo, PlatformMetrics, PlatformTenantSummary } from '../services/api.service';
 
 @Component({
   selector: 'app-platform-dashboard',
   standalone: true,
-  imports: [TranslateModule],
+  imports: [RouterLink, TranslateModule],
   template: `
     <div class="platform-page">
       <header class="platform-header">
@@ -46,28 +46,52 @@ import { ApiService, PlatformInfo, PlatformMetrics } from '../services/api.servi
         </section>
 
         <section class="platform-section">
-          <h2>{{ 'PLATFORM_DASHBOARD.RECENT_TENANTS' | translate }}</h2>
-          @if (metrics()!.recent_tenants.length === 0) {
+          <h2>{{ 'PLATFORM_DASHBOARD.ALL_TENANTS' | translate }}</h2>
+          <p class="platform-muted section-hint">{{ 'PLATFORM_DASHBOARD.ALL_TENANTS_HINT' | translate }}</p>
+          @if (tenants().length === 0) {
             <p class="platform-muted">{{ 'PLATFORM_DASHBOARD.NO_TENANTS' | translate }}</p>
           } @else {
-            <table class="platform-table">
-              <thead>
-                <tr>
-                  <th>{{ 'PLATFORM_DASHBOARD.COL_ID' | translate }}</th>
-                  <th>{{ 'PLATFORM_DASHBOARD.COL_NAME' | translate }}</th>
-                  <th>{{ 'PLATFORM_DASHBOARD.COL_CREATED' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (t of metrics()!.recent_tenants; track t.id) {
+            <div class="table-wrap">
+              <table class="platform-table">
+                <thead>
                   <tr>
-                    <td>{{ t.id }}</td>
-                    <td>{{ t.name }}</td>
-                    <td>{{ formatDate(t.created_at) }}</td>
+                    <th>{{ 'PLATFORM_DASHBOARD.COL_ID' | translate }}</th>
+                    <th>{{ 'PLATFORM_DASHBOARD.COL_NAME' | translate }}</th>
+                    <th>{{ 'PLATFORM_DASHBOARD.OWNER_CONTACT' | translate }}</th>
+                    <th>{{ 'PLATFORM_DASHBOARD.COL_PRODUCTS' | translate }}</th>
+                    <th>{{ 'PLATFORM_DASHBOARD.COL_CREATED' | translate }}</th>
+                    <th>{{ 'PLATFORM_DASHBOARD.COL_ACTIONS' | translate }}</th>
                   </tr>
-                }
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  @for (t of tenants(); track t.id) {
+                    <tr>
+                      <td>{{ t.id }}</td>
+                      <td>
+                        <a [routerLink]="['/platform/tenants', t.id]" class="tenant-link">{{ t.name }}</a>
+                      </td>
+                      <td>
+                        @if (t.owner_email) {
+                          <a [href]="'mailto:' + t.owner_email">{{ t.owner_name || t.owner_email }}</a>
+                        } @else {
+                          <span class="platform-muted">{{ 'PLATFORM_DASHBOARD.NO_CONTACT' | translate }}</span>
+                        }
+                      </td>
+                      <td>{{ t.product_count }}</td>
+                      <td>{{ formatDate(t.created_at) }}</td>
+                      <td class="actions-cell">
+                        <a [href]="publicUrl('public-menu', t.id)" target="_blank" rel="noopener noreferrer" class="action-link">
+                          {{ 'PLATFORM_DASHBOARD.LINK_MENU' | translate }}
+                        </a>
+                        <a [routerLink]="['/platform/tenants', t.id]" class="action-link">
+                          {{ 'PLATFORM_DASHBOARD.VIEW_TENANT' | translate }}
+                        </a>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           }
         </section>
 
@@ -76,26 +100,38 @@ import { ApiService, PlatformInfo, PlatformMetrics } from '../services/api.servi
           @if (metrics()!.recent_logins.length === 0) {
             <p class="platform-muted">{{ 'PLATFORM_DASHBOARD.NO_LOGINS' | translate }}</p>
           } @else {
-            <table class="platform-table">
-              <thead>
-                <tr>
-                  <th>{{ 'PLATFORM_DASHBOARD.COL_TIME' | translate }}</th>
-                  <th>{{ 'PLATFORM_DASHBOARD.COL_ROLE' | translate }}</th>
-                  <th>{{ 'PLATFORM_DASHBOARD.COL_TENANT' | translate }}</th>
-                  <th>{{ 'PLATFORM_DASHBOARD.COL_SCOPE' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (row of metrics()!.recent_logins; track row.logged_in_at) {
+            <div class="table-wrap">
+              <table class="platform-table">
+                <thead>
                   <tr>
-                    <td>{{ formatDate(row.logged_in_at) }}</td>
-                    <td>{{ row.role ?? '—' }}</td>
-                    <td>{{ row.tenant_id ?? '—' }}</td>
-                    <td>{{ row.login_scope ?? '—' }}</td>
+                    <th>{{ 'PLATFORM_DASHBOARD.COL_TIME' | translate }}</th>
+                    <th>{{ 'PLATFORM_DASHBOARD.COL_EMAIL' | translate }}</th>
+                    <th>{{ 'PLATFORM_DASHBOARD.COL_ROLE' | translate }}</th>
+                    <th>{{ 'PLATFORM_DASHBOARD.COL_TENANT' | translate }}</th>
+                    <th>{{ 'PLATFORM_DASHBOARD.COL_SCOPE' | translate }}</th>
                   </tr>
-                }
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  @for (row of metrics()!.recent_logins; track row.logged_in_at) {
+                    <tr>
+                      <td>{{ formatDate(row.logged_in_at) }}</td>
+                      <td>{{ row.user_email ?? '—' }}</td>
+                      <td>{{ row.role ?? '—' }}</td>
+                      <td>
+                        @if (row.tenant_id) {
+                          <a [routerLink]="['/platform/tenants', row.tenant_id]">
+                            {{ row.tenant_name || row.tenant_id }}
+                          </a>
+                        } @else {
+                          —
+                        }
+                      </td>
+                      <td>{{ row.login_scope ?? '—' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           }
         </section>
       }
@@ -107,7 +143,7 @@ import { ApiService, PlatformInfo, PlatformMetrics } from '../services/api.servi
       padding: var(--space-6);
       background: var(--color-bg);
       color: var(--color-text);
-      max-width: 960px;
+      max-width: 1200px;
       margin: 0 auto;
     }
     .platform-header {
@@ -146,7 +182,9 @@ import { ApiService, PlatformInfo, PlatformMetrics } from '../services/api.servi
     }
     .metric-value { font-size: 2rem; font-weight: 600; margin: 0; }
     .platform-section { margin-bottom: var(--space-8); }
-    .platform-section h2 { font-size: 1.125rem; margin-bottom: var(--space-3); }
+    .platform-section h2 { font-size: 1.125rem; margin-bottom: var(--space-2); }
+    .section-hint { margin: 0 0 var(--space-3); font-size: 0.875rem; }
+    .table-wrap { overflow-x: auto; }
     .platform-table {
       width: 100%;
       border-collapse: collapse;
@@ -160,8 +198,16 @@ import { ApiService, PlatformInfo, PlatformMetrics } from '../services/api.servi
       text-align: left;
       border-bottom: 1px solid var(--color-border);
       font-size: 0.875rem;
+      vertical-align: top;
     }
-    .platform-table th { background: var(--color-bg); font-weight: 500; }
+    .platform-table th { background: var(--color-bg); font-weight: 500; white-space: nowrap; }
+    .tenant-link { font-weight: 500; }
+    .actions-cell { white-space: nowrap; }
+    .action-link {
+      display: inline-block;
+      margin-right: var(--space-3);
+      font-size: 0.8125rem;
+    }
     .platform-muted { color: var(--color-text-muted); }
     .platform-error { color: var(--color-error); }
   `]
@@ -172,10 +218,17 @@ export class PlatformDashboardComponent implements OnInit {
 
   profile = signal<PlatformInfo | null>(null);
   metrics = signal<PlatformMetrics | null>(null);
+  tenants = signal<PlatformTenantSummary[]>([]);
   loading = signal(true);
   error = signal('');
 
   ngOnInit(): void {
+    let metricsDone = false;
+    let tenantsDone = false;
+    const maybeDone = () => {
+      if (metricsDone && tenantsDone) this.loading.set(false);
+    };
+
     this.api.getPlatformMe().subscribe({
       next: (p) => this.profile.set(p),
       error: () => this.error.set('PLATFORM_DASHBOARD.LOAD_FAILED'),
@@ -183,7 +236,19 @@ export class PlatformDashboardComponent implements OnInit {
     this.api.getPlatformMetrics().subscribe({
       next: (m) => {
         this.metrics.set(m);
+        metricsDone = true;
+        maybeDone();
+      },
+      error: () => {
+        this.error.set('PLATFORM_DASHBOARD.LOAD_FAILED');
         this.loading.set(false);
+      },
+    });
+    this.api.getPlatformTenants().subscribe({
+      next: (list) => {
+        this.tenants.set(list);
+        tenantsDone = true;
+        maybeDone();
       },
       error: () => {
         this.error.set('PLATFORM_DASHBOARD.LOAD_FAILED');
@@ -198,6 +263,11 @@ export class PlatformDashboardComponent implements OnInit {
     } catch {
       return iso;
     }
+  }
+
+  publicUrl(segment: string, tenantId: number): string {
+    if (typeof window === 'undefined') return `/${segment}/${tenantId}`;
+    return `${window.location.origin}/${segment}/${tenantId}`;
   }
 
   logout(): void {

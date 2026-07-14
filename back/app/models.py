@@ -313,13 +313,38 @@ class PlatformTenantSummary(SQLModel):
     id: int
     name: str
     created_at: datetime
+    owner_email: str | None = None
+    owner_name: str | None = None
+    tenant_email: str | None = None
+    tenant_phone: str | None = None
+    product_count: int = 0
+    table_count: int = 0
+    user_count: int = 0
+    order_count: int = 0
+    reservation_count: int = 0
+
+
+class PlatformStaffContact(SQLModel):
+    email: str
+    full_name: str | None = None
+    role: str
+
+
+class PlatformTenantDetail(PlatformTenantSummary):
+    business_type: str | None = None
+    description: str | None = None
+    address: str | None = None
+    website: str | None = None
+    staff_users: list[PlatformStaffContact] = []
 
 
 class PlatformLoginSummary(SQLModel):
     logged_in_at: datetime
     role: str | None = None
     tenant_id: int | None = None
+    tenant_name: str | None = None
     login_scope: str | None = None
+    user_email: str | None = None
 
 
 class PlatformMetricsResponse(SQLModel):
