@@ -1,7 +1,7 @@
 {
   "repos": {
     "satisfecho/010_antillana": {
-      "last_artifact": "dist",
+      "last_artifact": "{\"message\": \"No server is currently available to service your request. Sorry about that. Please try resubmitting your request and contact us if the problem persists.\"}\r",
       "pushed_at": "2026-04-21T07:40:14Z"
     },
     "satisfecho/020_dilruba": {
@@ -13,15 +13,15 @@
       "pushed_at": "2026-04-21T06:05:30Z"
     },
     "satisfecho/040_gustazo": {
-      "last_artifact": "gustazo-dist",
+      "last_artifact": "{\"message\": \"No server is currently available to service your request. Sorry about that. Please try resubmitting your request and contact us if the problem persists.\"}\r",
       "pushed_at": "2026-06-01T17:10:56Z"
     },
     "satisfecho/050_hakone": {
-      "last_artifact": "dist",
+      "last_artifact": "{\"message\": \"No server is currently available to service your request. Sorry about that. Please try resubmitting your request and contact us if the problem persists.\"}\r",
       "pushed_at": "2026-04-21T06:05:35Z"
     },
     "satisfecho/060_labellatoscana": {
-      "last_artifact": "labellatoscana-satisfecho-deploy",
+      "last_artifact": "{\"message\": \"No server is currently available to service your request. Sorry about that. Please try resubmitting your request and contact us if the problem persists.\"}\r",
       "pushed_at": "2026-06-05T11:47:20Z"
     },
     "satisfecho/082_la_moca": {
@@ -29,11 +29,11 @@
       "pushed_at": "2026-05-29T09:38:56Z"
     },
     "satisfecho/083_wimpi": {
-      "last_artifact": "wimpi-satisfecho-deploy",
+      "last_artifact": "{\"message\": \"No server is currently available to service your request. Sorry about that. Please try resubmitting your request and contact us if the problem persists.\"}\r",
       "pushed_at": "2026-06-05T12:46:54Z"
     },
     "satisfecho/085_Bosskebabypizzeria": {
-      "last_artifact": "boss-kebab-satisfecho-deploy",
+      "last_artifact": "{\"message\": \"No server is currently available to service your request. Sorry about that. Please try resubmitting your request and contact us if the problem persists.\"}\r",
       "pushed_at": "2026-06-02T07:02:46Z"
     },
     "satisfecho/086_pitahouse": {
@@ -41,11 +41,11 @@
       "pushed_at": "2026-06-05T06:54:41Z"
     },
     "satisfecho/087_pizzalluna": {
-      "last_artifact": "pizzaluna-satisfecho-deploy",
+      "last_artifact": "{\"message\": \"No server is currently available to service your request. Sorry about that. Please try resubmitting your request and contact us if the problem persists.\"}\r",
       "pushed_at": "2026-06-04T14:08:11Z"
     },
     "satisfecho/088_ricokebab": {
-      "last_artifact": "rico-kebab-satisfecho-deploy",
+      "last_artifact": "{\"message\": \"No server is currently available to service your request. Sorry about that. Please try resubmitting your request and contact us if the problem persists.\"}\r",
       "pushed_at": "2026-06-02T16:47:52Z"
     },
     "satisfecho/089_amigokebab": {
@@ -53,7 +53,7 @@
       "pushed_at": "2026-06-15T11:20:32Z"
     },
     "satisfecho/090_aribakebab": {
-      "last_artifact": "ariba-doner-satisfecho-deploy",
+      "last_artifact": "{\"message\": \"No server is currently available to service your request. Sorry about that. Please try resubmitting your request and contact us if the problem persists.\"}\r",
       "pushed_at": "2026-06-17T12:58:16Z"
     },
     "satisfecho/091_frenchkebab": {
