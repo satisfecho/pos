@@ -29,7 +29,7 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Res
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel as _BaseModel, Field
-from sqlalchemy import event
+from sqlalchemy import event, or_
 from sqlalchemy.exc import IntegrityError, InvalidRequestError, OperationalError, StatementError
 from sqlmodel import Session, select
 
@@ -1336,10 +1336,7 @@ def register(
     if len(user_count) == 0 and len(tenant_count) == 1:
         tenant = tenant_count[0]
     else:
-        tenant = models.Tenant(
-            name=tenant_name,
-            ui_modules=new_tenant_ui_modules_stored(),
-        )
+        tenant = models.Tenant(name=tenant_name, ui_modules=new_tenant_ui_modules_stored())
         session.add(tenant)
         session.commit()
         session.refresh(tenant)
@@ -5531,15 +5528,28 @@ def _courier_pickup_context(session: Session, tenant_id: int) -> tuple[str | Non
 
 
 def _courier_order_base_query(tenant_id: int):
+    """Marketplace (integration) or first-party Satisfecho Delivery orders."""
     return (
         select(models.Order)
         .where(
             models.Order.tenant_id == tenant_id,
             models.Order.deleted_at.is_(None),
-            models.Order.delivery_integration_id.is_not(None),
+            or_(
+                models.Order.delivery_integration_id.is_not(None),
+                models.Order.order_channel == models.OrderChannel.satisfecho_delivery,
+            ),
         )
         .order_by(models.Order.created_at.desc())
     )
+
+
+def _order_channel_value(order: models.Order) -> str:
+    ch = getattr(order, "order_channel", None)
+    if ch is None:
+        if getattr(order, "delivery_integration_id", None):
+            return models.OrderChannel.marketplace.value
+        return models.OrderChannel.table.value
+    return ch.value if hasattr(ch, "value") else str(ch)
 
 
 def _serialize_courier_order_summary(
@@ -5600,7 +5610,10 @@ def _serialize_courier_order_detail(
         "pickup_name": pickup_name,
         "pickup_address": pickup_address,
         "delivery_notes": order.notes,
-        "delivery_address": None,
+        "delivery_address": getattr(order, "delivery_address", None),
+        "customer_phone": getattr(order, "customer_phone", None),
+        "order_channel": _order_channel_value(order),
+        "courier_user_id": getattr(order, "courier_user_id", None),
         "external_order_ref": order.external_order_ref,
         "total_cents": total_cents,
         "items": items_json,
@@ -5644,7 +5657,10 @@ def courier_get_order(
             models.Order.id == order_id,
             models.Order.tenant_id == tenant_id,
             models.Order.deleted_at.is_(None),
-            models.Order.delivery_integration_id.is_not(None),
+            or_(
+                models.Order.delivery_integration_id.is_not(None),
+                models.Order.order_channel == models.OrderChannel.satisfecho_delivery,
+            ),
         )
     ).first()
     if not order:
@@ -11854,6 +11870,145 @@ def compute_order_status_from_items(items: list[models.OrderItem]) -> models.Ord
     return models.OrderStatus.pending
 
 
+@app.post("/orders/satisfecho-delivery")
+def create_satisfecho_delivery_order_endpoint(
+    body: models.SatisfechoDeliveryOrderCreate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.ORDER_UPDATE_STATUS))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Staff: create a first-party Satisfecho Delivery order (no table / marketplace)."""
+    if not body.items:
+        raise HTTPException(status_code=400, detail="Order must have at least one item")
+    address = (body.delivery_address or "").strip()
+    if not address:
+        raise HTTPException(status_code=400, detail="delivery_address is required")
+
+    phone = None
+    if body.customer_phone and body.customer_phone.strip():
+        try:
+            phone = normalize_phone_e164(body.customer_phone, settings.default_phone_country)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid customer_phone")
+
+    from app.delivery_order_service import create_satisfecho_delivery_order
+
+    lines = [
+        {"product_id": it.product_id, "quantity": it.quantity, "notes": it.notes}
+        for it in body.items
+    ]
+    order, outcome = create_satisfecho_delivery_order(
+        session,
+        tenant_id=current_user.tenant_id,
+        lines=lines,
+        delivery_address=address,
+        customer_phone=phone,
+        customer_name=body.customer_name,
+        notes=body.notes,
+        courier_user_id=body.courier_user_id,
+    )
+    if not order:
+        detail = outcome.get("detail", "create_failed")
+        if detail == "delivery_address_required":
+            raise HTTPException(status_code=400, detail="delivery_address is required")
+        if detail == "invalid_courier_user":
+            raise HTTPException(status_code=400, detail="courier_user_id must be a courier in this tenant")
+        if detail == "no_lines":
+            raise HTTPException(status_code=400, detail="Order must have at least one item")
+        if str(detail).startswith("product_not_found"):
+            raise HTTPException(status_code=400, detail=f"Product not found: {detail.split(':', 1)[-1]}")
+        raise HTTPException(status_code=400, detail=str(detail))
+
+    return {
+        "id": order.id,
+        "status": order.status.value,
+        "order_channel": _order_channel_value(order),
+        "delivery_address": order.delivery_address,
+        "customer_phone": order.customer_phone,
+        "customer_name": order.customer_name,
+        "notes": order.notes,
+        "courier_user_id": order.courier_user_id,
+        "table_id": order.table_id,
+        "created_at": order.created_at.isoformat() if order.created_at else None,
+    }
+
+
+@app.put("/orders/{order_id}/delivery")
+def update_order_delivery(
+    order_id: int,
+    body: models.OrderDeliveryUpdate,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.ORDER_UPDATE_STATUS))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Staff: update delivery metadata on a Satisfecho Delivery order."""
+    order = session.exec(
+        select(models.Order).where(
+            models.Order.id == order_id,
+            models.Order.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not order or order.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if _order_channel_value(order) != models.OrderChannel.satisfecho_delivery.value:
+        raise HTTPException(
+            status_code=400,
+            detail="Only Satisfecho Delivery orders can update delivery fields via this endpoint",
+        )
+
+    updates = body.model_dump(exclude_unset=True)
+    if "delivery_address" in updates:
+        address = (updates["delivery_address"] or "").strip()
+        if not address:
+            raise HTTPException(status_code=400, detail="delivery_address cannot be empty")
+        order.delivery_address = address
+    if "customer_phone" in updates:
+        raw_phone = updates["customer_phone"]
+        if raw_phone and str(raw_phone).strip():
+            try:
+                order.customer_phone = normalize_phone_e164(
+                    str(raw_phone), settings.default_phone_country
+                )
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid customer_phone")
+        else:
+            order.customer_phone = None
+    if "customer_name" in updates:
+        name = updates["customer_name"]
+        order.customer_name = (name or "").strip() or None
+    if "notes" in updates:
+        from app.order_notes import normalize_order_note
+
+        order.notes = normalize_order_note(updates["notes"])
+    if "courier_user_id" in updates:
+        cid = updates["courier_user_id"]
+        if cid is None:
+            order.courier_user_id = None
+        else:
+            courier = session.get(models.User, cid)
+            if (
+                not courier
+                or courier.tenant_id != current_user.tenant_id
+                or courier.role != models.UserRole.courier
+            ):
+                raise HTTPException(
+                    status_code=400,
+                    detail="courier_user_id must be a courier in this tenant",
+                )
+            order.courier_user_id = cid
+
+    session.add(order)
+    session.commit()
+    session.refresh(order)
+    return {
+        "id": order.id,
+        "order_channel": _order_channel_value(order),
+        "delivery_address": order.delivery_address,
+        "customer_phone": order.customer_phone,
+        "customer_name": order.customer_name,
+        "notes": order.notes,
+        "courier_user_id": order.courier_user_id,
+    }
+
+
 @app.get("/orders")
 def list_orders(
     current_user: Annotated[models.User, Depends(require_permission(Permission.ORDER_READ))],
@@ -11978,8 +12133,11 @@ def list_orders(
         if table:
             tg_label = _table_group_display_label(session, current_user.tenant_id, table)
 
+        channel = _order_channel_value(order)
         table_display = "Unknown"
-        if getattr(order, "delivery_integration_id", None):
+        if channel == models.OrderChannel.satisfecho_delivery.value:
+            table_display = "Satisfecho Delivery"
+        elif getattr(order, "delivery_integration_id", None) or channel == models.OrderChannel.marketplace.value:
             table_display = "Delivery"
         elif table:
             table_display = table.name
@@ -11999,6 +12157,12 @@ def list_orders(
             "paid_at": order.paid_at.isoformat() if order.paid_at else None,
             "payment_method": order.payment_method,
             "staff_urgent": bool(getattr(order, "staff_urgent", False)),
+            "order_channel": channel,
+            "delivery_address": getattr(order, "delivery_address", None),
+            "customer_phone": getattr(order, "customer_phone", None),
+            "courier_user_id": getattr(order, "courier_user_id", None),
+            "delivery_integration_id": getattr(order, "delivery_integration_id", None),
+            "external_order_ref": getattr(order, "external_order_ref", None),
             "items": order_items_json,
             "subtotal_cents": subtotal_cents,
             "tip_percent_applied": getattr(order, "tip_percent_applied", None),

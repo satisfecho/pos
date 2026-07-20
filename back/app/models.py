@@ -52,6 +52,14 @@ class OrderStatus(str, Enum):
     cancelled = "cancelled"
 
 
+class OrderChannel(str, Enum):
+    """How the order was placed / fulfilled (kitchen + courier distinguish channels)."""
+
+    table = "table"  # dine-in (default)
+    satisfecho_delivery = "satisfecho_delivery"  # first-party Satisfecho Delivery
+    marketplace = "marketplace"  # third-party (Glovo/Uber); usually paired with delivery_integration_id
+
+
 class BusinessType(str, Enum):
     restaurant = "restaurant"
     bar = "bar"
@@ -893,7 +901,13 @@ class Order(TenantMixin, table=True):
         default=None, foreign_key="delivery_marketplace_integration.id", index=True
     )
     external_order_ref: str | None = Field(default=None, max_length=256, index=True)
-    
+
+    # First-party Satisfecho Delivery (no delivery_integration_id); table_id stays null
+    order_channel: OrderChannel = Field(default=OrderChannel.table, max_length=32, index=True)
+    delivery_address: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    customer_phone: str | None = Field(default=None, max_length=40)
+    courier_user_id: int | None = Field(default=None, foreign_key="user.id", index=True)
+
     items: list["OrderItem"] = Relationship(back_populates="order")
     billing_customer: BillingCustomer | None = Relationship(back_populates="orders")
 
@@ -1191,6 +1205,27 @@ class OrderCreate(SQLModel):
     staff_access: str | None = None  # Staff link token: when valid, PIN is not required
     latitude: float | None = None  # Optional GPS latitude for location verification
     longitude: float | None = None  # Optional GPS longitude for location verification
+
+
+class SatisfechoDeliveryOrderCreate(SQLModel):
+    """Staff create first-party Satisfecho Delivery order (no table, no marketplace integration)."""
+
+    items: list[OrderItemCreate]
+    delivery_address: str
+    customer_phone: str | None = None
+    customer_name: str | None = None
+    notes: str | None = None  # delivery notes (stored on Order.notes)
+    courier_user_id: int | None = None
+
+
+class OrderDeliveryUpdate(SQLModel):
+    """Update delivery metadata on a Satisfecho Delivery order."""
+
+    delivery_address: str | None = None
+    customer_phone: str | None = None
+    customer_name: str | None = None
+    notes: str | None = None
+    courier_user_id: int | None = None
 
 
 class OrderStatusUpdate(SQLModel):

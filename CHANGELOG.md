@@ -8,6 +8,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.17] - 2026-07-20
+
+### Added
+
+- **Satisfecho Delivery orders:** Staff can create and update first-party delivery orders (channel, address, phone, optional courier) via the API; kitchen/order lists distinguish them from table orders, and courier list/detail return the real delivery address and phone instead of nulls (#297).
+
 ## [2.1.16] - 2026-07-14
 
 ### Added

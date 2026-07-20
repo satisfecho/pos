@@ -51,6 +51,8 @@ This folder contains deployment guides, feature documentation, implementation pl
 | [0016-reports.md](0016-reports.md) | Reports (Sales & Revenue): date range, summary, by product/category/table/waiter, CSV/Excel export. |
 | [0017-billing-customers-factura.md](0017-billing-customers-factura.md) | Billing customers (Factura): register company details, search, print invoice with “Bill to”. |
 | [0028-tenant-public-branding.md](0028-tenant-public-branding.md) | Tenant public branding: background colour and header image for book, menu, reservation-view. |
+| [0015-platform-operator-portal.md](0015-platform-operator-portal.md) | Platform operator portal: SaaS metrics and tenant oversight. |
+| [0053-satisfecho-delivery-order-channel.md](0053-satisfecho-delivery-order-channel.md) | First-party Satisfecho Delivery on Order: channel, address, phone, courier API (issue #297). |
 | [REVOLUT.md](REVOLUT.md) | Revolut Merchant API: checkout extension, sandbox CSR, redirect URLs, tenant payment setup. |
 
 ---
