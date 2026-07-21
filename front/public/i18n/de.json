@@ -359,14 +359,15 @@
     "WELCOME": "Angemeldet als",
     "PLACEHOLDER": "Ihre Lieferliste erscheint hier in einem späteren Update.",
     "LOGOUT": "Abmelden",
-    "LOAD_FAILED": "Profil konnte nicht geladen werden. Bitte erneut anmelden."
+    "LOAD_FAILED": "Profil konnte nicht geladen werden. Bitte erneut anmelden.",
+    "REFRESH": "Aktualisieren"
   },
   "COURIER_ORDERS": {
     "TAB_AVAILABLE": "Verfügbar",
     "TAB_MINE": "Meine",
     "TAB_COMPLETED": "Abgeschlossen",
     "EMPTY_AVAILABLE": "Derzeit keine offenen Lieferaufträge.",
-    "EMPTY_MINE": "Noch keine Ihnen zugewiesenen Aufträge. Zuweisung folgt in einem späteren Update.",
+    "EMPTY_MINE": "Noch keine Ihnen zugewiesenen Aufträge.",
     "EMPTY_COMPLETED": "Noch keine abgeschlossenen Lieferungen.",
     "LOAD_FAILED": "Aufträge konnten nicht geladen werden. Bitte erneut versuchen.",
     "NOT_FOUND": "Auftrag nicht gefunden.",

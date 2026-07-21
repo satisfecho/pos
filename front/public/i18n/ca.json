@@ -359,14 +359,15 @@
     "WELCOME": "Sessió iniciada com a",
     "PLACEHOLDER": "La vostra llista d'entregues apareixerà aquí en una actualització futura.",
     "LOGOUT": "Tancar sessió",
-    "LOAD_FAILED": "No s'ha pogut carregar el perfil. Torneu a iniciar sessió."
+    "LOAD_FAILED": "No s'ha pogut carregar el perfil. Torneu a iniciar sessió.",
+    "REFRESH": "Actualitza"
   },
   "COURIER_ORDERS": {
     "TAB_AVAILABLE": "Disponibles",
     "TAB_MINE": "Meves",
     "TAB_COMPLETED": "Completades",
     "EMPTY_AVAILABLE": "No hi ha comandes de lliurament obertes ara.",
-    "EMPTY_MINE": "Encara no teniu comandes assignades. L'assignació estarà disponible en una actualització futura.",
+    "EMPTY_MINE": "Encara no teniu comandes assignades.",
     "EMPTY_COMPLETED": "Encara no hi ha lliuraments completats.",
     "LOAD_FAILED": "No s'han pogut carregar les comandes. Torneu-ho a provar.",
     "NOT_FOUND": "Comanda no trobada.",

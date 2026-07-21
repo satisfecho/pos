@@ -415,14 +415,15 @@
     "WELCOME": "Signed in as",
     "PLACEHOLDER": "Your delivery list will appear here in a future update.",
     "LOGOUT": "Log out",
-    "LOAD_FAILED": "Could not load your profile. Please sign in again."
+    "LOAD_FAILED": "Could not load your profile. Please sign in again.",
+    "REFRESH": "Refresh"
   },
   "COURIER_ORDERS": {
     "TAB_AVAILABLE": "Available",
     "TAB_MINE": "Mine",
     "TAB_COMPLETED": "Completed",
     "EMPTY_AVAILABLE": "No open delivery orders right now.",
-    "EMPTY_MINE": "No orders assigned to you yet. Assignment will be available in a future update.",
+    "EMPTY_MINE": "No orders assigned to you yet.",
     "EMPTY_COMPLETED": "No completed deliveries yet.",
     "LOAD_FAILED": "Could not load orders. Please try again.",
     "NOT_FOUND": "Order not found.",

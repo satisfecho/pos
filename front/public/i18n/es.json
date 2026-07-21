@@ -359,14 +359,15 @@
     "WELCOME": "Conectado como",
     "PLACEHOLDER": "Tu lista de entregas aparecerá aquí en una actualización futura.",
     "LOGOUT": "Cerrar sesión",
-    "LOAD_FAILED": "No se pudo cargar tu perfil. Inicia sesión de nuevo."
+    "LOAD_FAILED": "No se pudo cargar tu perfil. Inicia sesión de nuevo.",
+    "REFRESH": "Actualizar"
   },
   "COURIER_ORDERS": {
     "TAB_AVAILABLE": "Disponibles",
     "TAB_MINE": "Mías",
     "TAB_COMPLETED": "Completadas",
     "EMPTY_AVAILABLE": "No hay pedidos de entrega abiertos ahora.",
-    "EMPTY_MINE": "Aún no tienes pedidos asignados. La asignación estará disponible en una actualización futura.",
+    "EMPTY_MINE": "Aún no tienes pedidos asignados.",
     "EMPTY_COMPLETED": "Aún no hay entregas completadas.",
     "LOAD_FAILED": "No se pudieron cargar los pedidos. Inténtalo de nuevo.",
     "NOT_FOUND": "Pedido no encontrado.",

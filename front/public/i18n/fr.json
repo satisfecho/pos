@@ -359,14 +359,15 @@
     "WELCOME": "Connecté en tant que",
     "PLACEHOLDER": "Votre liste de livraisons apparaîtra ici dans une prochaine mise à jour.",
     "LOGOUT": "Se déconnecter",
-    "LOAD_FAILED": "Impossible de charger votre profil. Veuillez vous reconnecter."
+    "LOAD_FAILED": "Impossible de charger votre profil. Veuillez vous reconnecter.",
+    "REFRESH": "Actualiser"
   },
   "COURIER_ORDERS": {
     "TAB_AVAILABLE": "Disponibles",
     "TAB_MINE": "Les miennes",
     "TAB_COMPLETED": "Terminées",
     "EMPTY_AVAILABLE": "Aucune commande de livraison ouverte pour le moment.",
-    "EMPTY_MINE": "Aucune commande ne vous est encore assignée. L'assignation sera disponible dans une prochaine mise à jour.",
+    "EMPTY_MINE": "Aucune commande ne vous est encore assignée.",
     "EMPTY_COMPLETED": "Aucune livraison terminée pour le moment.",
     "LOAD_FAILED": "Impossible de charger les commandes. Veuillez réessayer.",
     "NOT_FOUND": "Commande introuvable.",

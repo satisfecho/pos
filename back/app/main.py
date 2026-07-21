@@ -5591,6 +5591,7 @@ def _serialize_courier_order_summary(
     if not active_items:
         return {}
     status = _courier_effective_order_status(order, all_items)
+    total_cents = sum(item.price_cents * item.quantity for item in active_items)
     return {
         "id": order.id,
         "status": status.value,
@@ -5599,6 +5600,11 @@ def _serialize_courier_order_summary(
         "item_summary": _courier_item_summary(all_items),
         "pickup_name": pickup_name,
         "pickup_address": pickup_address,
+        "delivery_address": getattr(order, "delivery_address", None),
+        "customer_phone": getattr(order, "customer_phone", None),
+        "courier_user_id": getattr(order, "courier_user_id", None),
+        "order_channel": _order_channel_value(order),
+        "total_cents": total_cents,
     }
 
 
@@ -5650,7 +5656,11 @@ def courier_list_orders(
     current_user: Annotated[models.User, Depends(security.get_current_courier_user)],
     session: Session = Depends(get_session),
 ) -> list[dict]:
-    """List delivery orders for the courier's tenant (v1: all tenant delivery orders)."""
+    """List delivery orders for the courier's tenant.
+
+    Includes assignment fields (`courier_user_id`, address, phone, totals) so the
+    courier UI can split Available / Mine / Completed. Tenant-scoped only.
+    """
     tenant_id = current_user.tenant_id
     assert tenant_id is not None
     pickup_name, pickup_address = _courier_pickup_context(session, tenant_id)

@@ -8,6 +8,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.20] - 2026-07-21
+
+### Added
+
+- **Courier Mine tab:** Couriers see staff-assigned deliveries on `/courier` (**Mine**) with address, customer, phone, and totals; **Available** shows unassigned open orders; list API includes assignment fields; refresh control on the courier home (#300).
+
 ## [2.1.19] - 2026-07-21
 
 ### Added

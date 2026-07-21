@@ -352,14 +352,15 @@
     "WELCOME": "当前登录",
     "PLACEHOLDER": "配送列表将在后续更新中显示在此处。",
     "LOGOUT": "退出登录",
-    "LOAD_FAILED": "无法加载个人资料，请重新登录。"
+    "LOAD_FAILED": "无法加载个人资料，请重新登录。",
+    "REFRESH": "刷新"
   },
   "COURIER_ORDERS": {
     "TAB_AVAILABLE": "可接",
     "TAB_MINE": "我的",
     "TAB_COMPLETED": "已完成",
     "EMPTY_AVAILABLE": "当前没有待配送订单。",
-    "EMPTY_MINE": "暂无分配给您的订单。分配功能将在后续更新中提供。",
+    "EMPTY_MINE": "暂无分配给您的订单。",
     "EMPTY_COMPLETED": "暂无已完成配送。",
     "LOAD_FAILED": "无法加载订单，请重试。",
     "NOT_FOUND": "未找到订单。",

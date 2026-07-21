@@ -20,7 +20,7 @@ Marketplace orders still use `delivery_integration_id` / `external_order_ref`; c
 - `PUT /orders/{id}/delivery` — update delivery metadata on Satisfecho Delivery orders only.
 - `GET /orders` — includes `order_channel`, `delivery_address`, `customer_phone`, `courier_user_id`; `table_name` is `"Satisfecho Delivery"` for that channel.
 - `GET /users/couriers` — staff (`order:read`): list courier-role users for assign UI.
-- `GET /courier/orders` / `GET /courier/orders/{id}` — lists marketplace **and** Satisfecho Delivery; detail returns real `delivery_address` / `customer_phone`.
+- `GET /courier/orders` / `GET /courier/orders/{id}` — lists marketplace **and** Satisfecho Delivery; list rows include `courier_user_id`, `delivery_address`, `customer_phone`, and `total_cents` so the courier **Mine** tab can show staff-assigned deliveries; detail returns the same address/phone fields.
 
 ## Staff UI
 

@@ -412,6 +412,11 @@ export interface CourierOrderSummary {
   item_summary: string;
   pickup_name: string | null;
   pickup_address: string | null;
+  delivery_address?: string | null;
+  customer_phone?: string | null;
+  courier_user_id?: number | null;
+  order_channel?: string | null;
+  total_cents?: number;
 }
 
 export interface CourierOrderItem {
@@ -424,6 +429,9 @@ export interface CourierOrderItem {
 export interface CourierOrderDetail extends CourierOrderSummary {
   delivery_notes: string | null;
   delivery_address: string | null;
+  customer_phone?: string | null;
+  courier_user_id?: number | null;
+  order_channel?: string | null;
   external_order_ref: string | null;
   total_cents: number;
   items: CourierOrderItem[];
