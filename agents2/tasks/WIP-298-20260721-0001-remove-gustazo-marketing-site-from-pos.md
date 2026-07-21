@@ -36,6 +36,10 @@ Marketing integration context: `config/marketing-sites.json`, `front/sites/<slug
 - Cleaned Gustazo-specific comments/env in `config.env.example`, `docker-compose.yml`, `docker-compose.dev.yml`, `front/Dockerfile`, sync/fetch scripts; updated 005 reviewer placeholder reference.
 - CHANGELOG `[Unreleased]` entry for #298.
 
+## Handoff log
+
+- **Handoff (`012-feature-coder-handoff.md`, 2026-07-21 00:19 UTC, Cursor):** `./scripts/git-sync-development.sh` (OK). **#298** **OPEN**, label **`agent:wip`**. POS-side removal is on **`development`** @ **`5787c385`** (manifest/`excludedSlugs`, tree cleanup, workflow, sync). **`5787c385` not on `origin/master`**; latest amvara9 deploy predates this task; production still serves Gustazo SPA (tester criterion **#6** **FAIL**). **Remain WIP** — **no** `WIP-298-…` → `UNTESTED-*`; **no** `gh issue edit 298 --add-label "agent:untested"`. Deploy-blocker per **012** / **`docs/agent-loop.md`**: feature coder must promote **`development` → `master`** + green **Deploy to amvara9**, then re-hand off (or archive per Deploy-blocker archive if cycling continues).
+
 ## Testing instructions
 
 1. **Manifest:** `jq -e '.sites | map(.slug) | index("gustazo") == null' config/marketing-sites.json` and `jq -e '.excludedSlugs | index("gustazo") != null' config/marketing-sites.json` both succeed.
