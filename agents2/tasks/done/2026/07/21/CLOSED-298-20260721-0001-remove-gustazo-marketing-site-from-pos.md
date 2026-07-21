@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** POS-side Gustazo removal is complete on **`development`** @ **`5787c385`** (manifest `excludedSlugs`, tree/workflow/sync cleanup). Tester criteria **1–5 PASS**; criterion **#6** (production `/gustazo/` gone) **FAIL** because **`5787c385` is not on `origin/master`** and latest **Deploy to amvara9** predates this task (run **29359569253**, 2026-07-14).
+- **Why not UNTESTED:** Deploy-blocker per **`012-feature-coder-handoff.md`** / **`docs/agent-loop.md`** — production verification cannot pass until **`development` → `master`** + green deploy.
+- **Why archived:** Second handoff pass with unchanged git/Actions/issue state; archive to stop no-op **WIP → handoff** cycling. Not a code failure.
+- **Resume verification:** After promote + green **Deploy to amvara9**, recreate **`UNTESTED-298-…`** (or re-test instruction **#6** only): `curl -sI https://www.satisfecho.de/gustazo/` must not serve the Gustazo marketing SPA; spot-check another slug (e.g. `/wimpi/`).
+- **Closed at (UTC):** 2026-07-21 04:08 UTC
+---
+
 # Remove Gustazo marketing site from POS
 
 ## GitHub Issues
@@ -37,6 +47,8 @@ Marketing integration context: `config/marketing-sites.json`, `front/sites/<slug
 - CHANGELOG `[Unreleased]` entry for #298.
 
 ## Handoff log
+
+- **Handoff (`012-feature-coder-handoff.md`, 2026-07-21 04:08 UTC, Cursor):** `./scripts/git-sync-development.sh` (OK). **#298** **OPEN**, label **`agent:wip`**. State unchanged vs prior handoff: **`5787c385` still not on `origin/master`**; amvara9 deploy still predates task; prod `/gustazo/` still live. **Archive WIP → CLOSED** (deploy-blocker) — **no** `WIP-298-…` → `UNTESTED-*`; **no** `gh issue edit 298 --add-label "agent:untested"`. Resume after promotion + green deploy.
 
 - **Handoff (`012-feature-coder-handoff.md`, 2026-07-21 00:19 UTC, Cursor):** `./scripts/git-sync-development.sh` (OK). **#298** **OPEN**, label **`agent:wip`**. POS-side removal is on **`development`** @ **`5787c385`** (manifest/`excludedSlugs`, tree cleanup, workflow, sync). **`5787c385` not on `origin/master`**; latest amvara9 deploy predates this task; production still serves Gustazo SPA (tester criterion **#6** **FAIL**). **Remain WIP** — **no** `WIP-298-…` → `UNTESTED-*`; **no** `gh issue edit 298 --add-label "agent:untested"`. Deploy-blocker per **012** / **`docs/agent-loop.md`**: feature coder must promote **`development` → `master`** + green **Deploy to amvara9**, then re-hand off (or archive per Deploy-blocker archive if cycling continues).
 
