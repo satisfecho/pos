@@ -3,8 +3,9 @@
 # Repository: https://github.com/satisfecho/pos — workflow must run from satisfecho/pos; server clone must have origin = satisfecho/pos.
 # Requires repository secret: SSH_PRIVATE_KEY_AMVARA9 (private key for root@amvara9; raw PEM or base64).
 # Optional: DEPLOY_HOST (default 167.235.138.59), DEPLOY_USER (default root), DEPLOY_PATH (default /development/pos), DEPLOY_SSH_PORT (default 60022; amvara9 SSH is not on port 22).
-# Marketing sites under /<slug>/ (see config/marketing-sites.json): optional GUSTAZO_ARTIFACT_TOKEN / MARKETING_ARTIFACT_TOKEN (PAT with Actions read on each repo). CI rsync runs after git reset so bundles are not wiped.
-# Optional repo Variables: GUSTAZO_BRANCH, GUSTAZO_ARTIFACT_NAME per legacy Gustazo defaults.
+# Marketing sites under /<slug>/ (see config/marketing-sites.json): optional MARKETING_ARTIFACT_TOKEN
+# (preferred) or legacy GUSTAZO_ARTIFACT_TOKEN — PAT with Actions read on each repo in the manifest.
+# CI rsync runs after git reset so bundles are not wiped (--delete removes dropped slugs).
 # Smoke test uses SMOKE_TEST_BASE_URL (default https://www.satisfecho.de) so SSL validates.
 
 name: Deploy to amvara9
@@ -25,19 +26,16 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       DEPLOY_SSH_PORT: ${{ vars.DEPLOY_SSH_PORT || '60022' }}
-      GUSTAZO_REPO: satisfecho/040_gustazo
-      GUSTAZO_BRANCH: ${{ vars.GUSTAZO_BRANCH }}
-      GUSTAZO_ARTIFACT_NAME: ${{ vars.GUSTAZO_ARTIFACT_NAME }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Fetch marketing site artifacts (curl + GitHub API)
         env:
-          MARKETING_ARTIFACT_TOKEN: ${{ secrets.GUSTAZO_ARTIFACT_TOKEN }}
-          GH_TOKEN: ${{ secrets.GUSTAZO_ARTIFACT_TOKEN }}
+          MARKETING_ARTIFACT_TOKEN: ${{ secrets.MARKETING_ARTIFACT_TOKEN || secrets.GUSTAZO_ARTIFACT_TOKEN }}
+          GH_TOKEN: ${{ secrets.MARKETING_ARTIFACT_TOKEN || secrets.GUSTAZO_ARTIFACT_TOKEN }}
           MARKETING_SYNC_FORCE: "1"
-          # Fails the job if any listed site is still the placeholder (e.g. fine-grained PAT only on 040_gustazo)
+          # Fails the job if any listed site is still the placeholder (PAT must cover every manifest repo)
           MARKETING_VERIFY_NO_PLACEHOLDERS: "1"
         run: bash scripts/sync-all-marketing-sites.sh
 
@@ -62,7 +60,7 @@ jobs:
 
       # Git reset must run BEFORE rsync of marketing bundles: deploy-amvara9.sh uses `docker compose build`
       # which COPYs front/sites/*. If we rsync before `git reset --hard`, placeholders from Git overwrite
-      # fetched artifacts on the server (explains Gustazo staying on placeholder in prod).
+      # fetched artifacts on the server.
 
       - name: Checkout latest code on amvara9 (git fetch / reset — marketing dirs reset to placeholders)
         env:
@@ -83,7 +81,7 @@ jobs:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/development/pos' }}
         run: |
-          rsync -az -e "ssh -p $DEPLOY_SSH_PORT -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=60" \
+          rsync -az --delete -e "ssh -p $DEPLOY_SSH_PORT -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=60" \
             ./front/sites/ "${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/front/sites/"
 
       - name: Build and restart stack on amvara9
@@ -140,14 +138,3 @@ jobs:
           done
           [ -n "$HEALTH_OK" ] || (echo "API health failed after retries"; exit 1)
           echo "Smoke test passed."
-          echo "Marketing /gustazo/ (expect real bundle, not repo placeholder)"
-          if ! curl -sf -o /dev/null "$BASE/gustazo/"; then
-            echo "::warning::GET $BASE/gustazo/ did not return 200."
-          else
-            GZ_HTML=$(curl -sfL "$BASE/gustazo/?t=$(date +%s)" || true)
-            if echo "$GZ_HTML" | grep -q 'bundle not loaded'; then
-              echo "::warning::Gustazo still serves placeholder HTML (verify GUSTAZO_ARTIFACT_TOKEN and deploy rsync runs after git reset)."
-            else
-              echo "Gustazo path OK (no placeholder title)."
-            fi
-          fi

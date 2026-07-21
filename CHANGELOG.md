@@ -8,6 +8,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.18] - 2026-07-21
+
+### Removed
+
+- **Marketing / Gustazo:** Stopped serving and syncing the Gustazo marketing SPA from POS — removed from **`config/marketing-sites.json`**, deleted **`front/sites/gustazo/`**, dropped Gustazo-only deploy smoke and legacy fetch wrappers; remaining marketing sites continue via the generic sync (#298).
+
 ## [2.1.17] - 2026-07-20
 
 ### Added
