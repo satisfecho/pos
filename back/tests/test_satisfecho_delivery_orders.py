@@ -176,6 +176,14 @@ class TestSatisfechoDeliveryOrders(PgClientTestCase):
         )
         self.assertEqual(r.status_code, 400, r.text)
 
+    def test_list_couriers_for_assign(self) -> None:
+        h = _bearer_headers(self.owner)
+        r = self.client.get("/users/couriers", headers=h)
+        self.assertEqual(r.status_code, 200, r.text)
+        ids = {u["id"] for u in r.json()}
+        self.assertIn(self.courier.id, ids)
+        self.assertNotIn(self.owner.id, ids)
+
 
 if __name__ == "__main__":
     unittest.main()

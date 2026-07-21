@@ -2338,6 +2338,31 @@ def list_users(
     ]
 
 
+@app.get("/users/couriers")
+def list_courier_users(
+    current_user: Annotated[models.User, Depends(require_permission(Permission.ORDER_READ))],
+    session: Session = Depends(get_session),
+) -> list[models.UserResponse]:
+    """List courier-role users in the tenant (for Satisfecho Delivery assign)."""
+    users = session.exec(
+        select(models.User).where(
+            models.User.tenant_id == current_user.tenant_id,
+            models.User.role == models.UserRole.courier,
+        )
+    ).all()
+    return [
+        models.UserResponse(
+            id=u.id,
+            email=u.email,
+            full_name=u.full_name,
+            role=u.role,
+            tenant_id=u.tenant_id,
+            provider_id=getattr(u, "provider_id", None),
+        )
+        for u in users
+    ]
+
+
 @app.post("/users")
 def create_user(
     user_data: models.UserCreate,

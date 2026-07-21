@@ -8,6 +8,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.19] - 2026-07-21
+
+### Added
+
+- **Staff Satisfecho Delivery UI:** On `/staff/orders`, staff can create delivery orders (address required, optional courier), filter a **Delivery** tab with channel badges, and edit address/courier via the existing delivery API; `GET /users/couriers` feeds the assign dropdown (#299).
+
 ## [2.1.18] - 2026-07-21
 
 ### Removed

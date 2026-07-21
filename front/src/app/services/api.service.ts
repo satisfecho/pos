@@ -1270,6 +1270,44 @@ export interface Order {
   staff_urgent?: boolean;
   /** When set, joined tables label e.g. "T1 + T2" for staff context */
   table_group_label?: string | null;
+  /** table | satisfecho_delivery | marketplace */
+  order_channel?: string | null;
+  delivery_address?: string | null;
+  customer_phone?: string | null;
+  courier_user_id?: number | null;
+  delivery_integration_id?: number | null;
+  external_order_ref?: string | null;
+}
+
+/** Staff create first-party Satisfecho Delivery order (no table). */
+export interface SatisfechoDeliveryOrderCreate {
+  items: OrderItemCreate[];
+  delivery_address: string;
+  customer_phone?: string | null;
+  customer_name?: string | null;
+  notes?: string | null;
+  courier_user_id?: number | null;
+}
+
+export interface OrderDeliveryUpdate {
+  delivery_address?: string | null;
+  customer_phone?: string | null;
+  customer_name?: string | null;
+  notes?: string | null;
+  courier_user_id?: number | null;
+}
+
+export interface SatisfechoDeliveryOrderResponse {
+  id: number;
+  status?: string;
+  order_channel: string;
+  delivery_address: string | null;
+  customer_phone: string | null;
+  customer_name: string | null;
+  notes?: string | null;
+  courier_user_id: number | null;
+  table_id?: number | null;
+  created_at?: string | null;
 }
 
 export interface MenuResponse {
@@ -2252,11 +2290,29 @@ export class ApiService {
     );
   }
 
+
+  /** Tenant users with courier role (for Satisfecho Delivery assign). Uses ORDER_READ-scoped endpoint. */
+  getCouriers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/users/couriers`).pipe(
+      catchError(() => of([]))
+    );
+  }
+
   // Orders
   getOrders(includeRemoved: boolean = false): Observable<Order[]> {
     const params = includeRemoved ? { params: { include_removed: 'true' } } : {};
     return this.http.get<Order[]>(`${this.apiUrl}/orders`, params);
   }
+
+
+  createSatisfechoDeliveryOrder(body: SatisfechoDeliveryOrderCreate): Observable<SatisfechoDeliveryOrderResponse> {
+    return this.http.post<SatisfechoDeliveryOrderResponse>(`${this.apiUrl}/orders/satisfecho-delivery`, body);
+  }
+
+  updateOrderDelivery(orderId: number, body: OrderDeliveryUpdate): Observable<SatisfechoDeliveryOrderResponse> {
+    return this.http.put<SatisfechoDeliveryOrderResponse>(`${this.apiUrl}/orders/${orderId}/delivery`, body);
+  }
+
 
   /** Staff-only: get a short-lived token to open the public menu for a table without PIN. */
   getStaffMenuToken(tableId: number): Observable<{ token: string; table_token: string; expires_in: number }> {

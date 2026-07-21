@@ -1,6 +1,6 @@
 # Satisfecho Delivery order channel (first-party)
 
-Staff can mark orders as **Satisfecho Delivery** (own channel, not Glovo/Uber). No customer UI yet—API + schema only so kitchen/orders and couriers can tell table orders from own delivery.
+Staff can mark orders as **Satisfecho Delivery** (own channel, not Glovo/Uber). Staff UI on `/staff/orders` can create these orders, filter the **Delivery** tab, and update address/courier. No public customer delivery app.
 
 ## Order fields
 
@@ -19,7 +19,12 @@ Marketplace orders still use `delivery_integration_id` / `external_order_ref`; c
 - `POST /orders/satisfecho-delivery` — staff (`order:update_status`): create with items + address (+ optional phone/name/notes/courier).
 - `PUT /orders/{id}/delivery` — update delivery metadata on Satisfecho Delivery orders only.
 - `GET /orders` — includes `order_channel`, `delivery_address`, `customer_phone`, `courier_user_id`; `table_name` is `"Satisfecho Delivery"` for that channel.
+- `GET /users/couriers` — staff (`order:read`): list courier-role users for assign UI.
 - `GET /courier/orders` / `GET /courier/orders/{id}` — lists marketplace **and** Satisfecho Delivery; detail returns real `delivery_address` / `customer_phone`.
+
+## Staff UI
+
+- `/staff/orders`: **New delivery order**, **Delivery** filter tab (Satisfecho + marketplace, with channel badges), **Edit delivery** for address/phone/name/notes/courier.
 
 ## Migration
 
