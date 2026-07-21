@@ -210,6 +210,7 @@ If you use a reverse proxy (nginx, Traefik, HAProxy, etc.):
 - Ensure `WS_URL` uses `ws://` for HTTP or `wss://` for HTTPS.
 - Check that the WebSocket port is accessible.
 - Verify WebSocket bridge container is running.
+- **Build note:** `ws-bridge` uses `FROM pos-back` via Compose `additional_contexts` (back is tagged `pos-back:latest`). Do not hard-code `<directory>-back` (e.g. `pos2-back`); rebuild with `docker compose … build back ws-bridge`. Entrypoint is `uvicorn main:app` on port **8021** (not backend `app.main`).
 
 **CORS errors**
 - Ensure `CORS_ORIGINS` includes the exact frontend URL (including protocol and port).

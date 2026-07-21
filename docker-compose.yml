@@ -4,6 +4,8 @@
 services:
   back:
     build: ./back
+    # Stable tag so ws-bridge FROM does not depend on Compose project name (pos vs pos2).
+    image: pos-back:latest
     container_name: pos-back
     restart: unless-stopped
     user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
@@ -106,7 +108,12 @@ services:
       retries: 20
 
   ws-bridge:
-    build: ./ws-bridge
+    build:
+      context: ./ws-bridge
+      # Resolve Dockerfile `FROM pos-back` to the back service image (build order + no Hub pull).
+      additional_contexts:
+        pos-back: service:back
+    image: pos-ws-bridge:latest
     container_name: pos-ws-bridge
     restart: unless-stopped
     expose:

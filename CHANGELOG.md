@@ -8,6 +8,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.22] - 2026-07-21
+
+### Fixed
+
+- **ws-bridge build:** Pin Compose images to `pos-back` / `pos-ws-bridge` and build the bridge `FROM pos-back` via Compose `additional_contexts`, so clones named `pos` (not `pos2`) no longer fail resolving `pos2-back`; CMD remains `uvicorn main:app` on **8021** (#303).
+
 ## [2.1.21] - 2026-07-21
 
 ### Added
