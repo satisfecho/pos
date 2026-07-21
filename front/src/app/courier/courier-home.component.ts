@@ -5,7 +5,13 @@ import { ApiService, CourierInfo, CourierOrderSummary } from '../services/api.se
 
 type CourierTab = 'available' | 'mine' | 'completed';
 
-const OPEN_STATUSES = new Set(['pending', 'preparing', 'ready', 'partially_delivered']);
+const OPEN_STATUSES = new Set([
+  'pending',
+  'preparing',
+  'ready',
+  'out_for_delivery',
+  'partially_delivered',
+]);
 const COMPLETED_STATUSES = new Set(['paid', 'completed', 'cancelled']);
 
 @Component({
@@ -217,7 +223,8 @@ const COMPLETED_STATUSES = new Set(['paid', 'completed', 'cancelled']);
       color: var(--color-text-muted);
     }
     .courier-status[data-status='ready'],
-    .courier-status[data-status='preparing'] {
+    .courier-status[data-status='preparing'],
+    .courier-status[data-status='out_for_delivery'] {
       color: var(--color-primary);
     }
     .courier-customer { font-weight: 500; margin: 0 0 var(--space-1); }

@@ -347,6 +347,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 register_rate_limit_exception_handler(app)
 
 
@@ -1333,10 +1334,14 @@ def register(
     # Virgin deployment: if exactly one tenant exists and has no users, first registrant becomes its owner
     tenant_count = session.exec(select(models.Tenant)).all()
     user_count = session.exec(select(models.User)).all()
+
     if len(user_count) == 0 and len(tenant_count) == 1:
         tenant = tenant_count[0]
     else:
-        tenant = models.Tenant(name=tenant_name, ui_modules=new_tenant_ui_modules_stored())
+        tenant = models.Tenant(
+            name=tenant_name,
+            ui_modules=new_tenant_ui_modules_stored(),
+        )
         session.add(tenant)
         session.commit()
         session.refresh(tenant)
@@ -5540,9 +5545,66 @@ def _courier_item_summary(items: list[models.OrderItem]) -> str:
 def _courier_effective_order_status(
     order: models.Order, all_items: list[models.OrderItem]
 ) -> models.OrderStatus:
-    if order.status in (models.OrderStatus.paid, models.OrderStatus.cancelled):
+    # Preserve terminal and courier-in-transit statuses; otherwise derive from items.
+    if order.status in (
+        models.OrderStatus.paid,
+        models.OrderStatus.cancelled,
+        models.OrderStatus.out_for_delivery,
+    ):
         return order.status
     return compute_order_status_from_items(all_items)
+
+
+_COURIER_OPEN_STATUSES = frozenset(
+    {
+        models.OrderStatus.pending,
+        models.OrderStatus.preparing,
+        models.OrderStatus.ready,
+        models.OrderStatus.out_for_delivery,
+        models.OrderStatus.partially_delivered,
+    }
+)
+
+
+def _courier_allowed_actions(
+    order: models.Order,
+    *,
+    courier_user_id: int,
+    status: models.OrderStatus,
+) -> list[str]:
+    """Which courier mutations the current courier may run on this order."""
+    if status not in _COURIER_OPEN_STATUSES:
+        return []
+    assigned = getattr(order, "courier_user_id", None)
+    if assigned is None:
+        return [models.CourierOrderActionType.accept.value]
+    if assigned != courier_user_id:
+        return []
+    actions: list[str] = []
+    # Decline assignment only before leaving the restaurant.
+    if status != models.OrderStatus.out_for_delivery:
+        actions.append(models.CourierOrderActionType.reject.value)
+    if status == models.OrderStatus.ready:
+        actions.append(models.CourierOrderActionType.picked_up.value)
+    if status in (models.OrderStatus.ready, models.OrderStatus.out_for_delivery):
+        actions.append(models.CourierOrderActionType.delivered.value)
+    return actions
+
+
+def _courier_load_delivery_order(
+    session: Session, tenant_id: int, order_id: int
+) -> models.Order | None:
+    return session.exec(
+        select(models.Order).where(
+            models.Order.id == order_id,
+            models.Order.tenant_id == tenant_id,
+            models.Order.deleted_at.is_(None),
+            or_(
+                models.Order.delivery_integration_id.is_not(None),
+                models.Order.order_channel == models.OrderChannel.satisfecho_delivery,
+            ),
+        )
+    ).first()
 
 
 def _courier_pickup_context(session: Session, tenant_id: int) -> tuple[str | None, str | None]:
@@ -5583,6 +5645,7 @@ def _serialize_courier_order_summary(
     *,
     pickup_name: str | None,
     pickup_address: str | None,
+    courier_user_id: int | None = None,
 ) -> dict:
     all_items = session.exec(
         select(models.OrderItem).where(models.OrderItem.order_id == order.id)
@@ -5592,7 +5655,7 @@ def _serialize_courier_order_summary(
         return {}
     status = _courier_effective_order_status(order, all_items)
     total_cents = sum(item.price_cents * item.quantity for item in active_items)
-    return {
+    row = {
         "id": order.id,
         "status": status.value,
         "customer_name": order.customer_name,
@@ -5606,6 +5669,11 @@ def _serialize_courier_order_summary(
         "order_channel": _order_channel_value(order),
         "total_cents": total_cents,
     }
+    if courier_user_id is not None:
+        row["allowed_actions"] = _courier_allowed_actions(
+            order, courier_user_id=courier_user_id, status=status
+        )
+    return row
 
 
 def _serialize_courier_order_detail(
@@ -5614,6 +5682,7 @@ def _serialize_courier_order_detail(
     *,
     pickup_name: str | None,
     pickup_address: str | None,
+    courier_user_id: int | None = None,
 ) -> dict:
     all_items = session.exec(
         select(models.OrderItem).where(models.OrderItem.order_id == order.id)
@@ -5632,7 +5701,7 @@ def _serialize_courier_order_detail(
         }
         for item in active_items
     ]
-    return {
+    detail = {
         "id": order.id,
         "status": status.value,
         "customer_name": order.customer_name,
@@ -5649,6 +5718,11 @@ def _serialize_courier_order_detail(
         "total_cents": total_cents,
         "items": items_json,
     }
+    if courier_user_id is not None:
+        detail["allowed_actions"] = _courier_allowed_actions(
+            order, courier_user_id=courier_user_id, status=status
+        )
+    return detail
 
 
 @app.get("/courier/orders")
@@ -5672,6 +5746,7 @@ def courier_list_orders(
             order,
             pickup_name=pickup_name,
             pickup_address=pickup_address,
+            courier_user_id=current_user.id,
         )
         if row:
             result.append(row)
@@ -5687,17 +5762,7 @@ def courier_get_order(
     """Return one delivery order for the courier's tenant."""
     tenant_id = current_user.tenant_id
     assert tenant_id is not None
-    order = session.exec(
-        select(models.Order).where(
-            models.Order.id == order_id,
-            models.Order.tenant_id == tenant_id,
-            models.Order.deleted_at.is_(None),
-            or_(
-                models.Order.delivery_integration_id.is_not(None),
-                models.Order.order_channel == models.OrderChannel.satisfecho_delivery,
-            ),
-        )
-    ).first()
+    order = _courier_load_delivery_order(session, tenant_id, order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     pickup_name, pickup_address = _courier_pickup_context(session, tenant_id)
@@ -5706,6 +5771,95 @@ def courier_get_order(
         order,
         pickup_name=pickup_name,
         pickup_address=pickup_address,
+        courier_user_id=current_user.id,
+    )
+    if not detail:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return detail
+
+
+@app.post("/courier/orders/{order_id}/actions")
+def courier_order_action(
+    order_id: int,
+    body: models.CourierOrderAction,
+    current_user: Annotated[models.User, Depends(security.get_current_courier_user)],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Courier fulfillment actions: accept, reject, picked_up, delivered.
+
+    Updates Order / OrderItem consistently with kitchen semantics:
+    - accept: claim unassigned open delivery (`courier_user_id`)
+    - reject: clear own assignment before pickup
+    - picked_up: ready → out_for_delivery (items stay ready)
+    - delivered: mark active items delivered → order completed
+    """
+    tenant_id = current_user.tenant_id
+    assert tenant_id is not None
+    assert current_user.id is not None
+    order = _courier_load_delivery_order(session, tenant_id, order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    all_items = session.exec(
+        select(models.OrderItem).where(models.OrderItem.order_id == order.id)
+    ).all()
+    active_items = _courier_active_order_items(all_items)
+    if not active_items:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    status = _courier_effective_order_status(order, all_items)
+    allowed = _courier_allowed_actions(
+        order, courier_user_id=current_user.id, status=status
+    )
+    action = body.action.value if hasattr(body.action, "value") else str(body.action)
+    if action not in allowed:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Action '{action}' not allowed for this order (status={status.value})",
+        )
+
+    now = datetime.now(timezone.utc)
+    if action == models.CourierOrderActionType.accept.value:
+        order.courier_user_id = current_user.id
+    elif action == models.CourierOrderActionType.reject.value:
+        order.courier_user_id = None
+    elif action == models.CourierOrderActionType.picked_up.value:
+        order.status = models.OrderStatus.out_for_delivery
+    elif action == models.CourierOrderActionType.delivered.value:
+        for item in active_items:
+            if item.status != models.OrderItemStatus.delivered:
+                item.status = models.OrderItemStatus.delivered
+                item.status_updated_at = now
+                item.delivered_by_user_id = current_user.id
+                session.add(item)
+        order.status = compute_order_status_from_items(list(all_items))
+
+    session.add(order)
+    session.commit()
+    session.refresh(order)
+
+    publish_order_update(
+        tenant_id,
+        {
+            "type": "courier_action",
+            "order_id": order.id,
+            "action": action,
+            "status": order.status.value,
+            "courier_user_id": order.courier_user_id,
+            "table_name": "Satisfecho Delivery"
+            if _order_channel_value(order) == models.OrderChannel.satisfecho_delivery.value
+            else "Delivery",
+        },
+        table_id=order.table_id,
+    )
+
+    pickup_name, pickup_address = _courier_pickup_context(session, tenant_id)
+    detail = _serialize_courier_order_detail(
+        session,
+        order,
+        pickup_name=pickup_name,
+        pickup_address=pickup_address,
+        courier_user_id=current_user.id,
     )
     if not detail:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -12245,6 +12399,7 @@ def update_order_status(
             models.OrderStatus.pending: models.OrderItemStatus.pending,
             models.OrderStatus.preparing: models.OrderItemStatus.preparing,
             models.OrderStatus.ready: models.OrderItemStatus.ready,
+            # out_for_delivery: items stay ready (courier en route); no item remapping
             models.OrderStatus.completed: models.OrderItemStatus.delivered,  # completed = all items delivered
             models.OrderStatus.partially_delivered: models.OrderItemStatus.delivered,  # Partial delivery
         }

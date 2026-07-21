@@ -46,6 +46,7 @@ class OrderStatus(str, Enum):
     pending = "pending"
     preparing = "preparing"
     ready = "ready"
+    out_for_delivery = "out_for_delivery"  # Courier picked up; en route to customer
     partially_delivered = "partially_delivered"  # Some items delivered, some not
     paid = "paid"
     completed = "completed"
@@ -1230,6 +1231,19 @@ class OrderDeliveryUpdate(SQLModel):
 
 class OrderStatusUpdate(SQLModel):
     status: OrderStatus
+
+
+class CourierOrderActionType(str, Enum):
+    accept = "accept"
+    reject = "reject"
+    picked_up = "picked_up"
+    delivered = "delivered"
+
+
+class CourierOrderAction(SQLModel):
+    """Courier portal fulfillment action on a delivery order."""
+
+    action: CourierOrderActionType
 
 
 class OrderItemStatusUpdate(SQLModel):

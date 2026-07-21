@@ -263,6 +263,121 @@ class TestCourierOrders(PgClientTestCase):
         r = self.client.get("/courier/orders")
         self.assertIn(r.status_code, (401, 403), r.text)
 
+    def _make_assigned_ready_order(self, *, courier_id: int | None) -> models.Order:
+        product = self.session.exec(
+            select(models.Product).where(models.Product.tenant_id == self.tenant_a.id)
+        ).first()
+        assert product is not None
+        order = models.Order(
+            tenant_id=self.tenant_a.id,
+            table_id=None,
+            status=models.OrderStatus.ready,
+            customer_name="Delivery Cust",
+            notes="Leave at door",
+            order_channel=models.OrderChannel.satisfecho_delivery,
+            delivery_address="Calle Sol 3",
+            customer_phone="+34600999888",
+            courier_user_id=courier_id,
+            created_at=datetime.now(timezone.utc),
+        )
+        self.session.add(order)
+        self.session.flush()
+        self.session.add(
+            models.OrderItem(
+                order_id=order.id,
+                product_id=product.id,
+                product_name=product.name,
+                quantity=1,
+                price_cents=product.price_cents,
+                status=models.OrderItemStatus.ready,
+            )
+        )
+        self.session.commit()
+        self.session.refresh(order)
+        return order
+
+    def test_courier_accept_claim_from_available(self) -> None:
+        order = self._make_assigned_ready_order(courier_id=None)
+        r = self.client.post(
+            f"/courier/orders/{order.id}/actions",
+            headers=_bearer_headers(self.courier_a),
+            json={"action": "accept"},
+        )
+        self.assertEqual(r.status_code, 200, r.text)
+        data = r.json()
+        self.assertEqual(data["courier_user_id"], self.courier_a.id)
+        self.assertEqual(data["status"], "ready")
+        self.assertIn("picked_up", data["allowed_actions"])
+        self.assertIn("delivered", data["allowed_actions"])
+        self.assertIn("reject", data["allowed_actions"])
+
+    def test_courier_happy_path_pickup_then_deliver(self) -> None:
+        order = self._make_assigned_ready_order(courier_id=self.courier_a.id)
+        r_pick = self.client.post(
+            f"/courier/orders/{order.id}/actions",
+            headers=_bearer_headers(self.courier_a),
+            json={"action": "picked_up"},
+        )
+        self.assertEqual(r_pick.status_code, 200, r_pick.text)
+        self.assertEqual(r_pick.json()["status"], "out_for_delivery")
+        self.assertIn("delivered", r_pick.json()["allowed_actions"])
+        self.assertNotIn("reject", r_pick.json()["allowed_actions"])
+
+        r_del = self.client.post(
+            f"/courier/orders/{order.id}/actions",
+            headers=_bearer_headers(self.courier_a),
+            json={"action": "delivered"},
+        )
+        self.assertEqual(r_del.status_code, 200, r_del.text)
+        self.assertEqual(r_del.json()["status"], "completed")
+        self.assertEqual(r_del.json()["allowed_actions"], [])
+
+        self.session.expire_all()
+        items = self.session.exec(
+            select(models.OrderItem).where(models.OrderItem.order_id == order.id)
+        ).all()
+        self.assertTrue(all(i.status == models.OrderItemStatus.delivered for i in items))
+        self.assertEqual(items[0].delivered_by_user_id, self.courier_a.id)
+
+    def test_courier_reject_unassigns(self) -> None:
+        order = self._make_assigned_ready_order(courier_id=self.courier_a.id)
+        r = self.client.post(
+            f"/courier/orders/{order.id}/actions",
+            headers=_bearer_headers(self.courier_a),
+            json={"action": "reject"},
+        )
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertIsNone(r.json()["courier_user_id"])
+        self.assertEqual(r.json()["allowed_actions"], ["accept"])
+
+    def test_wrong_courier_cannot_act(self) -> None:
+        other = models.User(
+            email="co-courier-b@test.local",
+            hashed_password=security.get_password_hash("secret"),
+            full_name="Courier B",
+            tenant_id=self.tenant_a.id,
+            role=models.UserRole.courier,
+        )
+        self.session.add(other)
+        self.session.commit()
+        self.session.refresh(other)
+        order = self._make_assigned_ready_order(courier_id=other.id)
+        r = self.client.post(
+            f"/courier/orders/{order.id}/actions",
+            headers=_bearer_headers(self.courier_a),
+            json={"action": "picked_up"},
+        )
+        self.assertEqual(r.status_code, 400, r.text)
+
+    def test_non_courier_cannot_post_action(self) -> None:
+        order = self._make_assigned_ready_order(courier_id=self.courier_a.id)
+        r = self.client.post(
+            f"/courier/orders/{order.id}/actions",
+            headers=_bearer_headers(self.waiter_a),
+            json={"action": "delivered"},
+        )
+        self.assertEqual(r.status_code, 403, r.text)
+
 
 if __name__ == "__main__":
     unittest.main()

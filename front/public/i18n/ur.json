@@ -389,7 +389,15 @@
     "STATUS_PARTIALLY_DELIVERED": "جزوی طور پر پہنچایا",
     "STATUS_PAID": "ادا شدہ",
     "STATUS_COMPLETED": "مکمل",
-    "STATUS_CANCELLED": "منسوخ"
+    "STATUS_CANCELLED": "منسوخ",
+    "PHONE": "فون",
+    "STATUS_OUT_FOR_DELIVERY": "ڈیلیوری کے لیے روانہ",
+    "ACTION_ACCEPT": "ڈیلیوری قبول کریں",
+    "ACTION_REJECT": "تفویض مسترد کریں",
+    "ACTION_PICKED_UP": "پک اپ نشان زد کریں",
+    "ACTION_DELIVERED": "ڈیلیور نشان زد کریں",
+    "ACTION_NOT_ALLOWED": "یہ عمل اس آرڈر کے لیے ابھی اجازت نہیں۔",
+    "ACTION_FAILED": "آرڈر اپڈیٹ نہیں ہو سکا۔ دوبارہ کوشش کریں۔"
   },
   "AUTH": {
     "LOGIN": "لاگ ان",
@@ -478,7 +486,8 @@
     "SIGNUP_PRODUCT_COKE": "Coca Cola",
     "SIGNUP_PRODUCT_WATER": "پانی",
     "SIGNUP_COMPLETE_LEAD": "یہ QR کوڈ شیئر کریں تاکہ مہمان مینو دیکھ کر آرڈر کر سکیں۔",
-    "SIGNUP_GO_DASHBOARD": "اسٹاف ڈیش بورڈ کھولیں"
+    "SIGNUP_GO_DASHBOARD": "اسٹاف ڈیش بورڈ کھولیں",
+    "LOGOUT": "لاگ آؤٹ"
   },
   "MENU": {
     "TITLE": "مینو",

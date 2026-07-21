@@ -389,7 +389,15 @@
     "STATUS_PARTIALLY_DELIVERED": "Parcialmente entregado",
     "STATUS_PAID": "Pagado",
     "STATUS_COMPLETED": "Completado",
-    "STATUS_CANCELLED": "Cancelado"
+    "STATUS_CANCELLED": "Cancelado",
+    "PHONE": "Teléfono",
+    "STATUS_OUT_FOR_DELIVERY": "En camino",
+    "ACTION_ACCEPT": "Aceptar entrega",
+    "ACTION_REJECT": "Rechazar asignación",
+    "ACTION_PICKED_UP": "Marcar recogido",
+    "ACTION_DELIVERED": "Marcar entregado",
+    "ACTION_NOT_ALLOWED": "Esa acción no está permitida para este pedido ahora.",
+    "ACTION_FAILED": "No se pudo actualizar el pedido. Inténtalo de nuevo."
   },
   "AUTH": {
     "LOGIN": "Iniciar sesión",
@@ -477,7 +485,8 @@
     "SIGNUP_PRODUCT_COKE": "Coca Cola",
     "SIGNUP_PRODUCT_WATER": "Agua",
     "SIGNUP_COMPLETE_LEAD": "Comparte este código QR para que los clientes vean tu menú y pidan.",
-    "SIGNUP_GO_DASHBOARD": "Abrir panel de personal"
+    "SIGNUP_GO_DASHBOARD": "Abrir panel de personal",
+    "LOGOUT": "Cerrar sesión"
   },
   "MENU": {
     "TITLE": "Menú",

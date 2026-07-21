@@ -8,6 +8,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.21] - 2026-07-21
+
+### Added
+
+- **Courier status actions:** On `/courier/orders/{id}`, couriers can **accept**, **reject**, **mark picked up** (`out_for_delivery`), and **mark delivered**; `POST /courier/orders/{id}/actions` keeps Order/OrderItem status aligned with kitchen (#301).
+
 ## [2.1.20] - 2026-07-21
 
 ### Added

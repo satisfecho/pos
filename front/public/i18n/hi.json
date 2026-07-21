@@ -382,7 +382,15 @@
     "STATUS_PARTIALLY_DELIVERED": "आंशिक रूप से वितरित",
     "STATUS_PAID": "भुगतान किया",
     "STATUS_COMPLETED": "पूर्ण",
-    "STATUS_CANCELLED": "रद्द"
+    "STATUS_CANCELLED": "रद्द",
+    "PHONE": "फ़ोन",
+    "STATUS_OUT_FOR_DELIVERY": "डिलीवरी के लिए निकला",
+    "ACTION_ACCEPT": "डिलीवरी स्वीकार करें",
+    "ACTION_REJECT": "असाइनमेंट अस्वीकार करें",
+    "ACTION_PICKED_UP": "पिकअप चिह्नित करें",
+    "ACTION_DELIVERED": "डिलीवर चिह्नित करें",
+    "ACTION_NOT_ALLOWED": "यह क्रिया अभी इस ऑर्डर के लिए अनुमत नहीं है।",
+    "ACTION_FAILED": "ऑर्डर अपडेट नहीं हो सका। कृपया फिर कोशिश करें।"
   },
   "AUTH": {
     "LOGIN": "लॉग इन",
@@ -464,7 +472,8 @@
     "SIGNUP_PRODUCT_COKE": "Coca Cola",
     "SIGNUP_PRODUCT_WATER": "पानी",
     "SIGNUP_COMPLETE_LEAD": "यह QR कोड साझा करें ताकि मेहमान मेनू देखकर ऑर्डर कर सकें।",
-    "SIGNUP_GO_DASHBOARD": "स्टाफ डैशबोर्ड खोलें"
+    "SIGNUP_GO_DASHBOARD": "स्टाफ डैशबोर्ड खोलें",
+    "LOGOUT": "लॉग आउट"
   },
   "MENU": {
     "TITLE": "मेनू",

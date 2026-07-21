@@ -389,7 +389,15 @@
     "STATUS_PARTIALLY_DELIVERED": "Частично доставена",
     "STATUS_PAID": "Платена",
     "STATUS_COMPLETED": "Завършена",
-    "STATUS_CANCELLED": "Отменена"
+    "STATUS_CANCELLED": "Отменена",
+    "PHONE": "Телефон",
+    "STATUS_OUT_FOR_DELIVERY": "В доставка",
+    "ACTION_ACCEPT": "Приеми доставка",
+    "ACTION_REJECT": "Откажи назначение",
+    "ACTION_PICKED_UP": "Маркирай взето",
+    "ACTION_DELIVERED": "Маркирай доставено",
+    "ACTION_NOT_ALLOWED": "Това действие не е позволено за тази поръчка в момента.",
+    "ACTION_FAILED": "Поръчката не можа да се обнови. Опитайте отново."
   },
   "AUTH": {
     "LOGIN": "Вход",
@@ -478,7 +486,8 @@
     "SIGNUP_PRODUCT_COKE": "Coca Cola",
     "SIGNUP_PRODUCT_WATER": "Вода",
     "SIGNUP_COMPLETE_LEAD": "Споделете този QR код, за да виждат менюто и да поръчват.",
-    "SIGNUP_GO_DASHBOARD": "Отвори таблото"
+    "SIGNUP_GO_DASHBOARD": "Отвори таблото",
+    "LOGOUT": "Изход"
   },
   "MENU": {
     "TITLE": "Меню",

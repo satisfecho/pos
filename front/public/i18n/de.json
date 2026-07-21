@@ -389,7 +389,15 @@
     "STATUS_PARTIALLY_DELIVERED": "Teilweise geliefert",
     "STATUS_PAID": "Bezahlt",
     "STATUS_COMPLETED": "Abgeschlossen",
-    "STATUS_CANCELLED": "Storniert"
+    "STATUS_CANCELLED": "Storniert",
+    "PHONE": "Telefon",
+    "STATUS_OUT_FOR_DELIVERY": "Unterwegs",
+    "ACTION_ACCEPT": "Lieferung annehmen",
+    "ACTION_REJECT": "Zuweisung ablehnen",
+    "ACTION_PICKED_UP": "Abgeholt markieren",
+    "ACTION_DELIVERED": "Zugestellt markieren",
+    "ACTION_NOT_ALLOWED": "Diese Aktion ist für diese Bestellung gerade nicht erlaubt.",
+    "ACTION_FAILED": "Bestellung konnte nicht aktualisiert werden. Bitte erneut versuchen."
   },
   "AUTH": {
     "LOGIN": "Anmelden",
@@ -471,7 +479,8 @@
     "SIGNUP_PRODUCT_COKE": "Coca Cola",
     "SIGNUP_PRODUCT_WATER": "Wasser",
     "SIGNUP_COMPLETE_LEAD": "Teilen Sie diesen QR-Code, damit Gäste Ihr Menü sehen und bestellen können.",
-    "SIGNUP_GO_DASHBOARD": "Personal-Dashboard öffnen"
+    "SIGNUP_GO_DASHBOARD": "Personal-Dashboard öffnen",
+    "LOGOUT": "Abmelden"
   },
   "MENU": {
     "TITLE": "Speisekarte",

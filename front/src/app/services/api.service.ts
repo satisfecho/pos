@@ -322,6 +322,7 @@ export interface RegisterResponse {
   email: string;
 }
 
+
 /** Provider portal types */
 export interface ProviderInfo {
   id: number;
@@ -417,6 +418,7 @@ export interface CourierOrderSummary {
   courier_user_id?: number | null;
   order_channel?: string | null;
   total_cents?: number;
+  allowed_actions?: string[];
 }
 
 export interface CourierOrderItem {
@@ -435,7 +437,11 @@ export interface CourierOrderDetail extends CourierOrderSummary {
   external_order_ref: string | null;
   total_cents: number;
   items: CourierOrderItem[];
+  allowed_actions?: string[];
 }
+
+export type CourierOrderAction = 'accept' | 'reject' | 'picked_up' | 'delivered';
+
 
 export interface ProviderRegisterData {
   provider_name: string;
@@ -1705,6 +1711,11 @@ export class ApiService {
     );
   }
 
+
+
+
+
+
   /** Login: sends username/password as application/x-www-form-urlencoded (required by backend OAuth2PasswordRequestForm). May return 403 with require_otp + temp_token when OTP is enabled. */
   login(username: string, password: string, tenantId?: number, scope?: 'tenant' | 'provider' | 'courier' | 'platform'): Observable<any> {
     let queryParams = new HttpParams();
@@ -1845,6 +1856,12 @@ export class ApiService {
 
   getCourierOrder(orderId: number): Observable<CourierOrderDetail> {
     return this.http.get<CourierOrderDetail>(`${this.apiUrl}/courier/orders/${orderId}`);
+  }
+
+  courierOrderAction(orderId: number, action: CourierOrderAction): Observable<CourierOrderDetail> {
+    return this.http.post<CourierOrderDetail>(`${this.apiUrl}/courier/orders/${orderId}/actions`, {
+      action,
+    });
   }
 
   getProviderCatalog(search?: string): Observable<ProviderCatalogItem[]> {
@@ -2298,7 +2315,6 @@ export class ApiService {
     );
   }
 
-
   /** Tenant users with courier role (for Satisfecho Delivery assign). Uses ORDER_READ-scoped endpoint. */
   getCouriers(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/users/couriers`).pipe(
@@ -2312,7 +2328,6 @@ export class ApiService {
     return this.http.get<Order[]>(`${this.apiUrl}/orders`, params);
   }
 
-
   createSatisfechoDeliveryOrder(body: SatisfechoDeliveryOrderCreate): Observable<SatisfechoDeliveryOrderResponse> {
     return this.http.post<SatisfechoDeliveryOrderResponse>(`${this.apiUrl}/orders/satisfecho-delivery`, body);
   }
@@ -2320,7 +2335,6 @@ export class ApiService {
   updateOrderDelivery(orderId: number, body: OrderDeliveryUpdate): Observable<SatisfechoDeliveryOrderResponse> {
     return this.http.put<SatisfechoDeliveryOrderResponse>(`${this.apiUrl}/orders/${orderId}/delivery`, body);
   }
-
 
   /** Staff-only: get a short-lived token to open the public menu for a table without PIN. */
   getStaffMenuToken(tableId: number): Observable<{ token: string; table_token: string; expires_in: number }> {

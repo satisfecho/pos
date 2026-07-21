@@ -382,7 +382,15 @@
     "STATUS_PARTIALLY_DELIVERED": "部分已送",
     "STATUS_PAID": "已付款",
     "STATUS_COMPLETED": "已完成",
-    "STATUS_CANCELLED": "已取消"
+    "STATUS_CANCELLED": "已取消",
+    "PHONE": "电话",
+    "STATUS_OUT_FOR_DELIVERY": "配送中",
+    "ACTION_ACCEPT": "接受配送",
+    "ACTION_REJECT": "拒绝分配",
+    "ACTION_PICKED_UP": "标记已取餐",
+    "ACTION_DELIVERED": "标记已送达",
+    "ACTION_NOT_ALLOWED": "当前无法对该订单执行此操作。",
+    "ACTION_FAILED": "无法更新订单，请重试。"
   },
   "AUTH": {
     "LOGIN": "登录",
@@ -464,7 +472,8 @@
     "SIGNUP_PRODUCT_COKE": "可口可乐",
     "SIGNUP_PRODUCT_WATER": "水",
     "SIGNUP_COMPLETE_LEAD": "分享此二维码，顾客即可查看菜单并下单。",
-    "SIGNUP_GO_DASHBOARD": "打开员工后台"
+    "SIGNUP_GO_DASHBOARD": "打开员工后台",
+    "LOGOUT": "退出登录"
   },
   "MENU": {
     "TITLE": "菜单",

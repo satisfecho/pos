@@ -2432,7 +2432,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   activeOrders = computed(() => {
     const tid = this.tableScopeId();
     let list = this.orders().filter(o =>
-      ['pending', 'preparing', 'ready', 'partially_delivered', 'paid'].includes(o.status)
+      ['pending', 'preparing', 'ready', 'out_for_delivery', 'partially_delivered', 'paid'].includes(o.status)
     );
     if (tid != null) list = list.filter(o => o.table_id === tid);
     return [...list].sort((a, b) => {
@@ -2738,7 +2738,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
     /** Resolve focus using full order list (ignore table scope filter). */
     const rawActive = this.orders().filter(o =>
-      ['pending', 'preparing', 'ready', 'partially_delivered', 'paid'].includes(o.status)
+      ['pending', 'preparing', 'ready', 'out_for_delivery', 'partially_delivered', 'paid'].includes(o.status)
     );
     const rawNotPaid = this.orders().filter(o => o.status === 'completed' && !o.paid_at);
 
@@ -2781,7 +2781,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     } else if (Number.isFinite(focusTableId) && focusTableId > 0) {
       preserveTableId = focusTableId;
       const forTable = this.orders().filter(o => o.table_id === focusTableId);
-      const activeStatuses = ['pending', 'preparing', 'ready', 'partially_delivered', 'paid'];
+      const activeStatuses = ['pending', 'preparing', 'ready', 'out_for_delivery', 'partially_delivered', 'paid'];
       const activeForTable = forTable
         .filter(o => activeStatuses.includes(o.status))
         .sort((a, b) => (b.staff_urgent ? 1 : 0) - (a.staff_urgent ? 1 : 0) || a.id - b.id);
@@ -3886,7 +3886,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
     const transitions: Record<string, { forward: string[]; backward: string[] }> = {
       pending: { forward: ['preparing'], backward: [] },
       preparing: { forward: ['ready'], backward: ['pending'] },
-      ready: { forward: ['completed'], backward: ['preparing'] },
+      ready: { forward: ['out_for_delivery', 'completed'], backward: ['preparing'] },
+      out_for_delivery: { forward: ['completed'], backward: ['ready'] },
       completed: { forward: [], backward: ['ready'] }, // Paid is handled via modal
       partially_delivered: { forward: ['completed'], backward: [] },
       paid: { forward: [], backward: [] }, // Unmark paid is a separate action (clears paid mark only)

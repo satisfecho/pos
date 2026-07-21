@@ -389,7 +389,15 @@
     "STATUS_PARTIALLY_DELIVERED": "Parcialment lliurada",
     "STATUS_PAID": "Pagada",
     "STATUS_COMPLETED": "Completada",
-    "STATUS_CANCELLED": "Cancel·lada"
+    "STATUS_CANCELLED": "Cancel·lada",
+    "PHONE": "Telèfon",
+    "STATUS_OUT_FOR_DELIVERY": "En camí",
+    "ACTION_ACCEPT": "Acceptar lliurament",
+    "ACTION_REJECT": "Rebutjar assignació",
+    "ACTION_PICKED_UP": "Marcar com a recollit",
+    "ACTION_DELIVERED": "Marcar com a lliurat",
+    "ACTION_NOT_ALLOWED": "Aquesta acció no està permesa per a aquesta comanda ara.",
+    "ACTION_FAILED": "No s'ha pogut actualitzar la comanda. Torna-ho a provar."
   },
   "AUTH": {
     "LOGIN": "Iniciar sessió",
@@ -471,7 +479,8 @@
     "SIGNUP_PRODUCT_COKE": "Coca Cola",
     "SIGNUP_PRODUCT_WATER": "Aigua",
     "SIGNUP_COMPLETE_LEAD": "Comparteix aquest codi QR perquè els clients vegin el menú i demanin.",
-    "SIGNUP_GO_DASHBOARD": "Obrir tauler de personal"
+    "SIGNUP_GO_DASHBOARD": "Obrir tauler de personal",
+    "LOGOUT": "Tancar la sessió"
   },
   "MENU": {
     "TITLE": "Menú",

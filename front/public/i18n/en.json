@@ -445,7 +445,15 @@
     "STATUS_PARTIALLY_DELIVERED": "Partially delivered",
     "STATUS_PAID": "Paid",
     "STATUS_COMPLETED": "Completed",
-    "STATUS_CANCELLED": "Cancelled"
+    "STATUS_CANCELLED": "Cancelled",
+    "PHONE": "Phone",
+    "STATUS_OUT_FOR_DELIVERY": "Out for delivery",
+    "ACTION_ACCEPT": "Accept delivery",
+    "ACTION_REJECT": "Reject assignment",
+    "ACTION_PICKED_UP": "Mark picked up",
+    "ACTION_DELIVERED": "Mark delivered",
+    "ACTION_NOT_ALLOWED": "That action is not allowed for this order right now.",
+    "ACTION_FAILED": "Could not update the order. Please try again."
   },
   "AUTH": {
     "LOGIN": "Login",
@@ -534,7 +542,8 @@
     "SIGNUP_PRODUCT_COKE": "Coca Cola",
     "SIGNUP_PRODUCT_WATER": "Water",
     "SIGNUP_COMPLETE_LEAD": "Share this QR code so guests can view your menu and order.",
-    "SIGNUP_GO_DASHBOARD": "Open staff dashboard"
+    "SIGNUP_GO_DASHBOARD": "Open staff dashboard",
+    "LOGOUT": "Log out"
   },
   "MENU": {
     "TITLE": "Menu",
