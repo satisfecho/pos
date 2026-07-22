@@ -7,8 +7,9 @@
     "2026-07-22T12:26:42Z: docs_stale\u00d714; demo_tables still fail (owned by existing NEW); Unreleased filled; queued 0 FEAT + 3 NEW (0024 WhatsApp shipped, 0019 reminder channels, 0033 waiting_list_entry)",
     "2026-07-22T12:40:08Z: docs_stale\u00d714; demo_tables still fail (owned by existing NEW); Unreleased filled; queued 0 FEAT + 3 NEW (0018 SMTP fields, 0025 seat math, 0029 deferred)",
     "2026-07-22T12:50:52Z: docs_stale\u00d714; demo_tables still fail (owned by existing NEW); Unreleased filled; queued 0 FEAT + 3 NEW (0023 prioritisation, 0032 delivery note, 0007 historical)",
-    "2026-07-22T12:59:00Z: docs_stale\u00d714; demo_tables still fail (owned by existing NEW); Unreleased filled; queued 0 FEAT + 3 NEW (0050 #52 closed, 0013 research-only, 0010 reservation plan shipped)"
+    "2026-07-22T12:59:00Z: docs_stale\u00d714; demo_tables still fail (owned by existing NEW); Unreleased filled; queued 0 FEAT + 3 NEW (0050 #52 closed, 0013 research-only, 0010 reservation plan shipped)",
+    "2026-07-22T13:10:58Z: docs_stale\u00d714; demo_tables still fail (owned by existing NEW); Unreleased filled; queued 0 FEAT + 3 NEW (0025 overbooking shipped, renumber 0015\u21920055 platform, 0016 reports overbooking)"
   ],
-  "last_run": "2026-07-22T13:00:55Z",
+  "last_run": "2026-07-22T13:11:31Z",
   "last_signals": 16
 }
