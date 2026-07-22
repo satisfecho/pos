@@ -12,10 +12,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - **Daily demo data reset:** Documented amvara9 host cron (`0 4 * * *` UTC) and made `scripts/reset-demo-data-on-server.sh` executable so tenant 1 orders/reservations can refresh automatically.
 - **Restaurant groups guide:** Documented multi-location restaurant groups (create/join/leave, share customers/products, Settings tab) in `docs/0054-restaurant-groups.md` and indexed it under Feature guides.
+- **SaaS signup paywall design:** Documented hard paywall for restaurant signups (trial/subscribe, grandfathering, env flags) in `docs/0052-saas-signup-paywall.md` and indexed it under Feature guides (#296).
 
 ### Changed
 
 - **Rate limiting ops doc:** `docs/0020` now lists waiting-list, public Satisfecho Delivery create, and marketplace delivery webhook limits (shared public-menu IP bucket) plus related env vars.
+- **Security review:** Updated `docs/SECURITY-REVIEW.md` for public Satisfecho Delivery, marketplace delivery webhooks, courier IDOR, and SaaS paywall/Checkout surfaces, with residual risks and linked tests.
 
 ### Fixed
 
