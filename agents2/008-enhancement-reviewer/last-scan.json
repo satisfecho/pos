@@ -55,8 +55,9 @@
     "2026-07-22T20:09:40Z: docs_stale\u00d714 + demo_tables fail all already queued; Unreleased filled; NEW backlog=39; preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-22T20:17:43Z: docs_stale\u00d714 + demo_tables fail all already queued; Unreleased filled; NEW backlog=39; preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-22T20:59:37Z: docs_stale\u00d714 + demo_tables fail all already queued; Unreleased filled; NEW backlog=39; preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)",
-    "2026-07-22T21:29:42Z: docs_stale\u00d714 + demo_tables fail + changelog_sparse all already queued (incl. 2120 sparse-after-cut / skip-demo-tables); Unreleased empty post-2.1.24; NEW backlog=41; queued 0 FEAT + 0 NEW (no task spam)"
+    "2026-07-22T21:29:42Z: docs_stale\u00d714 + demo_tables fail + changelog_sparse all already queued (incl. 2120 sparse-after-cut / skip-demo-tables); Unreleased empty post-2.1.24; NEW backlog=41; queued 0 FEAT + 0 NEW (no task spam)",
+    "2026-07-22T21:37:00Z: docs_stale\u00d714 + demo_tables fail + changelog_sparse all already queued (incl. 2120 sparse-after-cut / skip-demo-tables); Unreleased empty post-2.1.24; NEW backlog=41; queued 0 FEAT + 0 NEW (no task spam)"
   ],
-  "last_run": "2026-07-22T21:29:52Z",
+  "last_run": "2026-07-22T21:37:27Z",
   "last_signals": 17
 }
