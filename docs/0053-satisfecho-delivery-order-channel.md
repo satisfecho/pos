@@ -1,6 +1,6 @@
 # Satisfecho Delivery order channel (first-party)
 
-Staff can mark orders as **Satisfecho Delivery** (own channel, not Glovo/Uber). Staff UI on `/staff/orders` can create these orders, filter the **Delivery** tab, and update address/courier. No public customer delivery app.
+Staff can mark orders as **Satisfecho Delivery** (own channel, not Glovo/Uber). Staff UI on `/staff/orders` can create these orders, filter the **Delivery** tab, and update address/courier. Guests can place delivery orders on the public checkout at `/delivery/{tenantId}` (menu → cart → address → pay).
 
 ## Order fields
 
@@ -8,7 +8,7 @@ Staff can mark orders as **Satisfecho Delivery** (own channel, not Glovo/Uber). 
 |-------|---------|
 | `order_channel` | `table` (default), `satisfecho_delivery`, or `marketplace` |
 | `delivery_address` | Drop-off address (nullable; required for Satisfecho create) |
-| `customer_phone` | E.164 phone (nullable) |
+| `customer_phone` | E.164 phone (nullable; **required** on public create) |
 | `courier_user_id` | Optional FK to a `courier` user on the same tenant |
 | `notes` | Reused as delivery notes (courier `delivery_notes`) |
 
@@ -16,12 +16,30 @@ Marketplace orders still use `delivery_integration_id` / `external_order_ref`; c
 
 ## API
 
-- `POST /orders/satisfecho-delivery` — staff (`order:update_status`): create with items + address (+ optional phone/name/notes/courier).
+- `POST /orders/satisfecho-delivery` — staff (`order:update_status`): create with items + address (+ optional phone/name/notes/courier). Kitchen is notified immediately.
+- `POST /public/tenants/{tenant_id}/satisfecho-delivery` — **public** (rate-limited): create with items + **required** address and phone (+ optional name/notes). No courier assign. Returns `public_order_token`, `total_cents`, and payment hints (`stripe_publishable_key`, `revolut_configured`). Kitchen/inventory notify is deferred until payment succeeds.
 - `PUT /orders/{id}/delivery` — update delivery metadata on Satisfecho Delivery orders only.
 - `GET /orders` — includes `order_channel`, `delivery_address`, `customer_phone`, `courier_user_id`; `table_name` is `"Satisfecho Delivery"` for that channel.
 - `GET /users/couriers` — staff (`order:read`): list courier-role users for assign UI.
 - `GET /courier/orders` / `GET /courier/orders/{id}` — lists marketplace **and** Satisfecho Delivery; list rows include `courier_user_id`, `delivery_address`, `customer_phone`, and `total_cents` so the courier **Mine** tab can show staff-assigned deliveries; detail returns the same address/phone fields plus `allowed_actions`.
 - `POST /courier/orders/{id}/actions` — courier fulfillment mutations (`accept` | `reject` | `picked_up` | `delivered`). See **Courier status actions** below.
+
+### Guest payment (table or public delivery)
+
+Stripe/Revolut guest endpoints accept **exactly one** of:
+
+- `table_token` — existing table / take-away menu checkout, or
+- `public_order_token` — public Satisfecho Delivery checkout (signed, ~1h).
+
+Endpoints: `POST /orders/{id}/create-payment-intent`, `confirm-payment`, `create-revolut-order`, `confirm-revolut-payment`.
+
+Revolut success redirect for delivery: `{PUBLIC_APP_BASE_URL}/delivery/{tenantId}/payment-success?order_id=…&public_order_token=…`.
+
+## Public UI
+
+- `/delivery/:tenantId` — cart + address + Stripe/Revolut pay.
+- `/delivery/:tenantId/payment-success` — confirms Revolut after redirect.
+- `/public-menu/:tenantId` — read-only menu with a link to delivery checkout.
 
 ## Courier status actions
 

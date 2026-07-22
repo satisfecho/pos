@@ -1227,6 +1227,16 @@ class SatisfechoDeliveryOrderCreate(SQLModel):
     courier_user_id: int | None = None
 
 
+class PublicSatisfechoDeliveryOrderCreate(SQLModel):
+    """Public guest create for Satisfecho Delivery (address + phone required; no courier assign)."""
+
+    items: list[OrderItemCreate]
+    delivery_address: str
+    customer_phone: str
+    customer_name: str | None = None
+    notes: str | None = None
+
+
 class OrderDeliveryUpdate(SQLModel):
     """Update delivery metadata on a Satisfecho Delivery order."""
 

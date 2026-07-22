@@ -54,6 +54,16 @@ export const routes: Routes = [
   { path: 'menu/:token', loadComponent: () => import('./menu/menu.component').then(m => m.MenuComponent) },
   { path: 'menu/:token/payment-success', loadComponent: () => import('./menu/payment-success.component').then(m => m.PaymentSuccessComponent) },
   { path: 'public-menu/:tenantId', loadComponent: () => import('./public-menu/public-menu.component').then(m => m.PublicMenuComponent) },
+  {
+    path: 'delivery/:tenantId/payment-success',
+    loadComponent: () =>
+      import('./delivery/delivery-payment-success.component').then((m) => m.DeliveryPaymentSuccessComponent),
+  },
+  {
+    path: 'delivery/:tenantId',
+    loadComponent: () =>
+      import('./delivery/delivery-checkout.component').then((m) => m.DeliveryCheckoutComponent),
+  },
   { path: 'book/:tenantId', loadComponent: () => import('./book/book.component').then(m => m.BookComponent) },
   { path: 'waitlist/:tenantId', loadComponent: () => import('./waitlist-public/waitlist-public.component').then(m => m.WaitlistPublicComponent) },
   { path: 'feedback/:tenantId', loadComponent: () => import('./feedback-public/feedback-public.component').then(m => m.FeedbackPublicComponent) },

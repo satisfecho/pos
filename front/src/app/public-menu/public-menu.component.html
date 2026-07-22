@@ -60,6 +60,11 @@
 
     <main class="book-content public-menu-content">
       <p class="public-menu-readonly-hint">{{ 'PUBLIC_MENU.READ_ONLY_HINT' | translate }}</p>
+      <p class="public-menu-delivery-cta">
+        <a [routerLink]="['/delivery', tenantId()]" class="btn btn-primary">
+          {{ 'PUBLIC_MENU.ORDER_DELIVERY' | translate }}
+        </a>
+      </p>
 
       @if (menuLoading()) {
         <p class="public-menu-status">{{ 'COMMON.LOADING' | translate }}</p>

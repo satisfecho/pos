@@ -11,7 +11,7 @@ Tenant 1 demo tables are out of spec: landing **Take Away** demos, Puppeteer scr
 ## Evidence (008 preflight / review)
 
 - `SIGNAL demo_tables_check=fail (run seed_demo_tables)`
-- `docker compose … exec back python -m app.seeds.check_demo_tables` output (still failing as of **2026-07-22T14:43Z** 008 re-check):
+- `docker compose … exec back python -m app.seeds.check_demo_tables` output (still failing as of **2026-07-22T20:59Z** 008 re-check):
   - Missing: **T05**, **T07**, **T10**
   - Wrong `seat_count`: **T08** (expected 2, got 6)
 - Checker: `back/app/seeds/check_demo_tables.py`; seeder: `back/app/seeds/seed_demo_tables`

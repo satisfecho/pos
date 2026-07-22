@@ -192,10 +192,14 @@ def create_satisfecho_delivery_order(
     customer_name: str | None = None,
     notes: str | None = None,
     courier_user_id: int | None = None,
+    notify_kitchen: bool = True,
 ) -> tuple[models.Order | None, dict]:
     """
     Create a first-party Satisfecho Delivery order (no marketplace integration, no table).
     lines: [{"product_id": int, "quantity": int, "notes": str|None}].
+
+    When notify_kitchen is False (public checkout before pay), skip WS publish and
+    inventory deduct until payment confirmation calls publish_satisfecho_delivery_order.
     """
     address = (delivery_address or "").strip()
     if not address:
@@ -239,5 +243,13 @@ def create_satisfecho_delivery_order(
     )
     session.commit()
     session.refresh(order)
-    _publish_and_deduct(session, order, tenant_id, "Satisfecho Delivery")
+    if notify_kitchen:
+        _publish_and_deduct(session, order, tenant_id, "Satisfecho Delivery")
     return order, {"status": "created", "order_id": order.id}
+
+
+def publish_satisfecho_delivery_order(session: Session, order: models.Order) -> None:
+    """Notify kitchen/staff and deduct inventory for a Satisfecho Delivery order (e.g. after pay)."""
+    if not order or order.tenant_id is None:
+        return
+    _publish_and_deduct(session, order, order.tenant_id, "Satisfecho Delivery")

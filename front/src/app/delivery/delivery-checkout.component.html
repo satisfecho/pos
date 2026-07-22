@@ -1,0 +1,304 @@
+<div
+  class="book-page delivery-checkout-page"
+  [style.--color-bg]="tenant()?.public_background_color ?? null"
+  [style.--hero-header-bg]="tenant()?.public_background_color ?? null"
+>
+  @if (loading()) {
+    <div class="delivery-shell">
+      <div class="delivery-top-bar">
+        <app-language-picker class="book-language-picker"></app-language-picker>
+      </div>
+      <div class="loading-screen">
+        <p>{{ 'DELIVERY_CHECKOUT.LOADING' | translate }}</p>
+      </div>
+    </div>
+  } @else if (errorKind()) {
+    <div class="delivery-shell">
+      <div class="delivery-top-bar">
+        <app-language-picker class="book-language-picker"></app-language-picker>
+      </div>
+      <main class="book-content">
+        <div class="book-card">
+          <h1>{{ 'DELIVERY_CHECKOUT.PAGE_TITLE' | translate }}</h1>
+          <p class="form-error">
+            @if (errorKind() === 'invalid_tenant') {
+              {{ 'DELIVERY_CHECKOUT.INVALID_TENANT' | translate }}
+            } @else if (errorKind() === 'tenant_not_found') {
+              {{ 'DELIVERY_CHECKOUT.TENANT_NOT_FOUND' | translate }}
+            } @else {
+              {{ 'DELIVERY_CHECKOUT.LOAD_FAILED' | translate }}
+            }
+          </p>
+          <a routerLink="/" class="delivery-back-link">{{ 'DELIVERY_CHECKOUT.BACK_HOME' | translate }}</a>
+        </div>
+      </main>
+    </div>
+  } @else {
+    <header
+      class="hero-header"
+      [class.has-bg-image]="tenant()?.header_background_filename"
+      [style.background-image]="headerBackgroundStyle()"
+    >
+      <div class="hero-overlay"></div>
+      <app-language-picker class="book-language-picker"></app-language-picker>
+      <div class="hero-content">
+        <div class="hero-top-row">
+          @if (logoUrl()) {
+            <div class="logo-container">
+              <img [src]="getLogoSafeUrl(logoUrl())" [alt]="displayName()" class="tenant-logo" />
+            </div>
+          }
+        </div>
+        <div class="hero-info">
+          <h1 class="restaurant-name">{{ displayName() }}</h1>
+          <p class="restaurant-description">{{ 'DELIVERY_CHECKOUT.SUBTITLE' | translate }}</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="book-content delivery-content">
+      @if (step() === 'menu') {
+        <div class="delivery-toolbar">
+          <p class="delivery-hint">{{ 'DELIVERY_CHECKOUT.MENU_HINT' | translate }}</p>
+          <button
+            type="button"
+            class="btn btn-primary delivery-cart-btn"
+            [disabled]="cartCount() < 1"
+            (click)="goToCart()"
+          >
+            {{ 'DELIVERY_CHECKOUT.VIEW_CART' | translate }} ({{ cartCount() }})
+          </button>
+        </div>
+
+        @if (menuLoading()) {
+          <p class="delivery-status">{{ 'COMMON.LOADING' | translate }}</p>
+        } @else if (categories().length === 0) {
+          <p class="delivery-status">{{ 'PUBLIC_MENU.EMPTY_MENU' | translate }}</p>
+        } @else {
+          @for (cat of categories(); track cat.id) {
+            <section class="delivery-category" [attr.aria-labelledby]="'dcat-' + cat.id">
+              <h2 class="delivery-category-title" [id]="'dcat-' + cat.id">
+                <button
+                  type="button"
+                  class="delivery-category-toggle"
+                  (click)="toggleCategory(cat.id)"
+                  [attr.aria-expanded]="isCategoryExpanded(cat.id)"
+                  [attr.aria-controls]="categoryPanelId(cat.id)"
+                  [attr.aria-label]="categoryToggleAriaLabel(cat)"
+                >
+                  <span>{{ getCategoryLabel(cat.name) }}</span>
+                  <span aria-hidden="true">{{ isCategoryExpanded(cat.id) ? '▾' : '▸' }}</span>
+                </button>
+              </h2>
+              @if (isCategoryExpanded(cat.id)) {
+                <ul class="delivery-product-list" [id]="categoryPanelId(cat.id)">
+                  @for (product of cat.products; track product.id) {
+                    <li class="delivery-product">
+                      @if (product.image_url) {
+                        <img
+                          class="delivery-product-image"
+                          [src]="productImageUrl(product.image_url)"
+                          [alt]="product.name"
+                          loading="lazy"
+                        />
+                      }
+                      <div class="delivery-product-body">
+                        <div class="delivery-product-header">
+                          <span class="delivery-product-name">{{ product.name }}</span>
+                          <span class="delivery-product-price">{{ formatPrice(product) }}</span>
+                        </div>
+                        @if (product.description?.trim()) {
+                          <p class="delivery-product-desc">{{ product.description }}</p>
+                        }
+                        <button
+                          type="button"
+                          class="btn btn-secondary delivery-add-btn"
+                          [disabled]="!product.available"
+                          (click)="addToCart(product)"
+                        >
+                          {{
+                            product.available
+                              ? ('DELIVERY_CHECKOUT.ADD' | translate)
+                              : ('DELIVERY_CHECKOUT.UNAVAILABLE' | translate)
+                          }}
+                        </button>
+                      </div>
+                    </li>
+                  }
+                </ul>
+              }
+            </section>
+          }
+        }
+      }
+
+      @if (step() === 'cart') {
+        <h2>{{ 'DELIVERY_CHECKOUT.CART_TITLE' | translate }}</h2>
+        @if (cart().length === 0) {
+          <p>{{ 'DELIVERY_CHECKOUT.CART_EMPTY' | translate }}</p>
+          <button type="button" class="btn btn-secondary" (click)="goToMenu()">
+            {{ 'DELIVERY_CHECKOUT.BACK_TO_MENU' | translate }}
+          </button>
+        } @else {
+          <ul class="delivery-cart-list">
+            @for (line of cart(); track line.product.id) {
+              <li class="delivery-cart-row">
+                <div>
+                  <strong>{{ line.product.name }}</strong>
+                  <span class="delivery-cart-line-price">{{
+                    formatCents(line.product.price_cents * line.quantity)
+                  }}</span>
+                </div>
+                <div class="delivery-qty">
+                  <button type="button" (click)="setQty(line.product.id, line.quantity - 1)">−</button>
+                  <span>{{ line.quantity }}</span>
+                  <button type="button" (click)="setQty(line.product.id, line.quantity + 1)">+</button>
+                </div>
+              </li>
+            }
+          </ul>
+          <p class="delivery-total">
+            <strong>{{ 'DELIVERY_CHECKOUT.TOTAL' | translate }}:</strong>
+            {{ formatCents(cartTotalCents()) }}
+          </p>
+          <div class="delivery-actions">
+            <button type="button" class="btn btn-secondary" (click)="goToMenu()">
+              {{ 'DELIVERY_CHECKOUT.BACK_TO_MENU' | translate }}
+            </button>
+            <button type="button" class="btn btn-primary" (click)="goToAddress()">
+              {{ 'DELIVERY_CHECKOUT.CONTINUE_ADDRESS' | translate }}
+            </button>
+          </div>
+        }
+      }
+
+      @if (step() === 'address') {
+        <h2>{{ 'DELIVERY_CHECKOUT.ADDRESS_TITLE' | translate }}</h2>
+        <p class="delivery-hint">{{ 'DELIVERY_CHECKOUT.ADDRESS_HINT' | translate }}</p>
+        @if (formError()) {
+          <p class="form-error">{{ formError() }}</p>
+        }
+        <form class="delivery-form" (ngSubmit)="submitAddress()">
+          <label>
+            {{ 'DELIVERY_CHECKOUT.NAME' | translate }}
+            <input type="text" name="name" [(ngModel)]="customerName" autocomplete="name" />
+          </label>
+          <label>
+            {{ 'DELIVERY_CHECKOUT.PHONE' | translate }} *
+            <input
+              type="tel"
+              name="phone"
+              [(ngModel)]="customerPhone"
+              required
+              autocomplete="tel"
+            />
+          </label>
+          <label>
+            {{ 'DELIVERY_CHECKOUT.ADDRESS' | translate }} *
+            <textarea
+              name="address"
+              rows="3"
+              [(ngModel)]="deliveryAddress"
+              required
+              autocomplete="street-address"
+            ></textarea>
+          </label>
+          <label>
+            {{ 'DELIVERY_CHECKOUT.NOTES' | translate }}
+            <textarea name="notes" rows="2" [(ngModel)]="deliveryNotes"></textarea>
+          </label>
+          <div class="delivery-actions">
+            <button type="button" class="btn btn-secondary" (click)="goToCart()" [disabled]="submitting()">
+              {{ 'COMMON.BACK' | translate }}
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="submitting()">
+              {{
+                submitting()
+                  ? ('COMMON.LOADING' | translate)
+                  : ('DELIVERY_CHECKOUT.CONTINUE_PAY' | translate)
+              }}
+            </button>
+          </div>
+        </form>
+      }
+
+      @if (step() === 'pay') {
+        <h2>{{ 'DELIVERY_CHECKOUT.PAY_TITLE' | translate }}</h2>
+        <p class="delivery-total">
+          <strong>{{ 'DELIVERY_CHECKOUT.TOTAL' | translate }}:</strong>
+          {{ formatCents(totalCents()) }}
+        </p>
+        @if (cardError()) {
+          <p class="form-error">{{ cardError() }}</p>
+        }
+        <div class="delivery-pay-options">
+          @if (stripeReady()) {
+            <button
+              type="button"
+              class="btn btn-primary"
+              [disabled]="processingPayment()"
+              (click)="payWithStripe()"
+            >
+              {{ 'DELIVERY_CHECKOUT.PAY_STRIPE' | translate }}
+            </button>
+          }
+          @if (revolutConfigured()) {
+            <button
+              type="button"
+              class="btn btn-secondary"
+              [disabled]="processingPayment()"
+              (click)="payWithRevolut()"
+            >
+              {{ 'DELIVERY_CHECKOUT.PAY_REVOLUT' | translate }}
+            </button>
+          }
+          @if (!stripeReady() && !revolutConfigured()) {
+            <p class="form-error">{{ 'DELIVERY_CHECKOUT.PAY_NOT_CONFIGURED' | translate }}</p>
+          }
+        </div>
+
+        @if (showStripeForm()) {
+          <div class="delivery-stripe-box">
+            <div id="delivery-card-element"></div>
+            <button
+              type="button"
+              class="btn btn-primary"
+              [disabled]="processingPayment()"
+              (click)="confirmStripe()"
+            >
+              {{
+                processingPayment()
+                  ? ('PAYMENTS.PROCESSING' | translate)
+                  : ('DELIVERY_CHECKOUT.CONFIRM_PAY' | translate)
+              }}
+            </button>
+          </div>
+        }
+      }
+
+      @if (step() === 'success') {
+        <div class="delivery-success">
+          <h2>{{ 'DELIVERY_CHECKOUT.SUCCESS_TITLE' | translate }}</h2>
+          <p>{{ 'DELIVERY_CHECKOUT.SUCCESS_MESSAGE' | translate }}</p>
+          @if (orderId(); as oid) {
+            <p class="delivery-order-ref">{{ 'DELIVERY_CHECKOUT.ORDER_REF' | translate: { id: oid } }}</p>
+          }
+          <button type="button" class="btn btn-primary" (click)="orderAgain()">
+            {{ 'DELIVERY_CHECKOUT.ORDER_AGAIN' | translate }}
+          </button>
+        </div>
+      }
+
+      <div class="delivery-footer-actions">
+        <a [routerLink]="['/public-menu', tenantId()]" class="delivery-back-link">
+          {{ 'DELIVERY_CHECKOUT.VIEW_MENU_ONLY' | translate }}
+        </a>
+        <a routerLink="/" class="delivery-back-link">{{ 'DELIVERY_CHECKOUT.BACK_HOME' | translate }}</a>
+        <app-legal-links
+          [termsUrl]="tenant()?.terms_of_service_url"
+          [privacyUrl]="tenant()?.privacy_policy_url"
+        />
+      </div>
+    </main>
+  }
+</div>

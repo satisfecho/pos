@@ -1336,6 +1336,30 @@ export interface SatisfechoDeliveryOrderResponse {
   created_at?: string | null;
 }
 
+/** Public guest Satisfecho Delivery create (no auth). */
+export interface PublicSatisfechoDeliveryOrderCreate {
+  items: OrderItemCreate[];
+  delivery_address: string;
+  customer_phone: string;
+  customer_name?: string | null;
+  notes?: string | null;
+}
+
+export interface PublicSatisfechoDeliveryOrderResponse {
+  id: number;
+  status: string;
+  order_channel: string;
+  delivery_address: string | null;
+  customer_phone: string | null;
+  customer_name: string | null;
+  notes?: string | null;
+  table_id: number | null;
+  total_cents: number;
+  public_order_token: string;
+  stripe_publishable_key?: string | null;
+  revolut_configured: boolean;
+  created_at?: string | null;
+}
 
 export interface MenuResponse {
   table_name: string;
@@ -2365,6 +2389,16 @@ export class ApiService {
     return this.http.post<SatisfechoDeliveryOrderResponse>(`${this.apiUrl}/orders/satisfecho-delivery`, body);
   }
 
+  /** Public guest: create Satisfecho Delivery order (address + phone required). */
+  createPublicSatisfechoDeliveryOrder(
+    tenantId: number,
+    body: PublicSatisfechoDeliveryOrderCreate,
+  ): Observable<PublicSatisfechoDeliveryOrderResponse> {
+    return this.http.post<PublicSatisfechoDeliveryOrderResponse>(
+      `${this.apiUrl}/public/tenants/${tenantId}/satisfecho-delivery`,
+      body,
+    );
+  }
 
   updateOrderDelivery(orderId: number, body: OrderDeliveryUpdate): Observable<SatisfechoDeliveryOrderResponse> {
     return this.http.put<SatisfechoDeliveryOrderResponse>(`${this.apiUrl}/orders/${orderId}/delivery`, body);
@@ -2695,28 +2729,70 @@ export class ApiService {
   }
 
   // Payments
-  createPaymentIntent(orderId: number, tableToken: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/orders/${orderId}/create-payment-intent?table_token=${tableToken}`, {});
+  createPaymentIntent(
+    orderId: number,
+    tableToken: string | null,
+    publicOrderToken?: string | null,
+  ): Observable<any> {
+    const params = new URLSearchParams();
+    if (publicOrderToken) {
+      params.set('public_order_token', publicOrderToken);
+    } else if (tableToken) {
+      params.set('table_token', tableToken);
+    }
+    return this.http.post(`${this.apiUrl}/orders/${orderId}/create-payment-intent?${params.toString()}`, {});
   }
 
-  confirmPayment(orderId: number, tableToken: string, paymentIntentId: string): Observable<any> {
+  confirmPayment(
+    orderId: number,
+    tableToken: string | null,
+    paymentIntentId: string,
+    publicOrderToken?: string | null,
+  ): Observable<any> {
+    const params = new URLSearchParams();
+    params.set('payment_intent_id', paymentIntentId);
+    if (publicOrderToken) {
+      params.set('public_order_token', publicOrderToken);
+    } else if (tableToken) {
+      params.set('table_token', tableToken);
+    }
     return this.http.post(
-      `${this.apiUrl}/orders/${orderId}/confirm-payment?table_token=${tableToken}&payment_intent_id=${paymentIntentId}`,
-      {}
+      `${this.apiUrl}/orders/${orderId}/confirm-payment?${params.toString()}`,
+      {},
     );
   }
 
-  createRevolutOrder(orderId: number, tableToken: string): Observable<{ checkout_url: string; revolut_order_id: string; order_id: number }> {
+  createRevolutOrder(
+    orderId: number,
+    tableToken: string | null,
+    publicOrderToken?: string | null,
+  ): Observable<{ checkout_url: string; revolut_order_id: string; order_id: number }> {
+    const params = new URLSearchParams();
+    if (publicOrderToken) {
+      params.set('public_order_token', publicOrderToken);
+    } else if (tableToken) {
+      params.set('table_token', tableToken);
+    }
     return this.http.post<{ checkout_url: string; revolut_order_id: string; order_id: number }>(
-      `${this.apiUrl}/orders/${orderId}/create-revolut-order?table_token=${tableToken}`,
-      {}
+      `${this.apiUrl}/orders/${orderId}/create-revolut-order?${params.toString()}`,
+      {},
     );
   }
 
-  confirmRevolutPayment(orderId: number, tableToken: string): Observable<{ status: string; order_id: number }> {
+  confirmRevolutPayment(
+    orderId: number,
+    tableToken: string | null,
+    publicOrderToken?: string | null,
+  ): Observable<{ status: string; order_id: number }> {
+    const params = new URLSearchParams();
+    if (publicOrderToken) {
+      params.set('public_order_token', publicOrderToken);
+    } else if (tableToken) {
+      params.set('table_token', tableToken);
+    }
     return this.http.post<{ status: string; order_id: number }>(
-      `${this.apiUrl}/orders/${orderId}/confirm-revolut-payment?table_token=${tableToken}`,
-      {}
+      `${this.apiUrl}/orders/${orderId}/confirm-revolut-payment?${params.toString()}`,
+      {},
     );
   }
 

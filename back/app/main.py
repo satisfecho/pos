@@ -395,6 +395,7 @@ async def saas_paywall_middleware(request: Request, call_next):
 
     return await call_next(request)
 
+
 register_rate_limit_exception_handler(app)
 
 
@@ -867,6 +868,102 @@ def _verify_staff_menu_token(table_token: str, token: str) -> bool:
         return False
 
 
+# Public Satisfecho Delivery checkout: short-lived token to pay without table_token
+PUBLIC_DELIVERY_ORDER_TOKEN_EXPIRY = 3600  # 1 hour
+
+
+def _sign_public_delivery_order_token(order_id: int, tenant_id: int) -> str:
+    """Signed token proving guest ownership of a public Satisfecho Delivery order for payment."""
+    expiry = int(_time.time()) + PUBLIC_DELIVERY_ORDER_TOKEN_EXPIRY
+    payload = f"sd:{order_id}:{tenant_id}:{expiry}"
+    sig = hmac.new(
+        settings.secret_key.encode("utf-8"),
+        payload.encode("utf-8"),
+        hashlib.sha256,
+    ).digest()
+    return (
+        base64.urlsafe_b64encode(payload.encode("utf-8") + b"." + sig)
+        .decode("ascii")
+        .rstrip("=")
+    )
+
+
+def _verify_public_delivery_order_token(order_id: int, tenant_id: int, token: str) -> bool:
+    if not token or order_id is None or tenant_id is None:
+        return False
+    try:
+        padded = token + "=" * (4 - len(token) % 4) if len(token) % 4 else token
+        raw = base64.urlsafe_b64decode(padded)
+        payload_b, _, sig_b = raw.rpartition(b".")
+        if not payload_b or not sig_b:
+            return False
+        payload = payload_b.decode("utf-8")
+        prefix, oid_str, tid_str, exp_str = payload.split(":", 3)
+        if prefix != "sd":
+            return False
+        if int(oid_str) != int(order_id) or int(tid_str) != int(tenant_id):
+            return False
+        if int(exp_str) < _time.time():
+            return False
+        expected = hmac.new(
+            settings.secret_key.encode("utf-8"),
+            payload.encode("utf-8"),
+            hashlib.sha256,
+        ).digest()
+        return hmac.compare_digest(sig_b, expected)
+    except Exception:
+        return False
+
+
+def _resolve_guest_payment_order(
+    session: Session,
+    order_id: int,
+    *,
+    table_token: str | None,
+    public_order_token: str | None,
+) -> tuple[models.Order, models.Table | None, str]:
+    """
+    Resolve an order for guest Stripe/Revolut pay.
+    Returns (order, table_or_none, display_name_for_ws).
+    """
+    tt = (table_token or "").strip() or None
+    pot = (public_order_token or "").strip() or None
+    if bool(tt) == bool(pot):
+        raise HTTPException(
+            status_code=400,
+            detail="Provide exactly one of table_token or public_order_token",
+        )
+
+    if tt:
+        table = session.exec(
+            select(models.Table).where(models.Table.token == tt)
+        ).first()
+        if not table:
+            raise HTTPException(status_code=404, detail="Invalid table")
+        order = session.exec(
+            select(models.Order).where(
+                models.Order.id == order_id, models.Order.table_id == table.id
+            )
+        ).first()
+        if not order or order.deleted_at is not None:
+            raise HTTPException(status_code=404, detail="Order not found")
+        return order, table, table.name or "Table"
+
+    order = session.exec(
+        select(models.Order).where(models.Order.id == order_id)
+    ).first()
+    if (
+        not order
+        or order.deleted_at is not None
+        or _order_channel_value(order) != models.OrderChannel.satisfecho_delivery.value
+        or order.table_id is not None
+    ):
+        raise HTTPException(status_code=404, detail="Order not found")
+    if not _verify_public_delivery_order_token(order.id, order.tenant_id, pot or ""):
+        raise HTTPException(status_code=404, detail="Order not found")
+    return order, None, "Satisfecho Delivery"
+
+
 def _take_away_table_token(session: Session, tenant_id: int) -> str | None:
     """Return token of the first active table named 'Take away' or 'Home ordering' (case-insensitive) for tenant."""
     tables = session.exec(
@@ -1064,6 +1161,95 @@ def get_public_tenant_menu(
     if body is None:
         raise HTTPException(status_code=404, detail=api_error_payload("tenant_not_found", lang))
     return body
+
+
+@app.post(
+    "/public/tenants/{tenant_id}/satisfecho-delivery",
+    summary="Public Satisfecho Delivery checkout create",
+    tags=["Public"],
+)
+@public_menu_ip_limit()
+def create_public_satisfecho_delivery_order(
+    request: Request,
+    response: Response,
+    tenant_id: int,
+    body: models.PublicSatisfechoDeliveryOrderCreate,
+    session: Session = Depends(get_session),
+) -> dict:
+    """
+    Unauthenticated: create a Satisfecho Delivery order (no table) for guest checkout.
+    Kitchen is notified only after successful payment (via public_order_token pay endpoints).
+    """
+    tenant = session.get(models.Tenant, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    if not body.items:
+        raise HTTPException(status_code=400, detail="Order must have at least one item")
+    address = (body.delivery_address or "").strip()
+    if not address:
+        raise HTTPException(status_code=400, detail="delivery_address is required")
+    raw_phone = (body.customer_phone or "").strip()
+    if not raw_phone:
+        raise HTTPException(status_code=400, detail="customer_phone is required")
+    try:
+        phone = normalize_phone_e164(raw_phone, settings.default_phone_country)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid customer_phone")
+
+    from app.delivery_order_service import create_satisfecho_delivery_order
+
+    lines = [
+        {"product_id": it.product_id, "quantity": it.quantity, "notes": it.notes}
+        for it in body.items
+    ]
+    order, outcome = create_satisfecho_delivery_order(
+        session,
+        tenant_id=tenant_id,
+        lines=lines,
+        delivery_address=address,
+        customer_phone=phone,
+        customer_name=body.customer_name,
+        notes=body.notes,
+        courier_user_id=None,
+        notify_kitchen=False,
+    )
+    if not order:
+        detail = outcome.get("detail", "create_failed")
+        if detail == "delivery_address_required":
+            raise HTTPException(status_code=400, detail="delivery_address is required")
+        if detail == "no_lines":
+            raise HTTPException(status_code=400, detail="Order must have at least one item")
+        if str(detail).startswith("product_not_found"):
+            raise HTTPException(
+                status_code=400, detail=f"Product not found: {detail.split(':', 1)[-1]}"
+            )
+        raise HTTPException(status_code=400, detail=str(detail))
+
+    items = session.exec(
+        select(models.OrderItem).where(models.OrderItem.order_id == order.id)
+    ).all()
+    total_cents = sum((item.price_cents or 0) * item.quantity for item in items)
+    revolut_configured = bool(
+        (tenant.revolut_merchant_secret and tenant.revolut_merchant_secret.strip())
+        or (settings.revolut_merchant_secret and settings.revolut_merchant_secret.strip())
+    )
+    stripe_key = tenant.stripe_publishable_key or settings.stripe_publishable_key or None
+
+    return {
+        "id": order.id,
+        "status": order.status.value,
+        "order_channel": _order_channel_value(order),
+        "delivery_address": order.delivery_address,
+        "customer_phone": order.customer_phone,
+        "customer_name": order.customer_name,
+        "notes": order.notes,
+        "table_id": order.table_id,
+        "total_cents": total_cents,
+        "public_order_token": _sign_public_delivery_order_token(order.id, tenant_id),
+        "stripe_publishable_key": stripe_key,
+        "revolut_configured": revolut_configured,
+        "created_at": order.created_at.isoformat() if order.created_at else None,
+    }
 
 
 @app.get("/public/tenants/{tenant_id}/reservation-book-zones")
@@ -1383,7 +1569,6 @@ def register(
     tenant_count = session.exec(select(models.Tenant)).all()
     user_count = session.exec(select(models.User)).all()
     from .saas_billing import initial_status_for_new_tenant
-
 
     if len(user_count) == 0 and len(tenant_count) == 1:
         tenant = tenant_count[0]
@@ -13780,25 +13965,18 @@ def _revolut_retrieve_order(secret: str, revolut_order_id: str) -> dict:
 )
 def create_payment_intent(
     request: Request,
-    order_id: int, table_token: str, session: Session = Depends(get_session)
+    order_id: int,
+    table_token: str | None = None,
+    public_order_token: str | None = None,
+    session: Session = Depends(get_session),
 ) -> dict:
-    """Create a Stripe PaymentIntent for an order."""
-    # Verify table token matches the order
-    table = session.exec(
-        select(models.Table).where(models.Table.token == table_token)
-    ).first()
-
-    if not table:
-        raise HTTPException(status_code=404, detail="Invalid table")
-
-    order = session.exec(
-        select(models.Order).where(
-            models.Order.id == order_id, models.Order.table_id == table.id
-        )
-    ).first()
-
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
+    """Create a Stripe PaymentIntent for an order (table guest or public delivery)."""
+    order, table, display_name = _resolve_guest_payment_order(
+        session,
+        order_id,
+        table_token=table_token,
+        public_order_token=public_order_token,
+    )
 
     # Calculate total from order items
     items = session.exec(
@@ -13840,16 +14018,20 @@ def create_payment_intent(
 
     try:
         # Use tenant-specific Stripe key
+        metadata = {
+            "order_id": str(order.id),
+            "tenant_id": str(order.tenant_id),
+        }
+        if table is not None:
+            metadata["table_id"] = str(table.id)
+        else:
+            metadata["order_channel"] = models.OrderChannel.satisfecho_delivery.value
         intent = stripe.PaymentIntent.create(
             amount=total_cents,
             currency=stripe_currency,
             api_key=stripe_secret_key,
-            metadata={
-                "order_id": str(order.id),
-                "table_id": str(table.id),
-                "tenant_id": str(order.tenant_id),
-            },
-            description=f"Order #{order.id} at {tenant.name} - {table.name}",
+            metadata=metadata,
+            description=f"Order #{order.id} at {tenant.name} - {display_name}",
         )
 
         return {
@@ -13870,26 +14052,18 @@ def create_payment_intent(
 def confirm_payment(
     request: Request,
     order_id: int,
-    table_token: str,
     payment_intent_id: str,
+    table_token: str | None = None,
+    public_order_token: str | None = None,
     session: Session = Depends(get_session),
 ) -> dict:
     """Mark order as paid after successful Stripe payment."""
-    table = session.exec(
-        select(models.Table).where(models.Table.token == table_token)
-    ).first()
-
-    if not table:
-        raise HTTPException(status_code=404, detail="Invalid table")
-
-    order = session.exec(
-        select(models.Order).where(
-            models.Order.id == order_id, models.Order.table_id == table.id
-        )
-    ).first()
-
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
+    order, table, display_name = _resolve_guest_payment_order(
+        session,
+        order_id,
+        table_token=table_token,
+        public_order_token=public_order_token,
+    )
 
     # Get tenant for Stripe keys
     tenant = session.exec(
@@ -13934,18 +14108,30 @@ def confirm_payment(
                 detail=f"Payment mismatch: Amount {intent.amount} does not match order total {total_cents}",
             )
 
+        was_unpaid = order.status != models.OrderStatus.paid
         # Mark order as paid
         order.status = models.OrderStatus.paid
+        order.payment_method = "stripe"
+        order.paid_at = datetime.now(timezone.utc)
         order.bill_requested_at = None
         order.notes = f"{order.notes or ''}\n[PAID: {payment_intent_id}]".strip()
         session.add(order)
         session.commit()
 
+        if (
+            was_unpaid
+            and table is None
+            and _order_channel_value(order) == models.OrderChannel.satisfecho_delivery.value
+        ):
+            from app.delivery_order_service import publish_satisfecho_delivery_order
+
+            publish_satisfecho_delivery_order(session, order)
+
         # Notify tenant
         publish_order_update(order.tenant_id, {
             "type": "order_paid",
             "order_id": order.id,
-            "table_name": table.name,
+            "table_name": display_name,
             "status": order.status.value
         }, table_id=order.table_id)
         
@@ -13963,23 +14149,17 @@ def confirm_payment(
 def create_revolut_order(
     request: Request,
     order_id: int,
-    table_token: str,
+    table_token: str | None = None,
+    public_order_token: str | None = None,
     session: Session = Depends(get_session),
 ) -> dict:
     """Create a Revolut Merchant order and return checkout_url for redirect."""
-    table = session.exec(
-        select(models.Table).where(models.Table.token == table_token)
-    ).first()
-    if not table:
-        raise HTTPException(status_code=404, detail="Invalid table")
-
-    order = session.exec(
-        select(models.Order).where(
-            models.Order.id == order_id, models.Order.table_id == table.id
-        )
-    ).first()
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
+    order, table, display_name = _resolve_guest_payment_order(
+        session,
+        order_id,
+        table_token=table_token,
+        public_order_token=public_order_token,
+    )
 
     items = session.exec(
         select(models.OrderItem).where(models.OrderItem.order_id == order_id)
@@ -14012,8 +14192,19 @@ def create_revolut_order(
     cancel_url = None
     if settings.public_app_base_url:
         base = settings.public_app_base_url.rstrip("/")
-        redirect_url = f"{base}/menu/{table_token}/payment-success?order_id={order_id}"
-        cancel_url = f"{base}/menu/{table_token}"
+        if table is not None and table_token:
+            redirect_url = f"{base}/menu/{table_token}/payment-success?order_id={order_id}"
+            cancel_url = f"{base}/menu/{table_token}"
+        else:
+            # Token must be query-param (may contain URL-unsafe chars after encoding)
+            from urllib.parse import quote
+
+            tok = quote(public_order_token or "", safe="")
+            redirect_url = (
+                f"{base}/delivery/{order.tenant_id}/payment-success"
+                f"?order_id={order_id}&public_order_token={tok}"
+            )
+            cancel_url = f"{base}/delivery/{order.tenant_id}"
 
     try:
         rev_order = _revolut_create_order(
@@ -14062,23 +14253,17 @@ def create_revolut_order(
 def confirm_revolut_payment(
     request: Request,
     order_id: int,
-    table_token: str,
+    table_token: str | None = None,
+    public_order_token: str | None = None,
     session: Session = Depends(get_session),
 ) -> dict:
     """Verify Revolut order is completed and mark our order as paid."""
-    table = session.exec(
-        select(models.Table).where(models.Table.token == table_token)
-    ).first()
-    if not table:
-        raise HTTPException(status_code=404, detail="Invalid table")
-
-    order = session.exec(
-        select(models.Order).where(
-            models.Order.id == order_id, models.Order.table_id == table.id
-        )
-    ).first()
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
+    order, table, display_name = _resolve_guest_payment_order(
+        session,
+        order_id,
+        table_token=table_token,
+        public_order_token=public_order_token,
+    )
 
     if not order.revolut_order_id:
         raise HTTPException(
@@ -14127,6 +14312,7 @@ def confirm_revolut_payment(
             detail="Payment amount does not match order total",
         )
 
+    was_unpaid = order.status != models.OrderStatus.paid
     order.status = models.OrderStatus.paid
     order.payment_method = "revolut"
     order.paid_at = datetime.now(timezone.utc)
@@ -14135,12 +14321,21 @@ def confirm_revolut_payment(
     session.add(order)
     session.commit()
 
+    if (
+        was_unpaid
+        and table is None
+        and _order_channel_value(order) == models.OrderChannel.satisfecho_delivery.value
+    ):
+        from app.delivery_order_service import publish_satisfecho_delivery_order
+
+        publish_satisfecho_delivery_order(session, order)
+
     publish_order_update(
         order.tenant_id,
         {
             "type": "order_paid",
             "order_id": order.id,
-            "table_name": table.name,
+            "table_name": display_name,
             "status": order.status.value,
         },
         table_id=order.table_id,

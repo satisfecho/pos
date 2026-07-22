@@ -8,8 +8,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.24] - 2026-07-22
+
 ### Added
 
+- **Public Satisfecho Delivery checkout:** Guests can order delivery at `/delivery/{tenantId}` (menu → cart → address → pay) via `POST /public/tenants/{id}/satisfecho-delivery`; kitchen notify waits until Stripe/Revolut payment with `public_order_token` (#302). Follow-up: catalog menu IDs (`TenantProduct`) still need mapping on create (#304).
 - **Daily demo data reset:** Documented amvara9 host cron (`0 4 * * *` UTC) and made `scripts/reset-demo-data-on-server.sh` executable so tenant 1 orders/reservations can refresh automatically.
 - **Restaurant groups guide:** Documented multi-location restaurant groups (create/join/leave, share customers/products, Settings tab) in `docs/0054-restaurant-groups.md` and indexed it under Feature guides.
 

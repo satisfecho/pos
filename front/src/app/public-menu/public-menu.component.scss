@@ -29,6 +29,12 @@
   text-align: center;
 }
 
+.public-menu-delivery-cta {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 var(--space-6);
+}
+
 .public-menu-status {
   text-align: center;
   color: var(--color-text-muted);
