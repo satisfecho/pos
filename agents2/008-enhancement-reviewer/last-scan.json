@@ -56,6 +56,6 @@
     "2026-07-22T20:17:43Z: docs_stale\u00d714 + demo_tables fail all already queued; Unreleased filled; NEW backlog=39; preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-22T20:59:37Z: docs_stale\u00d714 + demo_tables fail all already queued; Unreleased filled; NEW backlog=39; preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)"
   ],
-  "last_run": "2026-07-22T21:11:57Z",
+  "last_run": "2026-07-22T21:21:17Z",
   "last_signals": 17
 }

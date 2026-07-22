@@ -11,7 +11,7 @@ Preflight emits `changelog_sparse` when **[Unreleased]** is empty. Track only **
 ## Evidence (008 preflight / review)
 
 - `SIGNAL changelog_sparse Unreleased may lag recent code (13 commits, 0 bullets)` — heuristic counts 14d code commits vs empty Unreleased; it does **not** check whether those commits already landed in a same-day version section
-- **008 re-check 2026-07-22T21:11Z:** Latest cut is **`## [2.1.24] - 2026-07-22`** (public Satisfecho Delivery checkout #302, daily demo reset docs, restaurant groups guide, rate-limit ops, demo FK fix, delivery webhook rate limit). **[Unreleased]** is empty on purpose after that cut
+- **008 re-check 2026-07-22T21:20Z:** Latest cut is **`## [2.1.24] - 2026-07-22`** (public Satisfecho Delivery checkout #302, daily demo reset docs, restaurant groups guide, rate-limit ops, demo FK fix, delivery webhook rate limit). **[Unreleased]** is empty on purpose after that cut. Preflight `changelog_sparse` remains a false positive until **`NEW-0-20260722-2120-preflight-changelog-sparse-after-cut`** lands.
 - Earlier cuts same day: **2.1.23** (#296 paywall), **2.1.22** (ws-bridge), courier/delivery channel work through **2.1.17**
 - Remaining open product WIP for Unreleased when it merges: **WIP-304** (TenantProduct ID resolve on public Satisfecho Delivery checkout). **#302** is CLOSED/shipped — do not re-list
 
