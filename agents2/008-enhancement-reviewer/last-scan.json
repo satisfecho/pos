@@ -10,8 +10,9 @@
     "2026-07-22T12:59:00Z: docs_stale\u00d714; demo_tables still fail (owned by existing NEW); Unreleased filled; queued 0 FEAT + 3 NEW (0050 #52 closed, 0013 research-only, 0010 reservation plan shipped)",
     "2026-07-22T13:10:58Z: docs_stale\u00d714; demo_tables still fail (owned by existing NEW); Unreleased filled; queued 0 FEAT + 3 NEW (0025 overbooking shipped, renumber 0015\u21920055 platform, 0016 reports overbooking)",
     "2026-07-22T13:21:54Z: docs_stale\u00d714; demo_tables still fail (owned by existing NEW); demo products partial-tenant skip (7 catalog rows, 0 DEMO_PRODUCTS); queued 2 FEAT + 1 NEW (saas Stripe webhook, repair demo products, paywall Puppeteer smoke)",
-    "2026-07-22T13:48:22Z: docs_stale\u00d714 (all SIGNAL basenames already queued); demo_tables still fail (owned by existing NEW); Unreleased filled + 2.1.23 cut; queued 0 FEAT + 3 NEW (0024 deploy CSS shipped, 0031 customizations status, 0022 OAuth deferred)"
+    "2026-07-22T13:48:22Z: docs_stale\u00d714 (all SIGNAL basenames already queued); demo_tables still fail (owned by existing NEW); Unreleased filled + 2.1.23 cut; queued 0 FEAT + 3 NEW (0024 deploy CSS shipped, 0031 customizations status, 0022 OAuth deferred)",
+    "2026-07-22T13:59:00Z: docs_stale\u00d714 (SIGNAL basenames already queued); demo_tables still fail (owned by existing NEW); Unreleased filled; queued 0 FEAT + 3 NEW (0002 customer-plan status, 0028 waitlist/feedback branding, 0009 table-PIN shipped)"
   ],
-  "last_run": "2026-07-22T13:48:51Z",
+  "last_run": "2026-07-22T14:00:22Z",
   "last_signals": 16
 }
