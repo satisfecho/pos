@@ -6,7 +6,7 @@ import secrets
 from datetime import datetime, timezone
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, Response
 from pydantic import BaseModel
 from sqlalchemy import delete, desc
 from sqlmodel import Session, select
@@ -17,6 +17,7 @@ from app.delivery_adapters import PROVIDER_REGISTRY, get_adapter
 from app.delivery_credentials import decrypt_credentials_json, encrypt_credentials_json
 from app.delivery_order_service import create_order_from_delivery_payload
 from app.permissions import Permission, require_permission
+from app.rate_limits import public_menu_ip_limit
 
 router = APIRouter()
 public_router = APIRouter()
@@ -315,7 +316,10 @@ def list_delivery_events(
 
 
 @public_router.post("/public/webhooks/delivery/{webhook_token}")
+@public_menu_ip_limit()
 def ingest_delivery_webhook(
+    request: Request,
+    response: Response,
     webhook_token: str,
     session: Session = Depends(get_session),
     payload: dict[str, Any] | None = Body(default=None),
@@ -323,6 +327,7 @@ def ingest_delivery_webhook(
     """
     Provider-agnostic ingest URL (token identifies tenant integration).
     Body must match adapter stub schema until real OAuth/API signatures are added.
+    Rate-limited with the shared public-menu IP bucket (RATE_LIMIT_PUBLIC_MENU_PER_MINUTE).
     """
     body = payload if isinstance(payload, dict) else {}
 

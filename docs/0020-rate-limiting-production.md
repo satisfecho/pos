@@ -8,7 +8,8 @@ Rate limiting is implemented per the [ROADMAP](../../ROADMAP.md) (satisfecho/pos
 - **Login** `POST /token`: 5 requests per 15 minutes per IP.
 - **Register** `POST /register`, `POST /register/provider`: 3 per hour per IP.
 - **Payment** `create-payment-intent`, `confirm-payment`: 10/minute per IP; plus **3 per order per hour** per IP (per-order limit).
-- **Public menu & discovery** (unauthenticated): `GET/POST /menu/{table_token}`, `GET /menu/{table_token}/order`, `GET /menu/{table_token}/order-history`, and related public menu endpoints (call-waiter, request-payment, order item update/remove, cancel order); **`GET /public/tenants`**, **`GET /public/legal-urls`**, **`GET /public/tenants/{tenant_id}`**, **`GET /public/tenants/{tenant_id}/reservation-book-zones`**, **`GET /public/table-lookup`**, **`GET /internal/validate-table/{table_token}`** (ws-bridge): **30 requests/minute per IP** (same bucket as `RATE_LIMIT_PUBLIC_MENU_PER_MINUTE`).
+- **Public menu & discovery** (unauthenticated): `GET/POST /menu/{table_token}`, `GET /menu/{table_token}/order`, `GET /menu/{table_token}/order-history`, and related public menu endpoints (call-waiter, request-payment, order item update/remove, cancel order); **`GET /public/tenants`**, **`GET /public/legal-urls`**, **`GET /public/tenants/{tenant_id}`**, **`GET /public/tenants/{tenant_id}/reservation-book-zones`**, **`GET /public/table-lookup`**, **`GET /internal/validate-table/{table_token}`** (ws-bridge); **`POST /public/tenants/{tenant_id}/satisfecho-delivery`** (public delivery checkout create); **`POST /public/webhooks/delivery/{webhook_token}`** (marketplace webhook ingest): **30 requests/minute per IP** (same bucket as `RATE_LIMIT_PUBLIC_MENU_PER_MINUTE`).
+- **Waiting list** (anonymous): `POST /public/tenants/{tenant_id}/waiting-list`: **10 submissions/hour per IP** (`RATE_LIMIT_WAITING_LIST_PER_HOUR`).
 - **Guest feedback** (anonymous): `POST /public/tenants/{tenant_id}/guest-feedback`: **15 submissions/hour per IP** (`RATE_LIMIT_GUEST_FEEDBACK_PER_HOUR`).
 - **Password reset**: `POST /password-reset/request`, `POST /password-reset/confirm`: **5/hour per IP** (`RATE_LIMIT_PASSWORD_RESET_PER_HOUR`).
 - **Uploads** (authenticated, per user): `POST /tenant/logo`, `POST /products/{id}/image`, `POST /provider/products/{id}/image`: **10 uploads per hour per user**.
@@ -31,6 +32,9 @@ Rate limiting is implemented per the [ROADMAP](../../ROADMAP.md) (satisfecho/pos
   - `RATE_LIMIT_PAYMENT_PER_MINUTE=10`
   - `RATE_LIMIT_PAYMENT_PER_ORDER_PER_HOUR=3`
   - `RATE_LIMIT_PUBLIC_MENU_PER_MINUTE=30`
+  - `RATE_LIMIT_WAITING_LIST_PER_HOUR=10`
+  - `RATE_LIMIT_GUEST_FEEDBACK_PER_HOUR=15`
+  - `RATE_LIMIT_PASSWORD_RESET_PER_HOUR=5`
   - `RATE_LIMIT_UPLOAD_PER_HOUR=10`
   - `RATE_LIMIT_ADMIN_PER_MINUTE=30`
 - [ ] **Monitoring:** Grep logs for "Rate limit exceeded" to detect abuse or tune limits.

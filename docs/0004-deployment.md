@@ -152,12 +152,20 @@ Steps to get the latest **master** or **main** branch deployed on a server where
    ```
 
 6. **(Optional) Seed demo tables**  
-   If you use tenant id 1 as the demo restaurant and need T01–T09:
+   If you use tenant id 1 as the demo restaurant and need T01–T10:
    ```bash
    docker compose --env-file config.env exec back python -m app.seeds.seed_demo_tables
    ```
 
-7. **Check that everything is up**  
+7. **(Optional) Daily demo order/reservation reset**  
+   On production (e.g. amvara9), schedule a host cron so tenant 1 demo orders and reservations stay fresh. See [Daily demo data reset](0001-ci-cd-amvara9.md#daily-demo-data-reset-tenant-1). Manual one-shot:
+
+   ```bash
+   ./scripts/reset-demo-data-on-server.sh
+   # or: docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml exec -T back python -m app.seeds.reset_demo_data
+   ```
+
+8. **Check that everything is up**  
    - Logs: `docker compose --env-file config.env logs -f --tail=50`
    - Health: `curl -s http://localhost:4200/api/health` (adjust host/port if you use a reverse proxy or different `FRONTEND_PORT`)
 
@@ -183,7 +191,8 @@ That script starts in **production** mode (build + prod compose override) and ru
 | 4 | `docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml up --build -d` |
 | 5 | `docker compose --env-file config.env exec back python -m app.migrate` |
 | 6 | (Optional) `docker compose --env-file config.env exec back python -m app.seeds.seed_demo_tables` |
-| 7 | Check logs and `/api/health` |
+| 7 | (Optional) daily demo reset cron — see [0001-ci-cd-amvara9.md](0001-ci-cd-amvara9.md#daily-demo-data-reset-tenant-1) |
+| 8 | Check logs and `/api/health` |
 
 ---
 

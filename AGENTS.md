@@ -189,6 +189,8 @@ Exit 0 means tenant 1 has T01–T10 with the correct seat counts; exit 1 reports
 
 **Demo products (tenant 1):** Deploy also runs `app.seeds.seed_demo_products`, which seeds a default menu (main courses, beverages) for tenant 1. Idempotent; no images. To run manually: `docker compose exec back python -m app.seeds.seed_demo_products`.
 
+**Demo orders/reservations reset (tenant 1 only):** Clears orders and reservations for tenant 1, then re-seeds. Safe while the stack is up. Local: `docker compose exec back python -m app.seeds.reset_demo_data`. Production wrapper: `./scripts/reset-demo-data-on-server.sh`. Daily host cron on amvara9 is documented in **`docs/0001-ci-cd-amvara9.md`** (section *Daily demo data reset*).
+
 **Puppeteer test (demo data):** Verifies tenant 1 has ≥10 tables and ≥10 products and /book/1 loads. Run with tenant 1 credentials: `BASE_URL=http://satisfecho.de LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/test-demo-data.mjs` (or `npm run test:demo-data` from front/). Runs headless by default; use `HEADLESS=0` to show the browser.
 
 **Puppeteer test (catalog + images):** `front/scripts/test-catalog.mjs` logs in, opens /catalog, and reports total cards, how many have loaded images vs placeholders. Compare dev vs amvara9: `BASE_URL=http://127.0.0.1:4202 LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/test-catalog.mjs` and same with `BASE_URL=http://satisfecho.de`. Catalog data (ProductCatalog, ProviderProduct, images) comes from wine/beer/pizza import seeds, not from deploy; amvara9 has no catalog unless those imports are run on the server.

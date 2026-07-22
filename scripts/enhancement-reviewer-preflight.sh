@@ -154,8 +154,14 @@ emit "reset_script=scripts/reset-demo-data-on-server.sh"
 emit "seed_module=back/app/seeds/reset_demo_data.py (idempotent orders+reservations reset)"
 emit "check_tables=back/app/seeds/check_demo_tables.py"
 if [[ -x "${ROOT}/scripts/reset-demo-data-on-server.sh" ]]; then
-  G008_DEMO_SIGNALS=1
-  emit "SIGNAL demo_daily_reset_not_scheduled Existing reset path is manual/cron-only — consider FEAT for amvara9 cron"
+  if grep -qR '0 4 \* \* \*.*reset-demo-data-on-server\.sh' "${ROOT}/docs" 2>/dev/null; then
+    emit "demo_daily_reset=documented (docs mention 04:00 UTC cron + reset-demo-data-on-server.sh)"
+  else
+    G008_DEMO_SIGNALS=1
+    emit "SIGNAL demo_daily_reset_not_scheduled Existing reset path is manual/cron-only — consider FEAT for amvara9 cron"
+  fi
+else
+  emit "demo_reset_script=not_executable (chmod +x scripts/reset-demo-data-on-server.sh)"
 fi
 if command -v docker >/dev/null 2>&1; then
   if docker compose -f "${ROOT}/docker-compose.yml" -f "${ROOT}/docker-compose.dev.yml" ps -q back 2>/dev/null | grep -q .; then

@@ -8,6 +8,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Added
+
+- **Daily demo data reset:** Documented amvara9 host cron (`0 4 * * *` UTC) and made `scripts/reset-demo-data-on-server.sh` executable so tenant 1 orders/reservations can refresh automatically.
+
+### Changed
+
+- **Rate limiting ops doc:** `docs/0020` now lists waiting-list, public Satisfecho Delivery create, and marketplace delivery webhook limits (shared public-menu IP bucket) plus related env vars.
+
+### Fixed
+
+- **Demo data reset:** Clearing tenant 1 orders no longer fails on fiscal invoice / inventory FK rows; child rows are deleted before orders.
+- **Delivery webhook:** `POST /public/webhooks/delivery/{token}` is rate-limited with the public-menu IP bucket and returns SlowAPI headers.
+
 ## [2.1.22] - 2026-07-21
 
 ### Fixed
