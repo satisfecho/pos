@@ -2,8 +2,9 @@
   "findings": [
     "2026-07-12T16:14:00Z: demo_tables_check fail (T05,T07,T10 missing; T08 seats); changelog_sparse; docs_stale\u00d716; queued 2 NEW + 1 FEAT",
     "2026-07-22T11:42:11Z: demo_tables still fail (seed run() skips partial tenants); changelog_sparse after 2.1.22 cut; docs_stale\u00d716; queued 2 FEAT + 1 NEW",
-    "2026-07-22T11:59:00Z: docs_stale\u00d715; demo_tables still fail (owned by existing NEW); Unreleased filled; queued 1 FEAT + 2 NEW (README delivery/saas, SECURITY-REVIEW delta, provider\u2260courier 0014)"
+    "2026-07-22T11:59:00Z: docs_stale\u00d715; demo_tables still fail (owned by existing NEW); Unreleased filled; queued 1 FEAT + 2 NEW (README delivery/saas, SECURITY-REVIEW delta, provider\u2260courier 0014)",
+    "2026-07-22T12:13:53Z: docs_stale\u00d714; demo_tables still fail (owned by existing NEW); Unreleased filled; queued 1 FEAT + 2 NEW (restaurant groups doc, 0026 prod cfg, PRINTING status)"
   ],
-  "last_run": "2026-07-22T12:04:08Z",
+  "last_run": "2026-07-22T12:14:29Z",
   "last_signals": 16
 }
