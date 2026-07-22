@@ -4,8 +4,11 @@
     "2026-07-22T11:42:11Z: demo_tables still fail (seed run() skips partial tenants); changelog_sparse after 2.1.22 cut; docs_stale\u00d716; queued 2 FEAT + 1 NEW",
     "2026-07-22T11:59:00Z: docs_stale\u00d715; demo_tables still fail (owned by existing NEW); Unreleased filled; queued 1 FEAT + 2 NEW (README delivery/saas, SECURITY-REVIEW delta, provider\u2260courier 0014)",
     "2026-07-22T12:13:53Z: docs_stale\u00d714; demo_tables still fail (owned by existing NEW); Unreleased filled; queued 1 FEAT + 2 NEW (restaurant groups doc, 0026 prod cfg, PRINTING status)",
-    "2026-07-22T12:26:42Z: docs_stale\u00d714; demo_tables still fail (owned by existing NEW); Unreleased filled; queued 0 FEAT + 3 NEW (0024 WhatsApp shipped, 0019 reminder channels, 0033 waiting_list_entry)"
+    "2026-07-22T12:26:42Z: docs_stale\u00d714; demo_tables still fail (owned by existing NEW); Unreleased filled; queued 0 FEAT + 3 NEW (0024 WhatsApp shipped, 0019 reminder channels, 0033 waiting_list_entry)",
+    "2026-07-22T12:40:08Z: docs_stale\u00d714; demo_tables still fail (owned by existing NEW); Unreleased filled; queued 0 FEAT + 3 NEW (0018 SMTP fields, 0025 seat math, 0029 deferred)",
+    "2026-07-22T12:50:52Z: docs_stale\u00d714; demo_tables still fail (owned by existing NEW); Unreleased filled; queued 0 FEAT + 3 NEW (0023 prioritisation, 0032 delivery note, 0007 historical)",
+    "2026-07-22T12:59:00Z: docs_stale\u00d714; demo_tables still fail (owned by existing NEW); Unreleased filled; queued 0 FEAT + 3 NEW (0050 #52 closed, 0013 research-only, 0010 reservation plan shipped)"
   ],
-  "last_run": "2026-07-22T12:26:46Z",
+  "last_run": "2026-07-22T13:00:55Z",
   "last_signals": 16
 }
