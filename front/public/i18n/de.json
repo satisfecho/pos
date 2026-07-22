@@ -480,7 +480,8 @@
     "SIGNUP_PRODUCT_WATER": "Wasser",
     "SIGNUP_COMPLETE_LEAD": "Teilen Sie diesen QR-Code, damit Gäste Ihr Menü sehen und bestellen können.",
     "SIGNUP_GO_DASHBOARD": "Personal-Dashboard öffnen",
-    "LOGOUT": "Abmelden"
+    "LOGOUT": "Abmelden",
+    "SIGNUP_CONTINUE_PAYWALL": "Weiter zu den Plänen"
   },
   "MENU": {
     "TITLE": "Speisekarte",
@@ -2372,5 +2373,17 @@
     "INVALID_PHONE": "Bitte geben Sie eine gültige Telefonnummer ein (ggf. mit Ländervorwahl).",
     "ERROR_INVALID_LINK": "Ungültiger Link. Bitte den Link des Restaurants verwenden.",
     "ERROR_FAILED": "Warteliste konnte nicht beigetragen werden. Bitte erneut versuchen."
+  },
+  "PAYWALL": {
+    "TITLE": "Wähle einen Plan, um fortzufahren",
+    "LEAD": "Dein Restaurant-Konto ist bereit. Starte eine kostenlose Testphase oder abonniere, um die Mitarbeiter-App freizuschalten.",
+    "PER_MONTH": "/ Monat",
+    "FEATURE_TRIAL": "{{days}} Tage kostenlos testen — voller Zugriff, jederzeit kündbar",
+    "FEATURE_CANCEL": "Während der Testphase ohne Kosten kündigen",
+    "FEATURE_ALL": "Bestellungen, Tische, Reservierungen und Küche inklusive",
+    "START_TRIAL": "{{days}}-Tage-Test starten",
+    "SUBSCRIBE": "Jetzt abonnieren",
+    "ALREADY_ACCESS": "Dein Abo ist aktiv.",
+    "GO_DASHBOARD": "Mitarbeiter-Dashboard öffnen"
   }
 }

@@ -237,6 +237,14 @@ class Tenant(SQLModel, table=True):
     fiscal_invoice_next_number: int = Field(default=1)
     fiscal_aeat_api_secret: str | None = Field(default=None, max_length=512)
 
+    # Platform SaaS subscription (Satisfecho paywall — not restaurant guest payments)
+    # none | trialing | active | canceled | past_due | grandfathered
+    saas_subscription_status: str = Field(default="grandfathered", max_length=32)
+    saas_trial_ends_at: datetime | None = Field(default=None)
+    saas_subscription_ends_at: datetime | None = Field(default=None)
+    saas_stripe_customer_id: str | None = Field(default=None, max_length=255)
+    saas_stripe_subscription_id: str | None = Field(default=None, max_length=255)
+
     users: list["User"] = Relationship(back_populates="tenant")
 
 

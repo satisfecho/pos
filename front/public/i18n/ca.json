@@ -480,7 +480,8 @@
     "SIGNUP_PRODUCT_WATER": "Aigua",
     "SIGNUP_COMPLETE_LEAD": "Comparteix aquest codi QR perquè els clients vegin el menú i demanin.",
     "SIGNUP_GO_DASHBOARD": "Obrir tauler de personal",
-    "LOGOUT": "Tancar la sessió"
+    "LOGOUT": "Tancar la sessió",
+    "SIGNUP_CONTINUE_PAYWALL": "Continuar als plans"
   },
   "MENU": {
     "TITLE": "Menú",
@@ -2331,5 +2332,17 @@
     "INVALID_PHONE": "Introduïu un número de telèfon vàlid (amb prefix internacional si cal).",
     "ERROR_INVALID_LINK": "Enllaç no vàlid. Utilitzeu l'enllaç del restaurant.",
     "ERROR_FAILED": "No s'ha pogut unir a la llista d'espera. Torneu-ho a provar."
+  },
+  "PAYWALL": {
+    "TITLE": "Tria un pla per continuar",
+    "LEAD": "El compte del restaurant està a punt. Inicia una prova gratuïta o subscriu-te per desbloquejar l'app del personal.",
+    "PER_MONTH": "/ mes",
+    "FEATURE_TRIAL": "Prova gratuïta de {{days}} dies — accés complet, cancel·la quan vulguis",
+    "FEATURE_CANCEL": "Cancel·la durant la prova sense càrrec",
+    "FEATURE_ALL": "Inclou comandes, taules, reserves i cuina",
+    "START_TRIAL": "Començar prova de {{days}} dies",
+    "SUBSCRIBE": "Subscriu-te ara",
+    "ALREADY_ACCESS": "La teva subscripció està activa.",
+    "GO_DASHBOARD": "Obrir el panell del personal"
   }
 }

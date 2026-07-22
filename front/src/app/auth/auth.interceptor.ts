@@ -22,6 +22,8 @@ function isPublicRoute(url: string): boolean {
     path.startsWith('/provider/forgot-password') ||
     path.startsWith('/platform/login') ||
     path.startsWith('/menu/') ||
+    path.startsWith('/public-menu/') ||
+    path.startsWith('/delivery/') ||
     path.startsWith('/book/') ||
     path.startsWith('/feedback/') ||
     path === '/reservation'
@@ -60,6 +62,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       const apiService = injector.get(ApiService);
+      // Hard paywall: staff APIs return 402 until trial/subscription
+      if (error.status === 402) {
+        const currentPath = getCurrentPath(router.url);
+        if (!currentPath.startsWith('/paywall') && !isPublicRoute(currentPath)) {
+          void router.navigate(['/paywall']);
+        }
+        return throwError(() => error);
+      }
       // Handle 401 Unauthorized errors
       if (error.status === 401) {
         // On public routes, do not redirect or refresh; let the request fail

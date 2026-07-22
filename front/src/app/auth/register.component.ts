@@ -280,7 +280,9 @@ const STARTER_DEFAULTS: StarterProductState[] = [
               </p>
             }
             <div class="wizard-nav wizard-nav--center">
-              <a routerLink="/orders" class="btn-submit btn-submit--link">{{ 'AUTH.SIGNUP_GO_DASHBOARD' | translate }}</a>
+              <button type="button" class="btn-submit" data-testid="signup-finish" (click)="finishSignup()">
+                {{ finishCtaKey() | translate }}
+              </button>
             </div>
           </div>
         }
@@ -631,6 +633,7 @@ export class RegisterComponent implements OnInit {
   starterProducts = signal<StarterProductState[]>(STARTER_DEFAULTS.map((p) => ({ ...p })));
   onboardedProducts = signal<OnboardedProduct[]>([]);
   pendingPhotos = new Map<number, File>();
+  paywallEnabled = signal(false);
 
   accountForm = this.fb.group(
     {
@@ -656,6 +659,10 @@ export class RegisterComponent implements OnInit {
         this.legalPrivacyUrl.set(u.privacy_policy_url ?? null);
       },
       error: () => {},
+    });
+    this.api.getSaasConfig().subscribe({
+      next: (c) => this.paywallEnabled.set(!!c.enabled),
+      error: () => this.paywallEnabled.set(false),
     });
   }
 
@@ -723,6 +730,18 @@ export class RegisterComponent implements OnInit {
     if (!id) return '';
     if (typeof window === 'undefined') return `/public-menu/${id}`;
     return `${window.location.origin}/public-menu/${id}`;
+  }
+
+  finishCtaKey(): string {
+    return this.paywallEnabled() ? 'AUTH.SIGNUP_CONTINUE_PAYWALL' : 'AUTH.SIGNUP_GO_DASHBOARD';
+  }
+
+  finishSignup(): void {
+    if (this.paywallEnabled()) {
+      void this.router.navigate(['/paywall']);
+      return;
+    }
+    void this.router.navigate(['/dashboard']);
   }
 
   submitAccount(): void {

@@ -422,6 +422,8 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `test:kitchen-status-dropdown` | `scripts/test-kitchen-status-dropdown.mjs` (Kitchen display: status dropdown visible, not clipped) |
 | `test:rate-limit` | `scripts/test-rate-limit.mjs` (API rate limiting: login 5/15min, register 3/hour; expects 429 after limit) |
 | `test:rate-limit-puppeteer` | `scripts/test-rate-limit-puppeteer.mjs` (Puppeteer: login page, 6 wrong attempts, expects error banner) |
+| `test:paywall` | `scripts/test-paywall.mjs` (SaaS hard paywall: register → `/paywall` → Start free trial → dashboard; skips exit 0 when `SAAS_PAYWALL_ENABLED=false`) |
+| `test:courier-actions` | `scripts/test-courier-actions.mjs` (courier portal status actions) |
 
 `test-menu-logo`, `test-websocket`, and `review-order-edit-puppeteer` have no npm script; run via `node front/scripts/<name>.mjs`.
 
@@ -497,6 +499,7 @@ GO_AHEAD_LOOP=1 DURATION_SECONDS=120 INTERVAL_SECONDS=60 SKIP_TESTS=1 ./scripts/
 | **Menu (customer)** | `test-menu-logo.mjs` | Logo on `/menu/:token`. |
 | **WebSocket** | `test-websocket.mjs` | Post-login WS (ws-bridge required). |
 | **Rate limiting** | `test-rate-limit.mjs`, `test-rate-limit-puppeteer.mjs` | API: 429 after limit; Puppeteer: login page shows error banner (e.g. "Too many login attempts") when rate limited. See `docs/0020-rate-limiting-production.md` for all limits (login, register, payment, public menu, upload, admin). |
+| **SaaS signup paywall** | `test-paywall.mjs` | Requires `SAAS_PAYWALL_ENABLED=true` (see `docs/0052-saas-signup-paywall.md`). Registers a new tenant, asserts `/paywall` + localized copy (no raw `PAYWALL.*`), starts free trial, confirms `/dashboard` unlocks. Skips with exit 0 when paywall is off; set `REQUIRE_PAYWALL=1` to fail instead. |
 
 **Not covered (or partial):** No automated cleanup of test-created data (e.g. provider/restaurant registration leaves DB entries). No Puppeteer tests for settings, inventory, or tables canvas. Unit tests (Karma/Jasmine) are separate; see `npm test` in front.
 
@@ -531,6 +534,24 @@ npm run test:rate-limit --prefix front
 npm run test:rate-limit-puppeteer --prefix front
 # Or: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 node front/scripts/test-rate-limit-puppeteer.mjs
 ```
+
+---
+
+### SaaS signup paywall
+
+Hard paywall for new restaurant signups when `SAAS_PAYWALL_ENABLED=true` (see `docs/0052-saas-signup-paywall.md`). Registers a fresh tenant via API, logs in, asserts `/paywall` with localized copy (no raw `PAYWALL.*` keys), clicks **Start free trial**, and confirms `/dashboard` unlocks.
+
+```bash
+# Paywall off (default): exits 0 with SKIP message
+BASE_URL=http://127.0.0.1:4202 npm run test:paywall --prefix front
+
+# Full path — set SAAS_PAYWALL_ENABLED=true in config.env, recreate back with env-file, then:
+docker compose --env-file config.env -f docker-compose.yml -f docker-compose.dev.yml up -d back
+BASE_URL=http://127.0.0.1:4202 REQUIRE_PAYWALL=1 npm run test:paywall --prefix front
+# Restore SAAS_PAYWALL_ENABLED=false afterward for normal local/demo.
+```
+
+- **Env:** `BASE_URL`, `HEADLESS`, `REQUIRE_PAYWALL` (fail instead of skip when disabled), optional `REGISTER_EMAIL` / `REGISTER_PASSWORD`. Creates a real tenant row (no cleanup).
 
 ---
 

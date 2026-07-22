@@ -486,7 +486,8 @@
     "SIGNUP_PRODUCT_WATER": "Agua",
     "SIGNUP_COMPLETE_LEAD": "Comparte este código QR para que los clientes vean tu menú y pidan.",
     "SIGNUP_GO_DASHBOARD": "Abrir panel de personal",
-    "LOGOUT": "Cerrar sesión"
+    "LOGOUT": "Cerrar sesión",
+    "SIGNUP_CONTINUE_PAYWALL": "Continuar a los planes"
   },
   "MENU": {
     "TITLE": "Menú",
@@ -2449,5 +2450,17 @@
     "INVALID_PHONE": "Introduzca un número de teléfono válido (con prefijo internacional si hace falta).",
     "ERROR_INVALID_LINK": "Enlace no válido. Use el enlace del restaurante.",
     "ERROR_FAILED": "No se pudo unir a la lista de espera. Inténtelo de nuevo."
+  },
+  "PAYWALL": {
+    "TITLE": "Elige un plan para continuar",
+    "LEAD": "Tu cuenta de restaurante está lista. Inicia una prueba gratis o suscríbete para desbloquear la app de personal.",
+    "PER_MONTH": "/ mes",
+    "FEATURE_TRIAL": "Prueba gratis de {{days}} días — acceso completo, cancela cuando quieras",
+    "FEATURE_CANCEL": "Cancela durante la prueba sin cargo",
+    "FEATURE_ALL": "Incluye pedidos, mesas, reservas y cocina",
+    "START_TRIAL": "Empezar prueba de {{days}} días",
+    "SUBSCRIBE": "Suscribirse ahora",
+    "ALREADY_ACCESS": "Tu suscripción está activa.",
+    "GO_DASHBOARD": "Abrir panel de personal"
   }
 }

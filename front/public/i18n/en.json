@@ -543,7 +543,8 @@
     "SIGNUP_PRODUCT_WATER": "Water",
     "SIGNUP_COMPLETE_LEAD": "Share this QR code so guests can view your menu and order.",
     "SIGNUP_GO_DASHBOARD": "Open staff dashboard",
-    "LOGOUT": "Log out"
+    "LOGOUT": "Log out",
+    "SIGNUP_CONTINUE_PAYWALL": "Continue to plans"
   },
   "MENU": {
     "TITLE": "Menu",
@@ -2463,5 +2464,17 @@
     "INVALID_PHONE": "Enter a valid phone number (including country code if needed).",
     "ERROR_INVALID_LINK": "Invalid link. Please use the link provided by the restaurant.",
     "ERROR_FAILED": "Could not join the waiting list. Please try again."
+  },
+  "PAYWALL": {
+    "TITLE": "Choose a plan to continue",
+    "LEAD": "Your restaurant account is ready. Start a free trial or subscribe to unlock the staff app.",
+    "PER_MONTH": "/ month",
+    "FEATURE_TRIAL": "{{days}}-day free trial — full access, cancel anytime",
+    "FEATURE_CANCEL": "Cancel during the trial with no charge",
+    "FEATURE_ALL": "Orders, tables, reservations, and kitchen tools included",
+    "START_TRIAL": "Start {{days}}-day free trial",
+    "SUBSCRIBE": "Subscribe now",
+    "ALREADY_ACCESS": "Your subscription is active.",
+    "GO_DASHBOARD": "Open staff dashboard"
   }
 }

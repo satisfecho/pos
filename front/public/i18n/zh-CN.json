@@ -473,7 +473,8 @@
     "SIGNUP_PRODUCT_WATER": "水",
     "SIGNUP_COMPLETE_LEAD": "分享此二维码，顾客即可查看菜单并下单。",
     "SIGNUP_GO_DASHBOARD": "打开员工后台",
-    "LOGOUT": "退出登录"
+    "LOGOUT": "退出登录",
+    "SIGNUP_CONTINUE_PAYWALL": "继续选择套餐"
   },
   "MENU": {
     "TITLE": "菜单",
@@ -2272,5 +2273,17 @@
     "INVALID_PHONE": "请输入有效的电话号码（如需请含国家区号）。",
     "ERROR_INVALID_LINK": "链接无效，请使用餐厅提供的链接。",
     "ERROR_FAILED": "无法加入等候名单，请重试。"
+  },
+  "PAYWALL": {
+    "TITLE": "选择套餐以继续",
+    "LEAD": "餐厅账户已就绪。开始免费试用或订阅以解锁员工应用。",
+    "PER_MONTH": "/ 月",
+    "FEATURE_TRIAL": "{{days}} 天免费试用 — 完整权限，随时取消",
+    "FEATURE_CANCEL": "试用期内取消不收费",
+    "FEATURE_ALL": "包含订单、桌台、预订与厨房工具",
+    "START_TRIAL": "开始 {{days}} 天免费试用",
+    "SUBSCRIBE": "立即订阅",
+    "ALREADY_ACCESS": "您的订阅已生效。",
+    "GO_DASHBOARD": "打开员工控制台"
   }
 }

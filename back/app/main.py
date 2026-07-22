@@ -42,6 +42,7 @@ from .product_bulk_import_routes import router as product_bulk_import_router
 from .tenant_subcategory_routes import router as tenant_subcategory_router
 from .reports_routes import router as reports_router
 from .platform_routes import router as platform_router
+from .saas_routes import router as saas_router
 from .attendance_routes import router as attendance_router
 from .tenant_lifecycle_routes import router as tenant_lifecycle_router
 from .staff_contract_routes import router as staff_contract_router
@@ -348,6 +349,52 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def saas_paywall_middleware(request: Request, call_next):
+    """Block staff APIs for tenants without trial/subscription when SAAS_PAYWALL_ENABLED."""
+    from .saas_billing import (
+        ensure_tenant_saas_access,
+        path_is_saas_exempt,
+        paywall_enabled,
+    )
+
+    if not paywall_enabled() or request.method == "OPTIONS":
+        return await call_next(request)
+    if path_is_saas_exempt(request.url.path):
+        return await call_next(request)
+
+    token = request.cookies.get("access_token")
+    if not token:
+        auth = request.headers.get("authorization") or ""
+        if auth.lower().startswith("bearer "):
+            token = auth[7:].strip()
+    if not token:
+        return await call_next(request)
+
+    try:
+        from jose import JWTError, jwt
+
+        payload = jwt.decode(
+            token, settings.secret_key, algorithms=[settings.algorithm]
+        )
+    except Exception:
+        return await call_next(request)
+
+    tenant_id = payload.get("tenant_id")
+    if tenant_id is None:
+        return await call_next(request)
+    if payload.get("is_platform_operator") or payload.get("provider_id") is not None:
+        return await call_next(request)
+
+    try:
+        with Session(engine) as session:
+            ensure_tenant_saas_access(session, int(tenant_id))
+    except HTTPException as exc:
+        detail = exc.detail
+        return JSONResponse(status_code=exc.status_code, content={"detail": detail})
+
+    return await call_next(request)
+
 register_rate_limit_exception_handler(app)
 
 
@@ -493,6 +540,7 @@ app.include_router(
 app.include_router(reports_router, prefix="/reports", tags=["Reports"])
 app.include_router(attendance_router, prefix="/reports", tags=["Reports"])
 app.include_router(platform_router, prefix="/platform", tags=["Platform"])
+app.include_router(saas_router, prefix="/saas", tags=["SaaS billing"])
 # Owner-only data export & tenant purge (GitHub #96)
 app.include_router(tenant_lifecycle_router, prefix="/tenant", tags=["Tenant lifecycle"])
 app.include_router(staff_contract_router, prefix="/staff-contracts", tags=["Staff contracts"])
@@ -1334,6 +1382,8 @@ def register(
     # Virgin deployment: if exactly one tenant exists and has no users, first registrant becomes its owner
     tenant_count = session.exec(select(models.Tenant)).all()
     user_count = session.exec(select(models.User)).all()
+    from .saas_billing import initial_status_for_new_tenant
+
 
     if len(user_count) == 0 and len(tenant_count) == 1:
         tenant = tenant_count[0]
@@ -1341,6 +1391,7 @@ def register(
         tenant = models.Tenant(
             name=tenant_name,
             ui_modules=new_tenant_ui_modules_stored(),
+            saas_subscription_status=initial_status_for_new_tenant(),
         )
         session.add(tenant)
         session.commit()

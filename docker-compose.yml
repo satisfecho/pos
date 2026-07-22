@@ -31,6 +31,13 @@ services:
       - SMTP_USE_TLS=${SMTP_USE_TLS:-true}
       - EMAIL_FROM=${EMAIL_FROM:-}
       - EMAIL_FROM_NAME=${EMAIL_FROM_NAME:-POS2 System}
+      # Platform SaaS paywall (from --env-file config.env). Default off for local/demo.
+      - SAAS_PAYWALL_ENABLED=${SAAS_PAYWALL_ENABLED:-false}
+      - SAAS_TRIAL_DAYS=${SAAS_TRIAL_DAYS:-14}
+      - SAAS_PLAN_PRICE_CENTS=${SAAS_PLAN_PRICE_CENTS:-4900}
+      - SAAS_PLAN_CURRENCY=${SAAS_PLAN_CURRENCY:-eur}
+      - SAAS_STRIPE_PRICE_ID=${SAAS_STRIPE_PRICE_ID:-}
+      - SAAS_STRIPE_WEBHOOK_SECRET=${SAAS_STRIPE_WEBHOOK_SECRET:-}
     volumes:
       - ./back:/app
       - ./back/uploads:/app/uploads

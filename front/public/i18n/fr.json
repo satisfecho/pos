@@ -480,7 +480,8 @@
     "SIGNUP_PRODUCT_WATER": "Eau",
     "SIGNUP_COMPLETE_LEAD": "Partagez ce QR code pour que les clients voient votre menu et commandent.",
     "SIGNUP_GO_DASHBOARD": "Ouvrir le tableau de bord",
-    "LOGOUT": "Se déconnecter"
+    "LOGOUT": "Se déconnecter",
+    "SIGNUP_CONTINUE_PAYWALL": "Continuer vers les offres"
   },
   "MENU": {
     "TITLE": "Menu",
@@ -2314,5 +2315,17 @@
     "INVALID_PHONE": "Saisissez un numéro de téléphone valide (indicatif pays si nécessaire).",
     "ERROR_INVALID_LINK": "Lien invalide. Utilisez le lien fourni par le restaurant.",
     "ERROR_FAILED": "Impossible de rejoindre la liste d'attente. Réessayez."
+  },
+  "PAYWALL": {
+    "TITLE": "Choisissez une offre pour continuer",
+    "LEAD": "Votre compte restaurant est prêt. Démarrez un essai gratuit ou abonnez-vous pour débloquer l'app équipe.",
+    "PER_MONTH": "/ mois",
+    "FEATURE_TRIAL": "Essai gratuit de {{days}} jours — accès complet, résiliable à tout moment",
+    "FEATURE_CANCEL": "Résiliez pendant l'essai sans frais",
+    "FEATURE_ALL": "Commandes, tables, réservations et cuisine inclus",
+    "START_TRIAL": "Démarrer l'essai de {{days}} jours",
+    "SUBSCRIBE": "S'abonner maintenant",
+    "ALREADY_ACCESS": "Votre abonnement est actif.",
+    "GO_DASHBOARD": "Ouvrir le tableau de bord"
   }
 }

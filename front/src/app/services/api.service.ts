@@ -322,6 +322,18 @@ export interface RegisterResponse {
   email: string;
 }
 
+/** Platform SaaS subscription / hard paywall (issue #296) */
+export interface SaasSubscription {
+  enabled: boolean;
+  trial_days: number;
+  price_cents: number;
+  currency: string;
+  stripe_checkout_available: boolean;
+  status?: string;
+  has_access?: boolean;
+  trial_ends_at?: string | null;
+  subscription_ends_at?: string | null;
+}
 
 /** Provider portal types */
 export interface ProviderInfo {
@@ -1324,6 +1336,7 @@ export interface SatisfechoDeliveryOrderResponse {
   created_at?: string | null;
 }
 
+
 export interface MenuResponse {
   table_name: string;
   table_id: number;
@@ -1711,10 +1724,30 @@ export class ApiService {
     );
   }
 
+  getSaasConfig(): Observable<SaasSubscription> {
+    return this.http.get<SaasSubscription>(`${this.apiUrl}/saas/config`);
+  }
 
+  getSaasSubscription(): Observable<SaasSubscription> {
+    return this.http.get<SaasSubscription>(`${this.apiUrl}/saas/subscription`);
+  }
 
+  startSaasTrial(): Observable<SaasSubscription> {
+    return this.http.post<SaasSubscription>(`${this.apiUrl}/saas/start-trial`, {});
+  }
 
+  createSaasCheckoutSession(successUrl: string, cancelUrl: string): Observable<{ url: string }> {
+    return this.http.post<{ url: string }>(`${this.apiUrl}/saas/checkout-session`, {
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+    });
+  }
 
+  confirmSaasCheckout(sessionId: string): Observable<SaasSubscription> {
+    return this.http.post<SaasSubscription>(`${this.apiUrl}/saas/confirm-checkout`, {
+      session_id: sessionId,
+    });
+  }
 
   /** Login: sends username/password as application/x-www-form-urlencoded (required by backend OAuth2PasswordRequestForm). May return 403 with require_otp + temp_token when OTP is enabled. */
   login(username: string, password: string, tenantId?: number, scope?: 'tenant' | 'provider' | 'courier' | 'platform'): Observable<any> {
@@ -2331,6 +2364,7 @@ export class ApiService {
   createSatisfechoDeliveryOrder(body: SatisfechoDeliveryOrderCreate): Observable<SatisfechoDeliveryOrderResponse> {
     return this.http.post<SatisfechoDeliveryOrderResponse>(`${this.apiUrl}/orders/satisfecho-delivery`, body);
   }
+
 
   updateOrderDelivery(orderId: number, body: OrderDeliveryUpdate): Observable<SatisfechoDeliveryOrderResponse> {
     return this.http.put<SatisfechoDeliveryOrderResponse>(`${this.apiUrl}/orders/${orderId}/delivery`, body);

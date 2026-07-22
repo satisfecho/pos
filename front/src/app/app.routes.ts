@@ -28,6 +28,11 @@ export const routes: Routes = [
   },
   { path: 'forgot-password', loadComponent: () => import('./auth/forgot-password.component').then(m => m.ForgotPasswordComponent) },
   { path: 'reset-password', loadComponent: () => import('./auth/reset-password.component').then(m => m.ResetPasswordComponent) },
+  {
+    path: 'paywall',
+    canActivate: [authGuard],
+    loadComponent: () => import('./auth/paywall.component').then(m => m.PaywallComponent),
+  },
   // Provider portal (public auth pages)
   { path: 'provider/login', loadComponent: () => import('./provider/provider-login.component').then(m => m.ProviderLoginComponent) },
   { path: 'provider/register', loadComponent: () => import('./provider/provider-register.component').then(m => m.ProviderRegisterComponent) },

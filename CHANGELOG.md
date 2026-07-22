@@ -12,17 +12,27 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - **Daily demo data reset:** Documented amvara9 host cron (`0 4 * * *` UTC) and made `scripts/reset-demo-data-on-server.sh` executable so tenant 1 orders/reservations can refresh automatically.
 - **Restaurant groups guide:** Documented multi-location restaurant groups (create/join/leave, share customers/products, Settings tab) in `docs/0054-restaurant-groups.md` and indexed it under Feature guides.
-- **SaaS signup paywall design:** Documented hard paywall for restaurant signups (trial/subscribe, grandfathering, env flags) in `docs/0052-saas-signup-paywall.md` and indexed it under Feature guides (#296).
 
 ### Changed
 
 - **Rate limiting ops doc:** `docs/0020` now lists waiting-list, public Satisfecho Delivery create, and marketplace delivery webhook limits (shared public-menu IP bucket) plus related env vars.
-- **Security review:** Updated `docs/SECURITY-REVIEW.md` for public Satisfecho Delivery, marketplace delivery webhooks, courier IDOR, and SaaS paywall/Checkout surfaces, with residual risks and linked tests.
 
 ### Fixed
 
 - **Demo data reset:** Clearing tenant 1 orders no longer fails on fiscal invoice / inventory FK rows; child rows are deleted before orders.
 - **Delivery webhook:** `POST /public/webhooks/delivery/{token}` is rate-limited with the public-menu IP bucket and returns SlowAPI headers.
+
+## [2.1.23] - 2026-07-22
+
+### Added
+
+- **SaaS signup paywall:** New restaurant signups can be required to start a free trial or subscribe before using the staff app (`/paywall`, 402 lock when enabled). Existing tenants stay grandfathered; paywall stays **off** by default (`SAAS_PAYWALL_ENABLED`) (#296).
+- **SaaS Stripe webhook:** `POST /saas/webhook` verifies Stripe signatures and syncs trial/active/`past_due`/cancel without relying only on browser `confirm-checkout` (#296).
+- **Paywall smoke test:** `npm run test:paywall` covers register → `/paywall` → trial → dashboard (skips cleanly when paywall is off).
+
+### Changed
+
+- **Security review:** Documented SaaS paywall middleware, platform Checkout, and signed billing webhook; residual risk is ops readiness before enabling the paywall in production (#296).
 
 ## [2.1.22] - 2026-07-21
 

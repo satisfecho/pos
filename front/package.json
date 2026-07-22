@@ -1,6 +1,6 @@
 {
   "name": "front",
-  "version": "2.1.22",
+  "version": "2.1.23",
   "scripts": {
     "ng": "ng",
     "prebuild": "node scripts/get-commit-hash.js",
@@ -43,6 +43,7 @@
     "test:feedback-public-i18n": "node scripts/test-feedback-public-i18n.mjs",
     "test:my-shift-clock-qr": "node scripts/test-my-shift-clock-qr.mjs",
     "test:courier-actions": "node scripts/test-courier-actions.mjs",
+    "test:paywall": "node scripts/test-paywall.mjs",
     "capture-screenshots": "node scripts/capture-screenshots.mjs"
   },
   "prettier": {

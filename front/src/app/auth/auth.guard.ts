@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { catchError, map, of } from 'rxjs';
-import { ApiService } from '../services/api.service';
+import { catchError, map, of, switchMap } from 'rxjs';
+import { ApiService, type SaasSubscription } from '../services/api.service';
 
 export const authGuard: CanActivateFn = (route, state) => {
   const apiService = inject(ApiService);
@@ -17,28 +17,40 @@ export const authGuard: CanActivateFn = (route, state) => {
     return null;
   };
 
-  // Check if we already have a user in memory
+  const afterAuth = (user: { role?: string; provider_id?: number | null; tenant_id?: number | null } | null) => {
+    if (!user) {
+      return of(router.createUrlTree(['/login']));
+    }
+    const roleRedirect = redirectForRole(user);
+    if (roleRedirect) {
+      return of(roleRedirect);
+    }
+    // Paywall page itself only needs auth
+    const url = state.url.split('?')[0];
+    if (url === '/paywall' || url.startsWith('/paywall/')) {
+      return of(true);
+    }
+    if (user.tenant_id == null || user.role === 'platform_operator') {
+      return of(true);
+    }
+    return apiService.getSaasSubscription().pipe(
+      map((sub: SaasSubscription) => {
+        if (!sub.enabled || sub.has_access) {
+          return true;
+        }
+        return router.createUrlTree(['/paywall']);
+      }),
+      catchError(() => of(true)),
+    );
+  };
+
   const cached = apiService.getCurrentUser();
   if (cached) {
-    const roleRedirect = redirectForRole(cached);
-    if (roleRedirect) return roleRedirect;
-    return true;
+    return afterAuth(cached);
   }
 
-  // If not, verify with backend
   return apiService.checkAuth().pipe(
-    map(user => {
-      if (user) {
-        const roleRedirect = redirectForRole(user);
-        if (roleRedirect) return roleRedirect;
-        return true;
-      } else {
-        return router.createUrlTree(['/login']);
-      }
-    }),
-    catchError(() => {
-      // Logic error or network error during check
-      return of(router.createUrlTree(['/login']));
-    })
+    switchMap((user) => afterAuth(user)),
+    catchError(() => of(router.createUrlTree(['/login']))),
   );
 };
