@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Demo tenant 1 orders/reservations piled up on production without a scheduled reset; the server wrapper was non-executable so preflight never treated daily reset as documented/runnable.
+- **What was done:** Made `scripts/reset-demo-data-on-server.sh` executable, fixed FK-safe reset (fiscal_invoice / inventory_transaction), documented and installed `0 4 * * *` UTC cron on amvara9, and updated enhancement preflight to report `demo_daily_reset=documented`.
+- **What was tested:** Wrapper executable, idempotent dry-run reset (×2), docs cron line, preflight documented signal, and amvara9 crontab — all **PASS**.
+- **Why closed:** All testing criteria passed; remaining `check_demo_tables` gaps belong to a separate NEW repair task.
+- **Closed at (UTC):** 2026-07-22 12:05
+---
+
 # Schedule daily demo data reset (tenant 1)
 
 ## GitHub Issues
@@ -56,3 +66,20 @@ Demo restaurant (tenant 1) accumulates orders and reservations on production. Sa
    ssh amvara9 'crontab -l | grep reset-demo-data-on-server'
    ```
 6. Note: `python -m app.seeds.check_demo_tables` may still fail until the separate demo-tables repair NEW task is done; that does not block this reset/cron work.
+
+## Test report
+
+1. **Date/time (UTC):** 2026-07-22 12:04:05 – 12:04:14 UTC. Log window: `docker logs --since 10m pos-back`.
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; branch `development` (synced); local HAProxy `http://127.0.0.1:4202`; no browser.
+3. **What was tested:** Wrapper executable bit; dry-run `reset_demo_data` twice (idempotent); cron line in `docs/0001-ci-cd-amvara9.md`; enhancement preflight `demo_daily_reset=documented`; optional amvara9 crontab entry.
+4. **Results:**
+   - Wrapper executable: **PASS** — `test -x scripts/reset-demo-data-on-server.sh` → OK (`-rwxr-xr-x`).
+   - Reset dry-run #1: **PASS** — exit 0; “Demo data reset and re-seeded.” (removed 40 orders / 37 reservations, re-seeded).
+   - Reset dry-run #2 (idempotency): **PASS** — exit 0; same success line after clearing the freshly seeded 40/37.
+   - Docs cron line: **PASS** — `docs/0001-ci-cd-amvara9.md` lines 113 and 120 match `0 4 * * * … reset-demo-data-on-server.sh`.
+   - Preflight: **PASS** — `demo_daily_reset=documented (docs mention 04:00 UTC cron + reset-demo-data-on-server.sh)`.
+   - Optional amvara9 cron: **PASS** — `crontab -l` shows `0 4 * * * cd /development/pos && ./scripts/reset-demo-data-on-server.sh >>/var/log/pos-demo-reset.log 2>&1`.
+5. **Overall:** **PASS**
+6. **Product owner feedback:** Daily demo reset is ready for ops: the wrapper runs, the seed module is idempotent on a live stack, and both the docs and amvara9 crontab advertise the 04:00 UTC job. Remaining `check_demo_tables` gaps stay on the separate demo-tables repair task and do not block this cron work.
+7. **URLs tested:** N/A — no browser
+8. **Relevant log excerpts (last section):** Seed module stdout (not HTTP): both runs ended with `Demo data reset and re-seeded.` / exit 0. `pos-back` HTTP logs in the window show only routine `GET /docs` 200s; no traceback/exception tied to the reset exec.

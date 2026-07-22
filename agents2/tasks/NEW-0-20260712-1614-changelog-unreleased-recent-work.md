@@ -10,9 +10,9 @@ Preflight still emits `changelog_sparse` when **[Unreleased]** is empty. After *
 
 ## Evidence (008 preflight / review)
 
-- `SIGNAL changelog_sparse Unreleased may lag recent code (10 commits, 0 bullets)` as of **2026-07-22**
-- **[Unreleased]** is empty; latest cut is **`## [2.1.22]`** (ws-bridge / courier / delivery channel already versioned — do **not** duplicate)
-- Open WIP likely to need Unreleased bullets when ready: **WIP-296** paywall, **WIP-302** public delivery checkout (not yet on Unreleased)
+- Earlier: `SIGNAL changelog_sparse` with empty Unreleased; latest cut **`## [2.1.22]`** (ws-bridge / courier / delivery channel already versioned — do **not** duplicate)
+- **008 re-check 2026-07-22T11:58Z:** Unreleased now has **4** bullets (daily demo reset, rate-limit doc, demo reset FK fix, delivery webhook rate limit) — **not** sparse; keep this task only for **post-2.1.22 WIP landings**
+- Open WIP still needing Unreleased bullets when ready: **WIP-296** paywall, **WIP-302** public delivery checkout
 
 ## High-level instructions for coder
 
