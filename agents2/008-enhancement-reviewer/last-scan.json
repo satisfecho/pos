@@ -60,8 +60,9 @@
     "2026-07-22T21:45:44Z: docs_stale\u00d714 + demo_tables fail + changelog_sparse all already queued (incl. 2120 sparse-after-cut / skip-demo-tables; 1433 skip-stale/last_review/backlog); Unreleased empty post-2.1.24; unqueued stale docs=0; NEW backlog=41; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-22T22:10:36Z: docs_stale\u00d714 + demo_tables fail + changelog_sparse all already queued (incl. 2120 sparse-after-cut / skip-demo-tables; 1433 skip-stale/last_review/backlog); Unreleased empty post-2.1.24; unqueued stale docs=0; NEW backlog=41; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-22T22:18:16Z: docs_stale\u00d714 + demo_tables fail + changelog_sparse all already queued (incl. 2120 sparse-after-cut / skip-demo-tables; 1433 skip-stale/last_review/backlog); Unreleased empty post-2.1.24; unqueued stale docs=0; NEW backlog=41; queued 0 FEAT + 0 NEW (no task spam)",
-    "2026-07-22T22:26:59Z: docs_stale\u00d714 + demo_tables fail + changelog_sparse all already queued (incl. 2120 sparse-after-cut / skip-demo-tables; 1433 skip-stale/last_review/backlog); Unreleased empty post-2.1.24; unqueued stale docs=0; NEW backlog=41; queued 0 FEAT + 0 NEW (no task spam)"
+    "2026-07-22T22:26:59Z: docs_stale\u00d714 + demo_tables fail + changelog_sparse all already queued (incl. 2120 sparse-after-cut / skip-demo-tables; 1433 skip-stale/last_review/backlog); Unreleased empty post-2.1.24; unqueued stale docs=0; NEW backlog=41; queued 0 FEAT + 0 NEW (no task spam)",
+    "2026-07-22T22:36:07Z: docs_stale\u00d714 + demo_tables fail + changelog_sparse all already queued (incl. 2120 sparse-after-cut / skip-demo-tables; 1433 skip-stale/last_review/backlog); Unreleased empty post-2.1.24; unqueued stale docs=0; NEW backlog=41; queued 0 FEAT + 0 NEW (no task spam)"
   ],
-  "last_run": "2026-07-22T22:27:42Z",
+  "last_run": "2026-07-22T22:36:16Z",
   "last_signals": 17
 }
