@@ -97,8 +97,9 @@
     "2026-07-23T21:12:40Z: docs_stale\u00d714 + changelog_sparse owned (Unreleased empty post-2.1.32 cut); demo_tables_check=ok; NEW\u2248118; unqueued post-#306: SECURITY zones/track TTL, 0020 config/status GETs, /features Delivery card; queued 0 FEAT + 3 NEW",
     "2026-07-23T21:21:34Z: docs_stale\u00d714 + changelog_sparse owned (Unreleased empty post-2.1.32 cut); demo_tables_check=ok; NEW backlog=121; stamp-only rule queued (2014); post-#306 NEWs (2103/2112) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-23T21:29:33Z: docs_stale\u00d714 + changelog_sparse owned (Unreleased empty post-2.1.32 cut); demo_tables_check=ok; NEW backlog=121; stamp-only rule queued (2014); post-#306 NEWs (2103/2112) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
-    "2026-07-23T21:36:32Z: docs_stale\u00d714 + changelog_sparse owned (Unreleased empty post-2.1.32 cut); demo_tables_check=ok; NEW backlog=121; stamp-only rule queued (2014); post-#306 NEWs (2103/2112) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)"
+    "2026-07-23T21:36:32Z: docs_stale\u00d714 + changelog_sparse owned (Unreleased empty post-2.1.32 cut); demo_tables_check=ok; NEW backlog=121; stamp-only rule queued (2014); post-#306 NEWs (2103/2112) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
+    "2026-07-23T21:43:40Z: docs_stale\u00d714 + changelog_sparse owned (Unreleased empty post-2.1.32 cut); demo_tables_check=ok; NEW backlog=121; stamp-only rule queued (2014); post-#306 NEWs (2103/2112) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)"
   ],
-  "last_run": "2026-07-23T21:36:44Z",
+  "last_run": "2026-07-23T21:43:44Z",
   "last_signals": 15
 }
