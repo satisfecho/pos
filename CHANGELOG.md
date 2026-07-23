@@ -8,6 +8,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Changed
+
+- **Committer version bumps:** Regenerating and staging `commit-hash.ts` via `get-commit-hash.js` is now required whenever `front/package.json` is bumped, so the landing footer and landing-version smoke stay aligned with the new semver.
+
 ## [2.1.29] - 2026-07-23
 
 ### Added

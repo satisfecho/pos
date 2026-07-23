@@ -16,6 +16,7 @@ When the user says **"commit"** (or asks to commit changes):
    - "Reasonable size" = multiple items under Unreleased, or user-visible fixes/features.
    - Bump in `front/package.json` and `front/package-lock.json` (this repo’s source of version).
    - Add a new `## [X.Y.Z] - YYYY-MM-DD` section in CHANGELOG.md with the entries being released; clear or reduce `[Unreleased]` accordingly.
+   - **Always** run `node front/scripts/get-commit-hash.js` after the bump and **stage** the updated `front/src/environments/commit-hash.ts` in the same commit (keeps landing footer / `test:landing-version` aligned with the new semver).
 
 3. **If in doubt** whether to bump: prefer bumping when there are user-facing fixes or features; skip for trivial or internal-only tweaks unless the user asks for a release.
 

@@ -30,6 +30,14 @@ Optional: record last bump time in **`agents/007-committer/last-version-bump.txt
 
 Bump **`front/package.json`** + lockfile + new **`## [X.Y.Z] - date`** section when changelog entries are **substantial** or per project rules. See **commit-changelog-version** rule.
 
+**Whenever you bump `front/package.json` version**, also regenerate the tracked footer stamp and include it in the same commit:
+
+```bash
+node front/scripts/get-commit-hash.js
+```
+
+That updates **`front/src/environments/commit-hash.ts`** (semver from `package.json` + short git hash). **`git add`** that file together with the bump so landing footer / **`test:landing-version`** stay in sync without a later skip-env workaround.
+
 ### GitHub issues (required when issues apply)
 
 1. **Discover issue numbers** from:
@@ -62,7 +70,7 @@ Do **not** paste secrets, tokens, or PII into issue comments.
 2. `git status` — if clean, stop.
 3. Review diff; decide if the tree is ready to commit.
 4. Edit **`CHANGELOG.md`** (clear **`[Unreleased]`** bullets).
-5. Version bump if warranted; update **`last-version-bump.txt`** if you use it.
+5. Version bump if warranted; update **`last-version-bump.txt`** if you use it. **If you bumped version:** run **`node front/scripts/get-commit-hash.js`** and include **`front/src/environments/commit-hash.ts`** in the stage.
 6. `git pull --rebase --autostash origin development` if others may have pushed since step 1; resolve conflicts if any.
 7. `git add` relevant paths; **`git commit`** on **`development`** (message includes **`Refs #…`** for linked issues).
 8. `git pull --rebase --autostash origin development` again if needed, then **`git push origin development`**.
