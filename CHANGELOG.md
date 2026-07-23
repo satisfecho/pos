@@ -8,6 +8,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.27] - 2026-07-23
+
+### Added
+
+- **Unpaid public delivery cleanup:** Ops can cancel abandoned unpaid Satisfecho Delivery guest checkouts past a 2h TTL (`python -m app.seeds.cleanup_unpaid_public_delivery`); staff-created delivery orders are never touched, and kitchen is not re-notified.
+
+### Changed
+
+- **Security review:** Residual risk for unpaid public delivery orders now documents the TTL cleanup seed and how to run it.
+
 ## [2.1.26] - 2026-07-23
 
 ### Added

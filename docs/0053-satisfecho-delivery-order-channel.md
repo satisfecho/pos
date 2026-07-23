@@ -17,7 +17,7 @@ Marketplace orders still use `delivery_integration_id` / `external_order_ref`; c
 ## API
 
 - `POST /orders/satisfecho-delivery` — staff (`order:update_status`): create with items + address (+ optional phone/name/notes/courier). Kitchen is notified immediately.
-- `POST /public/tenants/{tenant_id}/satisfecho-delivery` — **public** (rate-limited): create with items + **required** address and phone (+ optional name/notes). No courier assign. Returns `public_order_token`, `total_cents`, and payment hints (`stripe_publishable_key`, `revolut_configured`). Kitchen/inventory notify is deferred until payment succeeds.
+- `POST /public/tenants/{tenant_id}/satisfecho-delivery` — **public** (rate-limited): create with items + **required** address and phone (+ optional name/notes). No courier assign. Returns `public_order_token`, `total_cents`, and payment hints (`stripe_publishable_key`, `revolut_configured`). Kitchen/inventory notify is deferred until payment succeeds. Public creates set `session_id=public_satisfecho_delivery` so ops can TTL-clean abandoned unpaid rows (see below).
 - `PUT /orders/{id}/delivery` — update delivery metadata on Satisfecho Delivery orders only.
 - `GET /orders` — includes `order_channel`, `delivery_address`, `customer_phone`, `courier_user_id`; `table_name` is `"Satisfecho Delivery"` for that channel.
 - `GET /users/couriers` — staff (`order:read`): list courier-role users for assign UI.
@@ -59,6 +59,28 @@ Kitchen semantics: item-level statuses remain the source of truth for pending �
 ## Staff UI
 
 - `/staff/orders`: **New delivery order**, **Delivery** filter tab (Satisfecho + marketplace, with channel badges), **Edit delivery** for address/phone/name/notes/courier.
+
+## Unpaid public checkout cleanup (TTL)
+
+Guests who abandon checkout leave **pending unpaid** public Satisfecho Delivery orders (kitchen never notified). Cleanup is idempotent and **does not** touch staff-created Satisfecho Delivery orders.
+
+| Rule | Value |
+|------|--------|
+| Marker | `session_id = public_satisfecho_delivery` (set only when `notify_kitchen=False`) |
+| Eligible | channel `satisfecho_delivery`, status `pending`, no `payment_method` / `paid_at`, not soft-deleted, `created_at` older than TTL |
+| Default TTL | **2 hours** (past `public_order_token` ~1h lifetime; override with `--ttl-hours`) |
+| Effect | Cancel order + items (`cancelled_by=ttl_cleanup`), set `deleted_at` (excluded from Informes). No kitchen WS / inventory (never published). |
+
+```bash
+# All tenants
+docker compose exec back python -m app.seeds.cleanup_unpaid_public_delivery
+docker compose exec back python -m app.seeds.cleanup_unpaid_public_delivery --dry-run
+docker compose exec back python -m app.seeds.cleanup_unpaid_public_delivery --ttl-hours 4 --tenant-id 1
+```
+
+Optional ops: schedule the same command on a host cron (separate from tenant-1 demo reset). Demo reset already wipes tenant 1 orders, so it does not need this hook.
+
+Tests: `back/tests/test_cleanup_unpaid_public_delivery.py`.
 
 ## Migration
 

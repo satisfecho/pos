@@ -10,6 +10,9 @@ from sqlmodel import Session
 from app import models
 from app.order_notes import normalize_order_note
 
+# Marks guest checkout creates (notify_kitchen=False) for TTL unpaid cleanup.
+PUBLIC_SATISFECHO_DELIVERY_SESSION_ID = "public_satisfecho_delivery"
+
 
 def _tax_amount_cents_inclusive(price_cents: int, quantity: int, rate_percent: int) -> int:
     if rate_percent <= 0:
@@ -224,7 +227,9 @@ def create_satisfecho_delivery_order(
         table_id=None,
         tenant_id=tenant_id,
         status=models.OrderStatus.pending,
-        session_id=None,
+        session_id=(
+            PUBLIC_SATISFECHO_DELIVERY_SESSION_ID if not notify_kitchen else None
+        ),
         customer_name=(customer_name or "").strip() or None,
         notes=normalize_order_note(notes),
         order_channel=models.OrderChannel.satisfecho_delivery,

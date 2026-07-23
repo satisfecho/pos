@@ -79,7 +79,7 @@ The app mounted `StaticFiles` on `/uploads` over the entire `uploads/` tree. Sta
 
 ### Residual risks (delivery / SaaS / courier)
 
-- **Unpaid public delivery orders:** Create persists an order before pay; kitchen is deferred, but unpaid rows can accumulate — monitor abuse via rate limits; consider TTL/cleanup if volume grows.
+- **Unpaid public delivery orders:** Create persists an order before pay; kitchen is deferred. **TTL cleanup implemented** (default **2h**): `python -m app.seeds.cleanup_unpaid_public_delivery` cancels tagged public creates (`session_id=public_satisfecho_delivery`) that stay unpaid; staff creates are never cleaned. See `docs/0053-satisfecho-delivery-order-channel.md`. Rate limits still cap create rate.
 - **Webhook token = capability:** Anyone with the ingest URL can post orders into that integration until provider request signatures are added. Rotate tokens if leaked; keep integrations disabled when unused.
 - **Courier PII:** Couriers on a tenant can see open delivery address/phone for Available + Mine — intentional; staff should only grant the courier role to trusted drivers.
 - **SaaS webhook ops:** `POST /saas/webhook` verifies Stripe signatures (`SAAS_STRIPE_WEBHOOK_SECRET`). Keep `SAAS_PAYWALL_ENABLED=false` until platform keys, webhook endpoint, and ops runbook are ready in the target environment.

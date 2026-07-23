@@ -84,6 +84,7 @@ class TestPublicSatisfechoDelivery(PgClientTestCase):
         assert order is not None
         self.assertEqual(order.status, models.OrderStatus.pending)
         self.assertIsNone(order.table_id)
+        self.assertEqual(order.session_id, "public_satisfecho_delivery")
 
     def test_public_create_unknown_tenant(self) -> None:
         r = self.client.post(
