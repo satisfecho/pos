@@ -157,8 +157,9 @@
     "2026-07-23T16:28:00Z: docs_stale\u00d714 all SIGNAL basenames owned; demo_tables_check=ok; Unreleased=2; NEW backlog=58; queued 0 FEAT + 2 NEW (refresh root ROADMAP shipped Jul features; docs/README Quick links delivery+paywall)",
     "2026-07-23T16:38:00Z: docs_stale\u00d714 all SIGNAL basenames owned; demo_tables_check=ok; Unreleased=2; NEW backlog=60; queued 0 FEAT + 2 NEW (backfill ca i18n missing keys; backfill zh-CN+hi i18n missing keys)",
     "2026-07-23T16:48:11Z: docs_stale\u00d714 all SIGNAL basenames owned; demo_tables_check=ok; Unreleased=2; NEW backlog=62; unqueued themes: fr/bg i18n leaf gaps + waiting-list Puppeteer smoke; queued 0 FEAT + 3 NEW (backfill fr, backfill bg, waiting-list smoke)",
-    "2026-07-23T16:59:45Z: docs_stale\u00d714 all SIGNAL basenames owned; demo_tables_check=ok; Unreleased=2; NEW backlog=65; unqueued themes: de (~91) + es (~15) i18n gaps (prior fr task wrongly claimed parity) + restaurant-groups Puppeteer smoke; queued 0 FEAT + 3 NEW (backfill de, backfill es, restaurant-groups smoke)"
+    "2026-07-23T16:59:45Z: docs_stale\u00d714 all SIGNAL basenames owned; demo_tables_check=ok; Unreleased=2; NEW backlog=65; unqueued themes: de (~91) + es (~15) i18n gaps (prior fr task wrongly claimed parity) + restaurant-groups Puppeteer smoke; queued 0 FEAT + 3 NEW (backfill de, backfill es, restaurant-groups smoke)",
+    "2026-07-23T17:14:43Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased empty post-2.1.28; NEW backlog=68; unqueued themes: 0021 duplicate renumber, order-comments Puppeteer smoke, docs/README 0011 waiting-list blurb; queued 0 FEAT + 3 NEW"
   ],
-  "last_run": "2026-07-23T17:00:11Z",
-  "last_signals": 15
+  "last_run": "2026-07-23T17:15:08Z",
+  "last_signals": 16
 }
