@@ -32,6 +32,7 @@ Public Satisfecho Delivery checkout (`/delivery/{tenantId}`) fails for catalog i
 ## Handoff log
 
 - **Handoff (`012-feature-coder-handoff.md`, 2026-07-22 21:00 UTC, Cursor):** Created as successor to archived **WIP-302** / **#302** (CLOSED). **#304** **OPEN**; labels **`bug`**, **`agent:wip`**. **Remain WIP** — TenantProduct fix not implemented yet (`_resolve_product_lines` still Product-only). **No** `WIP → UNTESTED`; **no** `agent:untested`.
+- **Handoff (`012-feature-coder-handoff.md`, 2026-07-23 16:50 UTC, Cursor):** `./scripts/git-sync-development.sh` (OK). Found **#304** **CLOSED** (COMPLETED by human) but fix still missing: `_resolve_product_lines` Product-only; public menu still `"id": tp.id`; no TenantProduct regression test. **Reopened #304**; labels **`bug`**, **`agent:wip`**. **Remain WIP** — **no** `WIP → UNTESTED`; **no** `agent:untested`. Feature coder must implement TenantProduct→Product resolution + tests, then re-hand off.
 
 ## Testing instructions
 
