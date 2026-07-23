@@ -8,6 +8,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.30] - 2026-07-23
+
+### Added
+
+- **Demo Satisfecho Delivery orders:** Tenant 1 seed / `reset_demo_data` now creates a small mix of paid and active Satisfecho Delivery samples (address/phone, optional courier when one exists) so Delivery, kitchen, and courier demos stay populated after daily reset.
+
 ### Changed
 
 - **Committer version bumps:** Regenerating and staging `commit-hash.ts` via `get-commit-hash.js` is now required whenever `front/package.json` is bumped, so the landing footer and landing-version smoke stay aligned with the new semver.

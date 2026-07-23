@@ -82,6 +82,10 @@ Optional ops: schedule on amvara9 host cron via `./scripts/cleanup-unpaid-public
 
 Tests: `back/tests/test_cleanup_unpaid_public_delivery.py`.
 
+## Demo seed (tenant 1)
+
+`seed_demo_orders` (also run by `reset_demo_data`) includes a small mix of Satisfecho Delivery samples (`order_channel=satisfecho_delivery`, `table_id` null, address/phone) so the Delivery tab, kitchen cards, and courier Mine list stay populated after daily demo reset. Assigns an existing courier only when one already exists for tenant 1.
+
 ## Migration
 
 `back/migrations/20260720220000_order_satisfecho_delivery.sql` — columns + backfill marketplace channel from existing `delivery_integration_id`.

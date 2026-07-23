@@ -1,6 +1,7 @@
 """
 Clear tenant 1's orders and reservations, then re-seed demo orders and demo reservations.
 Use this to refresh demo data on a server (e.g. amvara9) so Informes show meaningful data.
+Re-seed includes table orders plus Satisfecho Delivery samples (see seed_demo_orders).
 
 Does NOT remove tables, products, or users—only orders, order items, fiscal invoices,
 inventory rows tied to those orders, and reservations for tenant 1.
