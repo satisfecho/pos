@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Smoke: public Satisfecho Delivery checkout UI loads (menu → cart path).
+ * Smoke: public Satisfecho Delivery checkout (menu → cart → address → create order).
  *
  * Usage:
  *   BASE_URL=http://127.0.0.1:4202 TENANT_ID=1 node front/scripts/test-delivery-checkout.mjs
@@ -91,6 +91,48 @@ async function main() {
         throw new Error('Cart step did not appear after add');
       }
       console.log('Cart step OK');
+
+      // Address → create order (regression: TenantProduct menu IDs must not 400)
+      const continueBtns = await page.$$('button.btn-primary');
+      let wentAddress = false;
+      for (const btn of continueBtns) {
+        const label = await page.evaluate((el) => (el.textContent || '').trim(), btn);
+        if (/address|Adresse|dirección|adresse|Continue|Weiter|Continuar/i.test(label)) {
+          await btn.click();
+          wentAddress = true;
+          break;
+        }
+      }
+      if (!wentAddress) {
+        throw new Error('Could not open address step from cart');
+      }
+      await page.waitForSelector('form.delivery-form', { timeout: 10000 });
+      await page.type('input[name="phone"]', '+34600111222');
+      await page.type('textarea[name="address"]', 'Calle Smoke Test 1, Madrid');
+
+      const createRespPromise = page.waitForResponse(
+        (res) =>
+          res.url().includes(`/public/tenants/${TENANT_ID}/satisfecho-delivery`) &&
+          res.request().method() === 'POST',
+        { timeout: 30000 },
+      );
+      await page.click('form.delivery-form button[type="submit"]');
+      const createResp = await createRespPromise;
+      const createStatus = createResp.status();
+      const createBody = await createResp.json().catch(() => ({}));
+      if (createStatus !== 200) {
+        throw new Error(
+          `Create delivery order failed: HTTP ${createStatus} ${JSON.stringify(createBody)}`,
+        );
+      }
+      if (!createBody.public_order_token || !createBody.id) {
+        throw new Error(`Create response missing token/id: ${JSON.stringify(createBody)}`);
+      }
+      await page.waitForFunction(
+        () => /pay|pago|Bezahlen|payer|Stripe|Revolut/i.test(document.body?.innerText || ''),
+        { timeout: 15000 },
+      );
+      console.log('Order create OK (id=', createBody.id, ')');
     } else {
       console.log('No add buttons (empty menu); page shell OK');
     }

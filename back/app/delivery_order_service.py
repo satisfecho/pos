@@ -45,22 +45,72 @@ def _effective_tax(
     return tax
 
 
+def _product_from_tenant_product(
+    session: Session,
+    *,
+    tenant_id: int,
+    tp: models.TenantProduct,
+) -> models.Product | None:
+    """Map a tenant menu row to Product (create+link if catalog-only)."""
+    if tp.product_id is not None:
+        product = session.get(models.Product, tp.product_id)
+        if product is not None and product.tenant_id == tenant_id:
+            return product
+        return None
+
+    price_cents = tp.price_cents
+    if price_cents is None and tp.provider_product_id:
+        pp = session.get(models.ProviderProduct, tp.provider_product_id)
+        if pp is not None and pp.price_cents is not None:
+            price_cents = pp.price_cents
+    if price_cents is None:
+        return None
+
+    product = models.Product(
+        name=tp.name,
+        price_cents=price_cents,
+        cost_cents=getattr(tp, "cost_cents", None),
+        tenant_id=tenant_id,
+        tax_id=getattr(tp, "tax_id", None),
+    )
+    session.add(product)
+    session.flush()
+    tp.product_id = product.id
+    if tp.price_cents is None:
+        tp.price_cents = price_cents
+    session.add(tp)
+    return product
+
+
 def _resolve_product_lines(
     session: Session,
     *,
     tenant_id: int,
     lines: list[dict],
 ) -> tuple[list[tuple[models.Product, int, str | None]] | None, dict | None]:
-    """lines: [{"product_id": int, "quantity": int, "notes": str|None}]."""
+    """lines: [{"product_id": int, "quantity": int, "notes": str|None}].
+
+    ``product_id`` may be a public-menu ``TenantProduct.id`` or a legacy ``Product.id``.
+    """
     if not lines:
         return None, {"status": "error", "detail": "no_lines"}
     resolved: list[tuple[models.Product, int, str | None]] = []
     for row in lines:
         pid = int(row["product_id"])
         qty = int(row["quantity"])
-        product = session.get(models.Product, pid)
-        if not product or product.tenant_id != tenant_id:
-            return None, {"status": "error", "detail": f"product_not_found:{pid}"}
+        product: models.Product | None = None
+
+        # Public menu / cart sends TenantProduct.id (same as guest table orders).
+        tp = session.get(models.TenantProduct, pid)
+        if tp is not None and tp.tenant_id == tenant_id:
+            product = _product_from_tenant_product(session, tenant_id=tenant_id, tp=tp)
+            if product is None:
+                return None, {"status": "error", "detail": f"product_not_found:{pid}"}
+        else:
+            product = session.get(models.Product, pid)
+            if not product or product.tenant_id != tenant_id:
+                return None, {"status": "error", "detail": f"product_not_found:{pid}"}
+
         notes = normalize_order_note(row.get("notes"))
         resolved.append((product, max(1, qty), notes))
     return resolved, None

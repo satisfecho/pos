@@ -119,6 +119,55 @@ class TestPublicSatisfechoDelivery(PgClientTestCase):
         )
         self.assertEqual(r.status_code, 400, r.text)
 
+    def test_public_create_accepts_tenant_product_menu_ids(self) -> None:
+        """Public menu posts TenantProduct.id; must resolve to linked Product (#304)."""
+        linked = models.Product(
+            tenant_id=self.tenant.id,
+            name="Amstel Radler Product",
+            price_cents=350,
+            category="Drinks",
+        )
+        self.session.add(linked)
+        self.session.commit()
+        self.session.refresh(linked)
+
+        catalog = models.ProductCatalog(
+            name="Amstel Radler Catalog",
+            category="Drinks",
+        )
+        self.session.add(catalog)
+        self.session.commit()
+        self.session.refresh(catalog)
+
+        tp = models.TenantProduct(
+            tenant_id=self.tenant.id,
+            catalog_id=catalog.id,
+            product_id=linked.id,
+            name="Amstel Radler",
+            price_cents=350,
+            is_active=True,
+        )
+        self.session.add(tp)
+        self.session.commit()
+        self.session.refresh(tp)
+
+        self.assertNotEqual(tp.id, linked.id)
+
+        body, status = self._create_public(
+            items=[{"product_id": tp.id, "quantity": 2}],
+        )
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body["total_cents"], 700)
+
+        from sqlmodel import select
+
+        items = self.session.exec(
+            select(models.OrderItem).where(models.OrderItem.order_id == body["id"])
+        ).all()
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0].product_id, linked.id)
+        self.assertEqual(items[0].quantity, 2)
+
     @patch("stripe.PaymentIntent.retrieve")
     def test_public_stripe_pay_happy_path(self, mock_retrieve) -> None:
         body, status = self._create_public()
