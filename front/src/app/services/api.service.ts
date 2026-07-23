@@ -1343,6 +1343,9 @@ export interface PublicSatisfechoDeliveryOrderCreate {
   customer_phone: string;
   customer_name?: string | null;
   notes?: string | null;
+  postal_code?: string | null;
+  delivery_latitude?: number | null;
+  delivery_longitude?: number | null;
 }
 
 export interface PublicSatisfechoDeliveryOrderResponse {
@@ -1354,11 +1357,46 @@ export interface PublicSatisfechoDeliveryOrderResponse {
   customer_name: string | null;
   notes?: string | null;
   table_id: number | null;
+  subtotal_cents?: number;
+  delivery_fee_cents?: number;
   total_cents: number;
   public_order_token: string;
   stripe_publishable_key?: string | null;
   revolut_configured: boolean;
   created_at?: string | null;
+}
+
+export interface PublicSatisfechoDeliveryConfig {
+  delivery_fee_cents: number;
+  delivery_radius_meters: number | null;
+  postal_codes_required: boolean;
+  postal_codes: string[];
+  restaurant_latitude: number | null;
+  restaurant_longitude: number | null;
+  currency_code?: string | null;
+  currency?: string | null;
+}
+
+export interface PublicDeliveryTrackStatus {
+  order_id: number;
+  tenant_id: number;
+  tenant_name?: string | null;
+  status:
+    | 'awaiting_payment'
+    | 'received'
+    | 'preparing'
+    | 'out_for_delivery'
+    | 'delivered'
+    | 'cancelled'
+    | string;
+  order_status: string;
+  paid: boolean;
+  delivery_address?: string | null;
+  subtotal_cents: number;
+  delivery_fee_cents: number;
+  total_cents: number;
+  created_at?: string | null;
+  updated_hint?: string | null;
 }
 
 export interface MenuResponse {
@@ -1438,6 +1476,11 @@ export interface TenantSettings {
   longitude?: number | null;
   location_radius_meters?: number | null;
   location_check_enabled?: boolean;
+  delivery_fee_cents?: number | null;
+  /** Max delivery distance from restaurant lat/lng; null/0 = no radius check */
+  delivery_radius_meters?: number | null;
+  /** JSON array string of allowed postal codes, or empty to clear */
+  delivery_postal_codes?: string | null;
   // Per-tenant SMTP / email (optional; fallback to global config)
   smtp_host?: string | null;
   smtp_port?: number | null;
@@ -2397,6 +2440,23 @@ export class ApiService {
     return this.http.post<PublicSatisfechoDeliveryOrderResponse>(
       `${this.apiUrl}/public/tenants/${tenantId}/satisfecho-delivery`,
       body,
+    );
+  }
+
+  getPublicSatisfechoDeliveryConfig(tenantId: number): Observable<PublicSatisfechoDeliveryConfig> {
+    return this.http.get<PublicSatisfechoDeliveryConfig>(
+      `${this.apiUrl}/public/tenants/${tenantId}/satisfecho-delivery-config`,
+    );
+  }
+
+  getPublicDeliveryOrderStatus(
+    orderId: number,
+    publicOrderToken: string,
+  ): Observable<PublicDeliveryTrackStatus> {
+    const params = new HttpParams().set('public_order_token', publicOrderToken);
+    return this.http.get<PublicDeliveryTrackStatus>(
+      `${this.apiUrl}/public/orders/${orderId}/delivery-status`,
+      { params },
     );
   }
 

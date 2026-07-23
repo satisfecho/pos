@@ -76,6 +76,8 @@ class TestPublicSatisfechoDelivery(PgClientTestCase):
         self.assertEqual(body["delivery_address"], "Calle Delivery 5, Madrid")
         self.assertEqual(body["customer_phone"], "+34600999888")
         self.assertEqual(body["total_cents"], 1200)
+        self.assertEqual(body.get("delivery_fee_cents"), 0)
+        self.assertEqual(body.get("subtotal_cents"), 1200)
         self.assertTrue(body.get("public_order_token"))
         self.assertEqual(body.get("stripe_publishable_key"), "pk_test_public_sd")
 
@@ -85,6 +87,87 @@ class TestPublicSatisfechoDelivery(PgClientTestCase):
         self.assertEqual(order.status, models.OrderStatus.pending)
         self.assertIsNone(order.table_id)
         self.assertEqual(order.session_id, "public_satisfecho_delivery")
+        self.assertEqual(order.delivery_fee_cents, 0)
+
+    def test_public_create_applies_delivery_fee(self) -> None:
+        self.tenant.delivery_fee_cents = 350
+        self.session.add(self.tenant)
+        self.session.commit()
+
+        body, status = self._create_public()
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body["subtotal_cents"], 1200)
+        self.assertEqual(body["delivery_fee_cents"], 350)
+        self.assertEqual(body["total_cents"], 1550)
+
+        order = self.session.get(models.Order, body["id"])
+        assert order is not None
+        self.assertEqual(order.delivery_fee_cents, 350)
+
+    def test_public_create_rejects_outside_postal_zone(self) -> None:
+        self.tenant.delivery_postal_codes = '["28001","28002"]'
+        self.session.add(self.tenant)
+        self.session.commit()
+
+        body, status = self._create_public(postal_code="99999")
+        self.assertEqual(status, 400, body)
+
+        body_ok, status_ok = self._create_public(postal_code="28001")
+        self.assertEqual(status_ok, 200, body_ok)
+
+    def test_public_create_rejects_outside_radius(self) -> None:
+        self.tenant.latitude = 40.4168
+        self.tenant.longitude = -3.7038
+        self.tenant.delivery_radius_meters = 500
+        self.session.add(self.tenant)
+        self.session.commit()
+
+        # Far away (~10km+)
+        body, status = self._create_public(
+            delivery_latitude=40.5,
+            delivery_longitude=-3.7,
+        )
+        self.assertEqual(status, 400, body)
+
+        body_ok, status_ok = self._create_public(
+            delivery_latitude=40.4170,
+            delivery_longitude=-3.7040,
+        )
+        self.assertEqual(status_ok, 200, body_ok)
+
+    def test_public_delivery_config_and_track_status(self) -> None:
+        self.tenant.delivery_fee_cents = 200
+        self.tenant.delivery_postal_codes = '["28013"]'
+        self.session.add(self.tenant)
+        self.session.commit()
+
+        cfg = self.client.get(
+            f"/public/tenants/{self.tenant.id}/satisfecho-delivery-config"
+        )
+        self.assertEqual(cfg.status_code, 200, cfg.text)
+        self.assertEqual(cfg.json()["delivery_fee_cents"], 200)
+        self.assertTrue(cfg.json()["postal_codes_required"])
+        self.assertEqual(cfg.json()["postal_codes"], ["28013"])
+
+        body, status = self._create_public(postal_code="28013")
+        self.assertEqual(status, 200, body)
+        order_id = body["id"]
+        token = body["public_order_token"]
+
+        track = self.client.get(
+            f"/public/orders/{order_id}/delivery-status",
+            params={"public_order_token": token},
+        )
+        self.assertEqual(track.status_code, 200, track.text)
+        self.assertEqual(track.json()["status"], "awaiting_payment")
+        self.assertEqual(track.json()["delivery_fee_cents"], 200)
+        self.assertEqual(track.json()["total_cents"], 1400)
+
+        bad = self.client.get(
+            f"/public/orders/{order_id}/delivery-status",
+            params={"public_order_token": "bad-token"},
+        )
+        self.assertEqual(bad.status_code, 404, bad.text)
 
     def test_public_create_unknown_tenant(self) -> None:
         r = self.client.post(
@@ -198,6 +281,42 @@ class TestPublicSatisfechoDelivery(PgClientTestCase):
         self.assertEqual(order.status, models.OrderStatus.paid)
         self.assertEqual(order.payment_method, "stripe")
         self.assertIsNotNone(order.paid_at)
+
+        track = self.client.get(
+            f"/public/orders/{order_id}/delivery-status",
+            params={"public_order_token": token},
+        )
+        self.assertEqual(track.status_code, 200, track.text)
+        self.assertEqual(track.json()["status"], "received")
+        self.assertTrue(track.json()["paid"])
+
+    @patch("stripe.PaymentIntent.retrieve")
+    def test_public_stripe_pay_includes_delivery_fee(self, mock_retrieve) -> None:
+        self.tenant.delivery_fee_cents = 300
+        self.session.add(self.tenant)
+        self.session.commit()
+
+        body, status = self._create_public()
+        self.assertEqual(status, 200, body)
+        order_id = body["id"]
+        token = body["public_order_token"]
+        self.assertEqual(body["total_cents"], 1500)
+
+        mock_intent = MagicMock()
+        mock_intent.status = "succeeded"
+        mock_intent.amount = 1500
+        mock_intent.id = "pi_delivery_fee"
+        mock_intent.metadata = {"order_id": str(order_id)}
+        mock_retrieve.return_value = mock_intent
+
+        r = self.client.post(
+            f"/orders/{order_id}/confirm-payment",
+            params={
+                "public_order_token": token,
+                "payment_intent_id": "pi_delivery_fee",
+            },
+        )
+        self.assertEqual(r.status_code, 200, r.text)
 
     @patch("stripe.PaymentIntent.retrieve")
     def test_public_stripe_pay_rejects_bad_token(self, mock_retrieve) -> None:

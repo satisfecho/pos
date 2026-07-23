@@ -1,0 +1,99 @@
+.delivery-track-page {
+  min-height: 60vh;
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.delivery-track-page h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.tenant-name {
+  margin: 0;
+  opacity: 0.85;
+}
+
+.order-ref {
+  margin: 0;
+  font-weight: 600;
+}
+
+.current-status {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+}
+
+.hint {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.status-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 1rem;
+  text-align: left;
+}
+
+.status-steps li {
+  padding: 0.45rem 0.65rem;
+  margin-bottom: 0.35rem;
+  border-left: 3px solid #ccc;
+  opacity: 0.55;
+}
+
+.status-steps li.done {
+  border-left-color: #2e7d32;
+  opacity: 1;
+}
+
+.status-steps li.current {
+  border-left-color: #1565c0;
+  font-weight: 700;
+  opacity: 1;
+  background: rgba(21, 101, 192, 0.06);
+}
+
+.address,
+.totals {
+  margin: 0;
+  text-align: left;
+}
+
+.totals .fee {
+  display: block;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.error {
+  color: var(--color-error, #c00);
+}
+
+.btn {
+  display: inline-block;
+  margin-top: 0.35rem;
+  padding: 0.55rem 1rem;
+  text-decoration: none;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #1565c0;
+  color: #fff;
+}
+
+.btn-secondary {
+  background: transparent;
+  border-color: #999;
+}

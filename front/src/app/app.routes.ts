@@ -60,6 +60,11 @@ export const routes: Routes = [
       import('./delivery/delivery-payment-success.component').then((m) => m.DeliveryPaymentSuccessComponent),
   },
   {
+    path: 'delivery/:tenantId/track',
+    loadComponent: () =>
+      import('./delivery/delivery-track.component').then((m) => m.DeliveryTrackComponent),
+  },
+  {
     path: 'delivery/:tenantId',
     loadComponent: () =>
       import('./delivery/delivery-checkout.component').then((m) => m.DeliveryCheckoutComponent),

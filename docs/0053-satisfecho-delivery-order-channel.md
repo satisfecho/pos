@@ -37,9 +37,33 @@ Revolut success redirect for delivery: `{PUBLIC_APP_BASE_URL}/delivery/{tenantId
 
 ## Public UI
 
-- `/delivery/:tenantId` — cart + address + Stripe/Revolut pay.
-- `/delivery/:tenantId/payment-success` — confirms Revolut after redirect.
+- `/delivery/:tenantId` — cart + address (+ postal code / location when configured) + Stripe/Revolut pay; shows delivery fee before pay.
+- `/delivery/:tenantId/payment-success` — confirms Revolut after redirect; links to track page.
+- `/delivery/:tenantId/track?order_id=&public_order_token=` — customer live status (polling; no maps).
 - `/public-menu/:tenantId` — read-only menu with a link to delivery checkout.
+
+## Delivery fee and coverage (tenant settings)
+
+Staff configure under **Settings → Payments → Satisfecho Delivery** (also via `PUT /tenant/settings`):
+
+| Field | Meaning |
+|-------|---------|
+| `delivery_fee_cents` | Flat fee added to public (and staff) Satisfecho Delivery create totals / payment intents (default `0`) |
+| `delivery_postal_codes` | Optional JSON array of allowed postal codes; when set, public create requires a matching `postal_code` |
+| `delivery_radius_meters` | Optional max distance from tenant `latitude`/`longitude`; when set with coords, public create requires `delivery_latitude`/`delivery_longitude` |
+
+`Order.delivery_fee_cents` stores the fee snapshot at create time. Guest payment amounts = line items + that fee.
+
+Public helpers:
+
+- `GET /public/tenants/{tenant_id}/satisfecho-delivery-config` — fee + coverage hints (no secrets).
+- `GET /public/orders/{order_id}/delivery-status?public_order_token=` — coarse status for the track page.
+
+Customer track statuses: `awaiting_payment` → `received` → `preparing` → `out_for_delivery` → `delivered` (also `cancelled`). Derived from pay state, item statuses, and courier `out_for_delivery` / completed — not a 1:1 map of raw `order.status` after online pay.
+
+`public_order_token` lifetime is **24 hours** (covers pay + track). Unpaid public checkout TTL cleanup remains **2 hours**.
+
+Maps UI and automatic courier matching remain out of scope.
 
 ## Courier status actions
 
@@ -91,3 +115,5 @@ Tests: `back/tests/test_cleanup_unpaid_public_delivery.py`.
 `back/migrations/20260720220000_order_satisfecho_delivery.sql` — columns + backfill marketplace channel from existing `delivery_integration_id`.
 
 `back/migrations/20260721220000_order_status_out_for_delivery.sql` — adds `out_for_delivery` to the `orderstatus` enum.
+
+`back/migrations/20260723220000_delivery_zones_fees.sql` — tenant `delivery_fee_cents` / `delivery_radius_meters` / `delivery_postal_codes`; order `delivery_fee_cents` snapshot.

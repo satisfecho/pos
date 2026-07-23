@@ -11,12 +11,13 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl, SafeStyle, Title } from '@angular/platform-browser';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { merge } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   ApiService,
+  PublicSatisfechoDeliveryConfig,
   PublicTenantMenuCategory,
   PublicTenantMenuProduct,
   PublicTenantMenuResponse,
@@ -43,6 +44,7 @@ type CheckoutStep = 'menu' | 'cart' | 'address' | 'pay' | 'success';
 })
 export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private api = inject(ApiService);
   private translate = inject(TranslateService);
   private language = inject(LanguageService);
@@ -65,12 +67,19 @@ export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
   customerPhone = '';
   deliveryAddress = '';
   deliveryNotes = '';
+  postalCode = '';
   formError = signal<string | null>(null);
   submitting = signal(false);
+
+  deliveryConfig = signal<PublicSatisfechoDeliveryConfig | null>(null);
+  deliveryLat = signal<number | null>(null);
+  deliveryLng = signal<number | null>(null);
 
   orderId = signal<number | null>(null);
   publicOrderToken = signal<string | null>(null);
   totalCents = signal(0);
+  subtotalCents = signal(0);
+  deliveryFeeCents = signal(0);
   revolutConfigured = signal(false);
   stripeReady = signal(false);
 
@@ -86,7 +95,12 @@ export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
   private collapsedCategoryIds = signal<Set<string>>(new Set());
 
   cartCount = computed(() => this.cart().reduce((n, l) => n + l.quantity, 0));
-  cartTotalCents = computed(() =>
+  cartTotalCents = computed(() => {
+    const items = this.cart().reduce((sum, l) => sum + l.product.price_cents * l.quantity, 0);
+    const fee = this.deliveryConfig()?.delivery_fee_cents ?? 0;
+    return items + (fee > 0 ? fee : 0);
+  });
+  cartSubtotalCents = computed(() =>
     this.cart().reduce((sum, l) => sum + l.product.price_cents * l.quantity, 0),
   );
 
@@ -129,6 +143,7 @@ export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
         this.tenant.set(t);
         this.logoUrl.set(this.api.getTenantLogoUrl(t.logo_filename ?? undefined, t.id));
         this.loadMenu(tid);
+        this.loadDeliveryConfig(tid);
       },
       error: () => {
         this.errorKind.set('tenant_not_found');
@@ -136,6 +151,34 @@ export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
         this.updateDocumentTitle();
       },
     });
+  }
+
+  private loadDeliveryConfig(tid: number): void {
+    this.api.getPublicSatisfechoDeliveryConfig(tid).subscribe({
+      next: (cfg) => {
+        this.deliveryConfig.set(cfg);
+        if (cfg.delivery_radius_meters) {
+          this.requestDeliveryLocation();
+        }
+      },
+      error: () => {
+        this.deliveryConfig.set(null);
+      },
+    });
+  }
+
+  requestDeliveryLocation(): void {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        this.deliveryLat.set(pos.coords.latitude);
+        this.deliveryLng.set(pos.coords.longitude);
+      },
+      () => {
+        /* optional; server rejects if radius configured and coords missing */
+      },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 120000 },
+    );
   }
 
   ngOnDestroy(): void {
@@ -289,12 +332,22 @@ export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
     this.formError.set(null);
     const address = this.deliveryAddress.trim();
     const phone = this.customerPhone.trim();
+    const cfg = this.deliveryConfig();
     if (!address) {
       this.formError.set(this.translate.instant('DELIVERY_CHECKOUT.ADDRESS_REQUIRED'));
       return;
     }
     if (!phone || !contactPhoneValid(phone)) {
       this.formError.set(this.translate.instant('DELIVERY_CHECKOUT.PHONE_INVALID'));
+      return;
+    }
+    if (cfg?.postal_codes_required && !this.postalCode.trim()) {
+      this.formError.set(this.translate.instant('DELIVERY_CHECKOUT.POSTAL_REQUIRED'));
+      return;
+    }
+    if (cfg?.delivery_radius_meters && (this.deliveryLat() == null || this.deliveryLng() == null)) {
+      this.formError.set(this.translate.instant('DELIVERY_CHECKOUT.LOCATION_REQUIRED'));
+      this.requestDeliveryLocation();
       return;
     }
     if (this.cartCount() < 1) {
@@ -313,6 +366,9 @@ export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
         customer_phone: phone,
         customer_name: this.customerName.trim() || null,
         notes: this.deliveryNotes.trim() || null,
+        postal_code: this.postalCode.trim() || null,
+        delivery_latitude: this.deliveryLat(),
+        delivery_longitude: this.deliveryLng(),
       })
       .subscribe({
         next: (res) => {
@@ -320,6 +376,8 @@ export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
           this.orderId.set(res.id);
           this.publicOrderToken.set(res.public_order_token);
           this.totalCents.set(res.total_cents);
+          this.subtotalCents.set(res.subtotal_cents ?? res.total_cents);
+          this.deliveryFeeCents.set(res.delivery_fee_cents ?? 0);
           this.revolutConfigured.set(!!res.revolut_configured);
           const key = res.stripe_publishable_key || environment.stripePublishableKey || '';
           this.api.setTenantStripeKey(res.stripe_publishable_key || null);
@@ -328,9 +386,22 @@ export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.submitting.set(false);
-          this.formError.set(
-            err.error?.detail || this.translate.instant('DELIVERY_CHECKOUT.CREATE_FAILED'),
-          );
+          const detail = err.error?.detail;
+          let msg = this.translate.instant('DELIVERY_CHECKOUT.CREATE_FAILED');
+          if (typeof detail === 'string') {
+            if (detail.includes('outside the delivery zone')) {
+              msg = this.translate.instant('DELIVERY_CHECKOUT.OUTSIDE_ZONE');
+            } else if (detail.includes('outside the delivery radius')) {
+              msg = this.translate.instant('DELIVERY_CHECKOUT.OUTSIDE_RADIUS');
+            } else if (detail.includes('postal_code')) {
+              msg = this.translate.instant('DELIVERY_CHECKOUT.POSTAL_REQUIRED');
+            } else if (detail.includes('location')) {
+              msg = this.translate.instant('DELIVERY_CHECKOUT.LOCATION_REQUIRED');
+            } else {
+              msg = detail;
+            }
+          }
+          this.formError.set(msg);
         },
       });
   }
@@ -470,6 +541,15 @@ export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
     } else {
       this.processingPayment.set(false);
     }
+  }
+
+  goToTrack(): void {
+    const oid = this.orderId();
+    const token = this.publicOrderToken();
+    if (!oid || !token) return;
+    void this.router.navigate(['/delivery', this.tenantId(), 'track'], {
+      queryParams: { order_id: oid, public_order_token: token },
+    });
   }
 
   displayName(): string {

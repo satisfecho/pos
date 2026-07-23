@@ -203,6 +203,41 @@
               autocomplete="street-address"
             ></textarea>
           </label>
+          @if (deliveryConfig()?.postal_codes_required) {
+            <label>
+              {{ 'DELIVERY_CHECKOUT.POSTAL_CODE' | translate }} *
+              <input
+                type="text"
+                name="postal"
+                [(ngModel)]="postalCode"
+                required
+                autocomplete="postal-code"
+              />
+            </label>
+            @if (deliveryConfig()?.postal_codes?.length) {
+              <p class="delivery-hint">
+                {{ 'DELIVERY_CHECKOUT.POSTAL_HINT' | translate }}:
+                {{ deliveryConfig()!.postal_codes.join(', ') }}
+              </p>
+            }
+          }
+          @if (deliveryConfig()?.delivery_radius_meters) {
+            <p class="delivery-hint">
+              {{
+                'DELIVERY_CHECKOUT.RADIUS_HINT'
+                  | translate: { meters: deliveryConfig()!.delivery_radius_meters }
+              }}
+            </p>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="requestDeliveryLocation()">
+              {{ 'DELIVERY_CHECKOUT.SHARE_LOCATION' | translate }}
+            </button>
+          }
+          @if ((deliveryConfig()?.delivery_fee_cents ?? 0) > 0) {
+            <p class="delivery-hint">
+              {{ 'DELIVERY_CHECKOUT.DELIVERY_FEE' | translate }}:
+              {{ formatCents(deliveryConfig()!.delivery_fee_cents) }}
+            </p>
+          }
           <label>
             {{ 'DELIVERY_CHECKOUT.NOTES' | translate }}
             <textarea name="notes" rows="2" [(ngModel)]="deliveryNotes"></textarea>
@@ -228,6 +263,12 @@
           <strong>{{ 'DELIVERY_CHECKOUT.TOTAL' | translate }}:</strong>
           {{ formatCents(totalCents()) }}
         </p>
+        @if (deliveryFeeCents() > 0) {
+          <p class="delivery-hint">
+            {{ 'DELIVERY_CHECKOUT.SUBTOTAL' | translate }}: {{ formatCents(subtotalCents()) }}
+            · {{ 'DELIVERY_CHECKOUT.DELIVERY_FEE' | translate }}: {{ formatCents(deliveryFeeCents()) }}
+          </p>
+        }
         @if (cardError()) {
           <p class="form-error">{{ cardError() }}</p>
         }
@@ -283,7 +324,10 @@
           @if (orderId(); as oid) {
             <p class="delivery-order-ref">{{ 'DELIVERY_CHECKOUT.ORDER_REF' | translate: { id: oid } }}</p>
           }
-          <button type="button" class="btn btn-primary" (click)="orderAgain()">
+          <button type="button" class="btn btn-primary" (click)="goToTrack()">
+            {{ 'DELIVERY_CHECKOUT.TRACK_ORDER' | translate }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="orderAgain()">
             {{ 'DELIVERY_CHECKOUT.ORDER_AGAIN' | translate }}
           </button>
         </div>

@@ -183,6 +183,13 @@ class Tenant(SQLModel, table=True):
     reservation_reminder_24h_enabled: bool = Field(default=False)
     reservation_reminder_2h_enabled: bool = Field(default=False)
 
+    # Satisfecho Delivery: flat fee + coverage (postal list and/or radius from lat/lng)
+    delivery_fee_cents: int = Field(default=0)
+    delivery_radius_meters: int | None = Field(default=None)
+    delivery_postal_codes: str | None = Field(
+        default=None
+    )  # JSON array of allowed postal codes, e.g. ["28001","28002"]
+
     # Public feedback page: optional "Write a review" link (Google Business Profile / Maps)
     public_google_review_url: str | None = Field(default=None, max_length=2048)
     # Public pages: optional Google Maps place or directions URL (Share link from Maps)
@@ -916,6 +923,7 @@ class Order(TenantMixin, table=True):
     delivery_address: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
     customer_phone: str | None = Field(default=None, max_length=40)
     courier_user_id: int | None = Field(default=None, foreign_key="user.id", index=True)
+    delivery_fee_cents: int = Field(default=0)  # Snapshot of tenant delivery fee at create
 
     items: list["OrderItem"] = Relationship(back_populates="order")
     billing_customer: BillingCustomer | None = Relationship(back_populates="orders")
@@ -1235,6 +1243,9 @@ class PublicSatisfechoDeliveryOrderCreate(SQLModel):
     customer_phone: str
     customer_name: str | None = None
     notes: str | None = None
+    postal_code: str | None = None  # Required when tenant has delivery_postal_codes
+    delivery_latitude: float | None = None  # Optional; used when tenant has delivery_radius_meters
+    delivery_longitude: float | None = None
 
 
 class OrderDeliveryUpdate(SQLModel):
@@ -1393,6 +1404,11 @@ class TenantUpdate(SQLModel):
     reservation_dress_code: str | None = None
     reservation_reminder_24h_enabled: bool | None = None
     reservation_reminder_2h_enabled: bool | None = None
+
+    # Satisfecho Delivery fee + coverage
+    delivery_fee_cents: int | None = None
+    delivery_radius_meters: int | None = None
+    delivery_postal_codes: str | None = None  # JSON array string or empty to clear
 
     # Public Google / Maps review link (shown on feedback thank-you page)
     public_google_review_url: str | None = None

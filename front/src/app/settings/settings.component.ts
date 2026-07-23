@@ -1439,6 +1439,47 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
                       </button>
                     </div>
                   }
+
+                  <div class="divider"></div>
+                  <h3>{{ 'SETTINGS.SATISFECHO_DELIVERY_TITLE' | translate }}</h3>
+                  <p class="section-desc">{{ 'SETTINGS.SATISFECHO_DELIVERY_DESC' | translate }}</p>
+                  <div class="form-group">
+                    <label for="delivery_fee_cents">{{ 'SETTINGS.DELIVERY_FEE_CENTS' | translate }}</label>
+                    <input
+                      type="number"
+                      id="delivery_fee_cents"
+                      min="0"
+                      step="1"
+                      [(ngModel)]="formData.delivery_fee_cents"
+                      name="delivery_fee_cents"
+                      placeholder="0"
+                    />
+                    <p class="hint">{{ 'SETTINGS.DELIVERY_FEE_HINT' | translate }}</p>
+                  </div>
+                  <div class="form-group">
+                    <label for="delivery_radius_meters">{{ 'SETTINGS.DELIVERY_RADIUS' | translate }}</label>
+                    <input
+                      type="number"
+                      id="delivery_radius_meters"
+                      min="0"
+                      step="1"
+                      [(ngModel)]="formData.delivery_radius_meters"
+                      name="delivery_radius_meters"
+                      placeholder="0"
+                    />
+                    <p class="hint">{{ 'SETTINGS.DELIVERY_RADIUS_HINT' | translate }}</p>
+                  </div>
+                  <div class="form-group">
+                    <label for="delivery_postal_codes">{{ 'SETTINGS.DELIVERY_POSTAL_CODES' | translate }}</label>
+                    <textarea
+                      id="delivery_postal_codes"
+                      rows="3"
+                      [(ngModel)]="formData.delivery_postal_codes"
+                      name="delivery_postal_codes"
+                      [placeholder]="'SETTINGS.DELIVERY_POSTAL_CODES_PH' | translate"
+                    ></textarea>
+                    <p class="hint">{{ 'SETTINGS.DELIVERY_POSTAL_CODES_HINT' | translate }}</p>
+                  </div>
                 </div>
               }
 
@@ -3107,6 +3148,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
     reservation_dress_code: null,
     reservation_reminder_24h_enabled: false,
     reservation_reminder_2h_enabled: false,
+    delivery_fee_cents: 0,
+    delivery_radius_meters: null,
+    delivery_postal_codes: null,
     public_google_review_url: null,
     public_google_maps_url: null,
     public_openstreetmap_url: null,
@@ -3223,6 +3267,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
           reservation_dress_code: settings.reservation_dress_code ?? null,
           reservation_reminder_24h_enabled: settings.reservation_reminder_24h_enabled ?? false,
           reservation_reminder_2h_enabled: settings.reservation_reminder_2h_enabled ?? false,
+          delivery_fee_cents: settings.delivery_fee_cents ?? 0,
+          delivery_radius_meters: settings.delivery_radius_meters ?? null,
+          delivery_postal_codes: this.formatDeliveryPostalCodesForForm(settings.delivery_postal_codes),
           public_google_review_url: settings.public_google_review_url ?? null,
           public_google_maps_url: settings.public_google_maps_url ?? null,
           public_openstreetmap_url: settings.public_openstreetmap_url ?? null,
@@ -3284,6 +3331,20 @@ export class SettingsComponent implements OnInit, OnDestroy {
       next: (list) => this.taxes.set(list),
       error: () => this.taxes.set([]),
     });
+  }
+
+  /** Show postal codes as one-per-line in settings textarea. */
+  private formatDeliveryPostalCodesForForm(raw: string | null | undefined): string | null {
+    if (!raw || !String(raw).trim()) return null;
+    try {
+      const parsed = JSON.parse(String(raw));
+      if (Array.isArray(parsed)) {
+        return parsed.map((x) => String(x).trim()).filter(Boolean).join('\n');
+      }
+    } catch {
+      /* plain text */
+    }
+    return String(raw);
   }
 
   loadOpeningHoursSchedule(): void {

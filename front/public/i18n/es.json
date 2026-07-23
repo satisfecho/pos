@@ -277,7 +277,18 @@
     "BACK_HOME": "Volver al inicio",
     "INVALID_TENANT": "Enlace de restaurante no válido.",
     "TENANT_NOT_FOUND": "Restaurante no encontrado.",
-    "LOAD_FAILED": "No se pudo cargar el menú de entrega. Inténtelo más tarde."
+    "LOAD_FAILED": "No se pudo cargar el menú de entrega. Inténtelo más tarde.",
+    "POSTAL_CODE": "Código postal",
+    "POSTAL_REQUIRED": "Se necesita el código postal para entregar en este restaurante.",
+    "POSTAL_HINT": "Entregamos en estos códigos postales",
+    "LOCATION_REQUIRED": "Comparte tu ubicación para comprobar la distancia de entrega.",
+    "SHARE_LOCATION": "Compartir mi ubicación",
+    "RADIUS_HINT": "La entrega está limitada a unos {{meters}} m del restaurante.",
+    "OUTSIDE_ZONE": "Lo sentimos: ese código postal está fuera de la zona de entrega.",
+    "OUTSIDE_RADIUS": "Lo sentimos: esa ubicación está fuera del radio de entrega.",
+    "DELIVERY_FEE": "Gastos de envío",
+    "SUBTOTAL": "Subtotal",
+    "TRACK_ORDER": "Seguir tu pedido"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Para llevar y pedido a domicilio",
@@ -1995,7 +2006,16 @@
     "RESERVATION_CONFIRMATION_SUBJECT_PLACEHOLDER": "p. ej. Hemos reservado una mesa para usted",
     "RESERVATION_CONFIRMATION_BODY": "Cuerpo del correo",
     "RESERVATION_CONFIRMATION_BODY_HINT": "Nombres permitidos (cada uno entre llaves dobles): restaurant_name, customer_name, date, time, party_size, reservation_url, reservation_link_block_html (enlace en HTML; vacío si no hay enlace de autogestión), cancellation_policy, prepayment_text, prepayment_notice, dress_code, arrival_note, restaurant_phone, restaurant_email, restaurant_contact_block_html (bloque de teléfono y correo con tel/mailto en HTML y líneas en texto; vacío si faltan ambos), google_maps_link_block_html, openstreetmap_link_block_html (enlaces de mapa en HTML si esas URLs están en Información de contacto; vacío si no). Usa cancellation_policy y similares para tomar el texto de la sección Reservas de la configuración.",
-    "PUBLIC_GOOGLE_REVIEW_URL_HINT": "Paste the Google Place ID (e.g., 0x...) from Google Place ID Finder: https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder . The app will auto-generate your review URL: https://search.google.com/local/writereview?placeid=YOUR-ID."
+    "PUBLIC_GOOGLE_REVIEW_URL_HINT": "Paste the Google Place ID (e.g., 0x...) from Google Place ID Finder: https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder . The app will auto-generate your review URL: https://search.google.com/local/writereview?placeid=YOUR-ID.",
+    "SATISFECHO_DELIVERY_TITLE": "Satisfecho Delivery",
+    "SATISFECHO_DELIVERY_DESC": "Tarifa fija y cobertura para el checkout de entrega propia (códigos postales y/o radio desde las coordenadas del restaurante).",
+    "DELIVERY_FEE_CENTS": "Gastos de envío (céntimos)",
+    "DELIVERY_FEE_HINT": "Importe añadido al total del checkout (0 = gratis). Ejemplo: 250 = 2,50.",
+    "DELIVERY_RADIUS": "Radio de entrega (metros)",
+    "DELIVERY_RADIUS_HINT": "Opcional. Usa latitud/longitud del restaurante. 0 para desactivar. El cliente debe compartir ubicación.",
+    "DELIVERY_POSTAL_CODES": "Códigos postales permitidos",
+    "DELIVERY_POSTAL_CODES_PH": "28001\n28002\n28003",
+    "DELIVERY_POSTAL_CODES_HINT": "Un código por línea (o separados por comas). Vacío = cualquier código. Si se define, el cliente debe indicar uno válido."
   },
   "PAYMENTS": {
     "PAYMENT": "Pago",
@@ -2518,5 +2538,20 @@
     "SUBSCRIBE": "Suscribirse ahora",
     "ALREADY_ACCESS": "Tu suscripción está activa.",
     "GO_DASHBOARD": "Abrir panel de personal"
+  },
+  "DELIVERY_TRACK": {
+    "TITLE": "Seguir tu pedido",
+    "LOADING": "Cargando estado del pedido…",
+    "MISSING_PARAMS": "Faltan datos para seguir el pedido.",
+    "NOT_FOUND": "Pedido no encontrado o enlace caducado.",
+    "REFRESH": "Actualizar estado",
+    "AWAITING_PAYMENT_HINT": "El pago sigue pendiente. Completa el pago para enviar el pedido a cocina.",
+    "CANCELLED_HINT": "Este pedido fue cancelado.",
+    "STATUS_AWAITING_PAYMENT": "Pendiente de pago",
+    "STATUS_RECEIVED": "Recibido",
+    "STATUS_PREPARING": "Preparando",
+    "STATUS_OUT_FOR_DELIVERY": "En camino",
+    "STATUS_DELIVERED": "Entregado",
+    "STATUS_CANCELLED": "Cancelado"
   }
 }

@@ -7,6 +7,7 @@ import json
 import logging
 import math
 import os
+import re
 import secrets
 import time as _time
 from calendar import monthrange
@@ -868,12 +869,12 @@ def _verify_staff_menu_token(table_token: str, token: str) -> bool:
         return False
 
 
-# Public Satisfecho Delivery checkout: short-lived token to pay without table_token
-PUBLIC_DELIVERY_ORDER_TOKEN_EXPIRY = 3600  # 1 hour
+# Public Satisfecho Delivery checkout + track: token covers pay (~1h) and track (~24h)
+PUBLIC_DELIVERY_ORDER_TOKEN_EXPIRY = 86400  # 24 hours
 
 
 def _sign_public_delivery_order_token(order_id: int, tenant_id: int) -> str:
-    """Signed token proving guest ownership of a public Satisfecho Delivery order for payment."""
+    """Signed token proving guest ownership of a public Satisfecho Delivery order for pay/track."""
     expiry = int(_time.time()) + PUBLIC_DELIVERY_ORDER_TOKEN_EXPIRY
     payload = f"sd:{order_id}:{tenant_id}:{expiry}"
     sig = hmac.new(
@@ -894,8 +895,10 @@ def _verify_public_delivery_order_token(order_id: int, tenant_id: int, token: st
     try:
         padded = token + "=" * (4 - len(token) % 4) if len(token) % 4 else token
         raw = base64.urlsafe_b64decode(padded)
-        payload_b, _, sig_b = raw.rpartition(b".")
-        if not payload_b or not sig_b:
+        # Payload is ASCII "sd:oid:tid:exp" (no dots). Split on the FIRST "." —
+        # rpartition breaks when the HMAC digest contains 0x2e.
+        payload_b, sep, sig_b = raw.partition(b".")
+        if sep != b"." or not payload_b or not sig_b:
             return False
         payload = payload_b.decode("utf-8")
         prefix, oid_str, tid_str, exp_str = payload.split(":", 3)
@@ -962,6 +965,19 @@ def _resolve_guest_payment_order(
     if not _verify_public_delivery_order_token(order.id, order.tenant_id, pot or ""):
         raise HTTPException(status_code=404, detail="Order not found")
     return order, None, "Satisfecho Delivery"
+
+
+def _guest_order_payable_total_cents(session: Session, order: models.Order) -> int:
+    """Line items + delivery fee for Satisfecho Delivery guest checkout totals."""
+    items = session.exec(
+        select(models.OrderItem).where(models.OrderItem.order_id == order.id)
+    ).all()
+    subtotal = sum((item.price_cents or 0) * item.quantity for item in items)
+    if _order_channel_value(order) == models.OrderChannel.satisfecho_delivery.value:
+        from app.delivery_order_service import order_delivery_fee_cents
+
+        return subtotal + order_delivery_fee_cents(order)
+    return subtotal
 
 
 def _take_away_table_token(session: Session, tenant_id: int) -> str | None:
@@ -1163,6 +1179,103 @@ def get_public_tenant_menu(
     return body
 
 
+@app.get(
+    "/public/tenants/{tenant_id}/satisfecho-delivery-config",
+    summary="Public Satisfecho Delivery fee and coverage config",
+    tags=["Public"],
+)
+@public_menu_ip_limit()
+def get_public_satisfecho_delivery_config(
+    request: Request,
+    response: Response,
+    tenant_id: int,
+    session: Session = Depends(get_session),
+) -> dict:
+    """Unauthenticated: fee + coverage hints for public checkout (no secrets)."""
+    tenant = session.get(models.Tenant, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    from app.delivery_order_service import (
+        parse_delivery_postal_codes,
+        tenant_delivery_fee_cents,
+    )
+
+    postal = parse_delivery_postal_codes(getattr(tenant, "delivery_postal_codes", None))
+    radius = getattr(tenant, "delivery_radius_meters", None)
+    has_center = tenant.latitude is not None and tenant.longitude is not None
+    radius_active = (
+        radius is not None and int(radius) > 0 and has_center
+    )
+    return {
+        "delivery_fee_cents": tenant_delivery_fee_cents(tenant),
+        "delivery_radius_meters": int(radius) if radius_active else None,
+        "postal_codes_required": bool(postal),
+        "postal_codes": postal if postal else [],
+        "restaurant_latitude": float(tenant.latitude) if radius_active else None,
+        "restaurant_longitude": float(tenant.longitude) if radius_active else None,
+        "currency_code": tenant.currency_code,
+        "currency": tenant.currency,
+    }
+
+
+@app.get(
+    "/public/orders/{order_id}/delivery-status",
+    summary="Public Satisfecho Delivery order track status",
+    tags=["Public"],
+)
+@public_menu_ip_limit()
+def get_public_delivery_order_status(
+    request: Request,
+    response: Response,
+    order_id: int,
+    public_order_token: str,
+    session: Session = Depends(get_session),
+) -> dict:
+    """Token-gated coarse live status for customer track page (no maps)."""
+    order = session.exec(
+        select(models.Order).where(models.Order.id == order_id)
+    ).first()
+    if (
+        not order
+        or order.deleted_at is not None
+        or _order_channel_value(order) != models.OrderChannel.satisfecho_delivery.value
+        or order.table_id is not None
+    ):
+        raise HTTPException(status_code=404, detail="Order not found")
+    if not _verify_public_delivery_order_token(
+        order.id, order.tenant_id, (public_order_token or "").strip()
+    ):
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    items = session.exec(
+        select(models.OrderItem).where(models.OrderItem.order_id == order.id)
+    ).all()
+    from app.delivery_order_service import (
+        customer_delivery_track_status,
+        order_delivery_fee_cents,
+    )
+
+    subtotal = sum((item.price_cents or 0) * item.quantity for item in items)
+    fee = order_delivery_fee_cents(order)
+    tenant = session.get(models.Tenant, order.tenant_id)
+    return {
+        "order_id": order.id,
+        "tenant_id": order.tenant_id,
+        "tenant_name": tenant.name if tenant else None,
+        "status": customer_delivery_track_status(order, list(items)),
+        "order_status": order.status.value if hasattr(order.status, "value") else str(order.status),
+        "paid": order.paid_at is not None,
+        "delivery_address": order.delivery_address,
+        "subtotal_cents": subtotal,
+        "delivery_fee_cents": fee,
+        "total_cents": subtotal + fee,
+        "created_at": order.created_at.isoformat() if order.created_at else None,
+        "updated_hint": order.paid_at.isoformat() if order.paid_at else (
+            order.created_at.isoformat() if order.created_at else None
+        ),
+    }
+
+
 @app.post(
     "/public/tenants/{tenant_id}/satisfecho-delivery",
     summary="Public Satisfecho Delivery checkout create",
@@ -1196,12 +1309,44 @@ def create_public_satisfecho_delivery_order(
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid customer_phone")
 
-    from app.delivery_order_service import create_satisfecho_delivery_order
+    from app.delivery_order_service import (
+        create_satisfecho_delivery_order,
+        order_delivery_fee_cents,
+        tenant_delivery_fee_cents,
+        validate_delivery_coverage,
+    )
+
+    coverage_err = validate_delivery_coverage(
+        tenant,
+        postal_code=body.postal_code,
+        delivery_latitude=body.delivery_latitude,
+        delivery_longitude=body.delivery_longitude,
+    )
+    if coverage_err == "postal_code_required":
+        raise HTTPException(status_code=400, detail="postal_code is required for delivery")
+    if coverage_err == "outside_delivery_zone":
+        raise HTTPException(
+            status_code=400, detail="Address is outside the delivery zone"
+        )
+    if coverage_err == "delivery_location_required":
+        raise HTTPException(
+            status_code=400,
+            detail="Delivery location is required to check delivery radius",
+        )
+    if coverage_err == "delivery_location_invalid":
+        raise HTTPException(status_code=400, detail="Invalid delivery location")
+    if coverage_err == "outside_delivery_radius":
+        raise HTTPException(
+            status_code=400, detail="Address is outside the delivery radius"
+        )
+    if coverage_err:
+        raise HTTPException(status_code=400, detail=str(coverage_err))
 
     lines = [
         {"product_id": it.product_id, "quantity": it.quantity, "notes": it.notes}
         for it in body.items
     ]
+    fee = tenant_delivery_fee_cents(tenant)
     order, outcome = create_satisfecho_delivery_order(
         session,
         tenant_id=tenant_id,
@@ -1212,6 +1357,7 @@ def create_public_satisfecho_delivery_order(
         notes=body.notes,
         courier_user_id=None,
         notify_kitchen=False,
+        delivery_fee_cents=fee,
     )
     if not order:
         detail = outcome.get("detail", "create_failed")
@@ -1228,7 +1374,9 @@ def create_public_satisfecho_delivery_order(
     items = session.exec(
         select(models.OrderItem).where(models.OrderItem.order_id == order.id)
     ).all()
-    total_cents = sum((item.price_cents or 0) * item.quantity for item in items)
+    subtotal_cents = sum((item.price_cents or 0) * item.quantity for item in items)
+    delivery_fee = order_delivery_fee_cents(order)
+    total_cents = subtotal_cents + delivery_fee
     revolut_configured = bool(
         (tenant.revolut_merchant_secret and tenant.revolut_merchant_secret.strip())
         or (settings.revolut_merchant_secret and settings.revolut_merchant_secret.strip())
@@ -1244,6 +1392,8 @@ def create_public_satisfecho_delivery_order(
         "customer_name": order.customer_name,
         "notes": order.notes,
         "table_id": order.table_id,
+        "subtotal_cents": subtotal_cents,
+        "delivery_fee_cents": delivery_fee,
         "total_cents": total_cents,
         "public_order_token": _sign_public_delivery_order_token(order.id, tenant_id),
         "stripe_publishable_key": stripe_key,
@@ -3339,6 +3489,41 @@ def update_tenant_settings(
         tenant.reservation_reminder_24h_enabled = tenant_update.reservation_reminder_24h_enabled
     if tenant_update.reservation_reminder_2h_enabled is not None:
         tenant.reservation_reminder_2h_enabled = tenant_update.reservation_reminder_2h_enabled
+
+    # Satisfecho Delivery fee + coverage
+    if tenant_update.delivery_fee_cents is not None:
+        fee = int(tenant_update.delivery_fee_cents)
+        if fee < 0:
+            raise HTTPException(status_code=400, detail="delivery_fee_cents must be non-negative")
+        tenant.delivery_fee_cents = fee
+    if tenant_update.delivery_radius_meters is not None:
+        r = int(tenant_update.delivery_radius_meters)
+        if r < 0:
+            raise HTTPException(
+                status_code=400, detail="delivery_radius_meters must be non-negative"
+            )
+        # 0 clears radius restriction
+        tenant.delivery_radius_meters = r if r > 0 else None
+    if tenant_update.delivery_postal_codes is not None:
+        from app.delivery_order_service import (
+            parse_delivery_postal_codes,
+            serialize_delivery_postal_codes,
+        )
+
+        raw = tenant_update.delivery_postal_codes
+        if isinstance(raw, str) and raw.strip() == "":
+            tenant.delivery_postal_codes = None
+        else:
+            # Accept JSON array string or newline/comma-separated list for convenience
+            codes: list[str] = []
+            if isinstance(raw, str):
+                stripped = raw.strip()
+                if stripped.startswith("["):
+                    codes = parse_delivery_postal_codes(stripped)
+                else:
+                    parts = re.split(r"[\n,;]+", stripped)
+                    codes = [p for p in parts if p.strip()]
+            tenant.delivery_postal_codes = serialize_delivery_postal_codes(codes)
 
     if tenant_update.tip_preset_percents is not None:
         tenant.tip_preset_percents = _tip_presets_from_request(
@@ -13978,12 +14163,8 @@ def create_payment_intent(
         public_order_token=public_order_token,
     )
 
-    # Calculate total from order items
-    items = session.exec(
-        select(models.OrderItem).where(models.OrderItem.order_id == order_id)
-    ).all()
-
-    total_cents = sum(item.price_cents * item.quantity for item in items)
+    # Calculate total from order items (+ delivery fee for Satisfecho Delivery)
+    total_cents = _guest_order_payable_total_cents(session, order)
 
     if total_cents <= 0:
         raise HTTPException(status_code=400, detail="Order has no items")
@@ -14096,11 +14277,8 @@ def confirm_payment(
                 detail="Payment mismatch: Payment does not belong to this order",
             )
 
-        # 2. Check amount
-        items = session.exec(
-            select(models.OrderItem).where(models.OrderItem.order_id == order_id)
-        ).all()
-        total_cents = sum(item.price_cents * item.quantity for item in items)
+        # 2. Check amount (includes delivery fee for Satisfecho Delivery)
+        total_cents = _guest_order_payable_total_cents(session, order)
 
         if intent.amount != total_cents:
             raise HTTPException(
@@ -14164,7 +14342,7 @@ def create_revolut_order(
     items = session.exec(
         select(models.OrderItem).where(models.OrderItem.order_id == order_id)
     ).all()
-    total_cents = sum(item.price_cents * item.quantity for item in items)
+    total_cents = _guest_order_payable_total_cents(session, order)
     if total_cents <= 0:
         raise HTTPException(status_code=400, detail="Order has no items")
 
@@ -14304,7 +14482,7 @@ def confirm_revolut_payment(
     items = session.exec(
         select(models.OrderItem).where(models.OrderItem.order_id == order_id)
     ).all()
-    total_cents = sum(item.price_cents * item.quantity for item in items)
+    total_cents = _guest_order_payable_total_cents(session, order)
     rev_amount = rev_order.get("order_amount") or rev_order.get("amount")
     if rev_amount is not None and int(rev_amount) != total_cents:
         raise HTTPException(

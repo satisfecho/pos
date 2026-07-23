@@ -8,6 +8,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.32] - 2026-07-23
+
+### Added
+
+- **Satisfecho Delivery zones, fees, and live tracking:** Restaurants can set a delivery fee, radius, and/or allowed postal codes; public checkout validates the address and includes the fee in payment totals; customers get a token-gated track page with live statuses (received → preparing → out for delivery → delivered) without maps (#306).
+
+### Fixed
+
+- **Public order token verify:** HMAC digests that contain `.` no longer fail intermittent token checks on public delivery flows.
+
 ## [2.1.31] - 2026-07-23
 
 ### Added

@@ -277,7 +277,18 @@
     "BACK_HOME": "Към началото",
     "INVALID_TENANT": "Невалидна връзка към ресторант.",
     "TENANT_NOT_FOUND": "Ресторантът не е намерен.",
-    "LOAD_FAILED": "Менюто за доставка не може да се зареди. Опитайте по-късно."
+    "LOAD_FAILED": "Менюто за доставка не може да се зареди. Опитайте по-късно.",
+    "POSTAL_CODE": "Postal code",
+    "POSTAL_REQUIRED": "Postal code is required for delivery to this restaurant.",
+    "POSTAL_HINT": "We deliver to these postal codes",
+    "LOCATION_REQUIRED": "Please share your location so we can check delivery distance.",
+    "SHARE_LOCATION": "Share my location",
+    "RADIUS_HINT": "Delivery is limited to about {{meters}} m from the restaurant.",
+    "OUTSIDE_ZONE": "Sorry — that postal code is outside our delivery zone.",
+    "OUTSIDE_RADIUS": "Sorry — that location is outside our delivery radius.",
+    "DELIVERY_FEE": "Delivery fee",
+    "SUBTOTAL": "Subtotal",
+    "TRACK_ORDER": "Track your order"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Отнемане и поръчване на дома",
@@ -1983,7 +1994,16 @@
     "RESERVATION_CONFIRMATION_SUBJECT_PLACEHOLDER": "напр. Запазили сме маса за вас",
     "RESERVATION_CONFIRMATION_BODY": "Тяло на имейл",
     "RESERVATION_CONFIRMATION_BODY_HINT": "Позволени имена (всяко в двойни фигурни скоби): restaurant_name, customer_name, date, time, party_size, reservation_url, reservation_link_block_html (линк в HTML имейли; празно ако няма линк за самообслужване), cancellation_policy, prepayment_text, prepayment_notice, dress_code, arrival_note, restaurant_phone, restaurant_email, restaurant_contact_block_html (блок телефон и имейл с tel/mailto в HTML и обикновен текст; празно ако липсват и двете), google_maps_link_block_html, openstreetmap_link_block_html (връзки към карти когато URL са зададени в контактна информация; иначе празно). Използвайте cancellation_policy и подобни за текст от настройките за резервации.",
-    "PUBLIC_GOOGLE_REVIEW_URL_HINT": "Paste the Google Place ID (e.g., 0x...) from Google Place ID Finder: https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder . The app will auto-generate your review URL: https://search.google.com/local/writereview?placeid=YOUR-ID."
+    "PUBLIC_GOOGLE_REVIEW_URL_HINT": "Paste the Google Place ID (e.g., 0x...) from Google Place ID Finder: https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder . The app will auto-generate your review URL: https://search.google.com/local/writereview?placeid=YOUR-ID.",
+    "SATISFECHO_DELIVERY_TITLE": "Satisfecho Delivery",
+    "SATISFECHO_DELIVERY_DESC": "Flat delivery fee and coverage for first-party delivery checkout (postal codes and/or radius from restaurant coordinates).",
+    "DELIVERY_FEE_CENTS": "Delivery fee (cents)",
+    "DELIVERY_FEE_HINT": "Amount added to guest checkout totals (0 = free). Example: 250 = 2.50.",
+    "DELIVERY_RADIUS": "Delivery radius (meters)",
+    "DELIVERY_RADIUS_HINT": "Optional. Uses restaurant latitude/longitude from location settings. Set 0 to disable. Guests must share location at checkout.",
+    "DELIVERY_POSTAL_CODES": "Allowed postal codes",
+    "DELIVERY_POSTAL_CODES_PH": "28001\n28002\n28003",
+    "DELIVERY_POSTAL_CODES_HINT": "One code per line (or comma-separated). Leave empty to allow any postal code. When set, guests must enter a matching code."
   },
   "PAYMENTS": {
     "PAYMENT": "Плащане:",
@@ -2507,5 +2527,20 @@
     "SUBSCRIBE": "Абонирай се сега",
     "ALREADY_ACCESS": "Абонаментът ви е активен.",
     "GO_DASHBOARD": "Отвори таблото"
+  },
+  "DELIVERY_TRACK": {
+    "TITLE": "Track your order",
+    "LOADING": "Loading order status…",
+    "MISSING_PARAMS": "Missing order tracking details.",
+    "NOT_FOUND": "Order not found or link expired.",
+    "REFRESH": "Refresh status",
+    "AWAITING_PAYMENT_HINT": "Payment is still pending. Complete checkout to send the order to the kitchen.",
+    "CANCELLED_HINT": "This order was cancelled.",
+    "STATUS_AWAITING_PAYMENT": "Awaiting payment",
+    "STATUS_RECEIVED": "Received",
+    "STATUS_PREPARING": "Preparing",
+    "STATUS_OUT_FOR_DELIVERY": "Out for delivery",
+    "STATUS_DELIVERED": "Delivered",
+    "STATUS_CANCELLED": "Cancelled"
   }
 }

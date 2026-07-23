@@ -277,7 +277,18 @@
     "BACK_HOME": "Zur Startseite",
     "INVALID_TENANT": "Ungültiger Restaurant-Link.",
     "TENANT_NOT_FOUND": "Restaurant nicht gefunden.",
-    "LOAD_FAILED": "Liefermenü konnte nicht geladen werden. Bitte später erneut versuchen."
+    "LOAD_FAILED": "Liefermenü konnte nicht geladen werden. Bitte später erneut versuchen.",
+    "POSTAL_CODE": "Postleitzahl",
+    "POSTAL_REQUIRED": "Für die Lieferung ist eine Postleitzahl erforderlich.",
+    "POSTAL_HINT": "Wir liefern in diese Postleitzahlen",
+    "LOCATION_REQUIRED": "Bitte Standort teilen, damit wir die Lieferentfernung prüfen können.",
+    "SHARE_LOCATION": "Standort teilen",
+    "RADIUS_HINT": "Lieferung ist auf ca. {{meters}} m um das Restaurant begrenzt.",
+    "OUTSIDE_ZONE": "Diese Postleitzahl liegt außerhalb unseres Liefergebiets.",
+    "OUTSIDE_RADIUS": "Dieser Standort liegt außerhalb unseres Lieferadius.",
+    "DELIVERY_FEE": "Liefergebühr",
+    "SUBTOTAL": "Zwischensumme",
+    "TRACK_ORDER": "Bestellung verfolgen"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Mitnahme & Lieferservice",
@@ -1883,7 +1894,16 @@
     "CLOCK_QR_TOKEN_LOADING": "Token wird geladen…",
     "PUBLIC_GOOGLE_REVIEW_URL_HINT": "Paste the Google Place ID (e.g., 0x...) from Google Place ID Finder: https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder . The app will auto-generate your review URL: https://search.google.com/local/writereview?placeid=YOUR-ID.",
     "PUBLIC_GOOGLE_REVIEW_DESCRIPTION": "Fügen Sie einen Link hinzu, damit Gäste nach dem privaten Feedback eine öffentliche Google-Bewertung abgeben können.",
-    "PUBLIC_GOOGLE_REVIEW_INSTRUCTIONS": "Öffnen Sie https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder im Browser, kopieren Sie dann die Place-ID Ihres Ortes und fügen Sie sie unten ein."
+    "PUBLIC_GOOGLE_REVIEW_INSTRUCTIONS": "Öffnen Sie https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder im Browser, kopieren Sie dann die Place-ID Ihres Ortes und fügen Sie sie unten ein.",
+    "SATISFECHO_DELIVERY_TITLE": "Satisfecho Delivery",
+    "SATISFECHO_DELIVERY_DESC": "Pauschale Liefergebühr und Abdeckung für den eigenen Liefer-Checkout (PLZ und/oder Radius).",
+    "DELIVERY_FEE_CENTS": "Liefergebühr (Cent)",
+    "DELIVERY_FEE_HINT": "Betrag zum Checkout-Total (0 = gratis). Beispiel: 250 = 2,50.",
+    "DELIVERY_RADIUS": "Lieferadius (Meter)",
+    "DELIVERY_RADIUS_HINT": "Optional. Nutzt Restaurant-Koordinaten. 0 deaktiviert. Gäste müssen Standort teilen.",
+    "DELIVERY_POSTAL_CODES": "Erlaubte Postleitzahlen",
+    "DELIVERY_POSTAL_CODES_PH": "28001\n28002\n28003",
+    "DELIVERY_POSTAL_CODES_HINT": "Eine PLZ pro Zeile (oder kommagetrennt). Leer = alle erlaubt."
   },
   "PAYMENTS": {
     "PAYMENT": "Zahlung",
@@ -2441,5 +2461,20 @@
     "SUBSCRIBE": "Jetzt abonnieren",
     "ALREADY_ACCESS": "Dein Abo ist aktiv.",
     "GO_DASHBOARD": "Mitarbeiter-Dashboard öffnen"
+  },
+  "DELIVERY_TRACK": {
+    "TITLE": "Bestellung verfolgen",
+    "LOADING": "Status wird geladen…",
+    "MISSING_PARAMS": "Tracking-Angaben fehlen.",
+    "NOT_FOUND": "Bestellung nicht gefunden oder Link abgelaufen.",
+    "REFRESH": "Status aktualisieren",
+    "AWAITING_PAYMENT_HINT": "Zahlung ausstehend. Checkout abschließen, damit die Küche benachrichtigt wird.",
+    "CANCELLED_HINT": "Diese Bestellung wurde storniert.",
+    "STATUS_AWAITING_PAYMENT": "Zahlung ausstehend",
+    "STATUS_RECEIVED": "Eingegangen",
+    "STATUS_PREPARING": "In Zubereitung",
+    "STATUS_OUT_FOR_DELIVERY": "Unterwegs",
+    "STATUS_DELIVERED": "Zugestellt",
+    "STATUS_CANCELLED": "Storniert"
   }
 }

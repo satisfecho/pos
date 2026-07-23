@@ -277,7 +277,18 @@
     "BACK_HOME": "होम पर वापस",
     "INVALID_TENANT": "अमान्य रेस्तरां लिंक।",
     "TENANT_NOT_FOUND": "रेस्तरां नहीं मिला।",
-    "LOAD_FAILED": "डिलीवरी मेनू लोड नहीं हो सका। बाद में पुनः प्रयास करें।"
+    "LOAD_FAILED": "डिलीवरी मेनू लोड नहीं हो सका। बाद में पुनः प्रयास करें।",
+    "POSTAL_CODE": "Postal code",
+    "POSTAL_REQUIRED": "Postal code is required for delivery to this restaurant.",
+    "POSTAL_HINT": "We deliver to these postal codes",
+    "LOCATION_REQUIRED": "Please share your location so we can check delivery distance.",
+    "SHARE_LOCATION": "Share my location",
+    "RADIUS_HINT": "Delivery is limited to about {{meters}} m from the restaurant.",
+    "OUTSIDE_ZONE": "Sorry — that postal code is outside our delivery zone.",
+    "OUTSIDE_RADIUS": "Sorry — that location is outside our delivery radius.",
+    "DELIVERY_FEE": "Delivery fee",
+    "SUBTOTAL": "Subtotal",
+    "TRACK_ORDER": "Track your order"
   },
   "DASHBOARD": {
     "TITLE": "डैशबोर्ड",
@@ -1783,7 +1794,16 @@
     "RESERVATION_SLOT_MINUTES_HINT": "सार्वजनिक ग्रिड पर प्रस्तावित शुरुआती समय के बीच अंतराल। खाली या 0 = 15 मिनट।",
     "RESERVATION_MAX_GUESTS_PER_SLOT": "प्रति स्लॉट अधिकतम अतिथि (वैकल्पिक)",
     "RESERVATION_MAX_GUESTS_PER_SLOT_HINT": "एक ही शुरुआती समय के लिए कुल अतिथियों की सीमा (मेज़ क्षमता के अलावा)। अतिरिक्त सीमा नहीं के लिए खाली।",
-    "PUBLIC_GOOGLE_REVIEW_URL_HINT": "Paste the Google Place ID (e.g., 0x...) from Google Place ID Finder: https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder . The app will auto-generate your review URL: https://search.google.com/local/writereview?placeid=YOUR-ID."
+    "PUBLIC_GOOGLE_REVIEW_URL_HINT": "Paste the Google Place ID (e.g., 0x...) from Google Place ID Finder: https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder . The app will auto-generate your review URL: https://search.google.com/local/writereview?placeid=YOUR-ID.",
+    "SATISFECHO_DELIVERY_TITLE": "Satisfecho Delivery",
+    "SATISFECHO_DELIVERY_DESC": "Flat delivery fee and coverage for first-party delivery checkout (postal codes and/or radius from restaurant coordinates).",
+    "DELIVERY_FEE_CENTS": "Delivery fee (cents)",
+    "DELIVERY_FEE_HINT": "Amount added to guest checkout totals (0 = free). Example: 250 = 2.50.",
+    "DELIVERY_RADIUS": "Delivery radius (meters)",
+    "DELIVERY_RADIUS_HINT": "Optional. Uses restaurant latitude/longitude from location settings. Set 0 to disable. Guests must share location at checkout.",
+    "DELIVERY_POSTAL_CODES": "Allowed postal codes",
+    "DELIVERY_POSTAL_CODES_PH": "28001\n28002\n28003",
+    "DELIVERY_POSTAL_CODES_HINT": "One code per line (or comma-separated). Leave empty to allow any postal code. When set, guests must enter a matching code."
   },
   "PAYMENTS": {
     "PAYMENT": "भुगतान",
@@ -2341,5 +2361,20 @@
     "SUBSCRIBE": "अभी सब्सक्राइब करें",
     "ALREADY_ACCESS": "आपकी सदस्यता सक्रिय है।",
     "GO_DASHBOARD": "स्टाफ डैशबोर्ड खोलें"
+  },
+  "DELIVERY_TRACK": {
+    "TITLE": "Track your order",
+    "LOADING": "Loading order status…",
+    "MISSING_PARAMS": "Missing order tracking details.",
+    "NOT_FOUND": "Order not found or link expired.",
+    "REFRESH": "Refresh status",
+    "AWAITING_PAYMENT_HINT": "Payment is still pending. Complete checkout to send the order to the kitchen.",
+    "CANCELLED_HINT": "This order was cancelled.",
+    "STATUS_AWAITING_PAYMENT": "Awaiting payment",
+    "STATUS_RECEIVED": "Received",
+    "STATUS_PREPARING": "Preparing",
+    "STATUS_OUT_FOR_DELIVERY": "Out for delivery",
+    "STATUS_DELIVERED": "Delivered",
+    "STATUS_CANCELLED": "Cancelled"
   }
 }

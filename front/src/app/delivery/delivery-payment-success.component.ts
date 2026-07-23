@@ -17,7 +17,14 @@ import { ApiService } from '../services/api.service';
       } @else {
         <h1>{{ 'PAYMENTS.SUCCESS_TITLE' | translate }}</h1>
         <p>{{ 'DELIVERY_CHECKOUT.SUCCESS_MESSAGE' | translate }}</p>
-        <a [routerLink]="['/delivery', tenantId()]" class="btn btn-primary">
+        <a
+          [routerLink]="['/delivery', tenantId(), 'track']"
+          [queryParams]="{ order_id: orderId(), public_order_token: publicToken() }"
+          class="btn btn-primary"
+        >
+          {{ 'DELIVERY_CHECKOUT.TRACK_ORDER' | translate }}
+        </a>
+        <a [routerLink]="['/delivery', tenantId()]" class="btn btn-secondary">
           {{ 'DELIVERY_CHECKOUT.ORDER_AGAIN' | translate }}
         </a>
       }
@@ -33,6 +40,7 @@ import { ApiService } from '../services/api.service';
         justify-content: center;
         padding: 1.5rem;
         text-align: center;
+        gap: 0.5rem;
       }
       .delivery-payment-success-page h1 {
         margin-bottom: 0.5rem;
@@ -57,6 +65,8 @@ export class DeliveryPaymentSuccessComponent implements OnInit {
   error = signal(false);
   errorMessage = signal('');
   tenantId = signal(0);
+  orderId = signal(0);
+  publicToken = signal('');
 
   ngOnInit(): void {
     const tidParam = this.route.snapshot.paramMap.get('tenantId');
@@ -70,6 +80,7 @@ export class DeliveryPaymentSuccessComponent implements OnInit {
       return;
     }
     this.tenantId.set(tid);
+    this.publicToken.set(publicToken);
     const orderIdNum = parseInt(orderId, 10);
     if (Number.isNaN(orderIdNum)) {
       this.error.set(true);
@@ -77,6 +88,7 @@ export class DeliveryPaymentSuccessComponent implements OnInit {
       this.loading.set(false);
       return;
     }
+    this.orderId.set(orderIdNum);
     this.api.confirmRevolutPayment(orderIdNum, null, publicToken).subscribe({
       next: () => this.loading.set(false),
       error: (err) => {

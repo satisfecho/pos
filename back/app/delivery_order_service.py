@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import json
+import math
+import re
 from datetime import date, datetime, timezone
 
 from sqlalchemy import select
@@ -12,6 +15,160 @@ from app.order_notes import normalize_order_note
 
 # Marks guest checkout creates (notify_kitchen=False) for TTL unpaid cleanup.
 PUBLIC_SATISFECHO_DELIVERY_SESSION_ID = "public_satisfecho_delivery"
+
+
+def normalize_postal_code(raw: str | None) -> str:
+    """Uppercase alphanumeric postal code (strip spaces and hyphens)."""
+    if not raw or not isinstance(raw, str):
+        return ""
+    return re.sub(r"[\s\-]", "", raw.strip()).upper()
+
+
+def parse_delivery_postal_codes(raw: str | None) -> list[str]:
+    """Parse tenant.delivery_postal_codes JSON array into normalized codes."""
+    if not raw or not isinstance(raw, str) or not raw.strip():
+        return []
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return []
+    if not isinstance(data, list):
+        return []
+    out: list[str] = []
+    seen: set[str] = set()
+    for item in data:
+        code = normalize_postal_code(str(item) if item is not None else "")
+        if code and code not in seen:
+            seen.add(code)
+            out.append(code)
+    return out
+
+
+def serialize_delivery_postal_codes(codes: list[str] | None) -> str | None:
+    if not codes:
+        return None
+    normalized = parse_delivery_postal_codes(json.dumps(codes))
+    return json.dumps(normalized) if normalized else None
+
+
+def haversine_meters(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Great-circle distance in meters."""
+    r = 6371000.0
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlmb = math.radians(lon2 - lon1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dlmb / 2) ** 2
+    return 2 * r * math.asin(min(1.0, math.sqrt(a)))
+
+
+def validate_delivery_coverage(
+    tenant: models.Tenant,
+    *,
+    postal_code: str | None = None,
+    delivery_latitude: float | None = None,
+    delivery_longitude: float | None = None,
+) -> str | None:
+    """
+    Return an error detail string if address is outside configured coverage, else None.
+    Postal-code list and/or radius (when restaurant lat/lng set) are enforced when configured.
+    """
+    allowed = parse_delivery_postal_codes(getattr(tenant, "delivery_postal_codes", None))
+    if allowed:
+        code = normalize_postal_code(postal_code)
+        if not code:
+            return "postal_code_required"
+        if code not in allowed:
+            return "outside_delivery_zone"
+
+    radius = getattr(tenant, "delivery_radius_meters", None)
+    if radius is not None and int(radius) > 0:
+        t_lat = getattr(tenant, "latitude", None)
+        t_lon = getattr(tenant, "longitude", None)
+        if t_lat is None or t_lon is None:
+            # Radius configured but restaurant has no center — skip radius check.
+            return None
+        if delivery_latitude is None or delivery_longitude is None:
+            return "delivery_location_required"
+        try:
+            dist = haversine_meters(
+                float(t_lat),
+                float(t_lon),
+                float(delivery_latitude),
+                float(delivery_longitude),
+            )
+        except (TypeError, ValueError):
+            return "delivery_location_invalid"
+        if dist > float(int(radius)):
+            return "outside_delivery_radius"
+    return None
+
+
+def tenant_delivery_fee_cents(tenant: models.Tenant | None) -> int:
+    if tenant is None:
+        return 0
+    fee = getattr(tenant, "delivery_fee_cents", 0) or 0
+    return max(0, int(fee))
+
+
+def order_delivery_fee_cents(order: models.Order | None) -> int:
+    if order is None:
+        return 0
+    fee = getattr(order, "delivery_fee_cents", 0) or 0
+    return max(0, int(fee))
+
+
+def customer_delivery_track_status(
+    order: models.Order,
+    items: list[models.OrderItem],
+) -> str:
+    """
+    Coarse guest-facing status for track page:
+    awaiting_payment | received | preparing | out_for_delivery | delivered | cancelled
+    """
+    status_val = (
+        order.status.value if hasattr(order.status, "value") else str(order.status)
+    )
+    if status_val == models.OrderStatus.cancelled.value:
+        return "cancelled"
+    if status_val == models.OrderStatus.completed.value:
+        return "delivered"
+    if status_val == models.OrderStatus.out_for_delivery.value:
+        return "out_for_delivery"
+
+    active = [
+        i
+        for i in items
+        if (
+            i.status.value
+            if hasattr(i.status, "value")
+            else str(i.status)
+        )
+        != models.OrderItemStatus.cancelled.value
+    ]
+    if active and all(
+        (
+            i.status.value
+            if hasattr(i.status, "value")
+            else str(i.status)
+        )
+        == models.OrderItemStatus.delivered.value
+        for i in active
+    ):
+        return "delivered"
+
+    unpaid = order.paid_at is None and status_val == models.OrderStatus.pending.value
+    if unpaid:
+        return "awaiting_payment"
+
+    item_statuses = {
+        (i.status.value if hasattr(i.status, "value") else str(i.status)) for i in active
+    }
+    if item_statuses & {
+        models.OrderItemStatus.preparing.value,
+        models.OrderItemStatus.ready.value,
+    }:
+        return "preparing"
+    return "received"
 
 
 def _tax_amount_cents_inclusive(price_cents: int, quantity: int, rate_percent: int) -> int:
@@ -246,6 +403,7 @@ def create_satisfecho_delivery_order(
     notes: str | None = None,
     courier_user_id: int | None = None,
     notify_kitchen: bool = True,
+    delivery_fee_cents: int | None = None,
 ) -> tuple[models.Order | None, dict]:
     """
     Create a first-party Satisfecho Delivery order (no marketplace integration, no table).
@@ -272,6 +430,13 @@ def create_satisfecho_delivery_order(
         return None, err
     assert resolved_lines is not None
 
+    tenant = session.get(models.Tenant, tenant_id)
+    fee = (
+        max(0, int(delivery_fee_cents))
+        if delivery_fee_cents is not None
+        else tenant_delivery_fee_cents(tenant)
+    )
+
     order_date = datetime.now(timezone.utc).date()
     order = models.Order(
         table_id=None,
@@ -286,6 +451,7 @@ def create_satisfecho_delivery_order(
         delivery_address=address,
         customer_phone=customer_phone,
         courier_user_id=courier_user_id,
+        delivery_fee_cents=fee,
     )
     session.add(order)
     session.flush()
