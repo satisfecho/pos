@@ -93,8 +93,9 @@
     "2026-07-23T20:04:30Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased empty post-2.1.30; NEW backlog\u2248108; unqueued themes: demo courier seed, check demo delivery orders, README Documentation Jul guides; queued 0 FEAT + 3 NEW",
     "2026-07-23T20:28:07Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased empty post-2.1.31; NEW backlog\u2248113; unqueued themes: check_demo_waiting_list after 2.1.31 seed, refresh 0001 daily-reset scope (Delivery+waitlist); deferred 3rd task (deep NEW + owned SIGNAL basenames); queued 0 FEAT + 2 NEW",
     "2026-07-23T20:37:27Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased empty post-2.1.31; NEW backlog=115; stamp-only rule queued (2014); unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
-    "2026-07-23T21:04:44Z: docs_stale\u00d714 + changelog_sparse owned (Unreleased empty post-2.1.32 cut); demo_tables_check=ok; NEW backlog\u2248115; unqueued post-#306: delivery-track alias/index, demo zone/fee seed, retarget 1734 0053 blurb; queued 0 FEAT + 3 NEW"
+    "2026-07-23T21:04:44Z: docs_stale\u00d714 + changelog_sparse owned (Unreleased empty post-2.1.32 cut); demo_tables_check=ok; NEW backlog\u2248115; unqueued post-#306: delivery-track alias/index, demo zone/fee seed, retarget 1734 0053 blurb; queued 0 FEAT + 3 NEW",
+    "2026-07-23T21:12:40Z: docs_stale\u00d714 + changelog_sparse owned (Unreleased empty post-2.1.32 cut); demo_tables_check=ok; NEW\u2248118; unqueued post-#306: SECURITY zones/track TTL, 0020 config/status GETs, /features Delivery card; queued 0 FEAT + 3 NEW"
   ],
-  "last_run": "2026-07-23T21:04:47Z",
+  "last_run": "2026-07-23T21:13:47Z",
   "last_signals": 15
 }
