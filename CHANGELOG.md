@@ -8,6 +8,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Added
+
+- **Unpaid public delivery cleanup cron:** Documented amvara9 host cron (hourly UTC) and added `scripts/cleanup-unpaid-public-delivery-on-server.sh` so abandoned unpaid public Satisfecho Delivery checkouts are cleaned on all tenants (separate from tenant-1 demo reset).
+
 ## [2.1.27] - 2026-07-23
 
 ### Added

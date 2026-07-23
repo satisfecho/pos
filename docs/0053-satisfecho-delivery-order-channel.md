@@ -78,7 +78,7 @@ docker compose exec back python -m app.seeds.cleanup_unpaid_public_delivery --dr
 docker compose exec back python -m app.seeds.cleanup_unpaid_public_delivery --ttl-hours 4 --tenant-id 1
 ```
 
-Optional ops: schedule the same command on a host cron (separate from tenant-1 demo reset). Demo reset already wipes tenant 1 orders, so it does not need this hook.
+Optional ops: schedule on amvara9 host cron via `./scripts/cleanup-unpaid-public-delivery-on-server.sh` (hourly UTC). Install steps and copy-paste crontab: **`docs/0001-ci-cd-amvara9.md`** § Unpaid public Satisfecho Delivery cleanup. Separate from tenant-1 demo reset — demo reset already wipes tenant 1 orders, so it does not need this hook.
 
 Tests: `back/tests/test_cleanup_unpaid_public_delivery.py`.
 
