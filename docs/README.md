@@ -24,8 +24,8 @@ This folder contains deployment guides, feature documentation, implementation pl
 
 | Doc | Description |
 |-----|-------------|
-| [0001-ci-cd-amvara9.md](0001-ci-cd-amvara9.md) | CI/CD: deploy to amvara9 on push to master (GitHub Actions, SSH key, secrets). |
-| [0004-deployment.md](0004-deployment.md) | Deployment guide: configuration (API_URL, WS_URL, CORS), deploy steps (git pull, compose, migrations, seeds). |
+| [0001-ci-cd-amvara9.md](0001-ci-cd-amvara9.md) | CI/CD: deploy to amvara9 on push to master (GitHub Actions, SSH key, secrets); daily demo data reset cron for tenant 1. |
+| [0004-deployment.md](0004-deployment.md) | Deployment guide: configuration (API_URL, WS_URL, CORS), deploy steps (git pull, compose, migrations, seeds, optional demo reset). |
 | [0024-deploy-css-fix-amvara9.md](0024-deploy-css-fix-amvara9.md) | Fix for stale front build on deploy (force front image rebuild, Cache-Control for index.html). |
 | [0026-haproxy-ssl-amvara9.md](0026-haproxy-ssl-amvara9.md) | HAProxy SSL on amvara9: durable cert path (certbot/haproxy-certs), reload without overwriting certs. |
 | [0029-deployment-images-plan-next-month.md](0029-deployment-images-plan-next-month.md) | **Todo (next month):** Deploy via images (CI build → registry → pull on server), two-slot so production stays up, CI production build to catch errors. |
@@ -51,6 +51,10 @@ This folder contains deployment guides, feature documentation, implementation pl
 | [0016-reports.md](0016-reports.md) | Reports (Sales & Revenue): date range, summary, by product/category/table/waiter, CSV/Excel export. |
 | [0017-billing-customers-factura.md](0017-billing-customers-factura.md) | Billing customers (Factura): register company details, search, print invoice with “Bill to”. |
 | [0028-tenant-public-branding.md](0028-tenant-public-branding.md) | Tenant public branding: background colour and header image for book, menu, reservation-view. |
+| [0015-platform-operator-portal.md](0015-platform-operator-portal.md) | Platform operator portal: SaaS metrics and tenant oversight. |
+| [0052-saas-signup-paywall.md](0052-saas-signup-paywall.md) | Hard paywall for restaurant signups: trial/subscribe before staff app (issue #296). |
+| [0053-satisfecho-delivery-order-channel.md](0053-satisfecho-delivery-order-channel.md) | First-party Satisfecho Delivery on Order: channel, address, phone, courier API (issue #297). |
+| [0054-restaurant-groups.md](0054-restaurant-groups.md) | Restaurant groups: multi-location join codes; optional shared billing customers/products (issue #283). |
 | [REVOLUT.md](REVOLUT.md) | Revolut Merchant API: checkout extension, sandbox CSR, redirect URLs, tenant payment setup. |
 
 ---

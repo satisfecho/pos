@@ -7,7 +7,7 @@
 #   MARKETING_REPO — owner/name (required)
 #   MARKETING_BRANCH — default development
 #   MARKETING_ARTIFACT_NAME — artifact name from workflow (default dist)
-#   TARGET_DIR — relative to repo root, e.g. front/sites/gustazo
+#   TARGET_DIR — relative to repo root, e.g. front/sites/wimpi
 #   MARKETING_SKIP=1 — no-op success
 #   POS_REPO_ROOT — repo root (default: parent of scripts/)
 
@@ -24,7 +24,7 @@ ARTIFACT_NAME="${MARKETING_ARTIFACT_NAME:-dist}"
 [[ -n "$ARTIFACT_NAME" ]] || ARTIFACT_NAME="dist"
 TOKEN="${MARKETING_ARTIFACT_TOKEN:-${GH_TOKEN:-${GUSTAZO_ARTIFACT_TOKEN:-}}}"
 
-if [[ "${MARKETING_SKIP:-0}" == "1" ]] || [[ "${GUSTAZO_SKIP:-0}" == "1" ]]; then
+if [[ "${MARKETING_SKIP:-0}" == "1" ]]; then
   echo "[fetch-marketing] SKIP=1 — skipping."
   exit 0
 fi

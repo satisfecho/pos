@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 20" aria-hidden="true">
+  <!-- Senyera (bandera de Catalunya): 9 franges alternes groc / vermell -->
+  <rect width="30" height="2.222" y="0" fill="#FCDD09"/>
+  <rect width="30" height="2.222" y="2.222" fill="#DA121A"/>
+  <rect width="30" height="2.222" y="4.444" fill="#FCDD09"/>
+  <rect width="30" height="2.222" y="6.667" fill="#DA121A"/>
+  <rect width="30" height="2.222" y="8.889" fill="#FCDD09"/>
+  <rect width="30" height="2.222" y="11.111" fill="#DA121A"/>
+  <rect width="30" height="2.222" y="13.333" fill="#FCDD09"/>
+  <rect width="30" height="2.222" y="15.556" fill="#DA121A"/>
+  <rect width="30" height="2.222" y="17.778" fill="#FCDD09"/>
+</svg>

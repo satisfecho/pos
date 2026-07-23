@@ -38,7 +38,7 @@ You live in **`~/projects/pos2`**. You may edit **`config/`**, **`front/sites/`*
      "artifact": "wimpi-satisfecho-deploy"
    }
    ```
-2. Create **`front/sites/wimpi/index.html`** placeholder (see **`front/sites/gustazo/index.html`**).
+2. Create **`front/sites/wimpi/index.html`** placeholder (see **`front/sites/antillana/index.html`** or any other slug).
 3. Commit on **`development`** with message explaining registration.
 4. **Production:** merge **`development` → `master`** per **`.cursor/rules/git-development-branch-workflow.mdc`** (new customer-facing site qualifies as production-impacting). Push **`master`**, then trigger deploy (push may already run workflow; otherwise **`trigger-marketing-deploy.sh`**).
 5. Verify: `curl -sf -o /dev/null -w "%{http_code}" https://www.satisfecho.de/wimpi/` → **200** and HTML must not contain **`bundle not loaded`**.

@@ -35,11 +35,42 @@ async function main() {
     await page.type('input#password', PASSWORD);
     await page.click('button[type="submit"]');
     await page.waitForFunction(() => window.location.pathname === '/platform', { timeout: 15000 });
+    await page.waitForSelector('.metric-card', { timeout: 15000 });
     const title = await page.$eval('h1', (el) => el.textContent?.trim() || '');
     if (!title) throw new Error('Dashboard title missing');
     const metrics = await page.$$('.metric-card');
     if (metrics.length < 4) throw new Error(`Expected 4 metric cards, got ${metrics.length}`);
     console.log('OK: platform operator login and dashboard');
+
+    await page.waitForSelector('a.tenant-link', { timeout: 10000 });
+    await page.click('a.tenant-link');
+    await page.waitForFunction(
+      () => /^\/platform\/tenants\/\d+$/.test(window.location.pathname),
+      { timeout: 15000 },
+    );
+    const tenantId = await page.evaluate(() => {
+      const m = window.location.pathname.match(/\/platform\/tenants\/(\d+)$/);
+      return m ? m[1] : null;
+    });
+    if (!tenantId) throw new Error('Tenant detail URL missing tenant id');
+
+    await page.waitForSelector(`a.link-btn[href$="/delivery/${tenantId}"]`, { timeout: 10000 });
+    const deliveryHref = await page.$eval(
+      `a.link-btn[href$="/delivery/${tenantId}"]`,
+      (el) => el.getAttribute('href') || '',
+    );
+    const expectedSuffix = `/delivery/${tenantId}`;
+    if (!deliveryHref.endsWith(expectedSuffix)) {
+      throw new Error(`Expected delivery link ending with ${expectedSuffix}, got ${deliveryHref}`);
+    }
+    const deliveryLabel = await page.$eval(
+      `a.link-btn[href$="/delivery/${tenantId}"]`,
+      (el) => el.textContent?.trim() || '',
+    );
+    if (!deliveryLabel || deliveryLabel.includes('LINK_DELIVERY')) {
+      throw new Error(`Delivery link label missing or untranslated: ${deliveryLabel}`);
+    }
+    console.log(`OK: tenant detail delivery link → ${deliveryHref}`);
   } finally {
     await browser.close();
   }

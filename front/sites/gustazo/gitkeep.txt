@@ -1,3 +1,0 @@
-This file keeps the gustazo directory in Git. Populate with a CI artifact or local
-ng build (see scripts/sync-all-marketing-sites.sh). Do not commit downloaded bundle
-files.

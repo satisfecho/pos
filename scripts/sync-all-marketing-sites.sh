@@ -2,10 +2,9 @@
 # Populate front/sites/<slug>/ from CI artifacts (token) or local ng build (sibling ../NNN_slug repos).
 # Reads config/marketing-sites.json; optional sibling auto-discovery for folders matching ^[0-9]{3}_*
 #
-# Env: POS_REPO_ROOT, MARKETING_ARTIFACT_TOKEN / GUSTAZO_ARTIFACT_TOKEN / GH_TOKEN,
-#      SYNC_MARKETING_ON_START (default 1), SYNC_GUSTAZO_ON_START fallback,
-#      MARKETING_SYNC_FORCE / GUSTAZO_SYNC_FORCE, MARKETING_REFRESH_EVERY_START,
-#      MARKETING_NG_CONFIGURATION (default production)
+# Env: POS_REPO_ROOT, MARKETING_ARTIFACT_TOKEN / GH_TOKEN (legacy: GUSTAZO_ARTIFACT_TOKEN),
+#      SYNC_MARKETING_ON_START (default 1; legacy SYNC_GUSTAZO_ON_START),
+#      MARKETING_SYNC_FORCE, MARKETING_REFRESH_EVERY_START, MARKETING_NG_CONFIGURATION
 
 set -euo pipefail
 
@@ -16,7 +15,7 @@ PLACEHOLDER_SIG='bundle not loaded'
 log() { echo "[marketing-sync] $*"; }
 
 if [[ "${SYNC_MARKETING_ON_START:-${SYNC_GUSTAZO_ON_START:-1}}" != "1" ]]; then
-  log "disabled (SYNC_MARKETING_ON_START / SYNC_GUSTAZO_ON_START)"
+  log "disabled (SYNC_MARKETING_ON_START)"
   exit 0
 fi
 
@@ -45,6 +44,10 @@ slug_seen() {
 
 slug_mark() {
   echo "$1" >>"${PROCESSED_SLUGS_FILE}"
+}
+
+slug_excluded() {
+  jq -e --arg s "$1" '(.excludedSlugs // []) | index($s) != null' "$MANIFEST" >/dev/null 2>&1
 }
 
 artifact_dir() {
@@ -159,6 +162,11 @@ process_manifest_site() {
   deploy_subpath=$(echo "$1" | jq -r '.deploySubpath // empty')
 
   [[ -n "$slug" && "$slug" != "null" ]] || return 0
+  if slug_excluded "$slug"; then
+    log "excluded ${slug} — skip"
+    slug_mark "$slug"
+    return 0
+  fi
   slug_mark "$slug"
 
   local folder="$clone_dir"
@@ -182,6 +190,7 @@ discover_siblings() {
     slug=$(echo "${BASH_REMATCH[2]}" | tr '[:upper:]' '[:lower:]')
 
     slug_seen "$slug" && continue
+    slug_excluded "$slug" && continue
     [[ -f "$dirpath/package.json" ]] || continue
 
     slug_mark "$slug"
@@ -214,7 +223,7 @@ if [[ "${MARKETING_VERIFY_NO_PLACEHOLDERS:-0}" == "1" ]]; then
     [[ -n "$_slug" && "$_slug" != "null" ]] || continue
     _idx="${ROOT}/front/sites/${_slug}/index.html"
     if [[ -f "$_idx" ]] && grep -q "${PLACEHOLDER_SIG}" "$_idx" 2>/dev/null; then
-      log "::error::placeholder still present for slug=${_slug} — missing artifact or PAT scope; use a token with Actions read on every repo in config/marketing-sites.json (not only 040_gustazo)."
+      log "::error::placeholder still present for slug=${_slug} — missing artifact or PAT scope; use a token with Actions read on every repo in config/marketing-sites.json."
       _ph_fail=1
     fi
   done < <(jq -c '.sites[]?' "$MANIFEST")

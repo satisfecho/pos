@@ -94,6 +94,66 @@ If the demo account **ralf@roeber.de** no longer works on amvara9, it was almost
 
 **Do not run `remove_extra_tenants`** on amvara9 unless you intentionally want a single-tenant (Cobalto-only) server and accept that all other tenants and their users will be deleted.
 
+## Daily demo data reset (tenant 1)
+
+Demo restaurant **tenant 1** accumulates orders and reservations from sales demos. To keep Informes and demo flows fresh, reset and re-seed **orders + reservations only** (tables, products, and users are untouched) with the idempotent wrapper:
+
+```bash
+cd /development/pos
+./scripts/reset-demo-data-on-server.sh
+```
+
+That script runs `python -m app.seeds.reset_demo_data` inside the production `back` container. It is safe while the stack is up and does **not** touch other tenants.
+
+**Host cron (preferred, UTC daily at 04:00):** on amvara9, install once as root (or the user that can run docker compose):
+
+```bash
+crontab -l 2>/dev/null | grep -q 'reset-demo-data-on-server.sh' || (
+  crontab -l 2>/dev/null
+  echo '0 4 * * * cd /development/pos && ./scripts/reset-demo-data-on-server.sh >>/var/log/pos-demo-reset.log 2>&1'
+) | crontab -
+```
+
+Or add the line manually with `crontab -e`:
+
+```cron
+0 4 * * * cd /development/pos && ./scripts/reset-demo-data-on-server.sh >>/var/log/pos-demo-reset.log 2>&1
+```
+
+Ensure the script is executable (`chmod +x scripts/reset-demo-data-on-server.sh`; it is committed executable in the repo). If `check_demo_tables` fails (missing T01–T10), repair tables first (`python -m app.seeds.seed_demo_tables`) before relying on the daily reset.
+
+## Unpaid public Satisfecho Delivery cleanup (all tenants)
+
+Abandoned unpaid **public** Satisfecho Delivery checkouts can accumulate on **any** tenant (kitchen was never notified). The idempotent CLI cancels rows past the default **2h** TTL; it does **not** touch staff-created delivery orders. Demo reset (tenant 1 only) does **not** replace this job — keep both crons.
+
+Manual (from `/development/pos` on amvara9):
+
+```bash
+cd /development/pos
+./scripts/cleanup-unpaid-public-delivery-on-server.sh
+# Preview only:
+./scripts/cleanup-unpaid-public-delivery-on-server.sh --dry-run
+```
+
+That wrapper runs `python -m app.seeds.cleanup_unpaid_public_delivery` inside the production `back` container (extra args are passed through). Details: **`docs/0053-satisfecho-delivery-order-channel.md`** § Unpaid public checkout cleanup.
+
+**Host cron (preferred, UTC hourly at :15):** on amvara9, install once as root (or the user that can run docker compose):
+
+```bash
+crontab -l 2>/dev/null | grep -q 'cleanup-unpaid-public-delivery-on-server.sh' || (
+  crontab -l 2>/dev/null
+  echo '15 * * * * cd /development/pos && ./scripts/cleanup-unpaid-public-delivery-on-server.sh >>/var/log/pos-unpaid-public-delivery-cleanup.log 2>&1'
+) | crontab -
+```
+
+Or add the line manually with `crontab -e`:
+
+```cron
+15 * * * * cd /development/pos && ./scripts/cleanup-unpaid-public-delivery-on-server.sh >>/var/log/pos-unpaid-public-delivery-cleanup.log 2>&1
+```
+
+Ensure the script is executable (`chmod +x scripts/cleanup-unpaid-public-delivery-on-server.sh`; it is committed executable in the repo). This cron is **separate** from the tenant-1 demo reset above — do not merge them.
+
 ## Virgin / fresh install (fully automatic)
 
 On a clean clone to `/development/pos` with no `config.env`, the deploy script creates `config.env` from `config.env.example` (with generated secrets) and uses relative `API_URL=/api` so registration works from any host. After migrations, **bootstrap_demo** runs: if no tenants exist, it creates tenant 1 "Demo Restaurant" and seeds T01–T10, demo products, and demo orders (paid + active over ±90 days) so Reports show data. Then **beer, pizza, wine** catalog imports run; **link_demo_products_to_catalog** runs so tenant products without images are linked to catalog provider products — when staff open `/products`, images are backfilled. The **first user to register** is assigned as owner of that tenant and gets the demo data immediately (no manual seed step). The app listens on port 80; reach it at **http://167.235.138.59** or your domain.

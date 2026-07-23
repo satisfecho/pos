@@ -1,9 +1,9 @@
 # Local development overlay. Use with base:
 #   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 # HAProxy uses haproxy.cfg (no HTTPS, no certs). App on http://localhost:4202
-# Also maps host 127.0.0.1:80 -> HAProxy so http://127.0.0.1/gustazo/ matches prod-style URLs (may fail if port 80 is taken).
+# Also maps host 127.0.0.1:80 -> HAProxy so http://127.0.0.1/<slug>/ matches prod-style marketing URLs (may fail if port 80 is taken).
 #
-# Gustazo local build without token: clone 040_gustazo beside pos (../040_gustazo), or add a bind mount + GUSTAZO_LOCAL_REPO=/gustazo-src.
+# Marketing local build without token: clone NNN_slug beside pos (e.g. ../083_wimpi); sync-all-marketing-sites.sh auto-discovers siblings.
 services:
   front:
     environment:

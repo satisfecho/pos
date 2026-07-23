@@ -2,7 +2,7 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# git: commit hash; curl/jq/unzip/bash: scripts/sync-gustazo-for-dev.sh + fetch-gustazo-artifact.sh (optional dev sync)
+# git: commit hash; curl/jq/unzip/bash: scripts/sync-all-marketing-sites.sh (optional dev sync)
 RUN apk add --no-cache bash curl git jq unzip
 
 # Copy package files and npm config (supply chain: pinned deps, no install scripts)

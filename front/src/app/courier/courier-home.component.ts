@@ -5,7 +5,13 @@ import { ApiService, CourierInfo, CourierOrderSummary } from '../services/api.se
 
 type CourierTab = 'available' | 'mine' | 'completed';
 
-const OPEN_STATUSES = new Set(['pending', 'preparing', 'ready', 'partially_delivered']);
+const OPEN_STATUSES = new Set([
+  'pending',
+  'preparing',
+  'ready',
+  'out_for_delivery',
+  'partially_delivered',
+]);
 const COMPLETED_STATUSES = new Set(['paid', 'completed', 'cancelled']);
 
 @Component({
@@ -21,9 +27,19 @@ const COMPLETED_STATUSES = new Set(['paid', 'completed', 'cancelled']);
             <p class="courier-subtitle">{{ profile()!.tenant_name }}</p>
           }
         </div>
-        <button type="button" class="btn-logout" (click)="logout()">
-          {{ 'COURIER_HOME.LOGOUT' | translate }}
-        </button>
+        <div class="courier-header-actions">
+          <button
+            type="button"
+            class="btn-refresh"
+            (click)="refresh()"
+            [disabled]="ordersLoading()"
+          >
+            {{ 'COURIER_HOME.REFRESH' | translate }}
+          </button>
+          <button type="button" class="btn-logout" (click)="logout()">
+            {{ 'COURIER_HOME.LOGOUT' | translate }}
+          </button>
+        </div>
       </header>
 
       @if (profileLoading()) {
@@ -78,8 +94,19 @@ const COMPLETED_STATUSES = new Set(['paid', 'completed', 'cancelled']);
                   @if (order.customer_name) {
                     <p class="courier-customer">{{ order.customer_name }}</p>
                   }
+                  @if (order.customer_phone) {
+                    <p class="courier-phone">{{ order.customer_phone }}</p>
+                  }
+                  @if (order.delivery_address) {
+                    <p class="courier-address">{{ order.delivery_address }}</p>
+                  }
                   <p class="courier-items">{{ order.item_summary }}</p>
-                  <p class="courier-time">{{ formatCreatedAt(order.created_at) }}</p>
+                  <div class="courier-order-bottom">
+                    <p class="courier-time">{{ formatCreatedAt(order.created_at) }}</p>
+                    @if (order.total_cents != null) {
+                      <p class="courier-total">{{ formatMoney(order.total_cents) }}</p>
+                    }
+                  </div>
                 </a>
               </li>
             }
@@ -114,16 +141,29 @@ const COMPLETED_STATUSES = new Set(['paid', 'completed', 'cancelled']);
       color: var(--color-text-muted);
       font-size: 0.9rem;
     }
-    .btn-logout {
+    .courier-header-actions {
+      display: flex;
+      gap: var(--space-2);
+      flex-shrink: 0;
+    }
+    .btn-logout,
+    .btn-refresh {
       padding: var(--space-2) var(--space-4);
       border: 1px solid var(--color-border);
       border-radius: var(--radius-md);
       background: var(--color-surface);
       color: var(--color-text);
       cursor: pointer;
-      flex-shrink: 0;
     }
-    .btn-logout:hover { border-color: var(--color-primary); color: var(--color-primary); }
+    .btn-logout:hover,
+    .btn-refresh:hover:not(:disabled) {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+    .btn-refresh:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
     .courier-tabs {
       display: flex;
       gap: var(--space-2);
@@ -183,20 +223,39 @@ const COMPLETED_STATUSES = new Set(['paid', 'completed', 'cancelled']);
       color: var(--color-text-muted);
     }
     .courier-status[data-status='ready'],
-    .courier-status[data-status='preparing'] {
+    .courier-status[data-status='preparing'],
+    .courier-status[data-status='out_for_delivery'] {
       color: var(--color-primary);
     }
     .courier-customer { font-weight: 500; margin: 0 0 var(--space-1); }
+    .courier-phone,
+    .courier-address {
+      margin: 0 0 var(--space-1);
+      font-size: 0.9rem;
+    }
+    .courier-address { color: var(--color-text); }
+    .courier-phone { color: var(--color-text-muted); }
     .courier-items {
       margin: 0 0 var(--space-2);
       color: var(--color-text-muted);
       font-size: 0.9rem;
       line-height: 1.4;
     }
+    .courier-order-bottom {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-2);
+    }
     .courier-time {
       margin: 0;
       font-size: 0.8rem;
       color: var(--color-text-muted);
+    }
+    .courier-total {
+      margin: 0;
+      font-size: 0.9rem;
+      font-weight: 600;
     }
     .courier-muted, .courier-empty { color: var(--color-text-muted); }
     .courier-error { color: var(--color-error); }
@@ -218,13 +277,26 @@ export class CourierHomeComponent implements OnInit {
   filteredOrders = computed(() => {
     const tab = this.activeTab();
     const all = this.orders();
+    const myId = this.profile()?.id ?? null;
     if (tab === 'available') {
-      return all.filter((o) => OPEN_STATUSES.has(o.status));
+      return all.filter(
+        (o) => OPEN_STATUSES.has(o.status) && (o.courier_user_id == null)
+      );
     }
     if (tab === 'completed') {
-      return all.filter((o) => COMPLETED_STATUSES.has(o.status));
+      return all.filter(
+        (o) =>
+          COMPLETED_STATUSES.has(o.status) &&
+          (o.courier_user_id == null || o.courier_user_id === myId)
+      );
     }
-    return [];
+    // Mine: open orders assigned to this courier
+    if (myId == null) {
+      return [];
+    }
+    return all.filter(
+      (o) => OPEN_STATUSES.has(o.status) && o.courier_user_id === myId
+    );
   });
 
   emptyMessageKey = computed(() => {
@@ -255,6 +327,13 @@ export class CourierHomeComponent implements OnInit {
     this.activeTab.set(tab);
   }
 
+  refresh(): void {
+    if (this.profileLoading() || this.profileError()) {
+      return;
+    }
+    this.loadOrders();
+  }
+
   statusLabelKey(status: string): string {
     return `COURIER_ORDERS.STATUS_${status.toUpperCase()}`;
   }
@@ -266,6 +345,13 @@ export class CourierHomeComponent implements OnInit {
     } catch {
       return iso;
     }
+  }
+
+  formatMoney(cents: number): string {
+    return (cents / 100).toLocaleString(undefined, {
+      style: 'currency',
+      currency: 'EUR',
+    });
   }
 
   logout(): void {

@@ -4,14 +4,20 @@ from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+_SETTINGS_FILE = Path(__file__).resolve()
+# Host layout: repo/back/app/settings.py → parents[2] is repo root (config.env).
+# Docker layout: /app/app/settings.py with ./config.env mounted at /app/config.env → parents[1].
+_PROJECT_ROOT = _SETTINGS_FILE.parents[2]
+_ENV_ROOT_CANDIDATES = (_SETTINGS_FILE.parents[2], _SETTINGS_FILE.parents[1])
 
 # Only use absolute paths so loading works regardless of CWD (e.g. uvicorn reload subprocess).
 # Include only paths that exist to avoid FileNotFoundError when a path is missing.
-_ENV_FILE_PATHS = [
-    p for p in (_PROJECT_ROOT / "config.env", _PROJECT_ROOT / ".env")
-    if p.exists()
-]
+_ENV_FILE_PATHS: list[Path] = []
+for _root in _ENV_ROOT_CANDIDATES:
+    for _name in ("config.env", ".env"):
+        _p = _root / _name
+        if _p.exists() and _p not in _ENV_FILE_PATHS:
+            _ENV_FILE_PATHS.append(_p)
 
 
 class Settings(BaseSettings):
@@ -56,6 +62,30 @@ class Settings(BaseSettings):
         default="", validation_alias="STRIPE_PUBLISHABLE_KEY"
     )
     stripe_currency: str = Field(default="eur", validation_alias="STRIPE_CURRENCY")
+
+    # Platform SaaS paywall (restaurant signup monetization — not guest order Stripe keys)
+    saas_paywall_enabled: bool = Field(
+        default=False,
+        validation_alias="SAAS_PAYWALL_ENABLED",
+        description="When true, new tenants must start a trial or paid plan before staff app access",
+    )
+    saas_trial_days: int = Field(default=14, validation_alias="SAAS_TRIAL_DAYS")
+    saas_plan_price_cents: int = Field(
+        default=4900,
+        validation_alias="SAAS_PLAN_PRICE_CENTS",
+        description="Displayed monthly plan price in cents (e.g. 4900 = €49)",
+    )
+    saas_plan_currency: str = Field(default="eur", validation_alias="SAAS_PLAN_CURRENCY")
+    saas_stripe_price_id: str = Field(
+        default="",
+        validation_alias="SAAS_STRIPE_PRICE_ID",
+        description="Stripe Price ID for platform subscription Checkout (optional; trial works without it)",
+    )
+    saas_stripe_webhook_secret: str = Field(
+        default="",
+        validation_alias="SAAS_STRIPE_WEBHOOK_SECRET",
+        description="Stripe webhook signing secret for platform SaaS subscription events (whsec_...)",
+    )
 
     # Revolut Merchant API (optional global fallback; tenants can set per-tenant key)
     revolut_merchant_secret: str = Field(

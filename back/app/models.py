@@ -46,10 +46,19 @@ class OrderStatus(str, Enum):
     pending = "pending"
     preparing = "preparing"
     ready = "ready"
+    out_for_delivery = "out_for_delivery"  # Courier picked up; en route to customer
     partially_delivered = "partially_delivered"  # Some items delivered, some not
     paid = "paid"
     completed = "completed"
     cancelled = "cancelled"
+
+
+class OrderChannel(str, Enum):
+    """How the order was placed / fulfilled (kitchen + courier distinguish channels)."""
+
+    table = "table"  # dine-in (default)
+    satisfecho_delivery = "satisfecho_delivery"  # first-party Satisfecho Delivery
+    marketplace = "marketplace"  # third-party (Glovo/Uber); usually paired with delivery_integration_id
 
 
 class BusinessType(str, Enum):
@@ -227,6 +236,14 @@ class Tenant(SQLModel, table=True):
     fiscal_invoice_series: str = Field(default="VF", max_length=32)
     fiscal_invoice_next_number: int = Field(default=1)
     fiscal_aeat_api_secret: str | None = Field(default=None, max_length=512)
+
+    # Platform SaaS subscription (Satisfecho paywall — not restaurant guest payments)
+    # none | trialing | active | canceled | past_due | grandfathered
+    saas_subscription_status: str = Field(default="grandfathered", max_length=32)
+    saas_trial_ends_at: datetime | None = Field(default=None)
+    saas_subscription_ends_at: datetime | None = Field(default=None)
+    saas_stripe_customer_id: str | None = Field(default=None, max_length=255)
+    saas_stripe_subscription_id: str | None = Field(default=None, max_length=255)
 
     users: list["User"] = Relationship(back_populates="tenant")
 
@@ -893,7 +910,13 @@ class Order(TenantMixin, table=True):
         default=None, foreign_key="delivery_marketplace_integration.id", index=True
     )
     external_order_ref: str | None = Field(default=None, max_length=256, index=True)
-    
+
+    # First-party Satisfecho Delivery (no delivery_integration_id); table_id stays null
+    order_channel: OrderChannel = Field(default=OrderChannel.table, max_length=32, index=True)
+    delivery_address: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    customer_phone: str | None = Field(default=None, max_length=40)
+    courier_user_id: int | None = Field(default=None, foreign_key="user.id", index=True)
+
     items: list["OrderItem"] = Relationship(back_populates="order")
     billing_customer: BillingCustomer | None = Relationship(back_populates="orders")
 
@@ -1193,8 +1216,52 @@ class OrderCreate(SQLModel):
     longitude: float | None = None  # Optional GPS longitude for location verification
 
 
+class SatisfechoDeliveryOrderCreate(SQLModel):
+    """Staff create first-party Satisfecho Delivery order (no table, no marketplace integration)."""
+
+    items: list[OrderItemCreate]
+    delivery_address: str
+    customer_phone: str | None = None
+    customer_name: str | None = None
+    notes: str | None = None  # delivery notes (stored on Order.notes)
+    courier_user_id: int | None = None
+
+
+class PublicSatisfechoDeliveryOrderCreate(SQLModel):
+    """Public guest create for Satisfecho Delivery (address + phone required; no courier assign)."""
+
+    items: list[OrderItemCreate]
+    delivery_address: str
+    customer_phone: str
+    customer_name: str | None = None
+    notes: str | None = None
+
+
+class OrderDeliveryUpdate(SQLModel):
+    """Update delivery metadata on a Satisfecho Delivery order."""
+
+    delivery_address: str | None = None
+    customer_phone: str | None = None
+    customer_name: str | None = None
+    notes: str | None = None
+    courier_user_id: int | None = None
+
+
 class OrderStatusUpdate(SQLModel):
     status: OrderStatus
+
+
+class CourierOrderActionType(str, Enum):
+    accept = "accept"
+    reject = "reject"
+    picked_up = "picked_up"
+    delivered = "delivered"
+
+
+class CourierOrderAction(SQLModel):
+    """Courier portal fulfillment action on a delivery order."""
+
+    action: CourierOrderActionType
 
 
 class OrderItemStatusUpdate(SQLModel):

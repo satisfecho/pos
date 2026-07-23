@@ -139,13 +139,16 @@ Put these in **`config.env`** (copy from `config.env.example` if needed). The fi
 
 3. **Redirect back**  
    Revolut redirects the browser to:
-   - Success: `{PUBLIC_APP_BASE_URL}/menu/{table_token}/payment-success?order_id={order_id}`
-   - Cancel: `{PUBLIC_APP_BASE_URL}/menu/{table_token}`
+   - Success (table menu): `{PUBLIC_APP_BASE_URL}/menu/{table_token}/payment-success?order_id={order_id}`
+   - Cancel (table menu): `{PUBLIC_APP_BASE_URL}/menu/{table_token}`
+   - Success (public delivery): `{PUBLIC_APP_BASE_URL}/delivery/{tenant_id}/payment-success?order_id={order_id}&public_order_token=…`
+   - Cancel (public delivery): `{PUBLIC_APP_BASE_URL}/delivery/{tenant_id}`
 
 4. **Confirm payment**  
    On the payment-success page, frontend calls:
-   - `POST /orders/{order_id}/confirm-revolut-payment?table_token=...`  
-   Backend uses **GET order** with the stored `revolut_order_id` to verify state (e.g. COMPLETED/AUTHORISED/CAPTURED), then marks the order as paid and sets `payment_method = 'revolut'`.
+   - Table: `POST /orders/{order_id}/confirm-revolut-payment?table_token=...`
+   - Delivery: `POST /orders/{order_id}/confirm-revolut-payment?public_order_token=...`  
+   Backend uses **GET order** with the stored `revolut_order_id` to verify state (e.g. COMPLETED/AUTHORISED/CAPTURED), then marks the order as paid and sets `payment_method = 'revolut'`. For public delivery, kitchen is notified on successful confirm.
 
 ### POS tips (staff checkout) vs this flow
 

@@ -2,7 +2,8 @@
 Clear tenant 1's orders and reservations, then re-seed demo orders and demo reservations.
 Use this to refresh demo data on a server (e.g. amvara9) so Informes show meaningful data.
 
-Does NOT remove tables, products, or users—only orders, order items, and reservations for tenant 1.
+Does NOT remove tables, products, or users—only orders, order items, fiscal invoices,
+inventory rows tied to those orders, and reservations for tenant 1.
 
 Usage (on server, from repo root):
   docker compose --env-file config.env exec -T back python -m app.seeds.reset_demo_data
@@ -12,10 +13,9 @@ Or locally:
 """
 
 from sqlalchemy import text
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from app.db import engine
-from app.models import Order, OrderItem, Reservation
 
 DEMO_TENANT_ID = 1
 
@@ -27,27 +27,45 @@ def run() -> None:
             text('UPDATE "table" SET active_order_id = NULL WHERE tenant_id = :tid'),
             {"tid": DEMO_TENANT_ID},
         )
-        session.commit()
 
-        orders = session.exec(select(Order).where(Order.tenant_id == DEMO_TENANT_ID)).all()
-        for order in orders:
-            items = session.exec(select(OrderItem).where(OrderItem.order_id == order.id)).all()
-            for item in items:
-                session.delete(item)
-            session.delete(order)
+        # Child rows that reference order (must go before order delete)
+        deleted_invoices = session.execute(
+            text("DELETE FROM fiscal_invoice WHERE tenant_id = :tid"),
+            {"tid": DEMO_TENANT_ID},
+        ).rowcount
+        deleted_inv_tx = session.execute(
+            text(
+                """
+                DELETE FROM inventory_transaction
+                WHERE order_id IN (SELECT id FROM "order" WHERE tenant_id = :tid)
+                """
+            ),
+            {"tid": DEMO_TENANT_ID},
+        ).rowcount
+        deleted_items = session.execute(
+            text(
+                """
+                DELETE FROM orderitem
+                WHERE order_id IN (SELECT id FROM "order" WHERE tenant_id = :tid)
+                """
+            ),
+            {"tid": DEMO_TENANT_ID},
+        ).rowcount
+        deleted_orders = session.execute(
+            text('DELETE FROM "order" WHERE tenant_id = :tid'),
+            {"tid": DEMO_TENANT_ID},
+        ).rowcount
+        deleted_reservations = session.execute(
+            text("DELETE FROM reservation WHERE tenant_id = :tid"),
+            {"tid": DEMO_TENANT_ID},
+        ).rowcount
         session.commit()
-        deleted_orders = len(orders)
-
-        reservations = session.exec(
-            select(Reservation).where(Reservation.tenant_id == DEMO_TENANT_ID)
-        ).all()
-        for r in reservations:
-            session.delete(r)
-        session.commit()
-        deleted_reservations = len(reservations)
 
         print(
-            f"Tenant {DEMO_TENANT_ID}: removed {deleted_orders} orders and {deleted_reservations} reservations."
+            f"Tenant {DEMO_TENANT_ID}: removed {deleted_orders} orders, "
+            f"{deleted_items} order items, {deleted_invoices} fiscal invoices, "
+            f"{deleted_inv_tx} inventory transactions, "
+            f"{deleted_reservations} reservations."
         )
 
     from app.seeds.seed_demo_orders import run as run_orders

@@ -4,6 +4,8 @@
 services:
   back:
     build: ./back
+    # Stable tag so ws-bridge FROM does not depend on Compose project name (pos vs pos2).
+    image: pos-back:latest
     container_name: pos-back
     restart: unless-stopped
     user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
@@ -29,6 +31,13 @@ services:
       - SMTP_USE_TLS=${SMTP_USE_TLS:-true}
       - EMAIL_FROM=${EMAIL_FROM:-}
       - EMAIL_FROM_NAME=${EMAIL_FROM_NAME:-POS2 System}
+      # Platform SaaS paywall (from --env-file config.env). Default off for local/demo.
+      - SAAS_PAYWALL_ENABLED=${SAAS_PAYWALL_ENABLED:-false}
+      - SAAS_TRIAL_DAYS=${SAAS_TRIAL_DAYS:-14}
+      - SAAS_PLAN_PRICE_CENTS=${SAAS_PLAN_PRICE_CENTS:-4900}
+      - SAAS_PLAN_CURRENCY=${SAAS_PLAN_CURRENCY:-eur}
+      - SAAS_STRIPE_PRICE_ID=${SAAS_STRIPE_PRICE_ID:-}
+      - SAAS_STRIPE_WEBHOOK_SECRET=${SAAS_STRIPE_WEBHOOK_SECRET:-}
     volumes:
       - ./back:/app
       - ./back/uploads:/app/uploads
@@ -57,13 +66,11 @@ services:
       # Optional: host git short hash — bind mount is ./front only (no .git); entrypoint runs get-commit-hash.js
       - COMMIT_HASH=${COMMIT_HASH:-}
       # Marketing sites under /<slug>/ (see config/marketing-sites.json, scripts/sync-all-marketing-sites.sh)
-      - MARKETING_ARTIFACT_TOKEN=${MARKETING_ARTIFACT_TOKEN:-${GUSTAZO_ARTIFACT_TOKEN:-}}
-      - GUSTAZO_ARTIFACT_TOKEN=${GUSTAZO_ARTIFACT_TOKEN:-}
-      - GUSTAZO_LOCAL_REPO=${GUSTAZO_LOCAL_REPO:-}
-      - SYNC_GUSTAZO_ON_START=${SYNC_GUSTAZO_ON_START:-1}
-      - GUSTAZO_REFRESH_EVERY_START=${GUSTAZO_REFRESH_EVERY_START:-0}
-      - GUSTAZO_SYNC_FORCE=${GUSTAZO_SYNC_FORCE:-0}
-      - GUSTAZO_NG_CONFIGURATION=${GUSTAZO_NG_CONFIGURATION:-production}
+      - MARKETING_ARTIFACT_TOKEN=${MARKETING_ARTIFACT_TOKEN:-}
+      - SYNC_MARKETING_ON_START=${SYNC_MARKETING_ON_START:-1}
+      - MARKETING_REFRESH_EVERY_START=${MARKETING_REFRESH_EVERY_START:-0}
+      - MARKETING_SYNC_FORCE=${MARKETING_SYNC_FORCE:-0}
+      - MARKETING_NG_CONFIGURATION=${MARKETING_NG_CONFIGURATION:-production}
     volumes:
       - ./front:/app
       - /app/node_modules
@@ -108,7 +115,12 @@ services:
       retries: 20
 
   ws-bridge:
-    build: ./ws-bridge
+    build:
+      context: ./ws-bridge
+      # Resolve Dockerfile `FROM pos-back` to the back service image (build order + no Hub pull).
+      additional_contexts:
+        pos-back: service:back
+    image: pos-ws-bridge:latest
     container_name: pos-ws-bridge
     restart: unless-stopped
     expose:

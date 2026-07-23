@@ -12,6 +12,9 @@ import {
   OrderItemCreate,
   OrderLineModifiers,
   FiscalInvoicePublic,
+  Product,
+  User,
+  OrderDeliveryUpdate,
 } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
 import { WaiterAlertService, WaiterAlertItem } from '../services/waiter-alert.service';
@@ -52,12 +55,19 @@ ModuleRegistry.registerModules([
           <app-staff-pos-toolbar />
           <div class="page-header-row">
             <h1>{{ 'ORDERS.TITLE' | translate }}</h1>
-            <button class="btn btn-secondary" (click)="loadOrders()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="23,4 23,10 17,10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
-              </svg>
-              {{ 'ORDERS.REFRESH' | translate }}
-            </button>
+            <div class="page-header-actions">
+              @if (canUpdateStatus()) {
+                <button type="button" class="btn btn-primary" (click)="openCreateDeliveryModal()">
+                  {{ 'ORDERS.NEW_DELIVERY_ORDER' | translate }}
+                </button>
+              }
+              <button class="btn btn-secondary" (click)="loadOrders()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23,4 23,10 17,10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+                </svg>
+                {{ 'ORDERS.REFRESH' | translate }}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -102,6 +112,15 @@ ModuleRegistry.registerModules([
                   <span class="tab-badge">{{ completedOrders().length }}</span>
                 }
               </button>
+              <button
+                class="filter-tab"
+                [class.active]="viewMode() === 'delivery'"
+                (click)="viewMode.set('delivery')">
+                {{ 'ORDERS.DELIVERY_TAB' | translate }}
+                @if (deliveryOrders().length > 0) {
+                  <span class="tab-badge">{{ deliveryOrders().length }}</span>
+                }
+              </button>
               @if (viewMode() === 'active') {
                 <label class="toggle-removed">
                   <input type="checkbox" [(ngModel)]="showRemovedItems" (change)="loadOrders()">
@@ -119,6 +138,9 @@ ModuleRegistry.registerModules([
                       <div class="order-header-main">
                         <span class="order-id">#{{ order.id }}</span>
                         <span class="order-table">{{ order.table_name }}</span>
+                        @if (orderChannelBadgeKey(order); as channelKey) {
+                          <span class="order-channel-badge" [class.marketplace]="isMarketplaceDelivery(order)">{{ channelKey | translate }}</span>
+                        }
                         @if (order.table_group_label) {
                           <span class="order-table-group">{{ order.table_group_label }}</span>
                         }
@@ -131,6 +153,20 @@ ModuleRegistry.registerModules([
                         <span class="order-time" [title]="formatExactTime(order.created_at)">{{ 'ORDERS.ORDER_TIME' | translate }}: {{ formatOrderTime(order.created_at) }}</span>
                       </div>
                     </div>
+
+                    @if (isDeliveryChannel(order)) {
+                      <div class="order-delivery-meta">
+                        @if (order.delivery_address) {
+                          <div>{{ 'ORDERS.DELIVERY_ADDRESS' | translate }}: {{ order.delivery_address }}</div>
+                        }
+                        @if (order.customer_phone) {
+                          <div>{{ 'ORDERS.DELIVERY_PHONE' | translate }}: {{ order.customer_phone }}</div>
+                        }
+                        @if (isSatisfechoDelivery(order)) {
+                          <div>{{ 'ORDERS.COURIER' | translate }}: {{ courierDisplayName(order.courier_user_id) }}</div>
+                        }
+                      </div>
+                    }
 
                     <div class="order-items">
                       @for (item of getSortedItems(order.items); track item.id) {
@@ -257,6 +293,11 @@ ModuleRegistry.registerModules([
                           </svg>
                           {{ 'COMMON.EDIT' | translate }}
                         </button>
+                        @if (isSatisfechoDelivery(order) && canUpdateStatus() && order.status !== 'cancelled') {
+                          <button type="button" class="btn btn-secondary" (click)="openEditDeliveryModal(order)">
+                            {{ 'ORDERS.EDIT_DELIVERY' | translate }}
+                          </button>
+                        }
                         @if (order.status !== 'paid' && order.status !== 'cancelled' && canMarkPaid()) {
                           <button
                             type="button"
@@ -405,6 +446,9 @@ ModuleRegistry.registerModules([
                         <div class="order-header-main">
                           <span class="order-id">#{{ order.id }}</span>
                           <span class="order-table">{{ order.table_name }}</span>
+                          @if (orderChannelBadgeKey(order); as channelKey) {
+                            <span class="order-channel-badge" [class.marketplace]="isMarketplaceDelivery(order)">{{ channelKey | translate }}</span>
+                          }
                           @if (order.table_group_label) {
                             <span class="order-table-group">{{ order.table_group_label }}</span>
                           }
@@ -417,6 +461,20 @@ ModuleRegistry.registerModules([
                           <span class="order-time" [title]="formatExactTime(order.created_at)">{{ 'ORDERS.ORDER_TIME' | translate }}: {{ formatOrderTime(order.created_at) }}</span>
                         </div>
                       </div>
+
+                      @if (isDeliveryChannel(order)) {
+                        <div class="order-delivery-meta">
+                          @if (order.delivery_address) {
+                            <div>{{ 'ORDERS.DELIVERY_ADDRESS' | translate }}: {{ order.delivery_address }}</div>
+                          }
+                          @if (order.customer_phone) {
+                            <div>{{ 'ORDERS.DELIVERY_PHONE' | translate }}: {{ order.customer_phone }}</div>
+                          }
+                          @if (isSatisfechoDelivery(order)) {
+                            <div>{{ 'ORDERS.COURIER' | translate }}: {{ courierDisplayName(order.courier_user_id) }}</div>
+                          }
+                        </div>
+                      }
 
                       <div class="order-items">
                         @for (item of getSortedItems(order.items); track item.id) {
@@ -539,6 +597,11 @@ ModuleRegistry.registerModules([
                             </svg>
                             {{ 'COMMON.EDIT' | translate }}
                           </button>
+                          @if (isSatisfechoDelivery(order) && canUpdateStatus() && order.status !== 'cancelled') {
+                            <button type="button" class="btn btn-secondary" (click)="openEditDeliveryModal(order)">
+                              {{ 'ORDERS.EDIT_DELIVERY' | translate }}
+                            </button>
+                          }
                           @if (order.status !== 'paid' && order.status !== 'cancelled' && canMarkPaid()) {
                             <button
                               type="button"
@@ -673,6 +736,105 @@ ModuleRegistry.registerModules([
                   </div>
                   <h3>{{ 'ORDERS.ALL_ORDERS_PAID' | translate }}</h3>
                   <p>{{ 'ORDERS.NO_UNPAID_ORDERS' | translate }}</p>
+                </div>
+              }
+            }
+
+            <!-- Delivery Orders Section -->
+            @if (viewMode() === 'delivery') {
+              @if (deliveryOrders().length > 0) {
+                <div class="order-grid">
+                  @for (order of deliveryOrders(); track order.id) {
+                    <div class="order-card" [id]="'order-card-' + order.id" [class]="'status-' + order.status + (orderCardHasOpenStatusDropdown(order.id) ? ' status-dropdown-open' : '')">
+                      <div class="order-header">
+                        <div class="order-header-main">
+                          <span class="order-id">#{{ order.id }}</span>
+                          <span class="order-table">{{ order.table_name }}</span>
+                          @if (orderChannelBadgeKey(order); as channelKey) {
+                            <span class="order-channel-badge" [class.marketplace]="isMarketplaceDelivery(order)">{{ channelKey | translate }}</span>
+                          }
+                          @if (order.customer_name) {
+                            <span class="order-customer">{{ 'ORDERS.CUSTOMER' | translate }}: {{ order.customer_name }}</span>
+                          }
+                          @if (order.staff_urgent) {
+                            <span class="order-urgent-badge">{{ 'ORDERS.URGENT_BADGE' | translate }}</span>
+                          }
+                          <span class="order-time" [title]="formatExactTime(order.created_at)">{{ 'ORDERS.ORDER_TIME' | translate }}: {{ formatOrderTime(order.created_at) }}</span>
+                        </div>
+                      </div>
+                      <div class="order-delivery-meta">
+                        @if (order.delivery_address) {
+                          <div>{{ 'ORDERS.DELIVERY_ADDRESS' | translate }}: {{ order.delivery_address }}</div>
+                        }
+                        @if (order.customer_phone) {
+                          <div>{{ 'ORDERS.DELIVERY_PHONE' | translate }}: {{ order.customer_phone }}</div>
+                        }
+                        @if (isSatisfechoDelivery(order)) {
+                          <div>{{ 'ORDERS.COURIER' | translate }}: {{ courierDisplayName(order.courier_user_id) }}</div>
+                        }
+                        @if (isMarketplaceDelivery(order) && order.external_order_ref) {
+                          <div>{{ 'ORDERS.MARKETPLACE_REF' | translate }}: {{ order.external_order_ref }}</div>
+                        }
+                      </div>
+                      <div class="order-items">
+                        @for (item of getSortedItems(order.items); track item.id) {
+                          <div class="order-item" [class.removed]="item.removed_by_customer">
+                            <div class="item-name-row">
+                              <span class="item-qty">{{ item.quantity }}x</span>
+                              <span class="item-name">{{ item.product_name }}</span>
+                              @if (item.notes?.trim()) {
+                                <span class="item-notes">{{ item.notes }}</span>
+                              }
+                            </div>
+                            <div class="item-details-row">
+                              <span class="item-price">{{ formatPrice(item.price_cents) }}</span>
+                              @if (item.status) {
+                                <span class="item-status-badge" [class]="'status-' + item.status">{{ getItemStatusLabel(item.status) }}</span>
+                              }
+                            </div>
+                          </div>
+                        }
+                      </div>
+                      @if (displayOrderNotes(order.notes)) {
+                        <div class="order-notes-banner">{{ 'ORDERS.ORDER_NOTES' | translate }}: {{ displayOrderNotes(order.notes) }}</div>
+                      }
+                      <div class="order-footer">
+                        <div class="order-footer-left">
+                          <span class="order-total">{{ 'ORDERS.TOTAL' | translate }}: {{ formatPrice(order.total_cents) }}</span>
+                        </div>
+                        <div class="order-actions">
+                          <button type="button" class="btn btn-edit-order" (click)="openOrderEdit(order)" [title]="'ORDERS.EDIT_ORDER' | translate">
+                            {{ 'COMMON.EDIT' | translate }}
+                          </button>
+                          @if (isSatisfechoDelivery(order) && canUpdateStatus() && order.status !== 'cancelled') {
+                            <button type="button" class="btn btn-secondary" (click)="openEditDeliveryModal(order)">
+                              {{ 'ORDERS.EDIT_DELIVERY' | translate }}
+                            </button>
+                          }
+                          @if (order.status !== 'paid' && order.status !== 'cancelled' && canMarkPaid()) {
+                            <button type="button" class="btn btn-primary" (click)="markAsPaid(order)">{{ 'ORDERS.PAY_NOW' | translate }}</button>
+                          }
+                          @if (order.status !== 'paid' && order.status !== 'cancelled' && canFinishOrder()) {
+                            <button type="button" class="btn btn-success" (click)="openFinishPaymentModal(order)">{{ 'ORDERS.FINISH_ORDER' | translate }}</button>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="empty-state">
+                  <div class="empty-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                      <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                  </div>
+                  <h3>{{ 'ORDERS.NO_DELIVERY_ORDERS' | translate }}</h3>
+                  <p>{{ 'ORDERS.NO_DELIVERY_ORDERS_DESC' | translate }}</p>
+                  @if (canUpdateStatus()) {
+                    <button type="button" class="btn btn-primary" (click)="openCreateDeliveryModal()">{{ 'ORDERS.NEW_DELIVERY_ORDER' | translate }}</button>
+                  }
                 </div>
               }
             }
@@ -819,6 +981,126 @@ ModuleRegistry.registerModules([
                 @if (order.status !== 'paid' && order.status !== 'cancelled' && canFinishOrder()) {
                   <button type="button" class="btn btn-success" (click)="markEditOrderFinish(order)">{{ 'ORDERS.FINISH_ORDER' | translate }}</button>
                 }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Create Satisfecho Delivery Order Modal -->
+        @if (createDeliveryOpen()) {
+          <div class="modal-overlay">
+            <div class="modal modal-order-edit" (click)="$event.stopPropagation()" appFocusFirstInput>
+              <div class="modal-header">
+                <h3>{{ 'ORDERS.NEW_DELIVERY_ORDER' | translate }}</h3>
+                <button class="icon-btn" (click)="closeCreateDeliveryModal()">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="modal-body">
+                <p class="modal-hint">{{ 'ORDERS.NEW_DELIVERY_HINT' | translate }}</p>
+                <div class="form-group">
+                  <label for="delivery-address">{{ 'ORDERS.DELIVERY_ADDRESS' | translate }} *</label>
+                  <input id="delivery-address" type="text" class="form-input" [(ngModel)]="deliveryFormAddress" name="deliveryAddress" required />
+                </div>
+                <div class="form-group">
+                  <label for="delivery-phone">{{ 'ORDERS.DELIVERY_PHONE' | translate }}</label>
+                  <input id="delivery-phone" type="tel" class="form-input" [(ngModel)]="deliveryFormPhone" name="deliveryPhone" />
+                </div>
+                <div class="form-group">
+                  <label for="delivery-customer">{{ 'ORDERS.CUSTOMER' | translate }}</label>
+                  <input id="delivery-customer" type="text" class="form-input" [(ngModel)]="deliveryFormCustomerName" name="deliveryCustomer" />
+                </div>
+                <div class="form-group">
+                  <label for="delivery-notes">{{ 'ORDERS.ORDER_NOTES' | translate }}</label>
+                  <textarea id="delivery-notes" class="form-input modifier-textarea" rows="2" [(ngModel)]="deliveryFormNotes" name="deliveryNotes"></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="delivery-courier">{{ 'ORDERS.COURIER' | translate }}</label>
+                  <select id="delivery-courier" class="form-select" [(ngModel)]="deliveryFormCourierId" name="deliveryCourier">
+                    <option [ngValue]="null">{{ 'COMMON.NONE' | translate }}</option>
+                    @for (c of couriers(); track c.id) {
+                      <option [ngValue]="c.id">{{ c.full_name || c.email }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="edit-order-label">{{ 'ORDERS.ITEMS' | translate }} *</div>
+                <div class="delivery-draft-items">
+                  @for (line of deliveryDraftItems; track $index; let i = $index) {
+                    <div class="edit-order-row">
+                      <span class="edit-item-name">{{ line.name }} × {{ line.quantity }}</span>
+                      <button type="button" class="btn btn-sm btn-secondary" (click)="removeDeliveryDraftItem(i)">{{ 'ORDERS.REMOVE_ITEM' | translate }}</button>
+                    </div>
+                  }
+                </div>
+                <div class="add-items-row">
+                  <select class="form-select" [(ngModel)]="deliveryAddProductId" name="deliveryAddProduct">
+                    <option [ngValue]="null">{{ 'COMMON.SELECT' | translate }}</option>
+                    @for (p of deliveryProducts(); track p.id) {
+                      <option [ngValue]="p.id">{{ p.name }} — {{ formatPrice(p.price_cents) }}</option>
+                    }
+                  </select>
+                  <input type="number" class="quantity-input" [(ngModel)]="deliveryAddQuantity" min="1" name="deliveryAddQty" />
+                  <button type="button" class="btn btn-secondary" (click)="addDeliveryDraftItem()" [disabled]="!deliveryAddProductId || deliveryAddQuantity < 1">
+                    {{ 'COMMON.ADD' | translate }}
+                  </button>
+                </div>
+              </div>
+              <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" (click)="closeCreateDeliveryModal()">{{ 'COMMON.CANCEL' | translate }}</button>
+                <button type="button" class="btn btn-primary" (click)="submitCreateDelivery()" [disabled]="creatingDelivery() || !deliveryFormAddress.trim() || deliveryDraftItems.length === 0">
+                  {{ creatingDelivery() ? ('COMMON.LOADING' | translate) : ('ORDERS.CREATE_DELIVERY' | translate) }}
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Edit Satisfecho Delivery metadata Modal -->
+        @if (editDeliveryOrder(); as dOrder) {
+          <div class="modal-overlay">
+            <div class="modal modal-order-edit" (click)="$event.stopPropagation()" appFocusFirstInput>
+              <div class="modal-header">
+                <h3>{{ 'ORDERS.EDIT_DELIVERY' | translate }} — #{{ dOrder.id }}</h3>
+                <button class="icon-btn" (click)="closeEditDeliveryModal()">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="edit-delivery-address">{{ 'ORDERS.DELIVERY_ADDRESS' | translate }} *</label>
+                  <input id="edit-delivery-address" type="text" class="form-input" [(ngModel)]="deliveryFormAddress" name="editDeliveryAddress" />
+                </div>
+                <div class="form-group">
+                  <label for="edit-delivery-phone">{{ 'ORDERS.DELIVERY_PHONE' | translate }}</label>
+                  <input id="edit-delivery-phone" type="tel" class="form-input" [(ngModel)]="deliveryFormPhone" name="editDeliveryPhone" />
+                </div>
+                <div class="form-group">
+                  <label for="edit-delivery-customer">{{ 'ORDERS.CUSTOMER' | translate }}</label>
+                  <input id="edit-delivery-customer" type="text" class="form-input" [(ngModel)]="deliveryFormCustomerName" name="editDeliveryCustomer" />
+                </div>
+                <div class="form-group">
+                  <label for="edit-delivery-notes">{{ 'ORDERS.ORDER_NOTES' | translate }}</label>
+                  <textarea id="edit-delivery-notes" class="form-input modifier-textarea" rows="2" [(ngModel)]="deliveryFormNotes" name="editDeliveryNotes"></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="edit-delivery-courier">{{ 'ORDERS.COURIER' | translate }}</label>
+                  <select id="edit-delivery-courier" class="form-select" [(ngModel)]="deliveryFormCourierId" name="editDeliveryCourier">
+                    <option [ngValue]="null">{{ 'COMMON.NONE' | translate }}</option>
+                    @for (c of couriers(); track c.id) {
+                      <option [ngValue]="c.id">{{ c.full_name || c.email }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+              <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" (click)="closeEditDeliveryModal()">{{ 'COMMON.CANCEL' | translate }}</button>
+                <button type="button" class="btn btn-primary" (click)="submitEditDelivery()" [disabled]="savingDelivery() || !deliveryFormAddress.trim()">
+                  {{ savingDelivery() ? ('COMMON.LOADING' | translate) : ('COMMON.SAVE' | translate) }}
+                </button>
               </div>
             </div>
           </div>
@@ -1075,7 +1357,39 @@ ModuleRegistry.registerModules([
       color: var(--color-text);
     }
 
-    .filter-tabs {
+    .page-header-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .order-delivery-meta {
+      font-size: 0.8125rem;
+      color: var(--color-text-muted);
+      padding: 0.35rem 0.75rem 0.5rem;
+      line-height: 1.4;
+      border-bottom: 1px solid var(--color-border, #E7E5E4);
+    }
+    .order-channel-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      background: rgba(211, 82, 51, 0.12);
+      color: #D35233;
+      margin-left: 0.35rem;
+    }
+    .order-channel-badge.marketplace {
+      background: rgba(59, 130, 246, 0.12);
+      color: #2563eb;
+    }
+    .delivery-draft-items {
+      margin-bottom: 0.75rem;
+    }
+        .filter-tabs {
       display: flex;
       align-items: center;
       gap: var(--space-2);
@@ -2033,7 +2347,23 @@ export class OrdersComponent implements OnInit, OnDestroy {
   currency = signal<string>('€');
   currencyCode = signal<string | null>(null);
   showRemovedItems = false;
-  viewMode = signal<'active' | 'not_paid' | 'history'>('active');
+  viewMode = signal<'active' | 'not_paid' | 'history' | 'delivery'>('active');
+
+  /** Satisfecho Delivery create / edit forms */
+  createDeliveryOpen = signal(false);
+  editDeliveryOrder = signal<Order | null>(null);
+  creatingDelivery = signal(false);
+  savingDelivery = signal(false);
+  couriers = signal<User[]>([]);
+  deliveryProducts = signal<Product[]>([]);
+  deliveryFormAddress = '';
+  deliveryFormPhone = '';
+  deliveryFormCustomerName = '';
+  deliveryFormNotes = '';
+  deliveryFormCourierId: number | null = null;
+  deliveryDraftItems: { product_id: number; name: string; quantity: number }[] = [];
+  deliveryAddProductId: number | null = null;
+  deliveryAddQuantity = 1;
   orderToMarkPaid = signal<Order | null>(null);
   /** When true, payment modal confirms finish (deliver all + pay) instead of pay-only. */
   paymentModalFinishMode = signal(false);
@@ -2102,7 +2432,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   activeOrders = computed(() => {
     const tid = this.tableScopeId();
     let list = this.orders().filter(o =>
-      ['pending', 'preparing', 'ready', 'partially_delivered', 'paid'].includes(o.status)
+      ['pending', 'preparing', 'ready', 'out_for_delivery', 'partially_delivered', 'paid'].includes(o.status)
     );
     if (tid != null) list = list.filter(o => o.table_id === tid);
     return [...list].sort((a, b) => {
@@ -2123,6 +2453,10 @@ export class OrdersComponent implements OnInit, OnDestroy {
     let list = this.orders().filter(o => o.status === 'completed' && !o.paid_at);
     if (tid != null) list = list.filter(o => o.table_id === tid);
     return list;
+  });
+  /** Satisfecho Delivery + marketplace delivery orders (Delivery tab). */
+  deliveryOrders = computed(() => {
+    return this.orders().filter(o => this.isDeliveryChannel(o));
   });
 
   // AG Grid configuration - custom light theme matching app colors
@@ -2299,6 +2633,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
       this.tableScopeId.set(Number.isFinite(id) && id > 0 ? id : null);
     });
     this.loadTenantSettings();
+    this.ensureDeliveryLookups();
     this.loadOrders();
     // Connect WebSocket for real-time updates (non-blocking - HTTP requests work without it)
     try {
@@ -2403,7 +2738,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
     /** Resolve focus using full order list (ignore table scope filter). */
     const rawActive = this.orders().filter(o =>
-      ['pending', 'preparing', 'ready', 'partially_delivered', 'paid'].includes(o.status)
+      ['pending', 'preparing', 'ready', 'out_for_delivery', 'partially_delivered', 'paid'].includes(o.status)
     );
     const rawNotPaid = this.orders().filter(o => o.status === 'completed' && !o.paid_at);
 
@@ -2446,7 +2781,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     } else if (Number.isFinite(focusTableId) && focusTableId > 0) {
       preserveTableId = focusTableId;
       const forTable = this.orders().filter(o => o.table_id === focusTableId);
-      const activeStatuses = ['pending', 'preparing', 'ready', 'partially_delivered', 'paid'];
+      const activeStatuses = ['pending', 'preparing', 'ready', 'out_for_delivery', 'partially_delivered', 'paid'];
       const activeForTable = forTable
         .filter(o => activeStatuses.includes(o.status))
         .sort((a, b) => (b.staff_urgent ? 1 : 0) - (a.staff_urgent ? 1 : 0) || a.id - b.id);
@@ -2497,6 +2832,179 @@ export class OrdersComponent implements OnInit, OnDestroy {
         const o = orders.find(ord => ord.id === orderId);
         if (o) this.editOrder.set(o);
       }
+    });
+  }
+
+  isSatisfechoDelivery(order: Order): boolean {
+    return (order.order_channel || '') === 'satisfecho_delivery';
+  }
+
+  isMarketplaceDelivery(order: Order): boolean {
+    return (order.order_channel || '') === 'marketplace' || !!order.delivery_integration_id;
+  }
+
+  isDeliveryChannel(order: Order): boolean {
+    return this.isSatisfechoDelivery(order) || this.isMarketplaceDelivery(order);
+  }
+
+  orderChannelBadgeKey(order: Order): string | null {
+    if (this.isSatisfechoDelivery(order)) return 'ORDERS.CHANNEL_SATISFECHO_DELIVERY';
+    if (this.isMarketplaceDelivery(order)) return 'ORDERS.CHANNEL_MARKETPLACE';
+    return null;
+  }
+
+  courierDisplayName(courierUserId: number | null | undefined): string {
+    if (courierUserId == null) return this.translate.instant('ORDERS.COURIER_UNASSIGNED');
+    const c = this.couriers().find(u => u.id === courierUserId);
+    if (c) return (c.full_name || c.email || `#${courierUserId}`).trim();
+    return `#${courierUserId}`;
+  }
+
+  private resetDeliveryForm(): void {
+    this.deliveryFormAddress = '';
+    this.deliveryFormPhone = '';
+    this.deliveryFormCustomerName = '';
+    this.deliveryFormNotes = '';
+    this.deliveryFormCourierId = null;
+    this.deliveryDraftItems = [];
+    this.deliveryAddProductId = null;
+    this.deliveryAddQuantity = 1;
+  }
+
+  private ensureDeliveryLookups(): void {
+    if (this.couriers().length === 0) {
+      this.api.getCouriers().subscribe({
+        next: list => this.couriers.set(list),
+        error: () => this.couriers.set([]),
+      });
+    }
+    if (this.deliveryProducts().length === 0) {
+      this.api.getProducts().subscribe({
+        next: list => this.deliveryProducts.set(list.filter(p => p.id != null)),
+        error: () => this.deliveryProducts.set([]),
+      });
+    }
+  }
+
+  openCreateDeliveryModal(): void {
+    this.resetDeliveryForm();
+    this.editDeliveryOrder.set(null);
+    this.createDeliveryOpen.set(true);
+    this.ensureDeliveryLookups();
+  }
+
+  closeCreateDeliveryModal(): void {
+    this.createDeliveryOpen.set(false);
+    this.resetDeliveryForm();
+  }
+
+  openEditDeliveryModal(order: Order): void {
+    this.createDeliveryOpen.set(false);
+    this.editDeliveryOrder.set(order);
+    this.deliveryFormAddress = order.delivery_address || '';
+    this.deliveryFormPhone = order.customer_phone || '';
+    this.deliveryFormCustomerName = order.customer_name || '';
+    this.deliveryFormNotes = this.displayOrderNotes(order.notes) || '';
+    this.deliveryFormCourierId = order.courier_user_id ?? null;
+    this.ensureDeliveryLookups();
+  }
+
+  closeEditDeliveryModal(): void {
+    this.editDeliveryOrder.set(null);
+    this.resetDeliveryForm();
+  }
+
+  addDeliveryDraftItem(): void {
+    if (!this.deliveryAddProductId || this.deliveryAddQuantity < 1) return;
+    const product = this.deliveryProducts().find(p => p.id === this.deliveryAddProductId);
+    if (!product?.id) return;
+    const existing = this.deliveryDraftItems.find(l => l.product_id === product.id);
+    if (existing) {
+      existing.quantity += this.deliveryAddQuantity;
+    } else {
+      this.deliveryDraftItems = [
+        ...this.deliveryDraftItems,
+        { product_id: product.id, name: product.name, quantity: this.deliveryAddQuantity },
+      ];
+    }
+    this.deliveryAddProductId = null;
+    this.deliveryAddQuantity = 1;
+  }
+
+  removeDeliveryDraftItem(index: number): void {
+    this.deliveryDraftItems = this.deliveryDraftItems.filter((_, i) => i !== index);
+  }
+
+  submitCreateDelivery(): void {
+    const address = this.deliveryFormAddress.trim();
+    if (!address || this.deliveryDraftItems.length === 0) return;
+    this.creatingDelivery.set(true);
+    this.api.createSatisfechoDeliveryOrder({
+      items: this.deliveryDraftItems.map(l => ({ product_id: l.product_id, quantity: l.quantity })),
+      delivery_address: address,
+      customer_phone: this.deliveryFormPhone.trim() || null,
+      customer_name: this.deliveryFormCustomerName.trim() || null,
+      notes: this.deliveryFormNotes.trim() || null,
+      courier_user_id: this.deliveryFormCourierId,
+    }).subscribe({
+      next: () => {
+        this.creatingDelivery.set(false);
+        this.closeCreateDeliveryModal();
+        this.viewMode.set('delivery');
+        this.loadOrders();
+        this.showToast(this.translate.instant('ORDERS.DELIVERY_CREATED'), 'success');
+      },
+      error: (err) => {
+        this.creatingDelivery.set(false);
+        const detail = err?.error?.detail;
+        this.showToast(
+          typeof detail === 'string' ? detail : this.translate.instant('ORDERS.DELIVERY_CREATE_FAILED'),
+          'error'
+        );
+      },
+    });
+  }
+
+  submitEditDelivery(): void {
+    const order = this.editDeliveryOrder();
+    const address = this.deliveryFormAddress.trim();
+    if (!order || !address) return;
+    this.savingDelivery.set(true);
+    const body: OrderDeliveryUpdate = {
+      delivery_address: address,
+      customer_phone: this.deliveryFormPhone.trim() || null,
+      customer_name: this.deliveryFormCustomerName.trim() || null,
+      notes: this.deliveryFormNotes.trim() || null,
+      courier_user_id: this.deliveryFormCourierId,
+    };
+    this.api.updateOrderDelivery(order.id, body).subscribe({
+      next: (res) => {
+        this.savingDelivery.set(false);
+        this.orders.update(list =>
+          list.map(o =>
+            o.id === order.id
+              ? {
+                  ...o,
+                  delivery_address: res.delivery_address,
+                  customer_phone: res.customer_phone,
+                  customer_name: res.customer_name ?? undefined,
+                  notes: res.notes ?? undefined,
+                  courier_user_id: res.courier_user_id,
+                }
+              : o
+          )
+        );
+        this.closeEditDeliveryModal();
+        this.showToast(this.translate.instant('ORDERS.DELIVERY_UPDATED'), 'success');
+      },
+      error: (err) => {
+        this.savingDelivery.set(false);
+        const detail = err?.error?.detail;
+        this.showToast(
+          typeof detail === 'string' ? detail : this.translate.instant('ORDERS.DELIVERY_UPDATE_FAILED'),
+          'error'
+        );
+      },
     });
   }
 
@@ -3378,7 +3886,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
     const transitions: Record<string, { forward: string[]; backward: string[] }> = {
       pending: { forward: ['preparing'], backward: [] },
       preparing: { forward: ['ready'], backward: ['pending'] },
-      ready: { forward: ['completed'], backward: ['preparing'] },
+      ready: { forward: ['out_for_delivery', 'completed'], backward: ['preparing'] },
+      out_for_delivery: { forward: ['completed'], backward: ['ready'] },
       completed: { forward: [], backward: ['ready'] }, // Paid is handled via modal
       partially_delivered: { forward: ['completed'], backward: [] },
       paid: { forward: [], backward: [] }, // Unmark paid is a separate action (clears paid mark only)

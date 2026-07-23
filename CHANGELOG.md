@@ -8,15 +8,106 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Added
+
+- **Unpaid public delivery cleanup cron:** Documented amvara9 host cron (hourly UTC) and added `scripts/cleanup-unpaid-public-delivery-on-server.sh` so abandoned unpaid public Satisfecho Delivery checkouts are cleaned on all tenants (separate from tenant-1 demo reset).
+
+## [2.1.27] - 2026-07-23
+
+### Added
+
+- **Unpaid public delivery cleanup:** Ops can cancel abandoned unpaid Satisfecho Delivery guest checkouts past a 2h TTL (`python -m app.seeds.cleanup_unpaid_public_delivery`); staff-created delivery orders are never touched, and kitchen is not re-notified.
+
+### Changed
+
+- **Security review:** Residual risk for unpaid public delivery orders now documents the TTL cleanup seed and how to run it.
+
+## [2.1.26] - 2026-07-23
+
+### Added
+
+- **Platform operator Delivery link:** Tenant detail Public pages now include a deep-link to Satisfecho Delivery checkout (`/delivery/{tenantId}`), with i18n labels and docs; the platform-operator smoke asserts the link.
+
+## [2.1.25] - 2026-07-23
+
+### Fixed
+
+- **Demo tables seed:** Tenants with a partial T01–T10 set (especially tenant 1) are repaired on seed — missing names are created and wrong seat counts corrected — so `check_demo_tables`, Take Away, and demo/book smokes stay green (#305).
+
+## [2.1.24] - 2026-07-22
+
+### Added
+
+- **Public Satisfecho Delivery checkout:** Guests can order delivery at `/delivery/{tenantId}` (menu → cart → address → pay) via `POST /public/tenants/{id}/satisfecho-delivery`; kitchen notify waits until Stripe/Revolut payment with `public_order_token` (#302). Follow-up: catalog menu IDs (`TenantProduct`) still need mapping on create (#304).
+- **Daily demo data reset:** Documented amvara9 host cron (`0 4 * * *` UTC) and made `scripts/reset-demo-data-on-server.sh` executable so tenant 1 orders/reservations can refresh automatically.
+- **Restaurant groups guide:** Documented multi-location restaurant groups (create/join/leave, share customers/products, Settings tab) in `docs/0054-restaurant-groups.md` and indexed it under Feature guides.
+
+### Changed
+
+- **Rate limiting ops doc:** `docs/0020` now lists waiting-list, public Satisfecho Delivery create, and marketplace delivery webhook limits (shared public-menu IP bucket) plus related env vars.
+
+### Fixed
+
+- **Demo data reset:** Clearing tenant 1 orders no longer fails on fiscal invoice / inventory FK rows; child rows are deleted before orders.
+- **Delivery webhook:** `POST /public/webhooks/delivery/{token}` is rate-limited with the public-menu IP bucket and returns SlowAPI headers.
+
+## [2.1.23] - 2026-07-22
+
+### Added
+
+- **SaaS signup paywall:** New restaurant signups can be required to start a free trial or subscribe before using the staff app (`/paywall`, 402 lock when enabled). Existing tenants stay grandfathered; paywall stays **off** by default (`SAAS_PAYWALL_ENABLED`) (#296).
+- **SaaS Stripe webhook:** `POST /saas/webhook` verifies Stripe signatures and syncs trial/active/`past_due`/cancel without relying only on browser `confirm-checkout` (#296).
+- **Paywall smoke test:** `npm run test:paywall` covers register → `/paywall` → trial → dashboard (skips cleanly when paywall is off).
+
+### Changed
+
+- **Security review:** Documented SaaS paywall middleware, platform Checkout, and signed billing webhook; residual risk is ops readiness before enabling the paywall in production (#296).
+
+## [2.1.22] - 2026-07-21
+
+### Fixed
+
+- **ws-bridge build:** Pin Compose images to `pos-back` / `pos-ws-bridge` and build the bridge `FROM pos-back` via Compose `additional_contexts`, so clones named `pos` (not `pos2`) no longer fail resolving `pos2-back`; CMD remains `uvicorn main:app` on **8021** (#303).
+
+## [2.1.21] - 2026-07-21
+
+### Added
+
+- **Courier status actions:** On `/courier/orders/{id}`, couriers can **accept**, **reject**, **mark picked up** (`out_for_delivery`), and **mark delivered**; `POST /courier/orders/{id}/actions` keeps Order/OrderItem status aligned with kitchen (#301).
+
+## [2.1.20] - 2026-07-21
+
+### Added
+
+- **Courier Mine tab:** Couriers see staff-assigned deliveries on `/courier` (**Mine**) with address, customer, phone, and totals; **Available** shows unassigned open orders; list API includes assignment fields; refresh control on the courier home (#300).
+
+## [2.1.19] - 2026-07-21
+
+### Added
+
+- **Staff Satisfecho Delivery UI:** On `/staff/orders`, staff can create delivery orders (address required, optional courier), filter a **Delivery** tab with channel badges, and edit address/courier via the existing delivery API; `GET /users/couriers` feeds the assign dropdown (#299).
+
+## [2.1.18] - 2026-07-21
+
+### Removed
+
+- **Marketing / Gustazo:** Stopped serving and syncing the Gustazo marketing SPA from POS — removed from **`config/marketing-sites.json`**, deleted **`front/sites/gustazo/`**, dropped Gustazo-only deploy smoke and legacy fetch wrappers; remaining marketing sites continue via the generic sync (#298).
+
+## [2.1.17] - 2026-07-20
+
+### Added
+
+- **Satisfecho Delivery orders:** Staff can create and update first-party delivery orders (channel, address, phone, optional courier) via the API; kitchen/order lists distinguish them from table orders, and courier list/detail return the real delivery address and phone instead of nulls (#297).
+
 ## [2.1.16] - 2026-07-14
 
 ### Added
 
-- **Platform operator portal:** Tenant list and detail pages for operators — owner/staff contact emails, activity stats, and links to each tenant's public menu, booking, and waitlist pages (`/platform/tenants/{id}`).
+- **Platform operator portal:** Tenant list and detail pages for operators — owner/staff contact emails, activity stats (products, tables, users, orders, reservations), and links to each tenant's public menu, booking, and waitlist pages at **`/platform/tenants/{id}`** (#292).
 
 ### Changed
 
-- **Release / production:** Promoted **`development` → `master`** and deployed to amvara9 (**satisfecho.de**) — live **2.1.16**.
+- **Platform operator dashboard:** All-tenants table with owner contact and public-menu shortcuts; recent logins show user email and tenant name with links to tenant detail (#292).
 
 ## [2.1.15] - 2026-07-13
 

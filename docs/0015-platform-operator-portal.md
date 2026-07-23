@@ -23,6 +23,7 @@ Platform operators can:
     - `/public-menu/{id}` — guest menu
     - `/book/{id}` — reservations / booking
     - `/waitlist/{id}` — waitlist
+    - `/delivery/{id}` — Satisfecho Delivery checkout
 
 Operator users live in the same `User` table with `role=platform_operator`, `tenant_id=NULL`, and `provider_id=NULL`.
 
@@ -37,6 +38,8 @@ Operator users live in the same `User` table with `role=platform_operator`, `ten
 | Tenant detail | `/platform/tenants/{tenantId}` |
 | Guest menu (review) | `/public-menu/{tenantId}` |
 | Guest booking | `/book/{tenantId}` |
+| Guest waitlist | `/waitlist/{tenantId}` |
+| Guest delivery checkout | `/delivery/{tenantId}` |
 
 ---
 

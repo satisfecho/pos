@@ -1,7 +1,7 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { ApiService, CourierOrderDetail } from '../services/api.service';
+import { ApiService, CourierOrderAction, CourierOrderDetail } from '../services/api.service';
 
 @Component({
   selector: 'app-courier-order-detail',
@@ -29,6 +29,12 @@ import { ApiService, CourierOrderDetail } from '../services/api.service';
             <p class="courier-row">
               <span class="label">{{ 'COURIER_ORDERS.CUSTOMER' | translate }}</span>
               <span>{{ order()!.customer_name }}</span>
+            </p>
+          }
+          @if (order()!.customer_phone) {
+            <p class="courier-row">
+              <span class="label">{{ 'COURIER_ORDERS.PHONE' | translate }}</span>
+              <a [href]="'tel:' + order()!.customer_phone">{{ order()!.customer_phone }}</a>
             </p>
           }
           <p class="courier-row">
@@ -88,6 +94,35 @@ import { ApiService, CourierOrderDetail } from '../services/api.service';
             {{ formatMoney(order()!.total_cents) }}
           </p>
         </section>
+
+        @if (primaryActions().length || canReject()) {
+          <section class="courier-actions" aria-label="Order actions">
+            @if (actionError()) {
+              <p class="courier-error">{{ actionError() | translate }}</p>
+            }
+            @for (action of primaryActions(); track action) {
+              <button
+                type="button"
+                class="btn-action"
+                [class.btn-primary]="action !== 'reject'"
+                [disabled]="actionBusy()"
+                (click)="runAction(action)"
+              >
+                {{ actionLabelKey(action) | translate }}
+              </button>
+            }
+            @if (canReject()) {
+              <button
+                type="button"
+                class="btn-action btn-secondary"
+                [disabled]="actionBusy()"
+                (click)="runAction('reject')"
+              >
+                {{ 'COURIER_ORDERS.ACTION_REJECT' | translate }}
+              </button>
+            }
+          </section>
+        }
       }
     </div>
   `,
@@ -121,6 +156,11 @@ import { ApiService, CourierOrderDetail } from '../services/api.service';
       background: var(--color-surface);
       border: 1px solid var(--color-border);
     }
+    .courier-status[data-status='out_for_delivery'],
+    .courier-status[data-status='ready'] {
+      color: var(--color-primary);
+      border-color: var(--color-primary);
+    }
     .courier-card {
       background: var(--color-surface);
       border-radius: var(--radius-lg);
@@ -145,6 +185,7 @@ import { ApiService, CourierOrderDetail } from '../services/api.service';
       margin: 0 0 var(--space-2);
       font-size: 0.95rem;
     }
+    .courier-row a { color: var(--color-primary); }
     .label { color: var(--color-text-muted); }
     .courier-strong { font-weight: 600; margin: 0 0 var(--space-1); }
     .courier-muted { color: var(--color-text-muted); margin: 0; }
@@ -174,7 +215,37 @@ import { ApiService, CourierOrderDetail } from '../services/api.service';
       font-weight: 600;
       text-align: right;
     }
-    .courier-error { color: var(--color-error); }
+    .courier-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      margin-top: var(--space-2);
+      position: sticky;
+      bottom: var(--space-4);
+    }
+    .btn-action {
+      width: 100%;
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-action:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+    }
+    .btn-secondary {
+      background: var(--color-surface);
+      color: var(--color-text-muted);
+    }
+    .courier-error { color: var(--color-error); margin: 0 0 var(--space-2); }
   `]
 })
 export class CourierOrderDetailComponent implements OnInit {
@@ -184,6 +255,17 @@ export class CourierOrderDetailComponent implements OnInit {
   loading = signal(true);
   error = signal('');
   order = signal<CourierOrderDetail | null>(null);
+  actionBusy = signal(false);
+  actionError = signal('');
+
+  private allowed = computed(() => new Set(this.order()?.allowed_actions ?? []));
+
+  primaryActions = computed(() => {
+    const order: CourierOrderAction[] = ['accept', 'picked_up', 'delivered'];
+    return order.filter((a) => this.allowed().has(a));
+  });
+
+  canReject = computed(() => this.allowed().has('reject'));
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -192,16 +274,32 @@ export class CourierOrderDetailComponent implements OnInit {
       this.error.set('COURIER_ORDERS.NOT_FOUND');
       return;
     }
-    this.api.getCourierOrder(id).subscribe({
+    this.loadOrder(id);
+  }
+
+  runAction(action: CourierOrderAction): void {
+    const current = this.order();
+    if (!current || this.actionBusy()) {
+      return;
+    }
+    this.actionBusy.set(true);
+    this.actionError.set('');
+    this.api.courierOrderAction(current.id, action).subscribe({
       next: (detail) => {
         this.order.set(detail);
-        this.loading.set(false);
+        this.actionBusy.set(false);
       },
       error: (err) => {
-        this.loading.set(false);
-        this.error.set(err.status === 404 ? 'COURIER_ORDERS.NOT_FOUND' : 'COURIER_ORDERS.LOAD_FAILED');
-      }
+        this.actionBusy.set(false);
+        this.actionError.set(
+          err.status === 400 ? 'COURIER_ORDERS.ACTION_NOT_ALLOWED' : 'COURIER_ORDERS.ACTION_FAILED'
+        );
+      },
     });
+  }
+
+  actionLabelKey(action: CourierOrderAction): string {
+    return `COURIER_ORDERS.ACTION_${action.toUpperCase()}`;
   }
 
   statusLabelKey(status: string): string {
@@ -219,5 +317,19 @@ export class CourierOrderDetailComponent implements OnInit {
 
   formatMoney(cents: number): string {
     return (cents / 100).toFixed(2);
+  }
+
+  private loadOrder(id: number): void {
+    this.loading.set(true);
+    this.api.getCourierOrder(id).subscribe({
+      next: (detail) => {
+        this.order.set(detail);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.loading.set(false);
+        this.error.set(err.status === 404 ? 'COURIER_ORDERS.NOT_FOUND' : 'COURIER_ORDERS.LOAD_FAILED');
+      },
+    });
   }
 }

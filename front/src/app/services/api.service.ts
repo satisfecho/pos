@@ -322,6 +322,19 @@ export interface RegisterResponse {
   email: string;
 }
 
+/** Platform SaaS subscription / hard paywall (issue #296) */
+export interface SaasSubscription {
+  enabled: boolean;
+  trial_days: number;
+  price_cents: number;
+  currency: string;
+  stripe_checkout_available: boolean;
+  status?: string;
+  has_access?: boolean;
+  trial_ends_at?: string | null;
+  subscription_ends_at?: string | null;
+}
+
 /** Provider portal types */
 export interface ProviderInfo {
   id: number;
@@ -412,6 +425,12 @@ export interface CourierOrderSummary {
   item_summary: string;
   pickup_name: string | null;
   pickup_address: string | null;
+  delivery_address?: string | null;
+  customer_phone?: string | null;
+  courier_user_id?: number | null;
+  order_channel?: string | null;
+  total_cents?: number;
+  allowed_actions?: string[];
 }
 
 export interface CourierOrderItem {
@@ -424,10 +443,17 @@ export interface CourierOrderItem {
 export interface CourierOrderDetail extends CourierOrderSummary {
   delivery_notes: string | null;
   delivery_address: string | null;
+  customer_phone?: string | null;
+  courier_user_id?: number | null;
+  order_channel?: string | null;
   external_order_ref: string | null;
   total_cents: number;
   items: CourierOrderItem[];
+  allowed_actions?: string[];
 }
+
+export type CourierOrderAction = 'accept' | 'reject' | 'picked_up' | 'delivered';
+
 
 export interface ProviderRegisterData {
   provider_name: string;
@@ -1270,6 +1296,69 @@ export interface Order {
   staff_urgent?: boolean;
   /** When set, joined tables label e.g. "T1 + T2" for staff context */
   table_group_label?: string | null;
+  /** table | satisfecho_delivery | marketplace */
+  order_channel?: string | null;
+  delivery_address?: string | null;
+  customer_phone?: string | null;
+  courier_user_id?: number | null;
+  delivery_integration_id?: number | null;
+  external_order_ref?: string | null;
+}
+
+/** Staff create first-party Satisfecho Delivery order (no table). */
+export interface SatisfechoDeliveryOrderCreate {
+  items: OrderItemCreate[];
+  delivery_address: string;
+  customer_phone?: string | null;
+  customer_name?: string | null;
+  notes?: string | null;
+  courier_user_id?: number | null;
+}
+
+export interface OrderDeliveryUpdate {
+  delivery_address?: string | null;
+  customer_phone?: string | null;
+  customer_name?: string | null;
+  notes?: string | null;
+  courier_user_id?: number | null;
+}
+
+export interface SatisfechoDeliveryOrderResponse {
+  id: number;
+  status?: string;
+  order_channel: string;
+  delivery_address: string | null;
+  customer_phone: string | null;
+  customer_name: string | null;
+  notes?: string | null;
+  courier_user_id: number | null;
+  table_id?: number | null;
+  created_at?: string | null;
+}
+
+/** Public guest Satisfecho Delivery create (no auth). */
+export interface PublicSatisfechoDeliveryOrderCreate {
+  items: OrderItemCreate[];
+  delivery_address: string;
+  customer_phone: string;
+  customer_name?: string | null;
+  notes?: string | null;
+}
+
+export interface PublicSatisfechoDeliveryOrderResponse {
+  id: number;
+  status: string;
+  order_channel: string;
+  delivery_address: string | null;
+  customer_phone: string | null;
+  customer_name: string | null;
+  notes?: string | null;
+  table_id: number | null;
+  total_cents: number;
+  public_order_token: string;
+  stripe_publishable_key?: string | null;
+  revolut_configured: boolean;
+  created_at?: string | null;
 }
 
 export interface MenuResponse {
@@ -1659,6 +1748,31 @@ export class ApiService {
     );
   }
 
+  getSaasConfig(): Observable<SaasSubscription> {
+    return this.http.get<SaasSubscription>(`${this.apiUrl}/saas/config`);
+  }
+
+  getSaasSubscription(): Observable<SaasSubscription> {
+    return this.http.get<SaasSubscription>(`${this.apiUrl}/saas/subscription`);
+  }
+
+  startSaasTrial(): Observable<SaasSubscription> {
+    return this.http.post<SaasSubscription>(`${this.apiUrl}/saas/start-trial`, {});
+  }
+
+  createSaasCheckoutSession(successUrl: string, cancelUrl: string): Observable<{ url: string }> {
+    return this.http.post<{ url: string }>(`${this.apiUrl}/saas/checkout-session`, {
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+    });
+  }
+
+  confirmSaasCheckout(sessionId: string): Observable<SaasSubscription> {
+    return this.http.post<SaasSubscription>(`${this.apiUrl}/saas/confirm-checkout`, {
+      session_id: sessionId,
+    });
+  }
+
   /** Login: sends username/password as application/x-www-form-urlencoded (required by backend OAuth2PasswordRequestForm). May return 403 with require_otp + temp_token when OTP is enabled. */
   login(username: string, password: string, tenantId?: number, scope?: 'tenant' | 'provider' | 'courier' | 'platform'): Observable<any> {
     let queryParams = new HttpParams();
@@ -1799,6 +1913,12 @@ export class ApiService {
 
   getCourierOrder(orderId: number): Observable<CourierOrderDetail> {
     return this.http.get<CourierOrderDetail>(`${this.apiUrl}/courier/orders/${orderId}`);
+  }
+
+  courierOrderAction(orderId: number, action: CourierOrderAction): Observable<CourierOrderDetail> {
+    return this.http.post<CourierOrderDetail>(`${this.apiUrl}/courier/orders/${orderId}/actions`, {
+      action,
+    });
   }
 
   getProviderCatalog(search?: string): Observable<ProviderCatalogItem[]> {
@@ -2252,10 +2372,36 @@ export class ApiService {
     );
   }
 
+  /** Tenant users with courier role (for Satisfecho Delivery assign). Uses ORDER_READ-scoped endpoint. */
+  getCouriers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/users/couriers`).pipe(
+      catchError(() => of([]))
+    );
+  }
+
   // Orders
   getOrders(includeRemoved: boolean = false): Observable<Order[]> {
     const params = includeRemoved ? { params: { include_removed: 'true' } } : {};
     return this.http.get<Order[]>(`${this.apiUrl}/orders`, params);
+  }
+
+  createSatisfechoDeliveryOrder(body: SatisfechoDeliveryOrderCreate): Observable<SatisfechoDeliveryOrderResponse> {
+    return this.http.post<SatisfechoDeliveryOrderResponse>(`${this.apiUrl}/orders/satisfecho-delivery`, body);
+  }
+
+  /** Public guest: create Satisfecho Delivery order (address + phone required). */
+  createPublicSatisfechoDeliveryOrder(
+    tenantId: number,
+    body: PublicSatisfechoDeliveryOrderCreate,
+  ): Observable<PublicSatisfechoDeliveryOrderResponse> {
+    return this.http.post<PublicSatisfechoDeliveryOrderResponse>(
+      `${this.apiUrl}/public/tenants/${tenantId}/satisfecho-delivery`,
+      body,
+    );
+  }
+
+  updateOrderDelivery(orderId: number, body: OrderDeliveryUpdate): Observable<SatisfechoDeliveryOrderResponse> {
+    return this.http.put<SatisfechoDeliveryOrderResponse>(`${this.apiUrl}/orders/${orderId}/delivery`, body);
   }
 
   /** Staff-only: get a short-lived token to open the public menu for a table without PIN. */
@@ -2583,28 +2729,70 @@ export class ApiService {
   }
 
   // Payments
-  createPaymentIntent(orderId: number, tableToken: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/orders/${orderId}/create-payment-intent?table_token=${tableToken}`, {});
+  createPaymentIntent(
+    orderId: number,
+    tableToken: string | null,
+    publicOrderToken?: string | null,
+  ): Observable<any> {
+    const params = new URLSearchParams();
+    if (publicOrderToken) {
+      params.set('public_order_token', publicOrderToken);
+    } else if (tableToken) {
+      params.set('table_token', tableToken);
+    }
+    return this.http.post(`${this.apiUrl}/orders/${orderId}/create-payment-intent?${params.toString()}`, {});
   }
 
-  confirmPayment(orderId: number, tableToken: string, paymentIntentId: string): Observable<any> {
+  confirmPayment(
+    orderId: number,
+    tableToken: string | null,
+    paymentIntentId: string,
+    publicOrderToken?: string | null,
+  ): Observable<any> {
+    const params = new URLSearchParams();
+    params.set('payment_intent_id', paymentIntentId);
+    if (publicOrderToken) {
+      params.set('public_order_token', publicOrderToken);
+    } else if (tableToken) {
+      params.set('table_token', tableToken);
+    }
     return this.http.post(
-      `${this.apiUrl}/orders/${orderId}/confirm-payment?table_token=${tableToken}&payment_intent_id=${paymentIntentId}`,
-      {}
+      `${this.apiUrl}/orders/${orderId}/confirm-payment?${params.toString()}`,
+      {},
     );
   }
 
-  createRevolutOrder(orderId: number, tableToken: string): Observable<{ checkout_url: string; revolut_order_id: string; order_id: number }> {
+  createRevolutOrder(
+    orderId: number,
+    tableToken: string | null,
+    publicOrderToken?: string | null,
+  ): Observable<{ checkout_url: string; revolut_order_id: string; order_id: number }> {
+    const params = new URLSearchParams();
+    if (publicOrderToken) {
+      params.set('public_order_token', publicOrderToken);
+    } else if (tableToken) {
+      params.set('table_token', tableToken);
+    }
     return this.http.post<{ checkout_url: string; revolut_order_id: string; order_id: number }>(
-      `${this.apiUrl}/orders/${orderId}/create-revolut-order?table_token=${tableToken}`,
-      {}
+      `${this.apiUrl}/orders/${orderId}/create-revolut-order?${params.toString()}`,
+      {},
     );
   }
 
-  confirmRevolutPayment(orderId: number, tableToken: string): Observable<{ status: string; order_id: number }> {
+  confirmRevolutPayment(
+    orderId: number,
+    tableToken: string | null,
+    publicOrderToken?: string | null,
+  ): Observable<{ status: string; order_id: number }> {
+    const params = new URLSearchParams();
+    if (publicOrderToken) {
+      params.set('public_order_token', publicOrderToken);
+    } else if (tableToken) {
+      params.set('table_token', tableToken);
+    }
     return this.http.post<{ status: string; order_id: number }>(
-      `${this.apiUrl}/orders/${orderId}/confirm-revolut-payment?table_token=${tableToken}`,
-      {}
+      `${this.apiUrl}/orders/${orderId}/confirm-revolut-payment?${params.toString()}`,
+      {},
     );
   }
 

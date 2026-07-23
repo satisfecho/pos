@@ -447,7 +447,23 @@ export class LoginComponent implements OnInit {
             void this.router.navigate(['/courier']);
           } else if (user?.provider_id != null) {
             void this.router.navigate(['/provider']);
+          } else if (user?.tenant_id != null) {
+            this.api.getSaasSubscription().subscribe({
+              next: (sub) => {
+                this.loading.set(false);
+                if (sub.enabled && !sub.has_access) {
+                  void this.router.navigate(['/paywall']);
+                } else {
+                  void this.router.navigate(['/dashboard']);
+                }
+              },
+              error: () => {
+                this.loading.set(false);
+                void this.router.navigate(['/dashboard']);
+              },
+            });
           } else {
+            this.loading.set(false);
             void this.router.navigate(['/dashboard']);
           }
         });
@@ -479,7 +495,23 @@ export class LoginComponent implements OnInit {
             void this.router.navigate(['/courier']);
           } else if (user?.provider_id != null) {
             void this.router.navigate(['/provider']);
+          } else if (user?.tenant_id != null) {
+            this.api.getSaasSubscription().subscribe({
+              next: (sub) => {
+                this.loading.set(false);
+                if (sub.enabled && !sub.has_access) {
+                  void this.router.navigate(['/paywall']);
+                } else {
+                  void this.router.navigate(['/dashboard']);
+                }
+              },
+              error: () => {
+                this.loading.set(false);
+                void this.router.navigate(['/dashboard']);
+              },
+            });
           } else {
+            this.loading.set(false);
             void this.router.navigate(['/dashboard']);
           }
         });
