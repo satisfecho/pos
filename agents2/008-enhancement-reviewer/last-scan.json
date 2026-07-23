@@ -120,8 +120,9 @@
     "2026-07-23T10:56:08Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=51 (defer more FEAT/doc tasks); unqueued stale docs=0; archive-demo-tables NEW already queued (1044); preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-23T11:04:44Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=51 (defer more FEAT/doc tasks); unqueued stale docs=0; archive-demo-tables NEW already queued (1044); preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-23T11:12:49Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=51 (defer more FEAT/doc tasks); unqueued stale docs=0; preflight meta (1433/2120) + archive-demo-tables (1044) already queued; queued 0 FEAT + 0 NEW (no task spam)",
-    "2026-07-23T11:29:23Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=51 (defer more FEAT/doc tasks); unqueued stale docs=0; archive-demo-tables NEW already queued (1044); preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)"
+    "2026-07-23T11:29:23Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=51 (defer more FEAT/doc tasks); unqueued stale docs=0; archive-demo-tables NEW already queued (1044); preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)",
+    "2026-07-23T11:38:26Z: docs_stale\u00d714 all SIGNAL basenames already owned; demo_tables_check=ok; Unreleased=2; NEW backlog=51; queued 0 FEAT + 2 NEW (align AGENTS.md/cursor-rules to agents2; retarget/close stale changelog Unreleased NEW); deferred bulk docs + WIP-304"
   ],
-  "last_run": "2026-07-23T11:29:34Z",
+  "last_run": "2026-07-23T11:38:30Z",
   "last_signals": 15
 }
