@@ -89,8 +89,9 @@
     "2026-07-23T19:18:00Z: docs_stale\u00d714 + changelog_sparse after 2.1.29 cut all owned; demo_tables_check=ok; Unreleased empty (fresh cut); NEW backlog\u224898; unqueued themes: stale commit-hash.ts 2.1.8 vs package 2.1.29, committer bump hygiene, staff delivery smoke; queued 1 FEAT + 2 NEW",
     "2026-07-23T19:34:11Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased=1 post-2.1.29; NEW backlog\u2248100; unqueued themes: delivery-checkout cart harness flake (CLOSED-304), AGENTS Key URLs Jul routes, entrypoint commit-hash regen visibility; queued 0 FEAT + 3 NEW",
     "2026-07-23T19:43:34Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased=1 post-2.1.29; NEW backlog\u2248103; unqueued themes: staff guest-feedback smoke, README /feedback Access Point + 0011 pointer, README Configuration SAAS_PAYWALL_ENABLED; queued 0 FEAT + 3 NEW",
-    "2026-07-23T19:52:24Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased=1 post-2.1.29; NEW backlog\u2248106; unqueued themes: demo Delivery seed, README /bar Access Point, bar-display Puppeteer smoke; queued 1 FEAT + 2 NEW"
+    "2026-07-23T19:52:24Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased=1 post-2.1.29; NEW backlog\u2248106; unqueued themes: demo Delivery seed, README /bar Access Point, bar-display Puppeteer smoke; queued 1 FEAT + 2 NEW",
+    "2026-07-23T20:04:30Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased empty post-2.1.30; NEW backlog\u2248108; unqueued themes: demo courier seed, check demo delivery orders, README Documentation Jul guides; queued 0 FEAT + 3 NEW"
   ],
-  "last_run": "2026-07-23T19:52:49Z",
+  "last_run": "2026-07-23T20:06:13Z",
   "last_signals": 15
 }
