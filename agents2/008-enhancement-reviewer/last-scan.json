@@ -84,8 +84,9 @@
     "2026-07-23T18:25:31Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased=1 post-2.1.28; NEW backlog\u224888; unqueued themes: docs/README missing PRINTING, 0051 table-groups, agent-cursor-rules; queued 0 FEAT + 3 NEW (index PRINTING, index 0051, index agent-cursor-rules)",
     "2026-07-23T18:33:00Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased=1 post-2.1.28; NEW backlog\u224891; unqueued themes: review-order-edit npm alias, one-off puppeteer retire/document, debug-working-plan-calendar testing index; queued 0 FEAT + 3 NEW",
     "2026-07-23T18:44:57Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased=1 post-2.1.28; NEW backlog\u224894; unqueued themes: i18n leaf-parity check, Jul screenshots capture, config.env unpaid-cleanup pointer; queued 1 FEAT + 2 NEW",
-    "2026-07-23T18:56:34Z: docs_stale\u00d714 all SIGNAL basenames already owned; demo_tables_check=ok; Unreleased=2; NEW backlog\u224896; 1842/1833/prior hygiene + preflight meta (1433/2120) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)"
+    "2026-07-23T18:56:34Z: docs_stale\u00d714 all SIGNAL basenames already owned; demo_tables_check=ok; Unreleased=2; NEW backlog\u224896; 1842/1833/prior hygiene + preflight meta (1433/2120) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
+    "2026-07-23T19:05:31Z: docs_stale\u00d714 all SIGNAL basenames owned; demo_tables_check=ok; Unreleased=2; NEW backlog\u224896; unqueued theme: public /features missing Jul capabilities + docs + smoke; queued 1 FEAT + 2 NEW (refresh features page, document /features, features Puppeteer smoke)"
   ],
-  "last_run": "2026-07-23T18:56:41Z",
+  "last_run": "2026-07-23T19:05:54Z",
   "last_signals": 14
 }
