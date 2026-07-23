@@ -161,8 +161,9 @@
     "2026-07-23T17:14:43Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased empty post-2.1.28; NEW backlog=68; unqueued themes: 0021 duplicate renumber, order-comments Puppeteer smoke, docs/README 0011 waiting-list blurb; queued 0 FEAT + 3 NEW",
     "2026-07-23T17:24:37Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased empty post-2.1.28; NEW backlog=71; unqueued themes: working-plan-calendar smoke index, 0053 TenantProduct IDs (#304), docs/README agent-loop agents2 blurb; queued 0 FEAT + 3 NEW",
     "2026-07-23T17:34:30Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased empty post-2.1.28; NEW backlog=74; unqueued themes: SECURITY #304 TenantProduct, docs/README 0053 Feature guides blurb, move-agent-task agents2 examples; queued 0 FEAT + 3 NEW",
-    "2026-07-23T17:44:00Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased empty post-2.1.28; NEW backlog=77; unqueued themes: docs/README Quick links groups, root README groups+waitlist, SECURITY waiting-list+groups; queued 0 FEAT + 3 NEW"
+    "2026-07-23T17:44:00Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased empty post-2.1.28; NEW backlog=77; unqueued themes: docs/README Quick links groups, root README groups+waitlist, SECURITY waiting-list+groups; queued 0 FEAT + 3 NEW",
+    "2026-07-23T17:52:16Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased empty post-2.1.28; NEW backlog=80; unqueued themes: VeriFactu docs/README index, 0012 add-language example still uses shipped fr, guided-signup wizard Puppeteer smoke; queued 0 FEAT + 3 NEW"
   ],
-  "last_run": "2026-07-23T17:45:03Z",
+  "last_run": "2026-07-23T17:54:04Z",
   "last_signals": 16
 }
