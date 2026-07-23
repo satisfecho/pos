@@ -113,8 +113,9 @@
     "2026-07-23T09:42:47Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; preflight meta NEWs (last_review_iso/skip-stale/backlog/skip-demo/changelog-sparse) already queued; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-23T09:51:26Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-23T10:02:04Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)",
-    "2026-07-23T10:12:14Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)"
+    "2026-07-23T10:12:14Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)",
+    "2026-07-23T10:20:43Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)"
   ],
-  "last_run": "2026-07-23T10:12:23Z",
+  "last_run": "2026-07-23T10:21:16Z",
   "last_signals": 15
 }
