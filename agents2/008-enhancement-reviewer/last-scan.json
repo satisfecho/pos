@@ -160,8 +160,9 @@
     "2026-07-23T16:59:45Z: docs_stale\u00d714 all SIGNAL basenames owned; demo_tables_check=ok; Unreleased=2; NEW backlog=65; unqueued themes: de (~91) + es (~15) i18n gaps (prior fr task wrongly claimed parity) + restaurant-groups Puppeteer smoke; queued 0 FEAT + 3 NEW (backfill de, backfill es, restaurant-groups smoke)",
     "2026-07-23T17:14:43Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased empty post-2.1.28; NEW backlog=68; unqueued themes: 0021 duplicate renumber, order-comments Puppeteer smoke, docs/README 0011 waiting-list blurb; queued 0 FEAT + 3 NEW",
     "2026-07-23T17:24:37Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased empty post-2.1.28; NEW backlog=71; unqueued themes: working-plan-calendar smoke index, 0053 TenantProduct IDs (#304), docs/README agent-loop agents2 blurb; queued 0 FEAT + 3 NEW",
-    "2026-07-23T17:34:30Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased empty post-2.1.28; NEW backlog=74; unqueued themes: SECURITY #304 TenantProduct, docs/README 0053 Feature guides blurb, move-agent-task agents2 examples; queued 0 FEAT + 3 NEW"
+    "2026-07-23T17:34:30Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased empty post-2.1.28; NEW backlog=74; unqueued themes: SECURITY #304 TenantProduct, docs/README 0053 Feature guides blurb, move-agent-task agents2 examples; queued 0 FEAT + 3 NEW",
+    "2026-07-23T17:44:00Z: docs_stale\u00d714 + changelog_sparse already owned; demo_tables_check=ok; Unreleased empty post-2.1.28; NEW backlog=77; unqueued themes: docs/README Quick links groups, root README groups+waitlist, SECURITY waiting-list+groups; queued 0 FEAT + 3 NEW"
   ],
-  "last_run": "2026-07-23T17:34:58Z",
+  "last_run": "2026-07-23T17:45:03Z",
   "last_signals": 16
 }
