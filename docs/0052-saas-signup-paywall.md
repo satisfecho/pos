@@ -59,3 +59,44 @@ Signing secret → `SAAS_STRIPE_WEBHOOK_SECRET`. Checkout and Subscription metad
 2. Finish → `/paywall` (when enabled).
 3. Start trial (or Stripe Checkout) → staff dashboard unlocks.
 4. Stripe lifecycle (renew / past_due / cancel) updates tenant columns via webhook.
+
+## Production enablement
+
+Keep **`SAAS_PAYWALL_ENABLED=false`** until this checklist is done. Do **not** flip the flag mid-deploy without webhook + Price ID ready — cancel / `past_due` / renewals will not sync. amvara9 ops pointer: [0001-ci-cd-amvara9.md](0001-ci-cd-amvara9.md) (§ SaaS paywall).
+
+Ordered checklist (local or amvara9 `/development/pos`):
+
+1. **Stripe Price + platform keys** — Create a recurring Price in Stripe Dashboard (or API). Set in `config.env`:
+   - `STRIPE_SECRET_KEY` / `STRIPE_PUBLISHABLE_KEY` (platform SaaS Checkout)
+   - `SAAS_STRIPE_PRICE_ID=price_…`
+   - Optional display overrides: `SAAS_TRIAL_DAYS`, `SAAS_PLAN_PRICE_CENTS`, `SAAS_PLAN_CURRENCY`
+2. **Dashboard webhook** — Developers → Webhooks → endpoint **`https://<host>/api/saas/webhook`** (prod behind HAProxy; local: Stripe CLI forward to `{API}/saas/webhook`). Enable events listed under **Stripe webhook** above. Copy signing secret → `SAAS_STRIPE_WEBHOOK_SECRET=whsec_…`.
+3. **Confirm grandfathering** — Existing restaurants must stay `grandfathered` (migration already did this). Spot-check before enabling:
+   ```bash
+   docker compose --env-file config.env exec -T back \
+     python -c "from sqlmodel import Session, select; from app.db import engine; from app import models; s=Session(engine); rows=s.exec(select(models.Tenant.id, models.Tenant.name, models.Tenant.saas_subscription_status)).all(); print('\n'.join(f'{i}\t{n}\t{st}' for i,n,st in rows))"
+   ```
+4. **Enable flag** — Set `SAAS_PAYWALL_ENABLED=true` in `config.env`, then recreate **back** so compose injects env:
+   ```bash
+   # Local
+   docker compose --env-file config.env -f docker-compose.yml -f docker-compose.dev.yml up -d back
+   # amvara9
+   cd /development/pos && docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml up -d back
+   ```
+5. **Verify config** — Expect `"enabled": true`:
+   ```bash
+   # Local (HAProxy)
+   curl -sS http://127.0.0.1:4202/api/saas/config
+   # Production
+   curl -sS https://www.satisfecho.de/api/saas/config
+   ```
+6. **Dry-run signup** — Register a throwaway restaurant → finish onboarding → land on `/paywall` → **Start free trial** (or Checkout) → staff dashboard unlocks. Existing grandfathered tenants must still reach `/dashboard` without `/paywall`.
+7. **Smoke (optional)** — With paywall on:
+   ```bash
+   BASE_URL=http://127.0.0.1:4202 REQUIRE_PAYWALL=1 npm run test:paywall --prefix front
+   # Prod example:
+   BASE_URL=https://www.satisfecho.de REQUIRE_PAYWALL=1 npm run test:paywall --prefix front
+   ```
+   Full notes: `docs/testing.md` (§ SaaS signup paywall). Restore `SAAS_PAYWALL_ENABLED=false` afterward if this was only a local dry-run.
+
+**Rollback:** set `SAAS_PAYWALL_ENABLED=false`, recreate `back`. Middleware and `/paywall` redirects stop; tenants already `trialing`/`active` keep their columns.

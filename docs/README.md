@@ -52,7 +52,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | [0017-billing-customers-factura.md](0017-billing-customers-factura.md) | Billing customers (Factura): register company details, search, print invoice with “Bill to”. |
 | [0028-tenant-public-branding.md](0028-tenant-public-branding.md) | Tenant public branding: background colour and header image for book, menu, reservation-view. |
 | [0015-platform-operator-portal.md](0015-platform-operator-portal.md) | Platform operator portal: SaaS metrics and tenant oversight. |
-| [0052-saas-signup-paywall.md](0052-saas-signup-paywall.md) | Hard paywall for restaurant signups: trial/subscribe before staff app (issue #296). |
+| [0052-saas-signup-paywall.md](0052-saas-signup-paywall.md) | Hard paywall for restaurant signups: trial/subscribe before staff app (issue #296). Keep off until ready; production enablement checklist in the doc (see also amvara9 § SaaS paywall in 0001). |
 | [0053-satisfecho-delivery-order-channel.md](0053-satisfecho-delivery-order-channel.md) | First-party Satisfecho Delivery on Order: channel, address, phone, courier API (issue #297). |
 | [0054-restaurant-groups.md](0054-restaurant-groups.md) | Restaurant groups: multi-location join codes; optional shared billing customers/products (issue #283). |
 | [REVOLUT.md](REVOLUT.md) | Revolut Merchant API: checkout extension, sandbox CSR, redirect URLs, tenant payment setup. |
