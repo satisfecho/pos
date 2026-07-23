@@ -123,8 +123,9 @@
     "2026-07-23T11:29:23Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=51 (defer more FEAT/doc tasks); unqueued stale docs=0; archive-demo-tables NEW already queued (1044); preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-23T11:38:26Z: docs_stale\u00d714 all SIGNAL basenames already owned; demo_tables_check=ok; Unreleased=2; NEW backlog=51; queued 0 FEAT + 2 NEW (align AGENTS.md/cursor-rules to agents2; retarget/close stale changelog Unreleased NEW); deferred bulk docs + WIP-304",
     "2026-07-23T11:47:15Z: docs_stale\u00d714 all SIGNAL basenames already owned; demo_tables_check=ok; Unreleased=2; NEW backlog=53; 1138 hygiene + preflight meta (1433/2120) + archive-demo-tables (1044) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
-    "2026-07-23T11:55:00Z: docs_stale\u00d714 all SIGNAL basenames already owned; demo_tables_check=ok; Unreleased=2; NEW backlog=53; queued 0 FEAT + 3 NEW (TASKS-README agents2 paths, pos-cursor-loop prompts, done/README); deferred bulk docs + WIP-304"
+    "2026-07-23T11:55:00Z: docs_stale\u00d714 all SIGNAL basenames already owned; demo_tables_check=ok; Unreleased=2; NEW backlog=53; queued 0 FEAT + 3 NEW (TASKS-README agents2 paths, pos-cursor-loop prompts, done/README); deferred bulk docs + WIP-304",
+    "2026-07-23T12:06:02Z: docs_stale\u00d714 all SIGNAL basenames already owned; demo_tables_check=ok; Unreleased=2; NEW backlog=56; 1138/1155 hygiene + preflight meta (1433/2120) + archive-demo-tables (1044) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)"
   ],
-  "last_run": "2026-07-23T11:56:36Z",
+  "last_run": "2026-07-23T12:06:12Z",
   "last_signals": 15
 }
