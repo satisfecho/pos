@@ -103,6 +103,9 @@ import { ApiService, PlatformTenantDetail } from '../services/api.service';
             <a [href]="publicUrl('waitlist')" target="_blank" rel="noopener noreferrer" class="link-btn">
               {{ 'PLATFORM_DASHBOARD.LINK_WAITLIST' | translate }}
             </a>
+            <a [href]="publicUrl('delivery')" target="_blank" rel="noopener noreferrer" class="link-btn">
+              {{ 'PLATFORM_DASHBOARD.LINK_DELIVERY' | translate }}
+            </a>
           </div>
         </section>
 

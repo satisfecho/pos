@@ -8,6 +8,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.26] - 2026-07-23
+
+### Added
+
+- **Platform operator Delivery link:** Tenant detail Public pages now include a deep-link to Satisfecho Delivery checkout (`/delivery/{tenantId}`), with i18n labels and docs; the platform-operator smoke asserts the link.
+
 ## [2.1.25] - 2026-07-23
 
 ### Fixed
