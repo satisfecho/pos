@@ -8,6 +8,7 @@ agents/.pos-agent-loop/
 agents/tmp/
 agents2/001-gh-reviewer/time-of-last-review.txt
 agents2/008-enhancement-reviewer/time-of-last-review.txt
+agents2/008-enhancement-reviewer/time-of-last-review.archive.txt
 .tmp/
 .DS_Store
 *.swp

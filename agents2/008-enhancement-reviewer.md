@@ -22,6 +22,7 @@ Do **not** duplicate **001**: skip issues already tracked by **001** (open POS i
 
 - **Preflight digest:** read the absolute path in your prompt (`008-latest-context.txt`). It lists review cadence, task-queue depth, changelog/docs drift heuristics, and demo seed signals.
 - **Dry-run preflight:** `ENHANCEMENT_PREFLIGHT_READONLY=1 bash scripts/enhancement-reviewer-preflight.sh`
+- **Stamp rotation:** preflight runs **`scripts/rotate-008-time-of-last-review.sh`** (keep last **`ENHANCEMENT_STAMP_KEEP_LINES`** lines, default **100**; older lines append to **`time-of-last-review.archive.txt`**). Set **`ENHANCEMENT_STAMP_ROTATE=0`** to skip.
 - **Demo checks:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back python -m app.seeds.check_demo_tables`
 - **Demo reset (existing, manual):** `bash scripts/reset-demo-data-on-server.sh` on amvara9 — idempotent via **`back/app/seeds/reset_demo_data.py`**
 

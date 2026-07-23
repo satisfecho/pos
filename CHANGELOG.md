@@ -8,6 +8,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Changed
+
+- **Enhancement reviewer stamp:** Preflight now rotates `agents2/008-enhancement-reviewer/time-of-last-review.txt` when it exceeds a line cap (default 100), archiving older lines instead of letting the stamp grow without bound.
+
 ## [2.1.28] - 2026-07-23
 
 ### Added

@@ -3,7 +3,9 @@
 # Writes digest to stdout or AGENT_008_CTX file; sets G008_* for pos-cursor-loop.sh gating.
 #
 # Usage: enhancement-reviewer-preflight.sh [digest_file]
-# Env: POS_REPO_ROOT, AGENT_008_STATE (override state json path), ENHANCEMENT_PREFLIGHT_READONLY=1 (no stamp)
+# Env: POS_REPO_ROOT, AGENT_008_STATE (override state json path), ENHANCEMENT_PREFLIGHT_READONLY=1 (no stamp),
+#      ENHANCEMENT_STAMP_KEEP_LINES (default 100; see rotate-008-time-of-last-review.sh),
+#      ENHANCEMENT_STAMP_ROTATE=0 to skip stamp rotation
 
 set -euo pipefail
 
@@ -12,6 +14,7 @@ TASKDIR="${ROOT}/agents2/tasks"
 STATE_DIR="${ROOT}/agents2/008-enhancement-reviewer"
 STATE_FILE="${AGENT_008_STATE:-${STATE_DIR}/last-scan.json}"
 STAMP_FILE="${STATE_DIR}/time-of-last-review.txt"
+ROTATE_SCRIPT="${ROOT}/scripts/rotate-008-time-of-last-review.sh"
 CTX="${1:-}"
 
 G008_OK=1
@@ -69,6 +72,11 @@ count_root_tasks() {
 
 mkdir -p "$STATE_DIR"
 [[ -f "$STATE_FILE" ]] || echo '{"last_run":null,"findings":[]}' >"$STATE_FILE"
+
+# Cap stamp growth: archive older lines before cadence / append (idempotent under keep cap).
+if [[ -f "$ROTATE_SCRIPT" ]]; then
+  POS_REPO_ROOT="$ROOT" bash "$ROTATE_SCRIPT" >&2 || true
+fi
 
 utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 if [[ -n "$CTX" ]]; then
