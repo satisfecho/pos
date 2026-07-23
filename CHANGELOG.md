@@ -13,6 +13,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Unpaid public delivery cleanup cron:** Documented amvara9 host cron (hourly UTC) and added `scripts/cleanup-unpaid-public-delivery-on-server.sh` so abandoned unpaid public Satisfecho Delivery checkouts are cleaned on all tenants (separate from tenant-1 demo reset). Cron is installed and verified on amvara9 (hourly UTC at `:15`).
 - **SaaS paywall production enablement:** Ordered ops checklist in `docs/0052` (Stripe Price, webhook secret, grandfather check, flag flip, smoke) plus an amvara9 keep-off pointer in `docs/0001`; paywall stays off until operators follow the runbook.
 
+### Fixed
+
+- **Public Satisfecho Delivery checkout:** Catalog items from the public menu now create orders successfully — line IDs resolve `TenantProduct` → `Product` (still accepts legacy `Product.id`); regression pytest + delivery smoke cover create past cart (#304).
+
 
 ## [2.1.27] - 2026-07-23
 
