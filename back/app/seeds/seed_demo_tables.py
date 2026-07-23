@@ -1,6 +1,7 @@
 """
-Seed demo floor and tables T01–T10 for any tenant that has no tables.
-Idempotent: creates missing tables only; does not delete or change existing tables.
+Seed demo floor and tables T01–T10 for every tenant (including partial sets).
+Idempotent: creates missing T01–T10, corrects seat_count when wrong, ensures
+Take Away; does not delete tables or change tokens/orders.
 Uses raw SQL for floor so it works even if floor table lacks optional columns.
 
 Usage (from repo root, with back as cwd or PYTHONPATH):
@@ -133,34 +134,16 @@ def _ensure_take_away_table(session, tenant_id: int, floor_id: int) -> None:
 
 def run() -> None:
     with Session(engine) as session:
-        # All tenant ids
         result = session.execute(text("SELECT id FROM tenant ORDER BY id"))
         tenant_ids = [row[0] for row in result.fetchall()]
         if not tenant_ids:
             print("No tenants found. Create a tenant (e.g. via register) first.")
             return
 
-        # Tenant ids that have no tables
-        result = session.execute(
-            text('SELECT tenant_id FROM "table" GROUP BY tenant_id')
-        )
-        tenants_with_tables = {row[0] for row in result.fetchall()}
-        to_seed = [tid for tid in tenant_ids if tid not in tenants_with_tables]
-
-        if not to_seed:
-            print("All tenants already have tables. Nothing to seed.")
-            return
-
-        for tenant_id in to_seed:
+        # Repair every tenant: empty and partial T01–T10 sets (create missing,
+        # fix seat_count). Idempotent; never deletes tables.
+        for tenant_id in tenant_ids:
             _seed_tenant_tables(session, tenant_id)
-
-        # Ensure demo take-away table on tenant 1 even when tables already exist.
-        floor_row = session.execute(
-            text("SELECT id FROM floor WHERE tenant_id = :tid AND name = :name"),
-            {"tid": 1, "name": FLOOR_NAME},
-        ).fetchone()
-        if floor_row:
-            _ensure_take_away_table(session, 1, floor_row[0])
 
     print("Done.")
 

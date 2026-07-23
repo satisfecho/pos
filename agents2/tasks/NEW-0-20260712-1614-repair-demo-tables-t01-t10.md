@@ -1,5 +1,7 @@
 # Repair demo tables T01–T10 for tenant 1
 
+> **Superseded by FEAT-305 / WIP→UNTESTED-305** (`UNTESTED-305-20260723-0621-missing-tables.md`, GitHub #305). Do **not** implement again under this NEW; same root cause and fix live there.
+
 ## GitHub Issues
 - **Issue:** (none — enhancement reviewer)
 - **0**

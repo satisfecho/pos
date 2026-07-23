@@ -8,6 +8,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.25] - 2026-07-23
+
+### Fixed
+
+- **Demo tables seed:** Tenants with a partial T01–T10 set (especially tenant 1) are repaired on seed — missing names are created and wrong seat counts corrected — so `check_demo_tables`, Take Away, and demo/book smokes stay green (#305).
+
 ## [2.1.24] - 2026-07-22
 
 ### Added
