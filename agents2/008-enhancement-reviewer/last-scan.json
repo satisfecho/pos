@@ -154,8 +154,9 @@
     "2026-07-23T16:00:07Z: docs_stale\u00d714 all SIGNAL basenames already owned; demo_tables_check=ok; Unreleased=2; NEW backlog=56; 1138/1155 hygiene + preflight meta (1433/2120) + archive-demo-tables (1044) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-23T16:07:54Z: docs_stale\u00d714 all SIGNAL basenames already owned; demo_tables_check=ok; Unreleased=2; NEW backlog=56; 1138/1155 hygiene + preflight meta (1433/2120) + archive-demo-tables (1044) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-23T16:17:52Z: docs_stale\u00d714 all SIGNAL basenames owned; demo_tables_check=ok; Unreleased=2; NEW backlog=56; queued 0 FEAT + 2 NEW (index 5 aliased smokes missing from testing.md; alias+index remaining Puppeteer smokes excl. delivery/platform owned NEWs)",
-    "2026-07-23T16:28:00Z: docs_stale\u00d714 all SIGNAL basenames owned; demo_tables_check=ok; Unreleased=2; NEW backlog=58; queued 0 FEAT + 2 NEW (refresh root ROADMAP shipped Jul features; docs/README Quick links delivery+paywall)"
+    "2026-07-23T16:28:00Z: docs_stale\u00d714 all SIGNAL basenames owned; demo_tables_check=ok; Unreleased=2; NEW backlog=58; queued 0 FEAT + 2 NEW (refresh root ROADMAP shipped Jul features; docs/README Quick links delivery+paywall)",
+    "2026-07-23T16:38:00Z: docs_stale\u00d714 all SIGNAL basenames owned; demo_tables_check=ok; Unreleased=2; NEW backlog=60; queued 0 FEAT + 2 NEW (backfill ca i18n missing keys; backfill zh-CN+hi i18n missing keys)"
   ],
-  "last_run": "2026-07-23T16:29:03Z",
+  "last_run": "2026-07-23T16:39:11Z",
   "last_signals": 15
 }
