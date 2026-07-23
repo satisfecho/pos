@@ -102,8 +102,9 @@
     "2026-07-23T07:16:13Z: docs_stale\u00d714 + changelog_sparse already queued; demo_tables_check=ok; unqueued themes: unpaid cleanup cron (0001), kitchen-display delivery doc, guided signup wizard; NEW backlog=44; queued 1 FEAT + 2 NEW",
     "2026-07-23T07:52:38Z: docs_stale\u00d714 + changelog_sparse already queued; demo_tables_check=ok; unqueued themes: paywall prod enablement runbook, unpaid cleanup ops index (README/0004), agent-loop agents2 paths; NEW backlog=48; queued 1 FEAT + 2 NEW",
     "2026-07-23T08:09:33Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
-    "2026-07-23T08:18:23Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)"
+    "2026-07-23T08:18:23Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
+    "2026-07-23T08:28:30Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)"
   ],
-  "last_run": "2026-07-23T08:18:26Z",
+  "last_run": "2026-07-23T08:29:13Z",
   "last_signals": 15
 }
