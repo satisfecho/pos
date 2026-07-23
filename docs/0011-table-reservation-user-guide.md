@@ -119,6 +119,7 @@ Staff can also add waiting-list entries manually via the staff API (`POST /waiti
 - **Waiting list form**: Open `http://127.0.0.1:4202/waitlist/1`, submit name, party size, phone → success message.
 - **View**: Open the link shown after booking, or `http://127.0.0.1:4202/reservation?token=<paste-token>`. You should see the reservation and, if status is booked/seated, the Cancel button.
 - **Staff waiting list**: Log in → `/reservations` → **Waiting list** tab. Test **Mark notified**, **Book table**, **Mark seated**, **Cancel**.
+- **Demo seed (tenant 1):** After `reset_demo_data` (or `python -m app.seeds.seed_demo_waiting_list` on an empty queue), tenant 1 has sample waiting/notified rows so the Waitlist tab is not empty on a fresh demo.
 - **API (no UI)**:  
   - Create reservation: `POST /api/reservations` with body `{ "tenant_id": 1, "customer_name": "...", "customer_phone": "...", "reservation_date": "YYYY-MM-DD", "reservation_time": "HH:MM", "party_size": 2 }` (no auth).  
   - Join waiting list: `POST /api/public/tenants/1/waiting-list` with body `{ "customer_name": "...", "customer_phone": "...", "party_size": 2 }` (no auth).  

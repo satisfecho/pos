@@ -8,6 +8,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [2.1.31] - 2026-07-23
+
+### Added
+
+- **Demo waiting-list entries:** Tenant 1 seed / `reset_demo_data` now clears and reseeds a small Waitlist queue (waiting + notified) so staff Waitlist and public `/waitlist/1` stay populated after daily demo reset.
+
 ## [2.1.30] - 2026-07-23
 
 ### Added

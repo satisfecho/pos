@@ -2,10 +2,12 @@
 Bootstrap a demo tenant on virgin deployment so the first registration gets tables, products, and demo orders.
 
 If no tenants exist, creates tenant 1 "Demo Restaurant", then runs seed_demo_tables,
-seed_demo_products, and seed_demo_orders for it. Deploy runs this after migrations so that:
+seed_demo_products, seed_demo_orders, seed_demo_reservations, and seed_demo_waiting_list
+for it. Deploy runs this after migrations so that:
 - First user to register is assigned to this tenant (see register() in main.py) and gets T01–T10 + demo products.
 - Reports (Informes) show meaningful paid-order data (orders spread over the last ±90 days, biased to last 30).
 - Reservations page shows a full list (demo reservations for today and tomorrow, plus spread for Reports).
+- Waiting list tab / public /waitlist/1 show a small sample queue.
 - No manual "run seeds after first register" step.
 
 Usage:
@@ -36,11 +38,13 @@ def run() -> None:
     from app.seeds.seed_demo_products import run as run_products
     from app.seeds.seed_demo_orders import run as run_orders
     from app.seeds.seed_demo_reservations import run as run_reservations
+    from app.seeds.seed_demo_waiting_list import run as run_waiting_list
 
     run_tables()
     run_products()
     run_orders()
     run_reservations()
+    run_waiting_list()
     print("Bootstrap done.")
 
 

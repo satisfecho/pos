@@ -189,7 +189,7 @@ Exit 0 means tenant 1 has T01–T10 with the correct seat counts; exit 1 reports
 
 **Demo products (tenant 1):** Deploy also runs `app.seeds.seed_demo_products`, which seeds a default menu (main courses, beverages) for tenant 1. Idempotent; no images. To run manually: `docker compose exec back python -m app.seeds.seed_demo_products`.
 
-**Demo orders/reservations reset (tenant 1 only):** Clears orders and reservations for tenant 1, then re-seeds. Safe while the stack is up. Local: `docker compose exec back python -m app.seeds.reset_demo_data`. Production wrapper: `./scripts/reset-demo-data-on-server.sh`. Daily host cron on amvara9 is documented in **`docs/0001-ci-cd-amvara9.md`** (section *Daily demo data reset*).
+**Demo orders/reservations/waiting-list reset (tenant 1 only):** Clears orders, reservations, and waiting-list entries for tenant 1, then re-seeds (including Satisfecho Delivery samples and a small waitlist queue). Safe while the stack is up. Local: `docker compose exec back python -m app.seeds.reset_demo_data`. Production wrapper: `./scripts/reset-demo-data-on-server.sh`. Daily host cron on amvara9 is documented in **`docs/0001-ci-cd-amvara9.md`** (section *Daily demo data reset*).
 
 **Puppeteer test (demo data):** Verifies tenant 1 has ≥10 tables and ≥10 products and /book/1 loads. Run with tenant 1 credentials: `BASE_URL=http://satisfecho.de LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/test-demo-data.mjs` (or `npm run test:demo-data` from front/). Runs headless by default; use `HEADLESS=0` to show the browser.
 
