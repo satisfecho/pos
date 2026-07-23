@@ -144,8 +144,9 @@
     "2026-07-23T14:36:56Z: docs_stale\u00d714 all SIGNAL basenames already owned; demo_tables_check=ok; Unreleased=2; NEW backlog=56; 1138/1155 hygiene + preflight meta (1433/2120) + archive-demo-tables (1044) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-23T14:45:00Z: docs_stale\u00d714 all SIGNAL basenames already owned; demo_tables_check=ok; Unreleased=2; NEW backlog=56; 1138/1155 hygiene + preflight meta (1433/2120) + archive-demo-tables (1044) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-23T14:53:32Z: docs_stale\u00d714 all SIGNAL basenames already owned; demo_tables_check=ok; Unreleased=2; NEW backlog=56; 1138/1155 hygiene + preflight meta (1433/2120) + archive-demo-tables (1044) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
-    "2026-07-23T15:01:44Z: docs_stale\u00d714 all SIGNAL basenames already owned; demo_tables_check=ok; Unreleased=2; NEW backlog=56; 1138/1155 hygiene + preflight meta (1433/2120) + archive-demo-tables (1044) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)"
+    "2026-07-23T15:01:44Z: docs_stale\u00d714 all SIGNAL basenames already owned; demo_tables_check=ok; Unreleased=2; NEW backlog=56; 1138/1155 hygiene + preflight meta (1433/2120) + archive-demo-tables (1044) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
+    "2026-07-23T15:10:01Z: docs_stale\u00d714 all SIGNAL basenames already owned; demo_tables_check=ok; Unreleased=2; NEW backlog=56; 1138/1155 hygiene + preflight meta (1433/2120) + archive-demo-tables (1044) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)"
   ],
-  "last_run": "2026-07-23T15:01:47Z",
+  "last_run": "2026-07-23T15:10:12Z",
   "last_signals": 15
 }
