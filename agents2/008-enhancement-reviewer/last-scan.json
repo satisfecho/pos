@@ -107,8 +107,9 @@
     "2026-07-23T08:46:21Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-23T08:56:29Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-23T09:06:05Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
-    "2026-07-23T09:15:33Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)"
+    "2026-07-23T09:15:33Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
+    "2026-07-23T09:24:41Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)"
   ],
-  "last_run": "2026-07-23T09:15:50Z",
+  "last_run": "2026-07-23T09:24:55Z",
   "last_signals": 15
 }
