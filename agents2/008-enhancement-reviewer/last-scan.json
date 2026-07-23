@@ -121,6 +121,6 @@
     "2026-07-23T11:04:44Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=51 (defer more FEAT/doc tasks); unqueued stale docs=0; archive-demo-tables NEW already queued (1044); preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-23T11:12:49Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=51 (defer more FEAT/doc tasks); unqueued stale docs=0; preflight meta (1433/2120) + archive-demo-tables (1044) already queued; queued 0 FEAT + 0 NEW (no task spam)"
   ],
-  "last_run": "2026-07-23T11:13:10Z",
+  "last_run": "2026-07-23T11:21:30Z",
   "last_signals": 15
 }
