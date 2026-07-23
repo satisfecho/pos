@@ -14,6 +14,7 @@
 #   BASE_URL              Default http://127.0.0.1:4202 (landing smoke).
 #   GO_AHEAD_LOG          Log file (default: repo root .go-ahead-loop.log, gitignored).
 #   SKIP_TESTS=1          Skip pytest and landing-version smoke.
+#   I18N_PARITY_CHECK=1   Also run scripts/check-i18n-locale-parity.py in warn-only mode (never fails the loop).
 #   COMPOSE_FILES         Arguments for docker compose (default: -f docker-compose.yml -f docker-compose.dev.yml).
 
 set -u
@@ -77,6 +78,13 @@ while [ "$(date +%s)" -lt "$END_TS" ]; do
       log "landing-version: OK"
     else
       log "ERROR: landing-version failed"
+    fi
+    if [ "${I18N_PARITY_CHECK:-}" = "1" ]; then
+      if I18N_PARITY_WARN_ONLY=1 python3 "$REPO_ROOT/scripts/check-i18n-locale-parity.py" 2>&1 | tee -a "$GO_AHEAD_LOG"; then
+        log "i18n-locale-parity: checked (warn-only)"
+      else
+        log "WARN: i18n-locale-parity script errored"
+      fi
     fi
   fi
 

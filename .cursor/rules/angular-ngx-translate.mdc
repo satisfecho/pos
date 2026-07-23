@@ -9,5 +9,6 @@ alwaysApply: false
 - **User-visible strings** in templates should use the **`translate` pipe** (or `TranslateService` in TS), not raw literals — match surrounding components (e.g. `{{ 'SETTINGS.TITLE' | translate }}`).
 - **Keys:** Use the existing naming style (`SECTION.SUBKEY`). Prefer reusing **`COMMON.*`** keys for shared actions (Save, Cancel, Delete) when they already exist.
 - **Locale files:** Add every new key to **`front/public/i18n/*.json`** for all shipped languages (keep objects in sync across `en.json`, `de.json`, `es.json`, etc.). Do not add keys to only one file unless the task explicitly allows a partial rollout.
+- **Verify:** After adding or renaming keys, run **`python3 scripts/check-i18n-locale-parity.py`** (see **`docs/testing.md`**) so sibling locales do not lag `en.json`.
 - **Placeholders / attributes:** Use `[placeholder]="'KEY' | translate"` or `translate` directive patterns already used in the codebase.
 - Deeper context: **`AGENTS.md`** (smoke tests), **`docs/testing.md`** for Puppeteer scripts after UI changes.

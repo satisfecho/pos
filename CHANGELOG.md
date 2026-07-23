@@ -8,6 +8,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Added
+
+- **i18n locale leaf-parity check:** `scripts/check-i18n-locale-parity.py` compares every shipped UI locale to `en.json` and fails when sibling locales miss keys; documented in `docs/testing.md`, referenced from the ngx-translate Cursor rule, and optionally runnable warn-only from `go-ahead-loop.sh` via `I18N_PARITY_CHECK=1`.
+
 ### Changed
 
 - **Enhancement reviewer stamp:** Preflight now rotates `agents2/008-enhancement-reviewer/time-of-last-review.txt` when it exceeds a line cap (default 100), archiving older lines instead of letting the stamp grow without bound.
