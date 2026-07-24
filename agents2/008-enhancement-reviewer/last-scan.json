@@ -103,7 +103,7 @@
     "2026-07-24T08:27:35Z: docs_stale\u00d714 + changelog_sparse owned (Unreleased empty post-2.1.32 cut); demo_tables_check=ok; NEW backlog=121; stamp-only rule queued (2014); post-#306 NEWs (2103/2112) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)"
   ],
   "last_agent_run_iso": "2026-07-24T08:27:35Z",
-  "last_run": "2026-07-24T08:35:35Z",
+  "last_run": "2026-07-24T08:43:16Z",
   "last_signals": 15,
   "new_created": 0
 }
