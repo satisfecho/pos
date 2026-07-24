@@ -1,7 +1,5 @@
 {
   "findings": [
-    "2026-07-23T10:12:14Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)",
-    "2026-07-23T10:20:43Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-23T10:29:08Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-23T10:37:41Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=50 (defer more FEAT/doc tasks); unqueued stale docs=0; preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-23T10:56:08Z: docs_stale\u00d714 all SIGNAL basenames already queued; demo_tables_check=ok; Unreleased filled (2 bullets); NEW backlog=51 (defer more FEAT/doc tasks); unqueued stale docs=0; archive-demo-tables NEW already queued (1044); preflight meta NEWs already queued; queued 0 FEAT + 0 NEW (no task spam)",
@@ -100,8 +98,9 @@
     "2026-07-24T01:12:33Z: docs_stale\u00d714 + changelog_sparse owned (Unreleased empty post-2.1.32 cut); demo_tables_check=ok; NEW backlog=121; stamp-only rule queued (2014); post-#306 NEWs (2103/2112) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-24T01:19:28Z: docs_stale\u00d714 + changelog_sparse owned (Unreleased empty post-2.1.32 cut); demo_tables_check=ok; NEW backlog=121; stamp-only rule queued (2014); post-#306 NEWs (2103/2112) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-24T01:26:47Z: docs_stale\u00d714 + changelog_sparse owned (Unreleased empty post-2.1.32 cut); demo_tables_check=ok; NEW backlog=121; stamp-only rule queued (2014); post-#306 NEWs (2103/2112) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
-    "2026-07-24T01:34:03Z: docs_stale\u00d714 + changelog_sparse owned (Unreleased empty post-2.1.32 cut); demo_tables_check=ok; NEW backlog=121; stamp-only rule queued (2014); post-#306 NEWs (2103/2112) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)"
+    "2026-07-24T01:34:03Z: docs_stale\u00d714 + changelog_sparse owned (Unreleased empty post-2.1.32 cut); demo_tables_check=ok; NEW backlog=121; stamp-only rule queued (2014); post-#306 NEWs (2103/2112) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
+    "2026-07-24T01:41:26Z: docs_stale\u00d714 + changelog_sparse owned (Unreleased empty post-2.1.32 cut); demo_tables_check=ok; NEW backlog=121; stamp-only rule queued (2014); post-#306 NEWs (2103/2112) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)"
   ],
-  "last_run": "2026-07-24T01:34:06Z",
+  "last_run": "2026-07-24T01:41:31Z",
   "last_signals": 15
 }
