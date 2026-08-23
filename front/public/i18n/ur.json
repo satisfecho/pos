@@ -240,7 +240,8 @@
     "FEATURES_VIEW_ALL": "View all features",
     "NAV_PRICING": "قیمتیں",
     "NAV_ABOUT": "ہمارے بارے میں",
-    "COMPANY_OPERATOR": "Amvara Consulting S.L. کے زیر چلایا جاتا ہے"
+    "COMPANY_OPERATOR": "Amvara Consulting S.L. کے زیر چلایا جاتا ہے",
+    "USER_MANUAL": "صارف دستی کتاب"
   },
   "PUBLIC_MENU": {
     "PAGE_TITLE": "مینو",
@@ -607,7 +608,11 @@
     "ITEM_COMMENT_PLACEHOLDER": "مثلاً زیادہ برف، ٹھنڈا دودھ، صرف موزاریلا",
     "ORDER_NOTES_PLACEHOLDER": "پورے آرڈر کے لیے اختیاری نوٹ",
     "ADD_COMMENT": "تبصرہ شامل کریں",
-    "HIDE_COMMENT": "تبصرہ چھپائیں"
+    "HIDE_COMMENT": "تبصرہ چھپائیں",
+    "SHARED_CART_HINT": "شیئرڈ ٹیبل کارٹ — میز پر سب یہ آئٹمز دیکھتے ہیں۔ آرڈر صرف آپ کے آئٹمز بھیجتا ہے۔",
+    "ADDED_BY": "{{name}} نے شامل کیا",
+    "ADDED_BY_GUEST": "کسی دوسرے مہمان نے شامل کیا",
+    "PLACE_OWN_ITEMS_ONLY": "آرڈر سے پہلے اپنے آئٹمز شامل کریں۔ دوسرے مہمانوں کے آئٹمز شیئرڈ کارٹ میں رہتے ہیں جب تک وہ آرڈر نہ دیں۔"
   },
   "PRODUCTS": {
     "TITLE": "پروڈکٹس",
@@ -2884,7 +2889,9 @@
     "OPEN_SOURCE_TITLE": "اوپن سورس",
     "OPEN_SOURCE_BODY": "پروڈکٹ کھلے طور پر تیار ہوتا ہے۔ آپ کوڈ دیکھ سکتے ہیں، AGPLv3 کے تحت خود میزبانی کر سکتے ہیں، یا satisfecho.de پر منظم سروس استعمال کر سکتے ہیں۔",
     "CONTACT_TITLE": "رابطہ",
-    "CONTACT_BODY": "پلیٹ فارم یا میزبانی شدہ سروس کے بارے میں سوالات:"
+    "CONTACT_BODY": "پلیٹ فارم یا میزبانی شدہ سروس کے بارے میں سوالات:",
+    "MANUAL_TITLE": "صارف دستی کتاب",
+    "MANUAL_BODY": "سیٹ اپ، روزانہ آپریشنز، ریزرویشنز، انوینٹری اور مزید کے لیے مرحلہ وار رہنمائیں۔"
   },
   "CUSTOMER_AUTH": {
     "TITLE": "Customer account",

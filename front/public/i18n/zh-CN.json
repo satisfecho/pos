@@ -240,7 +240,8 @@
     "QR_DEMO_OPEN_MENU": "打开演示菜单",
     "NAV_PRICING": "定价",
     "NAV_ABOUT": "关于我们",
-    "COMPANY_OPERATOR": "由 Amvara Consulting S.L. 运营"
+    "COMPANY_OPERATOR": "由 Amvara Consulting S.L. 运营",
+    "USER_MANUAL": "用户手册"
   },
   "FEATURES_PAGE": {
     "BADGE": "完整功能列表",
@@ -729,7 +730,11 @@
     "ITEM_COMMENT_PLACEHOLDER": "例如：多冰、冰牛奶、只要马苏里拉",
     "ORDER_NOTES_PLACEHOLDER": "整单可选备注（例如一起上菜）",
     "ADD_COMMENT": "添加备注",
-    "HIDE_COMMENT": "隐藏备注"
+    "HIDE_COMMENT": "隐藏备注",
+    "SHARED_CART_HINT": "同桌共享购物车——桌上每位客人都能看到这些菜品。下单只提交您自己的菜品。",
+    "ADDED_BY": "由 {{name}} 添加",
+    "ADDED_BY_GUEST": "由其他客人添加",
+    "PLACE_OWN_ITEMS_ONLY": "下单前请先添加您自己的菜品。其他客人的菜品会留在共享购物车中，直到他们自己下单。"
   },
   "PRODUCTS": {
     "TITLE": "产品",
@@ -2884,7 +2889,9 @@
     "OPEN_SOURCE_TITLE": "开源",
     "OPEN_SOURCE_BODY": "产品以开源方式开发。您可以查看代码、按 AGPLv3 自托管，或使用 satisfecho.de 上的托管服务。",
     "CONTACT_TITLE": "联系",
-    "CONTACT_BODY": "有关平台或托管服务的问题："
+    "CONTACT_BODY": "有关平台或托管服务的问题：",
+    "MANUAL_TITLE": "用户手册",
+    "MANUAL_BODY": "涵盖设置、日常运营、预订、库存等内容的逐步指南。"
   },
   "CUSTOMER_AUTH": {
     "TITLE": "Customer account",

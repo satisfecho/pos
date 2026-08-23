@@ -1596,6 +1596,17 @@ $cart-expanded-max: 60vh;
   padding: 0 var(--space-4) var(--space-4);
 }
 
+.cart-shared-hint {
+  margin: 0 0 var(--space-3);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.cart-item-card.cart-item-other {
+  opacity: 0.92;
+}
+
 .cart-items-list {
   max-height: 30vh;
   overflow-y: auto;
@@ -1666,6 +1677,13 @@ $cart-expanded-max: 60vh;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .cart-item-guest {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-top: 2px;
   }
 
   .cart-item-customization {

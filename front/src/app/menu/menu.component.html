@@ -504,12 +504,20 @@
     <!-- Expanded state -->
     @if (cartExpanded()) {
     <div class="cart-expanded-content">
+      @if (sharedCartEnabled()) {
+      <p class="cart-shared-hint">{{ 'MENU.SHARED_CART_HINT' | translate }}</p>
+      }
       <div class="cart-items-list">
         @for (item of cart(); track getCartLineKey(item)) {
-        <div class="cart-item-card" [class.just-added]="isCartLineJustAdded(item)">
+        <div class="cart-item-card" [class.just-added]="isCartLineJustAdded(item)" [class.cart-item-other]="!isMyCartItem(item)">
           <div class="cart-item-main">
           <div class="cart-item-info">
             <span class="cart-item-name">{{ item.product.name }}</span>
+            @if (sharedCartEnabled() && item.customerName) {
+            <span class="cart-item-guest">{{ 'MENU.ADDED_BY' | translate:{ name: item.customerName } }}</span>
+            } @else if (sharedCartEnabled() && !isMyCartItem(item)) {
+            <span class="cart-item-guest">{{ 'MENU.ADDED_BY_GUEST' | translate }}</span>
+            }
             @if (formatCustomizationSummary(item.customization_answers, item.customization_summary)) {
             <span class="cart-item-customization">{{ formatCustomizationSummary(item.customization_answers, item.customization_summary) }}</span>
             }
@@ -519,6 +527,7 @@
             <span class="cart-item-price">{{ formatPrice(item.product.price_cents * item.quantity) }}</span>
           </div>
           <div class="cart-item-controls">
+            @if (isMyCartItem(item)) {
             <button type="button" class="comment-toggle-btn" (click)="toggleCartItemComment(item)"
               [attr.aria-expanded]="isCartItemCommentExpanded(item)">
               {{ (isCartItemCommentExpanded(item) || item.notes?.trim()) ? ('MENU.HIDE_COMMENT' | translate) : ('MENU.ADD_COMMENT' | translate) }}
@@ -535,9 +544,12 @@
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
             </button>
+            } @else {
+            <span class="qty-display">{{ item.quantity }}</span>
+            }
           </div>
           </div>
-          @if (isCartItemCommentExpanded(item)) {
+          @if (isMyCartItem(item) && isCartItemCommentExpanded(item)) {
           <label class="cart-item-comment-field">
             <span class="sr-only">{{ 'MENU.ITEM_COMMENT' | translate }}</span>
             <textarea class="cart-comment-input" rows="2" [value]="item.notes"

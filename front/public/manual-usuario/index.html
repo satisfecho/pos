@@ -1,0 +1,1398 @@
+<!doctype html>
+<html lang="es-MX">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Manual de usuario | Satisfecho POS</title>
+    <style>
+      :root {
+        --bg: #f6f7fb;
+        --panel: #ffffff;
+        --ink: #17202a;
+        --muted: #5b6675;
+        --line: #dfe5ec;
+        --soft: #eef3f8;
+        --brand: #d94b34;
+        --brand-dark: #a73525;
+        --accent: #0f766e;
+        --warn: #ad5f00;
+        --danger: #b42318;
+        --shadow: 0 16px 36px rgba(23, 32, 42, 0.08);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--bg);
+        line-height: 1.55;
+      }
+
+      a {
+        color: var(--brand-dark);
+        text-decoration-thickness: 0.08em;
+        text-underline-offset: 0.18em;
+      }
+
+      img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 28px 22px 64px;
+      }
+
+      .hero {
+        background: linear-gradient(135deg, #151b22 0%, #27313b 58%, #3b302b 100%);
+        color: white;
+        border-radius: 18px;
+        padding: 42px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        right: -110px;
+        top: -90px;
+        width: 320px;
+        height: 320px;
+        border-radius: 50%;
+        background: rgba(217, 75, 52, 0.26);
+      }
+
+      .hero > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        color: #ffd7cd;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 900px;
+        font-size: clamp(2.2rem, 4vw, 4.2rem);
+        line-height: 1.04;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        margin: 0 0 18px;
+        font-size: clamp(1.55rem, 2.2vw, 2.35rem);
+        line-height: 1.16;
+        letter-spacing: 0;
+      }
+
+      h3 {
+        margin: 26px 0 10px;
+        font-size: 1.24rem;
+        line-height: 1.28;
+      }
+
+      h4 {
+        margin: 20px 0 8px;
+        font-size: 1.05rem;
+      }
+
+      p {
+        margin: 0 0 12px;
+      }
+
+      ul,
+      ol {
+        margin: 0 0 16px;
+        padding-left: 1.25rem;
+      }
+
+      li {
+        margin: 6px 0;
+      }
+
+      code,
+      .chip {
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      }
+
+      .hero-copy {
+        max-width: 820px;
+        margin-top: 18px;
+        color: #f3f6f9;
+        font-size: 1.08rem;
+      }
+
+      .meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 32px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.13);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        font-size: 0.86rem;
+        white-space: nowrap;
+      }
+
+      .section {
+        margin-top: 28px;
+        padding: 30px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: 0 10px 28px rgba(23, 32, 42, 0.05);
+      }
+
+      .section.lede {
+        background: #fffaf7;
+        border-color: #f4c7b8;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 18px;
+      }
+
+      .col-4 {
+        grid-column: span 4;
+      }
+
+      .col-6 {
+        grid-column: span 6;
+      }
+
+      .col-8 {
+        grid-column: span 8;
+      }
+
+      .col-12 {
+        grid-column: span 12;
+      }
+
+      .card {
+        background: #ffffff;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 18px;
+      }
+
+      .card.soft {
+        background: var(--soft);
+      }
+
+      .toc {
+        column-count: 2;
+        column-gap: 28px;
+        margin-top: 10px;
+      }
+
+      .toc a {
+        break-inside: avoid;
+        display: block;
+        padding: 8px 0;
+        color: var(--ink);
+        font-weight: 650;
+      }
+
+      .toc a span {
+        display: block;
+        color: var(--muted);
+        font-weight: 450;
+        font-size: 0.92rem;
+      }
+
+      .callout {
+        margin: 18px 0;
+        padding: 16px 18px;
+        border-left: 5px solid var(--accent);
+        background: #eefaf8;
+        border-radius: 8px;
+      }
+
+      .callout.warn {
+        border-left-color: var(--warn);
+        background: #fff6e7;
+      }
+
+      .callout.danger {
+        border-left-color: var(--danger);
+        background: #fff1f0;
+      }
+
+      figure {
+        margin: 18px 0;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 12px 30px rgba(23, 32, 42, 0.07);
+      }
+
+      figure img {
+        width: 100%;
+      }
+
+      figure.phone {
+        max-width: 360px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      figure.phone img {
+        width: auto;
+        max-height: none;
+        margin: 0 auto;
+      }
+
+      figcaption {
+        padding: 10px 14px;
+        color: var(--muted);
+        background: #fbfcfd;
+        border-top: 1px solid var(--line);
+        font-size: 0.92rem;
+      }
+
+      .steps {
+        counter-reset: step;
+        list-style: none;
+        padding-left: 0;
+      }
+
+      .steps > li {
+        counter-increment: step;
+        position: relative;
+        padding-left: 42px;
+        margin: 14px 0;
+      }
+
+      .steps > li::before {
+        content: counter(step);
+        position: absolute;
+        left: 0;
+        top: 0;
+        display: inline-grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--brand);
+        color: white;
+        font-weight: 800;
+        font-size: 0.9rem;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 16px 0;
+        font-size: 0.95rem;
+      }
+
+      th,
+      td {
+        text-align: left;
+        vertical-align: top;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      th {
+        background: #f2f5f8;
+        color: #26313b;
+      }
+
+      .small {
+        font-size: 0.92rem;
+        color: var(--muted);
+      }
+
+      .kbd {
+        display: inline-block;
+        padding: 1px 6px;
+        border: 1px solid #cfd7df;
+        border-bottom-width: 2px;
+        border-radius: 5px;
+        background: #fff;
+        color: #27313b;
+        font-size: 0.88em;
+      }
+
+      .checklist {
+        list-style: none;
+        padding-left: 0;
+      }
+
+      .checklist li {
+        padding-left: 28px;
+        position: relative;
+      }
+
+      .checklist li::before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        top: 0;
+        color: var(--accent);
+        font-weight: 900;
+      }
+
+      .footer {
+        margin-top: 28px;
+        padding: 26px 30px;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      @media (max-width: 860px) {
+        .page {
+          padding: 18px 14px 44px;
+        }
+
+        .hero {
+          padding: 28px 22px;
+          border-radius: 14px;
+        }
+
+        .section {
+          padding: 22px 16px;
+        }
+
+        .toc {
+          column-count: 1;
+        }
+
+        .col-4,
+        .col-6,
+        .col-8 {
+          grid-column: span 12;
+        }
+
+        table {
+          display: block;
+          overflow-x: auto;
+          white-space: nowrap;
+        }
+      }
+
+      @media print {
+        body {
+          background: white;
+        }
+
+        .page {
+          max-width: none;
+          padding: 0;
+        }
+
+        .hero,
+        .section,
+        figure {
+          box-shadow: none;
+          break-inside: avoid;
+        }
+
+        a {
+          color: inherit;
+          text-decoration: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <p class="eyebrow">Manual para clientes y equipos de restaurante</p>
+        <h1>Cómo usar Satisfecho POS de principio a fin</h1>
+        <p class="hero-copy">
+          Esta guía explica la aplicación completa con pasos prácticos: configuración inicial, mesas,
+          pedidos, pagos, reservas, cocina, barra, inventario, reportes, turnos, contratos, opiniones y
+          portal de proveedores. Las capturas son reales del entorno de demostración.
+        </p>
+        <div class="meta-row" aria-label="Información del manual">
+          <span class="chip">Actualizado: mayo de 2026</span>
+          <span class="chip">Aplicación web</span>
+          <span class="chip">Roles: propietario, admin, personal y proveedor</span>
+          <span class="chip">Incluye pantallas públicas y privadas</span>
+        </div>
+      </header>
+
+      <section class="section lede" id="leer-primero">
+        <h2>Leer primero</h2>
+        <div class="grid">
+          <div class="col-8">
+            <p>
+              Satisfecho POS está dividido en tres experiencias. El personal trabaja desde el panel
+              interno; los clientes usan el menú público desde un QR, enlace o búsqueda de mesa; los
+              proveedores usan un portal separado cuando el restaurante desea recibir catálogos de
+              producto externos.
+            </p>
+            <p>
+              Si eres nuevo, empieza por <a href="#configuracion">Configuración</a>, luego crea tus
+              <a href="#productos">productos</a>, configura <a href="#mesas">mesas y QR</a>, y por
+              último prueba el flujo completo de <a href="#cliente">pedido del cliente</a> y
+              <a href="#operacion">operación del personal</a>.
+            </p>
+          </div>
+          <div class="col-4">
+            <div class="card soft">
+              <h3>Regla práctica</h3>
+              <p>
+                Primero configura el restaurante. Después carga productos, mesas, personal y métodos de
+                pago. No publiques QR ni enlaces a clientes hasta haber hecho una prueba real de pedido,
+                cocina, pago y cierre de mesa.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="indice">
+        <h2>Índice</h2>
+        <nav class="toc" aria-label="Índice del manual">
+          <a href="#primeros-pasos">1. Primeros pasos <span>Inicio público, registro, acceso y navegación.</span></a>
+          <a href="#roles">2. Roles y permisos <span>Qué puede hacer cada tipo de usuario.</span></a>
+          <a href="#configuracion">3. Configuración <span>Datos, marca, horarios, pagos, seguridad e integraciones.</span></a>
+          <a href="#productos">4. Productos y catálogo <span>Menú, categorías, preguntas, recetas y proveedores.</span></a>
+          <a href="#mesas">5. Mesas y plano <span>QR, PIN, plantas, camareros, grupos y vista visual.</span></a>
+          <a href="#cliente">6. Experiencia del cliente <span>Menú QR, pedido, PIN, pago, pedidos para llevar y llamada al camarero.</span></a>
+          <a href="#operacion">7. Operación diaria <span>Pedidos, caja, historial, cocina y barra.</span></a>
+          <a href="#reservas">8. Reservas y opiniones <span>Reserva pública, gestión interna, recordatorios y opiniones.</span></a>
+          <a href="#equipo">9. Equipo, turnos y contratos <span>Usuarios, Mi turno, plan de trabajo y contratos.</span></a>
+          <a href="#inventario">10. Inventario, clientes y reportes <span>Stock, compras, clientes fiscales y análisis.</span></a>
+          <a href="#proveedores">11. Portal de proveedores <span>Acceso separado para proveedores externos.</span></a>
+          <a href="#checklists">12. Checklists <span>Puesta en marcha, servicio diario y cierre.</span></a>
+          <a href="#problemas">13. Problemas frecuentes <span>Soluciones rápidas y conceptos clave.</span></a>
+        </nav>
+      </section>
+
+      <section class="section" id="primeros-pasos">
+        <h2>1. Primeros pasos</h2>
+
+        <h3>Pantalla pública de inicio</h3>
+        <p>
+          La página inicial muestra los restaurantes disponibles, accesos para reservar, iniciar sesión,
+          usar mesa por código y, si está configurado, hacer pedidos para llevar. También incluye el
+          acceso de proveedores y el selector de idioma.
+        </p>
+        <figure>
+          <img src="img/landing.png" alt="Página pública con restaurantes, reservas y búsqueda de mesa" loading="lazy" />
+          <figcaption>Página pública. Los clientes no necesitan cuenta para reservar o usar un QR de mesa.</figcaption>
+        </figure>
+
+        <h3>Crear la primera cuenta</h3>
+        <p>
+          El registro crea una cuenta de restaurante. La primera persona que registra un restaurante debe
+          ser quien administrará la operación inicial, porque desde esa cuenta se crean usuarios,
+          productos, mesas, pagos y configuración.
+        </p>
+        <ol class="steps">
+          <li>Entra a <strong>Registrarse</strong>.</li>
+          <li>Escribe nombre, correo, contraseña y datos básicos del restaurante.</li>
+          <li>Guarda. Después entra con el correo y contraseña que acabas de crear.</li>
+          <li>Completa la configuración antes de compartir enlaces públicos.</li>
+        </ol>
+        <figure>
+          <img src="img/register.png" alt="Formulario de registro de restaurante" loading="lazy" />
+          <figcaption>Registro de restaurante. Usa un correo real para recuperar contraseña y recibir avisos.</figcaption>
+        </figure>
+
+        <h3>Iniciar sesión y recuperar contraseña</h3>
+        <p>
+          El personal entra por <strong>Iniciar sesión</strong>. Si el restaurante activó verificación de dos
+          pasos, el sistema pedirá un código temporal después de la contraseña. Si alguien olvida su
+          contraseña, debe usar el enlace de recuperación y seguir el correo recibido.
+        </p>
+        <figure>
+          <img src="img/login.png" alt="Pantalla de inicio de sesión con enlaces de recuperación y proveedor" loading="lazy" />
+          <figcaption>Inicio de sesión del personal. Los proveedores tienen un acceso separado desde esta misma zona pública.</figcaption>
+        </figure>
+
+        <h3>Panel interno y navegación</h3>
+        <p>
+          Después de iniciar sesión aparece el panel interno. El menú lateral muestra solo las secciones
+          permitidas por el rol y por los módulos activados en configuración. En pantallas pequeñas se
+          usa como menú desplegable.
+        </p>
+        <figure>
+          <img src="img/dashboard.png" alt="Panel interno con barra lateral, tarjetas y accesos principales" loading="lazy" />
+          <figcaption>Panel interno. Úsalo como punto de control para entrar a pedidos, reservas, mesas y reportes.</figcaption>
+        </figure>
+
+        <div class="callout">
+          <strong>Idiomas.</strong> La aplicación permite cambiar idioma desde la zona pública y desde
+          el entorno interno. Si una etiqueta aparece en otro idioma, normalmente significa que esa
+          traducción todavía no está cargada para esa parte del sistema.
+        </div>
+      </section>
+
+      <section class="section" id="roles">
+        <h2>2. Roles y permisos</h2>
+        <p>
+          Los permisos protegen acciones sensibles. Si un usuario no ve una sección, no es un error:
+          su rol no tiene permiso o el módulo fue desactivado en <strong>Configuración &gt; Navegación</strong>.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Rol</th>
+              <th>Uso recomendado</th>
+              <th>Permisos principales</th>
+              <th>Límites importantes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Propietario</strong></td>
+              <td>Dueño o responsable máximo.</td>
+              <td>Acceso completo: configuración, usuarios, productos, mesas, reservas, reportes, inventario, contratos y datos.</td>
+              <td>Debe ser una cuenta protegida. No se recomienda compartirla.</td>
+            </tr>
+            <tr>
+              <td><strong>Admin</strong></td>
+              <td>Gerente operativo.</td>
+              <td>Gestiona operación diaria, usuarios no propietarios, productos, mesas, reservas, inventario, reportes, contratos y plan de trabajo.</td>
+              <td>Puede tener restricciones en datos de facturación, llaves de pago o usuarios propietarios.</td>
+            </tr>
+            <tr>
+              <td><strong>Camarero</strong></td>
+              <td>Servicio en sala.</td>
+              <td>Ve productos, mesas, reservas, clientes fiscales y pedidos. Puede actualizar estados, marcar pagado y retirar líneas permitidas.</td>
+              <td>No administra configuración, usuarios, inventario ni reportes globales.</td>
+            </tr>
+            <tr>
+              <td><strong>Recepcionista</strong></td>
+              <td>Reservas y atención inicial.</td>
+              <td>Gestiona reservas, consulta mesas, clientes y pedidos.</td>
+              <td>No modifica productos ni configuración; su acceso a pedidos es más limitado.</td>
+            </tr>
+            <tr>
+              <td><strong>Cocina</strong></td>
+              <td>Preparación de comida.</td>
+              <td>Ve pedidos y cambia estados de líneas asignadas a cocina. También ve su turno y contratos.</td>
+              <td>No cobra ni administra mesas.</td>
+            </tr>
+            <tr>
+              <td><strong>Barra</strong></td>
+              <td>Preparación de bebidas.</td>
+              <td>Similar a cocina, enfocado en la pantalla de barra y productos de bebidas.</td>
+              <td>No cobra ni administra configuración.</td>
+            </tr>
+            <tr>
+              <td><strong>Proveedor</strong></td>
+              <td>Proveedor externo.</td>
+              <td>Usa un portal separado para su catálogo y datos de empresa.</td>
+              <td>No entra al panel interno del restaurante.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <figure>
+          <img src="img/users.png" alt="Pantalla de usuarios y roles" loading="lazy" />
+          <figcaption>Usuarios. Crea una cuenta por persona para saber quién hace cada acción.</figcaption>
+        </figure>
+
+        <div class="callout warn">
+          <strong>Buenas prácticas.</strong> Desactiva usuarios que ya no trabajan contigo y evita cuentas
+          compartidas. Para cambios delicados, usa propietario o admin con contraseña individual.
+        </div>
+      </section>
+
+      <section class="section" id="configuracion">
+        <h2>3. Configuración</h2>
+        <p>
+          Configuración controla cómo se ve y se comporta el restaurante. Haz esta parte con calma antes
+          de operar en vivo: afecta los QR, reservas, pagos, horarios, seguridad, cocina, inventario y
+          visibilidad de módulos.
+        </p>
+
+        <h3>Perfil, marca y apariencia pública</h3>
+        <p>
+          En <strong>Perfil</strong> se editan nombre del restaurante, descripción, teléfono, correo,
+          moneda, país, zona horaria, logo, imagen de cabecera y color de fondo público. Estos datos
+          aparecen en páginas públicas, reservas, menú QR y algunas comunicaciones.
+        </p>
+        <figure>
+          <img src="img/settings-profile.png" alt="Configuración de perfil, marca, logo y cabecera" loading="lazy" />
+          <figcaption>Perfil. Usa imágenes claras y datos reales, porque los ve el cliente final.</figcaption>
+        </figure>
+
+        <h3>Navegación y módulos</h3>
+        <p>
+          La pestaña <strong>Navegación</strong> permite activar o desactivar módulos como mesas, plan
+          de trabajo, proveedores, reservas, cocina/barra e inventario. Si un módulo está apagado, el
+          menú lo oculta y los enlaces directos pueden redirigir al inicio interno.
+        </p>
+        <ul>
+          <li>Desactiva módulos que tu restaurante no usa para simplificar el trabajo del personal.</li>
+          <li>Activa inventario solo cuando vayas a mantener stock, proveedores, compras y recetas.</li>
+          <li>Activa cocina/barra si necesitas pantallas de preparación por estación.</li>
+        </ul>
+
+        <h3>Contacto, ubicación, legal y reseñas</h3>
+        <p>
+          En <strong>Contacto</strong> se guardan dirección, web, enlaces a Google Maps y OpenStreetMap,
+          URL de reseñas de Google, NIF/CIF, CCC, URL de términos públicos, URL de privacidad pública y
+          datos fiscales básicos. También se define el impuesto por defecto cuando el producto no tiene
+          una regla específica.
+        </p>
+        <figure>
+          <img src="img/settings-contact.png" alt="Configuración de contacto, ubicación y datos legales" loading="lazy" />
+          <figcaption>Contacto. Estos datos ayudan al cliente a encontrarte y alimentan facturas o páginas públicas.</figcaption>
+        </figure>
+
+        <h3>Horarios, turnos esperados y excepciones</h3>
+        <p>
+          En <strong>Horarios</strong> configuras los horarios semanales del restaurante, necesidades de
+          personal por franja y patrones planificados a futuro. También puedes crear excepciones por
+          fechas concretas, por ejemplo festivos, vacaciones o eventos privados.
+        </p>
+        <figure>
+          <img src="img/settings-hours.png" alt="Configuración de horarios y necesidades de personal" loading="lazy" />
+          <figcaption>Horarios. Las reservas y el plan de trabajo dependen de esta información.</figcaption>
+        </figure>
+
+        <h3>Pagos, facturación, propinas y verificación de ubicación</h3>
+        <p>
+          En <strong>Pagos</strong> se ajustan métodos de pago visibles, propinas, comportamiento de
+          cobro y datos de proveedores de pago como Stripe o Revolut cuando estén activados en tu
+          instalación. También puede haber opciones de factura fiscal, serie interna, modo de pruebas o
+          producción, y verificación de ubicación para pagos presenciales.
+        </p>
+        <figure>
+          <img src="img/settings-payments.png" alt="Configuración de métodos de pago y facturación" loading="lazy" />
+          <figcaption>Pagos. No compartas llaves de pago, SMTP ni tokens con el personal que no los necesita.</figcaption>
+        </figure>
+        <div class="callout warn">
+          <strong>Fiscalidad.</strong> La configuración fiscal depende del país y del despliegue. Antes
+          de usar facturación fiscal en producción, confirma con tu asesor y con el equipo técnico qué
+          integración está activa.
+        </div>
+
+        <h3>Reservas públicas</h3>
+        <p>
+          La configuración de reservas controla si el cliente puede reservar, si se exige prepago, la
+          política de cancelación, tolerancia de llegada, duración media de mesa, intervalo entre franjas,
+          máximo de personas por franja, mesas para clientes sin reserva, código de vestimenta y recordatorios de 24
+          horas o 2 horas.
+        </p>
+        <ul>
+          <li>Usa intervalos de reserva que tu equipo pueda cumplir, por ejemplo 15 o 30 minutos.</li>
+          <li>Define tolerancia de llegada para saber cuándo marcar <strong>no-show</strong>.</li>
+          <li>Activa recordatorios solo cuando correo o mensajería estén correctamente configurados.</li>
+        </ul>
+
+        <h3>Correo saliente</h3>
+        <p>
+          Si tu despliegue tiene SMTP habilitado, úsalo para recuperación de contraseña, recordatorios,
+          confirmaciones y comunicaciones relacionadas con reservas. Prueba el correo antes de activar
+          recordatorios automáticos.
+        </p>
+
+        <h3>Impuestos e IVA</h3>
+        <p>
+          En <strong>Impuestos</strong> puedes crear tipos de IVA o impuestos equivalentes. Después,
+          cada producto puede usar el impuesto por defecto del restaurante o una regla propia.
+        </p>
+        <figure>
+          <img src="img/settings-taxes.png" alt="Configuración de impuestos" loading="lazy" />
+          <figcaption>Impuestos. Mantén nombres claros, por ejemplo general, reducido o bebidas.</figcaption>
+        </figure>
+
+        <h3>Estaciones de cocina</h3>
+        <p>
+          Las estaciones agrupan el trabajo de preparación. Un producto puede asignarse a una estación
+          para que aparezca donde corresponde: cocina caliente, postres, barra, parrilla u otra zona.
+        </p>
+        <figure>
+          <img src="img/settings-kitchen-stations.png" alt="Configuración de estaciones de cocina" loading="lazy" />
+          <figcaption>Estaciones. Úsalas para ordenar las pantallas de cocina y barra.</figcaption>
+        </figure>
+
+        <h3>Integraciones de reparto</h3>
+        <p>
+          En <strong>Integraciones</strong> se configuran marketplaces o canales externos cuando el
+          despliegue incluye el adaptador correspondiente. Mantén los enlaces técnicos y secretos protegidos.
+        </p>
+        <figure>
+          <img src="img/settings-delivery.png" alt="Configuración de integraciones de reparto" loading="lazy" />
+          <figcaption>Reparto. Activa solo integraciones verificadas en tu instalación.</figcaption>
+        </figure>
+
+        <h3>Publicaciones sociales</h3>
+        <p>
+          Las publicaciones sociales permiten preparar mensajes y contenido para canales conectados,
+          como Meta, cuando la conexión OAuth está configurada. Úsalo para promociones, novedades o
+          campañas de temporada.
+        </p>
+        <figure>
+          <img src="img/settings-social.png" alt="Configuración de publicaciones sociales" loading="lazy" />
+          <figcaption>Social. Revisa el texto antes de publicar y confirma que la cuenta conectada sea la correcta.</figcaption>
+        </figure>
+
+        <h3>Seguridad, fichaje y datos</h3>
+        <p>
+          En <strong>Seguridad</strong> puedes activar código de dos pasos para accesos sensibles y
+          configurar el fichaje del personal con QR. Si está habilitada la verificación por ubicación,
+          el dispositivo pedirá permisos de ubicación al fichar.
+        </p>
+        <figure>
+          <img src="img/settings-security.png" alt="Configuración de seguridad y QR de fichaje" loading="lazy" />
+          <figcaption>Seguridad. Descarga o imprime el QR de fichaje solo para el personal autorizado.</figcaption>
+        </figure>
+        <p>
+          En <strong>Datos y privacidad</strong>, el propietario puede exportar información del
+          restaurante y, si el despliegue lo permite, ejecutar acciones destructivas como purgar datos.
+          Estas acciones deben reservarse al propietario y hacerse con copia previa.
+        </p>
+
+        <h3>Plantillas, traducciones y proveedores internos</h3>
+        <p>
+          Configuración también incluye plantillas de contratos, traducciones de textos visibles y
+          proveedores/productos propios del restaurante. Estas áreas ayudan a mantener documentos,
+          etiquetas públicas y compras con la misma información base.
+        </p>
+      </section>
+
+      <section class="section" id="productos">
+        <h2>4. Productos y catálogo</h2>
+        <p>
+          Productos es el corazón del menú. Cada producto puede tener precio, coste, imagen, categoría,
+          subcategoría, ingredientes, descripción, impuesto propio, estación de cocina, disponibilidad
+          por horario y preguntas de personalización.
+        </p>
+
+        <figure>
+          <img src="img/products.png" alt="Pantalla de productos con formulario, categorías y listado" loading="lazy" />
+          <figcaption>Productos. La pestaña de categorías permite ordenar el menú público y el trabajo interno.</figcaption>
+        </figure>
+
+        <h3>Crear o editar un producto</h3>
+        <ol class="steps">
+          <li>Entra a <strong>Productos</strong> y abre la pestaña de productos.</li>
+          <li>Escribe nombre, precio de venta y, si lo conoces, coste de compra o elaboración.</li>
+          <li>Añade descripción e ingredientes. Esto ayuda al cliente y al personal con alergias.</li>
+          <li>Selecciona categoría, subcategoría y estación de cocina cuando aplique.</li>
+          <li>Sube una imagen real y clara del plato o bebida.</li>
+          <li>Si el producto solo se vende en ciertos horarios, define disponibilidad desde/hasta.</li>
+          <li>Guarda. Después añade preguntas de personalización si el producto lo necesita.</li>
+        </ol>
+
+        <h3>Preguntas y personalizaciones</h3>
+        <p>
+          Después de guardar un producto puedes añadir preguntas para el cliente o el camarero:
+          selección única, selección múltiple, escala o texto libre. Cada pregunta puede ser obligatoria
+          y tener un orden. Úsalas para términos de cocción, tamaños, salsas, extras, retiradas o notas.
+        </p>
+        <div class="callout">
+          <strong>Ejemplo.</strong> Para una hamburguesa, crea una pregunta obligatoria "Punto de la
+          carne" con opciones poco hecha, al punto y bien hecha. Crea otra de extras si tienen coste.
+        </div>
+
+        <h3>Costes, recetas y precio ideal</h3>
+        <p>
+          Si inventario y recetas están activos, puedes vincular ingredientes reales al producto. El
+          sistema usa esos costes para ayudar a calcular margen y precio ideal. Esta ayuda funciona bien
+          solo si el stock, unidades y costes están actualizados.
+        </p>
+
+        <h3>Catálogo de proveedores</h3>
+        <p>
+          La sección <strong>Catálogo</strong> reúne productos de proveedores o productos externos que
+          el restaurante consulta para compras, disponibilidad o referencia. No sustituye al menú de
+          venta al cliente: el menú visible al cliente sale de <strong>Productos</strong>.
+        </p>
+        <figure>
+          <img src="img/catalog.png" alt="Catálogo de productos de proveedores" loading="lazy" />
+          <figcaption>Catálogo. Útil para consultar productos externos, imágenes y disponibilidad de proveedores.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="mesas">
+        <h2>5. Mesas y plano</h2>
+        <p>
+          Mesas conecta la sala con los pedidos. Cada mesa puede tener nombre, capacidad, estado,
+          planta, QR, PIN y camarero asignado. También puedes trabajar con vista de listado, tarjetas o
+          plano visual.
+        </p>
+
+        <figure>
+          <img src="img/tables.png" alt="Gestión de mesas con plantas, QR, PIN y acciones" loading="lazy" />
+          <figcaption>Mesas. Desde aquí puedes activar, desactivar, imprimir QR, copiar enlace o abrir el menú.</figcaption>
+        </figure>
+
+        <h3>Qué configurar en cada mesa</h3>
+        <ul>
+          <li><strong>Nombre visible:</strong> por ejemplo T01, Terraza 4 o Barra 2.</li>
+          <li><strong>Capacidad:</strong> número normal de comensales.</li>
+          <li><strong>Planta o zona:</strong> salón, terraza, barra, privado u otra área.</li>
+          <li><strong>PIN:</strong> protege acciones del cliente como confirmar o modificar pedidos.</li>
+          <li><strong>Camarero asignado:</strong> se puede definir por planta y ajustar por mesa.</li>
+          <li><strong>Activo:</strong> solo las mesas activas se usan en operación y enlaces públicos.</li>
+        </ul>
+
+        <h3>QR, enlace y menú abierto por personal</h3>
+        <p>
+          El QR de mesa abre el menú público de esa mesa. El enlace se puede copiar para imprimirlo o
+          enviarlo. La acción <strong>Abrir menú</strong> permite al personal ayudar a una mesa desde
+          su dispositivo; no debe usarse como enlace público permanente.
+        </p>
+
+        <h3>Grupos de mesas y reasignación</h3>
+        <p>
+          Puedes unir mesas cuando varias mesas forman una sola cuenta o una reserva grande. Si intentas
+          borrar una mesa con pedidos o reservas asociados, el sistema puede pedir reasignar información
+          para no perder historial.
+        </p>
+
+        <h3>Plano visual</h3>
+        <p>
+          El plano ayuda a ver rápidamente qué mesas están libres, ocupadas, con pago pendiente,
+          asignadas a un camarero o agrupadas. Los colores y chips de pago permiten detectar acciones
+          pendientes sin abrir cada mesa.
+        </p>
+        <figure>
+          <img src="img/tables-canvas.png" alt="Plano visual de mesas con estados y acciones" loading="lazy" />
+          <figcaption>Plano de mesas. Útil durante el servicio para decidir dónde sentar o cerrar cuentas.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="cliente">
+        <h2>6. Experiencia del cliente</h2>
+        <p>
+          El cliente puede usar el menú sin instalar nada. Entra por QR de mesa, enlace, búsqueda de
+          mesa en la página pública o ruta de pedidos para llevar cuando el restaurante la tenga activa.
+        </p>
+
+        <div class="grid">
+          <div class="col-6">
+            <h3>Identificación inicial</h3>
+            <p>
+              Al entrar al menú de mesa, el cliente puede escribir su nombre. Esto ayuda al personal a
+              reconocer quién hizo el pedido y a resolver dudas de la mesa.
+            </p>
+            <figure class="phone">
+              <img src="img/menu-name.png" alt="Menú móvil solicitando el nombre del cliente" loading="lazy" />
+              <figcaption>Entrada al menú de mesa.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <h3>Explorar productos</h3>
+            <p>
+              El menú muestra categorías, subcategorías, destacados, imágenes, precios, ingredientes,
+              alérgenos o datos dietéticos cuando están cargados. El cliente añade productos con el
+              botón de suma.
+            </p>
+            <figure class="phone">
+              <img src="img/menu-browse.png" alt="Menú móvil con productos y categorías" loading="lazy" />
+              <figcaption>Menú público con productos reales del demo.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Carrito, personalización y confirmación</h3>
+        <p>
+          Antes de enviar, el cliente revisa cantidades, personalizaciones y total. Si el producto tiene
+          preguntas obligatorias, debe responderlas antes de confirmar. Para evitar pedidos accidentales,
+          la mesa puede pedir PIN.
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure class="phone">
+              <img src="img/menu-cart.png" alt="Carrito móvil con productos listos para pedir" loading="lazy" />
+              <figcaption>Carrito. Aquí se revisa el pedido antes de enviarlo.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure class="phone">
+              <img src="img/menu-pin.png" alt="Pantalla móvil solicitando PIN de mesa" loading="lazy" />
+              <figcaption>PIN de mesa. El personal lo entrega o lo mantiene visible según la operación.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Pedido en curso, historial y acciones</h3>
+        <p>
+          Después de enviar, el cliente ve el estado del pedido. Puede seguir añadiendo productos si la
+          mesa sigue abierta. Según configuración y estado, puede solicitar pago, avisar al camarero,
+          cancelar elementos todavía permitidos o consultar historial.
+        </p>
+        <figure class="phone">
+          <img src="img/menu-status.png" alt="Estado móvil del pedido actual y botones principales" loading="lazy" />
+          <figcaption>Pedido actual. El cliente ve si está recibido, preparando, listo o entregado.</figcaption>
+        </figure>
+
+        <h3>Formas de pago visibles al cliente</h3>
+        <p>
+          Las opciones dependen de la configuración del restaurante. Pueden aparecer pago en línea,
+          terminal, efectivo, Revolut, Stripe o llamada al camarero. Si el pago en línea no está
+          configurado, el cliente puede pedir que el personal cobre en mesa.
+        </p>
+
+        <h3>Pedidos para llevar o a domicilio</h3>
+        <p>
+          Si el restaurante tiene mesa o canal de pedidos para llevar configurado, la página pública de pedidos
+          muestra restaurantes disponibles. El flujo se parece al menú de mesa, pero se usa para pedidos
+          sin estar sentado en una mesa física.
+        </p>
+      </section>
+
+      <section class="section" id="operacion">
+        <h2>7. Operación diaria</h2>
+        <p>
+          La sección de pedidos es el centro del servicio. El personal puede ver pedidos activos,
+          cuentas sin pagar e historial. También existen pantallas separadas para cocina y barra.
+        </p>
+
+        <h3>Pedidos activos</h3>
+        <p>
+          En <strong>Pedidos</strong> se ven mesas, líneas, estados, notas y totales. Desde aquí se
+          pueden añadir productos, editar pedidos, retirar líneas permitidas, marcar urgente, avanzar
+          estados y abrir opciones de cobro.
+        </p>
+        <figure>
+          <img src="img/orders-active.png" alt="Pedidos activos con mesas, líneas y acciones" loading="lazy" />
+          <figcaption>Pedidos activos. Mantén esta pantalla abierta durante el servicio de sala.</figcaption>
+        </figure>
+
+        <h3>Estados del pedido y de las líneas</h3>
+        <p>
+          Un pedido puede pasar por estados como recibido, en preparación, listo, entregado, pagado o
+          cancelado. Cada línea también puede tener su propio estado, lo que permite que cocina y barra
+          trabajen en paralelo.
+        </p>
+        <ul>
+          <li><strong>Recibido:</strong> el cliente o personal acaba de enviar el pedido.</li>
+          <li><strong>Preparando:</strong> cocina o barra lo está trabajando.</li>
+          <li><strong>Listo:</strong> está preparado para entregar.</li>
+          <li><strong>Entregado:</strong> ya llegó a la mesa.</li>
+          <li><strong>Pagado:</strong> la cuenta quedó cerrada.</li>
+        </ul>
+
+        <h3>Cobro, propina y factura</h3>
+        <p>
+          En el modal de pago puedes elegir método, registrar propina, gestionar sobrepago cuando
+          aplique, finalizar orden y abrir factura. Los métodos visibles dependen de configuración:
+          efectivo, terminal, Stripe, Revolut u otros.
+        </p>
+        <figure>
+          <img src="img/orders-unpaid.png" alt="Pedidos pendientes de pago" loading="lazy" />
+          <figcaption>Sin pagar. Esta vista ayuda a cerrar cuentas pendientes antes del final del turno.</figcaption>
+        </figure>
+
+        <h3>Historial</h3>
+        <p>
+          El historial permite revisar pedidos anteriores, importes, estados y elementos retirados
+          cuando esa opción está visible. Es útil para resolver dudas, auditoría interna y reportes.
+        </p>
+        <figure>
+          <img src="img/orders-history.png" alt="Historial de pedidos" loading="lazy" />
+          <figcaption>Historial. Consulta pedidos cerrados sin mezclarlos con la operación activa.</figcaption>
+        </figure>
+
+        <h3>Pantalla de cocina</h3>
+        <p>
+          Cocina muestra las líneas que requieren preparación. El equipo puede avanzar estados sin
+          entrar a cobros ni configuración. Si usas estaciones, cada producto llega a la zona asignada.
+        </p>
+        <figure>
+          <img src="img/kitchen.png" alt="Pantalla de cocina con pedidos por preparar" loading="lazy" />
+          <figcaption>Cocina. Ordena el trabajo por pedido, estado y urgencia.</figcaption>
+        </figure>
+
+        <h3>Pantalla de barra</h3>
+        <p>
+          Barra funciona como una pantalla de preparación enfocada en bebidas u otra estación similar.
+          Es especialmente útil cuando la barra debe trabajar separada de la cocina.
+        </p>
+        <figure>
+          <img src="img/bar.png" alt="Pantalla de barra con pedidos de bebidas" loading="lazy" />
+          <figcaption>Barra. Permite preparar y marcar bebidas sin depender de la pantalla de sala.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="reservas">
+        <h2>8. Reservas y opiniones</h2>
+
+        <h3>Reservas internas</h3>
+        <p>
+          En <strong>Reservas</strong> el personal puede crear, buscar y gestionar reservas. La vista
+          permite filtrar por fecha, teléfono o estado, ver posibles sobrecupos, enviar recordatorios,
+          asignar mesa, marcar llegada, marcar no-show, cancelar o finalizar.
+        </p>
+        <figure>
+          <img src="img/reservations.png" alt="Pantalla interna de reservas" loading="lazy" />
+          <figcaption>Reservas internas. Úsala para coordinar recepción y sala.</figcaption>
+        </figure>
+
+        <h3>Reserva pública</h3>
+        <p>
+          El cliente puede reservar desde la página pública del restaurante. El formulario muestra
+          fecha, turno, hora disponible, número de personas, preferencia de zona o planta cuando está
+          habilitada, datos de contacto, alergias y notas.
+        </p>
+        <figure>
+          <img src="img/book-public.png" alt="Formulario público de reserva con franjas disponibles" loading="lazy" />
+          <figcaption>Reserva pública. La disponibilidad depende de horarios, capacidad, franjas y reglas configuradas.</figcaption>
+        </figure>
+
+        <h3>Gestionar una reserva desde el enlace del cliente</h3>
+        <p>
+          Cuando el cliente recibe un enlace de reserva, puede consultar datos, cancelar si la política
+          lo permite o avisar de retraso. Esto reduce llamadas y mantiene informado al equipo.
+        </p>
+
+        <h3>Opiniones de clientes</h3>
+        <p>
+          El sistema incluye una página pública de feedback y una bandeja interna. Puedes compartir el
+          enlace o QR después de la visita. En la bandeja interna se revisan valoraciones, comentarios y
+          datos asociados.
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure>
+              <img src="img/feedback-public.png" alt="Formulario público de opinión de cliente" loading="lazy" />
+              <figcaption>Formulario público. Debe ser breve para que el cliente lo complete.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure>
+              <img src="img/guest-feedback.png" alt="Bandeja interna de opiniones de clientes" loading="lazy" />
+              <figcaption>Opiniones internas. Revisa tendencias y casos que requieren respuesta.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="equipo">
+        <h2>9. Equipo, turnos y contratos</h2>
+
+        <h3>Usuarios</h3>
+        <p>
+          En <strong>Usuarios</strong> se crean cuentas del personal, se asignan roles y se actualizan
+          datos. Usa correos reales y evita compartir credenciales. El rol determina el acceso real, no
+          solo el menú visible.
+        </p>
+        <figure>
+          <img src="img/users.png" alt="Lista de usuarios del restaurante" loading="lazy" />
+          <figcaption>Usuarios. Cambia roles cuando una persona cambia de puesto.</figcaption>
+        </figure>
+
+        <h3>Mi turno</h3>
+        <p>
+          <strong>Mi turno</strong> permite al trabajador ver su estado de jornada, fichar entrada o
+          salida si está habilitado, consultar pausas y revisar información relacionada con su día.
+        </p>
+        <figure>
+          <img src="img/my-shift.png" alt="Pantalla Mi turno para fichaje y jornada" loading="lazy" />
+          <figcaption>Mi turno. Si usas QR de fichaje, el personal debe escanear desde esta operación autorizada.</figcaption>
+        </figure>
+
+        <h3>Plan de trabajo semanal y calendario</h3>
+        <p>
+          El plan de trabajo permite organizar turnos por semana y revisar un calendario. Se alimenta de
+          horarios del restaurante, necesidades de personal y contratos. Sirve para ver cobertura,
+          asignar personal y detectar huecos antes del servicio.
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure>
+              <img src="img/working-plan-week.png" alt="Plan de trabajo semanal" loading="lazy" />
+              <figcaption>Semana. Vista práctica para planificar por día y rol.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure>
+              <img src="img/working-plan-calendar.png" alt="Calendario de plan de trabajo" loading="lazy" />
+              <figcaption>Calendario. Útil para detectar solapes, ausencias o días especiales.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Contratos</h3>
+        <p>
+          Contratos centraliza contratos de personal y plantillas. Según permisos, el usuario puede
+          leer, crear, actualizar o gestionar documentos. Úsalo junto con el plan de trabajo para que
+          horas, funciones y condiciones estén alineadas.
+        </p>
+        <figure>
+          <img src="img/contracts.png" alt="Pantalla de contratos de personal" loading="lazy" />
+          <figcaption>Contratos. Mantén documentos actualizados y usa plantillas consistentes.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="inventario">
+        <h2>10. Inventario, clientes y reportes</h2>
+
+        <h3>Clientes fiscales</h3>
+        <p>
+          La sección <strong>Clientes</strong> guarda datos necesarios para facturas o identificación
+          fiscal. El personal autorizado puede crear y editar clientes para asociarlos con pedidos y
+          facturas.
+        </p>
+        <figure>
+          <img src="img/customers.png" alt="Gestión de clientes fiscales" loading="lazy" />
+          <figcaption>Clientes. Útil cuando una empresa o comensal pide factura con datos fiscales.</figcaption>
+        </figure>
+
+        <h3>Inventario: artículos y stock</h3>
+        <p>
+          Inventario permite controlar artículos, SKU, categorías, unidades, coste, stock mínimo,
+          proveedor por defecto y movimientos. Los ajustes de stock pueden registrar entradas, salidas,
+          merma o correcciones.
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure>
+              <img src="img/inv-items.png" alt="Artículos de inventario" loading="lazy" />
+              <figcaption>Artículos. Define unidades claras para evitar errores de receta.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure>
+              <img src="img/inv-stock.png" alt="Movimientos y ajustes de stock" loading="lazy" />
+              <figcaption>Stock. Registra mermas y ajustes para que el coste sea realista.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Proveedores y órdenes de compra</h3>
+        <p>
+          Puedes crear proveedores, generar órdenes de compra, cambiar estados, imprimir PDF y recibir
+          mercancía para actualizar stock. Al recibir, revisa cantidades y precios antes de confirmar.
+        </p>
+        <div class="grid">
+          <div class="col-4">
+            <figure>
+              <img src="img/inv-suppliers.png" alt="Proveedores de inventario" loading="lazy" />
+              <figcaption>Proveedores.</figcaption>
+            </figure>
+          </div>
+          <div class="col-4">
+            <figure>
+              <img src="img/inv-po.png" alt="Órdenes de compra" loading="lazy" />
+              <figcaption>Órdenes de compra.</figcaption>
+            </figure>
+          </div>
+          <div class="col-4">
+            <figure>
+              <img src="img/inv-po-detail.png" alt="Detalle de orden de compra" loading="lazy" />
+              <figcaption>Detalle y recepción.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Reportes de inventario</h3>
+        <p>
+          Los reportes de inventario ayudan a detectar bajo stock, consumo, coste y compras. Son más
+          útiles cuando recetas y movimientos se registran con disciplina.
+        </p>
+        <figure>
+          <img src="img/inv-reports.png" alt="Reportes de inventario" loading="lazy" />
+          <figcaption>Inventario. Revisa stock bajo antes de crear compras.</figcaption>
+        </figure>
+
+        <h3>Reportes de ventas y operación</h3>
+        <p>
+          Reportes muestra ingresos, propinas, costes, beneficios, promedio de pago, promedio por
+          cliente, ventas diarias, desgloses y exportaciones cuando están disponibles. Úsalo para tomar
+          decisiones de menú, personal y horarios.
+        </p>
+        <figure>
+          <img src="img/reports.png" alt="Reportes de ventas, ingresos y operación" loading="lazy" />
+          <figcaption>Reportes. Filtra por periodo y compara ventas con costes para entender margen.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="proveedores">
+        <h2>11. Portal de proveedores</h2>
+        <p>
+          El portal de proveedores es independiente del panel interno. Un proveedor puede registrarse,
+          iniciar sesión, recuperar contraseña, editar datos de empresa y mantener su catálogo con
+          imágenes, precios y disponibilidad. Actualmente algunas pantallas del portal pueden aparecer
+          en inglés.
+        </p>
+        <ul>
+          <li>El proveedor no gestiona pedidos de sala ni configuración del restaurante.</li>
+          <li>El restaurante decide si usa productos del proveedor como referencia o catálogo.</li>
+          <li>Los datos bancarios, fiscales y de contacto deben ser revisados por el proveedor.</li>
+        </ul>
+        <div class="callout">
+          <strong>Cuándo usarlo.</strong> Úsalo si trabajas con proveedores que mantienen listas de
+          productos vivas. Si compras siempre manualmente, el inventario interno puede ser suficiente.
+        </div>
+      </section>
+
+      <section class="section" id="checklists">
+        <h2>12. Checklists</h2>
+
+        <div class="grid">
+          <div class="col-6">
+            <div class="card">
+              <h3>Puesta en marcha inicial</h3>
+              <ul class="checklist">
+                <li>Crear cuenta de propietario y guardar credenciales de forma segura.</li>
+                <li>Completar perfil, contacto, ubicación, impuestos y zona horaria.</li>
+                <li>Configurar horarios, reservas y tolerancia de llegada.</li>
+                <li>Activar solo los módulos necesarios en navegación.</li>
+                <li>Crear productos, categorías, imágenes y preguntas obligatorias.</li>
+                <li>Crear plantas, mesas, PIN y QR.</li>
+                <li>Crear usuarios reales con roles correctos.</li>
+                <li>Probar un pedido completo: cliente, cocina/barra, pago y cierre.</li>
+                <li>Probar una reserva pública y su gestión interna.</li>
+                <li>Revisar reportes y permisos antes de abrir al público.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card">
+              <h3>Antes de cada servicio</h3>
+              <ul class="checklist">
+                <li>Verificar que mesas y QR estén activos.</li>
+                <li>Comprobar productos agotados o no disponibles.</li>
+                <li>Revisar reservas del día y mesas asignadas.</li>
+                <li>Confirmar que cocina y barra ven sus pantallas.</li>
+                <li>Revisar usuarios de turno y fichajes cuando aplique.</li>
+                <li>Confirmar métodos de cobro y caja.</li>
+                <li>Revisar bajo stock si inventario está activo.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card">
+              <h3>Cierre del día</h3>
+              <ul class="checklist">
+                <li>Cerrar pedidos activos y revisar cuentas sin pagar.</li>
+                <li>Resolver pedidos cancelados o líneas retiradas.</li>
+                <li>Revisar propinas, métodos de pago y facturas.</li>
+                <li>Registrar mermas o ajustes de stock relevantes.</li>
+                <li>Mirar reportes del día y anotar incidencias.</li>
+                <li>Revisar opiniones nuevas y responder internamente.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card">
+              <h3>Seguridad operativa</h3>
+              <ul class="checklist">
+                <li>No compartir cuentas de propietario o admin.</li>
+                <li>No enviar llaves de pago, SMTP o tokens por chat.</li>
+                <li>Desactivar usuarios que ya no trabajan en el restaurante.</li>
+                <li>Usar roles mínimos necesarios para cada puesto.</li>
+                <li>Probar cambios de configuración antes de servicio real.</li>
+                <li>Exportar datos antes de acciones destructivas.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="problemas">
+        <h2>13. Problemas frecuentes</h2>
+
+        <h3>Un usuario no ve una sección</h3>
+        <p>
+          Revisa dos cosas: su rol en <strong>Usuarios</strong> y si el módulo está activo en
+          <strong>Configuración &gt; Navegación</strong>. Si ambas cosas están bien, cierra sesión y
+          vuelve a entrar.
+        </p>
+
+        <h3>El cliente no puede pedir desde una mesa</h3>
+        <p>
+          Comprueba que la mesa esté activa, que el QR corresponda a esa mesa, que el producto esté
+          disponible en ese horario y que el PIN entregado sea correcto. Si el menú no carga productos,
+          revisa categorías y disponibilidad.
+        </p>
+
+        <h3>Una reserva no aparece disponible</h3>
+        <p>
+          Revisa horarios del restaurante, reglas de reservas, duración media de mesa, intervalo de
+          franjas, capacidad, zona preferida y reservas existentes en la misma franja.
+        </p>
+
+        <h3>No aparece pago en línea</h3>
+        <p>
+          El pago en línea solo aparece cuando el método está activo y correctamente configurado. Si no
+          hay proveedor de pago, usa efectivo, terminal o llamada al camarero.
+        </p>
+
+        <h3>El stock no coincide</h3>
+        <p>
+          Revisa unidades, recetas, compras recibidas y ajustes manuales. Un producto vendido solo
+          descuenta stock correctamente cuando la receta y unidades están bien configuradas.
+        </p>
+
+        <h3>Glosario breve</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Concepto</th>
+              <th>Significado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Slot</strong></td>
+              <td>Bloque de hora disponible para reservar.</td>
+            </tr>
+            <tr>
+              <td><strong>PIN de mesa</strong></td>
+              <td>Código que confirma acciones del cliente en una mesa.</td>
+            </tr>
+            <tr>
+              <td><strong>Estación</strong></td>
+              <td>Zona de preparación como cocina, barra, postres o parrilla.</td>
+            </tr>
+            <tr>
+              <td><strong>Merma</strong></td>
+              <td>Producto perdido, desperdiciado o no vendible que debe descontarse del stock.</td>
+            </tr>
+            <tr>
+              <td><strong>No-show</strong></td>
+              <td>Reserva confirmada cuyo cliente no llegó dentro de la tolerancia definida.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <footer class="footer">
+        <p>
+          Manual creado con capturas reales del entorno de demostración. Algunas funciones visibles
+          dependen del rol, módulos activos, país, integraciones contratadas y configuración técnica del
+          restaurante.
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>

@@ -240,7 +240,8 @@
     "FEATURES_VIEW_ALL": "Ver todas las funciones",
     "NAV_PRICING": "Precios",
     "NAV_ABOUT": "Sobre nosotros",
-    "COMPANY_OPERATOR": "Operado por Amvara Consulting S.L."
+    "COMPANY_OPERATOR": "Operado por Amvara Consulting S.L.",
+    "USER_MANUAL": "Manual de usuario"
   },
   "PUBLIC_MENU": {
     "PAGE_TITLE": "Carta",
@@ -607,7 +608,11 @@
     "ITEM_COMMENT_PLACEHOLDER": "p. ej. mucho hielo, leche fría, solo mozzarella",
     "ORDER_NOTES_PLACEHOLDER": "Nota opcional para todo el pedido (p. ej. servir junto)",
     "ADD_COMMENT": "Añadir comentario",
-    "HIDE_COMMENT": "Ocultar comentario"
+    "HIDE_COMMENT": "Ocultar comentario",
+    "SHARED_CART_HINT": "Carrito compartido de la mesa: todos ven estos artículos. Al pedir se envían solo los tuyos.",
+    "ADDED_BY": "Añadido por {{name}}",
+    "ADDED_BY_GUEST": "Añadido por otro comensal",
+    "PLACE_OWN_ITEMS_ONLY": "Añade tus propios artículos antes de pedir. Los de otros comensales siguen en el carrito compartido hasta que ellos pidan."
   },
   "PRODUCTS": {
     "TITLE": "Productos",
@@ -2884,7 +2889,9 @@
     "OPEN_SOURCE_TITLE": "Código abierto",
     "OPEN_SOURCE_BODY": "El producto se desarrolla en abierto. Puedes revisar el código, autoalojarlo bajo AGPLv3 o usar el servicio gestionado en satisfecho.de.",
     "CONTACT_TITLE": "Contacto",
-    "CONTACT_BODY": "Preguntas sobre la plataforma o el servicio alojado:"
+    "CONTACT_BODY": "Preguntas sobre la plataforma o el servicio alojado:",
+    "MANUAL_TITLE": "Manual de usuario",
+    "MANUAL_BODY": "Guías paso a paso para configuración, operación diaria, reservas, inventario y más."
   },
   "CUSTOMER_AUTH": {
     "TITLE": "Customer account",

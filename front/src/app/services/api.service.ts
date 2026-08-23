@@ -1691,7 +1691,29 @@ export interface MenuResponse {
   table_is_active?: boolean;
   table_requires_pin?: boolean;
   active_order_id?: number | null;
+  /** When true, draft cart is shared across devices on this table token (#349). */
+  table_shared_cart?: boolean;
   products: Product[];
+}
+
+export interface TableCartLine {
+  line_id: string;
+  session_id: string;
+  customer_name?: string | null;
+  product_id: number;
+  product_name: string;
+  price_cents: number;
+  quantity: number;
+  notes?: string | null;
+  source?: string | null;
+  customization_answers?: Record<string, string | number | string[]> | null;
+}
+
+export interface TableCartResponse {
+  shared: boolean;
+  items: TableCartLine[];
+  updated_at?: string;
+  reason?: string;
 }
 
 /** Tax (IVA) rate with validity period */
@@ -3273,7 +3295,9 @@ export class ApiService {
   }
 
   submitOrder(tableToken: string, order: OrderCreate): Observable<any> {
-    return this.http.post(`${this.apiUrl}/menu/${tableToken}/order`, order);
+    return this.http.post(`${this.apiUrl}/menu/${tableToken}/order`, order, {
+      withCredentials: true,
+    });
   }
 
   getCurrentOrder(tableToken: string, sessionId?: string): Observable<any> {
@@ -3284,9 +3308,57 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/menu/${tableToken}/order`, { params });
   }
 
-  getOrderHistory(tableToken: string, limit = 10): Observable<OrderHistoryItem[]> {
+  getTableCart(tableToken: string): Observable<TableCartResponse> {
+    return this.http.get<TableCartResponse>(`${this.apiUrl}/menu/${tableToken}/cart`);
+  }
+
+  addTableCartItem(
+    tableToken: string,
+    body: {
+      session_id: string;
+      customer_name?: string;
+      product_id: number;
+      quantity?: number;
+      notes?: string;
+      source?: string;
+      customization_answers?: Record<string, string | number | string[]>;
+    }
+  ): Observable<TableCartResponse> {
+    return this.http.post<TableCartResponse>(`${this.apiUrl}/menu/${tableToken}/cart/items`, body);
+  }
+
+  updateTableCartItem(
+    tableToken: string,
+    lineId: string,
+    body: { session_id: string; quantity?: number; notes?: string }
+  ): Observable<TableCartResponse> {
+    return this.http.put<TableCartResponse>(
+      `${this.apiUrl}/menu/${tableToken}/cart/items/${encodeURIComponent(lineId)}`,
+      body
+    );
+  }
+
+  deleteTableCartItem(
+    tableToken: string,
+    lineId: string,
+    sessionId: string
+  ): Observable<TableCartResponse> {
+    const params = new HttpParams().set('session_id', sessionId);
+    return this.http.delete<TableCartResponse>(
+      `${this.apiUrl}/menu/${tableToken}/cart/items/${encodeURIComponent(lineId)}`,
+      { params }
+    );
+  }
+
+  getOrderHistory(
+    tableToken: string,
+    sessionId: string,
+    limit = 10,
+  ): Observable<OrderHistoryItem[]> {
+    const params = new HttpParams().set('limit', String(limit)).set('session_id', sessionId);
     return this.http.get<OrderHistoryItem[]>(`${this.apiUrl}/menu/${tableToken}/order-history`, {
-      params: { limit }
+      params,
+      withCredentials: true,
     });
   }
 

@@ -42,12 +42,23 @@ Adhere to **`agents2/TASKS-README.md`**.
 
 Append before **UNTESTED-** rename.
 
+### Blocked — waiting for human (design / product gate)
+
+When the task **Status** or body says the work is **blocked** until humans decide (design discussion, open questions, hard gate):
+
+1. **Do not** rename **FEAT → WIP** and **do not** ship code until decisions are recorded on the linked GitHub issue (or an approved discussion linked from the task).
+2. **One GitHub comment only:** Post a single short waiting notice on the issue, then stop. Example body:
+   `🤖 Agent 010 (feature coder): **Blocked — waiting for human.** <one-line reason>. Task stays FEAT until decisions are on the issue.`
+3. **Record in the task file** under **## Status**: `**Waiting notice posted:** <UTC ISO>` (e.g. `2026-08-20T15:08:00Z`).
+4. **Stay quiet:** If **Waiting notice posted** is already set, **do not** comment on GitHub again and **do not** re-check the issue in a loop. The orchestrator preflight (`scripts/agent-feat-waiting-human-preflight.sh`) skips **010** until a **non-agent** human reply appears on the issue after that timestamp.
+5. When a human replies with decisions, clear or update the blocked status, then implement the agreed slice.
+
 ### Instructions
 
 1. **`./scripts/git-sync-development.sh`** at repo root (if not already synced this step).
 2. Read **`agents2/TASKS-README.md`**.
-3. Pick **FEAT-*.md** → **WIP-*.md**.
+3. Pick **FEAT-*.md** → **WIP-*.md** (unless blocked waiting for human — see above).
 4. Implement; add **Testing instructions**; **UNTESTED-*.md**.
-5. Add comment with the changes to github issue (use gh issue xxx comment)
-6. When coding task is started, add the label agent:wip in github
-7. When a coding task is finished make sure to add a comment on github
+5. Add **one** comment with the changes to the GitHub issue when work ships (**`gh issue comment`**). Do **not** spam waiting notices (see **Blocked — waiting for human**).
+6. When coding task is started, add the label **`agent:wip`** on GitHub (not when blocked on human).
+7. When a coding task is finished, add a comment on GitHub.

@@ -240,7 +240,8 @@
     "QR_DEMO_OPEN_MENU": "Open demo menu",
     "NAV_PRICING": "Pricing",
     "NAV_ABOUT": "About us",
-    "COMPANY_OPERATOR": "Operated by Amvara Consulting S.L."
+    "COMPANY_OPERATOR": "Operated by Amvara Consulting S.L.",
+    "USER_MANUAL": "User manual"
   },
   "FEATURES_PAGE": {
     "BADGE": "Full feature list",
@@ -763,7 +764,11 @@
     "ITEM_COMMENT_PLACEHOLDER": "e.g. lots of ice, cold milk, cheese only mozzarella",
     "ORDER_NOTES_PLACEHOLDER": "Optional note for the whole order (e.g. serve together)",
     "ADD_COMMENT": "Add comment",
-    "HIDE_COMMENT": "Hide comment"
+    "HIDE_COMMENT": "Hide comment",
+    "SHARED_CART_HINT": "Shared table cart — everyone at this table sees these items. Place order sends only your items.",
+    "ADDED_BY": "Added by {{name}}",
+    "ADDED_BY_GUEST": "Added by another guest",
+    "PLACE_OWN_ITEMS_ONLY": "Add your own items before placing an order. Other guests’ items stay in the shared cart until they place their order."
   },
   "PRODUCTS": {
     "TITLE": "Products",
@@ -2918,7 +2923,9 @@
     "OPEN_SOURCE_TITLE": "Open source",
     "OPEN_SOURCE_BODY": "The product is developed in the open. You can inspect the code, self-host under AGPLv3, or use the managed service at satisfecho.de.",
     "CONTACT_TITLE": "Contact",
-    "CONTACT_BODY": "Questions about the platform or hosted service:"
+    "CONTACT_BODY": "Questions about the platform or hosted service:",
+    "MANUAL_TITLE": "User manual",
+    "MANUAL_BODY": "Step-by-step guides for setup, daily operations, reservations, inventory, and more."
   },
   "TALK": {
     "TITLE": "Talk to POS",

@@ -240,7 +240,8 @@
     "FEATURES_VIEW_ALL": "Voir toutes les fonctionnalités",
     "NAV_PRICING": "Tarifs",
     "NAV_ABOUT": "À propos",
-    "COMPANY_OPERATOR": "Exploité par Amvara Consulting S.L."
+    "COMPANY_OPERATOR": "Exploité par Amvara Consulting S.L.",
+    "USER_MANUAL": "Manuel utilisateur"
   },
   "PUBLIC_MENU": {
     "PAGE_TITLE": "Carte",
@@ -607,7 +608,11 @@
     "ITEM_COMMENT_PLACEHOLDER": "ex. beaucoup de glace, lait froid, mozzarella uniquement",
     "ORDER_NOTES_PLACEHOLDER": "Note optionnelle pour toute la commande (ex. servir ensemble)",
     "ADD_COMMENT": "Ajouter un commentaire",
-    "HIDE_COMMENT": "Masquer le commentaire"
+    "HIDE_COMMENT": "Masquer le commentaire",
+    "SHARED_CART_HINT": "Panier partagé de la table — tout le monde voit ces articles. Commander n’envoie que vos articles.",
+    "ADDED_BY": "Ajouté par {{name}}",
+    "ADDED_BY_GUEST": "Ajouté par un autre client",
+    "PLACE_OWN_ITEMS_ONLY": "Ajoutez vos propres articles avant de commander. Ceux des autres restent dans le panier partagé jusqu’à leur commande."
   },
   "PRODUCTS": {
     "TITLE": "Produits",
@@ -2884,7 +2889,9 @@
     "OPEN_SOURCE_TITLE": "Open source",
     "OPEN_SOURCE_BODY": "Le produit est développé en open source. Vous pouvez consulter le code, l’auto-héberger sous AGPLv3 ou utiliser le service géré sur satisfecho.de.",
     "CONTACT_TITLE": "Contact",
-    "CONTACT_BODY": "Questions sur la plateforme ou le service hébergé :"
+    "CONTACT_BODY": "Questions sur la plateforme ou le service hébergé :",
+    "MANUAL_TITLE": "Manuel utilisateur",
+    "MANUAL_BODY": "Guides pas à pas pour la configuration, les opérations quotidiennes, les réservations, l'inventaire et plus."
   },
   "CUSTOMER_AUTH": {
     "TITLE": "Customer account",

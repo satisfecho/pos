@@ -3,7 +3,7 @@ import { DomSanitizer, SafeResourceUrl, SafeStyle } from '@angular/platform-brow
 import { FormsModule } from '@angular/forms';
 import { CommonModule, SlicePipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { ApiService, Product, ProductQuestion, OrderItemCreate, OrderHistoryItem } from '../services/api.service';
+import { ApiService, Product, ProductQuestion, OrderItemCreate, OrderHistoryItem, TableCartResponse } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
 import { environment } from '../../environments/environment';
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
@@ -21,6 +21,10 @@ interface CartItem {
   customization_summary?: string | null;
   status?: string;  // Item status from backend
   itemId?: number;  // Backend item ID for editing
+  /** Shared draft cart line id (server) */
+  lineId?: string;
+  sessionId?: string;
+  customerName?: string | null;
 }
 
 interface PlacedOrder {
@@ -78,6 +82,8 @@ export class MenuComponent implements OnInit, OnDestroy {
 
   // Cart & Orders
   cart = signal<CartItem[]>([]);
+  /** When true, cart mutations go to the shared table cart API (#349). */
+  sharedCartEnabled = signal(false);
   orderNotes = '';
   /** Cart line keys with expanded per-item comment field */
   expandedCommentKeys = signal<Set<string>>(new Set());
@@ -90,6 +96,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   lastOrderId = signal(0);
   ordersExpanded = signal(true);
   menuExpanded = signal(true);
+  private notesSyncTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
   // Product details toggles (legacy)
   showIngredientsFor = signal<number | null>(null);
@@ -204,6 +211,10 @@ export class MenuComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.ws?.close();
+    for (const t of this.notesSyncTimers.values()) {
+      clearTimeout(t);
+    }
+    this.notesSyncTimers.clear();
   }
 
   // ============================================
@@ -304,6 +315,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         // Table session status
         this.tableIsActive.set(data.table_is_active !== false);  // Default true for backward compatibility
         this.tableRequiresPin.set(data.table_requires_pin === true);
+        this.sharedCartEnabled.set(data.table_shared_cart === true);
 
         // Check if the table session has changed (table was closed and reopened).
         // If active_order_id differs from what we stored, clear stale data and
@@ -320,6 +332,7 @@ export class MenuComponent implements OnInit, OnDestroy {
           this.currentPin = '';
           this.placedOrders.set([]);
           this.customerName.set('');
+          this.cart.set([]);
 
           // Re-initialize session with fresh IDs
           const newSessionId = this.generateUUID();
@@ -336,6 +349,10 @@ export class MenuComponent implements OnInit, OnDestroy {
           if (storedPin) {
             this.currentPin = storedPin;
           }
+        }
+
+        if (this.sharedCartEnabled()) {
+          this.loadSharedCart();
         }
 
         this.loading.set(false);
@@ -414,6 +431,10 @@ export class MenuComponent implements OnInit, OnDestroy {
         } else if (data.type === 'item_removed' || data.type === 'item_updated' || data.type === 'order_cancelled' || data.type === 'items_added' || data.type === 'new_order') {
           this.audio.playCustomerOrderChange();
           this.loadStoredOrders();
+        } else if (data.type === 'cart_updated') {
+          if (this.sharedCartEnabled()) {
+            this.loadSharedCart();
+          }
         }
       } catch { }
     };
@@ -641,9 +662,65 @@ export class MenuComponent implements OnInit, OnDestroy {
     return `${source}-${id}-${name}-${price}${answersKey ? '-' + answersKey : ''}`;
   }
 
-  getCartLineKey(item: Pick<CartItem, 'product' | 'customization_answers' | 'notes'>): string {
+  getCartLineKey(item: Pick<CartItem, 'product' | 'customization_answers' | 'notes' | 'lineId' | 'sessionId'>): string {
+    if (item.lineId) {
+      return `line:${item.lineId}`;
+    }
     const notePart = (item.notes || '').trim();
-    return `${this.getProductKey(item.product, item.customization_answers)}|${notePart}`;
+    const sess = item.sessionId || this.sessionId || '';
+    return `${this.getProductKey(item.product, item.customization_answers)}|${notePart}|${sess}`;
+  }
+
+  isMyCartItem(item: CartItem): boolean {
+    if (!item.sessionId) return true;
+    return item.sessionId === this.sessionId;
+  }
+
+  private applySharedCartResponse(res: TableCartResponse): void {
+    if (!res.shared) {
+      this.sharedCartEnabled.set(false);
+      return;
+    }
+    this.sharedCartEnabled.set(true);
+    const mapped: CartItem[] = (res.items || []).map(line => ({
+      lineId: line.line_id,
+      sessionId: line.session_id,
+      customerName: line.customer_name ?? null,
+      product: {
+        id: line.product_id,
+        name: line.product_name,
+        price_cents: line.price_cents,
+        _source: (line.source as Product['_source']) || undefined,
+      } as Product,
+      quantity: line.quantity,
+      notes: line.notes || '',
+      customization_answers: line.customization_answers || undefined,
+    }));
+    this.cart.set(mapped);
+    if (mapped.length > 0 && !this.cartExpanded()) {
+      // Keep collapsed summary visible; do not force expand on remote updates
+    }
+  }
+
+  loadSharedCart(): void {
+    if (!this.tableToken) return;
+    this.api.getTableCart(this.tableToken).subscribe({
+      next: res => this.applySharedCartResponse(res),
+      error: () => {
+        // Fall back to local cart if shared cart API fails
+        this.sharedCartEnabled.set(false);
+      },
+    });
+  }
+
+  private syncCartFromResponse(res: TableCartResponse, flashProduct?: Product, flashKey?: string): void {
+    this.applySharedCartResponse(res);
+    if (flashProduct && flashKey) {
+      this.flashProductAdded(flashProduct, flashKey);
+    }
+    if (this.cart().length === 1) {
+      this.cartExpanded.set(true);
+    }
   }
 
   toggleCartItemComment(item: CartItem): void {
@@ -663,16 +740,39 @@ export class MenuComponent implements OnInit, OnDestroy {
   updateCartItemNotes(item: CartItem, notes: string): void {
     const trimmed = notes.slice(0, this.maxNoteLength);
     const oldKey = this.getCartLineKey(item);
+    if (!this.isMyCartItem(item)) {
+      return;
+    }
     this.cart.update(items =>
       items.map(i => (this.getCartLineKey(i) === oldKey ? { ...i, notes: trimmed } : i))
     );
     if (trimmed.trim()) {
       this.expandedCommentKeys.update(set => {
         const next = new Set(set);
-        next.add(`${this.getProductKey(item.product, item.customization_answers)}|${trimmed.trim()}`);
+        next.add(this.getCartLineKey({ ...item, notes: trimmed }));
         next.delete(oldKey);
         return next;
       });
+    }
+    if (this.sharedCartEnabled() && item.lineId) {
+      const lineId = item.lineId;
+      const prev = this.notesSyncTimers.get(lineId);
+      if (prev) clearTimeout(prev);
+      this.notesSyncTimers.set(
+        lineId,
+        setTimeout(() => {
+          this.notesSyncTimers.delete(lineId);
+          this.api
+            .updateTableCartItem(this.tableToken, lineId, {
+              session_id: this.sessionId,
+              notes: trimmed,
+            })
+            .subscribe({
+              next: res => this.applySharedCartResponse(res),
+              error: () => this.loadSharedCart(),
+            });
+        }, 400)
+      );
     }
   }
 
@@ -759,17 +859,62 @@ export class MenuComponent implements OnInit, OnDestroy {
   // CART OPERATIONS
   // ============================================
   addToCart(product: Product, customizationAnswers?: Record<string, string | number | string[]>) {
-    const newLine: CartItem = { product, quantity: 1, notes: '', customization_answers: customizationAnswers };
+    const newLine: CartItem = {
+      product,
+      quantity: 1,
+      notes: '',
+      customization_answers: customizationAnswers,
+      sessionId: this.sessionId,
+      customerName: this.customerName() || null,
+    };
+    const lineKey = this.getCartLineKey(newLine);
+
+    if (this.sharedCartEnabled()) {
+      this.api
+        .addTableCartItem(this.tableToken, {
+          session_id: this.sessionId,
+          customer_name: this.customerName() || undefined,
+          product_id: product.id!,
+          quantity: 1,
+          source: product._source || undefined,
+          customization_answers:
+            customizationAnswers && Object.keys(customizationAnswers).length
+              ? customizationAnswers
+              : undefined,
+        })
+        .subscribe({
+          next: res => this.syncCartFromResponse(res, product, lineKey),
+          error: () => {
+            // Local fallback if shared cart write fails
+            this.sharedCartEnabled.set(false);
+            this.addToCartLocal(product, customizationAnswers);
+          },
+        });
+      return;
+    }
+
+    this.addToCartLocal(product, customizationAnswers);
+  }
+
+  private addToCartLocal(product: Product, customizationAnswers?: Record<string, string | number | string[]>) {
+    const newLine: CartItem = {
+      product,
+      quantity: 1,
+      notes: '',
+      customization_answers: customizationAnswers,
+      sessionId: this.sessionId,
+    };
     const lineKey = this.getCartLineKey(newLine);
     this.cart.update(items => {
       const existing = items.find(i => this.getCartLineKey(i) === lineKey);
       if (existing) {
-        return items.map(i => this.getCartLineKey(i) === lineKey ? { ...i, quantity: i.quantity + 1 } : i);
+        return items.map(i =>
+          this.getCartLineKey(i) === lineKey ? { ...i, quantity: i.quantity + 1 } : i
+        );
       }
       return [...items, newLine];
     });
     this.flashProductAdded(product, lineKey);
-    // Auto-expand cart when adding first item
     if (this.cart().length === 1) {
       this.cartExpanded.set(true);
     }
@@ -869,17 +1014,54 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   incrementItem(item: CartItem) {
+    if (!this.isMyCartItem(item)) return;
     const lineKey = this.getCartLineKey(item);
-    this.cart.update(items => items.map(i => this.getCartLineKey(i) === lineKey ? { ...i, quantity: i.quantity + 1 } : i));
+    if (this.sharedCartEnabled() && item.lineId) {
+      this.api
+        .updateTableCartItem(this.tableToken, item.lineId, {
+          session_id: this.sessionId,
+          quantity: item.quantity + 1,
+        })
+        .subscribe({
+          next: res => this.syncCartFromResponse(res, item.product, lineKey),
+          error: () => this.loadSharedCart(),
+        });
+      return;
+    }
+    this.cart.update(items =>
+      items.map(i => (this.getCartLineKey(i) === lineKey ? { ...i, quantity: i.quantity + 1 } : i))
+    );
     this.flashProductAdded(item.product, lineKey);
   }
 
   decrementItem(item: CartItem) {
+    if (!this.isMyCartItem(item)) return;
     const lineKey = this.getCartLineKey(item);
+    if (this.sharedCartEnabled() && item.lineId) {
+      if (item.quantity <= 1) {
+        this.api.deleteTableCartItem(this.tableToken, item.lineId, this.sessionId).subscribe({
+          next: res => this.applySharedCartResponse(res),
+          error: () => this.loadSharedCart(),
+        });
+      } else {
+        this.api
+          .updateTableCartItem(this.tableToken, item.lineId, {
+            session_id: this.sessionId,
+            quantity: item.quantity - 1,
+          })
+          .subscribe({
+            next: res => this.applySharedCartResponse(res),
+            error: () => this.loadSharedCart(),
+          });
+      }
+      return;
+    }
     if (item.quantity <= 1) {
       this.cart.update(items => items.filter(i => this.getCartLineKey(i) !== lineKey));
     } else {
-      this.cart.update(items => items.map(i => this.getCartLineKey(i) === lineKey ? { ...i, quantity: i.quantity - 1 } : i));
+      this.cart.update(items =>
+        items.map(i => (this.getCartLineKey(i) === lineKey ? { ...i, quantity: i.quantity - 1 } : i))
+      );
     }
   }
 
@@ -993,7 +1175,12 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   private async doSubmitOrder() {
-    const items: OrderItemCreate[] = this.cart().map(item => ({
+    const myLines = this.cart().filter(item => this.isMyCartItem(item));
+    if (myLines.length === 0) {
+      alert(this.translate.instant('MENU.PLACE_OWN_ITEMS_ONLY'));
+      return;
+    }
+    const items: OrderItemCreate[] = myLines.map(item => ({
       product_id: item.product.id!,
       quantity: item.quantity,
       notes: item.notes?.trim() || undefined,
@@ -1043,8 +1230,6 @@ export class MenuComponent implements OnInit, OnDestroy {
           localStorage.setItem(`customer_name_${this.tableToken}`, response.customer_name);
         }
 
-        this.cart.set([]);
-        this.cartExpanded.set(false);
         this.orderNotes = '';
         this.expandedCommentKeys.set(new Set());
         this.lastOrderId.set(orderId);
@@ -1052,6 +1237,14 @@ export class MenuComponent implements OnInit, OnDestroy {
         setTimeout(() => this.showSuccessToast.set(false), 3000);
         this.ordersExpanded.set(true);
         this.submitting.set(false);
+
+        if (this.sharedCartEnabled()) {
+          // Backend already dropped this session's draft lines; refresh to keep others'
+          this.loadSharedCart();
+        } else {
+          this.cart.set([]);
+          this.cartExpanded.set(false);
+        }
 
         this.loadStoredOrders();
 
@@ -1204,8 +1397,8 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   loadOrderHistory() {
-    if (!this.tableToken) return;
-    this.api.getOrderHistory(this.tableToken, 10).subscribe({
+    if (!this.tableToken || !this.sessionId) return;
+    this.api.getOrderHistory(this.tableToken, this.sessionId, 10).subscribe({
       next: (orders) => this.orderHistory.set(orders),
       error: () => this.orderHistory.set([])
     });

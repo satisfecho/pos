@@ -9,6 +9,7 @@ Table PIN security is **live**. Prefer this status section (and current code) ov
 - **Staff:** activate table → 4-digit PIN, regenerate PIN, close/deactivate (`POST /tables/{id}/activate`, `…/regenerate-pin`, `…/close`).
 - **Public menu:** inactive tables reject orders (“not accepting orders”); PIN required on place-order; PIN kept in `sessionStorage` for the table session.
 - **Shared order:** one active order per activated table; customers append to the same order.
+- **Shared draft cart (#349):** activated dine-in tables sync pre-submit cart lines via Redis (`/menu/{token}/cart`) and WebSocket `cart_updated`. Each device keeps its own `session_id` for attribution; Place Order submits **only that device’s** lines. Take-away tables stay local-only. Cart clears on table close.
 
 **Optional GPS / location check**
 
@@ -73,9 +74,10 @@ The Table PIN Security System provides a multi-layered approach to ensure that o
    - Subsequent orders during session don't need PIN re-entry
 
 4. **Shared Order**
-   - All customers at the table see the same order
-   - Items added by anyone appear for everyone
+   - All customers at the table see the same placed order
+   - Items added by anyone appear for everyone after Place Order
    - Staff can see the complete table order
+   - **Shared draft cart (#349):** before Place Order, activated dine-in tables also share cart lines (name attribution per `session_id`). Place Order still requires PIN and only submits the current device’s lines.
 
 ## Security Layers
 

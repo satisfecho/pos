@@ -1,6 +1,10 @@
 # Order Management Logic Specification
 
-> **Status: shipped core / design reference.** Session-scoped orders (`Order.session_id`, per-browser isolation, item `added_by_session`) and the main lifecycle rules are live. Do **not** re-open the original “shared unpaid order on one table token” problem as backlog. Treat remaining edge-case and proposed-enhancement sections as reference, not a todo list — prefer current code and tests for behaviour.
+> **Status: shipped core / design reference.** Session-scoped attribution (`OrderItem.added_by_session`, per-browser `session_id` in localStorage) and the main lifecycle rules are live.
+>
+> **Activated dine-in tables (PIN model):** Prefer [0009-table-pin-security.md](0009-table-pin-security.md). Those tables use **one shared active order** (`table.active_order_id`) plus an optional **shared draft cart** (`GET/POST /menu/{token}/cart`, Redis, WebSocket `cart_updated` — #349). That is **not** a return of the old unsafe “any browser on the token silently shares one unpaid order without PIN”. Take-away / inactive tables keep a **local-only** cart.
+>
+> Do **not** re-open a backlog that removes PIN activation or merges strangers’ take-away carts. Treat remaining edge-case and proposed-enhancement sections as reference — prefer current code and tests for behaviour.
 >
 > **Order / item comments (#284):** Optional free-text notes on `Order.notes` and `OrderItem.notes` (public menu **Add comment** + order-level note, staff edit on `/orders`, highlighted on `/kitchen` and `/bar`) are documented in [0015-kitchen-display.md](0015-kitchen-display.md#order-and-item-comments-284). This file remains the session/lifecycle design reference; do not treat comments as a separate schema project.
 
@@ -1185,6 +1189,7 @@ All customer-facing order modification endpoints require and validate `session_i
 - ✅ `DELETE /menu/{table_token}/order/{order_id}/items/{item_id}` - **Requires** `session_id` query param
 - ✅ `PUT /menu/{table_token}/order/{order_id}/items/{item_id}` - **Requires** `session_id` query param
 - ✅ `DELETE /menu/{table_token}/order/{order_id}` - **Requires** `session_id` query param
+- ✅ `GET /menu/{table_token}/order-history` - **Requires** `session_id` query param; returns paid/completed orders scoped to that browser session (`OrderItem.added_by_session`) or, when the end-user customer cookie is present, orders linked via `Order.customer_id` at the same tenant (#350). Staff/back-office table views are unchanged.
 
 **Security Logic**:
 - Backend validates that `order.session_id == provided_session_id`

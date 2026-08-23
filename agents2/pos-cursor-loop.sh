@@ -27,6 +27,7 @@ MKT_REVIEW_FILE="${SCRIPTDIR}/005-marketing-repos-reviewer/time-of-last-review.t
 MKT_PREFLIGHT="${REPO_ROOT}/scripts/marketing-repos-preflight.sh"
 ENH_REVIEW_FILE="${SCRIPTDIR}/008-enhancement-reviewer/time-of-last-review.txt"
 ENH_PREFLIGHT="${REPO_ROOT}/scripts/enhancement-reviewer-preflight.sh"
+FEAT_PREFLIGHT="${REPO_ROOT}/scripts/agent-feat-waiting-human-preflight.sh"
 
 cd "$SCRIPTDIR" || exit 1
 
@@ -703,16 +704,64 @@ step_feat() {
     echo "----- feature coding (FEAT) (skip: no FEAT-*.md — no sync, no agent)"
     return 0
   fi
+  mkdir -p "$AGENT_LOOP_TMP"
+  local ctx="${AGENT_LOOP_TMP}/006-latest-context.txt"
+  prepare_006_preflight_context "$ctx"
+  echo "----- 006 preflight digest: $ctx"
+  if ! should_run_006_cursor_agent; then
+    echo "----- feature coding (FEAT) (skip: all FEAT tasks waiting for human — quiet until issue reply)"
+    echo "----- Override: AGENT_FEAT_REVIEWER_ALWAYS=1 or AGENT_006_SKIP_PREFLIGHT=1"
+    return 0
+  fi
   if ! sync_repo; then
     echo "----- feature coding (FEAT) (skip: git sync failed)" >&2
     return 0
   fi
   echo "-----> feature coding (FEAT) <----"
+  local msg
+  msg="Run 010: Read the preflight digest first (absolute path): $ctx
+Then follow 010-feature-coder.md — pick FEAT-*.md. If blocked waiting for human: post ONE waiting comment on the linked issue, add **Waiting notice posted:** <UTC ISO> to the task Status, then stop (no code). If **Waiting notice posted** is already set and preflight says SKIP, do not run gh comment again. Task conventions: TASKS-README.md. Do your job."
   run_agent "feature coding (FEAT)" \
-    "any_root_task_glob 'FEAT-*.md'" \
+    "true" \
     "010-feature-coder.md" \
-    "Start feature coding now. Pick up a FEAT task if any. Do your job." \
+    "$msg" \
     "feat"
+}
+
+# G006_* set by scripts/agent-feat-waiting-human-preflight.sh (sourced via eval of Summary lines).
+prepare_006_preflight_context() {
+  local ctx="$1"
+  G006_FEAT_OK=0
+  G006_FEAT_TOTAL=0
+  G006_FEAT_ACTIONABLE=0
+  G006_FEAT_WAITING_QUIET=0
+  mkdir -p "$(dirname "$ctx")"
+  if [[ ! -x "$FEAT_PREFLIGHT" ]]; then
+    echo "G006 preflight script missing: $FEAT_PREFLIGHT" >"$ctx"
+    G006_FEAT_OK=1
+    G006_FEAT_ACTIONABLE=1
+    return 0
+  fi
+  POS_REPO_ROOT="$REPO_ROOT" AGENT_GH_REPO="$GH_REPO" bash "$FEAT_PREFLIGHT" "$ctx" || true
+  local line
+  while IFS= read -r line; do
+    case "$line" in
+      G006_FEAT_OK=*) eval "$line" 2>/dev/null || true ;;
+      G006_FEAT_TOTAL=*) eval "$line" 2>/dev/null || true ;;
+      G006_FEAT_ACTIONABLE=*) eval "$line" 2>/dev/null || true ;;
+      G006_FEAT_WAITING_QUIET=*) eval "$line" 2>/dev/null || true ;;
+    esac
+  done < <(grep -E '^G006_' "$ctx" 2>/dev/null || true)
+  if [[ "${G006_FEAT_TOTAL:-0}" -eq 0 ]]; then
+    G006_FEAT_ACTIONABLE=1
+  fi
+}
+
+should_run_006_cursor_agent() {
+  [[ "${AGENT_FEAT_REVIEWER_ALWAYS:-0}" == "1" ]] && return 0
+  [[ "${AGENT_006_SKIP_PREFLIGHT:-0}" == "1" ]] && return 0
+  [[ "${G006_FEAT_OK:-0}" != "1" ]] && return 1
+  (( G006_FEAT_ACTIONABLE > 0 ))
 }
 
 step_feature_coder_handoff() {
@@ -869,15 +918,26 @@ run_full_cycle() {
   run_step "005 marketing repos" step_marketing_repos
   run_step "008 enhancement reviewer" step_enhancement_reviewer
   local i=0
-  local has_feat
+  local has_feat has_actionable_feat
   while (( i < 5 )); do
     has_feat=false
+    has_actionable_feat=false
     shopt -s nullglob
     for _ in "$TASKDIR"/FEAT-*.md; do has_feat=true; break; done
     shopt -u nullglob
     if ! $has_feat; then
       if (( i == 0 )); then
         echo "----- feature coding (FEAT): queue empty, skipping up to 5 batch slots (saves git sync)"
+      fi
+      break
+    fi
+    prepare_006_preflight_context "${AGENT_LOOP_TMP}/006-latest-context.txt"
+    if should_run_006_cursor_agent; then
+      has_actionable_feat=true
+    fi
+    if ! $has_actionable_feat; then
+      if (( i == 0 )); then
+        echo "----- feature coding (FEAT): queue parked waiting for human — skipping batch (see ${AGENT_LOOP_TMP}/006-latest-context.txt)"
       fi
       break
     fi
@@ -937,6 +997,8 @@ Environment:
   AGENT_REVIEWER_TIMEOUT_MINUTES   001 / 005 / 008 limit (default: same as AGENT_CURSOR_TIMEOUT_MINUTES).
   AGENT_ENHANCEMENT_REVIEWER_ALWAYS  If 1, always invoke 008 cursor-agent.
   AGENT_008_SKIP_PREFLIGHT         If 1, always invoke 008 (legacy always-run).
+  AGENT_FEAT_REVIEWER_ALWAYS       If 1, always invoke 006 feature coder (skip waiting-human preflight).
+  AGENT_006_SKIP_PREFLIGHT         If 1, same as AGENT_FEAT_REVIEWER_ALWAYS for 006 (legacy always-run).
   On timeout the loop continues (exit 124); TESTING-/WIP- tasks are retried on the next cycle.
 
 Docker / app stack: start separately from repo root with ./run.sh -dev

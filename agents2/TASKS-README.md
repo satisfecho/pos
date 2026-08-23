@@ -65,3 +65,15 @@ See **`agents2/tasks/done/README.md`** for a short index of the archive tree.
 - **untested → testing** when the tester starts.
 - **testing → closed** when verification passes: rename **`TESTING-…`** → **`CLOSED-…`** (keep the same **`YYYYMMDD-HHMM-slug`**; only change the status prefix). On failure, **testing → wip**.
 - **closed → done/YYYY/MM/DD/** after the closing summary is added (use **`move-agent-task-to-done.sh`** or an equivalent `mkdir` + `mv`).
+
+## Waiting for human (FEAT blocked on design)
+
+Some **FEAT-** tasks are **parked** until product or design decisions land on GitHub (see issue #350 pattern).
+
+| Step | Who | Action |
+|------|-----|--------|
+| First blocked pass | Feature coder **010** | Post **one** waiting comment on the linked issue; add `**Waiting notice posted:** <UTC ISO>` under **## Status** in the task file. Leave task as **FEAT** (no **WIP**). |
+| Later loop cycles | Orchestrator **006** preflight | **`scripts/agent-feat-waiting-human-preflight.sh`** skips **010** when the waiting notice is set and no non-agent reply appeared on the issue after that time. |
+| Human decides | Human on GitHub | Reply on the issue with decisions. Preflight unblocks **010** on the next cycle. |
+
+Override preflight (debug only): **`AGENT_FEAT_REVIEWER_ALWAYS=1`** or **`AGENT_006_SKIP_PREFLIGHT=1`** in **`agents2/pos-cursor-loop.sh`**.

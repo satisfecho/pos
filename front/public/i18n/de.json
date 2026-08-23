@@ -240,7 +240,8 @@
     "FEATURES_VIEW_ALL": "Alle Funktionen ansehen",
     "NAV_PRICING": "Preise",
     "NAV_ABOUT": "Über uns",
-    "COMPANY_OPERATOR": "Betrieben von Amvara Consulting S.L."
+    "COMPANY_OPERATOR": "Betrieben von Amvara Consulting S.L.",
+    "USER_MANUAL": "Benutzerhandbuch"
   },
   "PUBLIC_MENU": {
     "PAGE_TITLE": "Speisekarte",
@@ -607,7 +608,11 @@
     "ITEM_COMMENT_PLACEHOLDER": "z. B. viel Eis, kalte Milch, nur Mozzarella",
     "ORDER_NOTES_PLACEHOLDER": "Optionale Notiz für die gesamte Bestellung (z. B. zusammen servieren)",
     "ADD_COMMENT": "Kommentar hinzufügen",
-    "HIDE_COMMENT": "Kommentar ausblenden"
+    "HIDE_COMMENT": "Kommentar ausblenden",
+    "SHARED_CART_HINT": "Gemeinsamer Tisch-Warenkorb — alle am Tisch sehen diese Artikel. Bestellen sendet nur Ihre Artikel.",
+    "ADDED_BY": "Hinzugefügt von {{name}}",
+    "ADDED_BY_GUEST": "Von einem anderen Gast hinzugefügt",
+    "PLACE_OWN_ITEMS_ONLY": "Fügen Sie eigene Artikel hinzu, bevor Sie bestellen. Artikel anderer Gäste bleiben im gemeinsamen Warenkorb, bis sie bestellen."
   },
   "PRODUCTS": {
     "TITLE": "Produkte",
@@ -2884,7 +2889,9 @@
     "OPEN_SOURCE_TITLE": "Open Source",
     "OPEN_SOURCE_BODY": "Das Produkt wird offen entwickelt. Sie können den Code einsehen, unter AGPLv3 selbst hosten oder den Managed Service auf satisfecho.de nutzen.",
     "CONTACT_TITLE": "Kontakt",
-    "CONTACT_BODY": "Fragen zur Plattform oder zum Hosted Service:"
+    "CONTACT_BODY": "Fragen zur Plattform oder zum Hosted Service:",
+    "MANUAL_TITLE": "Benutzerhandbuch",
+    "MANUAL_BODY": "Schritt-für-Schritt-Anleitungen für Einrichtung, Tagesgeschäft, Reservierungen, Inventar und mehr."
   },
   "CUSTOMER_AUTH": {
     "TITLE": "Customer account",

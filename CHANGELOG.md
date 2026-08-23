@@ -8,11 +8,29 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Fixed
+
+## [2.1.153] - 2026-08-23
+
+### Fixed
+
+- **QR menu order history (#350):** Public `/menu/{table_token}` order history no longer lists every guest’s paid orders at the same table. `GET /menu/{table_token}/order-history` requires `session_id` and scopes results to that browser session or, when logged in, the end-user customer at the tenant. Table orders set `Order.customer_id` when the customer cookie is present. Staff back-office table views are unchanged.
+
+## [2.1.152] - 2026-08-23
+
 ### Added
+
+- **User manual on marketing site (#352):** Published the Spanish user manual at `/manual-usuario/` (static assets from `docs/manual-usuario/`). **User manual** links on the shared marketing footer, `/about`, and `/features`.
 
 ### Changed
 
-### Fixed
+- **Agent loop (FEAT waiting for human):** Feature coder step skips parked **FEAT** tasks after one waiting GitHub comment until a human replies on the linked issue (`scripts/agent-feat-waiting-human-preflight.sh`).
+
+## [2.1.151] - 2026-08-20
+
+### Added
+
+- **Shared table cart for dine-in QR (#349):** Guests on the same activated table QR now share a live draft cart before Place Order (Redis + WebSocket). Each device keeps its own session for attribution; Place Order still sends only that device’s lines. Take Away stays local-only. Docs 0008/0009 updated.
 
 ## [2.1.150] - 2026-08-20
 
