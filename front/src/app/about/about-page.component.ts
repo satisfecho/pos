@@ -59,7 +59,7 @@ import { LandingSiteFooterComponent } from '../shared/landing-site-footer.compon
           <h2 id="about-manual-heading" class="about-section__title">{{ 'ABOUT_PAGE.MANUAL_TITLE' | translate }}</h2>
           <p class="about-section__body">
             {{ 'ABOUT_PAGE.MANUAL_BODY' | translate }}
-            <a href="/manual-usuario/" class="about-section__link" data-testid="about-manual-link">{{
+            <a routerLink="/manual-usuario" class="about-section__link" data-testid="about-manual-link">{{
               'LANDING.USER_MANUAL' | translate
             }}</a>
           </p>

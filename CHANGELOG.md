@@ -8,7 +8,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-### Fixed
+## [2.1.154] - 2026-08-24
+
+### Added
+
+- **User manual language switch (#353):** Public `/manual-usuario` is now an Angular page with the marketing language picker and shared footer. Spanish and English manual bodies load from `content/es.html` and `content/en.html`; other UI locales use English until more translations exist. Footer and About links use the SPA route.
 
 ## [2.1.153] - 2026-08-23
 

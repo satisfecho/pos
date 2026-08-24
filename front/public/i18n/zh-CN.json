@@ -3266,5 +3266,10 @@
         "HOW_3": "或注册托管版 Satisfecho，由我们管理更新。"
       }
     }
+  },
+  "USER_MANUAL_PAGE": {
+    "LOADING": "正在加载用户手册…",
+    "LOAD_ERROR": "无法加载用户手册。请刷新页面或稍后再试。",
+    "DOC_TITLE": "用户手册 | Satisfecho POS"
   }
 }

@@ -3266,5 +3266,10 @@
         "HOW_3": "Or register for hosted Satisfecho with managed updates."
       }
     }
+  },
+  "USER_MANUAL_PAGE": {
+    "LOADING": "Loading the user manual…",
+    "LOAD_ERROR": "Could not load the user manual. Refresh the page or try again later.",
+    "DOC_TITLE": "User manual | Satisfecho POS"
   }
 }

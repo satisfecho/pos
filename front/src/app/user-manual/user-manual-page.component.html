@@ -1,0 +1,35 @@
+<div class="user-manual-page" data-testid="user-manual-page">
+  <nav class="user-manual-nav" aria-label="Main">
+    <a routerLink="/" class="user-manual-nav__brand">
+      <span class="user-manual-nav__mark" aria-hidden="true"></span>
+      <span>{{ 'LANDING.BRAND_NAME' | translate }}</span>
+    </a>
+    <div class="user-manual-nav__links">
+      <a routerLink="/features" class="user-manual-nav__link">{{ 'LANDING.NAV_FEATURES' | translate }}</a>
+      <a routerLink="/pricing" class="user-manual-nav__link">{{ 'LANDING.NAV_PRICING' | translate }}</a>
+      <a routerLink="/about" class="user-manual-nav__link">{{ 'LANDING.NAV_ABOUT' | translate }}</a>
+      <a routerLink="/manual-usuario" class="user-manual-nav__link user-manual-nav__link--active" data-testid="user-manual-nav-manual">{{
+        'LANDING.USER_MANUAL' | translate
+      }}</a>
+    </div>
+    <div class="user-manual-nav__actions">
+      <app-language-picker data-testid="user-manual-language-picker"></app-language-picker>
+      <a routerLink="/login" class="user-manual-nav__login">{{ 'LANDING.LOGIN' | translate }}</a>
+      <a routerLink="/register" class="user-manual-nav__cta">{{ 'LANDING.CTA_CREATE_QR_MENU' | translate }}</a>
+    </div>
+  </nav>
+
+  <div class="user-manual-body">
+    @if (loading()) {
+      <p class="user-manual-status" data-testid="user-manual-loading">{{ 'USER_MANUAL_PAGE.LOADING' | translate }}</p>
+    } @else if (error()) {
+      <p class="user-manual-status user-manual-status--error" data-testid="user-manual-error">
+        {{ 'USER_MANUAL_PAGE.LOAD_ERROR' | translate }}
+      </p>
+    } @else if (contentHtml(); as html) {
+      <div class="user-manual-doc" data-testid="user-manual-content" [innerHTML]="html"></div>
+    }
+  </div>
+
+  <app-landing-site-footer></app-landing-site-footer>
+</div>

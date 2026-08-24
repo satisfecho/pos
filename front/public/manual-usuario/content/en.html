@@ -1,0 +1,964 @@
+<main class="page">
+      <header class="hero">
+        <p class="eyebrow">Manual for customers and restaurant teams</p>
+        <h1>How to use Satisfecho POS from start to finish</h1>
+        <p class="hero-copy">
+          This guide explains the full application with practical steps: initial setup, tables,
+          orders, payments, reservations, kitchen, bar, inventory, reports, shifts, contracts, feedback, and
+          the supplier portal. Screenshots are real captures from the demo environment.
+        </p>
+        <div class="meta-row" aria-label="Manual information">
+          <span class="chip">Updated: May 2026</span>
+          <span class="chip">Web application</span>
+          <span class="chip">Roles: owner, admin, staff, and supplier</span>
+          <span class="chip">Includes public and private screens</span>
+        </div>
+      </header>
+
+      <section class="section lede" id="leer-primero">
+        <h2>Read this first</h2>
+        <div class="grid">
+          <div class="col-8">
+            <p>
+              Satisfecho POS is split into three experiences. Staff work from the internal
+              dashboard; customers use the public menu from a QR code, link, or table search; and
+              suppliers use a separate portal when the restaurant wants to receive external product
+              catalogs.
+            </p>
+            <p>
+              If you are new, start with <a href="#configuracion">Settings</a>, then create your
+              <a href="#productos">products</a>, set up <a href="#mesas">tables and QR</a>, and
+              finally test the full flow for the <a href="#cliente">customer order</a> and
+              <a href="#operacion">staff operations</a>.
+            </p>
+          </div>
+          <div class="col-4">
+            <div class="card soft">
+              <h3>Practical rule</h3>
+              <p>
+                Configure the restaurant first. Then load products, tables, staff, and payment
+                methods. Do not publish QR codes or customer links until you have run a real test of order,
+                kitchen, payment, and table close.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="indice">
+        <h2>Contents</h2>
+        <nav class="toc" aria-label="Manual table of contents">
+          <a href="#primeros-pasos">1. Getting started <span>Public home, sign-up, access, and navigation.</span></a>
+          <a href="#roles">2. Roles and permissions <span>What each user type can do.</span></a>
+          <a href="#configuracion">3. Settings <span>Data, branding, hours, payments, security, and integrations.</span></a>
+          <a href="#productos">4. Products and catalog <span>Menu, categories, questions, recipes, and suppliers.</span></a>
+          <a href="#mesas">5. Tables and floor plan <span>QR, PIN, floors, waiters, groups, and visual view.</span></a>
+          <a href="#cliente">6. Customer experience <span>QR menu, order, PIN, payment, takeaway, and call waiter.</span></a>
+          <a href="#operacion">7. Daily operations <span>Orders, payments, history, kitchen, and bar.</span></a>
+          <a href="#reservas">8. Reservations and feedback <span>Public booking, internal management, reminders, and reviews.</span></a>
+          <a href="#equipo">9. Team, shifts, and contracts <span>Users, My shift, working plan, and contracts.</span></a>
+          <a href="#inventario">10. Inventory, customers, and reports <span>Stock, purchases, fiscal customers, and analytics.</span></a>
+          <a href="#proveedores">11. Supplier portal <span>Separate access for external suppliers.</span></a>
+          <a href="#checklists">12. Checklists <span>Go-live, daily service, and closing.</span></a>
+          <a href="#problemas">13. Common problems <span>Quick fixes and key concepts.</span></a>
+        </nav>
+      </section>
+
+      <section class="section" id="primeros-pasos">
+        <h2>1. Getting started</h2>
+
+        <h3>Public home screen</h3>
+        <p>
+          The home page shows available restaurants, links to book, log in,
+          use a table by code, and, if configured, place takeaway orders. It also includes
+          supplier access and the language selector.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/landing.png" alt="Public page with restaurants, bookings, and table search" loading="lazy" />
+          <figcaption>Public page. Customers do not need an account to book or use a table QR.</figcaption>
+        </figure>
+
+        <h3>Create the first account</h3>
+        <p>
+          Sign-up creates a restaurant account. The first person who registers a restaurant should
+          be the one who will manage the initial setup, because that account is used to create users,
+          products, tables, payments, and settings.
+        </p>
+        <ol class="steps">
+          <li>Go to <strong>Sign up</strong>.</li>
+          <li>Enter name, email, password, and basic restaurant details.</li>
+          <li>Save. Then log in with the email and password you just created.</li>
+          <li>Complete settings before you share public links.</li>
+        </ol>
+        <figure>
+          <img src="/manual-usuario/img/register.png" alt="Restaurant registration form" loading="lazy" />
+          <figcaption>Restaurant registration. Use a real email to recover the password and receive notices.</figcaption>
+        </figure>
+
+        <h3>Log in and recover password</h3>
+        <p>
+          Staff enter through <strong>Log in</strong>. If the restaurant enabled two-step
+          verification, the system asks for a temporary code after the password. If someone forgets their
+          password, they must use the recovery link and follow the email they receive.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/login.png" alt="Log-in screen with recovery and supplier links" loading="lazy" />
+          <figcaption>Staff log-in. Suppliers have a separate access from this same public area.</figcaption>
+        </figure>
+
+        <h3>Internal dashboard and navigation</h3>
+        <p>
+          After you log in, the internal dashboard appears. The side menu shows only the sections
+          allowed by the role and by the modules enabled in settings. On small screens it
+          works as a drop-down menu.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/dashboard.png" alt="Internal dashboard with sidebar, cards, and main shortcuts" loading="lazy" />
+          <figcaption>Internal dashboard. Use it as the control point to open orders, reservations, tables, and reports.</figcaption>
+        </figure>
+
+        <div class="callout">
+          <strong>Languages.</strong> The application lets you change language from the public area and from
+          the internal environment. If a label appears in another language, it usually means that
+          translation is not yet loaded for that part of the system.
+        </div>
+      </section>
+
+      <section class="section" id="roles">
+        <h2>2. Roles and permissions</h2>
+        <p>
+          Permissions protect sensitive actions. If a user does not see a section, it is not an error:
+          their role lacks permission or the module was turned off in <strong>Settings &gt; Navigation</strong>.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Role</th>
+              <th>Recommended use</th>
+              <th>Main permissions</th>
+              <th>Important limits</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Owner</strong></td>
+              <td>Owner or top responsible person.</td>
+              <td>Full access: settings, users, products, tables, reservations, reports, inventory, contracts, and data.</td>
+              <td>This must be a protected account. Sharing it is not recommended.</td>
+            </tr>
+            <tr>
+              <td><strong>Admin</strong></td>
+              <td>Operations manager.</td>
+              <td>Manages daily operations, non-owner users, products, tables, reservations, inventory, reports, contracts, and the working plan.</td>
+              <td>May have restrictions on billing data, payment keys, or owner users.</td>
+            </tr>
+            <tr>
+              <td><strong>Waiter</strong></td>
+              <td>Floor service.</td>
+              <td>Sees products, tables, reservations, fiscal customers, and orders. Can update statuses, mark paid, and remove allowed lines.</td>
+              <td>Does not manage settings, users, inventory, or global reports.</td>
+            </tr>
+            <tr>
+              <td><strong>Receptionist</strong></td>
+              <td>Reservations and first contact.</td>
+              <td>Manages reservations, and can view tables, customers, and orders.</td>
+              <td>Does not change products or settings; order access is more limited.</td>
+            </tr>
+            <tr>
+              <td><strong>Kitchen</strong></td>
+              <td>Food preparation.</td>
+              <td>Sees orders and changes statuses of lines assigned to kitchen. Also sees their shift and contracts.</td>
+              <td>Does not take payment or manage tables.</td>
+            </tr>
+            <tr>
+              <td><strong>Bar</strong></td>
+              <td>Drink preparation.</td>
+              <td>Similar to kitchen, focused on the bar screen and drink products.</td>
+              <td>Does not take payment or manage settings.</td>
+            </tr>
+            <tr>
+              <td><strong>Supplier</strong></td>
+              <td>External supplier.</td>
+              <td>Uses a separate portal for their catalog and company data.</td>
+              <td>Does not enter the restaurant internal dashboard.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <figure>
+          <img src="/manual-usuario/img/users.png" alt="Users and roles screen" loading="lazy" />
+          <figcaption>Users. Create one account per person so you know who did each action.</figcaption>
+        </figure>
+
+        <div class="callout warn">
+          <strong>Best practices.</strong> Disable users who no longer work with you and avoid shared
+          accounts. For sensitive changes, use owner or admin with an individual password.
+        </div>
+      </section>
+
+      <section class="section" id="configuracion">
+        <h2>3. Settings</h2>
+        <p>
+          Settings control how the restaurant looks and behaves. Do this part carefully before
+          you go live: it affects QR codes, reservations, payments, hours, security, kitchen, inventory, and
+          module visibility.
+        </p>
+
+        <h3>Profile, branding, and public appearance</h3>
+        <p>
+          In <strong>Profile</strong> you edit the restaurant name, description, phone, email,
+          currency, country, time zone, logo, header image, and public background color. These details
+          appear on public pages, reservations, the QR menu, and some messages.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-profile.png" alt="Profile, branding, logo, and header settings" loading="lazy" />
+          <figcaption>Profile. Use clear images and real data, because end customers see them.</figcaption>
+        </figure>
+
+        <h3>Navigation and modules</h3>
+        <p>
+          The <strong>Navigation</strong> tab lets you enable or disable modules such as tables, working
+          plan, suppliers, reservations, kitchen/bar, and inventory. If a module is off, the
+          menu hides it and direct links may redirect to the internal home.
+        </p>
+        <ul>
+          <li>Turn off modules your restaurant does not use to simplify staff work.</li>
+          <li>Enable inventory only when you will maintain stock, suppliers, purchases, and recipes.</li>
+          <li>Enable kitchen/bar if you need preparation screens by station.</li>
+        </ul>
+
+        <h3>Contact, location, legal, and reviews</h3>
+        <p>
+          In <strong>Contact</strong> you store address, website, Google Maps and OpenStreetMap links,
+          Google reviews URL, tax ID (NIF/CIF), bank account (CCC), public terms URL, public privacy URL, and
+          basic fiscal data. You also set the default tax when a product has no
+          specific rule.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-contact.png" alt="Contact, location, and legal settings" loading="lazy" />
+          <figcaption>Contact. These details help customers find you and feed invoices or public pages.</figcaption>
+        </figure>
+
+        <h3>Hours, expected shifts, and exceptions</h3>
+        <p>
+          In <strong>Hours</strong> you set the restaurant weekly schedule, staffing needs by
+          time slot, and patterns planned for the future. You can also create exceptions for
+          specific dates, for example holidays, vacations, or private events.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-hours.png" alt="Hours and staffing needs settings" loading="lazy" />
+          <figcaption>Hours. Reservations and the working plan depend on this information.</figcaption>
+        </figure>
+
+        <h3>Payments, invoicing, tips, and location verification</h3>
+        <p>
+          In <strong>Payments</strong> you adjust visible payment methods, tips, payment
+          behavior, and payment provider details such as Stripe or Revolut when they are enabled in your
+          installation. There may also be options for fiscal invoices, internal series, test or
+          production mode, and location verification for in-person payments.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-payments.png" alt="Payment methods and invoicing settings" loading="lazy" />
+          <figcaption>Payments. Do not share payment keys, SMTP, or tokens with staff who do not need them.</figcaption>
+        </figure>
+        <div class="callout warn">
+          <strong>Tax compliance.</strong> Fiscal settings depend on the country and the deployment. Before
+          you use fiscal invoicing in production, confirm with your advisor and the technical team which
+          integration is active.
+        </div>
+
+        <h3>Public reservations</h3>
+        <p>
+          Reservation settings control whether customers can book, whether prepayment is required, the
+          cancellation policy, arrival tolerance, average table duration, slot interval,
+          maximum people per slot, tables for walk-in guests, dress code, and 24-hour or
+          2-hour reminders.
+        </p>
+        <ul>
+          <li>Use reservation intervals your team can meet, for example 15 or 30 minutes.</li>
+          <li>Set arrival tolerance so you know when to mark <strong>no-show</strong>.</li>
+          <li>Enable reminders only when email or messaging is correctly configured.</li>
+        </ul>
+
+        <h3>Outgoing email</h3>
+        <p>
+          If your deployment has SMTP enabled, use it for password recovery, reminders,
+          confirmations, and reservation-related messages. Test email before you enable
+          automatic reminders.
+        </p>
+
+        <h3>Taxes and VAT</h3>
+        <p>
+          In <strong>Taxes</strong> you can create VAT types or equivalent taxes. Then
+          each product can use the restaurant default tax or its own rule.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-taxes.png" alt="Tax settings" loading="lazy" />
+          <figcaption>Taxes. Keep clear names, for example standard, reduced, or drinks.</figcaption>
+        </figure>
+
+        <h3>Kitchen stations</h3>
+        <p>
+          Stations group preparation work. A product can be assigned to a station
+          so it appears where it belongs: hot kitchen, desserts, bar, grill, or another area.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-kitchen-stations.png" alt="Kitchen station settings" loading="lazy" />
+          <figcaption>Stations. Use them to organize kitchen and bar screens.</figcaption>
+        </figure>
+
+        <h3>Delivery integrations</h3>
+        <p>
+          In <strong>Integrations</strong> you configure marketplaces or external channels when the
+          deployment includes the matching adapter. Keep technical links and secrets protected.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-delivery.png" alt="Delivery integration settings" loading="lazy" />
+          <figcaption>Delivery. Enable only integrations verified in your installation.</figcaption>
+        </figure>
+
+        <h3>Social posts</h3>
+        <p>
+          Social posts let you prepare messages and content for connected channels,
+          such as Meta, when the OAuth connection is configured. Use it for promotions, news, or
+          seasonal campaigns.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-social.png" alt="Social post settings" loading="lazy" />
+          <figcaption>Social. Review the text before you publish and confirm the connected account is correct.</figcaption>
+        </figure>
+
+        <h3>Security, clock-in, and data</h3>
+        <p>
+          In <strong>Security</strong> you can enable two-step codes for sensitive access and
+          configure staff clock-in with QR. If location verification is enabled,
+          the device will ask for location permission when clocking in.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-security.png" alt="Security and clock-in QR settings" loading="lazy" />
+          <figcaption>Security. Download or print the clock-in QR only for authorized staff.</figcaption>
+        </figure>
+        <p>
+          In <strong>Data and privacy</strong>, the owner can export restaurant
+          information and, if the deployment allows it, run destructive actions such as purging data.
+          These actions must stay with the owner and require a prior backup.
+        </p>
+
+        <h3>Templates, translations, and internal suppliers</h3>
+        <p>
+          Settings also include contract templates, translations of visible texts, and
+          the restaurant’s own suppliers/products. These areas help keep documents,
+          public labels, and purchases aligned with the same base information.
+        </p>
+      </section>
+
+      <section class="section" id="productos">
+        <h2>4. Products and catalog</h2>
+        <p>
+          Products is the heart of the menu. Each product can have price, cost, image, category,
+          subcategory, ingredients, description, its own tax, kitchen station, availability
+          by time, and customization questions.
+        </p>
+
+        <figure>
+          <img src="/manual-usuario/img/products.png" alt="Products screen with form, categories, and list" loading="lazy" />
+          <figcaption>Products. The categories tab lets you order the public menu and internal work.</figcaption>
+        </figure>
+
+        <h3>Create or edit a product</h3>
+        <ol class="steps">
+          <li>Go to <strong>Products</strong> and open the products tab.</li>
+          <li>Enter name, sale price, and, if you know it, purchase or prep cost.</li>
+          <li>Add description and ingredients. This helps customers and staff with allergies.</li>
+          <li>Select category, subcategory, and kitchen station when it applies.</li>
+          <li>Upload a real, clear image of the dish or drink.</li>
+          <li>If the product is sold only at certain times, set availability from/to.</li>
+          <li>Save. Then add customization questions if the product needs them.</li>
+        </ol>
+
+        <h3>Questions and customizations</h3>
+        <p>
+          After you save a product you can add questions for the customer or waiter:
+          single choice, multiple choice, scale, or free text. Each question can be required
+          and have an order. Use them for cooking preference, sizes, sauces, extras, removals, or notes.
+        </p>
+        <div class="callout">
+          <strong>Example.</strong> For a burger, create a required question "Cooking level"
+          with options rare, medium, and well done. Create another for extras if they have a cost.
+        </div>
+
+        <h3>Costs, recipes, and ideal price</h3>
+        <p>
+          If inventory and recipes are active, you can link real ingredients to the product. The
+          system uses those costs to help calculate margin and ideal price. This help works well
+          only if stock, units, and costs are up to date.
+        </p>
+
+        <h3>Supplier catalog</h3>
+        <p>
+          The <strong>Catalog</strong> section gathers supplier products or external products that
+          the restaurant reviews for purchases, availability, or reference. It does not replace the customer
+          sales menu: the menu customers see comes from <strong>Products</strong>.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/catalog.png" alt="Supplier product catalog" loading="lazy" />
+          <figcaption>Catalog. Useful to review external products, images, and supplier availability.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="mesas">
+        <h2>5. Tables and floor plan</h2>
+        <p>
+          Tables connect the floor to orders. Each table can have a name, capacity, status,
+          floor, QR, PIN, and assigned waiter. You can also work with list, card, or
+          visual floor-plan views.
+        </p>
+
+        <figure>
+          <img src="/manual-usuario/img/tables.png" alt="Table management with floors, QR, PIN, and actions" loading="lazy" />
+          <figcaption>Tables. From here you can enable, disable, print QR, copy link, or open the menu.</figcaption>
+        </figure>
+
+        <h3>What to configure on each table</h3>
+        <ul>
+          <li><strong>Visible name:</strong> for example T01, Terrace 4, or Bar 2.</li>
+          <li><strong>Capacity:</strong> normal number of guests.</li>
+          <li><strong>Floor or zone:</strong> dining room, terrace, bar, private, or another area.</li>
+          <li><strong>PIN:</strong> protects customer actions such as confirming or changing orders.</li>
+          <li><strong>Assigned waiter:</strong> can be set by floor and adjusted per table.</li>
+          <li><strong>Active:</strong> only active tables are used in operations and public links.</li>
+        </ul>
+
+        <h3>QR, link, and staff-opened menu</h3>
+        <p>
+          The table QR opens that table’s public menu. You can copy the link to print it or
+          send it. The <strong>Open menu</strong> action lets staff help a table from
+          their device; it must not be used as a permanent public link.
+        </p>
+
+        <h3>Table groups and reassignment</h3>
+        <p>
+          You can join tables when several tables form one check or a large reservation. If you try to
+          delete a table with linked orders or reservations, the system may ask you to reassign information
+          so history is not lost.
+        </p>
+
+        <h3>Visual floor plan</h3>
+        <p>
+          The floor plan helps you quickly see which tables are free, occupied, with payment pending,
+          assigned to a waiter, or grouped. Colors and payment chips help you spot pending actions
+          without opening each table.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/tables-canvas.png" alt="Visual table floor plan with statuses and actions" loading="lazy" />
+          <figcaption>Table floor plan. Useful during service to decide where to seat guests or close checks.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="cliente">
+        <h2>6. Customer experience</h2>
+        <p>
+          Customers can use the menu without installing anything. They enter via table QR, link, table
+          search on the public page, or the takeaway order path when the restaurant has it active.
+        </p>
+
+        <div class="grid">
+          <div class="col-6">
+            <h3>Initial identification</h3>
+            <p>
+              When entering the table menu, the customer can enter their name. This helps staff
+              recognize who placed the order and resolve questions at the table.
+            </p>
+            <figure class="phone">
+              <img src="/manual-usuario/img/menu-name.png" alt="Mobile menu asking for the customer name" loading="lazy" />
+              <figcaption>Entry to the table menu.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <h3>Browse products</h3>
+            <p>
+              The menu shows categories, subcategories, featured items, images, prices, ingredients,
+              allergens, or dietary details when they are loaded. The customer adds products with the
+              plus button.
+            </p>
+            <figure class="phone">
+              <img src="/manual-usuario/img/menu-browse.png" alt="Mobile menu with products and categories" loading="lazy" />
+              <figcaption>Public menu with real products from the demo.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Cart, customization, and confirmation</h3>
+        <p>
+          Before sending, the customer reviews quantities, customizations, and total. If the product has
+          required questions, they must answer them before confirming. To avoid accidental orders,
+          the table can require a PIN.
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure class="phone">
+              <img src="/manual-usuario/img/menu-cart.png" alt="Mobile cart with products ready to order" loading="lazy" />
+              <figcaption>Cart. Here the order is reviewed before it is sent.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure class="phone">
+              <img src="/manual-usuario/img/menu-pin.png" alt="Mobile screen asking for table PIN" loading="lazy" />
+              <figcaption>Table PIN. Staff give it out or keep it visible according to operations.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Active order, history, and actions</h3>
+        <p>
+          After sending, the customer sees the order status. They can keep adding products if the
+          table is still open. Depending on settings and status, they can request payment, call the waiter,
+          cancel items that are still allowed, or view history.
+        </p>
+        <figure class="phone">
+          <img src="/manual-usuario/img/menu-status.png" alt="Mobile status of the current order and main buttons" loading="lazy" />
+          <figcaption>Current order. The customer sees whether it is received, preparing, ready, or delivered.</figcaption>
+        </figure>
+
+        <h3>Payment options visible to the customer</h3>
+        <p>
+          Options depend on restaurant settings. Online payment, terminal, cash,
+          Revolut, Stripe, or call waiter may appear. If online payment is not
+          configured, the customer can ask staff to take payment at the table.
+        </p>
+
+        <h3>Takeaway or delivery orders</h3>
+        <p>
+          If the restaurant has a takeaway table or channel configured, the public orders page
+          shows available restaurants. The flow is similar to the table menu, but it is used for orders
+          without sitting at a physical table.
+        </p>
+      </section>
+
+      <section class="section" id="operacion">
+        <h2>7. Daily operations</h2>
+        <p>
+          The orders section is the center of service. Staff can see active orders,
+          unpaid checks, and history. There are also separate screens for kitchen and bar.
+        </p>
+
+        <h3>Active orders</h3>
+        <p>
+          In <strong>Orders</strong> you see tables, lines, statuses, notes, and totals. From here you
+          can add products, edit orders, remove allowed lines, mark urgent, advance
+          statuses, and open payment options.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/orders-active.png" alt="Active orders with tables, lines, and actions" loading="lazy" />
+          <figcaption>Active orders. Keep this screen open during floor service.</figcaption>
+        </figure>
+
+        <h3>Order and line statuses</h3>
+        <p>
+          An order can move through statuses such as received, preparing, ready, delivered, paid, or
+          cancelled. Each line can also have its own status, so kitchen and bar
+          can work in parallel.
+        </p>
+        <ul>
+          <li><strong>Received:</strong> the customer or staff just sent the order.</li>
+          <li><strong>Preparing:</strong> kitchen or bar is working on it.</li>
+          <li><strong>Ready:</strong> it is prepared for delivery.</li>
+          <li><strong>Delivered:</strong> it has reached the table.</li>
+          <li><strong>Paid:</strong> the check is closed.</li>
+        </ul>
+
+        <h3>Payment, tip, and invoice</h3>
+        <p>
+          In the payment modal you can choose the method, record a tip, manage overpayment when it
+          applies, finalize the order, and open an invoice. Visible methods depend on settings:
+          cash, terminal, Stripe, Revolut, or others.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/orders-unpaid.png" alt="Orders pending payment" loading="lazy" />
+          <figcaption>Unpaid. This view helps close pending checks before the end of the shift.</figcaption>
+        </figure>
+
+        <h3>History</h3>
+        <p>
+          History lets you review previous orders, amounts, statuses, and removed items
+          when that option is visible. It is useful for resolving questions, internal audit, and reports.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/orders-history.png" alt="Order history" loading="lazy" />
+          <figcaption>History. Review closed orders without mixing them with active operations.</figcaption>
+        </figure>
+
+        <h3>Kitchen screen</h3>
+        <p>
+          Kitchen shows the lines that need preparation. The team can advance statuses without
+          entering payments or settings. If you use stations, each product goes to the assigned area.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/kitchen.png" alt="Kitchen screen with orders to prepare" loading="lazy" />
+          <figcaption>Kitchen. Organize work by order, status, and urgency.</figcaption>
+        </figure>
+
+        <h3>Bar screen</h3>
+        <p>
+          Bar works as a preparation screen focused on drinks or a similar station.
+          It is especially useful when the bar must work separately from the kitchen.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/bar.png" alt="Bar screen with drink orders" loading="lazy" />
+          <figcaption>Bar. Lets you prepare and mark drinks without depending on the floor screen.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="reservas">
+        <h2>8. Reservations and feedback</h2>
+
+        <h3>Internal reservations</h3>
+        <p>
+          In <strong>Reservations</strong> staff can create, search, and manage bookings. The view
+          lets you filter by date, phone, or status, see possible overbooking, send reminders,
+          assign a table, mark arrival, mark no-show, cancel, or complete.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/reservations.png" alt="Internal reservations screen" loading="lazy" />
+          <figcaption>Internal reservations. Use it to coordinate reception and the floor.</figcaption>
+        </figure>
+
+        <h3>Public booking</h3>
+        <p>
+          Customers can book from the restaurant public page. The form shows
+          date, shift, available time, number of guests, zone or floor preference when it is
+          enabled, contact details, allergies, and notes.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/book-public.png" alt="Public booking form with available time slots" loading="lazy" />
+          <figcaption>Public booking. Availability depends on hours, capacity, slots, and configured rules.</figcaption>
+        </figure>
+
+        <h3>Manage a reservation from the customer link</h3>
+        <p>
+          When the customer receives a reservation link, they can view details, cancel if the policy
+          allows it, or report a delay. This reduces calls and keeps the team informed.
+        </p>
+
+        <h3>Customer feedback</h3>
+        <p>
+          The system includes a public feedback page and an internal inbox. You can share the
+          link or QR after the visit. In the internal inbox you review ratings, comments, and
+          related data.
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/feedback-public.png" alt="Public customer feedback form" loading="lazy" />
+              <figcaption>Public form. Keep it short so customers complete it.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/guest-feedback.png" alt="Internal customer feedback inbox" loading="lazy" />
+              <figcaption>Internal feedback. Review trends and cases that need a response.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="equipo">
+        <h2>9. Team, shifts, and contracts</h2>
+
+        <h3>Users</h3>
+        <p>
+          In <strong>Users</strong> you create staff accounts, assign roles, and update
+          details. Use real emails and avoid sharing credentials. The role determines real access, not
+          only the visible menu.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/users.png" alt="Restaurant user list" loading="lazy" />
+          <figcaption>Users. Change roles when a person changes position.</figcaption>
+        </figure>
+
+        <h3>My shift</h3>
+        <p>
+          <strong>My shift</strong> lets the worker see their shift status, clock in or
+          out if enabled, view breaks, and review information related to their day.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/my-shift.png" alt="My shift screen for clock-in and workday" loading="lazy" />
+          <figcaption>My shift. If you use clock-in QR, staff must scan from this authorized operation.</figcaption>
+        </figure>
+
+        <h3>Weekly working plan and calendar</h3>
+        <p>
+          The working plan lets you organize shifts by week and review a calendar. It is fed by
+          restaurant hours, staffing needs, and contracts. It helps you see coverage,
+          assign staff, and spot gaps before service.
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/working-plan-week.png" alt="Weekly working plan" loading="lazy" />
+              <figcaption>Week. Practical view for planning by day and role.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/working-plan-calendar.png" alt="Working plan calendar" loading="lazy" />
+              <figcaption>Calendar. Useful to spot overlaps, absences, or special days.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Contracts</h3>
+        <p>
+          Contracts centralizes staff contracts and templates. Depending on permissions, the user can
+          read, create, update, or manage documents. Use it with the working plan so
+          hours, duties, and conditions stay aligned.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/contracts.png" alt="Staff contracts screen" loading="lazy" />
+          <figcaption>Contracts. Keep documents current and use consistent templates.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="inventario">
+        <h2>10. Inventory, customers, and reports</h2>
+
+        <h3>Fiscal customers</h3>
+        <p>
+          The <strong>Customers</strong> section stores data needed for invoices or fiscal
+          identification. Authorized staff can create and edit customers to link them with orders and
+          invoices.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/customers.png" alt="Fiscal customer management" loading="lazy" />
+          <figcaption>Customers. Useful when a company or guest asks for an invoice with fiscal details.</figcaption>
+        </figure>
+
+        <h3>Inventory: items and stock</h3>
+        <p>
+          Inventory lets you control items, SKUs, categories, units, cost, minimum stock,
+          default supplier, and movements. Stock adjustments can record receipts, issues,
+          waste, or corrections.
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/inv-items.png" alt="Inventory items" loading="lazy" />
+              <figcaption>Items. Define clear units to avoid recipe errors.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/inv-stock.png" alt="Stock movements and adjustments" loading="lazy" />
+              <figcaption>Stock. Record waste and adjustments so cost stays realistic.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Suppliers and purchase orders</h3>
+        <p>
+          You can create suppliers, generate purchase orders, change statuses, print PDF, and receive
+          goods to update stock. When receiving, check quantities and prices before you confirm.
+        </p>
+        <div class="grid">
+          <div class="col-4">
+            <figure>
+              <img src="/manual-usuario/img/inv-suppliers.png" alt="Inventory suppliers" loading="lazy" />
+              <figcaption>Suppliers.</figcaption>
+            </figure>
+          </div>
+          <div class="col-4">
+            <figure>
+              <img src="/manual-usuario/img/inv-po.png" alt="Purchase orders" loading="lazy" />
+              <figcaption>Purchase orders.</figcaption>
+            </figure>
+          </div>
+          <div class="col-4">
+            <figure>
+              <img src="/manual-usuario/img/inv-po-detail.png" alt="Purchase order detail" loading="lazy" />
+              <figcaption>Detail and receipt.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Inventory reports</h3>
+        <p>
+          Inventory reports help detect low stock, consumption, cost, and purchases. They are more
+          useful when recipes and movements are recorded with discipline.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/inv-reports.png" alt="Inventory reports" loading="lazy" />
+          <figcaption>Inventory. Review low stock before you create purchases.</figcaption>
+        </figure>
+
+        <h3>Sales and operations reports</h3>
+        <p>
+          Reports shows revenue, tips, costs, profit, average payment, average per
+          customer, daily sales, breakdowns, and exports when available. Use it to make
+          decisions on menu, staff, and hours.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/reports.png" alt="Sales, revenue, and operations reports" loading="lazy" />
+          <figcaption>Reports. Filter by period and compare sales with costs to understand margin.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="proveedores">
+        <h2>11. Supplier portal</h2>
+        <p>
+          The supplier portal is separate from the internal dashboard. A supplier can register,
+          log in, recover password, edit company details, and maintain their catalog with
+          images, prices, and availability. Currently some portal screens may appear
+          in English.
+        </p>
+        <ul>
+          <li>The supplier does not manage floor orders or restaurant settings.</li>
+          <li>The restaurant decides whether to use supplier products as reference or catalog.</li>
+          <li>Bank, fiscal, and contact data must be reviewed by the supplier.</li>
+        </ul>
+        <div class="callout">
+          <strong>When to use it.</strong> Use it if you work with suppliers who keep live product
+          lists. If you always buy manually, internal inventory may be enough.
+        </div>
+      </section>
+
+      <section class="section" id="checklists">
+        <h2>12. Checklists</h2>
+
+        <div class="grid">
+          <div class="col-6">
+            <div class="card">
+              <h3>Initial go-live</h3>
+              <ul class="checklist">
+                <li>Create the owner account and store credentials securely.</li>
+                <li>Complete profile, contact, location, taxes, and time zone.</li>
+                <li>Configure hours, reservations, and arrival tolerance.</li>
+                <li>Enable only the needed modules in navigation.</li>
+                <li>Create products, categories, images, and required questions.</li>
+                <li>Create floors, tables, PIN, and QR.</li>
+                <li>Create real users with the correct roles.</li>
+                <li>Test a full order: customer, kitchen/bar, payment, and close.</li>
+                <li>Test a public reservation and its internal management.</li>
+                <li>Review reports and permissions before opening to the public.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card">
+              <h3>Before each service</h3>
+              <ul class="checklist">
+                <li>Verify that tables and QR codes are active.</li>
+                <li>Check sold-out or unavailable products.</li>
+                <li>Review today’s reservations and assigned tables.</li>
+                <li>Confirm that kitchen and bar can see their screens.</li>
+                <li>Review shift users and clock-ins when applicable.</li>
+                <li>Confirm payment methods and cash drawer.</li>
+                <li>Review low stock if inventory is active.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card">
+              <h3>End of day</h3>
+              <ul class="checklist">
+                <li>Close active orders and review unpaid checks.</li>
+                <li>Resolve cancelled orders or removed lines.</li>
+                <li>Review tips, payment methods, and invoices.</li>
+                <li>Record relevant waste or stock adjustments.</li>
+                <li>Look at the day’s reports and note incidents.</li>
+                <li>Review new feedback and respond internally.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card">
+              <h3>Operational security</h3>
+              <ul class="checklist">
+                <li>Do not share owner or admin accounts.</li>
+                <li>Do not send payment keys, SMTP, or tokens by chat.</li>
+                <li>Disable users who no longer work at the restaurant.</li>
+                <li>Use the minimum roles needed for each position.</li>
+                <li>Test settings changes before real service.</li>
+                <li>Export data before destructive actions.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="problemas">
+        <h2>13. Common problems</h2>
+
+        <h3>A user cannot see a section</h3>
+        <p>
+          Check two things: their role in <strong>Users</strong> and whether the module is active in
+          <strong>Settings &gt; Navigation</strong>. If both are correct, log out and
+          log in again.
+        </p>
+
+        <h3>The customer cannot order from a table</h3>
+        <p>
+          Confirm that the table is active, that the QR matches that table, that the product is
+          available at that time, and that the PIN given is correct. If the menu does not load products,
+          review categories and availability.
+        </p>
+
+        <h3>A reservation slot is not available</h3>
+        <p>
+          Review restaurant hours, reservation rules, average table duration, slot
+          interval, capacity, preferred zone, and existing reservations in the same slot.
+        </p>
+
+        <h3>Online payment does not appear</h3>
+        <p>
+          Online payment only appears when the method is active and correctly configured. If there is no
+          payment provider, use cash, terminal, or call waiter.
+        </p>
+
+        <h3>Stock does not match</h3>
+        <p>
+          Review units, recipes, received purchases, and manual adjustments. A sold product only
+          deducts stock correctly when the recipe and units are configured well.
+        </p>
+
+        <h3>Short glossary</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Concept</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Slot</strong></td>
+              <td>Available time block for booking.</td>
+            </tr>
+            <tr>
+              <td><strong>Table PIN</strong></td>
+              <td>Code that confirms customer actions at a table.</td>
+            </tr>
+            <tr>
+              <td><strong>Station</strong></td>
+              <td>Preparation area such as kitchen, bar, desserts, or grill.</td>
+            </tr>
+            <tr>
+              <td><strong>Waste</strong></td>
+              <td>Lost, discarded, or unsellable product that must be deducted from stock.</td>
+            </tr>
+            <tr>
+              <td><strong>No-show</strong></td>
+              <td>Confirmed reservation whose guest did not arrive within the defined tolerance.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <footer class="footer">
+        <p>
+          Manual created with real screenshots from the demo environment. Some visible features
+          depend on role, active modules, country, contracted integrations, and the restaurant’s
+          technical configuration.
+        </p>
+      </footer>
+    </main>

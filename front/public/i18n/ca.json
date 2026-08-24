@@ -3266,5 +3266,10 @@
         "HOW_3": "O registreu-vos a Satisfecho allotjat amb actualitzacions gestionades."
       }
     }
+  },
+  "USER_MANUAL_PAGE": {
+    "LOADING": "S’està carregant el manual d’usuari…",
+    "LOAD_ERROR": "No s’ha pogut carregar el manual d’usuari. Actualitzeu la pàgina o torneu-ho a provar més tard.",
+    "DOC_TITLE": "Manual d’usuari | Satisfecho POS"
   }
 }

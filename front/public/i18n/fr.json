@@ -3266,5 +3266,10 @@
         "HOW_3": "Ou inscrivez-vous à Satisfecho hébergé avec mises à jour gérées."
       }
     }
+  },
+  "USER_MANUAL_PAGE": {
+    "LOADING": "Chargement du manuel utilisateur…",
+    "LOAD_ERROR": "Impossible de charger le manuel utilisateur. Actualisez la page ou réessayez plus tard.",
+    "DOC_TITLE": "Manuel utilisateur | Satisfecho POS"
   }
 }
