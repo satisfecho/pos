@@ -1,0 +1,964 @@
+<main class="page">
+      <header class="hero">
+        <p class="eyebrow">Handbuch für Kunden und Restaurantteams</p>
+        <h1>Satisfecho POS von Anfang bis Ende nutzen</h1>
+        <p class="hero-copy">
+          Diese Anleitung erklärt die gesamte Anwendung mit praktischen Schritten: Ersteinrichtung, Tische,
+          Bestellungen, Zahlungen, Reservierungen, Küche, Bar, Inventar, Berichte, Schichten, Verträge, Feedback und
+          das Lieferantenportal. Die Screenshots stammen aus der Demo-Umgebung.
+        </p>
+        <div class="meta-row" aria-label="Handbuchinformationen">
+          <span class="chip">Aktualisiert: Mai 2026</span>
+          <span class="chip">Webanwendung</span>
+          <span class="chip">Rollen: Inhaber, Admin, Personal und Lieferant</span>
+          <span class="chip">Enthält öffentliche und private Bildschirme</span>
+        </div>
+      </header>
+
+      <section class="section lede" id="leer-primero">
+        <h2>Zuerst lesen</h2>
+        <div class="grid">
+          <div class="col-8">
+            <p>
+              Satisfecho POS ist in drei Bereiche aufgeteilt. Das Personal arbeitet im internen
+              Dashboard; Kunden nutzen das öffentliche Menü per QR-Code, Link oder Tischsuche; und
+              Lieferanten nutzen ein separates Portal, wenn das Restaurant externe Produktkataloge
+              empfangen möchte.
+            </p>
+            <p>
+              Wenn Sie neu sind, beginnen Sie mit <a href="#configuracion">Einstellungen</a>, erstellen Sie dann Ihre
+              <a href="#productos">Produkte</a>, richten Sie <a href="#mesas">Tische und QR</a> ein und
+              testen Sie abschließend den vollständigen Ablauf für die <a href="#cliente">Kundenbestellung</a> und
+              <a href="#operacion">Personaloperationen</a>.
+            </p>
+          </div>
+          <div class="col-4">
+            <div class="card soft">
+              <h3>Praktische Regel</h3>
+              <p>
+                Konfigurieren Sie zuerst das Restaurant. Laden Sie dann Produkte, Tische, Personal und Zahlungs-
+                methoden. Veröffentlichen Sie keine QR-Codes oder Kundenlinks, bis Sie einen echten Test von Bestellung,
+                Küche, Zahlung und Tischabschluss durchgeführt haben.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="indice">
+        <h2>Inhalt</h2>
+        <nav class="toc" aria-label="Inhaltsverzeichnis des Handbuchs">
+          <a href="#primeros-pasos">1. Erste Schritte <span>Öffentliche Startseite, Registrierung, Zugang und Navigation.</span></a>
+          <a href="#roles">2. Rollen und Berechtigungen <span>Was jeder Benutzertyp tun kann.</span></a>
+          <a href="#configuracion">3. Einstellungen <span>Daten, Branding, Öffnungszeiten, Zahlungen, Sicherheit und Integrationen.</span></a>
+          <a href="#productos">4. Produkte und Katalog <span>Menü, Kategorien, Fragen, Rezepte und Lieferanten.</span></a>
+          <a href="#mesas">5. Tische und Grundriss <span>QR, PIN, Etagen, Kellner, Gruppen und visuelle Ansicht.</span></a>
+          <a href="#cliente">6. Kundenerlebnis <span>QR-Menü, Bestellung, PIN, Zahlung, Mitnahme und Kellner rufen.</span></a>
+          <a href="#operacion">7. Täglicher Betrieb <span>Bestellungen, Zahlungen, Verlauf, Küche und Bar.</span></a>
+          <a href="#reservas">8. Reservierungen und Feedback <span>Öffentliche Buchung, interne Verwaltung, Erinnerungen und Bewertungen.</span></a>
+          <a href="#equipo">9. Team, Schichten und Verträge <span>Benutzer, Meine Schicht, Arbeitsplan und Verträge.</span></a>
+          <a href="#inventario">10. Inventar, Kunden und Berichte <span>Bestand, Einkäufe, steuerliche Kunden und Analysen.</span></a>
+          <a href="#proveedores">11. Lieferantenportal <span>Separater Zugang für externe Lieferanten.</span></a>
+          <a href="#checklists">12. Checklisten <span>Go-live, täglicher Service und Abschluss.</span></a>
+          <a href="#problemas">13. Häufige Probleme <span>Schnelle Lösungen und Schlüsselkonzepte.</span></a>
+        </nav>
+      </section>
+
+      <section class="section" id="primeros-pasos">
+        <h2>1. Erste Schritte</h2>
+
+        <h3>Öffentliche Startseite</h3>
+        <p>
+          Die Startseite zeigt verfügbare Restaurants, Links zum Buchen, Anmelden,
+          Tisch per Code nutzen und, falls konfiguriert, Mitnahmebestellungen aufgeben. Sie enthält auch
+          den Lieferantenzugang und die Sprachauswahl.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/landing.png" alt="Öffentliche Seite mit Restaurants, Buchungen und Tischsuche" loading="lazy" />
+          <figcaption>Öffentliche Seite. Kunden benötigen kein Konto zum Buchen oder Nutzen eines Tisch-QR.</figcaption>
+        </figure>
+
+        <h3>Erstes Konto erstellen</h3>
+        <p>
+          Die Registrierung erstellt ein Restaurantkonto. Die erste Person, die ein Restaurant registriert, sollte
+          die sein, die die Ersteinrichtung verwaltet, denn mit diesem Konto werden Benutzer,
+          Produkte, Tische, Zahlungen und Einstellungen erstellt.
+        </p>
+        <ol class="steps">
+          <li>Gehen Sie zu <strong>Registrieren</strong>.</li>
+          <li>Geben Sie Name, E-Mail, Passwort und grundlegende Restaurantdaten ein.</li>
+          <li>Speichern. Melden Sie sich dann mit der soeben erstellten E-Mail und dem Passwort an.</li>
+          <li>Vervollständigen Sie die Einstellungen, bevor Sie öffentliche Links teilen.</li>
+        </ol>
+        <figure>
+          <img src="/manual-usuario/img/register.png" alt="Restaurant-Registrierungsformular" loading="lazy" />
+          <figcaption>Restaurant-Registrierung. Verwenden Sie eine echte E-Mail zur Passwortwiederherstellung und für Benachrichtigungen.</figcaption>
+        </figure>
+
+        <h3>Anmelden und Passwort wiederherstellen</h3>
+        <p>
+          Das Personal meldet sich über <strong>Anmelden</strong> an. Wenn das Restaurant die Zwei-Schritt-
+          Verifizierung aktiviert hat, fordert das System nach dem Passwort einen temporären Code an. Bei vergessenem
+          Passwort muss der Wiederherstellungslink und die erhaltene E-Mail genutzt werden.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/login.png" alt="Anmeldebildschirm mit Wiederherstellung und Lieferantenlinks" loading="lazy" />
+          <figcaption>Personal-Anmeldung. Lieferanten haben von diesem öffentlichen Bereich aus einen separaten Zugang.</figcaption>
+        </figure>
+
+        <h3>Internes Dashboard und Navigation</h3>
+        <p>
+          Nach der Anmeldung erscheint das interne Dashboard. Das Seitenmenü zeigt nur die Bereiche,
+          die durch die Rolle und die in den Einstellungen aktivierten Module erlaubt sind. Auf kleinen Bildschirmen
+          funktioniert es als Dropdown-Menü.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/dashboard.png" alt="Internes Dashboard mit Seitenleiste, Karten und Hauptverknüpfungen" loading="lazy" />
+          <figcaption>Internes Dashboard. Nutzen Sie es als Kontrollpunkt für Bestellungen, Reservierungen, Tische und Berichte.</figcaption>
+        </figure>
+
+        <div class="callout">
+          <strong>Sprachen.</strong> Die Anwendung ermöglicht den Sprachwechsel im öffentlichen Bereich und in der
+          internen Umgebung. Wenn eine Bezeichnung in einer anderen Sprache erscheint, bedeutet das meist, dass die
+          Übersetzung für diesen Systemteil noch nicht geladen ist.
+        </div>
+      </section>
+
+      <section class="section" id="roles">
+        <h2>2. Rollen und Berechtigungen</h2>
+        <p>
+          Berechtigungen schützen sensible Aktionen. Wenn ein Benutzer einen Bereich nicht sieht, ist das kein Fehler:
+          seiner Rolle fehlt die Berechtigung oder das Modul wurde in <strong>Einstellungen &gt; Navigation</strong> deaktiviert.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Rolle</th>
+              <th>Empfohlene Nutzung</th>
+              <th>Hauptberechtigungen</th>
+              <th>Wichtige Grenzen</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Inhaber</strong></td>
+              <td>Inhaber oder verantwortliche Leitung.</td>
+              <td>Voller Zugriff: Einstellungen, Benutzer, Produkte, Tische, Reservierungen, Berichte, Inventar, Verträge und Daten.</td>
+              <td>Dies muss ein geschütztes Konto sein. Teilen wird nicht empfohlen.</td>
+            </tr>
+            <tr>
+              <td><strong>Admin</strong></td>
+              <td>Betriebsleiter.</td>
+              <td>Verwaltet den Tagesbetrieb, Nicht-Inhaber-Benutzer, Produkte, Tische, Reservierungen, Inventar, Berichte, Verträge und den Arbeitsplan.</td>
+              <td>Kann Einschränkungen bei Rechnungsdaten, Zahlungsschlüsseln oder Inhaber-Benutzern haben.</td>
+            </tr>
+            <tr>
+              <td><strong>Kellner</strong></td>
+              <td>Service im Gastraum.</td>
+              <td>Sieht Produkte, Tische, Reservierungen, steuerliche Kunden und Bestellungen. Kann Status aktualisieren, als bezahlt markieren und erlaubte Positionen entfernen.</td>
+              <td>Verwaltet keine Einstellungen, Benutzer, Inventar oder globale Berichte.</td>
+            </tr>
+            <tr>
+              <td><strong>Rezeptionist</strong></td>
+              <td>Reservierungen und Erstkontakt.</td>
+              <td>Verwaltet Reservierungen und kann Tische, Kunden und Bestellungen einsehen.</td>
+              <td>Ändert keine Produkte oder Einstellungen; Bestellzugriff ist eingeschränkter.</td>
+            </tr>
+            <tr>
+              <td><strong>Küche</strong></td>
+              <td>Speisenzubereitung.</td>
+              <td>Sieht Bestellungen und ändert Status von der Küche zugewiesenen Positionen. Sieht auch die eigene Schicht und Verträge.</td>
+              <td>Nimmt keine Zahlung entgegen und verwaltet keine Tische.</td>
+            </tr>
+            <tr>
+              <td><strong>Bar</strong></td>
+              <td>Getränkezubereitung.</td>
+              <td>Ähnlich wie Küche, fokussiert auf den Barbildschirm und Getränkeprodukte.</td>
+              <td>Nimmt keine Zahlung entgegen und verwaltet keine Einstellungen.</td>
+            </tr>
+            <tr>
+              <td><strong>Lieferant</strong></td>
+              <td>Externer Lieferant.</td>
+              <td>Nutzt ein separates Portal für Katalog und Firmendaten.</td>
+              <td>Betritt nicht das interne Restaurant-Dashboard.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <figure>
+          <img src="/manual-usuario/img/users.png" alt="Benutzer- und Rollenbildschirm" loading="lazy" />
+          <figcaption>Benutzer. Erstellen Sie ein Konto pro Person, damit Sie wissen, wer welche Aktion ausgeführt hat.</figcaption>
+        </figure>
+
+        <div class="callout warn">
+          <strong>Best Practices.</strong> Deaktivieren Sie Benutzer, die nicht mehr mit Ihnen arbeiten, und vermeiden Sie geteilte
+          Konten. Für sensible Änderungen nutzen Sie Inhaber oder Admin mit individuellem Passwort.
+        </div>
+      </section>
+
+      <section class="section" id="configuracion">
+        <h2>3. Einstellungen</h2>
+        <p>
+          Einstellungen steuern Aussehen und Verhalten des Restaurants. Erledigen Sie diesen Teil sorgfältig vor
+          dem Go-live: Es betrifft QR-Codes, Reservierungen, Zahlungen, Öffnungszeiten, Sicherheit, Küche, Inventar und
+          Modulsichtbarkeit.
+        </p>
+
+        <h3>Profil, Branding und öffentliches Erscheinungsbild</h3>
+        <p>
+          Unter <strong>Profil</strong> bearbeiten Sie Restaurantname, Beschreibung, Telefon, E-Mail,
+          Währung, Land, Zeitzone, Logo, Kopfbild und öffentliche Hintergrundfarbe. Diese Angaben
+          erscheinen auf öffentlichen Seiten, Reservierungen, dem QR-Menü und in einigen Nachrichten.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-profile.png" alt="Profil-, Branding-, Logo- und Kopfeinstellungen" loading="lazy" />
+          <figcaption>Profil. Verwenden Sie klare Bilder und echte Daten, denn Endkunden sehen sie.</figcaption>
+        </figure>
+
+        <h3>Navigation und Module</h3>
+        <p>
+          Der Tab <strong>Navigation</strong> ermöglicht das Aktivieren oder Deaktivieren von Modulen wie Tische, Arbeits-
+          plan, Lieferanten, Reservierungen, Küche/Bar und Inventar. Wenn ein Modul aus ist, blendet das
+          Menü es aus und direkte Links können zur internen Startseite weiterleiten.
+        </p>
+        <ul>
+          <li>Deaktivieren Sie Module, die Ihr Restaurant nicht nutzt, um die Arbeit des Personals zu vereinfachen.</li>
+          <li>Aktivieren Sie Inventar nur, wenn Sie Bestand, Lieferanten, Einkäufe und Rezepte pflegen werden.</li>
+          <li>Aktivieren Sie Küche/Bar, wenn Sie Zubereitungsbildschirme nach Station benötigen.</li>
+        </ul>
+
+        <h3>Kontakt, Standort, Rechtliches und Bewertungen</h3>
+        <p>
+          Unter <strong>Kontakt</strong> speichern Sie Adresse, Website, Google Maps- und OpenStreetMap-Links,
+          Google-Bewertungs-URL, Steuernummer (NIF/CIF), Bankkonto (CCC), öffentliche AGB-URL, öffentliche Datenschutz-URL und
+          grundlegende Steuerdaten. Sie legen auch die Standardsteuer fest, wenn ein Produkt keine
+          spezifische Regel hat.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-contact.png" alt="Kontakt-, Standort- und Rechtseinstellungen" loading="lazy" />
+          <figcaption>Kontakt. Diese Angaben helfen Kunden, Sie zu finden, und speisen Rechnungen oder öffentliche Seiten.</figcaption>
+        </figure>
+
+        <h3>Öffnungszeiten, erwartete Schichten und Ausnahmen</h3>
+        <p>
+          Unter <strong>Öffnungszeiten</strong> legen Sie den wöchentlichen Zeitplan des Restaurants, Personalbedarf nach
+          Zeitfenster und geplante Muster für die Zukunft fest. Sie können auch Ausnahmen für
+          bestimmte Daten erstellen, z. B. Feiertage, Urlaub oder private Veranstaltungen.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-hours.png" alt="Öffnungszeiten- und Personalbedarf-Einstellungen" loading="lazy" />
+          <figcaption>Öffnungszeiten. Reservierungen und der Arbeitsplan hängen von diesen Informationen ab.</figcaption>
+        </figure>
+
+        <h3>Zahlungen, Rechnungsstellung, Trinkgeld und Standortprüfung</h3>
+        <p>
+          Unter <strong>Zahlungen</strong> passen Sie sichtbare Zahlungsmethoden, Trinkgeld, Zahlungs-
+          verhalten und Zahlungsanbieterdetails wie Stripe oder Revolut an, wenn diese in Ihrer
+          Installation aktiviert sind. Es kann auch Optionen für steuerliche Rechnungen, interne Serien, Test- oder
+          Produktionsmodus und Standortprüfung für Vor-Ort-Zahlungen geben.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-payments.png" alt="Zahlungsmethoden- und Rechnungseinstellungen" loading="lazy" />
+          <figcaption>Zahlungen. Teilen Sie Zahlungsschlüssel, SMTP oder Tokens nicht mit Personal, das sie nicht benötigt.</figcaption>
+        </figure>
+        <div class="callout warn">
+          <strong>Steuerkonformität.</strong> Steuereinstellungen hängen vom Land und der Bereitstellung ab. Bevor
+          Sie steuerliche Rechnungsstellung in Produktion nutzen, bestätigen Sie mit Ihrem Berater und dem technischen Team, welche
+          Integration aktiv ist.
+        </div>
+
+        <h3>Öffentliche Reservierungen</h3>
+        <p>
+          Reservierungseinstellungen steuern, ob Kunden buchen können, ob Vorauszahlung erforderlich ist, die
+          Stornierungsrichtlinie, Ankunftstoleranz, durchschnittliche Tischdauer, Slot-Intervall,
+          maximale Personen pro Slot, Tische für Laufkundschaft, Dresscode und 24-Stunden- oder
+          2-Stunden-Erinnerungen.
+        </p>
+        <ul>
+          <li>Verwenden Sie Reservierungsintervalle, die Ihr Team einhalten kann, z. B. 15 oder 30 Minuten.</li>
+          <li>Legen Sie Ankunftstoleranz fest, damit Sie wissen, wann <strong>No-show</strong> markiert wird.</li>
+          <li>Aktivieren Sie Erinnerungen nur, wenn E-Mail oder Messaging korrekt konfiguriert ist.</li>
+        </ul>
+
+        <h3>Ausgehende E-Mail</h3>
+        <p>
+          Wenn Ihre Bereitstellung SMTP aktiviert hat, nutzen Sie es für Passwortwiederherstellung, Erinnerungen,
+          Bestätigungen und reservierungsbezogene Nachrichten. Testen Sie E-Mail, bevor Sie
+          automatische Erinnerungen aktivieren.
+        </p>
+
+        <h3>Steuern und VAT</h3>
+        <p>
+          Unter <strong>Steuern</strong> können Sie VAT-Typen oder gleichwertige Steuern erstellen. Dann
+          kann jedes Produkt die Restaurant-Standardsteuer oder eine eigene Regel nutzen.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-taxes.png" alt="Steuereinstellungen" loading="lazy" />
+          <figcaption>Steuern. Verwenden Sie klare Namen, z. B. Standard, ermäßigt oder Getränke.</figcaption>
+        </figure>
+
+        <h3>Küchenstationen</h3>
+        <p>
+          Stationen gruppieren Zubereitungsarbeit. Ein Produkt kann einer Station
+          zugewiesen werden, damit es dort erscheint, wo es hingehört: Warme Küche, Desserts, Bar, Grill oder ein anderer Bereich.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-kitchen-stations.png" alt="Küchenstation-Einstellungen" loading="lazy" />
+          <figcaption>Stationen. Nutzen Sie sie zur Organisation von Küchen- und Barbildschirmen.</figcaption>
+        </figure>
+
+        <h3>Lieferintegrationen</h3>
+        <p>
+          Unter <strong>Integrationen</strong> konfigurieren Sie Marktplätze oder externe Kanäle, wenn die
+          Bereitstellung den passenden Adapter enthält. Schützen Sie technische Links und Geheimnisse.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-delivery.png" alt="Lieferintegrations-Einstellungen" loading="lazy" />
+          <figcaption>Lieferung. Aktivieren Sie nur in Ihrer Installation verifizierte Integrationen.</figcaption>
+        </figure>
+
+        <h3>Social-Media-Beiträge</h3>
+        <p>
+          Social-Media-Beiträge ermöglichen die Vorbereitung von Nachrichten und Inhalten für verbundene Kanäle,
+          wie Meta, wenn die OAuth-Verbindung konfiguriert ist. Nutzen Sie es für Aktionen, Neuigkeiten oder
+          saisonale Kampagnen.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-social.png" alt="Social-Media-Beitrag-Einstellungen" loading="lazy" />
+          <figcaption>Social Media. Prüfen Sie den Text vor der Veröffentlichung und bestätigen Sie, dass das verbundene Konto korrekt ist.</figcaption>
+        </figure>
+
+        <h3>Sicherheit, Zeiterfassung und Daten</h3>
+        <p>
+          Unter <strong>Sicherheit</strong> können Sie Zwei-Schritt-Codes für sensiblen Zugang aktivieren und
+          die Personal-Zeiterfassung per QR konfigurieren. Wenn Standortprüfung aktiviert ist,
+          fragt das Gerät bei der Zeiterfassung nach Standortberechtigung.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-security.png" alt="Sicherheits- und Zeiterfassungs-QR-Einstellungen" loading="lazy" />
+          <figcaption>Sicherheit. Laden Sie den Zeiterfassungs-QR nur für autorisiertes Personal herunter oder drucken Sie ihn.</figcaption>
+        </figure>
+        <p>
+          Unter <strong>Daten und Datenschutz</strong> kann der Inhaber Restaurant-
+          informationen exportieren und, wenn die Bereitstellung es erlaubt, destruktive Aktionen wie Datenbereinigung ausführen.
+          Diese Aktionen müssen beim Inhaber bleiben und erfordern ein vorheriges Backup.
+        </p>
+
+        <h3>Vorlagen, Übersetzungen und interne Lieferanten</h3>
+        <p>
+          Einstellungen umfassen auch Vertragsvorlagen, Übersetzungen sichtbarer Texte und
+          die eigenen Lieferanten/Produkte des Restaurants. Diese Bereiche helfen, Dokumente,
+          öffentliche Bezeichnungen und Einkäufe an derselben Basisinformation auszurichten.
+        </p>
+      </section>
+
+      <section class="section" id="productos">
+        <h2>4. Produkte und Katalog</h2>
+        <p>
+          Produkte sind das Herz des Menüs. Jedes Produkt kann Preis, Kosten, Bild, Kategorie,
+          Unterkategorie, Zutaten, Beschreibung, eigene Steuer, Küchenstation, Verfügbarkeit
+          nach Zeit und Anpassungsfragen haben.
+        </p>
+
+        <figure>
+          <img src="/manual-usuario/img/products.png" alt="Produktbildschirm mit Formular, Kategorien und Liste" loading="lazy" />
+          <figcaption>Produkte. Der Kategorien-Tab ermöglicht die Sortierung des öffentlichen Menüs und der internen Arbeit.</figcaption>
+        </figure>
+
+        <h3>Produkt erstellen oder bearbeiten</h3>
+        <ol class="steps">
+          <li>Gehen Sie zu <strong>Produkte</strong> und öffnen Sie den Produkte-Tab.</li>
+          <li>Geben Sie Name, Verkaufspreis und, falls bekannt, Einkaufs- oder Zubereitungskosten ein.</li>
+          <li>Fügen Sie Beschreibung und Zutaten hinzu. Das hilft Kunden und Personal bei Allergien.</li>
+          <li>Wählen Sie Kategorie, Unterkategorie und Küchenstation, wenn zutreffend.</li>
+          <li>Laden Sie ein echtes, klares Bild des Gerichts oder Getränks hoch.</li>
+          <li>Wenn das Produkt nur zu bestimmten Zeiten verkauft wird, legen Sie Verfügbarkeit von/bis fest.</li>
+          <li>Speichern. Fügen Sie dann Anpassungsfragen hinzu, wenn das Produkt sie benötigt.</li>
+        </ol>
+
+        <h3>Fragen und Anpassungen</h3>
+        <p>
+          Nach dem Speichern können Sie Fragen für Kunde oder Kellner hinzufügen:
+          Einfachauswahl, Mehrfachauswahl, Skala oder Freitext. Jede Frage kann Pflicht sein
+          und eine Reihenfolge haben. Nutzen Sie sie für Gargrad, Größen, Saucen, Extras, Entfernungen oder Notizen.
+        </p>
+        <div class="callout">
+          <strong>Beispiel.</strong> Erstellen Sie für einen Burger eine Pflichtfrage „Gargrad"
+          mit Optionen blutig, medium und durch. Erstellen Sie eine weitere für Extras, wenn sie Kosten haben.
+        </div>
+
+        <h3>Kosten, Rezepte und Idealpreis</h3>
+        <p>
+          Wenn Inventar und Rezepte aktiv sind, können Sie echte Zutaten mit dem Produkt verknüpfen. Das
+          System nutzt diese Kosten zur Berechnung von Marge und Idealpreis. Diese Hilfe funktioniert gut
+          nur, wenn Bestand, Einheiten und Kosten aktuell sind.
+        </p>
+
+        <h3>Lieferantenkatalog</h3>
+        <p>
+          Der Bereich <strong>Katalog</strong> sammelt Lieferantenprodukte oder externe Produkte, die
+          das Restaurant für Einkäufe, Verfügbarkeit oder Referenz prüft. Er ersetzt nicht das Kunden-
+          Verkaufsmenü: Das Menü, das Kunden sehen, kommt aus <strong>Produkte</strong>.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/catalog.png" alt="Lieferantenproduktkatalog" loading="lazy" />
+          <figcaption>Katalog. Nützlich zur Prüfung externer Produkte, Bilder und Lieferantenverfügbarkeit.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="mesas">
+        <h2>5. Tische und Grundriss</h2>
+        <p>
+          Tische verbinden den Gastraum mit Bestellungen. Jeder Tisch kann Name, Kapazität, Status,
+          Etage, QR, PIN und zugewiesenen Kellner haben. Sie können auch mit Listen-, Karten- oder
+          visueller Grundriss-Ansicht arbeiten.
+        </p>
+
+        <figure>
+          <img src="/manual-usuario/img/tables.png" alt="Tischverwaltung mit Etagen, QR, PIN und Aktionen" loading="lazy" />
+          <figcaption>Tische. Von hier können Sie aktivieren, deaktivieren, QR drucken, Link kopieren oder das Menü öffnen.</figcaption>
+        </figure>
+
+        <h3>Was an jedem Tisch konfiguriert werden soll</h3>
+        <ul>
+          <li><strong>Sichtbarer Name:</strong> z. B. T01, Terrasse 4 oder Bar 2.</li>
+          <li><strong>Kapazität:</strong> normale Gästeanzahl.</li>
+          <li><strong>Etage oder Zone:</strong> Gastraum, Terrasse, Bar, Privat oder ein anderer Bereich.</li>
+          <li><strong>PIN:</strong> schützt Kundenaktionen wie Bestätigen oder Ändern von Bestellungen.</li>
+          <li><strong>Zugewiesener Kellner:</strong> kann pro Etage festgelegt und pro Tisch angepasst werden.</li>
+          <li><strong>Aktiv:</strong> nur aktive Tische werden im Betrieb und in öffentlichen Links genutzt.</li>
+        </ul>
+
+        <h3>QR, Link und vom Personal geöffnetes Menü</h3>
+        <p>
+          Der Tisch-QR öffnet das öffentliche Menü dieses Tisches. Sie können den Link kopieren zum Drucken oder
+          Senden. Die Aktion <strong>Menü öffnen</strong> ermöglicht dem Personal, einem Tisch vom
+          eigenen Gerät zu helfen; sie darf nicht als permanenter öffentlicher Link genutzt werden.
+        </p>
+
+        <h3>Tischgruppen und Neuzuweisung</h3>
+        <p>
+          Sie können Tische zusammenführen, wenn mehrere Tische eine Rechnung oder eine große Reservierung bilden. Beim Versuch,
+          einen Tisch mit verknüpften Bestellungen oder Reservierungen zu löschen, kann das System Sie auffordern, Informationen
+          neu zuzuweisen, damit der Verlauf nicht verloren geht.
+        </p>
+
+        <h3>Visueller Grundriss</h3>
+        <p>
+          Der Grundriss hilft schnell zu sehen, welche Tische frei, besetzt, mit ausstehender Zahlung,
+          einem Kellner zugewiesen oder gruppiert sind. Farben und Zahlungs-Chips helfen, ausstehende Aktionen
+          zu erkennen, ohne jeden Tisch zu öffnen.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/tables-canvas.png" alt="Visueller Tischgrundriss mit Status und Aktionen" loading="lazy" />
+          <figcaption>Tischgrundriss. Nützlich während des Service zum Platzieren von Gästen oder Schließen von Rechnungen.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="cliente">
+        <h2>6. Kundenerlebnis</h2>
+        <p>
+          Kunden können das Menü nutzen, ohne etwas zu installieren. Sie gelangen per Tisch-QR, Link, Tisch-
+          suche auf der öffentlichen Seite oder dem Mitnahme-Bestellweg, wenn das Restaurant ihn aktiviert hat.
+        </p>
+
+        <div class="grid">
+          <div class="col-6">
+            <h3>Erste Identifikation</h3>
+            <p>
+              Beim Betreten des Tischmenüs kann der Kunde seinen Namen eingeben. Das hilft dem Personal,
+              zu erkennen, wer bestellt hat, und Fragen am Tisch zu klären.
+            </p>
+            <figure class="phone">
+              <img src="/manual-usuario/img/menu-name.png" alt="Mobiles Menü mit Abfrage des Kundennamens" loading="lazy" />
+              <figcaption>Einstieg ins Tischmenü.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <h3>Produkte durchsuchen</h3>
+            <p>
+              Das Menü zeigt Kategorien, Unterkategorien, Highlights, Bilder, Preise, Zutaten,
+              Allergene oder Ernährungsdetails, wenn geladen. Der Kunde fügt Produkte mit dem
+              Plus-Button hinzu.
+            </p>
+            <figure class="phone">
+              <img src="/manual-usuario/img/menu-browse.png" alt="Mobiles Menü mit Produkten und Kategorien" loading="lazy" />
+              <figcaption>Öffentliches Menü mit echten Produkten aus der Demo.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Warenkorb, Anpassung und Bestätigung</h3>
+        <p>
+          Vor dem Senden prüft der Kunde Mengen, Anpassungen und Gesamtsumme. Bei Pflichtfragen
+          muss er diese vor der Bestätigung beantworten. Um versehentliche Bestellungen zu vermeiden,
+          kann der Tisch eine PIN verlangen.
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure class="phone">
+              <img src="/manual-usuario/img/menu-cart.png" alt="Mobiler Warenkorb mit Produkten bereit zur Bestellung" loading="lazy" />
+              <figcaption>Warenkorb. Hier wird die Bestellung geprüft, bevor sie gesendet wird.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure class="phone">
+              <img src="/manual-usuario/img/menu-pin.png" alt="Mobiler Bildschirm mit Abfrage der Tisch-PIN" loading="lazy" />
+              <figcaption>Tisch-PIN. Das Personal gibt sie aus oder hält sie je nach Betrieb sichtbar.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Aktive Bestellung, Verlauf und Aktionen</h3>
+        <p>
+          Nach dem Senden sieht der Kunde den Bestellstatus. Er kann weiter Produkte hinzufügen, solange der
+          Tisch noch offen ist. Je nach Einstellungen und Status kann er Zahlung anfordern, den Kellner rufen,
+          noch erlaubte Positionen stornieren oder den Verlauf einsehen.
+        </p>
+        <figure class="phone">
+          <img src="/manual-usuario/img/menu-status.png" alt="Mobiler Status der aktuellen Bestellung und Hauptbuttons" loading="lazy" />
+          <figcaption>Aktuelle Bestellung. Der Kunde sieht, ob sie empfangen, in Zubereitung, fertig oder geliefert ist.</figcaption>
+        </figure>
+
+        <h3>Für Kunden sichtbare Zahlungsoptionen</h3>
+        <p>
+          Optionen hängen von den Restaurant-Einstellungen ab. Online-Zahlung, Terminal, Bar,
+          Revolut, Stripe oder Kellner rufen können erscheinen. Wenn Online-Zahlung nicht
+          konfiguriert ist, kann der Kunde das Personal bitten, am Tisch zu kassieren.
+        </p>
+
+        <h3>Mitnahme- oder Lieferbestellungen</h3>
+        <p>
+          Wenn das Restaurant einen Mitnahme-Tisch oder -Kanal konfiguriert hat, zeigt die öffentliche Bestellseite
+          verfügbare Restaurants. Der Ablauf ähnelt dem Tischmenü, wird aber für Bestellungen
+          ohne Sitz am physischen Tisch genutzt.
+        </p>
+      </section>
+
+      <section class="section" id="operacion">
+        <h2>7. Täglicher Betrieb</h2>
+        <p>
+          Der Bestellbereich ist das Zentrum des Service. Das Personal sieht aktive Bestellungen,
+          unbezahlte Rechnungen und den Verlauf. Es gibt auch separate Bildschirme für Küche und Bar.
+        </p>
+
+        <h3>Aktive Bestellungen</h3>
+        <p>
+          Unter <strong>Bestellungen</strong> sehen Sie Tische, Positionen, Status, Notizen und Summen. Von hier
+          können Sie Produkte hinzufügen, Bestellungen bearbeiten, erlaubte Positionen entfernen, als dringend markieren, Status
+          vorantreiben und Zahlungsoptionen öffnen.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/orders-active.png" alt="Aktive Bestellungen mit Tischen, Positionen und Aktionen" loading="lazy" />
+          <figcaption>Aktive Bestellungen. Halten Sie diesen Bildschirm während des Gastraumservice offen.</figcaption>
+        </figure>
+
+        <h3>Bestell- und Positionsstatus</h3>
+        <p>
+          Eine Bestellung kann durch Status wie empfangen, in Zubereitung, fertig, geliefert, bezahlt oder
+          storniert laufen. Jede Position kann auch einen eigenen Status haben, damit Küche und Bar
+          parallel arbeiten können.
+        </p>
+        <ul>
+          <li><strong>Empfangen:</strong> Kunde oder Personal hat die Bestellung gerade gesendet.</li>
+          <li><strong>In Zubereitung:</strong> Küche oder Bar arbeitet daran.</li>
+          <li><strong>Fertig:</strong> es ist zur Auslieferung vorbereitet.</li>
+          <li><strong>Geliefert:</strong> es hat den Tisch erreicht.</li>
+          <li><strong>Bezahlt:</strong> die Rechnung ist geschlossen.</li>
+        </ul>
+
+        <h3>Zahlung, Trinkgeld und Rechnung</h3>
+        <p>
+          Im Zahlungsmodal können Sie die Methode wählen, Trinkgeld erfassen, Überzahlung verwalten, wenn
+          zutreffend, die Bestellung abschließen und eine Rechnung öffnen. Sichtbare Methoden hängen von den Einstellungen ab:
+          Bar, Terminal, Stripe, Revolut oder andere.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/orders-unpaid.png" alt="Bestellungen mit ausstehender Zahlung" loading="lazy" />
+          <figcaption>Unbezahlt. Diese Ansicht hilft, ausstehende Rechnungen vor Schichtende zu schließen.</figcaption>
+        </figure>
+
+        <h3>Verlauf</h3>
+        <p>
+          Der Verlauf ermöglicht die Prüfung früherer Bestellungen, Beträge, Status und entfernter Positionen,
+          wenn diese Option sichtbar ist. Nützlich zur Klärung von Fragen, interner Prüfung und Berichten.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/orders-history.png" alt="Bestellverlauf" loading="lazy" />
+          <figcaption>Verlauf. Prüfen Sie geschlossene Bestellungen, ohne sie mit aktiven Operationen zu mischen.</figcaption>
+        </figure>
+
+        <h3>Küchenbildschirm</h3>
+        <p>
+          Die Küche zeigt Positionen, die Zubereitung benötigen. Das Team kann Status vorantreiben, ohne
+          Zahlungen oder Einstellungen zu öffnen. Bei Stationen geht jedes Produkt zum zugewiesenen Bereich.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/kitchen.png" alt="Küchenbildschirm mit zu bereitenden Bestellungen" loading="lazy" />
+          <figcaption>Küche. Organisieren Sie die Arbeit nach Bestellung, Status und Dringlichkeit.</figcaption>
+        </figure>
+
+        <h3>Barbildschirm</h3>
+        <p>
+          Die Bar funktioniert als Zubereitungsbildschirm für Getränke oder eine ähnliche Station.
+          Besonders nützlich, wenn die Bar getrennt von der Küche arbeiten muss.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/bar.png" alt="Barbildschirm mit Getränkebestellungen" loading="lazy" />
+          <figcaption>Bar. Ermöglicht Zubereitung und Markierung von Getränken ohne Abhängigkeit vom Gastraumbildschirm.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="reservas">
+        <h2>8. Reservierungen und Feedback</h2>
+
+        <h3>Interne Reservierungen</h3>
+        <p>
+          Unter <strong>Reservierungen</strong> kann das Personal Buchungen erstellen, suchen und verwalten. Die Ansicht
+          ermöglicht Filter nach Datum, Telefon oder Status, mögliche Überbuchung, Erinnerungen senden,
+          Tisch zuweisen, Ankunft markieren, No-show markieren, stornieren oder abschließen.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/reservations.png" alt="Interner Reservierungsbildschirm" loading="lazy" />
+          <figcaption>Interne Reservierungen. Nutzen Sie es zur Koordination von Rezeption und Gastraum.</figcaption>
+        </figure>
+
+        <h3>Öffentliche Buchung</h3>
+        <p>
+          Kunden können von der öffentlichen Restaurantseite buchen. Das Formular zeigt
+          Datum, Schicht, verfügbare Zeit, Gästeanzahl, Zonen- oder Etagenpräferenz, wenn
+          aktiviert, Kontaktdaten, Allergien und Notizen.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/book-public.png" alt="Öffentliches Buchungsformular mit verfügbaren Zeitfenstern" loading="lazy" />
+          <figcaption>Öffentliche Buchung. Verfügbarkeit hängt von Öffnungszeiten, Kapazität, Slots und konfigurierten Regeln ab.</figcaption>
+        </figure>
+
+        <h3>Reservierung über den Kundenlink verwalten</h3>
+        <p>
+          Wenn der Kunde einen Reservierungslink erhält, kann er Details einsehen, stornieren, wenn die Richtlinie
+          es erlaubt, oder Verspätung melden. Das reduziert Anrufe und hält das Team informiert.
+        </p>
+
+        <h3>Kundenfeedback</h3>
+        <p>
+          Das System enthält eine öffentliche Feedback-Seite und einen internen Posteingang. Sie können den
+          Link oder QR nach dem Besuch teilen. Im internen Posteingang prüfen Sie Bewertungen, Kommentare und
+          zugehörige Daten.
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/feedback-public.png" alt="Öffentliches Kundenfeedback-Formular" loading="lazy" />
+              <figcaption>Öffentliches Formular. Halten Sie es kurz, damit Kunden es ausfüllen.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/guest-feedback.png" alt="Interner Kundenfeedback-Posteingang" loading="lazy" />
+              <figcaption>Internes Feedback. Prüfen Sie Trends und Fälle, die eine Antwort benötigen.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="equipo">
+        <h2>9. Team, Schichten und Verträge</h2>
+
+        <h3>Benutzer</h3>
+        <p>
+          Unter <strong>Benutzer</strong> erstellen Sie Personal-Konten, weisen Rollen zu und aktualisieren
+          Details. Verwenden Sie echte E-Mails und vermeiden Sie geteilte Zugangsdaten. Die Rolle bestimmt den echten Zugriff, nicht
+          nur das sichtbare Menü.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/users.png" alt="Restaurant-Benutzerliste" loading="lazy" />
+          <figcaption>Benutzer. Ändern Sie Rollen, wenn eine Person die Position wechselt.</figcaption>
+        </figure>
+
+        <h3>Meine Schicht</h3>
+        <p>
+          <strong>Meine Schicht</strong> ermöglicht dem Mitarbeiter, den Schichtstatus zu sehen, ein- und
+          auszustempeln, wenn aktiviert, Pausen einzusehen und informationen zum Arbeitstag zu prüfen.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/my-shift.png" alt="Meine Schicht-Bildschirm für Zeiterfassung und Arbeitstag" loading="lazy" />
+          <figcaption>Meine Schicht. Bei Zeiterfassungs-QR muss das Personal von dieser autorisierten Operation scannen.</figcaption>
+        </figure>
+
+        <h3>Wöchentlicher Arbeitsplan und Kalender</h3>
+        <p>
+          Der Arbeitsplan ermöglicht die Organisation von Schichten pro Woche und die Prüfung eines Kalenders. Er wird gespeist durch
+          Restaurant-Öffnungszeiten, Personalbedarf und Verträge. Er hilft, Abdeckung zu sehen,
+          Personal zuzuweisen und Lücken vor dem Service zu erkennen.
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/working-plan-week.png" alt="Wöchentlicher Arbeitsplan" loading="lazy" />
+              <figcaption>Woche. Praktische Ansicht zur Planung nach Tag und Rolle.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/working-plan-calendar.png" alt="Arbeitsplan-Kalender" loading="lazy" />
+              <figcaption>Kalender. Nützlich zum Erkennen von Überschneidungen, Abwesenheiten oder Sondertagen.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Verträge</h3>
+        <p>
+          Verträge bündelt Personalverträge und Vorlagen. Je nach Berechtigungen kann der Benutzer
+          lesen, erstellen, aktualisieren oder Dokumente verwalten. Nutzen Sie es mit dem Arbeitsplan, damit
+          Stunden, Aufgaben und Bedingungen abgestimmt bleiben.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/contracts.png" alt="Personalvertrags-Bildschirm" loading="lazy" />
+          <figcaption>Verträge. Halten Sie Dokumente aktuell und nutzen Sie einheitliche Vorlagen.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="inventario">
+        <h2>10. Inventar, Kunden und Berichte</h2>
+
+        <h3>Steuerliche Kunden</h3>
+        <p>
+          Der Bereich <strong>Kunden</strong> speichert Daten für Rechnungen oder steuerliche
+          Identifikation. Autorisiertes Personal kann Kunden erstellen und bearbeiten, um sie mit Bestellungen und
+          Rechnungen zu verknüpfen.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/customers.png" alt="Verwaltung steuerlicher Kunden" loading="lazy" />
+          <figcaption>Kunden. Nützlich, wenn ein Unternehmen oder Gast eine Rechnung mit Steuerdetails anfordert.</figcaption>
+        </figure>
+
+        <h3>Inventar: Artikel und Bestand</h3>
+        <p>
+          Inventar ermöglicht die Kontrolle von Artikeln, SKUs, Kategorien, Einheiten, Kosten, Mindestbestand,
+          Standardlieferant und Bewegungen. Bestandsanpassungen können Eingänge, Ausgaben,
+          Abfall oder Korrekturen erfassen.
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/inv-items.png" alt="Inventarartikel" loading="lazy" />
+              <figcaption>Artikel. Definieren Sie klare Einheiten, um Rezeptfehler zu vermeiden.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/inv-stock.png" alt="Bestandsbewegungen und Anpassungen" loading="lazy" />
+              <figcaption>Bestand. Erfassen Sie Abfall und Anpassungen, damit die Kosten realistisch bleiben.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Lieferanten und Bestellungen</h3>
+        <p>
+          Sie können Lieferanten erstellen, Bestellungen generieren, Status ändern, PDF drucken und
+          Waren empfangen, um den Bestand zu aktualisieren. Beim Empfang prüfen Sie Mengen und Preise vor der Bestätigung.
+        </p>
+        <div class="grid">
+          <div class="col-4">
+            <figure>
+              <img src="/manual-usuario/img/inv-suppliers.png" alt="Inventar-Lieferanten" loading="lazy" />
+              <figcaption>Lieferanten.</figcaption>
+            </figure>
+          </div>
+          <div class="col-4">
+            <figure>
+              <img src="/manual-usuario/img/inv-po.png" alt="Bestellungen" loading="lazy" />
+              <figcaption>Bestellungen.</figcaption>
+            </figure>
+          </div>
+          <div class="col-4">
+            <figure>
+              <img src="/manual-usuario/img/inv-po-detail.png" alt="Bestelldetail" loading="lazy" />
+              <figcaption>Detail und Empfang.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Inventarberichte</h3>
+        <p>
+          Inventarberichte helfen, niedrigen Bestand, Verbrauch, Kosten und Einkäufe zu erkennen. Sie sind
+          nützlicher, wenn Rezepte und Bewegungen diszipliniert erfasst werden.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/inv-reports.png" alt="Inventarberichte" loading="lazy" />
+          <figcaption>Inventar. Prüfen Sie niedrigen Bestand, bevor Sie Einkäufe erstellen.</figcaption>
+        </figure>
+
+        <h3>Verkaufs- und Betriebsberichte</h3>
+        <p>
+          Berichte zeigt Umsatz, Trinkgeld, Kosten, Gewinn, durchschnittliche Zahlung, Durchschnitt pro
+          Kunde, Tagesumsatz, Aufschlüsselungen und Exporte, wenn verfügbar. Nutzen Sie es für
+          Entscheidungen zu Menü, Personal und Öffnungszeiten.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/reports.png" alt="Verkaufs-, Umsatz- und Betriebsberichte" loading="lazy" />
+          <figcaption>Berichte. Filtern Sie nach Zeitraum und vergleichen Sie Umsatz mit Kosten, um die Marge zu verstehen.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="proveedores">
+        <h2>11. Lieferantenportal</h2>
+        <p>
+          Das Lieferantenportal ist getrennt vom internen Dashboard. Ein Lieferant kann sich registrieren,
+          anmelden, das Passwort wiederherstellen, Firmendaten bearbeiten und seinen Katalog mit
+          Bildern, Preisen und Verfügbarkeit pflegen. Derzeit können einige Portalbildschirme
+          auf Englisch erscheinen.
+        </p>
+        <ul>
+          <li>Der Lieferant verwaltet keine Gastraumbestellungen oder Restaurant-Einstellungen.</li>
+          <li>Das Restaurant entscheidet, ob Lieferantenprodukte als Referenz oder Katalog genutzt werden.</li>
+          <li>Bank-, Steuer- und Kontaktdaten müssen vom Lieferanten geprüft werden.</li>
+        </ul>
+        <div class="callout">
+          <strong>Wann nutzen.</strong> Nutzen Sie es, wenn Sie mit Lieferanten arbeiten, die aktuelle Produkt-
+          listen pflegen. Wenn Sie immer manuell einkaufen, reicht internes Inventar.
+        </div>
+      </section>
+
+      <section class="section" id="checklists">
+        <h2>12. Checklisten</h2>
+
+        <div class="grid">
+          <div class="col-6">
+            <div class="card">
+              <h3>Erster Go-live</h3>
+              <ul class="checklist">
+                <li>Erstellen Sie das Inhaber-Konto und speichern Sie Zugangsdaten sicher.</li>
+                <li>Vervollständigen Sie Profil, Kontakt, Standort, Steuern und Zeitzone.</li>
+                <li>Konfigurieren Sie Öffnungszeiten, Reservierungen und Ankunftstoleranz.</li>
+                <li>Aktivieren Sie nur die benötigten Module in der Navigation.</li>
+                <li>Erstellen Sie Produkte, Kategorien, Bilder und Pflichtfragen.</li>
+                <li>Erstellen Sie Etagen, Tische, PIN und QR.</li>
+                <li>Erstellen Sie echte Benutzer mit den korrekten Rollen.</li>
+                <li>Testen Sie eine vollständige Bestellung: Kunde, Küche/Bar, Zahlung und Abschluss.</li>
+                <li>Testen Sie eine öffentliche Reservierung und deren interne Verwaltung.</li>
+                <li>Prüfen Sie Berichte und Berechtigungen vor der Öffnung für die Öffentlichkeit.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card">
+              <h3>Vor jedem Service</h3>
+              <ul class="checklist">
+                <li>Prüfen Sie, dass Tische und QR-Codes aktiv sind.</li>
+                <li>Prüfen Sie ausverkaufte oder nicht verfügbare Produkte.</li>
+                <li>Prüfen Sie heutige Reservierungen und zugewiesene Tische.</li>
+                <li>Bestätigen Sie, dass Küche und Bar ihre Bildschirme sehen können.</li>
+                <li>Prüfen Sie Schichtbenutzer und Zeiterfassungen, wenn zutreffend.</li>
+                <li>Bestätigen Sie Zahlungsmethoden und Kassenlade.</li>
+                <li>Prüfen Sie niedrigen Bestand, wenn Inventar aktiv ist.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card">
+              <h3>Tagesende</h3>
+              <ul class="checklist">
+                <li>Schließen Sie aktive Bestellungen und prüfen Sie unbezahlte Rechnungen.</li>
+                <li>Klären Sie stornierte Bestellungen oder entfernte Positionen.</li>
+                <li>Prüfen Sie Trinkgeld, Zahlungsmethoden und Rechnungen.</li>
+                <li>Erfassen Sie relevanten Abfall oder Bestandsanpassungen.</li>
+                <li>Sehen Sie sich die Tagesberichte an und notieren Sie Vorfälle.</li>
+                <li>Prüfen Sie neues Feedback und antworten Sie intern.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card">
+              <h3>Operative Sicherheit</h3>
+              <ul class="checklist">
+                <li>Teilen Sie keine Inhaber- oder Admin-Konten.</li>
+                <li>Senden Sie keine Zahlungsschlüssel, SMTP oder Tokens per Chat.</li>
+                <li>Deaktivieren Sie Benutzer, die nicht mehr im Restaurant arbeiten.</li>
+                <li>Verwenden Sie die minimal nötigen Rollen für jede Position.</li>
+                <li>Testen Sie Einstellungsänderungen vor echtem Service.</li>
+                <li>Exportieren Sie Daten vor destruktiven Aktionen.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="problemas">
+        <h2>13. Häufige Probleme</h2>
+
+        <h3>Ein Benutzer sieht einen Bereich nicht</h3>
+        <p>
+          Prüfen Sie zwei Dinge: die Rolle unter <strong>Benutzer</strong> und ob das Modul aktiv ist unter
+          <strong>Einstellungen &gt; Navigation</strong>. Wenn beides stimmt, melden Sie sich ab und
+          wieder an.
+        </p>
+
+        <h3>Der Kunde kann nicht vom Tisch bestellen</h3>
+        <p>
+          Bestätigen Sie, dass der Tisch aktiv ist, der QR zu diesem Tisch passt, das Produkt zu
+          dieser Zeit verfügbar ist und die angegebene PIN korrekt ist. Wenn das Menü keine Produkte lädt,
+          prüfen Sie Kategorien und Verfügbarkeit.
+        </p>
+
+        <h3>Ein Reservierungsslot ist nicht verfügbar</h3>
+        <p>
+          Prüfen Sie Restaurant-Öffnungszeiten, Reservierungsregeln, durchschnittliche Tischdauer, Slot-
+          Intervall, Kapazität, bevorzugte Zone und bestehende Reservierungen im gleichen Slot.
+        </p>
+
+        <h3>Online-Zahlung erscheint nicht</h3>
+        <p>
+          Online-Zahlung erscheint nur, wenn die Methode aktiv und korrekt konfiguriert ist. Ohne
+          Zahlungsanbieter nutzen Sie Bar, Terminal oder Kellner rufen.
+        </p>
+
+        <h3>Bestand stimmt nicht überein</h3>
+        <p>
+          Prüfen Sie Einheiten, Rezepte, empfangene Einkäufe und manuelle Anpassungen. Ein verkauftes Produkt zieht
+          Bestand nur korrekt ab, wenn Rezept und Einheiten gut konfiguriert sind.
+        </p>
+
+        <h3>Kurzes Glossar</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Begriff</th>
+              <th>Bedeutung</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Slot</strong></td>
+              <td>Verfügbarer Zeitblock für Buchungen.</td>
+            </tr>
+            <tr>
+              <td><strong>Tisch-PIN</strong></td>
+              <td>Code, der Kundenaktionen am Tisch bestätigt.</td>
+            </tr>
+            <tr>
+              <td><strong>Station</strong></td>
+              <td>Zubereitungsbereich wie Küche, Bar, Desserts oder Grill.</td>
+            </tr>
+            <tr>
+              <td><strong>Abfall</strong></td>
+              <td>Verlorenes, weggeworfenes oder nicht verkäufliches Produkt, das vom Bestand abgezogen werden muss.</td>
+            </tr>
+            <tr>
+              <td><strong>No-show</strong></td>
+              <td>Bestätigte Reservierung, deren Gast innerhalb der definierten Toleranz nicht erschienen ist.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <footer class="footer">
+        <p>
+          Handbuch erstellt mit echten Screenshots aus der Demo-Umgebung. Einige sichtbare Funktionen
+          hängen von Rolle, aktiven Modulen, Land, gebuchten Integrationen und der technischen
+          Konfiguration des Restaurants ab.
+        </p>
+      </footer>
+    </main>

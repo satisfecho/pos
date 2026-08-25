@@ -38,17 +38,7 @@ export class UserManualPageComponent {
           this.loading.set(true);
           this.error.set(false);
         }),
-        switchMap((lang) => {
-          const code = this.contentLocale(lang);
-          return this.http.get(`/manual-usuario/content/${code}.html`, { responseType: 'text' }).pipe(
-            catchError(() => {
-              this.error.set(true);
-              this.loading.set(false);
-              this.contentHtml.set(null);
-              return of(null);
-            }),
-          );
-        }),
+        switchMap((lang) => this.fetchManualContent(this.contentLocale(lang))),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((html) => {
@@ -67,8 +57,29 @@ export class UserManualPageComponent {
     });
   }
 
-  /** Full manual body exists for es + en; other UI locales use English content. */
-  private contentLocale(lang: LanguageCode): 'en' | 'es' {
-    return lang === 'es' ? 'es' : 'en';
+  /** Each shipped UI locale loads its own HTML body; missing files fall back to English. */
+  private contentLocale(lang: LanguageCode): LanguageCode {
+    return lang;
+  }
+
+  private fetchManualContent(locale: LanguageCode) {
+    return this.http.get(`/manual-usuario/content/${locale}.html`, { responseType: 'text' }).pipe(
+      catchError(() => {
+        if (locale === 'en') {
+          this.error.set(true);
+          this.loading.set(false);
+          this.contentHtml.set(null);
+          return of(null);
+        }
+        return this.http.get('/manual-usuario/content/en.html', { responseType: 'text' }).pipe(
+          catchError(() => {
+            this.error.set(true);
+            this.loading.set(false);
+            this.contentHtml.set(null);
+            return of(null);
+          }),
+        );
+      }),
+    );
   }
 }

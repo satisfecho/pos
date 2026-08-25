@@ -37,6 +37,34 @@ POS2 is built for restaurants and venues that want:
 
 The frontend is Angular; the backend is FastAPI with PostgreSQL and Redis. All major flows are implemented and documented (see [ROADMAP.md](ROADMAP.md) and the `docs/` folder).
 
+---
+
+## Start with one feature
+
+You do not need the full POS on day one. Start with **one public feature** and add the rest when you are ready. Orders, kitchen display, inventory, and other areas stay in the same tenant — turn them on in **Settings → Navigation** when you need them.
+
+### QR menu only (free to start)
+
+The **digital QR menu** is part of every plan. On **self-host (AGPLv3)** there is **no license fee**. On hosted Satisfecho you get a **free trial** with no card required — see live pricing at **`/pricing`** when the app is running.
+
+1. **Register** your restaurant ([Getting Started](#getting-started) below).
+2. Add items under **Products** in the staff app.
+3. Create tables under **Tables** and open each table’s **QR code** (print or display it).
+4. Guests scan the code and browse **`/menu/{table_token}`** — no app install.
+
+Add later when you want: table PIN security ([docs/0009-table-pin-security.md](docs/0009-table-pin-security.md)), Stripe or Revolut checkout in **Settings**, kitchen display, inventory.
+
+### Reservations only
+
+Use **online booking** without running the full order flow.
+
+1. **Register** and sign in (see [Getting Started](#getting-started)).
+2. Turn on **Reservations & guest feedback** under **Settings → Navigation** if it is not already enabled.
+3. Share your public link: **`/book/{tenantId}`** (e.g. `http://localhost:4202/book/1`).
+4. Staff manage bookings at **`/reservations`**.
+
+Guests can join the **waiting list** at **`/waitlist/{tenantId}`** (linked from the book page). Full URLs and flows: [docs/0011-table-reservation-user-guide.md](docs/0011-table-reservation-user-guide.md).
+
 ### Screenshots
 
 Staff dashboard, kitchen display, and customer menu — a quick visual sense of the product.

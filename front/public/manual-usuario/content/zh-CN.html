@@ -1,0 +1,957 @@
+<main class="page">
+      <header class="hero">
+        <p class="eyebrow">面向顾客与餐厅团队的用户手册</p>
+        <h1>如何从头到尾使用 Satisfecho POS</h1>
+        <p class="hero-copy">
+          本指南以实操步骤说明完整应用：初始设置、餐桌、订单、支付、预订、厨房、吧台、库存、报表、班次、合同、反馈以及
+          供应商门户。截图为演示环境的真实画面。
+        </p>
+        <div class="meta-row" aria-label="手册信息">
+          <span class="chip">更新：2026 年 5 月</span>
+          <span class="chip">Web 应用</span>
+          <span class="chip">角色：店主、管理员、员工与供应商</span>
+          <span class="chip">含公开与内部界面</span>
+        </div>
+      </header>
+
+      <section class="section lede" id="leer-primero">
+        <h2>请先阅读</h2>
+        <div class="grid">
+          <div class="col-8">
+            <p>
+              Satisfecho POS 分为三种使用场景。员工在内部
+              仪表板工作；顾客通过 QR 码、链接或餐桌搜索使用公开菜单；当餐厅需要接收外部产品
+              目录时，供应商使用独立门户。
+            </p>
+            <p>
+              若您是新手，请从 <a href="#configuracion">设置</a> 开始，然后创建
+              <a href="#productos">产品</a>，配置 <a href="#mesas">餐桌与 QR</a>，最后测试
+              <a href="#cliente">顾客下单</a> 与
+              <a href="#operacion">员工操作</a> 的完整流程。
+            </p>
+          </div>
+          <div class="col-4">
+            <div class="card soft">
+              <h3>实用原则</h3>
+              <p>
+                先配置餐厅。再录入产品、餐桌、员工与支付
+                方式。在完成订单、厨房、支付与关桌的真实测试之前，请勿发布 QR 码或顾客链接。
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="indice">
+        <h2>目录</h2>
+        <nav class="toc" aria-label="手册目录">
+          <a href="#primeros-pasos">1. 入门 <span>公开首页、注册、登录与导航。</span></a>
+          <a href="#roles">2. 角色与权限 <span>各用户类型可执行的操作。</span></a>
+          <a href="#configuracion">3. 设置 <span>资料、品牌、营业时间、支付、安全与集成。</span></a>
+          <a href="#productos">4. 产品与目录 <span>菜单、分类、问题、配方与供应商。</span></a>
+          <a href="#mesas">5. 餐桌与平面图 <span>QR、PIN、楼层、服务员、拼桌与可视化视图。</span></a>
+          <a href="#cliente">6. 顾客体验 <span>QR 菜单、下单、PIN、支付、外带与呼叫服务员。</span></a>
+          <a href="#operacion">7. 日常运营 <span>订单、支付、历史、厨房与吧台。</span></a>
+          <a href="#reservas">8. 预订与反馈 <span>公开预订、内部管理、提醒与评价。</span></a>
+          <a href="#equipo">9. 团队、班次与合同 <span>用户、我的班次、排班计划与合同。</span></a>
+          <a href="#inventario">10. 库存、客户与报表 <span>库存、采购、开票客户与分析。</span></a>
+          <a href="#proveedores">11. 供应商门户 <span>外部供应商的独立入口。</span></a>
+          <a href="#checklists">12. 检查清单 <span>上线、日常营业与打烊。</span></a>
+          <a href="#problemas">13. 常见问题 <span>快速修复与关键概念。</span></a>
+        </nav>
+      </section>
+
+      <section class="section" id="primeros-pasos">
+        <h2>1. 入门</h2>
+
+        <h3>公开首页</h3>
+        <p>
+          首页展示可用餐厅、预订链接、登录入口、
+          按代码使用餐桌，以及（若已配置）外带下单。页面还包含
+          供应商入口与语言选择器。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/landing.png" alt="公开页面：餐厅列表、预订与餐桌搜索" loading="lazy" />
+          <figcaption>公开页面。顾客预订或使用餐桌 QR 无需账户。</figcaption>
+        </figure>
+
+        <h3>创建首个账户</h3>
+        <p>
+          注册会创建餐厅账户。首位注册餐厅的人员
+          应负责初始设置，因为该账户用于创建用户、
+          产品、餐桌、支付与设置。
+        </p>
+        <ol class="steps">
+          <li>进入 <strong>注册</strong>。</li>
+          <li>填写姓名、邮箱、密码及餐厅基本信息。</li>
+          <li>保存后，使用刚创建的邮箱与密码登录。</li>
+          <li>分享公开链接前，请先完成设置。</li>
+        </ol>
+        <figure>
+          <img src="/manual-usuario/img/register.png" alt="餐厅注册表单" loading="lazy" />
+          <figcaption>餐厅注册。请使用真实邮箱以便找回密码并接收通知。</figcaption>
+        </figure>
+
+        <h3>登录与找回密码</h3>
+        <p>
+          员工通过 <strong>登录</strong> 进入。若餐厅启用了两步
+          验证，输入密码后系统会要求临时验证码。若忘记
+          密码，须使用找回链接并按邮件指引操作。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/login.png" alt="登录界面：含找回密码与供应商链接" loading="lazy" />
+          <figcaption>员工登录。供应商从此公开区域有独立入口。</figcaption>
+        </figure>
+
+        <h3>内部仪表板与导航</h3>
+        <p>
+          登录后进入内部仪表板。侧边菜单仅显示
+          角色允许且设置中已启用的模块。在小屏幕上
+          以下拉菜单形式显示。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/dashboard.png" alt="内部仪表板：侧边栏、卡片与快捷入口" loading="lazy" />
+          <figcaption>内部仪表板。作为控制中心打开订单、预订、餐桌与报表。</figcaption>
+        </figure>
+
+        <div class="callout">
+          <strong>语言。</strong> 应用可在公开区域与
+          内部环境中切换语言。若某标签显示为其他语言，通常表示该部分
+          的翻译尚未加载。
+        </div>
+      </section>
+
+      <section class="section" id="roles">
+        <h2>2. 角色与权限</h2>
+        <p>
+          权限保护敏感操作。若用户看不到某模块，并非错误：
+          其角色无权限，或该模块已在 <strong>设置 > 导航</strong> 中关闭。
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>角色</th>
+              <th>建议使用场景</th>
+              <th>主要权限</th>
+              <th>重要限制</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>店主</strong></td>
+              <td>店主或最高负责人。</td>
+              <td>完全访问：设置、用户、产品、餐桌、预订、报表、库存、合同与数据。</td>
+              <td>须为受保护账户。不建议共享。</td>
+            </tr>
+            <tr>
+              <td><strong>管理员</strong></td>
+              <td>运营经理。</td>
+              <td>管理日常运营、非店主用户、产品、餐桌、预订、库存、报表、合同与排班计划。</td>
+              <td>可能对账单资料、支付密钥或店主用户有限制。</td>
+            </tr>
+            <tr>
+              <td><strong>服务员</strong></td>
+              <td>楼面服务。</td>
+              <td>可查看产品、餐桌、预订、开票客户与订单。可更新状态、标记已付并删除允许的行项。</td>
+              <td>不可管理设置、用户、库存或全局报表。</td>
+            </tr>
+            <tr>
+              <td><strong>接待</strong></td>
+              <td>预订与前台接待。</td>
+              <td>管理预订，可查看餐桌、客户与订单。</td>
+              <td>不可修改产品或设置；订单权限更有限。</td>
+            </tr>
+            <tr>
+              <td><strong>厨房</strong></td>
+              <td>餐食制作。</td>
+              <td>查看订单并更改分配给厨房的行项状态。也可查看自己的班次与合同。</td>
+              <td>不可收款或管理餐桌。</td>
+            </tr>
+            <tr>
+              <td><strong>吧台</strong></td>
+              <td>饮品制作。</td>
+              <td>与厨房类似，侧重吧台界面与饮品产品。</td>
+              <td>不可收款或管理设置。</td>
+            </tr>
+            <tr>
+              <td><strong>供应商</strong></td>
+              <td>外部供应商。</td>
+              <td>使用独立门户管理目录与公司资料。</td>
+              <td>不可进入餐厅内部仪表板。</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <figure>
+          <img src="/manual-usuario/img/users.png" alt="用户与角色界面" loading="lazy" />
+          <figcaption>用户。每人一个账户，便于追溯操作者。</figcaption>
+        </figure>
+
+        <div class="callout warn">
+          <strong>最佳实践。</strong> 停用已离职用户，避免共享
+          账户。敏感变更请使用店主或管理员个人密码。
+        </div>
+      </section>
+
+      <section class="section" id="configuracion">
+        <h2>3. 设置</h2>
+        <p>
+          设置控制餐厅的外观与行为。上线前请仔细完成
+          此部分：它影响 QR 码、预订、支付、营业时间、安全、厨房、库存与
+          模块可见性。
+        </p>
+
+        <h3>资料、品牌与公开外观</h3>
+        <p>
+          在 <strong>资料</strong> 中编辑餐厅名称、简介、电话、邮箱、
+          货币、国家、时区、Logo、页眉图片与公开背景色。这些信息
+          会出现在公开页面、预订、QR 菜单及部分消息中。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-profile.png" alt="资料、品牌、Logo 与页眉设置" loading="lazy" />
+          <figcaption>资料。请使用清晰图片与真实信息，顾客会直接看到。</figcaption>
+        </figure>
+
+        <h3>导航与模块</h3>
+        <p>
+          <strong>导航</strong> 标签页可启用或关闭餐桌、排班
+          计划、供应商、预订、厨房/吧台与库存等模块。模块关闭时，
+          菜单会隐藏，直接链接可能跳转到内部首页。
+        </p>
+        <ul>
+          <li>关闭餐厅不用的模块，简化员工操作。</li>
+          <li>仅当会维护库存、供应商、采购与配方时再启用库存。</li>
+          <li>若需要按工位显示制作界面，请启用厨房/吧台。</li>
+        </ul>
+
+        <h3>联系、位置、法律与评价</h3>
+        <p>
+          在 <strong>联系</strong> 中保存地址、网站、Google Maps 与 OpenStreetMap 链接、
+          Google 评价 URL、税号（NIF/CIF）、银行账户（CCC）、公开条款 URL、公开隐私 URL 及
+          基本税务资料。还可设置产品无
+          特定规则时使用的默认税率。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-contact.png" alt="联系、位置与法律设置" loading="lazy" />
+          <figcaption>联系。这些信息帮助顾客找到您，并用于发票或公开页面。</figcaption>
+        </figure>
+
+        <h3>营业时间、预期班次与例外</h3>
+        <p>
+          在 <strong>营业时间</strong> 中设置餐厅每周日程、各时段
+          人力需求及未来计划模式。还可为
+          特定日期创建例外，例如节假日、休假或私人活动。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-hours.png" alt="营业时间与人力需求设置" loading="lazy" />
+          <figcaption>营业时间。预订与排班计划依赖此信息。</figcaption>
+        </figure>
+
+        <h3>支付、开票、小费与位置验证</h3>
+        <p>
+          在 <strong>支付</strong> 中调整可见支付方式、小费、支付
+          行为，以及安装中启用时的 Stripe 或 Revolut 等支付提供商详情。还可能有
+          税务发票、内部序列、测试或
+          生产模式，以及现场支付的位置验证选项。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-payments.png" alt="支付方式与开票设置" loading="lazy" />
+          <figcaption>支付。勿向不需要的员工分享支付密钥、SMTP 或令牌。</figcaption>
+        </figure>
+        <div class="callout warn">
+          <strong>税务合规。</strong> 税务设置因国家与部署而异。在生产环境使用税务开票前，请与顾问及技术团队确认
+          当前启用的集成。
+        </div>
+
+        <h3>公开预订</h3>
+        <p>
+          预订设置控制顾客是否可预订、是否需预付、
+          取消政策、到店容忍时间、平均用餐时长、时段间隔、
+          每时段最大人数、散客餐桌、着装要求，以及 24 小时或
+          2 小时提醒。
+        </p>
+        <ul>
+          <li>使用团队能兑现的预订间隔，例如 15 或 30 分钟。</li>
+          <li>设置到店容忍时间，以便标记 <strong>no-show</strong>。</li>
+          <li>仅在邮件或消息配置正确时启用提醒。</li>
+        </ul>
+
+        <h3>外发邮件</h3>
+        <p>
+          若部署启用了 SMTP，可用于密码找回、提醒、
+          确认及预订相关消息。启用自动提醒前请先测试邮件。
+        </p>
+
+        <h3>税种与 VAT</h3>
+        <p>
+          在 <strong>税种</strong> 中可创建 VAT 类型或等效税种。随后
+          每个产品可使用餐厅默认税或独立规则。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-taxes.png" alt="税种设置" loading="lazy" />
+          <figcaption>税种。请使用清晰名称，例如标准、减免或饮品。</figcaption>
+        </figure>
+
+        <h3>厨房工位</h3>
+        <p>
+          工位用于分组制作工作。产品可分配到工位，
+          以便出现在对应区域：热厨、甜品、吧台、烧烤或其他区域。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-kitchen-stations.png" alt="厨房工位设置" loading="lazy" />
+          <figcaption>工位。用于组织厨房与吧台界面。</figcaption>
+        </figure>
+
+        <h3>外卖集成</h3>
+        <p>
+          在 <strong>集成</strong> 中，当部署包含对应适配器时可配置市场或外部渠道。请保护技术链接与密钥。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-delivery.png" alt="外卖集成设置" loading="lazy" />
+          <figcaption>外卖。仅启用已在安装中验证的集成。</figcaption>
+        </figure>
+
+        <h3>社交发布</h3>
+        <p>
+          社交发布可准备已连接渠道的消息与内容，
+          例如配置 OAuth 连接后的 Meta。可用于促销、新闻或
+          季节性活动。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-social.png" alt="社交发布设置" loading="lazy" />
+          <figcaption>社交。发布前请核对文案，并确认连接的账户正确。</figcaption>
+        </figure>
+
+        <h3>安全、打卡与数据</h3>
+        <p>
+          在 <strong>安全</strong> 中可为敏感访问启用两步验证码，并
+          配置员工通过 QR 打卡。若启用位置验证，
+          打卡时设备会请求位置权限。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-security.png" alt="安全与打卡 QR 设置" loading="lazy" />
+          <figcaption>安全。打卡 QR 仅下载或打印给授权员工。</figcaption>
+        </figure>
+        <p>
+          在 <strong>数据与隐私</strong> 中，店主可导出餐厅
+          信息；若部署允许，还可执行清除数据等破坏性操作。
+          这些操作仅限店主，且须事先备份。
+        </p>
+
+        <h3>模板、翻译与内部供应商</h3>
+        <p>
+          设置还包含合同模板、可见文本翻译及
+          餐厅自有供应商/产品。这些区域有助于保持文档、
+          公开标签与采购使用同一基础信息。
+        </p>
+      </section>
+
+      <section class="section" id="productos">
+        <h2>4. 产品与目录</h2>
+        <p>
+          产品是菜单核心。每个产品可有价格、成本、图片、分类、
+          子分类、配料、描述、独立税种、厨房工位、按时段
+          可用性及定制问题。
+        </p>
+
+        <figure>
+          <img src="/manual-usuario/img/products.png" alt="产品界面：表单、分类与列表" loading="lazy" />
+          <figcaption>产品。分类标签页用于排序公开菜单与内部工作。</figcaption>
+        </figure>
+
+        <h3>创建或编辑产品</h3>
+        <ol class="steps">
+          <li>进入 <strong>产品</strong> 并打开产品标签页。</li>
+          <li>填写名称、售价；若已知，填写采购或制作成本。</li>
+          <li>添加描述与配料，便于顾客与员工了解过敏信息。</li>
+          <li>选择分类、子分类及适用的厨房工位。</li>
+          <li>上传菜品或饮品的真实清晰图片。</li>
+          <li>若产品仅在特定时段销售，设置可用起止时间。</li>
+          <li>保存后，若需要可添加定制问题。</li>
+        </ol>
+
+        <h3>问题与定制</h3>
+        <p>
+          保存产品后可添加供顾客或服务员回答的问题：
+          单选、多选、量表或自由文本。每个问题可设为必填
+          并排序。用于熟度、规格、酱料、加料、去料或备注。
+        </p>
+        <div class="callout">
+          <strong>示例。</strong> 汉堡可创建必填问题「熟度」，
+          选项为三分、五分、全熟。若有加价加料，可再创建一项。
+        </div>
+
+        <h3>成本、配方与理想售价</h3>
+        <p>
+          若启用库存与配方，可将真实原料关联到产品。系统
+          用这些成本辅助计算毛利与理想售价。此功能仅在
+          库存、单位与成本保持最新时才有意义。
+        </p>
+
+        <h3>供应商目录</h3>
+        <p>
+          <strong>目录</strong> 汇集供应商产品或餐厅审核的
+          外部产品，用于采购、可用性或参考。它不能替代顾客
+          销售菜单：顾客看到的菜单来自 <strong>产品</strong>。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/catalog.png" alt="供应商产品目录" loading="lazy" />
+          <figcaption>目录。便于查看外部产品、图片与供应商可用性。</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="mesas">
+        <h2>5. 餐桌与平面图</h2>
+        <p>
+          餐桌连接楼面与订单。每张餐桌可有名称、容量、状态、
+          楼层、QR、PIN 与指定服务员。也可使用列表、卡片或
+          可视化平面图视图。
+        </p>
+
+        <figure>
+          <img src="/manual-usuario/img/tables.png" alt="餐桌管理：楼层、QR、PIN 与操作" loading="lazy" />
+          <figcaption>餐桌。可在此启用、停用、打印 QR、复制链接或打开菜单。</figcaption>
+        </figure>
+
+        <h3>每张餐桌需配置的内容</h3>
+        <ul>
+          <li><strong>显示名称：</strong>例如 T01、露台 4 或吧台 2。</li>
+          <li><strong>容量：</strong>正常就餐人数。</li>
+          <li><strong>楼层或区域：</strong>大厅、露台、吧台、包间或其他区域。</li>
+          <li><strong>PIN：</strong>保护顾客确认或修改订单等操作。</li>
+          <li><strong>指定服务员：</strong>可按楼层设置，也可按餐桌调整。</li>
+          <li><strong>启用：</strong>仅启用的餐桌用于运营与公开链接。</li>
+        </ul>
+
+        <h3>QR、链接与员工代开菜单</h3>
+        <p>
+          餐桌 QR 打开该桌公开菜单。可复制链接用于打印或
+          发送。<strong>打开菜单</strong> 操作让员工在
+          自己设备上协助该桌；不可作为永久公开链接使用。
+        </p>
+
+        <h3>拼桌与重新分配</h3>
+        <p>
+          多张餐桌可合并为一单或大型预订。若删除
+          有关联订单或预订的餐桌，系统可能要求重新分配信息
+          以免丢失历史记录。
+        </p>
+
+        <h3>可视化平面图</h3>
+        <p>
+          平面图可快速查看空闲、占用、待付款、
+          已指定服务员或已拼桌的餐桌。颜色与支付标签帮助发现待处理事项，
+          无需逐桌打开。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/tables-canvas.png" alt="可视化餐桌平面图：状态与操作" loading="lazy" />
+          <figcaption>餐桌平面图。营业时便于安排就座或结账。</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="cliente">
+        <h2>6. 顾客体验</h2>
+        <p>
+          顾客无需安装应用即可使用菜单。入口包括餐桌 QR、链接、公开页
+          餐桌搜索，以及餐厅启用时的外带下单路径。
+        </p>
+
+        <div class="grid">
+          <div class="col-6">
+            <h3>初始识别</h3>
+            <p>
+              进入餐桌菜单时，顾客可输入姓名。这帮助员工
+              识别下单者并在桌边解答问题。
+            </p>
+            <figure class="phone">
+              <img src="/manual-usuario/img/menu-name.png" alt="手机菜单：请求输入顾客姓名" loading="lazy" />
+              <figcaption>进入餐桌菜单。</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <h3>浏览产品</h3>
+            <p>
+              菜单显示分类、子分类、推荐项、图片、价格、配料、
+              过敏原或饮食信息（若已填写）。顾客通过
+              加号按钮添加产品。
+            </p>
+            <figure class="phone">
+              <img src="/manual-usuario/img/menu-browse.png" alt="手机菜单：产品与分类" loading="lazy" />
+              <figcaption>公开菜单，展示演示环境的真实产品。</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>购物车、定制与确认</h3>
+        <p>
+          提交前，顾客核对数量、定制项与合计。若产品有
+          必填问题，须先回答再确认。为避免误下单，
+          餐桌可要求 PIN。
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure class="phone">
+              <img src="/manual-usuario/img/menu-cart.png" alt="手机购物车：待提交产品" loading="lazy" />
+              <figcaption>购物车。提交前在此核对订单。</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure class="phone">
+              <img src="/manual-usuario/img/menu-pin.png" alt="手机界面：请求餐桌 PIN" loading="lazy" />
+              <figcaption>餐桌 PIN。按运营方式告知顾客或店内展示。</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>进行中订单、历史与操作</h3>
+        <p>
+          提交后，顾客可查看订单状态。若餐桌
+          仍开放，可继续加菜。根据设置与状态，可请求支付、呼叫服务员、
+          取消仍允许的项目或查看历史。
+        </p>
+        <figure class="phone">
+          <img src="/manual-usuario/img/menu-status.png" alt="手机界面：当前订单状态与主要按钮" loading="lazy" />
+          <figcaption>当前订单。顾客可看到已接收、制作中、已备好或已送达等状态。</figcaption>
+        </figure>
+
+        <h3>顾客可见的支付选项</h3>
+        <p>
+          选项取决于餐厅设置。可能显示在线支付、终端、现金、
+          Revolut、Stripe 或呼叫服务员。若未配置在线支付，
+          顾客可请员工在桌边收款。
+        </p>
+
+        <h3>外带或配送订单</h3>
+        <p>
+          若餐厅配置了外带餐桌或渠道，公开下单页
+          会显示可用餐厅。流程与餐桌菜单类似，但用于
+          无需就座物理餐桌的订单。
+        </p>
+      </section>
+
+      <section class="section" id="operacion">
+        <h2>7. 日常运营</h2>
+        <p>
+          订单模块是营业中心。员工可查看进行中订单、
+          未付账单与历史。另有独立的厨房与吧台界面。
+        </p>
+
+        <h3>进行中订单</h3>
+        <p>
+          在 <strong>订单</strong> 中可看到餐桌、行项、状态、备注与合计。在此可
+          加菜、改单、删除允许的行项、标记加急、推进
+          状态并打开支付选项。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/orders-active.png" alt="进行中订单：餐桌、行项与操作" loading="lazy" />
+          <figcaption>进行中订单。楼面营业时请保持此界面打开。</figcaption>
+        </figure>
+
+        <h3>订单与行项状态</h3>
+        <p>
+          订单可经历已接收、制作中、已备好、已送达、已付或
+          已取消等状态。每行项也可有独立状态，厨房与吧台
+          可并行工作。
+        </p>
+        <ul>
+          <li><strong>已接收：</strong>顾客或员工刚提交订单。</li>
+          <li><strong>制作中：</strong>厨房或吧台正在制作。</li>
+          <li><strong>已备好：</strong>已做好待上菜。</li>
+          <li><strong>已送达：</strong>已送到餐桌。</li>
+          <li><strong>已付：</strong>账单已结清。</li>
+        </ul>
+
+        <h3>支付、小费与发票</h3>
+        <p>
+          在支付弹窗中可选择方式、记录小费、处理超额支付（若适用）、
+          完成订单并开具发票。可见方式取决于设置：
+          现金、终端、Stripe、Revolut 或其他。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/orders-unpaid.png" alt="待支付订单" loading="lazy" />
+          <figcaption>未付。此视图帮助在班次结束前结清待付账单。</figcaption>
+        </figure>
+
+        <h3>历史</h3>
+        <p>
+          历史可查看以往订单、金额、状态及删除的行项
+          （若可见）。便于答疑、内部审计与报表。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/orders-history.png" alt="订单历史" loading="lazy" />
+          <figcaption>历史。查看已结订单，不与进行中操作混在一起。</figcaption>
+        </figure>
+
+        <h3>厨房界面</h3>
+        <p>
+          厨房显示待制作的行项。团队可推进状态，无需
+          进入支付或设置。若使用工位，每个产品进入指定区域。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/kitchen.png" alt="厨房界面：待制作订单" loading="lazy" />
+          <figcaption>厨房。按订单、状态与紧急程度组织工作。</figcaption>
+        </figure>
+
+        <h3>吧台界面</h3>
+        <p>
+          吧台是侧重饮品或类似工位的制作界面。
+          当吧台需与厨房分开作业时尤其有用。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/bar.png" alt="吧台界面：饮品订单" loading="lazy" />
+          <figcaption>吧台。可独立制作并标记饮品，不依赖楼面界面。</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="reservas">
+        <h2>8. 预订与反馈</h2>
+
+        <h3>内部预订</h3>
+        <p>
+          在 <strong>预订</strong> 中，员工可创建、搜索与管理预订。可按日期、电话或状态筛选，查看可能的超订，发送提醒、
+          分配餐桌、标记到店、标记 no-show、取消或完成。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/reservations.png" alt="内部预订界面" loading="lazy" />
+          <figcaption>内部预订。用于协调前台与楼面。</figcaption>
+        </figure>
+
+        <h3>公开预订</h3>
+        <p>
+          顾客可从餐厅公开页预订。表单显示
+          日期、餐段、可用时间、人数、启用时的区域或楼层偏好、
+          联系方式、过敏信息与备注。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/book-public.png" alt="公开预订表单：可用时段" loading="lazy" />
+          <figcaption>公开预订。可用性取决于营业时间、容量、时段与已配置规则。</figcaption>
+        </figure>
+
+        <h3>通过顾客链接管理预订</h3>
+        <p>
+          顾客收到预订链接后可查看详情，若政策
+          允许可取消或报告迟到。这减少电话并让团队掌握情况。
+        </p>
+
+        <h3>顾客反馈</h3>
+        <p>
+          系统包含公开反馈页与内部收件箱。可在
+          就餐后分享链接或 QR。在内部收件箱中查看评分、评论与
+          相关数据。
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/feedback-public.png" alt="公开顾客反馈表单" loading="lazy" />
+              <figcaption>公开表单。保持简短以便顾客完成。</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/guest-feedback.png" alt="内部顾客反馈收件箱" loading="lazy" />
+              <figcaption>内部反馈。查看趋势及需回复的情况。</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="equipo">
+        <h2>9. 团队、班次与合同</h2>
+
+        <h3>用户</h3>
+        <p>
+          在 <strong>用户</strong> 中创建员工账户、分配角色并更新
+          资料。请使用真实邮箱，避免共享凭据。角色决定实际权限，不仅是
+          可见菜单。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/users.png" alt="餐厅用户列表" loading="lazy" />
+          <figcaption>用户。人员岗位变动时请调整角色。</figcaption>
+        </figure>
+
+        <h3>我的班次</h3>
+        <p>
+          <strong>我的班次</strong> 让员工查看班次状态，在启用时
+          打卡上下班，查看休息并回顾当日相关信息。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/my-shift.png" alt="我的班次：打卡与工作日" loading="lazy" />
+          <figcaption>我的班次。若使用打卡 QR，员工须在此授权流程中扫描。</figcaption>
+        </figure>
+
+        <h3>每周排班计划与日历</h3>
+        <p>
+          排班计划按周组织班次并查看日历。数据来自
+          餐厅营业时间、人力需求与合同。有助于查看覆盖、
+          分配人员并在营业前发现缺口。
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/working-plan-week.png" alt="每周排班计划" loading="lazy" />
+              <figcaption>周视图。按日与角色规划很实用。</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/working-plan-calendar.png" alt="排班计划日历" loading="lazy" />
+              <figcaption>日历。便于发现重叠、缺勤或特殊日期。</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>合同</h3>
+        <p>
+          合同集中管理员工合同与模板。根据权限，用户可
+          阅读、创建、更新或管理文档。与排班计划配合使用，使
+          工时、职责与条件保持一致。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/contracts.png" alt="员工合同界面" loading="lazy" />
+          <figcaption>合同。保持文档最新并使用一致模板。</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="inventario">
+        <h2>10. 库存、客户与报表</h2>
+
+        <h3>开票客户</h3>
+        <p>
+          <strong>客户</strong> 模块保存开票或税务
+          识别所需资料。授权员工可创建与编辑客户，并将其与订单及
+          发票关联。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/customers.png" alt="开票客户管理" loading="lazy" />
+          <figcaption>客户。企业或客人需要带税务信息的发票时很有用。</figcaption>
+        </figure>
+
+        <h3>库存：物料与存量</h3>
+        <p>
+          库存可管理物料、SKU、分类、单位、成本、最低库存、
+          默认供应商与变动。库存调整可记录入库、出库、
+          损耗或更正。
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/inv-items.png" alt="库存物料" loading="lazy" />
+              <figcaption>物料。请定义清晰单位，避免配方错误。</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/inv-stock.png" alt="库存变动与调整" loading="lazy" />
+              <figcaption>库存。记录损耗与调整，使成本贴近实际。</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>供应商与采购单</h3>
+        <p>
+          可创建供应商、生成采购单、更改状态、打印 PDF 并在
+          收货时更新库存。收货时请核对数量与价格后再确认。
+        </p>
+        <div class="grid">
+          <div class="col-4">
+            <figure>
+              <img src="/manual-usuario/img/inv-suppliers.png" alt="库存供应商" loading="lazy" />
+              <figcaption>供应商。</figcaption>
+            </figure>
+          </div>
+          <div class="col-4">
+            <figure>
+              <img src="/manual-usuario/img/inv-po.png" alt="采购单" loading="lazy" />
+              <figcaption>采购单。</figcaption>
+            </figure>
+          </div>
+          <div class="col-4">
+            <figure>
+              <img src="/manual-usuario/img/inv-po-detail.png" alt="采购单详情" loading="lazy" />
+              <figcaption>详情与收货。</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>库存报表</h3>
+        <p>
+          库存报表帮助发现低库存、消耗、成本与采购。在
+          规范记录配方与变动时更有价值。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/inv-reports.png" alt="库存报表" loading="lazy" />
+          <figcaption>库存。创建采购前先查看低库存。</figcaption>
+        </figure>
+
+        <h3>销售与运营报表</h3>
+        <p>
+          报表展示营收、小费、成本、利润、平均支付、人均、
+          日销售、明细及可用时的导出。用于
+          菜单、人员与营业时间的决策。
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/reports.png" alt="销售、营收与运营报表" loading="lazy" />
+          <figcaption>报表。按期间筛选，对比销售与成本以了解毛利。</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="proveedores">
+        <h2>11. 供应商门户</h2>
+        <p>
+          供应商门户与内部仪表板分离。供应商可注册、
+          登录、找回密码、编辑公司资料，并维护含
+          图片、价格与可用性的目录。目前部分门户界面可能仍显示
+          英文。
+        </p>
+        <ul>
+          <li>供应商不管理楼面订单或餐厅设置。</li>
+          <li>餐厅决定是否将供应商产品用作参考或目录。</li>
+          <li>银行、税务与联系资料须由供应商自行核对。</li>
+        </ul>
+        <div class="callout">
+          <strong>何时使用。</strong> 适用于与维护实时产品
+          列表的供应商合作。若始终手工采购，内部库存可能已足够。
+        </div>
+      </section>
+
+      <section class="section" id="checklists">
+        <h2>12. 检查清单</h2>
+
+        <div class="grid">
+          <div class="col-6">
+            <div class="card">
+              <h3>初始上线</h3>
+              <ul class="checklist">
+                <li>创建店主账户并安全保存凭据。</li>
+                <li>完成资料、联系、位置、税种与时区。</li>
+                <li>配置营业时间、预订与到店容忍时间。</li>
+                <li>在导航中仅启用所需模块。</li>
+                <li>创建产品、分类、图片与必填问题。</li>
+                <li>创建楼层、餐桌、PIN 与 QR。</li>
+                <li>创建具有正确角色的真实用户。</li>
+                <li>测试完整订单：顾客、厨房/吧台、支付与关桌。</li>
+                <li>测试公开预订及其内部管理。</li>
+                <li>对外开放前检查报表与权限。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card">
+              <h3>每次营业前</h3>
+              <ul class="checklist">
+                <li>确认餐桌与 QR 码已启用。</li>
+                <li>检查售罄或不可用产品。</li>
+                <li>查看当日预订与分配餐桌。</li>
+                <li>确认厨房与吧台能看到各自界面。</li>
+                <li>查看班次用户与打卡（若适用）。</li>
+                <li>确认支付方式与现金抽屉。</li>
+                <li>若启用库存，查看低库存。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card">
+              <h3>日终</h3>
+              <ul class="checklist">
+                <li>结清进行中订单并核对未付账单。</li>
+                <li>处理已取消订单或删除的行项。</li>
+                <li>核对小费、支付方式与发票。</li>
+                <li>记录相关损耗或库存调整。</li>
+                <li>查看当日报表并记录事件。</li>
+                <li>查看新反馈并在内部回复。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card">
+              <h3>运营安全</h3>
+              <ul class="checklist">
+                <li>勿共享店主或管理员账户。</li>
+                <li>勿通过聊天发送支付密钥、SMTP 或令牌。</li>
+                <li>停用已不在餐厅工作的用户。</li>
+                <li>为每个岗位使用最小必要角色。</li>
+                <li>真实营业前测试设置变更。</li>
+                <li>破坏性操作前先导出数据。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="problemas">
+        <h2>13. 常见问题</h2>
+
+        <h3>用户看不到某模块</h3>
+        <p>
+          请检查两点：<strong>用户</strong> 中的角色，以及
+          <strong>设置 > 导航</strong> 中模块是否启用。若均正确，请退出并
+          重新登录。
+        </p>
+
+        <h3>顾客无法从餐桌下单</h3>
+        <p>
+          确认餐桌已启用、QR 对应该桌、产品在
+          该时段可用，且提供的 PIN 正确。若菜单不显示产品，
+          请检查分类与可用性。
+        </p>
+
+        <h3>预订时段不可用</h3>
+        <p>
+          请检查餐厅营业时间、预订规则、平均用餐时长、时段
+          间隔、容量、偏好区域及同一时段的已有预订。
+        </p>
+
+        <h3>不显示在线支付</h3>
+        <p>
+          仅当支付方式已启用且配置正确时才显示在线支付。若无
+          支付提供商，请使用现金、终端或呼叫服务员。
+        </p>
+
+        <h3>库存数量不符</h3>
+        <p>
+          请检查单位、配方、已收货采购与手工调整。已售产品仅在
+          配方与单位配置正确时才会准确扣减库存。
+        </p>
+
+        <h3>简要术语</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>概念</th>
+              <th>含义</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>时段</strong></td>
+              <td>可预订的时间块。</td>
+            </tr>
+            <tr>
+              <td><strong>餐桌 PIN</strong></td>
+              <td>确认顾客在餐桌操作的代码。</td>
+            </tr>
+            <tr>
+              <td><strong>工位</strong></td>
+              <td>制作区域，如厨房、吧台、甜品或烧烤。</td>
+            </tr>
+            <tr>
+              <td><strong>损耗</strong></td>
+              <td>丢失、废弃或无法销售、须从库存扣减的产品。</td>
+            </tr>
+            <tr>
+              <td><strong>No-show</strong></td>
+              <td>已确认预订但客人在规定容忍时间内未到。</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <footer class="footer">
+        <p>
+          本手册使用演示环境的真实截图编写。部分可见功能
+          取决于角色、启用模块、国家、已签约集成及餐厅的
+          技术配置。
+        </p>
+      </footer>
+    </main>

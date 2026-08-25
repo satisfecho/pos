@@ -1,0 +1,964 @@
+<main class="page">
+      <header class="hero">
+        <p class="eyebrow">Manual per a clients i equips de restaurant</p>
+        <h1>Com utilitzar Satisfecho POS de principi a fi</h1>
+        <p class="hero-copy">
+          Aquesta guia explica l'aplicació completa amb passos pràctics: configuració inicial, taules,
+          comandes, pagaments, reserves, cuina, bar, inventari, informes, torns, contractes, opinions i
+          el portal de proveïdors. Les captures són reals de l'entorn de demostració.
+        </p>
+        <div class="meta-row" aria-label="Informació del manual">
+          <span class="chip">Actualitzat: maig de 2026</span>
+          <span class="chip">Aplicació web</span>
+          <span class="chip">Rols: propietari, admin, personal i proveïdor</span>
+          <span class="chip">Inclou pantalles públiques i privades</span>
+        </div>
+      </header>
+
+      <section class="section lede" id="leer-primero">
+        <h2>Llegir primer</h2>
+        <div class="grid">
+          <div class="col-8">
+            <p>
+              Satisfecho POS està dividit en tres experiències. El personal treballa des del tauler
+              intern; els clients utilitzen el menú públic des d'un QR, enllaç o cerca de taula; i
+              els proveïdors utilitzen un portal separat quan el restaurant vol rebre catàlegs de
+              producte externs.
+            </p>
+            <p>
+              Si sou nous, comenceu per <a href="#configuracion">Configuració</a>, després creeu els vostres
+              <a href="#productos">productes</a>, configureu <a href="#mesas">taules i QR</a>, i
+              finalment proveu el flux complet de la <a href="#cliente">comanda del client</a> i
+              <a href="#operacion">l'operació del personal</a>.
+            </p>
+          </div>
+          <div class="col-4">
+            <div class="card soft">
+              <h3>Regla pràctica</h3>
+              <p>
+                Configureu primer el restaurant. Després carregueu productes, taules, personal i mètodes de
+                pagament. No publiqueu QR ni enllaços a clients fins haver fet una prova real de comanda,
+                cuina, pagament i tancament de taula.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="indice">
+        <h2>Índex</h2>
+        <nav class="toc" aria-label="Índex del manual">
+          <a href="#primeros-pasos">1. Primers passos <span>Inici públic, registre, accés i navegació.</span></a>
+          <a href="#roles">2. Rols i permisos <span>Què pot fer cada tipus d'usuari.</span></a>
+          <a href="#configuracion">3. Configuració <span>Dades, marca, horaris, pagaments, seguretat i integracions.</span></a>
+          <a href="#productos">4. Productes i catàleg <span>Menú, categories, preguntes, receptes i proveïdors.</span></a>
+          <a href="#mesas">5. Taules i plànol <span>QR, PIN, plantes, cambrers, grups i vista visual.</span></a>
+          <a href="#cliente">6. Experiència del client <span>Menú QR, comanda, PIN, pagament, per emportar i cridar el cambrer.</span></a>
+          <a href="#operacion">7. Operació diària <span>Comandes, pagaments, historial, cuina i bar.</span></a>
+          <a href="#reservas">8. Reserves i opinions <span>Reserva pública, gestió interna, recordatoris i valoracions.</span></a>
+          <a href="#equipo">9. Equip, torns i contractes <span>Usuaris, El meu torn, pla de treball i contractes.</span></a>
+          <a href="#inventario">10. Inventari, clients i informes <span>Estoc, compres, clients fiscals i anàlisi.</span></a>
+          <a href="#proveedores">11. Portal de proveïdors <span>Accés separat per a proveïdors externs.</span></a>
+          <a href="#checklists">12. Llistes de comprovació <span>Posada en marxa, servei diari i tancament.</span></a>
+          <a href="#problemas">13. Problemes freqüents <span>Solucions ràpides i conceptes clau.</span></a>
+        </nav>
+      </section>
+
+      <section class="section" id="primeros-pasos">
+        <h2>1. Primers passos</h2>
+
+        <h3>Pantalla pública d'inici</h3>
+        <p>
+          La pàgina d'inici mostra els restaurants disponibles, enllaços per reservar, iniciar sessió,
+          utilitzar taula per codi i, si està configurat, fer comandes per emportar. També inclou
+          l'accés de proveïdors i el selector d'idioma.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/landing.png" alt="Pàgina pública amb restaurants, reserves i cerca de taula" loading="lazy" />
+          <figcaption>Pàgina pública. Els clients no necessiten compte per reservar o utilitzar un QR de taula.</figcaption>
+        </figure>
+
+        <h3>Crear el primer compte</h3>
+        <p>
+          El registre crea un compte de restaurant. La primera persona que registra un restaurant ha de
+          ser qui gestionarà la configuració inicial, perquè des d'aquest compte es creen usuaris,
+          productes, taules, pagaments i configuració.
+        </p>
+        <ol class="steps">
+          <li>Aneu a <strong>Registrar-se</strong>.</li>
+          <li>Introduïu nom, correu, contrasenya i dades bàsiques del restaurant.</li>
+          <li>Deseu. Després inicieu sessió amb el correu i la contrasenya que acabeu de crear.</li>
+          <li>Completeu la configuració abans de compartir enllaços públics.</li>
+        </ol>
+        <figure>
+          <img src="/manual-usuario/img/register.png" alt="Formulari de registre del restaurant" loading="lazy" />
+          <figcaption>Registre del restaurant. Utilitzeu un correu real per recuperar la contrasenya i rebre avisos.</figcaption>
+        </figure>
+
+        <h3>Iniciar sessió i recuperar contrasenya</h3>
+        <p>
+          El personal entra per <strong>Iniciar sessió</strong>. Si el restaurant ha activat la verificació en dos
+          passos, el sistema demana un codi temporal després de la contrasenya. Si algú oblida la
+          contrasenya, ha d'utilitzar l'enllaç de recuperació i seguir el correu que rep.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/login.png" alt="Pantalla d'inici de sessió amb recuperació i enllaços de proveïdor" loading="lazy" />
+          <figcaption>Inici de sessió del personal. Els proveïdors tenen un accés separat des d'aquesta mateixa zona pública.</figcaption>
+        </figure>
+
+        <h3>Tauler intern i navegació</h3>
+        <p>
+          Després d'iniciar sessió, apareix el tauler intern. El menú lateral mostra només les seccions
+          permeses per el rol i pels mòduls activats a la configuració. En pantalles petites
+          funciona com a menú desplegable.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/dashboard.png" alt="Tauler intern amb barra lateral, targetes i dreceres principals" loading="lazy" />
+          <figcaption>Tauler intern. Utilitzeu-lo com a punt de control per obrir comandes, reserves, taules i informes.</figcaption>
+        </figure>
+
+        <div class="callout">
+          <strong>Idiomes.</strong> L'aplicació permet canviar d'idioma des de la zona pública i des de
+          l'entorn intern. Si una etiqueta apareix en un altre idioma, normalment vol dir que la
+          traducció encara no està carregada per a aquella part del sistema.
+        </div>
+      </section>
+
+      <section class="section" id="roles">
+        <h2>2. Rols i permisos</h2>
+        <p>
+          Els permisos protegeixen accions sensibles. Si un usuari no veu una secció, no és un error:
+          el seu rol no té permís o el mòdul s'ha desactivat a <strong>Configuració &gt; Navegació</strong>.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Rol</th>
+              <th>Ús recomanat</th>
+              <th>Permisos principals</th>
+              <th>Límits importants</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Propietari</strong></td>
+              <td>Propietari o responsable principal.</td>
+              <td>Accés complet: configuració, usuaris, productes, taules, reserves, informes, inventari, contractes i dades.</td>
+              <td>Ha de ser un compte protegit. No es recomana compartir-lo.</td>
+            </tr>
+            <tr>
+              <td><strong>Admin</strong></td>
+              <td>Responsable d'operacions.</td>
+              <td>Gestiona l'operació diària, usuaris no propietaris, productes, taules, reserves, inventari, informes, contractes i el pla de treball.</td>
+              <td>Pot tenir restriccions en dades de facturació, claus de pagament o usuaris propietaris.</td>
+            </tr>
+            <tr>
+              <td><strong>Cambrer</strong></td>
+              <td>Servei de sala.</td>
+              <td>Veure productes, taules, reserves, clients fiscals i comandes. Pot actualitzar estats, marcar com a pagat i eliminar línies permeses.</td>
+              <td>No gestiona configuració, usuaris, inventari ni informes globals.</td>
+            </tr>
+            <tr>
+              <td><strong>Recepcionista</strong></td>
+              <td>Reserves i primer contacte.</td>
+              <td>Gestiona reserves i pot veure taules, clients i comandes.</td>
+              <td>No canvia productes ni configuració; l'accés a comandes és més limitat.</td>
+            </tr>
+            <tr>
+              <td><strong>Cuina</strong></td>
+              <td>Preparació d'aliments.</td>
+              <td>Veure comandes i canviar estats de línies assignades a cuina. També veu el seu torn i contractes.</td>
+              <td>No cobra ni gestiona taules.</td>
+            </tr>
+            <tr>
+              <td><strong>Bar</strong></td>
+              <td>Preparació de begudes.</td>
+              <td>Similar a cuina, centrat en la pantalla de bar i productes de beguda.</td>
+              <td>No cobra ni gestiona configuració.</td>
+            </tr>
+            <tr>
+              <td><strong>Proveïdor</strong></td>
+              <td>Proveïdor extern.</td>
+              <td>Utilitza un portal separat per al seu catàleg i dades de l'empresa.</td>
+              <td>No entra al tauler intern del restaurant.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <figure>
+          <img src="/manual-usuario/img/users.png" alt="Pantalla d'usuaris i rols" loading="lazy" />
+          <figcaption>Usuaris. Creeu un compte per persona per saber qui ha fet cada acció.</figcaption>
+        </figure>
+
+        <div class="callout warn">
+          <strong>Bones pràctiques.</strong> Desactiveu usuaris que ja no treballen amb vosaltres i eviteu comptes
+          compartits. Per a canvis sensibles, utilitzeu propietari o admin amb contrasenya individual.
+        </div>
+      </section>
+
+      <section class="section" id="configuracion">
+        <h2>3. Configuració</h2>
+        <p>
+          La configuració controla com es veu i es comporta el restaurant. Feu aquesta part amb cura abans
+          de posar en marxa: afecta QR, reserves, pagaments, horaris, seguretat, cuina, inventari i
+          visibilitat de mòduls.
+        </p>
+
+        <h3>Perfil, marca i aparença pública</h3>
+        <p>
+          A <strong>Perfil</strong> editeu el nom del restaurant, la descripció, el telèfon, el correu,
+          la moneda, el país, la zona horària, el logotip, la imatge de capçalera i el color de fons públic. Aquestes dades
+          apareixen a pàgines públiques, reserves, el menú QR i alguns missatges.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-profile.png" alt="Configuració de perfil, marca, logotip i capçalera" loading="lazy" />
+          <figcaption>Perfil. Utilitzeu imatges clares i dades reals, perquè els clients finals les veuen.</figcaption>
+        </figure>
+
+        <h3>Navegació i mòduls</h3>
+        <p>
+          La pestanya <strong>Navegació</strong> permet activar o desactivar mòduls com taules, pla de
+          treball, proveïdors, reserves, cuina/bar i inventari. Si un mòdul està desactivat, el
+          menú l'amaga i els enllaços directes poden redirigir a l'inici intern.
+        </p>
+        <ul>
+          <li>Desactiveu mòduls que el vostre restaurant no utilitza per simplificar el treball del personal.</li>
+          <li>Activeu inventari només quan mantindreu estoc, proveïdors, compres i receptes.</li>
+          <li>Activeu cuina/bar si necessiteu pantalles de preparació per estació.</li>
+        </ul>
+
+        <h3>Contacte, ubicació, legal i valoracions</h3>
+        <p>
+          A <strong>Contacte</strong> deseu adreça, lloc web, enllaços de Google Maps i OpenStreetMap,
+          URL de valoracions de Google, identificador fiscal (NIF/CIF), compte bancari (CCC), URL pública de condicions, URL pública de privacitat i
+          dades fiscals bàsiques. També definiu l'impost per defecte quan un producte no té
+          regla específica.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-contact.png" alt="Configuració de contacte, ubicació i legal" loading="lazy" />
+          <figcaption>Contacte. Aquestes dades ajuden els clients a trobar-vos i alimenten factures o pàgines públiques.</figcaption>
+        </figure>
+
+        <h3>Horaris, torns previstos i excepcions</h3>
+        <p>
+          A <strong>Horaris</strong> definiu l'horari setmanal del restaurant, les necessitats de personal per
+          franja horària i els patrons planificats per al futur. També podeu crear excepcions per a
+          dates concretes, per exemple festius, vacances o esdeveniments privats.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-hours.png" alt="Configuració d'horaris i necessitats de personal" loading="lazy" />
+          <figcaption>Horaris. Les reserves i el pla de treball depenen d'aquesta informació.</figcaption>
+        </figure>
+
+        <h3>Pagaments, facturació, propines i verificació d'ubicació</h3>
+        <p>
+          A <strong>Pagaments</strong> ajusteu mètodes de pagament visibles, propines, comportament de
+          pagament i detalls del proveïdor com Stripe o Revolut quan estan activats a la vostra
+          instal·lació. També pot haver-hi opcions per a factures fiscals, sèries internes, mode prova o
+          producció, i verificació d'ubicació per a pagaments presencials.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-payments.png" alt="Configuració de mètodes de pagament i facturació" loading="lazy" />
+          <figcaption>Pagaments. No compartiu claus de pagament, SMTP o tokens amb personal que no en necessiti.</figcaption>
+        </figure>
+        <div class="callout warn">
+          <strong>Compliment fiscal.</strong> La configuració fiscal depèn del país i del desplegament. Abans
+          d'utilitzar facturació fiscal en producció, confirmeu amb el vostre assessor i l'equip tècnic quina
+          integració està activa.
+        </div>
+
+        <h3>Reserves públiques</h3>
+        <p>
+          La configuració de reserves controla si els clients poden reservar, si cal prepagament, la
+          política de cancel·lació, la tolerància d'arribada, la durada mitjana de taula, l'interval de franges,
+          el màxim de persones per franja, taules per a clients sense reserva, codi de vestiment i recordatoris a
+          24 hores o 2 hores.
+        </p>
+        <ul>
+          <li>Utilitzeu intervals de reserva que el vostre equip pugui complir, per exemple 15 o 30 minuts.</li>
+          <li>Definiu la tolerància d'arribada per saber quan marcar <strong>no-show</strong>.</li>
+          <li>Activeu recordatoris només quan el correu o la missatgeria estigui ben configurada.</li>
+        </ul>
+
+        <h3>Correu sortint</h3>
+        <p>
+          Si el vostre desplegament té SMTP activat, utilitzeu-lo per a recuperació de contrasenya, recordatoris,
+          confirmacions i missatges relacionats amb reserves. Proveu el correu abans d'activar
+          recordatoris automàtics.
+        </p>
+
+        <h3>Impostos i VAT</h3>
+        <p>
+          A <strong>Impostos</strong> podeu crear tipus de VAT o impostos equivalents. Després
+          cada producte pot utilitzar l'impost per defecte del restaurant o la seva pròpia regla.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-taxes.png" alt="Configuració d'impostos" loading="lazy" />
+          <figcaption>Impostos. Manteniu noms clars, per exemple estàndard, reduït o begudes.</figcaption>
+        </figure>
+
+        <h3>Estacions de cuina</h3>
+        <p>
+          Les estacions agrupen el treball de preparació. Un producte pot assignar-se a una estació
+          per aparèixer on correspon: cuina calenta, postres, bar, graella o una altra àrea.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-kitchen-stations.png" alt="Configuració d'estacions de cuina" loading="lazy" />
+          <figcaption>Estacions. Utilitzeu-les per organitzar pantalles de cuina i bar.</figcaption>
+        </figure>
+
+        <h3>Integracions de lliurament</h3>
+        <p>
+          A <strong>Integracions</strong> configureu marketplaces o canals externs quan el
+          desplegament inclou l'adaptador corresponent. Protegiu enllaços tècnics i secrets.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-delivery.png" alt="Configuració d'integracions de lliurament" loading="lazy" />
+          <figcaption>Lliurament. Activeu només integracions verificades a la vostra instal·lació.</figcaption>
+        </figure>
+
+        <h3>Publicacions socials</h3>
+        <p>
+          Les publicacions socials permeten preparar missatges i contingut per a canals connectats,
+          com Meta, quan la connexió OAuth està configurada. Utilitzeu-ho per a promocions, novetats o
+          campanyes de temporada.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-social.png" alt="Configuració de publicacions socials" loading="lazy" />
+          <figcaption>Social. Reviseu el text abans de publicar i confirmeu que el compte connectat és correcte.</figcaption>
+        </figure>
+
+        <h3>Seguretat, fitxatge i dades</h3>
+        <p>
+          A <strong>Seguretat</strong> podeu activar codis en dos passos per a accés sensible i
+          configurar el fitxatge del personal amb QR. Si la verificació d'ubicació està activada,
+          el dispositiu demanarà permís d'ubicació en fitxar.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/settings-security.png" alt="Configuració de seguretat i QR de fitxatge" loading="lazy" />
+          <figcaption>Seguretat. Descarregueu o imprimiu el QR de fitxatge només per a personal autoritzat.</figcaption>
+        </figure>
+        <p>
+          A <strong>Dades i privacitat</strong>, el propietari pot exportar informació del restaurant
+          i, si el desplegament ho permet, executar accions destructives com purgar dades.
+          Aquestes accions han de quedar amb el propietari i requereixen una còpia de seguretat prèvia.
+        </p>
+
+        <h3>Plantilles, traduccions i proveïdors interns</h3>
+        <p>
+          La configuració inclou també plantilles de contractes, traduccions de textos visibles i
+          proveïdors/productes propis del restaurant. Aquestes àrees ajuden a mantenir documents,
+          etiquetes públiques i compres alineades amb la mateixa base d'informació.
+        </p>
+      </section>
+
+      <section class="section" id="productos">
+        <h2>4. Productes i catàleg</h2>
+        <p>
+          Productes és el cor del menú. Cada producte pot tenir preu, cost, imatge, categoria,
+          subcategoria, ingredients, descripció, impost propi, estació de cuina, disponibilitat
+          per horari i preguntes de personalització.
+        </p>
+
+        <figure>
+          <img src="/manual-usuario/img/products.png" alt="Pantalla de productes amb formulari, categories i llista" loading="lazy" />
+          <figcaption>Productes. La pestanya categories permet ordenar el menú públic i el treball intern.</figcaption>
+        </figure>
+
+        <h3>Crear o editar un producte</h3>
+        <ol class="steps">
+          <li>Aneu a <strong>Productes</strong> i obriu la pestanya productes.</li>
+          <li>Introduïu nom, preu de venda i, si el coneixeu, cost de compra o preparació.</li>
+          <li>Afegiu descripció i ingredients. Això ajuda clients i personal amb al·lèrgies.</li>
+          <li>Seleccioneu categoria, subcategoria i estació de cuina quan correspongui.</li>
+          <li>Pugeu una imatge real i clara del plat o beguda.</li>
+          <li>Si el producte es ven només a certs horaris, definiu disponibilitat des de/fins a.</li>
+          <li>Deseu. Després afegiu preguntes de personalització si el producte en necessita.</li>
+        </ol>
+
+        <h3>Preguntes i personalitzacions</h3>
+        <p>
+          Després de desar un producte podeu afegir preguntes per al client o cambrer:
+          opció única, opció múltiple, escala o text lliure. Cada pregunta pot ser obligatòria
+          i tenir un ordre. Utilitzeu-les per a punt de cocció, mides, salses, extres, eliminacions o notes.
+        </p>
+        <div class="callout">
+          <strong>Exemple.</strong> Per a un hamburguesa, creeu una pregunta obligatòria «Punt de cocció»
+          amb opcions poc fet, al punt i ben fet. Creeu-ne una altra per a extres si tenen cost.
+        </div>
+
+        <h3>Costos, receptes i preu ideal</h3>
+        <p>
+          Si inventari i receptes estan actius, podeu enllaçar ingredients reals al producte. El
+          sistema utilitza aquests costos per calcular marge i preu ideal. Aquesta ajuda funciona bé
+          només si estoc, unitats i costos estan actualitzats.
+        </p>
+
+        <h3>Catàleg de proveïdor</h3>
+        <p>
+          La secció <strong>Catàleg</strong> reuneix productes de proveïdor o productes externs que
+          el restaurant revisa per a compres, disponibilitat o referència. No substitueix el menú de
+          venda al client: el menú que veuen els clients ve de <strong>Productes</strong>.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/catalog.png" alt="Catàleg de productes de proveïdor" loading="lazy" />
+          <figcaption>Catàleg. Útil per revisar productes externs, imatges i disponibilitat del proveïdor.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="mesas">
+        <h2>5. Taules i plànol</h2>
+        <p>
+          Les taules connecten la sala amb les comandes. Cada taula pot tenir nom, capacitat, estat,
+          planta, QR, PIN i cambrer assignat. També podeu treballar amb vistes de llista, targeta o
+          plànol visual.
+        </p>
+
+        <figure>
+          <img src="/manual-usuario/img/tables.png" alt="Gestió de taules amb plantes, QR, PIN i accions" loading="lazy" />
+          <figcaption>Taules. Des d'aquí podeu activar, desactivar, imprimir QR, copiar enllaç o obrir el menú.</figcaption>
+        </figure>
+
+        <h3>Què configurar a cada taula</h3>
+        <ul>
+          <li><strong>Nom visible:</strong> per exemple T01, Terrassa 4 o Bar 2.</li>
+          <li><strong>Capacitat:</strong> nombre normal de comensals.</li>
+          <li><strong>Planta o zona:</strong> menjador, terrassa, bar, privat o una altra àrea.</li>
+          <li><strong>PIN:</strong> protegeix accions del client com confirmar o canviar comandes.</li>
+          <li><strong>Cambrer assignat:</strong> es pot definir per planta i ajustar per taula.</li>
+          <li><strong>Activa:</strong> només les taules actives s'utilitzen en operació i en enllaços públics.</li>
+        </ul>
+
+        <h3>QR, enllaç i menú obert pel personal</h3>
+        <p>
+          El QR de taula obre el menú públic d'aquella taula. Podeu copiar l'enllaç per imprimir-lo o
+          enviar-lo. L'acció <strong>Obrir menú</strong> permet al personal ajudar una taula des del
+          seu dispositiu; no s'ha d'utilitzar com a enllaç públic permanent.
+        </p>
+
+        <h3>Grups de taules i reassignació</h3>
+        <p>
+          Podeu unir taules quan diverses formen un compte o una reserva gran. Si intenteu
+          eliminar una taula amb comandes o reserves enllaçades, el sistema pot demanar-vos reassignar informació
+          per no perdre l'historial.
+        </p>
+
+        <h3>Plànol visual</h3>
+        <p>
+          El plànol ajuda a veure ràpidament quines taules estan lliures, ocupades, amb pagament pendent,
+          assignades a un cambrer o agrupades. Colors i etiquetes de pagament ajuden a detectar accions pendents
+          sense obrir cada taula.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/tables-canvas.png" alt="Plànol visual de taules amb estats i accions" loading="lazy" />
+          <figcaption>Plànol de taules. Útil durant el servei per decidir on seure convidats o tancar comptes.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="cliente">
+        <h2>6. Experiència del client</h2>
+        <p>
+          Els clients poden utilitzar el menú sense instal·lar res. Entren per QR de taula, enllaç, cerca de
+          taula a la pàgina pública o el camí de comanda per emportar quan el restaurant l'ha activat.
+        </p>
+
+        <div class="grid">
+          <div class="col-6">
+            <h3>Identificació inicial</h3>
+            <p>
+              En entrar al menú de taula, el client pot introduir el seu nom. Això ajuda el personal
+              a reconèixer qui ha fet la comanda i resoldre dubtes a la taula.
+            </p>
+            <figure class="phone">
+              <img src="/manual-usuario/img/menu-name.png" alt="Menú mòbil demanant el nom del client" loading="lazy" />
+              <figcaption>Entrada al menú de taula.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <h3>Explorar productes</h3>
+            <p>
+              El menú mostra categories, subcategories, destacats, imatges, preus, ingredients,
+              al·lèrgens o detalls dietètics quan estan carregats. El client afegeix productes amb el
+              botó més.
+            </p>
+            <figure class="phone">
+              <img src="/manual-usuario/img/menu-browse.png" alt="Menú mòbil amb productes i categories" loading="lazy" />
+              <figcaption>Menú públic amb productes reals de la demo.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Cistella, personalització i confirmació</h3>
+        <p>
+          Abans d'enviar, el client revisa quantitats, personalitzacions i total. Si el producte té
+          preguntes obligatòries, ha de respondre-les abans de confirmar. Per evitar comandes accidentals,
+          la taula pot exigir un PIN.
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure class="phone">
+              <img src="/manual-usuario/img/menu-cart.png" alt="Cistella mòbil amb productes a punt per comandar" loading="lazy" />
+              <figcaption>Cistella. Aquí es revisa la comanda abans d'enviar-la.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure class="phone">
+              <img src="/manual-usuario/img/menu-pin.png" alt="Pantalla mòbil demanant el PIN de taula" loading="lazy" />
+              <figcaption>PIN de taula. El personal el facilita o el manté visible segons l'operació.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Comanda activa, historial i accions</h3>
+        <p>
+          Després d'enviar, el client veu l'estat de la comanda. Pot continuar afegint productes si la
+          taula encara està oberta. Segons configuració i estat, pot demanar pagament, cridar el cambrer,
+          cancel·lar articles encara permesos o veure l'historial.
+        </p>
+        <figure class="phone">
+          <img src="/manual-usuario/img/menu-status.png" alt="Estat mòbil de la comanda actual i botons principals" loading="lazy" />
+          <figcaption>Comanda actual. El client veu si està rebuda, en preparació, llesta o servida.</figcaption>
+        </figure>
+
+        <h3>Opcions de pagament visibles per al client</h3>
+        <p>
+          Les opcions depenen de la configuració del restaurant. Pagament en línia, terminal, efectiu,
+          Revolut, Stripe o cridar el cambrer poden aparèixer. Si el pagament en línia no està
+          configurat, el client pot demanar al personal que cobri a la taula.
+        </p>
+
+        <h3>Comandes per emportar o lliurament</h3>
+        <p>
+          Si el restaurant té una taula o canal per emportar configurat, la pàgina pública de comandes
+          mostra restaurants disponibles. El flux és similar al menú de taula, però s'utilitza per a comandes
+          sense seure a una taula física.
+        </p>
+      </section>
+
+      <section class="section" id="operacion">
+        <h2>7. Operació diària</h2>
+        <p>
+          La secció de comandes és el centre del servei. El personal pot veure comandes actives,
+          comptes sense pagar i historial. També hi ha pantalles separades per a cuina i bar.
+        </p>
+
+        <h3>Comandes actives</h3>
+        <p>
+          A <strong>Comandes</strong> veieu taules, línies, estats, notes i totals. Des d'aquí podeu
+          afegir productes, editar comandes, eliminar línies permeses, marcar urgent, avançar
+          estats i obrir opcions de pagament.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/orders-active.png" alt="Comandes actives amb taules, línies i accions" loading="lazy" />
+          <figcaption>Comandes actives. Mantingueu aquesta pantalla oberta durant el servei de sala.</figcaption>
+        </figure>
+
+        <h3>Estats de comanda i línia</h3>
+        <p>
+          Una comanda pot passar per estats com rebuda, en preparació, llesta, servida, pagada o
+          cancel·lada. Cada línia pot tenir també el seu propi estat, perquè cuina i bar
+          treballin en paral·lel.
+        </p>
+        <ul>
+          <li><strong>Rebuda:</strong> el client o el personal acaba d'enviar la comanda.</li>
+          <li><strong>En preparació:</strong> cuina o bar hi treballa.</li>
+          <li><strong>Llesta:</strong> està preparada per servir.</li>
+          <li><strong>Servida:</strong> ha arribat a la taula.</li>
+          <li><strong>Pagada:</strong> el compte està tancat.</li>
+        </ul>
+
+        <h3>Pagament, propina i factura</h3>
+        <p>
+          A la finestra de pagament podeu triar el mètode, registrar una propina, gestionar el sobrepagament quan
+          correspongui, finalitzar la comanda i obrir una factura. Els mètodes visibles depenen de la configuració:
+          efectiu, terminal, Stripe, Revolut o altres.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/orders-unpaid.png" alt="Comandes pendents de pagament" loading="lazy" />
+          <figcaption>Sense pagar. Aquesta vista ajuda a tancar comptes pendents abans del final del torn.</figcaption>
+        </figure>
+
+        <h3>Historial</h3>
+        <p>
+          L'historial permet revisar comandes anteriors, imports, estats i línies eliminades
+          quan aquesta opció és visible. És útil per resoldre dubtes, auditoria interna i informes.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/orders-history.png" alt="Historial de comandes" loading="lazy" />
+          <figcaption>Historial. Reviseu comandes tancades sense barrejar-les amb operacions actives.</figcaption>
+        </figure>
+
+        <h3>Pantalla de cuina</h3>
+        <p>
+          Cuina mostra les línies que necessiten preparació. L'equip pot avançar estats sense
+          entrar a pagaments o configuració. Si utilitzeu estacions, cada producte va a l'àrea assignada.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/kitchen.png" alt="Pantalla de cuina amb comandes a preparar" loading="lazy" />
+          <figcaption>Cuina. Organitzeu el treball per comanda, estat i urgència.</figcaption>
+        </figure>
+
+        <h3>Pantalla de bar</h3>
+        <p>
+          Bar funciona com a pantalla de preparació centrada en begudes o una estació similar.
+          És especialment útil quan el bar ha de treballar separat de la cuina.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/bar.png" alt="Pantalla de bar amb comandes de begudes" loading="lazy" />
+          <figcaption>Bar. Permet preparar i marcar begudes sense dependre de la pantalla de sala.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="reservas">
+        <h2>8. Reserves i opinions</h2>
+
+        <h3>Reserves internes</h3>
+        <p>
+          A <strong>Reserves</strong> el personal pot crear, cercar i gestionar reserves. La vista
+          permet filtrar per data, telèfon o estat, veure possible sobresreserva, enviar recordatoris,
+          assignar taula, marcar arribada, marcar no-show, cancel·lar o completar.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/reservations.png" alt="Pantalla de reserves internes" loading="lazy" />
+          <figcaption>Reserves internes. Utilitzeu-la per coordinar recepció i sala.</figcaption>
+        </figure>
+
+        <h3>Reserva pública</h3>
+        <p>
+          Els clients poden reservar des de la pàgina pública del restaurant. El formulari mostra
+          data, torn, hora disponible, nombre de comensals, preferència de zona o planta quan està
+          activada, dades de contacte, al·lèrgies i notes.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/book-public.png" alt="Formulari de reserva pública amb franges horàries disponibles" loading="lazy" />
+          <figcaption>Reserva pública. La disponibilitat depèn d'horaris, capacitat, franges i regles configurades.</figcaption>
+        </figure>
+
+        <h3>Gestionar una reserva des de l'enllaç del client</h3>
+        <p>
+          Quan el client rep un enllaç de reserva, pot veure detalls, cancel·lar si la política
+          ho permet, o informar d'un retard. Això redueix trucades i manté l'equip informat.
+        </p>
+
+        <h3>Opinions dels clients</h3>
+        <p>
+          El sistema inclou una pàgina pública d'opinions i una safata d'entrada interna. Podeu compartir l'
+          enllaç o QR després de la visita. A la safata interna reviseu valoracions, comentaris i
+          dades relacionades.
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/feedback-public.png" alt="Formulari públic d'opinió del client" loading="lazy" />
+              <figcaption>Formulari públic. Mantingueu-lo breu perquè els clients el completin.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/guest-feedback.png" alt="Safata d'entrada interna d'opinions de clients" loading="lazy" />
+              <figcaption>Opinions internes. Reviseu tendències i casos que necessiten resposta.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="equipo">
+        <h2>9. Equip, torns i contractes</h2>
+
+        <h3>Usuaris</h3>
+        <p>
+          A <strong>Usuaris</strong> creeu comptes del personal, assigneu rols i actualitzeu
+          dades. Utilitzeu correus reals i eviteu compartir credencials. El rol determina l'accés real, no
+          només el menú visible.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/users.png" alt="Llista d'usuaris del restaurant" loading="lazy" />
+          <figcaption>Usuaris. Canvieu rols quan una persona canvia de càrrec.</figcaption>
+        </figure>
+
+        <h3>El meu torn</h3>
+        <p>
+          <strong>El meu torn</strong> permet al treballador veure l'estat del seu torn, fitxar entrada o
+          sortida si està activat, veure pauses i revisar informació del seu dia.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/my-shift.png" alt="Pantalla El meu torn per a fitxatge i jornada" loading="lazy" />
+          <figcaption>El meu torn. Si utilitzeu QR de fitxatge, el personal ha d'escanejar des d'aquesta operació autoritzada.</figcaption>
+        </figure>
+
+        <h3>Pla de treball setmanal i calendari</h3>
+        <p>
+          El pla de treball permet organitzar torns per setmana i revisar un calendari. S'alimenta dels
+          horaris del restaurant, necessitats de personal i contractes. Ajuda a veure cobertura,
+          assignar personal i detectar buits abans del servei.
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/working-plan-week.png" alt="Pla de treball setmanal" loading="lazy" />
+              <figcaption>Setmana. Vista pràctica per planificar per dia i rol.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/working-plan-calendar.png" alt="Calendari del pla de treball" loading="lazy" />
+              <figcaption>Calendari. Útil per detectar solapaments, absències o dies especials.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Contractes</h3>
+        <p>
+          Contractes centralitza contractes del personal i plantilles. Segons permisos, l'usuari pot
+          llegir, crear, actualitzar o gestionar documents. Utilitzeu-lo amb el pla de treball perquè
+          hores, funcions i condicions restin alineades.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/contracts.png" alt="Pantalla de contractes del personal" loading="lazy" />
+          <figcaption>Contractes. Mantingueu documents actuals i utilitzeu plantilles coherents.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="inventario">
+        <h2>10. Inventari, clients i informes</h2>
+
+        <h3>Clients fiscals</h3>
+        <p>
+          La secció <strong>Clients</strong> emmagatzema dades necessàries per a factures o identificació
+          fiscal. El personal autoritzat pot crear i editar clients per enllaçar-los amb comandes i
+          factures.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/customers.png" alt="Gestió de clients fiscals" loading="lazy" />
+          <figcaption>Clients. Útil quan una empresa o client demana factura amb dades fiscals.</figcaption>
+        </figure>
+
+        <h3>Inventari: articles i estoc</h3>
+        <p>
+          Inventari permet controlar articles, SKUs, categories, unitats, cost, estoc mínim,
+          proveïdor per defecte i moviments. Els ajustos d'estoc poden registrar entrades, sortides,
+          pèrdues o correccions.
+        </p>
+        <div class="grid">
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/inv-items.png" alt="Articles d'inventari" loading="lazy" />
+              <figcaption>Articles. Definiu unitats clares per evitar errors de recepta.</figcaption>
+            </figure>
+          </div>
+          <div class="col-6">
+            <figure>
+              <img src="/manual-usuario/img/inv-stock.png" alt="Moviments i ajustos d'estoc" loading="lazy" />
+              <figcaption>Estoc. Registreu pèrdues i ajustos perquè el cost sigui realista.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Proveïdors i comandes de compra</h3>
+        <p>
+          Podeu crear proveïdors, generar comandes de compra, canviar estats, imprimir PDF i rebre
+          mercaderia per actualitzar l'estoc. En rebre, comproveu quantitats i preus abans de confirmar.
+        </p>
+        <div class="grid">
+          <div class="col-4">
+            <figure>
+              <img src="/manual-usuario/img/inv-suppliers.png" alt="Proveïdors d'inventari" loading="lazy" />
+              <figcaption>Proveïdors.</figcaption>
+            </figure>
+          </div>
+          <div class="col-4">
+            <figure>
+              <img src="/manual-usuario/img/inv-po.png" alt="Comandes de compra" loading="lazy" />
+              <figcaption>Comandes de compra.</figcaption>
+            </figure>
+          </div>
+          <div class="col-4">
+            <figure>
+              <img src="/manual-usuario/img/inv-po-detail.png" alt="Detall de comanda de compra" loading="lazy" />
+              <figcaption>Detall i recepció.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <h3>Informes d'inventari</h3>
+        <p>
+          Els informes d'inventari ajuden a detectar estoc baix, consum, cost i compres. Són més
+          útils quan receptes i moviments es registren amb disciplina.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/inv-reports.png" alt="Informes d'inventari" loading="lazy" />
+          <figcaption>Inventari. Reviseu estoc baix abans de crear compres.</figcaption>
+        </figure>
+
+        <h3>Informes de vendes i operacions</h3>
+        <p>
+          Informes mostra ingressos, propines, costos, benefici, pagament mitjà, mitjana per
+          client, vendes diàries, desglossaments i exportacions quan estan disponibles. Utilitzeu-lo per
+          decidir sobre menú, personal i horaris.
+        </p>
+        <figure>
+          <img src="/manual-usuario/img/reports.png" alt="Informes de vendes, ingressos i operacions" loading="lazy" />
+          <figcaption>Informes. Filtreu per període i compareu vendes amb costos per entendre el marge.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" id="proveedores">
+        <h2>11. Portal de proveïdors</h2>
+        <p>
+          El portal de proveïdors està separat del tauler intern. Un proveïdor pot registrar-se,
+          iniciar sessió, recuperar contrasenya, editar dades de l'empresa i mantenir el seu catàleg amb
+          imatges, preus i disponibilitat. Actualment algunes pantalles del portal poden aparèixer
+          en anglès.
+        </p>
+        <ul>
+          <li>El proveïdor no gestiona comandes de sala ni configuració del restaurant.</li>
+          <li>El restaurant decideix si utilitza productes de proveïdor com a referència o catàleg.</li>
+          <li>Les dades bancàries, fiscals i de contacte han de ser revisades pel proveïdor.</li>
+        </ul>
+        <div class="callout">
+          <strong>Quan utilitzar-lo.</strong> Utilitzeu-lo si treballeu amb proveïdors que mantenen llistes de producte
+          actualitzades. Si sempre compreu manualment, l'inventari intern pot ser suficient.
+        </div>
+      </section>
+
+      <section class="section" id="checklists">
+        <h2>12. Llistes de comprovació</h2>
+
+        <div class="grid">
+          <div class="col-6">
+            <div class="card">
+              <h3>Posada en marxa inicial</h3>
+              <ul class="checklist">
+                <li>Creeu el compte propietari i deseu les credencials de forma segura.</li>
+                <li>Completeu perfil, contacte, ubicació, impostos i zona horària.</li>
+                <li>Configureu horaris, reserves i tolerància d'arribada.</li>
+                <li>Activeu només els mòduls necessaris a la navegació.</li>
+                <li>Creeu productes, categories, imatges i preguntes obligatòries.</li>
+                <li>Creeu plantes, taules, PIN i QR.</li>
+                <li>Creeu usuaris reals amb els rols correctes.</li>
+                <li>Proveu una comanda completa: client, cuina/bar, pagament i tancament.</li>
+                <li>Proveu una reserva pública i la seva gestió interna.</li>
+                <li>Reviseu informes i permisos abans d'obrir al públic.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card">
+              <h3>Abans de cada servei</h3>
+              <ul class="checklist">
+                <li>Verifiqueu que taules i QR estan actius.</li>
+                <li>Comproveu productes esgotats o no disponibles.</li>
+                <li>Reviseu les reserves d'avui i taules assignades.</li>
+                <li>Confirmeu que cuina i bar poden veure les seves pantalles.</li>
+                <li>Reviseu usuaris de torn i fitxatges quan correspongui.</li>
+                <li>Confirmeu mètodes de pagament i caixa.</li>
+                <li>Reviseu estoc baix si l'inventari està actiu.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card">
+              <h3>Final del dia</h3>
+              <ul class="checklist">
+                <li>Tanqueu comandes actives i reviseu comptes sense pagar.</li>
+                <li>Resoleu comandes cancel·lades o línies eliminades.</li>
+                <li>Reviseu propines, mètodes de pagament i factures.</li>
+                <li>Registreu pèrdues o ajustos d'estoc rellevants.</li>
+                <li>Consulteu els informes del dia i anoteu incidències.</li>
+                <li>Reviseu opinions noves i responeu internament.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card">
+              <h3>Seguretat operativa</h3>
+              <ul class="checklist">
+                <li>No compartiu comptes de propietari o admin.</li>
+                <li>No envieu claus de pagament, SMTP o tokens per xat.</li>
+                <li>Desactiveu usuaris que ja no treballen al restaurant.</li>
+                <li>Utilitzeu els rols mínims necessaris per a cada càrrec.</li>
+                <li>Proveu canvis de configuració abans del servei real.</li>
+                <li>Exporteu dades abans d'accions destructives.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="problemas">
+        <h2>13. Problemes freqüents</h2>
+
+        <h3>Un usuari no veu una secció</h3>
+        <p>
+          Comproveu dues coses: el seu rol a <strong>Usuaris</strong> i si el mòdul està actiu a
+          <strong>Configuració &gt; Navegació</strong>. Si ambdós són correctes, tanqueu sessió i
+          torneu a iniciar-la.
+        </p>
+
+        <h3>El client no pot comandar des d'una taula</h3>
+        <p>
+          Confirmeu que la taula està activa, que el QR correspon a aquella taula, que el producte està
+          disponible en aquell moment i que el PIN facilitat és correcte. Si el menú no carrega productes,
+          reviseu categories i disponibilitat.
+        </p>
+
+        <h3>Una franja de reserva no està disponible</h3>
+        <p>
+          Reviseu horaris del restaurant, regles de reserva, durada mitjana de taula, interval de
+          franges, capacitat, zona preferida i reserves existents a la mateixa franja.
+        </p>
+
+        <h3>El pagament en línia no apareix</h3>
+        <p>
+          El pagament en línia només apareix quan el mètode està actiu i ben configurat. Si no hi ha
+          proveïdor de pagament, utilitzeu efectiu, terminal o cridar el cambrer.
+        </p>
+
+        <h3>L'estoc no coincideix</h3>
+        <p>
+          Reviseu unitats, receptes, compres rebudes i ajustos manuals. Un producte venut només
+          descompta estoc correctament quan la recepta i les unitats estan ben configurades.
+        </p>
+
+        <h3>Petit glossari</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Concepte</th>
+              <th>Significat</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Franja</strong></td>
+              <td>Bloc horari disponible per a reserva.</td>
+            </tr>
+            <tr>
+              <td><strong>PIN de taula</strong></td>
+              <td>Codi que confirma accions del client a una taula.</td>
+            </tr>
+            <tr>
+              <td><strong>Estació</strong></td>
+              <td>Àrea de preparació com cuina, bar, postres o graella.</td>
+            </tr>
+            <tr>
+              <td><strong>Pèrdua</strong></td>
+              <td>Producte perdut, descartat o invendible que s'ha de descomptar de l'estoc.</td>
+            </tr>
+            <tr>
+              <td><strong>No-show</strong></td>
+              <td>Reserva confirmada el convidat de la qual no ha arribat dins la tolerància definida.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <footer class="footer">
+        <p>
+          Manual creat amb captures reals de l'entorn de demostració. Algunes funcions visibles
+          depenen del rol, mòduls actius, país, integracions contractades i la configuració
+          tècnica del restaurant.
+        </p>
+      </footer>
+    </main>
