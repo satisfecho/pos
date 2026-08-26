@@ -14,6 +14,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.158] - 2026-08-26
+
+### Added
+
+- **Customer stock alerts (#356):** QR menu and Satisfecho Delivery show **Only X left** when a product’s sellable stock is at or below its alert level. From discussion #21.
+- **Tenant ID in staff header (#357):** The staff sidebar shows the logged-in tenant number after the version and commit hash (compact tooltip “Tenant ID”).
+
+### Changed
+
+- **Products form:** Default stock alert level for new products is **5** (was 0).
+
+### Fixed
+
+- **`/products` thumbnails vs public menu:** `GET /products` repairs stale `Product.image_filename` values when the file is missing on disk, using the linked `TenantProduct` / provider catalog image (same source as `/public-menu/{id}`).
+
 ## [2.1.157] - 2026-08-26
 
 ### Added

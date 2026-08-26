@@ -616,7 +616,8 @@
     "SHARED_CART_HINT": "Gemeinsamer Tisch-Warenkorb — alle am Tisch sehen diese Artikel. Bestellen sendet nur Ihre Artikel.",
     "ADDED_BY": "Hinzugefügt von {{name}}",
     "ADDED_BY_GUEST": "Von einem anderen Gast hinzugefügt",
-    "PLACE_OWN_ITEMS_ONLY": "Fügen Sie eigene Artikel hinzu, bevor Sie bestellen. Artikel anderer Gäste bleiben im gemeinsamen Warenkorb, bis sie bestellen."
+    "PLACE_OWN_ITEMS_ONLY": "Fügen Sie eigene Artikel hinzu, bevor Sie bestellen. Artikel anderer Gäste bleiben im gemeinsamen Warenkorb, bis sie bestellen.",
+    "STOCK_ONLY_LEFT": "Nur noch {{count}} übrig"
   },
   "PRODUCTS": {
     "TITLE": "Produkte",

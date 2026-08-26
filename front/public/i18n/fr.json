@@ -616,7 +616,8 @@
     "SHARED_CART_HINT": "Panier partagé de la table — tout le monde voit ces articles. Commander n’envoie que vos articles.",
     "ADDED_BY": "Ajouté par {{name}}",
     "ADDED_BY_GUEST": "Ajouté par un autre client",
-    "PLACE_OWN_ITEMS_ONLY": "Ajoutez vos propres articles avant de commander. Ceux des autres restent dans le panier partagé jusqu’à leur commande."
+    "PLACE_OWN_ITEMS_ONLY": "Ajoutez vos propres articles avant de commander. Ceux des autres restent dans le panier partagé jusqu’à leur commande.",
+    "STOCK_ONLY_LEFT": "Plus que {{count}}"
   },
   "PRODUCTS": {
     "TITLE": "Produits",

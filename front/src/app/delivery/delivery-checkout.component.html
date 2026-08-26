@@ -107,6 +107,9 @@
                           <span class="delivery-product-name">{{ product.name }}</span>
                           <span class="delivery-product-price">{{ formatPrice(product) }}</span>
                         </div>
+                        @if (stockLeft(product); as left) {
+                          <p class="delivery-stock-left">{{ 'MENU.STOCK_ONLY_LEFT' | translate:{ count: left } }}</p>
+                        }
                         @if (product.description?.trim()) {
                           <p class="delivery-product-desc">{{ product.description }}</p>
                         }

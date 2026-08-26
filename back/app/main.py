@@ -38,8 +38,10 @@ from sqlmodel import Session, select
 from . import models, security
 from .db import check_db_connection, create_db_and_tables, get_session, engine
 from .provider_images import (
+    product_stored_image_exists,
     provider_product_image_url,
     provider_product_stored_image_path,
+    resolve_linked_tenant_product_image_filename,
 )
 from .settings import settings
 from .inventory_routes import router as inventory_router
@@ -5648,26 +5650,20 @@ def list_products(
                     session.add(product)
                     updated_count += 1
 
-            # Backfill image from provider if missing
-            if not product.image_filename and tenant_product.provider_product_id:
-                # Get image from provider product
-                provider_product = session.exec(
-                    select(models.ProviderProduct).where(
-                        models.ProviderProduct.id == tenant_product.provider_product_id
-                    )
-                ).first()
-                if provider_product and provider_product.image_filename:
-                    provider = session.exec(
-                        select(models.Provider).where(models.Provider.id == provider_product.provider_id)
-                    ).first()
-                    if provider:
-                        stored = provider_product_stored_image_path(
-                            provider.token, provider_product.image_filename
-                        )
-                        if stored:
-                            product.image_filename = stored
-                            session.add(product)
-                            updated_count += 1
+            # Backfill image from linked TenantProduct when missing or orphan on disk
+            resolved = resolve_linked_tenant_product_image_filename(
+                session, tenant_product
+            )
+            if resolved and resolved != product.image_filename:
+                product.image_filename = resolved
+                session.add(product)
+                updated_count += 1
+            elif product.image_filename and not product_stored_image_exists(
+                product.tenant_id, product.image_filename
+            ):
+                product.image_filename = None
+                session.add(product)
+                updated_count += 1
     
     # Commit all changes
     if tenant_products_without_product or updated_count > 0:
@@ -12129,11 +12125,15 @@ def get_menu(
             "_source": "tenant_product",  # Indicate this is from TenantProduct table
         }
 
-        # Get the actual product record to check for customized description
+        # Get the actual product record to check for customized description / stock alert
         if tp.product_id:
             custom_product = session.get(models.Product, tp.product_id)
-            if custom_product and custom_product.description:
-                product_data["description"] = custom_product.description
+            if custom_product:
+                if custom_product.description:
+                    product_data["description"] = custom_product.description
+                from .product_stock import product_stock_alert_payload
+
+                product_data.update(product_stock_alert_payload(custom_product))
 
         # Add translations for tenant product
         if lang != "en":  # Only add if different from default
@@ -12346,6 +12346,8 @@ def get_menu(
     for lp in legacy_products:
         if lp.id in linked_legacy_product_ids:
             continue
+        from .product_stock import product_stock_alert_payload
+
         product_data = {
             "id": lp.id,
             "name": lp.name,
@@ -12357,6 +12359,7 @@ def get_menu(
             "category": lp.category,
             "subcategory": lp.subcategory,
             "_source": "product",
+            **product_stock_alert_payload(lp),
         }
 
         # Add translations for legacy product

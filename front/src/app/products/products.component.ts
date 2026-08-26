@@ -708,7 +708,7 @@ export class ProductsComponent implements OnInit {
     kitchen_station_id: null,
     stock_alert_enabled: false,
     stock_qty: 0,
-    stock_alert_level: 0,
+    stock_alert_level: 5,
   };
   productTaxes = signal<Tax[]>([]);
   kitchenStations = signal<KitchenStation[]>([]);
@@ -1078,7 +1078,7 @@ export class ProductsComponent implements OnInit {
       kitchen_station_id: null,
       stock_alert_enabled: false,
       stock_qty: 0,
-      stock_alert_level: 0,
+      stock_alert_level: 5,
     };
     this.showAddForm.set(true);
     this.clearQuestionsState();
@@ -1101,7 +1101,7 @@ export class ProductsComponent implements OnInit {
       kitchen_station_id: null,
       stock_alert_enabled: false,
       stock_qty: 0,
-      stock_alert_level: 0,
+      stock_alert_level: 5,
     };
     this.availableSubcategories.set([]);
     this.productFormErrors.set(null);

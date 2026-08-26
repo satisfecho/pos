@@ -42,6 +42,44 @@ def provider_product_stored_image_path(
     return f"providers/{provider_token}/products/{fn}"
 
 
+def product_stored_image_exists(tenant_id: int, image_filename: str | None) -> bool:
+    """True when image_filename points at a file under uploads/ (tenant or provider path)."""
+    if not image_filename:
+        return False
+    fn = image_filename.replace("\\", "/").strip("/")
+    if not fn or fn.startswith(".") or ".." in fn.split("/"):
+        return False
+    if fn.startswith("providers/"):
+        return (UPLOADS_DIR / fn).is_file()
+    if "/" in fn:
+        return False
+    return (UPLOADS_DIR / str(tenant_id) / "products" / fn).is_file()
+
+
+def resolve_linked_tenant_product_image_filename(
+    session: Session,
+    tenant_product: models.TenantProduct,
+) -> str | None:
+    """Best stored path for a linked TenantProduct (tenant upload or provider catalog)."""
+    if tenant_product.image_filename and product_stored_image_exists(
+        tenant_product.tenant_id, tenant_product.image_filename
+    ):
+        return tenant_product.image_filename
+    if tenant_product.provider_product_id:
+        provider_product = session.get(
+            models.ProviderProduct, tenant_product.provider_product_id
+        )
+        if provider_product and provider_product.image_filename:
+            provider = session.get(models.Provider, provider_product.provider_id)
+            if provider:
+                stored = provider_product_stored_image_path(
+                    provider.token, provider_product.image_filename
+                )
+                if stored:
+                    return stored
+    return None
+
+
 def clear_orphan_provider_product_images(session: Session) -> dict[str, int]:
     """
     Clear ProviderProduct.image_filename (and Product refs under providers/) when the file is missing.

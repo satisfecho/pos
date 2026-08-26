@@ -738,7 +738,8 @@
     "SHARED_CART_HINT": "同桌共享购物车——桌上每位客人都能看到这些菜品。下单只提交您自己的菜品。",
     "ADDED_BY": "由 {{name}} 添加",
     "ADDED_BY_GUEST": "由其他客人添加",
-    "PLACE_OWN_ITEMS_ONLY": "下单前请先添加您自己的菜品。其他客人的菜品会留在共享购物车中，直到他们自己下单。"
+    "PLACE_OWN_ITEMS_ONLY": "下单前请先添加您自己的菜品。其他客人的菜品会留在共享购物车中，直到他们自己下单。",
+    "STOCK_ONLY_LEFT": "仅剩 {{count}} 份"
   },
   "PRODUCTS": {
     "TITLE": "产品",

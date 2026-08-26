@@ -622,6 +622,9 @@ export interface PublicTenantMenuProduct {
   subcategory: string | null;
   image_url: string | null;
   available: boolean;
+  stock_alert_enabled?: boolean;
+  stock_qty?: number;
+  stock_alert_level?: number;
 }
 
 /** Category group in GET /public/tenants/{id}/menu. */

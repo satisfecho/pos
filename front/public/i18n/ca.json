@@ -738,7 +738,8 @@
     "SHARED_CART_HINT": "Cistella compartida de la taula: tothom veu aquests articles. En demanar s’envien només els teus.",
     "ADDED_BY": "Afegit per {{name}}",
     "ADDED_BY_GUEST": "Afegit per un altre convidat",
-    "PLACE_OWN_ITEMS_ONLY": "Afegeix els teus articles abans de demanar. Els dels altres queden a la cistella compartida fins que demanin."
+    "PLACE_OWN_ITEMS_ONLY": "Afegeix els teus articles abans de demanar. Els dels altres queden a la cistella compartida fins que demanin.",
+    "STOCK_ONLY_LEFT": "Només en queden {{count}}"
   },
   "PRODUCTS": {
     "TITLE": "Productes",

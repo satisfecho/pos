@@ -616,7 +616,8 @@
     "SHARED_CART_HINT": "Carrito compartido de la mesa: todos ven estos artículos. Al pedir se envían solo los tuyos.",
     "ADDED_BY": "Añadido por {{name}}",
     "ADDED_BY_GUEST": "Añadido por otro comensal",
-    "PLACE_OWN_ITEMS_ONLY": "Añade tus propios artículos antes de pedir. Los de otros comensales siguen en el carrito compartido hasta que ellos pidan."
+    "PLACE_OWN_ITEMS_ONLY": "Añade tus propios artículos antes de pedir. Los de otros comensales siguen en el carrito compartido hasta que ellos pidan.",
+    "STOCK_ONLY_LEFT": "Solo quedan {{count}}"
   },
   "PRODUCTS": {
     "TITLE": "Productos",
