@@ -425,7 +425,11 @@
     "ADDRESS": "Adresse",
     "WEBSITE": "Site web",
     "TENANT_NOT_FOUND": "Locataire introuvable.",
-    "LOAD_FAILED": "Impossible de charger les données plateforme. Veuillez vous reconnecter."
+    "LOAD_FAILED": "Impossible de charger les données plateforme. Veuillez vous reconnecter.",
+    "COL_OWNER_LOGINS": "Connexions propriétaire",
+    "COL_OWNER_LAST_LOGIN": "Dernière connexion propriétaire",
+    "COL_LOGIN_COUNT": "Connexions",
+    "COL_LAST_LOGIN": "Dernière connexion"
   },
   "COURIER_HOME": {
     "TITLE": "Livraisons",

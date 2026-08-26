@@ -8,6 +8,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Added
+
+- **Platform owner/staff login counts:** `/platform` All tenants table shows each owner's login count and last login; tenant detail staff table shows the same per user (from `login_event`).
+
+### Changed
+
+### Fixed
+
 ## [2.1.155] - 2026-08-24
 
 ### Added

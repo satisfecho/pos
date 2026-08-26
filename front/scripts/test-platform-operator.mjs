@@ -52,6 +52,14 @@ async function main() {
     console.log('OK: login metrics visible (total, last, 24h, 7d)');
 
     await page.waitForSelector('a.tenant-link', { timeout: 10000 });
+    const ownerLoginCell = await page.$('[data-testid="owner-login-count"]');
+    if (!ownerLoginCell) throw new Error('Missing owner login count column in All tenants table');
+    const ownerLoginText = await ownerLoginCell.evaluate((el) => el.textContent?.trim() || '');
+    if (!/^\d+$/.test(ownerLoginText)) {
+      throw new Error(`Owner login count should be a number, got: ${ownerLoginText}`);
+    }
+    console.log(`OK: All tenants shows owner login count (${ownerLoginText})`);
+
     await page.click('a.tenant-link');
     await page.waitForFunction(
       () => /^\/platform\/tenants\/\d+$/.test(window.location.pathname),
@@ -62,6 +70,16 @@ async function main() {
       return m ? m[1] : null;
     });
     if (!tenantId) throw new Error('Tenant detail URL missing tenant id');
+
+    await page.waitForSelector('[data-testid="staff-login-count"]', { timeout: 10000 });
+    const staffLoginText = await page.$eval(
+      '[data-testid="staff-login-count"]',
+      (el) => el.textContent?.trim() || '',
+    );
+    if (!/^\d+$/.test(staffLoginText)) {
+      throw new Error(`Staff login count should be a number, got: ${staffLoginText}`);
+    }
+    console.log(`OK: tenant staff table shows login count (${staffLoginText})`);
 
     await page.waitForSelector(`a.link-btn[href$="/delivery/${tenantId}"]`, { timeout: 10000 });
     const deliveryHref = await page.$eval(

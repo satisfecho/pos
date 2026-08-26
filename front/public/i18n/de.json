@@ -425,7 +425,11 @@
     "ADDRESS": "Adresse",
     "WEBSITE": "Website",
     "TENANT_NOT_FOUND": "Mandant nicht gefunden.",
-    "LOAD_FAILED": "Plattformdaten konnten nicht geladen werden. Bitte erneut anmelden."
+    "LOAD_FAILED": "Plattformdaten konnten nicht geladen werden. Bitte erneut anmelden.",
+    "COL_OWNER_LOGINS": "Owner-Logins",
+    "COL_OWNER_LAST_LOGIN": "Owner letzter Login",
+    "COL_LOGIN_COUNT": "Logins",
+    "COL_LAST_LOGIN": "Letzter Login"
   },
   "COURIER_HOME": {
     "TITLE": "Lieferungen",

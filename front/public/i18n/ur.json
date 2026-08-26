@@ -425,7 +425,11 @@
     "ADDRESS": "پتہ",
     "WEBSITE": "ویب سائٹ",
     "TENANT_NOT_FOUND": "کرایہ دار نہیں ملا۔",
-    "LOAD_FAILED": "پلیٹ فارم ڈیٹا لوڈ نہیں ہو سکا۔ براہ کرم دوبارہ سائن ان کریں۔"
+    "LOAD_FAILED": "پلیٹ فارم ڈیٹا لوڈ نہیں ہو سکا۔ براہ کرم دوبارہ سائن ان کریں۔",
+    "COL_OWNER_LOGINS": "مالک لاگ اِن",
+    "COL_OWNER_LAST_LOGIN": "مالک آخری لاگ اِن",
+    "COL_LOGIN_COUNT": "لاگ اِنز",
+    "COL_LAST_LOGIN": "آخری لاگ اِن"
   },
   "COURIER_HOME": {
     "TITLE": "ڈیلیوریز",

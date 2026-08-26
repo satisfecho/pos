@@ -535,7 +535,11 @@
     "ADDRESS": "Adreça",
     "WEBSITE": "Lloc web",
     "TENANT_NOT_FOUND": "Inquilí no trobat.",
-    "LOAD_FAILED": "No s'han pogut carregar les dades de la plataforma. Torneu a iniciar sessió."
+    "LOAD_FAILED": "No s'han pogut carregar les dades de la plataforma. Torneu a iniciar sessió.",
+    "COL_OWNER_LOGINS": "Inicis del propietari",
+    "COL_OWNER_LAST_LOGIN": "Darrer inici del propietari",
+    "COL_LOGIN_COUNT": "Inicis de sessió",
+    "COL_LAST_LOGIN": "Darrer inici"
   },
   "COURIER_HOME": {
     "TITLE": "Entregues",

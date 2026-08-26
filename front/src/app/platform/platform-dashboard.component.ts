@@ -72,6 +72,8 @@ import { ApiService, PlatformInfo, PlatformMetrics, PlatformTenantSummary } from
                     <th>{{ 'PLATFORM_DASHBOARD.COL_ID' | translate }}</th>
                     <th>{{ 'PLATFORM_DASHBOARD.COL_NAME' | translate }}</th>
                     <th>{{ 'PLATFORM_DASHBOARD.OWNER_CONTACT' | translate }}</th>
+                    <th>{{ 'PLATFORM_DASHBOARD.COL_OWNER_LOGINS' | translate }}</th>
+                    <th>{{ 'PLATFORM_DASHBOARD.COL_OWNER_LAST_LOGIN' | translate }}</th>
                     <th>{{ 'PLATFORM_DASHBOARD.COL_PRODUCTS' | translate }}</th>
                     <th>{{ 'PLATFORM_DASHBOARD.COL_CREATED' | translate }}</th>
                     <th>{{ 'PLATFORM_DASHBOARD.COL_ACTIONS' | translate }}</th>
@@ -89,6 +91,14 @@ import { ApiService, PlatformInfo, PlatformMetrics, PlatformTenantSummary } from
                           <a [href]="'mailto:' + t.owner_email">{{ t.owner_name || t.owner_email }}</a>
                         } @else {
                           <span class="platform-muted">{{ 'PLATFORM_DASHBOARD.NO_CONTACT' | translate }}</span>
+                        }
+                      </td>
+                      <td data-testid="owner-login-count">{{ t.owner_login_count ?? 0 }}</td>
+                      <td data-testid="owner-last-login">
+                        @if (t.owner_last_login_at) {
+                          {{ formatDate(t.owner_last_login_at) }}
+                        } @else {
+                          <span class="platform-muted">—</span>
                         }
                       </td>
                       <td>{{ t.product_count }}</td>

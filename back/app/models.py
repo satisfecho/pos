@@ -411,6 +411,8 @@ class PlatformTenantSummary(SQLModel):
     created_at: datetime
     owner_email: str | None = None
     owner_name: str | None = None
+    owner_login_count: int = 0
+    owner_last_login_at: datetime | None = None
     tenant_email: str | None = None
     tenant_phone: str | None = None
     product_count: int = 0
@@ -424,6 +426,8 @@ class PlatformStaffContact(SQLModel):
     email: str
     full_name: str | None = None
     role: str
+    login_count: int = 0
+    last_login_at: datetime | None = None
 
 
 class PlatformTenantDetail(PlatformTenantSummary):

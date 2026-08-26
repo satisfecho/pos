@@ -425,7 +425,11 @@
     "ADDRESS": "Dirección",
     "WEBSITE": "Sitio web",
     "TENANT_NOT_FOUND": "Inquilino no encontrado.",
-    "LOAD_FAILED": "No se pudieron cargar los datos de la plataforma. Inicia sesión de nuevo."
+    "LOAD_FAILED": "No se pudieron cargar los datos de la plataforma. Inicia sesión de nuevo.",
+    "COL_OWNER_LOGINS": "Inicios del propietario",
+    "COL_OWNER_LAST_LOGIN": "Último inicio del propietario",
+    "COL_LOGIN_COUNT": "Inicios de sesión",
+    "COL_LAST_LOGIN": "Último inicio"
   },
   "COURIER_HOME": {
     "TITLE": "Entregas",

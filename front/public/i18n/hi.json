@@ -535,7 +535,11 @@
     "ADDRESS": "पता",
     "WEBSITE": "वेबसाइट",
     "TENANT_NOT_FOUND": "टेनant नहीं मिला।",
-    "LOAD_FAILED": "प्लेटफ़ॉर्म डेटा लोड नहीं हो सका। कृपया फिर से साइन इन करें।"
+    "LOAD_FAILED": "प्लेटफ़ॉर्म डेटा लोड नहीं हो सका। कृपया फिर से साइन इन करें।",
+    "COL_OWNER_LOGINS": "मालिक लॉगिन",
+    "COL_OWNER_LAST_LOGIN": "मालिक अंतिम लॉगिन",
+    "COL_LOGIN_COUNT": "लॉगिन",
+    "COL_LAST_LOGIN": "अंतिम लॉगिन"
   },
   "COURIER_HOME": {
     "TITLE": "डिलीवरी",

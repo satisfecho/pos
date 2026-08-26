@@ -569,7 +569,11 @@
     "ADDRESS": "Address",
     "WEBSITE": "Website",
     "TENANT_NOT_FOUND": "Tenant not found.",
-    "LOAD_FAILED": "Could not load platform data. Please sign in again."
+    "LOAD_FAILED": "Could not load platform data. Please sign in again.",
+    "COL_OWNER_LOGINS": "Owner logins",
+    "COL_OWNER_LAST_LOGIN": "Owner last login",
+    "COL_LOGIN_COUNT": "Logins",
+    "COL_LAST_LOGIN": "Last login"
   },
   "COURIER_HOME": {
     "TITLE": "Deliveries",

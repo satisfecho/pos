@@ -535,7 +535,11 @@
     "ADDRESS": "地址",
     "WEBSITE": "网站",
     "TENANT_NOT_FOUND": "未找到租户。",
-    "LOAD_FAILED": "无法加载平台数据，请重新登录。"
+    "LOAD_FAILED": "无法加载平台数据，请重新登录。",
+    "COL_OWNER_LOGINS": "所有者登录次数",
+    "COL_OWNER_LAST_LOGIN": "所有者上次登录",
+    "COL_LOGIN_COUNT": "登录次数",
+    "COL_LAST_LOGIN": "上次登录"
   },
   "COURIER_HOME": {
     "TITLE": "配送",

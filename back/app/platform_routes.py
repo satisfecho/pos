@@ -51,12 +51,51 @@ def _owner_for_tenant(session: Session, tenant_id: int) -> models.User | None:
     ).first()
 
 
-def _tenant_summary(session: Session, tenant: models.Tenant) -> models.PlatformTenantSummary:
+def _login_stats_by_user_ids(
+    session: Session, user_ids: list[int]
+) -> dict[int, tuple[int, datetime | None]]:
+    """Return {user_id: (login_count, last_login_at)} for the given users."""
+    ids = [uid for uid in user_ids if uid is not None]
+    if not ids:
+        return {}
+    rows = session.exec(
+        select(
+            models.LoginEvent.user_id,
+            func.count(),
+            func.max(models.LoginEvent.logged_in_at),
+        )
+        .where(models.LoginEvent.user_id.in_(ids))  # type: ignore[union-attr]
+        .group_by(models.LoginEvent.user_id)
+    ).all()
+    out: dict[int, tuple[int, datetime | None]] = {}
+    for user_id, count, last_at in rows:
+        if user_id is None:
+            continue
+        out[int(user_id)] = (int(count or 0), last_at)
+    return out
+
+
+def _tenant_summary(
+    session: Session,
+    tenant: models.Tenant,
+    *,
+    owner: models.User | None = None,
+    login_stats: dict[int, tuple[int, datetime | None]] | None = None,
+) -> models.PlatformTenantSummary:
     tenant_id = tenant.id
     if tenant_id is None:
         raise ValueError("Tenant id is required")
 
-    owner = _owner_for_tenant(session, tenant_id)
+    if owner is None:
+        owner = _owner_for_tenant(session, tenant_id)
+
+    owner_login_count = 0
+    owner_last_login_at: datetime | None = None
+    if owner is not None and owner.id is not None:
+        stats = login_stats
+        if stats is None:
+            stats = _login_stats_by_user_ids(session, [owner.id])
+        owner_login_count, owner_last_login_at = stats.get(owner.id, (0, None))
 
     return models.PlatformTenantSummary(
         id=tenant_id,
@@ -64,6 +103,8 @@ def _tenant_summary(session: Session, tenant: models.Tenant) -> models.PlatformT
         created_at=tenant.created_at,
         owner_email=owner.email if owner else None,
         owner_name=owner.full_name if owner else None,
+        owner_login_count=owner_login_count,
+        owner_last_login_at=owner_last_login_at,
         tenant_email=tenant.email,
         tenant_phone=tenant.phone,
         product_count=_count_for_tenant(session, models.Product, tenant_id),
@@ -79,12 +120,21 @@ def _tenant_detail(session: Session, tenant: models.Tenant) -> models.PlatformTe
     if tenant_id is None:
         raise ValueError("Tenant id is required")
 
-    summary = _tenant_summary(session, tenant)
     staff_rows = session.exec(
         select(models.User)
         .where(models.User.tenant_id == tenant_id)
         .order_by(models.User.role, models.User.email)  # type: ignore[arg-type]
     ).all()
+    login_stats = _login_stats_by_user_ids(
+        session, [u.id for u in staff_rows if u.id is not None]
+    )
+    owner = next((u for u in staff_rows if u.role == models.UserRole.owner), None)
+    if owner is None:
+        owner = _owner_for_tenant(session, tenant_id)
+
+    summary = _tenant_summary(
+        session, tenant, owner=owner, login_stats=login_stats
+    )
 
     return models.PlatformTenantDetail(
         **summary.model_dump(),
@@ -99,6 +149,8 @@ def _tenant_detail(session: Session, tenant: models.Tenant) -> models.PlatformTe
                 email=u.email,
                 full_name=u.full_name,
                 role=u.role.value,
+                login_count=login_stats.get(u.id, (0, None))[0] if u.id else 0,
+                last_login_at=login_stats.get(u.id, (0, None))[1] if u.id else None,
             )
             for u in staff_rows
         ],
@@ -152,7 +204,35 @@ def platform_tenants(
         .order_by(models.Tenant.created_at.desc())  # type: ignore[arg-type]
         .limit(_TENANT_LIST_LIMIT)
     ).all()
-    return [_tenant_summary(session, t) for t in tenants if t.id is not None]
+    tenant_ids = [t.id for t in tenants if t.id is not None]
+    owners = session.exec(
+        select(models.User)
+        .where(
+            models.User.tenant_id.in_(tenant_ids),  # type: ignore[union-attr]
+            models.User.role == models.UserRole.owner,
+        )
+        .order_by(models.User.id)  # type: ignore[arg-type]
+    ).all()
+    owner_by_tenant: dict[int, models.User] = {}
+    for user in owners:
+        if user.tenant_id is None:
+            continue
+        # First owner by id wins (matches _owner_for_tenant).
+        if user.tenant_id not in owner_by_tenant:
+            owner_by_tenant[user.tenant_id] = user
+    login_stats = _login_stats_by_user_ids(
+        session, [u.id for u in owner_by_tenant.values() if u.id is not None]
+    )
+    return [
+        _tenant_summary(
+            session,
+            t,
+            owner=owner_by_tenant.get(t.id) if t.id is not None else None,
+            login_stats=login_stats,
+        )
+        for t in tenants
+        if t.id is not None
+    ]
 
 
 @router.get("/tenants/{tenant_id}", response_model=models.PlatformTenantDetail)

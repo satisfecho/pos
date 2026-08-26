@@ -409,6 +409,8 @@ export interface PlatformTenantSummary {
   created_at: string;
   owner_email?: string | null;
   owner_name?: string | null;
+  owner_login_count?: number;
+  owner_last_login_at?: string | null;
   tenant_email?: string | null;
   tenant_phone?: string | null;
   product_count: number;
@@ -422,6 +424,8 @@ export interface PlatformStaffContact {
   email: string;
   full_name?: string | null;
   role: string;
+  login_count?: number;
+  last_login_at?: string | null;
 }
 
 export interface PlatformTenantDetail extends PlatformTenantSummary {
