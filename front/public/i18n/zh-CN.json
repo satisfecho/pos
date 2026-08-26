@@ -318,7 +318,16 @@
   "PRICING_PAGE": {
     "BADGE": "简洁托管定价",
     "TITLE": "免费试用，之后统一月费",
-    "SUBTITLE": "托管版 Satisfecho 含无需绑卡的免费试用。也可按 AGPLv3 自托管，无授权费。",
+    "SUBTITLE": "从永久免费的二维码菜单开始。托管版 Satisfecho 为完整平台提供无需绑卡的免费试用。也可按 AGPLv3 自托管，无授权费。",
+    "QR_CALLOUT": "二维码菜单永久免费 — 零成本起步",
+    "QR_NAME": "二维码菜单",
+    "QR_LEDE": "宾客数字菜单与桌边点餐 — 无需安装应用。",
+    "QR_PRICE": "免费",
+    "QR_FOREVER": "永久免费",
+    "QR_INCLUDES_1": "通过桌边二维码发布移动端菜单",
+    "QR_INCLUDES_2": "一次更新菜品 — 每个二维码显示最新菜单",
+    "QR_INCLUDES_3": "准备好后可添加厨房、报表等功能",
+    "CTA_QR": "创建您的二维码菜单",
     "HOSTED_NAME": "托管版",
     "HOSTED_LEDE": "为餐厅托管的 Satisfecho — 由我们运营平台。",
     "PER_MONTH": "/ 月",
@@ -336,6 +345,12 @@
     "SELFHOST_PRICE": "€0",
     "SELFHOST_LICENSE": "AGPLv3 开源 — 无托管费",
     "CTA_GITHUB": "在 GitHub 查看",
+    "SUPPORT_NAME": "专业支持",
+    "SUPPORT_HEADLINE": "我们支持您！",
+    "SUPPORT_LEDE": "团队可选帮助 — 设置、培训和故障排除。",
+    "SUPPORT_PRICE": "€50/小时 + 税",
+    "SUPPORT_NOTE": "按小时计费。联系我们讨论您的需求。",
+    "CTA_SUPPORT": "联系我们",
     "LOAD_ERROR": "无法加载定价。请稍后重试。"
   },
   "PUBLIC_MENU": {
@@ -535,7 +550,11 @@
     "ADDRESS": "地址",
     "WEBSITE": "网站",
     "TENANT_NOT_FOUND": "未找到租户。",
-    "LOAD_FAILED": "无法加载平台数据，请重新登录。"
+    "LOAD_FAILED": "无法加载平台数据，请重新登录。",
+    "COL_OWNER_LOGINS": "所有者登录次数",
+    "COL_OWNER_LAST_LOGIN": "所有者上次登录",
+    "COL_LOGIN_COUNT": "登录次数",
+    "COL_LAST_LOGIN": "上次登录"
   },
   "COURIER_HOME": {
     "TITLE": "配送",
@@ -734,7 +753,8 @@
     "SHARED_CART_HINT": "同桌共享购物车——桌上每位客人都能看到这些菜品。下单只提交您自己的菜品。",
     "ADDED_BY": "由 {{name}} 添加",
     "ADDED_BY_GUEST": "由其他客人添加",
-    "PLACE_OWN_ITEMS_ONLY": "下单前请先添加您自己的菜品。其他客人的菜品会留在共享购物车中，直到他们自己下单。"
+    "PLACE_OWN_ITEMS_ONLY": "下单前请先添加您自己的菜品。其他客人的菜品会留在共享购物车中，直到他们自己下单。",
+    "STOCK_ONLY_LEFT": "仅剩 {{count}} 份"
   },
   "PRODUCTS": {
     "TITLE": "产品",
@@ -936,7 +956,15 @@
     "BULK_IMPORT_CSV_PLACEHOLDER": "name,price,category\nMargherita,12.5,Main Course",
     "BULK_IMPORT_CSV_HINT": "必填：name。价格使用 price 或 price_cents。可选：cost、category、subcategory、description、ingredients。支持常见别名。未知列会被拒绝，除非启用 AI 列映射。",
     "BULK_IMPORT_CSV_AI_MAPPING": "使用 AI 映射未知列名（会将表头和少量示例行发送到视觉 API；保存前请核对预览）",
-    "BULK_IMPORT_CSV_EMPTY": "请先粘贴或上传 CSV。"
+    "BULK_IMPORT_CSV_EMPTY": "请先粘贴或上传 CSV。",
+    "STOCK_ALERT_ENABLED": "启用库存提醒",
+    "STOCK_ALERT_HINT": "当可售库存达到或低于阈值时提醒。在本产品上管理，而非库存原料。",
+    "STOCK_QTY": "当前库存",
+    "STOCK_ALERT_LEVEL": "达到或低于时提醒",
+    "STOCK_HEADER": "库存",
+    "STOCK_LOW": "偏低",
+    "STOCK_OK": "正常",
+    "STOCK_BADGE_TITLE": "库存 {{qty}}（阈值 {{level}}）"
   },
   "CATALOG": {
     "TITLE": "产品目录",

@@ -212,10 +212,15 @@ def _load_flat_products(
         category = catalog_item.category if catalog_item else None
         subcategory = catalog_item.subcategory if catalog_item else None
         description = None
+        stock_fields: dict = {}
         if tp.product_id:
             custom_product = session.get(models.Product, tp.product_id)
-            if custom_product and custom_product.description:
-                description = custom_product.description
+            if custom_product:
+                if custom_product.description:
+                    description = custom_product.description
+                from .product_stock import product_stock_alert_payload
+
+                stock_fields = product_stock_alert_payload(custom_product)
         if not description and catalog_item and catalog_item.description:
             description = catalog_item.description
 
@@ -248,6 +253,7 @@ def _load_flat_products(
                 "subcategory": subcategory,
                 "image_url": _resolve_tenant_product_image(session, tenant_id, tp),
                 "available": True,
+                **stock_fields,
             }
         )
 
@@ -260,6 +266,8 @@ def _load_flat_products(
         description = _translated_description(
             session, tenant_id, "product", lp.id, lp.description, lang
         )
+        from .product_stock import product_stock_alert_payload
+
         products.append(
             {
                 "id": lp.id,
@@ -271,6 +279,7 @@ def _load_flat_products(
                 "subcategory": lp.subcategory,
                 "image_url": resolve_product_image_url(tenant_id, lp.image_filename),
                 "available": True,
+                **product_stock_alert_payload(lp),
             }
         )
 

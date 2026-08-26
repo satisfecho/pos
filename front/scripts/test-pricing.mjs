@@ -2,7 +2,7 @@
 /**
  * Puppeteer smoke: public /pricing marketing page (#328).
  * Asserts page shell, live price from GET /saas/config, trial line, self-host card,
- * register CTA, and paywall-enabled vs inactive billing note.
+ * QR Menu free tier, support pricing block, register CTA, and paywall-enabled vs inactive billing note.
  *
  * Usage (from repo root):
  *   BASE_URL=http://127.0.0.1:4202 npm run test:pricing --prefix front
@@ -100,13 +100,24 @@ async function main() {
     await page.waitForSelector('[data-testid="pricing-tiers"]', { timeout: 15000 });
     await page.waitForSelector('[data-testid="pricing-price"]', { timeout: 10000 });
     await page.waitForSelector('[data-testid="pricing-trial"]', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="pricing-qr-free"]', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="pricing-support"]', { timeout: 10000 });
 
     const shell = await page.evaluate((expected) => {
       const title = (document.querySelector('.pricing-hero__title')?.textContent || '').trim();
       const priceText = (document.querySelector('[data-testid="pricing-price"]')?.textContent || '').trim();
       const trialText = (document.querySelector('[data-testid="pricing-trial"]')?.textContent || '').trim();
+      const qrCallout = (document.querySelector('[data-testid="pricing-qr-callout"]')?.textContent || '').trim();
+      const qrPriceText = (document.querySelector('[data-testid="pricing-qr-price"]')?.textContent || '').trim();
+      const supportHeadline = (
+        document.querySelector('[data-testid="pricing-support"] .pricing-support__headline')?.textContent || ''
+      ).trim();
+      const supportPrice = (document.querySelector('[data-testid="pricing-support-price"]')?.textContent || '').trim();
       const registerOk = !!document.querySelector('a[data-testid="pricing-cta-register"]');
+      const qrCtaOk = !!document.querySelector('a[data-testid="pricing-cta-qr"]');
+      const supportCtaOk = !!document.querySelector('a[data-testid="pricing-cta-support"]');
       const selfHostOk = !!document.querySelector('[data-testid="pricing-self-host"]');
+      const qrFreeOk = !!document.querySelector('[data-testid="pricing-qr-free"]');
       const billingActive = !!document.querySelector('[data-testid="pricing-billing-active"]');
       const billingInactive = !!document.querySelector('[data-testid="pricing-billing-inactive"]');
       const rawKeyDump =
@@ -120,8 +131,15 @@ async function main() {
         title,
         priceText,
         trialText,
+        qrCallout,
+        qrPriceText,
+        supportHeadline,
+        supportPrice,
         registerOk,
+        qrCtaOk,
+        supportCtaOk,
         selfHostOk,
+        qrFreeOk,
         billingActive,
         billingInactive,
         rawKeyDump,
@@ -158,8 +176,35 @@ async function main() {
     }
     console.log('   Trial:', shell.trialText);
 
-    if (!shell.registerOk || !shell.selfHostOk) {
-      console.error('FAIL: Missing register CTA or self-host card.', shell);
+    if (!shell.qrFreeOk || !shell.qrCallout || !shell.qrPriceText) {
+      console.error('FAIL: QR Menu free tier or callout missing.', shell);
+      process.exit(1);
+    }
+    const qrFreeForever =
+      /free forever/i.test(shell.qrCallout) ||
+      /free forever/i.test(shell.qrPriceText) ||
+      /gratis para siempre/i.test(shell.qrPriceText);
+    if (!qrFreeForever) {
+      console.error('FAIL: QR tier should mention free forever. Got:', {
+        qrCallout: shell.qrCallout,
+        qrPriceText: shell.qrPriceText,
+      });
+      process.exit(1);
+    }
+    console.log('   QR free:', shell.qrCallout);
+
+    if (!shell.supportHeadline || !/support you/i.test(shell.supportHeadline)) {
+      console.error('FAIL: Support headline missing or untranslated. Got:', shell.supportHeadline);
+      process.exit(1);
+    }
+    if (!shell.supportPrice || !/50/.test(shell.supportPrice)) {
+      console.error('FAIL: Support price should mention €50/h. Got:', shell.supportPrice);
+      process.exit(1);
+    }
+    console.log('   Support:', shell.supportHeadline, '—', shell.supportPrice);
+
+    if (!shell.registerOk || !shell.selfHostOk || !shell.qrCtaOk || !shell.supportCtaOk) {
+      console.error('FAIL: Missing register, QR, support, or self-host CTA/card.', shell);
       process.exit(1);
     }
 
@@ -183,7 +228,7 @@ async function main() {
     }
 
     await browser.close();
-    console.log('\n>>> RESULT: /pricing loads with live saas/config price, trial, and self-host tier.');
+    console.log('\n>>> RESULT: /pricing loads with QR free tier, support pricing, live saas/config price, trial, and self-host tier.');
     process.exit(0);
   } catch (err) {
     console.error('Error:', err.message);

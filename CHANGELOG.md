@@ -8,6 +8,55 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Fixed
+
+## [2.1.160] - 2026-08-26
+
+### Changed
+
+- **Public pricing page (#358):** Added **QR Menu — free forever** as its own tier before paid plans, a hero callout, and optional **professional support** at **€50/h + tax** with a contact link.
+
+## [2.1.159] - 2026-08-26
+
+### Added
+
+- **Product image deploy repair:** `sync_product_images` and `check_product_image_health` seeds repair stale `Product.image_filename` after catalog import; deploy runs them after linking demo products to catalog.
+
+### Fixed
+
+- **`/products` vs public menu:** `GET /products` no longer overwrites custom tenant upload paths when the file exists on disk; stale `providers/...` refs are repaired from the linked catalog.
+
+## [2.1.158] - 2026-08-26
+
+### Added
+
+- **Customer stock alerts (#356):** QR menu and Satisfecho Delivery show **Only X left** when a product’s sellable stock is at or below its alert level. From discussion #21.
+- **Tenant ID in staff header (#357):** The staff sidebar shows the logged-in tenant number after the version and commit hash (compact tooltip “Tenant ID”).
+
+### Changed
+
+- **Products form:** Default stock alert level for new products is **5** (was 0).
+
+### Fixed
+
+- **`/products` thumbnails vs public menu:** `GET /products` repairs stale `Product.image_filename` values when the file is missing on disk, using the linked `TenantProduct` / provider catalog image (same source as `/public-menu/{id}`).
+
+## [2.1.157] - 2026-08-26
+
+### Added
+
+- **Product stock alerts (#356):** On `/products`, each product can enable a sellable-unit stock alert (`stock_qty` / `stock_alert_level`). Low stock shows a badge in the products list. From discussion #21.
+
+## [2.1.156] - 2026-08-26
+
+### Added
+
+- **Platform owner/staff login counts (#315):** `/platform` All tenants table shows each owner's login count and last login; tenant detail staff table shows the same per user (from `login_event`).
+
 ## [2.1.155] - 2026-08-24
 
 ### Added

@@ -120,6 +120,8 @@ import { ApiService, PlatformTenantDetail } from '../services/api.service';
                   <th>{{ 'PLATFORM_DASHBOARD.COL_NAME' | translate }}</th>
                   <th>{{ 'PLATFORM_DASHBOARD.COL_EMAIL' | translate }}</th>
                   <th>{{ 'PLATFORM_DASHBOARD.COL_ROLE' | translate }}</th>
+                  <th>{{ 'PLATFORM_DASHBOARD.COL_LOGIN_COUNT' | translate }}</th>
+                  <th>{{ 'PLATFORM_DASHBOARD.COL_LAST_LOGIN' | translate }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -128,6 +130,14 @@ import { ApiService, PlatformTenantDetail } from '../services/api.service';
                     <td>{{ u.full_name || '—' }}</td>
                     <td><a [href]="'mailto:' + u.email">{{ u.email }}</a></td>
                     <td>{{ u.role }}</td>
+                    <td data-testid="staff-login-count">{{ u.login_count ?? 0 }}</td>
+                    <td data-testid="staff-last-login">
+                      @if (u.last_login_at) {
+                        {{ formatDate(u.last_login_at) }}
+                      } @else {
+                        <span class="platform-muted">—</span>
+                      }
+                    </td>
                   </tr>
                 }
               </tbody>

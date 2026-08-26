@@ -74,7 +74,8 @@
     margin-top: 2px;
 }
 
-.commit-hash {
+.commit-hash,
+.tenant-id {
     margin-left: 4px;
     font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
     font-size: 0.625rem;

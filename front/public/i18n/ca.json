@@ -318,7 +318,16 @@
   "PRICING_PAGE": {
     "BADGE": "Preus hosted senzills",
     "TITLE": "Prova gratis, després un pla mensual fix",
-    "SUBTITLE": "Satisfecho hosted inclou una prova gratuïta sense targeta. Autohostitja sota AGPLv3 sense cost de llicència si prefereixes executar-lo tu.",
+    "SUBTITLE": "Comença amb un menú QR gratis per sempre. Satisfecho hosted afegeix una prova gratuïta sense targeta per a la plataforma completa. Autohostitja sota AGPLv3 sense cost de llicència si prefereixes executar-lo tu.",
+    "QR_CALLOUT": "Menú QR gratis per sempre — comença sense cost",
+    "QR_NAME": "Menú QR",
+    "QR_LEDE": "Menú digital i comandes a taula per als clients — sense instal·lar cap app.",
+    "QR_PRICE": "Gratuït",
+    "QR_FOREVER": "Gratuït per sempre",
+    "QR_INCLUDES_1": "Publica un menú mòbil des d'un codi QR a la taula",
+    "QR_INCLUDES_2": "Actualitza els plats una vegada — cada QR mostra el menú actual",
+    "QR_INCLUDES_3": "Afegeix cuina, informes i més quan estiguis preparat",
+    "CTA_QR": "Crea el teu menú QR",
     "HOSTED_NAME": "Hosted",
     "HOSTED_LEDE": "Satisfecho gestionat per al teu restaurant — nosaltres operem la plataforma.",
     "PER_MONTH": "/ mes",
@@ -336,6 +345,12 @@
     "SELFHOST_PRICE": "€0",
     "SELFHOST_LICENSE": "Codi obert AGPLv3 — sense quota hosted",
     "CTA_GITHUB": "Veure a GitHub",
+    "SUPPORT_NAME": "Suport professional",
+    "SUPPORT_HEADLINE": "Et donem suport!",
+    "SUPPORT_LEDE": "Ajuda opcional del nostre equip — configuració, formació i resolució de problemes.",
+    "SUPPORT_PRICE": "50 €/h + IVA",
+    "SUPPORT_NOTE": "Facturació per hora. Contacta'ns per parlar de les teves necessitats.",
+    "CTA_SUPPORT": "Contacta'ns",
     "LOAD_ERROR": "No s'ha pogut carregar la tarifa. Torna-ho a provar més tard."
   },
   "PUBLIC_MENU": {
@@ -535,7 +550,11 @@
     "ADDRESS": "Adreça",
     "WEBSITE": "Lloc web",
     "TENANT_NOT_FOUND": "Inquilí no trobat.",
-    "LOAD_FAILED": "No s'han pogut carregar les dades de la plataforma. Torneu a iniciar sessió."
+    "LOAD_FAILED": "No s'han pogut carregar les dades de la plataforma. Torneu a iniciar sessió.",
+    "COL_OWNER_LOGINS": "Inicis del propietari",
+    "COL_OWNER_LAST_LOGIN": "Darrer inici del propietari",
+    "COL_LOGIN_COUNT": "Inicis de sessió",
+    "COL_LAST_LOGIN": "Darrer inici"
   },
   "COURIER_HOME": {
     "TITLE": "Entregues",
@@ -734,7 +753,8 @@
     "SHARED_CART_HINT": "Cistella compartida de la taula: tothom veu aquests articles. En demanar s’envien només els teus.",
     "ADDED_BY": "Afegit per {{name}}",
     "ADDED_BY_GUEST": "Afegit per un altre convidat",
-    "PLACE_OWN_ITEMS_ONLY": "Afegeix els teus articles abans de demanar. Els dels altres queden a la cistella compartida fins que demanin."
+    "PLACE_OWN_ITEMS_ONLY": "Afegeix els teus articles abans de demanar. Els dels altres queden a la cistella compartida fins que demanin.",
+    "STOCK_ONLY_LEFT": "Només en queden {{count}}"
   },
   "PRODUCTS": {
     "TITLE": "Productes",
@@ -936,7 +956,15 @@
     "BULK_IMPORT_CSV_PLACEHOLDER": "name,price,category\nMargherita,12.5,Main Course",
     "BULK_IMPORT_CSV_HINT": "Obligatori: name. Preu amb price o price_cents. Opcional: cost, category, subcategory, description, ingredients. S'accepten àlies comuns (producto, precio, …). Les columnes desconegudes es rebutgen tret que activeu el mapatge amb IA.",
     "BULK_IMPORT_CSV_AI_MAPPING": "Utilitzar IA per mapar columnes desconegudes (envia capçaleres i algunes files de mostra a l'API de visió; reviseu la vista prèvia abans de desar)",
-    "BULK_IMPORT_CSV_EMPTY": "Enganxeu o pugeu CSV primer."
+    "BULK_IMPORT_CSV_EMPTY": "Enganxeu o pugeu CSV primer.",
+    "STOCK_ALERT_ENABLED": "Activar alerta d'estoc",
+    "STOCK_ALERT_HINT": "Aviseu quan l'estoc venible estigui en o per sota del llindar. Es gestiona en aquest producte.",
+    "STOCK_QTY": "Estoc actual",
+    "STOCK_ALERT_LEVEL": "Alertar en o per sota de",
+    "STOCK_HEADER": "Estoc",
+    "STOCK_LOW": "Baix",
+    "STOCK_OK": "OK",
+    "STOCK_BADGE_TITLE": "Estoc {{qty}} (alerta a {{level}})"
   },
   "CATALOG": {
     "TITLE": "Catàleg de productes",

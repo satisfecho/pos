@@ -1400,6 +1400,28 @@ $cart-expanded-max: 60vh;
   }
 }
 
+.stock-left-badge {
+  display: inline-block;
+  margin: 0.15rem 0 0.35rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #9a3412;
+  background: #ffedd5;
+}
+
+.stock-left-badge--detail {
+  margin-top: 0.5rem;
+}
+
+.featured-info .stock-left-badge {
+  display: block;
+  margin: 0.2rem 0 0.35rem;
+  width: fit-content;
+}
+
 .product-origin {
   font-size: 0.8125rem;
   color: var(--color-text-muted);

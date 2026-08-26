@@ -411,6 +411,8 @@ class PlatformTenantSummary(SQLModel):
     created_at: datetime
     owner_email: str | None = None
     owner_name: str | None = None
+    owner_login_count: int = 0
+    owner_last_login_at: datetime | None = None
     tenant_email: str | None = None
     tenant_phone: str | None = None
     product_count: int = 0
@@ -424,6 +426,8 @@ class PlatformStaffContact(SQLModel):
     email: str
     full_name: str | None = None
     role: str
+    login_count: int = 0
+    last_login_at: datetime | None = None
 
 
 class PlatformTenantDetail(PlatformTenantSummary):
@@ -508,6 +512,10 @@ class Product(TenantMixin, table=True):
     kitchen_station_id: int | None = Field(
         default=None, foreign_key="kitchen_station.id", index=True
     )
+    # Sellable-unit stock alert (Products UI; separate from inventory ingredient reorder)
+    stock_alert_enabled: bool = Field(default=False)
+    stock_qty: int = Field(default=0)
+    stock_alert_level: int = Field(default=0)
 
 
 class ProductQuestionType(str, Enum):
@@ -1370,6 +1378,9 @@ class ProductUpdate(SQLModel):
     available_from: date | None = None
     available_until: date | None = None
     kitchen_station_id: int | None = None  # null = clear mapping
+    stock_alert_enabled: bool | None = None
+    stock_qty: int | None = None
+    stock_alert_level: int | None = None
 
 
 class TableCreate(SQLModel):

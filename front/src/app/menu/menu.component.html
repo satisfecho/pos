@@ -324,6 +324,9 @@
           </div>
           <div class="featured-info">
             <h3 class="featured-name">{{ product.name }}</h3>
+            @if (stockLeft(product); as left) {
+            <span class="stock-left-badge">{{ 'MENU.STOCK_ONLY_LEFT' | translate:{ count: left } }}</span>
+            }
             <span class="featured-price">
               @if (product.list_price_cents != null && product.list_price_cents > product.price_cents) {
                 <span class="list-price">{{ formatPrice(product.list_price_cents) }}</span>
@@ -405,6 +408,9 @@
                 }
               </span>
             </div>
+            @if (stockLeft(product); as left) {
+            <p class="stock-left-badge">{{ 'MENU.STOCK_ONLY_LEFT' | translate:{ count: left } }}</p>
+            }
 
             <!-- Origin / Winery -->
             @if (product.country || product.region || product.winery) {
@@ -666,6 +672,9 @@
               }
             </span>
           </div>
+          @if (stockLeft(selectedProduct()!); as left) {
+          <p class="stock-left-badge stock-left-badge--detail">{{ 'MENU.STOCK_ONLY_LEFT' | translate:{ count: left } }}</p>
+          }
 
           <!-- Tags row -->
           @if (selectedProduct()!.vintage || selectedProduct()!.winery || selectedProduct()!.grape_variety ||

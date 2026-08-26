@@ -318,7 +318,16 @@
   "PRICING_PAGE": {
     "BADGE": "Simple hosted pricing",
     "TITLE": "Try free, then one flat monthly plan",
-    "SUBTITLE": "Hosted Satisfecho includes a free trial with no card required. Self-host under AGPLv3 at zero license cost if you prefer to run it yourself.",
+    "SUBTITLE": "Start with a QR menu free forever. Hosted Satisfecho adds a free trial with no card required for the full platform. Self-host under AGPLv3 at zero license cost if you prefer to run it yourself.",
+    "QR_CALLOUT": "QR Menu is free forever — start with zero cost",
+    "QR_NAME": "QR Menu",
+    "QR_LEDE": "Digital menu and table ordering for guests — no app install.",
+    "QR_PRICE": "Free",
+    "QR_FOREVER": "Free forever",
+    "QR_INCLUDES_1": "Publish a mobile menu from a table QR code",
+    "QR_INCLUDES_2": "Update dishes once — every QR shows the latest menu",
+    "QR_INCLUDES_3": "Add kitchen, reports, and more when you are ready",
+    "CTA_QR": "Create your QR menu",
     "HOSTED_NAME": "Hosted",
     "HOSTED_LEDE": "Managed Satisfecho for your restaurant — we run the platform.",
     "PER_MONTH": "/ month",
@@ -336,6 +345,12 @@
     "SELFHOST_PRICE": "€0",
     "SELFHOST_LICENSE": "AGPLv3 open source — no hosted fee",
     "CTA_GITHUB": "View on GitHub",
+    "SUPPORT_NAME": "Professional support",
+    "SUPPORT_HEADLINE": "We support you!",
+    "SUPPORT_LEDE": "Optional help from our team — setup, training, and troubleshooting.",
+    "SUPPORT_PRICE": "€50/h + tax",
+    "SUPPORT_NOTE": "Billed by the hour. Contact us to discuss your needs.",
+    "CTA_SUPPORT": "Contact us",
     "LOAD_ERROR": "Could not load pricing. Please try again later."
   },
   "PUBLIC_MENU": {
@@ -569,7 +584,11 @@
     "ADDRESS": "Address",
     "WEBSITE": "Website",
     "TENANT_NOT_FOUND": "Tenant not found.",
-    "LOAD_FAILED": "Could not load platform data. Please sign in again."
+    "LOAD_FAILED": "Could not load platform data. Please sign in again.",
+    "COL_OWNER_LOGINS": "Owner logins",
+    "COL_OWNER_LAST_LOGIN": "Owner last login",
+    "COL_LOGIN_COUNT": "Logins",
+    "COL_LAST_LOGIN": "Last login"
   },
   "COURIER_HOME": {
     "TITLE": "Deliveries",
@@ -768,7 +787,8 @@
     "SHARED_CART_HINT": "Shared table cart — everyone at this table sees these items. Place order sends only your items.",
     "ADDED_BY": "Added by {{name}}",
     "ADDED_BY_GUEST": "Added by another guest",
-    "PLACE_OWN_ITEMS_ONLY": "Add your own items before placing an order. Other guests’ items stay in the shared cart until they place their order."
+    "PLACE_OWN_ITEMS_ONLY": "Add your own items before placing an order. Other guests’ items stay in the shared cart until they place their order.",
+    "STOCK_ONLY_LEFT": "Only {{count}} left"
   },
   "PRODUCTS": {
     "TITLE": "Products",
@@ -970,7 +990,15 @@
     "BULK_IMPORT_CSV_PLACEHOLDER": "name,price,category\nMargherita,12.5,Main Course",
     "BULK_IMPORT_CSV_HINT": "Required: name. Price via price or price_cents. Optional: cost, category, subcategory, description, ingredients. Common aliases (producto, precio, …) are accepted. Unknown columns are rejected unless AI mapping is enabled.",
     "BULK_IMPORT_CSV_AI_MAPPING": "Use AI to map unknown column headers (sends headers + a few sample rows to the configured vision API; review preview before saving)",
-    "BULK_IMPORT_CSV_EMPTY": "Paste or upload CSV first."
+    "BULK_IMPORT_CSV_EMPTY": "Paste or upload CSV first.",
+    "STOCK_ALERT_ENABLED": "Enable stock alert",
+    "STOCK_ALERT_HINT": "Warn when sellable stock is at or below the alert level. Managed on this product, not inventory ingredients.",
+    "STOCK_QTY": "Current stock",
+    "STOCK_ALERT_LEVEL": "Alert when at or below",
+    "STOCK_HEADER": "Stock",
+    "STOCK_LOW": "Low",
+    "STOCK_OK": "OK",
+    "STOCK_BADGE_TITLE": "Stock {{qty}} (alert at {{level}})"
   },
   "CATALOG": {
     "TITLE": "Product Catalog",

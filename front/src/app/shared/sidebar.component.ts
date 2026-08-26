@@ -41,7 +41,13 @@ type NavGroupKey = 'operations' | 'planning' | 'catalog' | 'admin';
         <div class="sidebar-header">
           <div class="logo-container" [attr.title]="brandTitle()" [attr.aria-label]="brandTitle()">
             <span class="logo">POS</span>
-            <span class="version">{{ version }} <span class="commit-hash">{{ commitHash }}</span></span>
+            <span class="version">
+              {{ version }}
+              <span class="commit-hash">{{ commitHash }}</span>
+              @if (tenantId(); as tid) {
+                <span class="tenant-id" title="Tenant ID">{{ tid }}</span>
+              }
+            </span>
             @if (tenantOrgName()) {
               <span class="sidebar-org-name" [attr.title]="tenantOrgName()!" [attr.aria-label]="tenantOrgName()!">{{
                 tenantOrgName()
@@ -403,6 +409,11 @@ export class SidebarComponent implements OnInit, AfterViewInit, OnDestroy {
   );
 
   tenantOrgName = computed(() => this.api.tenantDisplayName()?.trim() ?? '');
+
+  tenantId = computed(() => {
+    const id = this.user()?.tenant_id;
+    return id != null ? id : null;
+  });
 
   brandTitle = computed(() => {
     const org = this.tenantOrgName();

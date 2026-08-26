@@ -210,6 +210,46 @@ import { ProductBulkImportComponent } from './product-bulk-import.component';
                        <small class="field-hint">{{ 'PRODUCTS.AVAILABLE_UNTIL_HINT' | translate }}</small>
                      </div>
                    </div>
+                   <div class="form-group stock-alert-section" data-testid="product-stock-alert">
+                     <label class="checkbox-label">
+                       <input
+                         type="checkbox"
+                         [(ngModel)]="formData.stock_alert_enabled"
+                         name="stock_alert_enabled"
+                         [disabled]="!canEditProducts()"
+                       />
+                       {{ 'PRODUCTS.STOCK_ALERT_ENABLED' | translate }}
+                     </label>
+                     <small class="field-hint">{{ 'PRODUCTS.STOCK_ALERT_HINT' | translate }}</small>
+                     @if (formData.stock_alert_enabled) {
+                       <div class="form-row stock-alert-fields">
+                         <div class="form-group form-group-sm">
+                           <label for="stock_qty">{{ 'PRODUCTS.STOCK_QTY' | translate }}</label>
+                           <input
+                             id="stock_qty"
+                             type="number"
+                             min="0"
+                             step="1"
+                             [(ngModel)]="formData.stock_qty"
+                             name="stock_qty"
+                             [readonly]="!canEditProducts()"
+                           />
+                         </div>
+                         <div class="form-group form-group-sm">
+                           <label for="stock_alert_level">{{ 'PRODUCTS.STOCK_ALERT_LEVEL' | translate }}</label>
+                           <input
+                             id="stock_alert_level"
+                             type="number"
+                             min="0"
+                             step="1"
+                             [(ngModel)]="formData.stock_alert_level"
+                             name="stock_alert_level"
+                             [readonly]="!canEditProducts()"
+                           />
+                         </div>
+                       </div>
+                     }
+                   </div>
                    <div class="form-group">
                      <label>{{ 'PRODUCTS.PRODUCT_IMAGE' | translate }}</label>
                      <div class="image-upload-row">
@@ -453,6 +493,7 @@ import { ProductBulkImportComponent } from './product-bulk-import.component';
                        <th>{{ 'PRODUCTS.SUBCATEGORY_HEADER' | translate }}</th>
                        <th>{{ 'PRODUCTS.PRICE_HEADER' | translate }}</th>
                        <th>{{ 'PRODUCTS.COST_HEADER' | translate }}</th>
+                       <th>{{ 'PRODUCTS.STOCK_HEADER' | translate }}</th>
                        <th></th>
                      </tr>
                    </thead>
@@ -524,6 +565,24 @@ import { ProductBulkImportComponent } from './product-bulk-import.component';
                         </td>
                         <td class="price">{{ formatPrice(product.price_cents) }}</td>
                         <td class="price">{{ product.cost_cents != null ? formatPrice(product.cost_cents) : '—' }}</td>
+                        <td data-testid="product-stock-cell">
+                          @if (product.stock_alert_enabled) {
+                            <span
+                              class="stock-badge"
+                              [class.stock-badge--low]="isProductLowStock(product)"
+                              [attr.title]="'PRODUCTS.STOCK_BADGE_TITLE' | translate:{qty: product.stock_qty ?? 0, level: product.stock_alert_level ?? 0}"
+                            >
+                              @if (isProductLowStock(product)) {
+                                {{ 'PRODUCTS.STOCK_LOW' | translate }}
+                              } @else {
+                                {{ 'PRODUCTS.STOCK_OK' | translate }}
+                              }
+                              <small>{{ product.stock_qty ?? 0 }} / {{ product.stock_alert_level ?? 0 }}</small>
+                            </span>
+                          } @else {
+                            <span class="muted">—</span>
+                          }
+                        </td>
                         <td class="actions">
                           <div class="actions-inner">
                           <button class="icon-btn" (click)="startEdit(product)" [attr.title]="'PRODUCTS.EDIT_TOOLTIP' | translate">
@@ -635,6 +694,9 @@ export class ProductsComponent implements OnInit {
     available_from?: string;
     available_until?: string;
     kitchen_station_id?: number | null;
+    stock_alert_enabled: boolean;
+    stock_qty: number;
+    stock_alert_level: number;
   } = {
     name: '',
     price: 0,
@@ -644,6 +706,9 @@ export class ProductsComponent implements OnInit {
     category: '',
     subcategory: '',
     kitchen_station_id: null,
+    stock_alert_enabled: false,
+    stock_qty: 0,
+    stock_alert_level: 5,
   };
   productTaxes = signal<Tax[]>([]);
   kitchenStations = signal<KitchenStation[]>([]);
@@ -857,6 +922,11 @@ export class ProductsComponent implements OnInit {
     });
   }
 
+  isProductLowStock(product: Product): boolean {
+    if (!product.stock_alert_enabled) return false;
+    return (product.stock_qty ?? 0) <= (product.stock_alert_level ?? 0);
+  }
+
   formatPrice(priceCents: number): string {
     void this.intlRevision();
     const currencyCode = this.currencyCode();
@@ -979,6 +1049,9 @@ export class ProductsComponent implements OnInit {
       available_from: product.available_from || '',
       available_until: product.available_until || '',
       kitchen_station_id: product.kitchen_station_id ?? null,
+      stock_alert_enabled: !!product.stock_alert_enabled,
+      stock_qty: product.stock_qty ?? 0,
+      stock_alert_level: product.stock_alert_level ?? 0,
     };
     this.onCategoryChange(); // Update available subcategories
     this.showAddForm.set(false);
@@ -1003,6 +1076,9 @@ export class ProductsComponent implements OnInit {
       available_from: '',
       available_until: '',
       kitchen_station_id: null,
+      stock_alert_enabled: false,
+      stock_qty: 0,
+      stock_alert_level: 5,
     };
     this.showAddForm.set(true);
     this.clearQuestionsState();
@@ -1023,6 +1099,9 @@ export class ProductsComponent implements OnInit {
       available_from: '',
       available_until: '',
       kitchen_station_id: null,
+      stock_alert_enabled: false,
+      stock_qty: 0,
+      stock_alert_level: 5,
     };
     this.availableSubcategories.set([]);
     this.productFormErrors.set(null);
@@ -1312,6 +1391,9 @@ export class ProductsComponent implements OnInit {
       available_from: this.formData.available_from?.trim() || null,
       available_until: this.formData.available_until?.trim() || null,
       kitchen_station_id: this.formData.kitchen_station_id ?? null,
+      stock_alert_enabled: !!this.formData.stock_alert_enabled,
+      stock_qty: Math.max(0, Math.floor(Number(this.formData.stock_qty) || 0)),
+      stock_alert_level: Math.max(0, Math.floor(Number(this.formData.stock_alert_level) || 0)),
     };
 
     const editing = this.editingProduct();

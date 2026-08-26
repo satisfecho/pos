@@ -318,7 +318,16 @@
   "PRICING_PAGE": {
     "BADGE": "सरल होस्टेड मूल्य",
     "TITLE": "मुफ़्त आज़माएँ, फिर एक फ्लैट मासिक प्लान",
-    "SUBTITLE": "होस्टेड Satisfecho में कार्ड के बिना मुफ़्त ट्रायल शामिल है। खुद चलाएँ तो AGPLv3 के तहत शून्य लाइसेंस लागत।",
+    "SUBTITLE": "हमेशा के लिए मुफ़्त QR मेनू से शुरू करें। पूर्ण प्लेटफ़ॉर्म के लिए होस्टेड Satisfecho में कार्ड के बिना मुफ़्त ट्रायल शामिल है। खुद चलाएँ तो AGPLv3 के तहत शून्य लाइसेंस लागत।",
+    "QR_CALLOUT": "QR मेनू हमेशा मुफ़्त — बिना लागत शुरू करें",
+    "QR_NAME": "QR मेनू",
+    "QR_LEDE": "अतिथियों के लिए डिजिटल मेनू और टेबल ऑर्डरिंग — कोई ऐप इंस्टॉल नहीं।",
+    "QR_PRICE": "मुफ़्त",
+    "QR_FOREVER": "हमेशा मुफ़्त",
+    "QR_INCLUDES_1": "टेबल QR कोड से मोबाइल मेनू प्रकाशित करें",
+    "QR_INCLUDES_2": "एक बार डिश अपडेट करें — हर QR नवीनतम मेनू दिखाता है",
+    "QR_INCLUDES_3": "तैयार होने पर किचन, रिपोर्ट और अधिक जोड़ें",
+    "CTA_QR": "अपना QR मेनू बनाएँ",
     "HOSTED_NAME": "होस्टेड",
     "HOSTED_LEDE": "आपके रेस्तराँ के लिए प्रबंधित Satisfecho — प्लेटफ़ॉर्म हम चलाते हैं।",
     "PER_MONTH": "/ माह",
@@ -336,6 +345,12 @@
     "SELFHOST_PRICE": "€0",
     "SELFHOST_LICENSE": "AGPLv3 ओपन सोर्स — कोई होस्टेड शुल्क नहीं",
     "CTA_GITHUB": "GitHub पर देखें",
+    "SUPPORT_NAME": "पेशेवर सहायता",
+    "SUPPORT_HEADLINE": "हम आपका साथ देते हैं!",
+    "SUPPORT_LEDE": "हमारी टीम से वैकल्पिक मदद — सेटअप, प्रशिक्षण और समस्या निवारण।",
+    "SUPPORT_PRICE": "€50/घं + कर",
+    "SUPPORT_NOTE": "प्रति घंटे बिलिंग। अपनी ज़रूरतों पर चर्चा के लिए संपर्क करें।",
+    "CTA_SUPPORT": "संपर्क करें",
     "LOAD_ERROR": "मूल्य लोड नहीं हो सके। बाद में पुनः प्रयास करें।"
   },
   "PUBLIC_MENU": {
@@ -535,7 +550,11 @@
     "ADDRESS": "पता",
     "WEBSITE": "वेबसाइट",
     "TENANT_NOT_FOUND": "टेनant नहीं मिला।",
-    "LOAD_FAILED": "प्लेटफ़ॉर्म डेटा लोड नहीं हो सका। कृपया फिर से साइन इन करें।"
+    "LOAD_FAILED": "प्लेटफ़ॉर्म डेटा लोड नहीं हो सका। कृपया फिर से साइन इन करें।",
+    "COL_OWNER_LOGINS": "मालिक लॉगिन",
+    "COL_OWNER_LAST_LOGIN": "मालिक अंतिम लॉगिन",
+    "COL_LOGIN_COUNT": "लॉगिन",
+    "COL_LAST_LOGIN": "अंतिम लॉगिन"
   },
   "COURIER_HOME": {
     "TITLE": "डिलीवरी",
@@ -734,7 +753,8 @@
     "SHARED_CART_HINT": "साझा टेबल कार्ट — मेज़ पर सभी ये आइटम देखते हैं। ऑर्डर केवल आपके आइटम भेजता है।",
     "ADDED_BY": "{{name}} द्वारा जोड़ा गया",
     "ADDED_BY_GUEST": "किसी अन्य अतिथि द्वारा जोड़ा गया",
-    "PLACE_OWN_ITEMS_ONLY": "ऑर्डर देने से पहले अपने आइटम जोड़ें। अन्य अतिथियों के आइटम साझा कार्ट में रहते हैं जब तक वे ऑर्डर न दें।"
+    "PLACE_OWN_ITEMS_ONLY": "ऑर्डर देने से पहले अपने आइटम जोड़ें। अन्य अतिथियों के आइटम साझा कार्ट में रहते हैं जब तक वे ऑर्डर न दें।",
+    "STOCK_ONLY_LEFT": "केवल {{count}} बचे हैं"
   },
   "PRODUCTS": {
     "TITLE": "उत्पाद",
@@ -936,7 +956,15 @@
     "BULK_IMPORT_CSV_PLACEHOLDER": "name,price,category\nMargherita,12.5,Main Course",
     "BULK_IMPORT_CSV_HINT": "Required: name. Price via price or price_cents. Optional: cost, category, subcategory, description, ingredients. Common aliases (producto, precio, …) are accepted. Unknown columns are rejected unless AI mapping is enabled.",
     "BULK_IMPORT_CSV_AI_MAPPING": "Use AI to map unknown column headers (sends headers + a few sample rows to the configured vision API; review preview before saving)",
-    "BULK_IMPORT_CSV_EMPTY": "Paste or upload CSV first."
+    "BULK_IMPORT_CSV_EMPTY": "Paste or upload CSV first.",
+    "STOCK_ALERT_ENABLED": "स्टॉक अलर्ट सक्षम करें",
+    "STOCK_ALERT_HINT": "जब बिकने योग्य स्टॉक अलर्ट स्तर पर या उससे कम हो तो चेतावनी दें। इस उत्पाद पर प्रबंधित।",
+    "STOCK_QTY": "वर्तमान स्टॉक",
+    "STOCK_ALERT_LEVEL": "इस पर या नीचे अलर्ट",
+    "STOCK_HEADER": "स्टॉक",
+    "STOCK_LOW": "कम",
+    "STOCK_OK": "ठीक",
+    "STOCK_BADGE_TITLE": "स्टॉक {{qty}} (अलर्ट {{level}} पर)"
   },
   "CATALOG": {
     "TITLE": "उत्पाद कैटलॉग",

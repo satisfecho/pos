@@ -425,7 +425,11 @@
     "ADDRESS": "Adresse",
     "WEBSITE": "Site web",
     "TENANT_NOT_FOUND": "Locataire introuvable.",
-    "LOAD_FAILED": "Impossible de charger les données plateforme. Veuillez vous reconnecter."
+    "LOAD_FAILED": "Impossible de charger les données plateforme. Veuillez vous reconnecter.",
+    "COL_OWNER_LOGINS": "Connexions propriétaire",
+    "COL_OWNER_LAST_LOGIN": "Dernière connexion propriétaire",
+    "COL_LOGIN_COUNT": "Connexions",
+    "COL_LAST_LOGIN": "Dernière connexion"
   },
   "COURIER_HOME": {
     "TITLE": "Livraisons",
@@ -612,7 +616,8 @@
     "SHARED_CART_HINT": "Panier partagé de la table — tout le monde voit ces articles. Commander n’envoie que vos articles.",
     "ADDED_BY": "Ajouté par {{name}}",
     "ADDED_BY_GUEST": "Ajouté par un autre client",
-    "PLACE_OWN_ITEMS_ONLY": "Ajoutez vos propres articles avant de commander. Ceux des autres restent dans le panier partagé jusqu’à leur commande."
+    "PLACE_OWN_ITEMS_ONLY": "Ajoutez vos propres articles avant de commander. Ceux des autres restent dans le panier partagé jusqu’à leur commande.",
+    "STOCK_ONLY_LEFT": "Plus que {{count}}"
   },
   "PRODUCTS": {
     "TITLE": "Produits",
@@ -814,7 +819,15 @@
     "BULK_IMPORT_CSV_PLACEHOLDER": "name,price,category\nMargherita,12.5,Main Course",
     "BULK_IMPORT_CSV_HINT": "Obligatoire : name. Prix via price ou price_cents. Optionnel : cost, category, subcategory, description, ingredients. Alias courants acceptés (producto, precio, …). Colonnes inconnues rejetées sauf mapping IA.",
     "BULK_IMPORT_CSV_AI_MAPPING": "Utiliser l'IA pour mapper les colonnes inconnues (envoie en-têtes + quelques lignes à l'API vision ; vérifiez l'aperçu avant d'enregistrer)",
-    "BULK_IMPORT_CSV_EMPTY": "Collez ou téléversez d'abord un CSV."
+    "BULK_IMPORT_CSV_EMPTY": "Collez ou téléversez d'abord un CSV.",
+    "STOCK_ALERT_ENABLED": "Activer l'alerte de stock",
+    "STOCK_ALERT_HINT": "Alerter lorsque le stock vendable est égal ou inférieur au seuil. Géré sur ce produit.",
+    "STOCK_QTY": "Stock actuel",
+    "STOCK_ALERT_LEVEL": "Alerter à partir de",
+    "STOCK_HEADER": "Stock",
+    "STOCK_LOW": "Bas",
+    "STOCK_OK": "OK",
+    "STOCK_BADGE_TITLE": "Stock {{qty}} (alerte à {{level}})"
   },
   "CATALOG": {
     "TITLE": "Catalogue produits",
@@ -2763,7 +2776,16 @@
   "PRICING_PAGE": {
     "BADGE": "Tarifs hébergés simples",
     "TITLE": "Essai gratuit, puis un forfait mensuel unique",
-    "SUBTITLE": "Satisfecho hébergé inclut un essai gratuit sans carte. Auto-hébergez sous AGPLv3 sans frais de licence si vous préférez le faire tourner vous-même.",
+    "SUBTITLE": "Commencez avec un menu QR gratuit pour toujours. Satisfecho hébergé ajoute un essai gratuit sans carte pour la plateforme complète. Auto-hébergez sous AGPLv3 sans frais de licence si vous préférez le faire tourner vous-même.",
+    "QR_CALLOUT": "Menu QR gratuit pour toujours — commencez sans frais",
+    "QR_NAME": "Menu QR",
+    "QR_LEDE": "Menu numérique et commandes à table pour les clients — pas d'app à installer.",
+    "QR_PRICE": "Gratuit",
+    "QR_FOREVER": "Gratuit pour toujours",
+    "QR_INCLUDES_1": "Publiez un menu mobile via un QR code sur la table",
+    "QR_INCLUDES_2": "Mettez à jour les plats une fois — chaque QR affiche le menu actuel",
+    "QR_INCLUDES_3": "Ajoutez cuisine, rapports et plus quand vous êtes prêt",
+    "CTA_QR": "Créez votre menu QR",
     "HOSTED_NAME": "Hébergé",
     "HOSTED_LEDE": "Satisfecho géré pour votre restaurant — nous exploitons la plateforme.",
     "PER_MONTH": "/ mois",
@@ -2781,6 +2803,12 @@
     "SELFHOST_PRICE": "€0",
     "SELFHOST_LICENSE": "Open source AGPLv3 — pas de frais hébergés",
     "CTA_GITHUB": "Voir sur GitHub",
+    "SUPPORT_NAME": "Support professionnel",
+    "SUPPORT_HEADLINE": "Nous vous accompagnons !",
+    "SUPPORT_LEDE": "Aide optionnelle de notre équipe — configuration, formation et dépannage.",
+    "SUPPORT_PRICE": "50 €/h + taxes",
+    "SUPPORT_NOTE": "Facturation à l'heure. Contactez-nous pour discuter de vos besoins.",
+    "CTA_SUPPORT": "Nous contacter",
     "LOAD_ERROR": "Impossible de charger les tarifs. Réessayez plus tard."
   },
   "WAITLIST": {

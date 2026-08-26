@@ -13,12 +13,12 @@ Platform operators can:
   - Total tenant (client) count
   - New tenant sign-ups in the last 30 days
   - Login activity (total count, last login time, last 24 hours / 7 days)
-  - **All tenants** with owner contact email, product count, and links
+  - **All tenants** with owner contact email, **owner login count / last login**, product count, and links
   - Recent login events (who logged in, which tenant, scope)
 - Open a **tenant detail** page at `/platform/tenants/{id}` with:
   - Owner and business contact (email, phone)
   - Activity stats (products, tables, users, orders, reservations)
-  - **Staff accounts** (email + role) — whom to contact
+  - **Staff accounts** (email + role + **login count / last login**) — whom to contact
   - Links to **public pages** for that tenant:
     - `/public-menu/{id}` — guest menu
     - `/book/{id}` — reservations / booking
@@ -52,8 +52,8 @@ All endpoints require a JWT from login with `?scope=platform`.
 | `POST` | `/token?scope=platform` | Operator login (email + password). |
 | `GET` | `/platform/me` | Current operator profile. |
 | `GET` | `/platform/metrics` | Aggregated metrics + recent tenants/logins. |
-| `GET` | `/platform/tenants` | All tenants (up to 100) with owner contact and counts. |
-| `GET` | `/platform/tenants/{id}` | Tenant detail + staff contacts. |
+| `GET` | `/platform/tenants` | All tenants (up to 100) with owner contact, owner login count/last login, and counts. |
+| `GET` | `/platform/tenants/{id}` | Tenant detail + staff contacts (each with login count / last login). |
 
 Successful logins (all scopes) append a row to `login_event` for operator metrics.
 

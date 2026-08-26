@@ -39,6 +39,11 @@ import { LandingSiteFooterComponent } from '../shared/landing-site-footer.compon
         <p class="pricing-hero__badge">{{ 'PRICING_PAGE.BADGE' | translate }}</p>
         <h1 class="pricing-hero__title">{{ 'PRICING_PAGE.TITLE' | translate }}</h1>
         <p class="pricing-hero__subtitle">{{ 'PRICING_PAGE.SUBTITLE' | translate }}</p>
+        @if (!loading() && !error()) {
+          <p class="pricing-hero__callout" data-testid="pricing-qr-callout">
+            {{ 'PRICING_PAGE.QR_CALLOUT' | translate }}
+          </p>
+        }
       </header>
 
       <main class="pricing-main">
@@ -48,6 +53,23 @@ import { LandingSiteFooterComponent } from '../shared/landing-site-footer.compon
           <p class="pricing-error" data-testid="pricing-error">{{ error() | translate }}</p>
         } @else {
           <div class="pricing-tiers" data-testid="pricing-tiers">
+            <article class="pricing-card pricing-card--highlight" data-plan-id="qr_menu" data-testid="pricing-qr-free">
+              <h2 class="pricing-card__name">{{ 'PRICING_PAGE.QR_NAME' | translate }}</h2>
+              <p class="pricing-card__lede">{{ 'PRICING_PAGE.QR_LEDE' | translate }}</p>
+              <div class="pricing-card__price" data-testid="pricing-qr-price">
+                <span class="pricing-card__amount">{{ 'PRICING_PAGE.QR_PRICE' | translate }}</span>
+                <span class="pricing-card__period">{{ 'PRICING_PAGE.QR_FOREVER' | translate }}</span>
+              </div>
+              <ul class="pricing-card__includes">
+                <li>{{ 'PRICING_PAGE.QR_INCLUDES_1' | translate }}</li>
+                <li>{{ 'PRICING_PAGE.QR_INCLUDES_2' | translate }}</li>
+                <li>{{ 'PRICING_PAGE.QR_INCLUDES_3' | translate }}</li>
+              </ul>
+              <a routerLink="/register" class="pricing-btn pricing-btn--primary" data-testid="pricing-cta-qr">
+                {{ 'PRICING_PAGE.CTA_QR' | translate }}
+              </a>
+            </article>
+
             @for (plan of plans(); track plan.id) {
               <article class="pricing-card" [attr.data-plan-id]="plan.id" data-testid="pricing-plan-card">
                 <h2 class="pricing-card__name">{{ 'PRICING_PAGE.HOSTED_NAME' | translate }}</h2>
@@ -104,6 +126,25 @@ import { LandingSiteFooterComponent } from '../shared/landing-site-footer.compon
               </a>
             </article>
           </div>
+
+          <section class="pricing-support" data-testid="pricing-support">
+            <div class="pricing-support__copy">
+              <p class="pricing-support__eyebrow">{{ 'PRICING_PAGE.SUPPORT_NAME' | translate }}</p>
+              <h2 class="pricing-support__headline">{{ 'PRICING_PAGE.SUPPORT_HEADLINE' | translate }}</h2>
+              <p class="pricing-support__lede">{{ 'PRICING_PAGE.SUPPORT_LEDE' | translate }}</p>
+              <p class="pricing-support__price" data-testid="pricing-support-price">
+                {{ 'PRICING_PAGE.SUPPORT_PRICE' | translate }}
+              </p>
+              <p class="pricing-support__note">{{ 'PRICING_PAGE.SUPPORT_NOTE' | translate }}</p>
+            </div>
+            <a
+              href="mailto:hello@satisfecho.de"
+              class="pricing-btn pricing-btn--ghost pricing-support__cta"
+              data-testid="pricing-cta-support"
+            >
+              {{ 'PRICING_PAGE.CTA_SUPPORT' | translate }}
+            </a>
+          </section>
         }
       </main>
 
@@ -255,6 +296,19 @@ import { LandingSiteFooterComponent } from '../shared/landing-site-footer.compon
         color: var(--pp-muted);
       }
 
+      .pricing-hero__callout {
+        margin: var(--space-5) auto 0;
+        max-width: 36rem;
+        padding: var(--space-3) var(--space-4);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 107, 71, 0.35);
+        background: rgba(255, 107, 71, 0.12);
+        color: var(--pp-text);
+        font-size: 0.9375rem;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
       .pricing-main {
         position: relative;
         z-index: 1;
@@ -281,7 +335,7 @@ import { LandingSiteFooterComponent } from '../shared/landing-site-footer.compon
 
       @media (min-width: 768px) {
         .pricing-tiers {
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: repeat(3, 1fr);
         }
       }
 
@@ -297,6 +351,71 @@ import { LandingSiteFooterComponent } from '../shared/landing-site-footer.compon
 
       .pricing-card--alt {
         background: transparent;
+      }
+
+      .pricing-card--highlight {
+        border-color: rgba(255, 107, 71, 0.45);
+        background: rgba(255, 107, 71, 0.08);
+      }
+
+      .pricing-support {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+        margin-top: var(--space-6);
+        padding: var(--space-6);
+        border-radius: 16px;
+        border: 1px solid var(--pp-border);
+        background: var(--pp-surface);
+      }
+
+      @media (min-width: 768px) {
+        .pricing-support {
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+        }
+      }
+
+      .pricing-support__copy {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+      }
+
+      .pricing-support__eyebrow {
+        margin: 0;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--pp-muted);
+      }
+
+      .pricing-support__headline {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .pricing-support__lede,
+      .pricing-support__note {
+        margin: 0;
+        font-size: 0.9375rem;
+        line-height: 1.5;
+        color: var(--pp-muted);
+      }
+
+      .pricing-support__price {
+        margin: var(--space-1) 0 0;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--pp-text);
+      }
+
+      .pricing-support__cta {
+        flex-shrink: 0;
       }
 
       .pricing-card__name {

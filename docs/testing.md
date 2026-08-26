@@ -364,7 +364,7 @@ npm run test:pricing --prefix front
 # Or: BASE_URL=http://127.0.0.1:4202 node front/scripts/test-pricing.mjs
 ```
 
-- No login. Fetches `GET /api/saas/config`, opens `/pricing` (must not redirect home), asserts translated hero, price and trial text matching config, self-host card, register CTA, and billing-active vs inactive note matching `enabled`. Fails on pageerror.
+- No login. Fetches `GET /api/saas/config`, opens `/pricing` (must not redirect home), asserts translated hero, QR Menu free-forever tier and callout, support block (€50/h), price and trial text matching config, self-host card, register/QR/support CTAs, and billing-active vs inactive note matching `enabled`. Fails on pageerror.
 
 **Public about page (`/about`):**
 
@@ -729,7 +729,7 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `test:landing-version` | `scripts/test-landing-version.mjs` |
 | `record-promo-video` | `scripts/record-promo-video.mjs` (marketing walkthrough screencast → 1080p MP4 + copyleft bed; see `docs/0075-promo-videos.md`; outputs under `tmp/promo/`) |
 | `test:features` | `scripts/test-features.mjs` (public `/features`: hero title, category sections, home/register nav; no login) |
-| `test:pricing` | `scripts/test-pricing.mjs` (public `/pricing`: live `GET /saas/config` price/trial, self-host card, billing note vs `enabled`; no login) |
+| `test:pricing` | `scripts/test-pricing.mjs` (public `/pricing`: QR free tier, support €50/h, live `GET /saas/config` price/trial, self-host card, billing note vs `enabled`; no login) |
 | `test:about` | `scripts/test-about.mjs` (public `/about`: footer About link, Amvara Consulting S.L. on page + footer; no login) |
 | Print agent (manual / API) | Backend: `pytest tests/test_print_jobs.py`; LAN dry-run: create agent in Settings → Printing, then `PRINT_AGENT_API_BASE=http://127.0.0.1:4202/api PRINT_AGENT_TOKEN=… PRINT_AGENT_DRY_RUN=1 python3 scripts/print-agent/print_agent.py` and enqueue via Orders → Print kitchen / invoice (`docs/0070-hardware-printing.md`) |
 | `test:feedback-public-i18n` | `scripts/test-feedback-public-i18n.mjs` (public `/feedback/:tenant` and `?token=`; locale picker en/de/fr/es/ca/zh-CN/hi; invalid `/feedback/0`; no raw `FEEDBACK.*` in DOM; document titles localized) |
@@ -786,6 +786,8 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 - **Demo products check:** `docker compose exec back python -m app.seeds.check_demo_products` (exit 0 = tenant 1 has all DEMO_PRODUCTS names; extra catalog rows OK).
 - **Link demo products to catalog (images on /products):** `docker compose exec back python -m app.seeds.link_demo_products_to_catalog` — links products without images to provider products that have images; deploy runs this after catalog imports.
 - **Clear orphan provider product images:** `docker compose exec back python -m app.seeds.clear_orphan_provider_product_images` — sets `ProviderProduct.image_filename` (and Product `providers/...` refs) to null when the file is missing under `uploads/providers/`, so catalog stops requesting 404 URLs.
+- **Sync Product images after catalog import:** `docker compose exec back python -m app.seeds.sync_product_images` — repairs stale `Product.image_filename` from linked `TenantProduct`/provider files (safe for custom tenant uploads). Deploy runs this automatically.
+- **Product image health (deploy):** `docker compose exec back python -m app.seeds.check_product_image_health` — fails when public menu shows an image for a linked product but `/products` would not (tenant 1 by default).
 - **Demo courier user:** `docker compose exec back python -m app.seeds.seed_demo_courier_user` — ensures tenant 1 has one `courier` role user when missing (`COURIER_EMAIL` / `COURIER_PASSWORD`, defaults `courier-test-phase1@amvara.de` / `secret`). Bootstrap / `reset_demo_data` run this **before** demo orders so Delivery samples can assign courier / `out_for_delivery`.
 - **Demo orders (Reports + Delivery):** `docker compose exec back python -m app.seeds.seed_demo_orders` — seeds tenant 1 with paid/active **table** orders over ±90 days plus a small Satisfecho Delivery mix; idempotent (skips if orders exist). Bootstrap / `reset_demo_data` run this. Optional: `./run_seeds.sh --demo-orders` from `back/`.
 - **Demo delivery orders check:** `docker compose exec back python -m app.seeds.check_demo_delivery_orders` (exit 0 = tenant 1 has ≥1 `order_channel=satisfecho_delivery` row; soft-warns if none have `courier_user_id`).

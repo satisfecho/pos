@@ -10,6 +10,7 @@ import { FocusFirstInputDirective } from '../shared/focus-first-input.directive'
 import { LanguagePickerComponent } from '../shared/language-picker.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { getSubcategoryLabel as resolveSubcategoryLabel } from '../shared/product-subcategory-label.util';
+import { productStockLeft } from '../shared/product-stock.util';
 
 interface CartItem {
   product: Product;
@@ -1120,6 +1121,10 @@ export class MenuComponent implements OnInit, OnDestroy {
       currency: currencyCode,
       currencyDisplay: 'symbol',
     }).format(priceCents / 100);
+  }
+
+  stockLeft(product: Product): number | null {
+    return productStockLeft(product);
   }
 
   sortItems(items: CartItem[]): CartItem[] {

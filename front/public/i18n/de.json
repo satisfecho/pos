@@ -425,7 +425,11 @@
     "ADDRESS": "Adresse",
     "WEBSITE": "Website",
     "TENANT_NOT_FOUND": "Mandant nicht gefunden.",
-    "LOAD_FAILED": "Plattformdaten konnten nicht geladen werden. Bitte erneut anmelden."
+    "LOAD_FAILED": "Plattformdaten konnten nicht geladen werden. Bitte erneut anmelden.",
+    "COL_OWNER_LOGINS": "Owner-Logins",
+    "COL_OWNER_LAST_LOGIN": "Owner letzter Login",
+    "COL_LOGIN_COUNT": "Logins",
+    "COL_LAST_LOGIN": "Letzter Login"
   },
   "COURIER_HOME": {
     "TITLE": "Lieferungen",
@@ -612,7 +616,8 @@
     "SHARED_CART_HINT": "Gemeinsamer Tisch-Warenkorb — alle am Tisch sehen diese Artikel. Bestellen sendet nur Ihre Artikel.",
     "ADDED_BY": "Hinzugefügt von {{name}}",
     "ADDED_BY_GUEST": "Von einem anderen Gast hinzugefügt",
-    "PLACE_OWN_ITEMS_ONLY": "Fügen Sie eigene Artikel hinzu, bevor Sie bestellen. Artikel anderer Gäste bleiben im gemeinsamen Warenkorb, bis sie bestellen."
+    "PLACE_OWN_ITEMS_ONLY": "Fügen Sie eigene Artikel hinzu, bevor Sie bestellen. Artikel anderer Gäste bleiben im gemeinsamen Warenkorb, bis sie bestellen.",
+    "STOCK_ONLY_LEFT": "Nur noch {{count}} übrig"
   },
   "PRODUCTS": {
     "TITLE": "Produkte",
@@ -814,7 +819,15 @@
     "BULK_IMPORT_CSV_PLACEHOLDER": "name,price,category\nMargherita,12.5,Main Course",
     "BULK_IMPORT_CSV_HINT": "Pflicht: name. Preis über price oder price_cents. Optional: cost, category, subcategory, description, ingredients. Übliche Aliase (producto, precio, …) werden akzeptiert. Unbekannte Spalten werden abgelehnt, außer KI-Zuordnung ist aktiv.",
     "BULK_IMPORT_CSV_AI_MAPPING": "KI zur Zuordnung unbekannter Spaltenköpfe nutzen (sendet Kopfzeilen und einige Beispielzeilen an die Vision-API; Vorschau vor dem Speichern prüfen)",
-    "BULK_IMPORT_CSV_EMPTY": "Bitte zuerst CSV einfügen oder hochladen."
+    "BULK_IMPORT_CSV_EMPTY": "Bitte zuerst CSV einfügen oder hochladen.",
+    "STOCK_ALERT_ENABLED": "Bestandswarnung aktivieren",
+    "STOCK_ALERT_HINT": "Warnen, wenn der verkaufbare Bestand die Warnschwelle erreicht oder unterschreitet. Am Produkt gepflegt, nicht an Inventar-Zutaten.",
+    "STOCK_QTY": "Aktueller Bestand",
+    "STOCK_ALERT_LEVEL": "Warnen ab / unter",
+    "STOCK_HEADER": "Bestand",
+    "STOCK_LOW": "Niedrig",
+    "STOCK_OK": "OK",
+    "STOCK_BADGE_TITLE": "Bestand {{qty}} (Warnung bei {{level}})"
   },
   "CATALOG": {
     "TITLE": "Produktkatalog",
@@ -2763,7 +2776,16 @@
   "PRICING_PAGE": {
     "BADGE": "Einfache Hosted-Preise",
     "TITLE": "Kostenlos testen, dann ein flacher Monatspreis",
-    "SUBTITLE": "Hosted Satisfecho enthält eine kostenlose Testphase ohne Karte. Self-Hosting unter AGPLv3 ohne Lizenzkosten, wenn Sie selbst betreiben möchten.",
+    "SUBTITLE": "Starten Sie mit einem QR-Menü — für immer kostenlos. Hosted Satisfecho bietet eine kostenlose Testphase ohne Karte für die volle Plattform. Self-Hosting unter AGPLv3 ohne Lizenzkosten, wenn Sie selbst betreiben möchten.",
+    "QR_CALLOUT": "QR-Menü ist für immer kostenlos — starten Sie ohne Kosten",
+    "QR_NAME": "QR-Menü",
+    "QR_LEDE": "Digitales Menü und Tischbestellung für Gäste — keine App nötig.",
+    "QR_PRICE": "Kostenlos",
+    "QR_FOREVER": "Für immer kostenlos",
+    "QR_INCLUDES_1": "Mobiles Menü per QR-Code am Tisch",
+    "QR_INCLUDES_2": "Gerichte einmal aktualisieren — jeder QR zeigt das aktuelle Menü",
+    "QR_INCLUDES_3": "Küche, Berichte und mehr hinzufügen, wenn Sie bereit sind",
+    "CTA_QR": "QR-Menü erstellen",
     "HOSTED_NAME": "Hosted",
     "HOSTED_LEDE": "Verwaltetes Satisfecho für Ihr Restaurant — wir betreiben die Plattform.",
     "PER_MONTH": "/ Monat",
@@ -2781,6 +2803,12 @@
     "SELFHOST_PRICE": "€0",
     "SELFHOST_LICENSE": "AGPLv3 Open Source — keine Hosted-Gebühr",
     "CTA_GITHUB": "Auf GitHub ansehen",
+    "SUPPORT_NAME": "Professioneller Support",
+    "SUPPORT_HEADLINE": "Wir unterstützen Sie!",
+    "SUPPORT_LEDE": "Optionale Hilfe unseres Teams — Einrichtung, Schulung und Fehlerbehebung.",
+    "SUPPORT_PRICE": "50 €/h + MwSt.",
+    "SUPPORT_NOTE": "Abrechnung nach Stunde. Kontaktieren Sie uns für Ihre Anforderungen.",
+    "CTA_SUPPORT": "Kontakt",
     "LOAD_ERROR": "Preise konnten nicht geladen werden. Bitte später erneut versuchen."
   },
   "WAITLIST": {

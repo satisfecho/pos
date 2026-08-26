@@ -44,9 +44,11 @@ Columns on `tenant`:
 
 Prospects can open **`/pricing`** (linked from landing / features nav and footer) to see:
 
+- **QR Menu free forever** — a dedicated zero-cost tier (and hero callout) before paid options; aligned with README **Start with one feature**.
 - Hosted monthly price and trial days from live `GET /saas/config` (env-driven; no drifting hardcoded copy).
-- A short “what’s included” list (QR ordering, kitchen/bar, reservations, reports, loyalty).
+- A short “what’s included” list on the hosted tier (QR ordering, kitchen/bar, reservations, reports, loyalty).
 - Self-host / AGPLv3 as a zero license-cost alternative.
+- Optional **professional support** at **€50/h + tax** with contact CTA (`hello@satisfecho.de`).
 - When `SAAS_PAYWALL_ENABLED` is false, the page still shows plan numbers but states that hosted paywall billing is **not** required on that deployment.
 
 Smoke: `npm run test:pricing --prefix front` (see `docs/testing.md`).

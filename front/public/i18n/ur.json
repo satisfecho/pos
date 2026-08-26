@@ -425,7 +425,11 @@
     "ADDRESS": "پتہ",
     "WEBSITE": "ویب سائٹ",
     "TENANT_NOT_FOUND": "کرایہ دار نہیں ملا۔",
-    "LOAD_FAILED": "پلیٹ فارم ڈیٹا لوڈ نہیں ہو سکا۔ براہ کرم دوبارہ سائن ان کریں۔"
+    "LOAD_FAILED": "پلیٹ فارم ڈیٹا لوڈ نہیں ہو سکا۔ براہ کرم دوبارہ سائن ان کریں۔",
+    "COL_OWNER_LOGINS": "مالک لاگ اِن",
+    "COL_OWNER_LAST_LOGIN": "مالک آخری لاگ اِن",
+    "COL_LOGIN_COUNT": "لاگ اِنز",
+    "COL_LAST_LOGIN": "آخری لاگ اِن"
   },
   "COURIER_HOME": {
     "TITLE": "ڈیلیوریز",
@@ -612,7 +616,8 @@
     "SHARED_CART_HINT": "شیئرڈ ٹیبل کارٹ — میز پر سب یہ آئٹمز دیکھتے ہیں۔ آرڈر صرف آپ کے آئٹمز بھیجتا ہے۔",
     "ADDED_BY": "{{name}} نے شامل کیا",
     "ADDED_BY_GUEST": "کسی دوسرے مہمان نے شامل کیا",
-    "PLACE_OWN_ITEMS_ONLY": "آرڈر سے پہلے اپنے آئٹمز شامل کریں۔ دوسرے مہمانوں کے آئٹمز شیئرڈ کارٹ میں رہتے ہیں جب تک وہ آرڈر نہ دیں۔"
+    "PLACE_OWN_ITEMS_ONLY": "آرڈر سے پہلے اپنے آئٹمز شامل کریں۔ دوسرے مہمانوں کے آئٹمز شیئرڈ کارٹ میں رہتے ہیں جب تک وہ آرڈر نہ دیں۔",
+    "STOCK_ONLY_LEFT": "صرف {{count}} باقی"
   },
   "PRODUCTS": {
     "TITLE": "پروڈکٹس",
@@ -814,7 +819,15 @@
     "BULK_IMPORT_CSV_PLACEHOLDER": "name,price,category\nMargherita,12.5,Main Course",
     "BULK_IMPORT_CSV_HINT": "Required: name. Price via price or price_cents. Optional: cost, category, subcategory, description, ingredients. Common aliases (producto, precio, …) are accepted. Unknown columns are rejected unless AI mapping is enabled.",
     "BULK_IMPORT_CSV_AI_MAPPING": "Use AI to map unknown column headers (sends headers + a few sample rows to the configured vision API; review preview before saving)",
-    "BULK_IMPORT_CSV_EMPTY": "Paste or upload CSV first."
+    "BULK_IMPORT_CSV_EMPTY": "Paste or upload CSV first.",
+    "STOCK_ALERT_ENABLED": "اسٹاک الرٹ فعال کریں",
+    "STOCK_ALERT_HINT": "جب قابل فروخت اسٹاک الرٹ سطح پر یا اس سے کم ہو تو خبردار کریں۔ اس پروڈکٹ پر منظم۔",
+    "STOCK_QTY": "موجودہ اسٹاک",
+    "STOCK_ALERT_LEVEL": "اس پر یا نیچے الرٹ",
+    "STOCK_HEADER": "اسٹاک",
+    "STOCK_LOW": "کم",
+    "STOCK_OK": "ٹھیک",
+    "STOCK_BADGE_TITLE": "اسٹاک {{qty}} (الرٹ {{level}} پر)"
   },
   "CATALOG": {
     "TITLE": "پروڈکٹ کیٹلاگ",
@@ -2763,7 +2776,16 @@
   "PRICING_PAGE": {
     "BADGE": "سادہ ہوسٹڈ قیمتیں",
     "TITLE": "مفت آزمائیں، پھر ایک فلیٹ ماہانہ پلان",
-    "SUBTITLE": "ہوسٹڈ Satisfecho میں کارڈ کے بغیر مفت ٹرائل شامل ہے۔ خود چلائیں تو AGPLv3 کے تحت لائسنس لاگت صفر۔",
+    "SUBTITLE": "ہمیشہ کے لیے مفت QR مینو سے شروع کریں۔ مکمل پلیٹ فارم کے لیے ہوسٹڈ Satisfecho میں کارڈ کے بغیر مفت ٹرائل شامل ہے۔ خود چلائیں تو AGPLv3 کے تحت لائسنس لاگت صفر۔",
+    "QR_CALLOUT": "QR مینو ہمیشہ مفت — بغیر لاگت شروع کریں",
+    "QR_NAME": "QR مینو",
+    "QR_LEDE": "مہمانوں کے لیے ڈیجیٹل مینو اور ٹیبل آرڈرنگ — کوئی ایپ انسٹال نہیں۔",
+    "QR_PRICE": "مفت",
+    "QR_FOREVER": "ہمیشہ مفت",
+    "QR_INCLUDES_1": "ٹیبل QR کوڈ سے موبائل مینو شائع کریں",
+    "QR_INCLUDES_2": "ایک بار ڈش اپ ڈیٹ کریں — ہر QR تازہ مینو دکھاتا ہے",
+    "QR_INCLUDES_3": "تیار ہونے پر کچن، رپورٹس اور مزید شامل کریں",
+    "CTA_QR": "اپنا QR مینو بنائیں",
     "HOSTED_NAME": "ہوسٹڈ",
     "HOSTED_LEDE": "آپ کے ریسٹورنٹ کے لیے منظم Satisfecho — پلیٹ فارم ہم چلاتے ہیں۔",
     "PER_MONTH": "/ مہینہ",
@@ -2781,6 +2803,12 @@
     "SELFHOST_PRICE": "€0",
     "SELFHOST_LICENSE": "AGPLv3 اوپن سورس — کوئی ہوسٹڈ فیس نہیں",
     "CTA_GITHUB": "GitHub پر دیکھیں",
+    "SUPPORT_NAME": "پیشہ ورانہ سپورٹ",
+    "SUPPORT_HEADLINE": "ہم آپ کا ساتھ دیتے ہیں!",
+    "SUPPORT_LEDE": "ہماری ٹیم سے اختیاری مدد — سیٹ اپ، تربیت اور مسائل حل۔",
+    "SUPPORT_PRICE": "€50/گھنٹہ + ٹیکس",
+    "SUPPORT_NOTE": "فی گھنٹہ بلنگ۔ اپنی ضروریات پر بات کے لیے رابطہ کریں۔",
+    "CTA_SUPPORT": "رابطہ کریں",
     "LOAD_ERROR": "قیمتیں لوڈ نہیں ہو سکیں۔ بعد میں دوبارہ کوشش کریں۔"
   },
   "WAITLIST": {

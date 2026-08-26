@@ -210,4 +210,12 @@ docker compose $COMPOSE_OPTS exec -T back python -m app.seeds.wine_import || tru
 echo "Linking demo products to catalog so /products page has images..."
 docker compose $COMPOSE_OPTS exec -T back python -m app.seeds.link_demo_products_to_catalog || true
 
+echo "Syncing Product.image_filename with catalog files (repair stale provider paths)..."
+docker compose $COMPOSE_OPTS exec -T back python -m app.seeds.sync_product_images || true
+
+echo "Checking product image health (public menu vs /products)..."
+if ! docker compose $COMPOSE_OPTS exec -T back python -m app.seeds.check_product_image_health; then
+  echo "::warning::Product image health check failed — see docs/0027-amvara9-menu-images-troubleshooting.md"
+fi
+
 echo "Deploy done."

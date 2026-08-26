@@ -27,6 +27,7 @@ import { LanguagePickerComponent } from '../shared/language-picker.component';
 import { LanguageService } from '../services/language.service';
 import { LegalLinksComponent } from '../shared/legal-links.component';
 import { contactPhoneValid } from '../shared/contact-validators';
+import { productStockLeft } from '../shared/product-stock.util';
 
 interface CartLine {
   product: PublicTenantMenuProduct;
@@ -260,6 +261,10 @@ export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
 
   formatPrice(product: PublicTenantMenuProduct): string {
     return product.price_formatted || `${(product.price_cents / 100).toFixed(2)}`;
+  }
+
+  stockLeft(product: PublicTenantMenuProduct): number | null {
+    return productStockLeft(product);
   }
 
   formatCents(cents: number): string {
