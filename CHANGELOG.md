@@ -10,11 +10,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- **Product stock alerts (#356):** On `/products`, each product can enable a sellable-unit stock alert (`stock_qty` / `stock_alert_level`). Low stock shows a badge in the products list. From discussion #21.
-
 ### Changed
 
 ### Fixed
+
+## [2.1.157] - 2026-08-26
+
+### Added
+
+- **Product stock alerts (#356):** On `/products`, each product can enable a sellable-unit stock alert (`stock_qty` / `stock_alert_level`). Low stock shows a badge in the products list. From discussion #21.
 
 ## [2.1.156] - 2026-08-26
 
