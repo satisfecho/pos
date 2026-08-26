@@ -14,6 +14,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.160] - 2026-08-26
+
+### Changed
+
+- **Public pricing page (#358):** Added **QR Menu — free forever** as its own tier before paid plans, a hero callout, and optional **professional support** at **€50/h + tax** with a contact link.
+
 ## [2.1.159] - 2026-08-26
 
 ### Added
