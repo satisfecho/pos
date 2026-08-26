@@ -940,7 +940,15 @@
     "BULK_IMPORT_CSV_PLACEHOLDER": "name,price,category\nMargherita,12.5,Main Course",
     "BULK_IMPORT_CSV_HINT": "必填：name。价格使用 price 或 price_cents。可选：cost、category、subcategory、description、ingredients。支持常见别名。未知列会被拒绝，除非启用 AI 列映射。",
     "BULK_IMPORT_CSV_AI_MAPPING": "使用 AI 映射未知列名（会将表头和少量示例行发送到视觉 API；保存前请核对预览）",
-    "BULK_IMPORT_CSV_EMPTY": "请先粘贴或上传 CSV。"
+    "BULK_IMPORT_CSV_EMPTY": "请先粘贴或上传 CSV。",
+    "STOCK_ALERT_ENABLED": "启用库存提醒",
+    "STOCK_ALERT_HINT": "当可售库存达到或低于阈值时提醒。在本产品上管理，而非库存原料。",
+    "STOCK_QTY": "当前库存",
+    "STOCK_ALERT_LEVEL": "达到或低于时提醒",
+    "STOCK_HEADER": "库存",
+    "STOCK_LOW": "偏低",
+    "STOCK_OK": "正常",
+    "STOCK_BADGE_TITLE": "库存 {{qty}}（阈值 {{level}}）"
   },
   "CATALOG": {
     "TITLE": "产品目录",

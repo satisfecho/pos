@@ -993,6 +993,10 @@ export interface Product {
   questions?: ProductQuestion[];
   /** Prep station for KDS (/kitchen vs /bar); null = use tenant default by category */
   kitchen_station_id?: number | null;
+  /** Sellable-unit stock alert (Products UI) */
+  stock_alert_enabled?: boolean;
+  stock_qty?: number;
+  stock_alert_level?: number;
   /** Live promo pricing (#322) from public/QR menu */
   list_price_cents?: number | null;
   promo_label?: string | null;

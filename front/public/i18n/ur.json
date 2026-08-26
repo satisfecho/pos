@@ -818,7 +818,15 @@
     "BULK_IMPORT_CSV_PLACEHOLDER": "name,price,category\nMargherita,12.5,Main Course",
     "BULK_IMPORT_CSV_HINT": "Required: name. Price via price or price_cents. Optional: cost, category, subcategory, description, ingredients. Common aliases (producto, precio, …) are accepted. Unknown columns are rejected unless AI mapping is enabled.",
     "BULK_IMPORT_CSV_AI_MAPPING": "Use AI to map unknown column headers (sends headers + a few sample rows to the configured vision API; review preview before saving)",
-    "BULK_IMPORT_CSV_EMPTY": "Paste or upload CSV first."
+    "BULK_IMPORT_CSV_EMPTY": "Paste or upload CSV first.",
+    "STOCK_ALERT_ENABLED": "اسٹاک الرٹ فعال کریں",
+    "STOCK_ALERT_HINT": "جب قابل فروخت اسٹاک الرٹ سطح پر یا اس سے کم ہو تو خبردار کریں۔ اس پروڈکٹ پر منظم۔",
+    "STOCK_QTY": "موجودہ اسٹاک",
+    "STOCK_ALERT_LEVEL": "اس پر یا نیچے الرٹ",
+    "STOCK_HEADER": "اسٹاک",
+    "STOCK_LOW": "کم",
+    "STOCK_OK": "ٹھیک",
+    "STOCK_BADGE_TITLE": "اسٹاک {{qty}} (الرٹ {{level}} پر)"
   },
   "CATALOG": {
     "TITLE": "پروڈکٹ کیٹلاگ",

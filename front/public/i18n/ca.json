@@ -940,7 +940,15 @@
     "BULK_IMPORT_CSV_PLACEHOLDER": "name,price,category\nMargherita,12.5,Main Course",
     "BULK_IMPORT_CSV_HINT": "Obligatori: name. Preu amb price o price_cents. Opcional: cost, category, subcategory, description, ingredients. S'accepten àlies comuns (producto, precio, …). Les columnes desconegudes es rebutgen tret que activeu el mapatge amb IA.",
     "BULK_IMPORT_CSV_AI_MAPPING": "Utilitzar IA per mapar columnes desconegudes (envia capçaleres i algunes files de mostra a l'API de visió; reviseu la vista prèvia abans de desar)",
-    "BULK_IMPORT_CSV_EMPTY": "Enganxeu o pugeu CSV primer."
+    "BULK_IMPORT_CSV_EMPTY": "Enganxeu o pugeu CSV primer.",
+    "STOCK_ALERT_ENABLED": "Activar alerta d'estoc",
+    "STOCK_ALERT_HINT": "Aviseu quan l'estoc venible estigui en o per sota del llindar. Es gestiona en aquest producte.",
+    "STOCK_QTY": "Estoc actual",
+    "STOCK_ALERT_LEVEL": "Alertar en o per sota de",
+    "STOCK_HEADER": "Estoc",
+    "STOCK_LOW": "Baix",
+    "STOCK_OK": "OK",
+    "STOCK_BADGE_TITLE": "Estoc {{qty}} (alerta a {{level}})"
   },
   "CATALOG": {
     "TITLE": "Catàleg de productes",

@@ -818,7 +818,15 @@
     "BULK_IMPORT_CSV_PLACEHOLDER": "name,price,category\nMargherita,12.5,Main Course",
     "BULK_IMPORT_CSV_HINT": "Obligatoire : name. Prix via price ou price_cents. Optionnel : cost, category, subcategory, description, ingredients. Alias courants acceptés (producto, precio, …). Colonnes inconnues rejetées sauf mapping IA.",
     "BULK_IMPORT_CSV_AI_MAPPING": "Utiliser l'IA pour mapper les colonnes inconnues (envoie en-têtes + quelques lignes à l'API vision ; vérifiez l'aperçu avant d'enregistrer)",
-    "BULK_IMPORT_CSV_EMPTY": "Collez ou téléversez d'abord un CSV."
+    "BULK_IMPORT_CSV_EMPTY": "Collez ou téléversez d'abord un CSV.",
+    "STOCK_ALERT_ENABLED": "Activer l'alerte de stock",
+    "STOCK_ALERT_HINT": "Alerter lorsque le stock vendable est égal ou inférieur au seuil. Géré sur ce produit.",
+    "STOCK_QTY": "Stock actuel",
+    "STOCK_ALERT_LEVEL": "Alerter à partir de",
+    "STOCK_HEADER": "Stock",
+    "STOCK_LOW": "Bas",
+    "STOCK_OK": "OK",
+    "STOCK_BADGE_TITLE": "Stock {{qty}} (alerte à {{level}})"
   },
   "CATALOG": {
     "TITLE": "Catalogue produits",

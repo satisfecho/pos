@@ -940,7 +940,15 @@
     "BULK_IMPORT_CSV_PLACEHOLDER": "name,price,category\nMargherita,12.5,Main Course",
     "BULK_IMPORT_CSV_HINT": "Required: name. Price via price or price_cents. Optional: cost, category, subcategory, description, ingredients. Common aliases (producto, precio, …) are accepted. Unknown columns are rejected unless AI mapping is enabled.",
     "BULK_IMPORT_CSV_AI_MAPPING": "Use AI to map unknown column headers (sends headers + a few sample rows to the configured vision API; review preview before saving)",
-    "BULK_IMPORT_CSV_EMPTY": "Paste or upload CSV first."
+    "BULK_IMPORT_CSV_EMPTY": "Paste or upload CSV first.",
+    "STOCK_ALERT_ENABLED": "स्टॉक अलर्ट सक्षम करें",
+    "STOCK_ALERT_HINT": "जब बिकने योग्य स्टॉक अलर्ट स्तर पर या उससे कम हो तो चेतावनी दें। इस उत्पाद पर प्रबंधित।",
+    "STOCK_QTY": "वर्तमान स्टॉक",
+    "STOCK_ALERT_LEVEL": "इस पर या नीचे अलर्ट",
+    "STOCK_HEADER": "स्टॉक",
+    "STOCK_LOW": "कम",
+    "STOCK_OK": "ठीक",
+    "STOCK_BADGE_TITLE": "स्टॉक {{qty}} (अलर्ट {{level}} पर)"
   },
   "CATALOG": {
     "TITLE": "उत्पाद कैटलॉग",

@@ -818,7 +818,15 @@
     "BULK_IMPORT_CSV_PLACEHOLDER": "name,price,category\nMargherita,12.5,Main Course",
     "BULK_IMPORT_CSV_HINT": "Задължително: name. Цена чрез price или price_cents. По избор: cost, category, subcategory, description, ingredients. Приемат се често срещани псевдоними. Неизвестните колони се отхвърлят, освен ако е активирано AI съпоставяне.",
     "BULK_IMPORT_CSV_AI_MAPPING": "Използване на AI за съпоставяне на неизвестни колони (изпраща заглавия и няколко примерни реда към vision API; прегледайте преди запис)",
-    "BULK_IMPORT_CSV_EMPTY": "Първо поставете или качете CSV."
+    "BULK_IMPORT_CSV_EMPTY": "Първо поставете или качете CSV.",
+    "STOCK_ALERT_ENABLED": "Включи предупреждение за наличност",
+    "STOCK_ALERT_HINT": "Предупреждавай, когато продаваемата наличност е на или под прага. Управлява се на този продукт.",
+    "STOCK_QTY": "Текуща наличност",
+    "STOCK_ALERT_LEVEL": "Предупреди при или под",
+    "STOCK_HEADER": "Наличност",
+    "STOCK_LOW": "Ниско",
+    "STOCK_OK": "OK",
+    "STOCK_BADGE_TITLE": "Наличност {{qty}} (предупреждение при {{level}})"
   },
   "CATALOG": {
     "TITLE": "ПРОДУКТОВ КАТАЛОГ",

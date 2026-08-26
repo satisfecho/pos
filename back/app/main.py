@@ -5697,6 +5697,13 @@ def create_product(
             )
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid kitchen station")
+    if getattr(product, "stock_qty", 0) is not None and int(product.stock_qty) < 0:
+        raise HTTPException(status_code=400, detail="stock_qty must be >= 0")
+    if getattr(product, "stock_alert_level", 0) is not None and int(product.stock_alert_level) < 0:
+        raise HTTPException(status_code=400, detail="stock_alert_level must be >= 0")
+    product.stock_alert_enabled = bool(getattr(product, "stock_alert_enabled", False))
+    product.stock_qty = int(getattr(product, "stock_qty", 0) or 0)
+    product.stock_alert_level = int(getattr(product, "stock_alert_level", 0) or 0)
     session.add(product)
     session.commit()
     session.refresh(product)
@@ -5756,6 +5763,18 @@ def update_product(
             except ValueError:
                 raise HTTPException(status_code=400, detail="Invalid kitchen station")
             product.kitchen_station_id = int(val)
+    if "stock_alert_enabled" in pu:
+        product.stock_alert_enabled = bool(pu["stock_alert_enabled"])
+    if "stock_qty" in pu:
+        qty = int(pu["stock_qty"] if pu["stock_qty"] is not None else 0)
+        if qty < 0:
+            raise HTTPException(status_code=400, detail="stock_qty must be >= 0")
+        product.stock_qty = qty
+    if "stock_alert_level" in pu:
+        level = int(pu["stock_alert_level"] if pu["stock_alert_level"] is not None else 0)
+        if level < 0:
+            raise HTTPException(status_code=400, detail="stock_alert_level must be >= 0")
+        product.stock_alert_level = level
 
     session.add(product)
     # Sync availability dates to linked TenantProduct(s) so customer menu stays consistent
