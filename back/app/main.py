@@ -38,10 +38,9 @@ from sqlmodel import Session, select
 from . import models, security
 from .db import check_db_connection, create_db_and_tables, get_session, engine
 from .provider_images import (
-    product_stored_image_exists,
     provider_product_image_url,
     provider_product_stored_image_path,
-    resolve_linked_tenant_product_image_filename,
+    repair_product_image_filename,
 )
 from .settings import settings
 from .inventory_routes import router as inventory_router
@@ -5650,18 +5649,10 @@ def list_products(
                     session.add(product)
                     updated_count += 1
 
-            # Backfill image from linked TenantProduct when missing or orphan on disk
-            resolved = resolve_linked_tenant_product_image_filename(
-                session, tenant_product
-            )
-            if resolved and resolved != product.image_filename:
-                product.image_filename = resolved
-                session.add(product)
-                updated_count += 1
-            elif product.image_filename and not product_stored_image_exists(
-                product.tenant_id, product.image_filename
-            ):
-                product.image_filename = None
+            # Repair image only when missing/orphan; never overwrite valid custom uploads
+            repaired = repair_product_image_filename(session, product, tenant_product)
+            if repaired != product.image_filename:
+                product.image_filename = repaired
                 session.add(product)
                 updated_count += 1
     

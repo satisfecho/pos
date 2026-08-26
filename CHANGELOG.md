@@ -14,6 +14,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.159] - 2026-08-26
+
+### Added
+
+- **Product image deploy repair:** `sync_product_images` and `check_product_image_health` seeds repair stale `Product.image_filename` after catalog import; deploy runs them after linking demo products to catalog.
+
+### Fixed
+
+- **`/products` vs public menu:** `GET /products` no longer overwrites custom tenant upload paths when the file exists on disk; stale `providers/...` refs are repaired from the linked catalog.
+
 ## [2.1.158] - 2026-08-26
 
 ### Added

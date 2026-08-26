@@ -125,6 +125,24 @@ class TestListProductsImageBackfill(PgClientTestCase):
         self.session.refresh(self.product)
         self.assertEqual(self.product.image_filename, expected)
 
+    def test_list_products_keeps_custom_tenant_upload(self) -> None:
+        tenant_dir = self._uploads / str(self.tenant.id) / "products"
+        tenant_dir.mkdir(parents=True, exist_ok=True)
+        custom_name = "custom-crafted.jpg"
+        (tenant_dir / custom_name).write_bytes(b"custom")
+
+        self.product.image_filename = custom_name
+        self.session.add(self.product)
+        self.session.commit()
+
+        r = self.client.get("/products", headers=self.headers)
+        self.assertEqual(r.status_code, 200, r.text)
+        row = next(p for p in r.json() if p["id"] == self.product.id)
+        self.assertEqual(row["image_filename"], custom_name)
+
+        self.session.refresh(self.product)
+        self.assertEqual(self.product.image_filename, custom_name)
+
 
 if __name__ == "__main__":
     unittest.main()

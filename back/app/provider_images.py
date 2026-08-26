@@ -80,6 +80,107 @@ def resolve_linked_tenant_product_image_filename(
     return None
 
 
+def repair_product_image_filename(
+    session: Session,
+    product: models.Product,
+    tenant_product: models.TenantProduct | None,
+) -> str | None:
+    """
+    Image path to store on Product.
+
+  Never replaces a custom tenant upload or any path whose file exists on disk.
+  Repairs stale provider catalog refs after re-import when a linked TenantProduct exists.
+    """
+    current = product.image_filename
+    if current and product_stored_image_exists(product.tenant_id, current):
+        return current
+    if tenant_product:
+        resolved = resolve_linked_tenant_product_image_filename(session, tenant_product)
+        if resolved:
+            return resolved
+    return None
+
+
+def sync_product_images_for_tenant(session: Session, tenant_id: int) -> dict[str, int]:
+    """Repair Product.image_filename rows for one tenant (idempotent)."""
+    repaired = 0
+    cleared = 0
+    unchanged = 0
+    products = session.exec(
+        select(models.Product).where(models.Product.tenant_id == tenant_id)
+    ).all()
+    for product in products:
+        tenant_product = session.exec(
+            select(models.TenantProduct).where(
+                models.TenantProduct.product_id == product.id,
+                models.TenantProduct.tenant_id == tenant_id,
+            )
+        ).first()
+        target = repair_product_image_filename(session, product, tenant_product)
+        if target == product.image_filename:
+            unchanged += 1
+            continue
+        if target is None and product.image_filename:
+            cleared += 1
+        else:
+            repaired += 1
+        product.image_filename = target
+        session.add(product)
+    if repaired or cleared:
+        session.commit()
+    return {
+        "repaired": repaired,
+        "cleared": cleared,
+        "unchanged": unchanged,
+    }
+
+
+def product_image_consistency_errors(
+    session: Session,
+    tenant_id: int,
+) -> list[str]:
+    """
+    Products that show an image on the public menu but lack a valid Product.image_filename.
+
+    Public menu resolves live from TenantProduct/provider; /products uses Product rows.
+    """
+    from .public_tenant_menu import build_public_tenant_menu
+
+    menu = build_public_tenant_menu(session, tenant_id, "en")
+    public_names_with_image: set[str] = set()
+    for category in menu.get("categories") or []:
+        for row in category.get("products") or []:
+            if row.get("image_url") and row.get("name"):
+                public_names_with_image.add(str(row["name"]))
+
+    if not public_names_with_image:
+        return []
+
+    errors: list[str] = []
+    products = session.exec(
+        select(models.Product).where(models.Product.tenant_id == tenant_id)
+    ).all()
+    by_name = {p.name: p for p in products if p.name}
+    for name in sorted(public_names_with_image):
+        product = by_name.get(name)
+        if product is None:
+            continue
+        tenant_product = session.exec(
+            select(models.TenantProduct).where(
+                models.TenantProduct.product_id == product.id,
+                models.TenantProduct.tenant_id == tenant_id,
+            )
+        ).first()
+        if tenant_product is None:
+            continue
+        if product_stored_image_exists(product.tenant_id, product.image_filename):
+            continue
+        errors.append(
+            f"{name!r}: public menu has image but Product.image_filename is missing or orphan"
+        )
+    return errors
+
+
 def clear_orphan_provider_product_images(session: Session) -> dict[str, int]:
     """
     Clear ProviderProduct.image_filename (and Product refs under providers/) when the file is missing.
