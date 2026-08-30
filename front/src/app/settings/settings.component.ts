@@ -3970,6 +3970,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     'DKK',
     'KRW',
     'TWD',
+    'XOF',
+    'XAF',
   ];
 
   /** Includes current tenant code if it is not in the standard list (e.g. after API changes). */

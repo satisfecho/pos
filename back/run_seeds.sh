@@ -38,27 +38,34 @@ error() {
 setup_env() {
     log "Setting up environment..."
     
-    # Source virtual environment
+    # Source virtual environment. The project keeps the environment at the repo root,
+    # not inside /back, so check both locations before falling back to the system Python.
     if [ -d "venv" ]; then
-        log "Activating virtual environment..."
+        log "Activating virtual environment from back/venv..."
         source venv/bin/activate
+    elif [ -d "../.venv" ]; then
+        log "Activating virtual environment from repo root .venv..."
+        source ../.venv/bin/activate
     else
-        warn "Virtual environment (venv) not found. Trying global python..."
+        warn "Virtual environment not found in ./venv or ../.venv. Trying global python..."
     fi
 
     # Load environment variables
     if [ -f "../config.env" ]; then
         log "Loading environment variables from ../config.env..."
         export $(grep -v '^#' ../config.env | xargs)
-        
+
         # Detect if we should use localhost instead of 'db' host (Docker default)
-        # If DB_HOST is 'db' and we are running on host, we need to use localhost:POSTGRES_PORT
-        if [ "$DB_HOST" = "db" ]; then
-            if ! ping -c 1 -W 1 db > /dev/null 2>&1; then
-                warn "Host 'db' not reachable. Assuming host execution."
+        # If DB_HOST is 'db' and we are running on host, we need to use localhost:POSTGRES_PORT.
+        # Guard against missing POSTGRES_PORT so the script still works in a Dockerized run.
+        if [ "${DB_HOST:-}" = "db" ] && ! ping -c 1 -W 1 db > /dev/null 2>&1; then
+            warn "Host 'db' not reachable. Assuming host execution."
+            export DB_HOST="localhost"
+            if [ -n "${POSTGRES_PORT:-}" ]; then
                 log "Switching DB_HOST to localhost and DB_PORT to $POSTGRES_PORT"
-                export DB_HOST="localhost"
                 export DB_PORT="$POSTGRES_PORT"
+            else
+                log "DB_HOST set to localhost without POSTGRES_PORT override; keep DB_PORT as configured."
             fi
         fi
     else
@@ -80,7 +87,14 @@ run_seed() {
     echo -e "\n${YELLOW}=== Seeding $name ===${NC}"
     log "Running: python -m $module $extra_args"
     
-    if python -m "$module" $extra_args; then
+    local py_cmd="${PYTHON:-python3}"
+    if command -v python >/dev/null 2>&1 && [ -n "${VIRTUAL_ENV:-}" ]; then
+        py_cmd="python"
+    elif command -v python3 >/dev/null 2>&1; then
+        py_cmd="python3"
+    fi
+
+    if "$py_cmd" -m "$module" $extra_args; then
         success "$name seeding completed."
     else
         error "$name seeding failed."
