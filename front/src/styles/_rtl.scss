@@ -1,0 +1,176 @@
+// ============================================
+// RTL (RIGHT-TO-LEFT) GLOBAL STYLES & OVERRIDES
+// ============================================
+@use 'breakpoints' as *;
+
+html[dir="rtl"], [dir="rtl"] {
+  /* Typography & Text Direction */
+  direction: rtl;
+  text-align: right;
+
+  /* Form Elements & Inputs */
+  input, textarea, select {
+    text-align: right;
+  }
+
+  /* Table Headers & Cells */
+  th, td {
+    text-align: right;
+  }
+
+  th.th-actions, td.td-actions, .text-right, .text-end {
+    text-align: left !important;
+  }
+
+  .text-left, .text-start {
+    text-align: right !important;
+  }
+
+  /* Accents & Borders on Cards, Toasts, Alerts */
+  .card-status-accent {
+    border-left: none !important;
+    border-right: 4px solid var(--color-primary);
+  }
+
+  /* Direct Arrow & Chevron Icon Mirroring */
+  .bi-chevron-right,
+  .bi-chevron-left,
+  .bi-arrow-right,
+  .bi-arrow-left,
+  .bi-arrow-return-left,
+  .fa-chevron-right,
+  .fa-chevron-left,
+  .fa-arrow-right,
+  .fa-arrow-left,
+  .rtl-flip {
+    transform: scaleX(-1);
+    display: inline-block;
+  }
+
+  /* Sidebar Layout Adjustments */
+  .layout {
+    .sidebar {
+      left: auto !important;
+      right: 0 !important;
+      border-right: none !important;
+      border-left: 1px solid var(--color-border) !important;
+    }
+
+    .main {
+      margin-left: 0 !important;
+      margin-right: 240px !important;
+      max-width: calc(100vw - 240px) !important;
+    }
+
+    .nav-link {
+      border-left: none !important;
+      border-right: 3px solid transparent !important;
+
+      &.active {
+        border-right-color: var(--color-primary) !important;
+        border-left-color: transparent !important;
+      }
+    }
+
+    .nav-section-header {
+      border-left: none !important;
+      border-right: 3px solid transparent !important;
+
+      .chevron {
+        margin-left: 0 !important;
+        margin-right: auto !important;
+      }
+    }
+
+    .nav-submenu {
+      border-left: none !important;
+      border-right: 3px solid var(--color-border) !important;
+      margin-left: 0 !important;
+      margin-right: calc(var(--space-5) + 10px) !important;
+    }
+
+    .nav-sublink--nested {
+      padding-left: var(--space-4) !important;
+      padding-right: var(--space-5) !important;
+    }
+
+    .nav-nested-submenu {
+      margin-left: 0 !important;
+      margin-right: var(--space-3) !important;
+      border-left: none !important;
+      border-right: 2px solid var(--color-border) !important;
+    }
+
+    .commit-hash, .tenant-id, .nav-update-star {
+      margin-left: 0 !important;
+      margin-right: 4px !important;
+    }
+  }
+
+  /* Nav Collapsed on Tablet+ in RTL */
+  @include for-tablet-portrait-up {
+    .layout.layout--nav-collapsed {
+      .sidebar {
+        transform: translateX(100%) !important;
+      }
+      .main {
+        margin-right: 0 !important;
+        max-width: 100vw !important;
+      }
+    }
+  }
+
+  /* Mobile Header & Mobile Sidebar in RTL */
+  @include for-phone-only {
+    .sidebar {
+      transform: translateX(100%) !important;
+    }
+
+    .sidebar-open .sidebar {
+      transform: translateX(0) !important;
+    }
+
+    .main {
+      margin-right: 0 !important;
+      padding-left: var(--space-4) !important;
+      padding-right: var(--space-4) !important;
+    }
+  }
+
+  /* Input fields with embedded icons */
+  .input-icon-wrapper, .search-box, .has-icon-left {
+    i, svg, .icon {
+      left: auto !important;
+      right: 0.75rem !important;
+    }
+    input {
+      padding-left: 0.75rem !important;
+      padding-right: 2.5rem !important;
+    }
+  }
+
+  .has-icon-right {
+    i, svg, .icon {
+      right: auto !important;
+      left: 0.75rem !important;
+    }
+    input {
+      padding-right: 0.75rem !important;
+      padding-left: 2.5rem !important;
+    }
+  }
+
+  /* Buttons with icons */
+  .btn {
+    svg, i {
+      &:first-child {
+        margin-right: 0;
+        margin-left: var(--space-2);
+      }
+      &:last-child {
+        margin-left: 0;
+        margin-right: var(--space-2);
+      }
+    }
+  }
+}

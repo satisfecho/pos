@@ -5,6 +5,7 @@ Language service for normalizing language codes and managing translations.
 SUPPORTED_LANGUAGES = [
     "en",  # English
     "es",  # Spanish
+    "ar",  # Arabic (RTL)
     "ca",  # Catalan
     "de",  # German
     "fr",  # French

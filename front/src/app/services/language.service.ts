@@ -4,6 +4,7 @@ import { TranslateService } from '@ngx-translate/core';
 export const SUPPORTED_LANGUAGES = [
   { code: 'en', label: 'English', locale: 'en-US' },
   { code: 'es', label: 'Español', locale: 'es-ES' },
+  { code: 'ar', label: 'العربية', locale: 'ar-EG' },
   { code: 'fr', label: 'Français', locale: 'fr-FR' },
   { code: 'ca', label: 'Català', locale: 'ca-ES' },
   { code: 'de', label: 'Deutsch', locale: 'de-DE' },
@@ -19,7 +20,7 @@ const LANG_STORAGE_KEY = 'pos_language';
 const DEFAULT_LANGUAGE: LanguageCode = 'en';
 
 // Languages written right-to-left. Extend this list when new RTL languages are added.
-const RTL_LANGUAGES: readonly LanguageCode[] = ['ur'];
+const RTL_LANGUAGES: readonly LanguageCode[] = ['ur', 'ar'];
 
 @Injectable({
   providedIn: 'root'
