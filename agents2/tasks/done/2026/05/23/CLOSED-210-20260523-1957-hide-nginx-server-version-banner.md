@@ -290,7 +290,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404** with `server: nginx/1.31.0` (nginx answered; path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → **200**, no `Server:` line (Angular dev via HAProxy dev cfg).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 '… exec haproxy haproxy -c …'` → `Configuration file is valid` (current **deployed** tree at **`7160354d`**, without #210 config lines).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host '… exec haproxy haproxy -c …'` → `Configuration file is valid` (current **deployed** tree at **`7160354d`**, without #210 config lines).
    - **Deploy readiness (#210 on production):** **FAIL** — No green **`deploy-amvara9`** run for commit `54961675`; workflow last **master** runs failed (e.g. https://github.com/satisfecho/pos/actions/runs/24773000757). amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **not present**. Polled production headers once at start (no fixed sleep); deploy never became ready within this session.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix is on **`development`** only, not merged/deployed to amvara9.
 6. **Product owner feedback:** The code change on **`development`** matches the issue (nginx `server_tokens off` + HAProxy strip). Production cannot be signed off until **`development` → `master`** and a successful **`deploy-amvara9`** rebuild front + reload haproxy; then re-run the production `curl` checks. Site and API remain healthy on the old build.
@@ -315,7 +315,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` → not present. No green **`deploy-amvara9`** for **`54961675`**; latest **master** deploy runs **failed** (e.g. https://github.com/satisfecho/pos/actions/runs/24773000757). Polled prod headers at session start; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 code on **`development`** only.
 6. **Product owner feedback:** Implementation on **`development`** is correct in repo (`server_tokens off;`, `http-response del-header Server`). Sign-off requires **`development` → `master`**, a **green** **`deploy-amvara9`** (front image rebuild + haproxy reload), then re-test prod `curl -sI https://satisfecho.de/ | grep -i server` (expect no `nginx/1.x`). Site/API healthy on current prod build.
@@ -339,7 +339,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `grep` on working tree: `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent**. Commit **`54961675`** **not** ancestor of **`origin/master`**. Latest **`deploy-amvara9`** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). Prod header polled at 21:40:15Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 code on **`development`** only, not deployed to amvara9.
@@ -366,7 +366,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 21:49:01Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — do not re-queue **UNTESTED** until promotion + green deploy.
@@ -394,7 +394,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 22:05:44Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -422,7 +422,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 22:14:36Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -450,7 +450,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 22:23:06Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -478,7 +478,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 22:32:27Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -506,7 +506,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 22:40:45Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -534,7 +534,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 22:48:44Z; deploy not ready (workflow list + amvara9 grep, not fixed sleep).
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -562,7 +562,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 22:56:41Z; deploy not ready (workflow list + amvara9 grep, not fixed sleep).
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -590,7 +590,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 23:05:51Z; deploy not ready (workflow list + amvara9 grep, not fixed sleep).
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -618,7 +618,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 23:13:57Z; deploy not ready (workflow list + amvara9 grep, not fixed sleep).
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -646,7 +646,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 23:23:56Z; deploy not ready (workflow list + amvara9 grep, not fixed sleep).
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -675,7 +675,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 23:32:01Z; deploy not ready (workflow list + amvara9 grep, not fixed sleep).
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -704,7 +704,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 23:39:42Z; deploy not ready (workflow list + amvara9 grep, not fixed sleep).
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -733,7 +733,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 23:47:07Z; deploy not ready (workflow list + amvara9 grep, not fixed sleep).
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -762,7 +762,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 23:54:42Z; deploy not ready (workflow list + amvara9 grep, not fixed sleep).
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -791,7 +791,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 00:02:44Z; deploy not ready (workflow list + amvara9 grep, not fixed sleep).
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -820,7 +820,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 00:10:51Z; deploy not ready (workflow list + amvara9 grep, not fixed sleep).
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -849,7 +849,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 00:18:23Z; deploy not ready (workflow list + amvara9 grep, not fixed sleep).
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -878,7 +878,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` counts for `server_tokens` / `del-header Server` on server → **0**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 00:26:13Z; deploy not ready (workflow list + amvara9 grep, not fixed sleep).
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -907,7 +907,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 00:33:53Z; deploy not ready (workflow list + amvara9 grep, not fixed sleep).
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -936,7 +936,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 00:41:33Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -965,7 +965,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 00:49:04Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -994,7 +994,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 00:57:04Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -1023,7 +1023,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 01:05:39Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -1052,7 +1052,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 01:14:02Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -1081,7 +1081,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 01:20:56Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -1110,7 +1110,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 01:28:29Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -1139,7 +1139,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 01:35:57Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -1168,7 +1168,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 01:43:41Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -1197,7 +1197,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 01:51:44Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -1226,7 +1226,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config; `grep` for `server_tokens` / `del-header Server` on server → **absent**).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**. **`origin/development`** **889** commits ahead of **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 01:58:43Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.
@@ -1253,7 +1253,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**. Prod header polled at 02:05:48Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** (35th report, same ops blocker) — do not re-queue **UNTESTED** until **`development` → `master`** + green **Deploy to amvara9**; coder rework not required.
@@ -1280,7 +1280,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → **200** (`{"status":"ok"}`).
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (dev HAProxy unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` counts for `server_tokens` / `del-header Server` on server → **0**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**. Prod header polled at 02:12:52Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** (36th report, same ops blocker) — do not re-queue **UNTESTED** until **`development` → `master`** + green **Deploy to amvara9**; coder rework not required.
@@ -1308,7 +1308,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (dev HAProxy unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**. Prod header polled at 02:20:13Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — coder rework not required; ops/release blocker.
@@ -1337,7 +1337,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → **200** (`{"status":"ok"}`).
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (dev HAProxy unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**. Prod header polled at 02:27:11Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/release blocker, not code.
@@ -1367,7 +1367,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → **200** (`{"status":"ok"}`).
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (dev HAProxy unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**. Prod header polled at 02:34:28Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/release blocker, not code.
@@ -1396,7 +1396,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → **200** (`{"status":"ok"}`).
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (dev HAProxy unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**. Prod header polled at 02:41:56Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/release blocker, not code.
@@ -1425,7 +1425,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → **200** (`{"status":"ok"}`).
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (dev HAProxy unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**. Prod header polled at 02:49:22Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/release blocker, not code.
@@ -1454,7 +1454,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (dev HAProxy unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**. Prod header polled at 02:57:11Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/release blocker, not code.
@@ -1483,7 +1483,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (dev HAProxy unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**. Prod header polled at 03:05:29Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/release blocker, not code.
@@ -1512,7 +1512,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (dev HAProxy unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**. Prod header polled at 03:14:02Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/release blocker, not code.
@@ -1541,7 +1541,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (dev HAProxy unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**. Prod header polled at 03:22:12Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/release blocker, not code.
@@ -1570,7 +1570,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (dev HAProxy unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**. Prod header polled at 03:29:12Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/release blocker, not code.
@@ -1599,7 +1599,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (dev HAProxy unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`, `http-response del-header Server` in `haproxy/haproxy.prod.cfg`; absent on **`origin/master`**.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**. Prod header polled at 03:37:34Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; #210 not deployed. **Loop protection** — ops/release blocker, not code.
@@ -1626,7 +1626,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404** with `server: nginx/1.31.0` (nginx answered; path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → **200**, no `Server:` line (dev HAProxy unchanged).
-   - **HAProxy `-c` on amvara9:** **PASS** — `ssh amvara9 '… exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, without #210 config).
+   - **HAProxy `-c` on amvara9:** **PASS** — `the production host '… exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, without #210 config).
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Commit **`54961675`** not on **`origin/master`**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for #210; prod header probed at session start (no fixed sleep).
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix on **`development`** only, not merged/deployed. **Loop protection** — repeated FAILs are deploy/ops blockers; do not re-queue **UNTESTED** until **`development` → `master`** + green **Deploy to amvara9**.
 6. **Product owner feedback:** Code on **`development`** (`server_tokens off;`, `http-response del-header Server`) matches the issue. Production cannot be signed off until promotion and a successful amvara9 deploy rebuild **front** and reload **haproxy**; then re-run production `curl` checks. Site and API remain healthy on the current build.
@@ -1652,7 +1652,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404** with `server: nginx/1.31.0` (nginx answered; path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → **200**, no `Server:` line (Angular dev via HAProxy dev cfg).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 '… exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree at **`7160354d`**, without #210 config lines).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host '… exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree at **`7160354d`**, without #210 config lines).
    - **Deploy readiness (#210 on production):** **FAIL** — No green **Deploy to amvara9** for commit **`54961675`**; last **master** deploy runs **failure** (e.g. https://github.com/satisfecho/pos/actions/runs/24773000757). amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **not present**. Polled production once at test time; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix is on **`development`** only, not merged/deployed to amvara9.
 6. **Product owner feedback:** Implementation on **`development`** (`server_tokens off;`, `http-response del-header Server`) matches the issue. Production sign-off requires **`development` → `master`** and a successful **Deploy to amvara9** (rebuild **front** + reload **haproxy**), then re-run production `curl` checks. Site and API remain healthy on the current build.
@@ -1678,7 +1678,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404** with `server: nginx/1.31.0` (nginx answered; path not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`; `GET https://satisfecho.de/api/docs` → **200**.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → **200**, no `Server:` line (Angular dev via HAProxy dev cfg).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 '… exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree at **`7160354d`**, without #210 config lines).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host '… exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree at **`7160354d`**, without #210 config lines).
    - **Deploy readiness (#210 on production):** **FAIL** — Commit **`54961675`** not on **`origin/master`**. amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). Polled production headers at test start (04:02:59Z); deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix is on **`development`** only, not merged/deployed to amvara9. **Loop protection** — repeated FAILs are deploy/ops blockers (not missing code); do not re-queue **UNTESTED** until **`development` → `master`** + green **Deploy to amvara9**.
 6. **Product owner feedback:** Implementation on **`development`** (`server_tokens off;`, `http-response del-header Server`) matches the issue. Production sign-off requires **`development` → `master`** and a successful **Deploy to amvara9** (rebuild **front** + reload **haproxy**), then re-run production `curl` checks. Site and API remain healthy on the current build.
@@ -1705,7 +1705,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404** with `server: nginx/1.31.0` (nginx answered; path not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`; `GET https://satisfecho.de/api/docs` → **200**.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → **200**, no `Server:` line (Angular dev via HAProxy dev cfg).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 '… exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, without #210 config lines).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host '… exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, without #210 config lines).
    - **Deploy readiness (#210 on production):** **FAIL** — Commit **`54961675`** not on **`origin/master`**. amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). Polled production at 04:10:32Z; deploy not ready.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix is on **`development`** only, not merged/deployed to amvara9. **Loop protection** — >3 prior FAILs for same deploy blocker; do not re-queue **UNTESTED** until **`development` → `master`** + green **Deploy to amvara9**.
 6. **Product owner feedback:** Implementation on **`development`** (`server_tokens off;`, `http-response del-header Server`) is correct. Ops must promote **`development` → `master`**, fix failing **Deploy to amvara9** on **`master`**, then rebuild **front** and reload **haproxy** on amvara9 before production sign-off. Site and API remain healthy on the current build.
@@ -1734,7 +1734,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** — do not re-queue **UNTESTED** until promotion + green deploy.
@@ -1763,7 +1763,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (Angular dev via HAProxy dev cfg).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** — do not re-queue **UNTESTED** until promotion + green deploy.
@@ -1792,7 +1792,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot path not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210 config).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** — do not re-queue **UNTESTED** until promotion + green deploy.
@@ -1819,7 +1819,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (dev HAProxy unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** — do not re-queue **UNTESTED** until **`development` → `master`** + green **Deploy to amvara9**.
@@ -1848,7 +1848,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — landing **200**; `/api/health` **200** (`{"status":"ok"}`).
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -1877,7 +1877,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — `GET https://satisfecho.de/` → **200**; `GET https://satisfecho.de/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (dev HAProxy unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -1906,7 +1906,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — landing **200**; `/api/health` **200** (`{"status":"ok"}`).
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -1935,7 +1935,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — landing **200**; `/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -1964,7 +1964,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — landing **200**; `/api/health` **200**.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — local prod compose `haproxy -c` → `Configuration file is valid`; `ssh amvara9` same (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — local prod compose `haproxy -c` → `Configuration file is valid`; `the production host` same (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -1993,7 +1993,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — landing **200**; `/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — local prod compose `haproxy -c` → `Configuration file is valid`; `ssh amvara9` same (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — local prod compose `haproxy -c` → `Configuration file is valid`; `the production host` same (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2022,7 +2022,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — landing **200**; `/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — local prod compose `haproxy -c` → `Configuration file is valid`; `ssh amvara9` same (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — local prod compose `haproxy -c` → `Configuration file is valid`; `the production host` same (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2051,7 +2051,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — landing **200**; `/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — local prod compose `haproxy -c` → `Configuration file is valid`; `ssh amvara9` same (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — local prod compose `haproxy -c` → `Configuration file is valid`; `the production host` same (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2080,7 +2080,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — landing **200**; `/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — local prod compose `haproxy -c` → `Configuration file is valid`; `ssh amvara9` same (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — local prod compose `haproxy -c` → `Configuration file is valid`; `the production host` same (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2110,7 +2110,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health`:** **PASS** — landing **200**; `/api/health` → **200** `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (dev HAProxy unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — local prod compose `haproxy -c` → `Configuration file is valid`; `ssh amvara9` same (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — local prod compose `haproxy -c` → `Configuration file is valid`; `the production host` same (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2140,7 +2140,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` → **200**; `/api/docs` → **200**.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (dev HAProxy unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — local prod compose `haproxy -c` → `Configuration file is valid`; `ssh amvara9` same (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — local prod compose `haproxy -c` → `Configuration file is valid`; `the production host` same (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server (grep counts **0**). Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2171,7 +2171,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` → **200** `{"status":"ok"}`; `/api/docs` → **200**.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2201,7 +2201,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` → **200** `{"status":"ok"}`; `/api/docs` → **200**.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **count 0** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2231,7 +2231,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` → **200** `{"status":"ok"}`; `/api/docs` → **200**.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (dev HAProxy does not strip).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **count 0** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2261,7 +2261,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` → **200** `{"status":"ok"}`; `/api/docs` → **200** (`server: uvicorn` on docs — API path OK).
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line (dev HAProxy does not strip).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for `server_tokens` / `del-header Server` on server → **absent** (exit 1). Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2291,7 +2291,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` → **200** `{"status":"ok"}`; `/api/docs` → **200** (`server: uvicorn`).
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2321,7 +2321,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` → **200** `{"status":"ok"}`; `/api/docs` → **200** (`server: uvicorn`).
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2351,7 +2351,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` → **200** `{"status":"ok"}`; `/api/docs` → **200**.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `server_tokens` / `del-header Server` **absent** on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2381,7 +2381,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` → **200** `{"status":"ok"}`; `/api/docs` → **200**.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `nginx_tokens:no`, `haproxy_del:no`. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2411,7 +2411,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` → **200** `{"status":"ok"}`; `/api/docs` → **200** (`server: uvicorn` on docs — API path healthy).
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `nginx_tokens:no`, `haproxy_del:no`. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2441,7 +2441,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` → **200** `{"status":"ok"}`; `/api/docs` → **200**.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `nginx_tokens`/`haproxy_del` grep → **missing**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2471,7 +2471,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` → **200**; `/api/docs` → **200**.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; #210 config **missing** on server (`grep` no match). Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2502,7 +2502,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` → **200**; `/api/docs` → **200**.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; #210 config **missing** on server (`grep` no match). Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2532,7 +2532,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP/1.1 **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` → **200**; `/api/docs` → **200**.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → HTTP/1.1 **200**, no `Server:` line.
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; #210 config **missing** on server (`grep` no match). Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2563,7 +2563,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` **200**; `/api/docs` **200**.
    - **Local dev `Server` unchanged (optional):** **SKIP** — Docker dev stack not up (`curl` to `http://127.0.0.1:4202/` unreachable).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for #210 config on server → **no match**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2591,7 +2591,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` **200** `{"status":"ok"}`; `/api/docs` **200**.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → **200**, no `Server` header (dev `ng serve` via HAProxy; unchanged vs prior runs).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for #210 config on server → **no match**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2620,7 +2620,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` **200** `{"status":"ok"}`; `/api/docs` **200**.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → **200**, no `Server` header (dev `ng serve` via HAProxy; unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for #210 config on server → **no match**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2649,7 +2649,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` **200** `{"status":"ok"}`; `/api/docs` **200**.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → **200**, no `Server` header (dev `ng serve` via HAProxy; unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for #210 config on server → **no match**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -2678,7 +2678,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod ACME HTTP path reaches nginx:** **PASS** — `curl -sI http://satisfecho.de/.well-known/acme-challenge/test` → HTTP **404**, `server: nginx/1.31.0` (nginx answered; webroot not broken).
    - **Prod smoke `/` + `/api/health` + `/api/docs`:** **PASS** — landing **200**; `/api/health` **200** `{"status":"ok"}`; `/api/docs` **200**.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → **200**, no `Server` header (dev `ng serve` via HAProxy; unchanged).
-   - **HAProxy `-c` on host with certs:** **PASS** — `ssh amvara9 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
+   - **HAProxy `-c` on host with certs:** **PASS** — `the production host 'docker compose … exec haproxy haproxy -c …'` → `Configuration file is valid` (deployed tree **`7160354d`**, pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf`; `http-response del-header Server` in `haproxy/haproxy.prod.cfg`.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` for #210 config on server → **no match**. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757). No green deploy for **`54961675`**.
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** applies.
@@ -3068,7 +3068,7 @@ Relevant paths: **`front/nginx.conf`**, **`haproxy/haproxy.prod.cfg`** (and dev 
    - **Prod smoke `/` + `/api/health`:** **PASS** — landing **200**; `/api/health` → `{"status":"ok"}`.
    - **Local dev `Server` unchanged (optional):** **PASS** — `curl -sI http://127.0.0.1:4202/` → **200**, no `Server:` header line (dev `ng serve` via HAProxy).
    - **HAProxy `-c` (local prod compose):** **PASS** — `docker compose … exec haproxy haproxy -c …` → `Configuration file is valid`.
-   - **HAProxy `-c` on amvara9:** **PASS** — `ssh amvara9 '… haproxy -c …'` → `Configuration file is valid` (deployed tree pre-#210).
+   - **HAProxy `-c` on amvara9:** **PASS** — `the production host '… haproxy -c …'` → `Configuration file is valid` (deployed tree pre-#210).
    - **Repo fix on `development`:** **PASS** — `server_tokens off;` in `front/nginx.conf` on **`origin/development`**; absent on **`origin/master`**. `http-response del-header Server` in `haproxy/haproxy.prod.cfg` on **`development`**.
    - **Deploy readiness (#210 on production):** **FAIL** — amvara9 `git rev-parse --short HEAD` = **`7160354d`**; `grep` counts **0** for `server_tokens` / `del-header Server` on server. Latest **Deploy to amvara9** on **`master`** → **failure** (https://github.com/satisfecho/pos/actions/runs/24773000757, 2026-04-22). No green deploy for **`54961675`**. Prod header polled at 15:48:51Z (workflow list + amvara9 grep, not fixed sleep).
 5. **Overall:** **FAIL** — production still discloses **`nginx/1.31.0`**; fix not on **`master`** / not deployed. **Loop protection** — ops/deploy blocker; coder rework not required.

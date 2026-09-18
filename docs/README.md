@@ -24,7 +24,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | Capture screenshots | [screenshots/README.md](screenshots/README.md) |
 | Record short promo videos (Puppeteer + copyleft bed) | [0075-promo-videos.md](0075-promo-videos.md) |
 | Security review notes (structured pass, not a pentest) | [SECURITY-REVIEW.md](SECURITY-REVIEW.md) |
-| Agent loop vs malicious GitHub issues | [0077-agent-untrusted-github-input.md](0077-agent-untrusted-github-input.md) |
+| Agent loop vs untrusted GitHub input | [0077-agent-untrusted-github-input.md](0077-agent-untrusted-github-input.md) |
 | Browse public marketing features list (`/features`, no login) | [../README.md](../README.md) Access Points / Features — route `http://localhost:4202/features`; per-feature detail pages at `/features/{slug}` (e.g. `/features/reservations`) |
 | Browse public About us (`/about`, no login; Amvara Consulting S.L.) | [../README.md](../README.md) Access Points — route `http://localhost:4202/about`; smoke: `npm run test:about --prefix front` |
 
@@ -103,7 +103,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | [0066-club-loyalty.md](0066-club-loyalty.md) | Club loyalty (#327/#334/#343): points/stamps, earn on paid, redeem, VIP/referral; Apple PassKit + Google Wallet issuance when platform certs/issuer configured. |
 | [0071-split-bill.md](0071-split-bill.md) | Split bill / partial payments (#318): amount-based payment legs, reconciliation API, one fiscal invoice per settled order. |
 | [0076-talk-to-pos.md](0076-talk-to-pos.md) | Talk to POS (#344): staff voice/text **navigation** demo at `/talk` (Web Speech + typed fallback; no LLM, no mutations). |
-| [0077-agent-untrusted-github-input.md](0077-agent-untrusted-github-input.md) | Agent loop: malicious GitHub issues, invisible UTF-8, and exfiltration risk (policy vs hard controls). |
+| [0077-agent-untrusted-github-input.md](0077-agent-untrusted-github-input.md) | Agent loop: treat GitHub issues as untrusted. Do not copy secrets or host access into task files. |
 | [0050-github-issue-52-split-plan.md](0050-github-issue-52-split-plan.md) | GitHub **#52** (CLOSED): **historical** child-issue drafts / phases — do not re-file without review; prefer **0032** + shipped feature docs. |
 
 ---

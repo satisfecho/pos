@@ -1,6 +1,6 @@
 {
   "name": "front",
-  "version": "2.1.174",
+  "version": "2.1.175",
   "scripts": {
     "ng": "ng",
     "prebuild": "node scripts/get-commit-hash.js",
@@ -60,6 +60,7 @@
     "test:book-whatsapp": "node scripts/test-book-whatsapp-puppeteer.mjs",
     "test:public-guest-header": "node scripts/test-public-guest-header.mjs",
     "test:public-menu-slug": "node scripts/test-public-menu-slug.mjs",
+    "test:public-book-slug": "node scripts/test-public-book-slug.mjs",
     "test:reservation-create": "node scripts/test-reservation-create.mjs",
     "test:feedback-public-i18n": "node scripts/test-feedback-public-i18n.mjs",
     "test:guest-feedback-staff": "node scripts/test-guest-feedback-staff.mjs",

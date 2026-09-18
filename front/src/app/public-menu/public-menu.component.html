@@ -7,6 +7,7 @@
   <app-public-guest-header
     [tenantId]="tenantId()"
     [publicMenuRef]="tenant()?.public_slug?.trim() || tenantId()"
+    [publicBookSlug]="tenant()?.public_slug?.trim() || null"
     [tenantName]="tenant()?.name ?? null"
     [logoUrl]="logoUrl()"
     [headerBackgroundColor]="tenant()?.public_background_color ?? null"
@@ -34,7 +35,7 @@
           </p>
           @if (tenantId() > 0) {
             <a
-              [routerLink]="['/book', tenantId()]"
+              [routerLink]="bookRouterLink()"
               class="public-menu-back-link"
               data-testid="public-menu-back-home"
             >{{ 'PUBLIC_MENU.BACK_HOME' | translate }}</a>
@@ -213,7 +214,7 @@
 
       <div class="public-menu-footer-actions">
         <a
-          [routerLink]="['/book', tenantId()]"
+          [routerLink]="bookRouterLink()"
           class="public-menu-back-link"
           data-testid="public-menu-back-home"
         >{{ 'PUBLIC_MENU.BACK_HOME' | translate }}</a>

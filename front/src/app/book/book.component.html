@@ -1,6 +1,8 @@
 <div class="book-page" [style.--color-bg]="tenant()?.public_background_color ?? null" [style.--hero-header-bg]="tenant()?.public_background_color ?? null" [style.--color-primary]="primaryColorCss()">
   <app-public-guest-header
     [tenantId]="tenantId()"
+    [publicMenuRef]="tenant()?.public_slug?.trim() || tenantId()"
+    [publicBookSlug]="tenant()?.public_slug?.trim() || null"
     [tenantName]="tenant()?.name ?? null"
     [logoUrl]="logoUrl()"
     [headerBackgroundColor]="tenant()?.public_background_color ?? null"

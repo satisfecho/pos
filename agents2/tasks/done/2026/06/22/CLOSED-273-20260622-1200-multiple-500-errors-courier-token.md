@@ -86,7 +86,7 @@ curl -s -o /dev/null -w "%{http_code}\n" \
   -d "username=nonexistent@amvara.de&password=wrong"
 
 # Verify column type on amvara9 (optional)
-ssh amvara9 'cd /development/pos && docker compose --env-file config.env \
+the production host 'cd the deploy directory && docker compose --env-file config.env \
   -f docker-compose.yml -f docker-compose.prod.yml exec -T db \
   psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c \
   "SELECT udt_name FROM information_schema.columns WHERE table_name = '\''user'\'' AND column_name = '\''role'\'';"'

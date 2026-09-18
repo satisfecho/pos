@@ -291,6 +291,11 @@ export class PlatformDashboardComponent implements OnInit {
   }
 
   publicUrl(segment: string, tenant: { id: number; public_slug?: string | null }): string {
+    if (segment === 'book' && tenant.public_slug?.trim()) {
+      const path = `/${tenant.public_slug.trim()}/book`;
+      if (typeof window === 'undefined') return path;
+      return `${window.location.origin}${path}`;
+    }
     const ref =
       segment === 'public-menu' && tenant.public_slug?.trim()
         ? tenant.public_slug.trim()

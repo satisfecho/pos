@@ -3,6 +3,7 @@ import { inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError, switchMap, ReplaySubject, take } from 'rxjs';
 import { ApiService } from '../services/api.service';
+import { isPublicBookPath } from '../shared/public-book-path';
 
 // Flag to prevent multiple simultaneous refresh attempts
 let isRefreshing = false;
@@ -27,7 +28,7 @@ function isPublicRoute(url: string): boolean {
     path.startsWith('/menu/') ||
     path.startsWith('/public-menu/') ||
     path.startsWith('/delivery/') ||
-    path.startsWith('/book/') ||
+    isPublicBookPath(path) ||
     path.startsWith('/feedback/') ||
     path === '/reservation'
   );

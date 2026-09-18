@@ -2,7 +2,7 @@
 
 These instructions apply to all work in this repository:
 
-- **Commits**: Do not add `Co-authored-by:`, `Signed-off-by:`, or any Cursor/agent/IDE attribution to commit messages. Do not advertise the agent or tool in commits. To enforce this locally, run `./scripts/install-git-hooks.sh` once (installs a prepare-commit-msg hook that strips such lines). **Always commit completed work**: when you finish a change, feature, or fix that the user asked for, stage and commit the changes so they are not lost. Do not leave the user to ask "was this committed?" — commit as part of doing the needed. **Use SSH for git remote**: this repo uses `id_rsa`; keep origin as `git@github.com:satisfecho/pos.git` (not HTTPS) so fetch/push work without prompting.
+- **Commits**: Do not add `Co-authored-by:`, `Signed-off-by:`, or any Cursor/agent/IDE attribution to commit messages. Do not advertise the agent or tool in commits. To enforce this locally, run `./scripts/install-git-hooks.sh` once (installs a prepare-commit-msg hook that strips such lines). **Always commit completed work**: when you finish a change, feature, or fix that the user asked for, stage and commit the changes so they are not lost. Do not leave the user to ask "was this committed?" — commit as part of doing the needed. **Use SSH for git remote**: keep origin as `git@github.com:satisfecho/pos.git` (not HTTPS) so fetch/push work without prompting. Do not name or copy private key files into tasks or commits.
 - **Branches and production (`development` vs `master`) — essential:** Do routine work on **`development`**, not **`master`**. **Before changing files** (including task markdown under **`agents2/tasks/`**; see **`agents2/TASKS-README.md`**), sync with remote: run **`./scripts/git-sync-development.sh`** or **`git fetch origin`**, ensure you are on **`development`**, then **`git pull --rebase --autostash origin development`** — see **`.cursor/rules/git-development-branch-workflow.mdc`** (*Sync before you change anything*). After committing, **`git pull --rebase`** again on **`development`**, then **`git push origin development`**. Merge **`development` → `master`** and push **`master`** **only** when: (1) the **daily** promote window (agent loop step **009** / **`scripts/promote-development-to-master.sh`**, default ≥24h), (2) a **big production-impacting** change (security, payments, critical bugs, blocking migrations, etc.), or (3) the **GitHub issue** or **user** explicitly requests **urgent / hotfix / production** (label **`production-urgent`** when used). Otherwise **do not** merge to **`master`**. **When the user says to push** (or “you push it”) without asking for production: push **`development`**. Details: **`.cursor/rules/git-development-branch-workflow.mdc`** and **`docs/agent-loop.md`**. Do the full follow-through on sync without asking, within these branch rules.
 
 - Do not install anything on the host system. Use containers for any installs.
@@ -95,9 +95,7 @@ See **Reservation tests (Puppeteer)** and **Demo tables** below for more test sc
 
 **Compose files:** Local dev = `docker compose -f docker-compose.yml -f docker-compose.dev.yml`. Production (amvara9) = `docker compose -f docker-compose.yml -f docker-compose.prod.yml`. Use the same `-f` list for `ps`, `logs`, `exec`, etc.
 
-**Deploy (amvara9) – migrations:** `scripts/deploy-amvara9.sh` starts only db+redis, runs `python -m app.migrate` then `python -m app.migrate --sync-idempotent` (repair when schema_version was wrong), then starts all services. So the app never serves traffic before migrations. On the server, path is `/development/pos`.
-
-**SSH (amvara9):** On the usual dev machine, `ssh amvara9` works with key-based auth (host alias in SSH config). Use it for production diagnostics from this environment—e.g. `ssh amvara9 'cd /development/pos && …'` with `docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml logs|exec|ps`. CI, sandboxes, or other laptops may not have that alias; treat it as optional, not guaranteed everywhere.
+**Deploy (amvara9) – migrations:** `scripts/deploy-amvara9.sh` starts only db+redis, runs `python -m app.migrate` then `python -m app.migrate --sync-idempotent` (repair when schema_version was wrong), then starts all services. So the app never serves traffic before migrations. Host access stays in operator docs. Do not copy host names, paths, or SSH steps into task files.
 
 When debugging the running app (e.g. frontend not loading a route, API issues):
 
@@ -126,9 +124,9 @@ When debugging the running app (e.g. frontend not loading a route, API issues):
 
 Run these from the repo root or from `front/` when the app is up (e.g. on port 4203 or 4202). Chrome must be installed (e.g. `/Applications/Google Chrome.app` on macOS). Scripts auto-detect the first responding port among 4203, 4202, 4200.
 
-**Provider portal (manual testing):** `.env` can define `PROVIDER_TEST_EMAIL=pos-provider@amvara.de` and `PROVIDER_TEST_PASSWORD=123456` for testing the provider dashboard at `/provider` (log in at `/provider/login`).
+**Provider portal (manual testing):** Set provider test email and password in `.env` (see `config.env.example`). Log in at `/provider/login`. Do not paste passwords into task files.
 
-**Courier portal (manual testing):** `.env` / `config.env` can define `COURIER_EMAIL=courier-test-phase1@amvara.de` and `COURIER_PASSWORD=secret` for the courier dashboard at `/courier` (log in at `/courier/login`). Same defaults as `front/scripts/test-courier-actions.mjs` and `app.seeds.seed_demo_courier_user` (see `config.env.example`).
+**Courier portal (manual testing):** Set courier test email and password in `.env` / `config.env` (see `config.env.example`). Log in at `/courier/login`. Same env names as `front/scripts/test-courier-actions.mjs` and `app.seeds.seed_demo_courier_user`. Do not paste passwords into task files.
 
 **Staff flow (login → reservations → create → cancel):**
 
@@ -140,8 +138,7 @@ export LOGIN_PASSWORD="${DEMO_LOGIN_PASSWORD:-$LOGIN_PASSWORD}"
 cd front && node scripts/debug-reservations.mjs
 ```
 
-Or with credentials inline (no .env):  
-`LOGIN_EMAIL="pos-staff-demo@amvara.de" LOGIN_PASSWORD="secret" node front/scripts/debug-reservations.mjs`
+Or set `LOGIN_EMAIL` and `LOGIN_PASSWORD` in the environment (no password in this file), then run `node front/scripts/debug-reservations.mjs`.
 
 **Public flow (no login: book page → submit → view/cancel by token):**
 
@@ -191,7 +188,7 @@ Exit 0 means tenant 1 has T01–T10 with the correct seat counts; exit 1 reports
 
 **Demo products (tenant 1):** Deploy also runs `app.seeds.seed_demo_products`, which seeds a default menu (main courses, beverages) for every tenant missing any of those names — including partial catalogs. Idempotent; does not delete existing products; no images. To run manually: `docker compose exec back python -m app.seeds.seed_demo_products`. **Check:** `docker compose exec back python -m app.seeds.check_demo_products` (exit 0 = tenant 1 has all demo product names).
 
-**Demo orders/reservations/waiting-list reset (tenant 1 only):** Clears orders, reservations, and waiting-list entries for tenant 1, then re-seeds (including a demo courier user when missing, Satisfecho Delivery samples, a small waitlist queue, and demo delivery fee/postal settings when unset). Safe while the stack is up. Local: `docker compose exec back python -m app.seeds.reset_demo_data`. Production wrapper: `./scripts/reset-demo-data-on-server.sh`. Daily host cron on amvara9 is documented in **`docs/0001-ci-cd-amvara9.md`** (section *Daily demo data reset*). **Delivery orders check:** `docker compose exec back python -m app.seeds.check_demo_delivery_orders` (exit 0 = tenant 1 has ≥1 `order_channel=satisfecho_delivery` row). **Delivery settings check:** `docker compose exec back python -m app.seeds.check_demo_delivery_settings` (exit 0 = tenant 1 has fee and/or zone). **Waiting list check:** `docker compose exec back python -m app.seeds.check_demo_waiting_list` (exit 0 = tenant 1 has ≥1 `waiting` and ≥1 `notified` row). **Demo courier:** `docker compose exec back python -m app.seeds.seed_demo_courier_user` (defaults `COURIER_EMAIL=courier-test-phase1@amvara.de` / `COURIER_PASSWORD=secret`, same as courier Puppeteer smokes).
+**Demo orders/reservations/waiting-list reset (tenant 1 only):** Clears orders, reservations, and waiting-list entries for tenant 1, then re-seeds (including a demo courier user when missing, Satisfecho Delivery samples, a small waitlist queue, and demo delivery fee/postal settings when unset). Safe while the stack is up. Local: `docker compose exec back python -m app.seeds.reset_demo_data`. Production wrapper: `./scripts/reset-demo-data-on-server.sh`. Daily host cron on amvara9 is documented in **`docs/0001-ci-cd-amvara9.md`** (section *Daily demo data reset*). **Delivery orders check:** `docker compose exec back python -m app.seeds.check_demo_delivery_orders` (exit 0 = tenant 1 has ≥1 `order_channel=satisfecho_delivery` row). **Delivery settings check:** `docker compose exec back python -m app.seeds.check_demo_delivery_settings` (exit 0 = tenant 1 has fee and/or zone). **Waiting list check:** `docker compose exec back python -m app.seeds.check_demo_waiting_list` (exit 0 = tenant 1 has ≥1 `waiting` and ≥1 `notified` row). **Demo courier:** `docker compose exec back python -m app.seeds.seed_demo_courier_user` (uses `COURIER_EMAIL` / `COURIER_PASSWORD` from the environment; see `config.env.example`). Do not paste those values into task files.
 
 **Puppeteer test (demo data):** Verifies tenant 1 has ≥10 tables and ≥10 products and /book/1 loads. Run with tenant 1 credentials: `BASE_URL=http://satisfecho.de LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/test-demo-data.mjs` (or `npm run test:demo-data` from front/). Runs headless by default; use `HEADLESS=0` to show the browser.
 
@@ -210,7 +207,7 @@ Exit 0 means tenant 1 has T01–T10 with the correct seat counts; exit 1 reports
 - **Frontend (run.sh):** http://localhost:4202 — **Frontend (Docker):** use HAProxy port from `docker compose ps` (e.g. http://127.0.0.1:4202).
 - **Backend API docs:** http://localhost:8020/docs
 - **Health check:** http://localhost:8020/health
-- **Public booking:** http://localhost:4202/book/{tenantId} (e.g. `/book/1`)
+- **Public booking:** http://localhost:4202/{public_slug}/book (or `/book/{tenantId}`, e.g. `/book/1`)
 - **Public waiting list:** http://localhost:4202/waitlist/{tenantId}
 - **Public Satisfecho Delivery:** http://localhost:4202/delivery/{tenantId}
 - **Public features (marketing):** http://localhost:4202/features — no login

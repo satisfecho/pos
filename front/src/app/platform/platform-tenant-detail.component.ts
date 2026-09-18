@@ -279,6 +279,9 @@ export class PlatformTenantDetailComponent implements OnInit {
     const t = this.tenant();
     const id = t?.id;
     if (!id || typeof window === 'undefined') return `/${segment}/${id ?? ''}`;
+    if (segment === 'book' && t?.public_slug?.trim()) {
+      return `${window.location.origin}/${t.public_slug.trim()}/book`;
+    }
     const ref =
       segment === 'public-menu' && t?.public_slug?.trim()
         ? t.public_slug.trim()

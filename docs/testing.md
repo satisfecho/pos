@@ -825,6 +825,7 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `test:support-access` | `scripts/test-support-access.mjs` (Users → Add Satisfecho support pre-fills `support@satisfecho.de`; admin/owner) |
 | `test:kitchen-timer` | `scripts/test-kitchen-timer.mjs` (Kitchen `/kitchen`: Timer settings + Waiting timer when orders exist) |
 | `test:book-whatsapp` | `scripts/test-book-whatsapp-puppeteer.mjs` (public `/book/1` WhatsApp CTA; optional `API_BASE`; no login) |
+| `test:public-book-slug` | `scripts/test-public-book-slug.mjs` (public `/{slug}/book` + numeric `/book/1` canonicalize; no login; #415) |
 | `test:public-guest-header` | `scripts/test-public-guest-header.mjs` (public `/book/:id` sticky header + menu link; no login; #376) |
 | `test:my-shift-clock-qr` | `scripts/test-my-shift-clock-qr.mjs` (My shift venue clock QR / `.scan-cta`; waiter `LOGIN_*` + optional `OWNER_*`) |
 | `test:rate-limit` | `scripts/test-rate-limit.mjs` (API rate limiting: login 5/15min, register 3/hour; expects 429 after limit) |

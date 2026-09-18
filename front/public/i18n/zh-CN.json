@@ -2436,7 +2436,7 @@
     "EVENING_LABEL_PLACEHOLDER": "晚市",
     "CITY": "城市",
     "PUBLIC_SLUG": "公开菜单网址别名",
-    "PUBLIC_SLUG_HINT": "用于 /public-menu/{slug}（名称-城市）。字母、数字、连字符。留空则根据名称和城市自动生成。"
+    "PUBLIC_SLUG_HINT": "用于 /public-menu/{slug} 和 /{slug}/book（名称-城市）。字母、数字、连字符。留空则根据名称和城市自动生成。"
   },
   "PAYMENTS": {
     "PAYMENT": "支付",

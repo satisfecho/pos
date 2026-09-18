@@ -2299,7 +2299,7 @@
     "EVENING_LABEL_PLACEHOLDER": "Cena",
     "CITY": "Ciudad",
     "PUBLIC_SLUG": "Slug de URL del menú público",
-    "PUBLIC_SLUG_HINT": "Se usa en /public-menu/{slug} (nombre-ciudad). Letras, números y guiones. Vacío = auto desde nombre y ciudad."
+    "PUBLIC_SLUG_HINT": "Se usa en /public-menu/{slug} y /{slug}/book (nombre-ciudad). Letras, números y guiones. Vacío = auto desde nombre y ciudad."
   },
   "PAYMENTS": {
     "PAYMENT": "Pago",

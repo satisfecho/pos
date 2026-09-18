@@ -11,7 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Added
 
 - **Public menu URL slug (#413):** `/public-menu/{slug}` uses a unique **name-city** `public_slug` (plus optional `city` in Settings). Numeric `/public-menu/{id}` still works and redirects to the slug when set. Landing QR, guest nav, delivery, loyalty CTAs, and platform shortcuts prefer the slug.
-- **Agent loop vs untrusted GitHub input:** New `docs/0077-agent-untrusted-github-input.md` (linked from `docs/README.md` and `docs/SECURITY-REVIEW.md`) explains soft controls, invisible UTF-8 risk, and hardening for malicious issues.
+- **Agent loop vs untrusted GitHub input:** `docs/0077-agent-untrusted-github-input.md` states the rule only. It does not list hosts, paths, keys, or commands.
 - **Public menu contact footer (#412):** `/public-menu/{tenantId}` shows restaurant phone, WhatsApp, email, address, and maps links above the existing back/legal footer (same tenant fields as `/book`).
 - **Loyalty public Menu / Book / Delivery CTAs (#374):** `/loyalty/card/:token` uses the sticky guest header; card and join-success show body CTAs to `/public-menu`, `/book`, and `/delivery` for that tenant.
 - **Settings → Loyalty club docs link (#394):** Loyalty club tab links to the runbook on GitHub (`docs/0066-club-loyalty.md`). Smoke: `npm run test:settings-loyalty-docs --prefix front`.
@@ -19,6 +19,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- **Agent instructions:** `AGENTS.md` no longer names the git key file, production host access, or demo passwords. Those values stay in local env files. Archived agent task notes no longer include the production address, host alias, deploy path, or SSH port.
 - **Settings RAL5002 preset clarity (#367):** Public background colour preset is labelled **Apply RAL5002 (#1E22AA)** with hint/title that it is optional and does not lock the field; colour picker and hex stay in sync while typing.
 - **Settings → Loyalty club docs link (#394):** Loyalty club tab links to the runbook on GitHub (`docs/0066-club-loyalty.md`). Smoke: `npm run test:settings-loyalty-docs --prefix front`.
 - **Sidebar mobile brand link fix (#390):** Close the broken mobile header `<a>` so the Angular template compiles again (desktop POS → dashboard link was already correct).
@@ -41,6 +42,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Book Time slot alignment (#369):** Public `/book` week summary keeps Time slot left-aligned under Date (no right-side float on wide viewports).
 
 - **Public menu Back to home (#386):** `/public-menu/:tenantId` (and delivery) **Back to home** goes to `/book/:tenantId` instead of marketing `/`.
+
+## [2.1.175] - 2026-09-18
+
+### Added
+
+- **Public booking URL slug (#415):** Guest booking prefers `/{public_slug}/book` (same name-city slug as the public menu). Numeric `/book/{id}` still works and redirects to the slug form when set. Guest nav, menu/delivery/waitlist/loyalty CTAs, and platform shortcuts prefer the slug path. Smoke: `npm run test:public-book-slug --prefix front`.
 
 ## [2.1.174] - 2026-09-14
 

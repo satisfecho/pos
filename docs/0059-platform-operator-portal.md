@@ -21,7 +21,7 @@ Platform operators can:
   - **Staff accounts** (email + role + **login count / last login**) — whom to contact
   - Links to **public pages** for that tenant:
     - `/public-menu/{id}` — guest menu
-    - `/book/{id}` — reservations / booking
+    - `/{slug}/book` or `/book/{id}` — reservations / booking
     - `/waitlist/{id}` — waitlist
     - `/delivery/{id}` — Satisfecho Delivery checkout
 
@@ -37,7 +37,7 @@ Operator users live in the same `User` table with `role=platform_operator`, `ten
 | Operator dashboard | `/platform` |
 | Tenant detail | `/platform/tenants/{tenantId}` |
 | Guest menu (review) | `/public-menu/{tenantId}` |
-| Guest booking | `/book/{tenantId}` |
+| Guest booking | `/{public_slug}/book` (preferred) or `/book/{tenantId}` |
 | Guest waitlist | `/waitlist/{tenantId}` |
 | Guest delivery checkout | `/delivery/{tenantId}` |
 

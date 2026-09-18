@@ -63,7 +63,7 @@ Demo restaurant (tenant 1) accumulates orders and reservations on production. Sa
    Expect: `demo_daily_reset=documented …`
 5. Optional — amvara9 cron present:
    ```bash
-   ssh amvara9 'crontab -l | grep reset-demo-data-on-server'
+   the production host 'crontab -l | grep reset-demo-data-on-server'
    ```
 6. Note: `python -m app.seeds.check_demo_tables` may still fail until the separate demo-tables repair NEW task is done; that does not block this reset/cron work.
 
@@ -78,7 +78,7 @@ Demo restaurant (tenant 1) accumulates orders and reservations on production. Sa
    - Reset dry-run #2 (idempotency): **PASS** — exit 0; same success line after clearing the freshly seeded 40/37.
    - Docs cron line: **PASS** — `docs/0001-ci-cd-amvara9.md` lines 113 and 120 match `0 4 * * * … reset-demo-data-on-server.sh`.
    - Preflight: **PASS** — `demo_daily_reset=documented (docs mention 04:00 UTC cron + reset-demo-data-on-server.sh)`.
-   - Optional amvara9 cron: **PASS** — `crontab -l` shows `0 4 * * * cd /development/pos && ./scripts/reset-demo-data-on-server.sh >>/var/log/pos-demo-reset.log 2>&1`.
+   - Optional amvara9 cron: **PASS** — `crontab -l` shows `0 4 * * * cd the deploy directory && ./scripts/reset-demo-data-on-server.sh >>/var/log/pos-demo-reset.log 2>&1`.
 5. **Overall:** **PASS**
 6. **Product owner feedback:** Daily demo reset is ready for ops: the wrapper runs, the seed module is idempotent on a live stack, and both the docs and amvara9 crontab advertise the 04:00 UTC job. Remaining `check_demo_tables` gaps stay on the separate demo-tables repair task and do not block this cron work.
 7. **URLs tested:** N/A — no browser

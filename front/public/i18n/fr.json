@@ -2246,7 +2246,7 @@
     "EVENING_LABEL_PLACEHOLDER": "Dîner",
     "CITY": "Ville",
     "PUBLIC_SLUG": "Slug d’URL du menu public",
-    "PUBLIC_SLUG_HINT": "Utilisé dans /public-menu/{slug} (nom-ville). Lettres, chiffres, tirets. Vide = auto depuis nom et ville."
+    "PUBLIC_SLUG_HINT": "Utilisé dans /public-menu/{slug} et /{slug}/book (nom-ville). Lettres, chiffres, tirets. Vide = auto depuis nom et ville."
   },
   "PAYMENTS": {
     "PAYMENT": "Paiement",

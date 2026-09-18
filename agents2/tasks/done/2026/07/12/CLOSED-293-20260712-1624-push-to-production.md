@@ -23,7 +23,7 @@ Promote the latest tested work from **`development`** to **production on amvara9
 - Read **`docs/0001-ci-cd-amvara9.md`** and **`.cursor/rules/git-development-branch-workflow.mdc`**: promote via **`development` → `master`** merge (or fast-forward) + **`git push origin master`**, which triggers **`.github/workflows/deploy-amvara9.yml`**.
 - Sync **`development`** with remote before promoting; confirm local smoke — `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:4202/` → **200**; `docker logs --since 10m pos-front` — expect **`Application bundle generation complete`** with no standing TS/build errors.
 - Review **`CHANGELOG.md`** `[Unreleased]` and bump **`front/package.json`** version if user-facing changes ship (platform operator, menu changes, etc.).
-- Merge/promote only production-ready changes; if **deploy-amvara9** GHA fails on SSH (see **#289**), fall back to manual deploy: `ssh amvara9 'cd /development/pos && git fetch origin && git checkout -f master && git reset --hard origin/master && bash scripts/deploy-amvara9.sh'`.
+- Merge/promote only production-ready changes; if **deploy-amvara9** GHA fails on SSH (see **#289**), fall back to manual deploy: `the production host 'cd the deploy directory && git fetch origin && git checkout -f master && git reset --hard origin/master && bash scripts/deploy-amvara9.sh'`.
 - Post-deploy smoke: landing **app-version** meta (expect version beyond **2.1.13**), **`/api/health`** 200, spot-check **#292** `/platform/login`, **#290** grouped sidebar, and public routes (`/waitlist/1`, `/register`).
 - This is **deploy/ops**, not feature coding — fix blocking defects on **`development`** only if deploy reveals them, then re-test and re-promote.
 - Append **Testing instructions** when promotion and production verification are complete (include workflow run URL and smoke results).
@@ -38,8 +38,8 @@ Promote the latest tested work from **`development`** to **production on amvara9
 
 ### Deploy
 
-- **GitHub Actions:** [Deploy to amvara9 run #29200152615](https://github.com/satisfecho/pos/actions/runs/29200152615) — **failed** at SSH checkout (`Connection refused` from runners to **167.235.138.59:22**, same as #289).
-- **Manual fallback:** `ssh amvara9 'cd /development/pos && git fetch origin && git checkout -f master && git reset --hard origin/master && bash scripts/deploy-amvara9.sh'` — **exit 0**, server at **`0923c654`**.
+- **GitHub Actions:** [Deploy to amvara9 run #29200152615](https://github.com/satisfecho/pos/actions/runs/29200152615) — **failed** at SSH checkout (`Connection refused` from runners to **the production address:22**, same as #289).
+- **Manual fallback:** `the production host 'cd the deploy directory && git fetch origin && git checkout -f master && git reset --hard origin/master && bash scripts/deploy-amvara9.sh'` — **exit 0**, server at **`0923c654`**.
 
 ### Post-deploy smoke (https://www.satisfecho.de)
 
@@ -55,7 +55,7 @@ Promote the latest tested work from **`development`** to **production on amvara9
 
 - Log in as staff and confirm **Customers (Invoice)** appears under **Operations** in the grouped sidebar (#290).
 - Optional: `BASE_URL=https://www.satisfecho.de node front/scripts/test-platform-operator.mjs` with platform operator credentials from server **`config.env`** (`PLATFORM_OPERATOR_EMAIL` / `PLATFORM_OPERATOR_PASSWORD`).
-- GHA SSH from GitHub runners remains blocked; production deploys may need manual **`ssh amvara9`** until firewall/key access is fixed (#289).
+- GHA SSH from GitHub runners remains blocked; production deploys may need manual **`the production host`** until firewall/key access is fixed (#289).
 
 ---
 
@@ -75,7 +75,7 @@ Promote the latest tested work from **`development`** to **production on amvara9
 | `/api/health` 200 | **PASS** | `curl https://www.satisfecho.de/api/health` → 200 |
 | Public routes (`/waitlist/1`, `/register`) | **PASS** | Both → HTTP 200 |
 | `/platform/login` (#292) | **PASS** | HTTP 200 |
-| Deploy on amvara9 @ `0923c654` | **PASS** | `ssh amvara9 git rev-parse --short HEAD` → `0923c654` (matches promoted `master`) |
+| Deploy on amvara9 @ `0923c654` | **PASS** | `the production host git rev-parse --short HEAD` → `0923c654` (matches promoted `master`) |
 | GHA deploy-amvara9 | **PASS** (manual fallback) | [Run #29200152615](https://github.com/satisfecho/pos/actions/runs/29200152615) failed SSH (known #289); manual `deploy-amvara9.sh` exit 0 per coder notes |
 | Staff sidebar — **Customers (Invoice)** under **Operations** (#290) | **PASS** | Puppeteer on production: logged in as tenant-1 owner; expanded Operations → sublinks include `Customers (Invoice)` alongside Tables, Kitchen display, Beverages display |
 | Optional platform-operator script | **SKIP** | No `platform-test@amvara.de` user on production DB; `/platform/login` page loads (200) — full operator login not seeded on prod |

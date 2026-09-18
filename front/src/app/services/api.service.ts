@@ -659,7 +659,7 @@ export interface TenantSummary {
   address?: string | null;
   /** City used in public menu slug (name-city, #413). */
   city?: string | null;
-  /** Unique public path for /public-menu/{slug}; numeric id still works. */
+  /** Unique public path for /public-menu/{slug} and /{slug}/book; numeric id still works. */
   public_slug?: string | null;
   opening_hours?: string | null;
   /** Google review URL (tenant settings). */

@@ -1,6 +1,8 @@
 <div class="book-page" [style.--color-bg]="tenant()?.public_background_color ?? null" [style.--hero-header-bg]="tenant()?.public_background_color ?? null" [style.--color-primary]="resolvePublicPrimaryColor(tenant()?.public_primary_color)">
   <app-public-guest-header
     [tenantId]="tenantId()"
+    [publicMenuRef]="tenant()?.public_slug?.trim() || tenantId()"
+    [publicBookSlug]="tenant()?.public_slug?.trim() || null"
     [tenantName]="tenant()?.name ?? null"
     [logoUrl]="logoUrl()"
     [headerBackgroundColor]="tenant()?.public_background_color ?? null"
@@ -29,7 +31,7 @@
         <h2 class="success-title">{{ 'WAITLIST.SUCCESS_TITLE' | translate }}</h2>
         <p class="success-message">{{ 'WAITLIST.SUCCESS_MESSAGE' | translate }}</p>
         <p class="waitlist-alt-link">
-          <a [routerLink]="['/book', tenantId()]">{{ 'WAITLIST.LINK_BOOK_TABLE' | translate }}</a>
+          <a [routerLink]="bookRouterLink()">{{ 'WAITLIST.LINK_BOOK_TABLE' | translate }}</a>
         </p>
       </div>
     </main>
@@ -76,7 +78,7 @@
             {{ submitting() ? ('WAITLIST.SUBMITTING' | translate) : ('WAITLIST.SUBMIT' | translate) }}
           </button>
           <p class="waitlist-alt-link">
-            <a [routerLink]="['/book', tenantId()]">{{ 'WAITLIST.LINK_BOOK_TABLE' | translate }}</a>
+            <a [routerLink]="bookRouterLink()">{{ 'WAITLIST.LINK_BOOK_TABLE' | translate }}</a>
           </p>
         </div>
       </div>

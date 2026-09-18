@@ -2617,7 +2617,7 @@
     "EVENING_LABEL_PLACEHOLDER": "عشاء",
     "CITY": "المدينة",
     "PUBLIC_SLUG": "معرّف رابط القائمة العامة",
-    "PUBLIC_SLUG_HINT": "يُستخدم في /public-menu/{slug} (اسم-مدينة). أحرف وأرقام وشرطات. اتركه فارغًا للتوليد من الاسم والمدينة."
+    "PUBLIC_SLUG_HINT": "يُستخدم في /public-menu/{slug} و /{slug}/book (اسم-مدينة). أحرف وأرقام وشرطات. اتركه فارغًا للتوليد من الاسم والمدينة."
   },
   "PROVIDER_AUTH": {
     "NO_ACCOUNT": "ليس لديك حساب مورد؟",

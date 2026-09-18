@@ -17,7 +17,7 @@ This document describes how table reservations work for **staff** and **end user
 
 ### End users (public, no login)
 
-- **Book a table**: Public page at **`/book/:tenantId`**. Form: date, time, party size, name, phone. Submit creates a reservation (status `booked`). Success screen shows a link to view/cancel. When no slot is available, guests can follow **“Join the waiting list”** to **`/waitlist/:tenantId`**.
+- **Book a table**: Public page at **`/{public_slug}/book`** when the restaurant has a public slug (e.g. `/demo-restaurant-barcelona/book`), or **`/book/:tenantId`** (numeric id still works and redirects to the slug form when set). Form: date, time, party size, name, phone. Submit creates a reservation (status `booked`). Success screen shows a link to view/cancel. When no slot is available, guests can follow **“Join the waiting list”** to **`/waitlist/:tenantId`**.
 - **Service labels**: Under **Settings → Opening hours**, staff can set an optional **service label** on each day (continuous hours) or **morning / evening** labels when the day has a break. The public book page and staff reservation form show those labels for **Service** (empty = default “Lunch” / “Dinner” / “Lunch and dinner”). API values stay `lunch` / `dinner` for filtering.
 - **Join the waiting list**: Public page at **`/waitlist/:tenantId`**. Form: name, party size, phone (no date/time). Submit adds the guest to the tenant queue (status `waiting`). Also reachable from the book page link above.
 - **View or cancel**: Public page at **`/reservation?token=...`**. Shows reservation details and status; allows cancelling if status is `booked` or `seated`.
@@ -36,10 +36,11 @@ This document describes how table reservations work for **staff** and **end user
 ## 2. End-user flow: How the customer reserves a table
 
 1. **Get the booking link**  
-   The restaurant shares a link that includes the **tenant ID** (e.g. tenant 1):
-   - **URL**: `https://your-domain.com/book/1`  
-   - Replace `your-domain.com` with your app host (e.g. `localhost:4203` for local, or your production domain).  
-   - Replace `1` with the tenant’s ID (same tenant as in the admin).
+   The restaurant shares a link that uses the **public slug** when set (Settings → Business profile), or the numeric tenant ID:
+   - **Preferred URL**: `https://your-domain.com/demo-restaurant-barcelona/book`  
+   - **Legacy URL**: `https://your-domain.com/book/1` (still works; redirects to the slug form when a slug exists)  
+   - Replace `your-domain.com` with your app host (e.g. `localhost:4202` for local, or your production domain).  
+   - Set the slug under **Settings → Business profile** (same name-city slug as the public menu).
 
 2. **Open the booking page**  
    The customer opens that URL. They see:
@@ -61,7 +62,7 @@ This document describes how table reservations work for **staff** and **end user
    - If status is Booked or Seated, they can click “Cancel” to cancel the reservation.
 
 **Important**: The customer does **not** need an account. They only need:
-- The **booking link** (`/book/<tenantId>`) to create a reservation.
+- The **booking link** (`/{public_slug}/book` or `/book/<tenantId>`) to create a reservation.
 - The **view link** (`/reservation?token=...`) to see or cancel it (this link is shown after booking and can be sent by email/SMS by the restaurant if implemented later).
 
 When a table is not available for a chosen slot, the book page shows **“No table now? Join the waiting list”** linking to the waiting-list form (see section 3).
@@ -75,7 +76,7 @@ The waiting list is for **walk-in guests** who want a table **without** picking 
 ### Guest flow (public, no login)
 
 1. **Get the waiting-list link**  
-   Share **`/waitlist/:tenantId`** (same tenant ID as booking), or send guests to **`/book/:tenantId`** and have them click **Join the waiting list** when no table is free.
+   Share **`/waitlist/:tenantId`** (same tenant ID as booking), or send guests to **`/{public_slug}/book`** (or `/book/:tenantId`) and have them click **Join the waiting list** when no table is free.
    - **Local example**: `http://127.0.0.1:4202/waitlist/1`
    - **Production example**: `https://www.satisfecho.de/waitlist/1`
 
@@ -103,7 +104,7 @@ Staff can also add waiting-list entries manually via the staff API (`POST /waiti
 
 | Purpose | URL | Who |
 |--------|-----|-----|
-| Book a table (public) | `/book/:tenantId` e.g. `/book/1` | End user |
+| Book a table (public) | `/{public_slug}/book` (preferred) or `/book/:tenantId` e.g. `/book/1` | End user |
 | Join waiting list (public) | `/waitlist/:tenantId` e.g. `/waitlist/1` | End user |
 | View / cancel reservation (public) | `/reservation?token=<uuid>` | End user |
 | Guest feedback (public) | `/feedback/:tenantId` e.g. `/feedback/1` | End user |
@@ -113,14 +114,15 @@ Staff can also add waiting-list entries manually via the staff API (`POST /waiti
 
 **Base URL**: Use the same host and port as the rest of the app (e.g. `http://localhost:4203` or `https://your-domain.com`). The booking and view pages are served by the same Angular app and API.
 
-**Tenant ID**: The tenant ID in `/book/1` is the database ID of the tenant (restaurant). Staff can find it in the admin (e.g. from the API or database). Typically the first tenant is `1`.
+**Tenant ID / public slug**: Numeric `/book/1` still works. Prefer **`/{public_slug}/book`** from Settings → Business profile (same slug as `/public-menu/{slug}`).
 
 ---
 
 ## 5. Testing the end-user flow
 
-- **Book**: Open `http://127.0.0.1:4202/book/1` (or your app URL), fill the form, submit. You should see the success screen and the “View or cancel” link.
-- **Waiting list link from book**: On `/book/1`, follow **Join the waiting list** → `/waitlist/1`.
+- **Book**: Open `http://127.0.0.1:4202/book/1` (or `/{public_slug}/book`), fill the form, submit. You should see the success screen and the “View or cancel” link. Numeric `/book/1` should canonicalize to the slug URL when a slug exists.
+- **Waiting list link from book**: On the book page, follow **Join the waiting list** → `/waitlist/1`.
+- **Slug smoke**: `BASE_URL=http://127.0.0.1:4202 npm run test:public-book-slug --prefix front`.
 - **Waiting list form**: Open `http://127.0.0.1:4202/waitlist/1`, submit name, party size, phone → success message.
 - **View**: Open the link shown after booking, or `http://127.0.0.1:4202/reservation?token=<paste-token>`. You should see the reservation and, if status is booked/seated, the Cancel button.
 - **Staff waiting list**: Log in → `/reservations` → **Waiting list** tab. Test **Mark notified**, **Book table**, **Mark seated**, **Cancel**.

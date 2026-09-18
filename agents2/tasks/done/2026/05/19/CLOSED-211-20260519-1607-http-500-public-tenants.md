@@ -48,7 +48,7 @@ Deploy **`development`** should run **`python -m app.migrate`** so other envs ge
    Expect **200**.
 
 4. **Pending migration check (prod):**  
-   `ssh amvara9 'cd /development/pos && docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml exec -T back python -m app.migrate --check'`  
+   `the production host 'cd the deploy directory && docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml exec -T back python -m app.migrate --check'`  
    Expect **no pending** migrations (or only unrelated pending after deploy).
 
 5. **Landing smoke (optional):**  
@@ -87,7 +87,7 @@ $ curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:4202/api/public/ten
 $ curl -sS -o /dev/null -w "%{http_code}\n" https://satisfecho.de/api/public/tenants
 200
 
-$ ssh amvara9 '… python -m app.migrate --check'
+$ the production host '… python -m app.migrate --check'
 INFO: Database is up to date (version 20260501120000)
 
 pos-back  | INFO: … "GET /public/tenants HTTP/1.1" 200 OK
