@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Public booking still used numeric tenant ids (`/book/1`); product wanted slug paths like `/{public_slug}/book/`.
+- **What was done:** Added `/:publicSlug/book`, kept `/book/{id|slug}`, canonicalize to slug when set, and updated guest/share links plus docs to prefer `Tenant.public_slug`.
+- **What was tested:** Slug book load, numeric canonicalize, reservation submit, guest Menu/Book nav, `test:public-book-slug`, `test:public-guest-header`, front bundle — all **PASS**.
+- **Why closed:** All testing criteria passed.
+- **Closed at (UTC):** 2026-09-18 07:58
+---
+
 # Booking URL still uses tenant number (#415)
 
 ## GitHub Issues
