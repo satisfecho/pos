@@ -2299,7 +2299,7 @@
     "EVENING_LABEL_PLACEHOLDER": "ڈنر",
     "CITY": "شہر",
     "PUBLIC_SLUG": "عوامی مینو URL سلاگ",
-    "PUBLIC_SLUG_HINT": "/public-menu/{slug} (نام-شہر) میں استعمال۔ حروف، اعداد، ہائفن۔ خالی چھوڑیں تو نام اور شہر سے خود بنے گا۔"
+    "PUBLIC_SLUG_HINT": "/public-menu/{slug} اور /{slug}/book (نام-شہر) میں استعمال۔ حروف، اعداد، ہائفن۔ خالی چھوڑیں تو نام اور شہر سے خود بنے گا۔"
   },
   "PAYMENTS": {
     "PAYMENT": "ادائیگی",

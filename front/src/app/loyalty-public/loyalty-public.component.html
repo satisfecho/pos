@@ -124,6 +124,7 @@
             <app-public-guest-sales-ctas
               [tenantId]="tenantId()"
               [publicMenuRef]="tenant()?.public_slug?.trim() || tenantId()"
+              [publicBookSlug]="tenant()?.public_slug?.trim() || null"
             />
           </div>
         } @else {

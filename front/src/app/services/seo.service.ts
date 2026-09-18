@@ -95,6 +95,9 @@ const DYNAMIC_PUBLIC_PREFIXES = [
   '/reservation',
 ];
 
+/** /{public_slug}/book (#415) — not a fixed prefix. */
+const SLUG_BOOK_PATH = /^\/[^/]+\/book$/;
+
 @Injectable({ providedIn: 'root' })
 export class SeoService {
   private readonly title = inject(Title);
@@ -232,6 +235,7 @@ export class SeoService {
   }
 
   private isDynamicPublicPath(path: string): boolean {
+    if (SLUG_BOOK_PATH.test(path)) return true;
     return DYNAMIC_PUBLIC_PREFIXES.some(
       (prefix) => path === prefix || path.startsWith(prefix),
     );

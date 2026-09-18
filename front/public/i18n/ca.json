@@ -2436,7 +2436,7 @@
     "EVENING_LABEL_PLACEHOLDER": "Sopar",
     "CITY": "Ciutat",
     "PUBLIC_SLUG": "Slug de l’URL del menú públic",
-    "PUBLIC_SLUG_HINT": "S’usa a /public-menu/{slug} (nom-ciutat). Lletres, números i guions. Buit = auto des del nom i la ciutat."
+    "PUBLIC_SLUG_HINT": "S’usa a /public-menu/{slug} i /{slug}/book (nom-ciutat). Lletres, números i guions. Buit = auto des del nom i la ciutat."
   },
   "PAYMENTS": {
     "PAYMENT": "Pagament",

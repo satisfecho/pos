@@ -6,6 +6,7 @@ import { ApiService, TenantSummary } from '../services/api.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PublicGuestHeaderComponent } from '../shared/public-guest-header.component';
 import { resolvePublicPrimaryColor } from '../shared/public-brand-colors';
+import { publicBookRouterLink } from '../shared/public-book-path';
 import { LegalLinksComponent } from '../shared/legal-links.component';
 import { contactPhoneValid } from '../shared/contact-validators';
 import { ApiErrorMessageService } from '../services/api-error-message.service';
@@ -76,6 +77,13 @@ export class WaitlistPublicComponent implements OnInit {
         ? this.api.getTenantHeaderBackgroundUrl(t.header_background_filename, t.id)
         : null;
     return url ? this.sanitizer.bypassSecurityTrustStyle('url("' + url + '")') : null;
+  }
+
+  /** Canonical guest booking link (#415). */
+  bookRouterLink(): (string | number)[] {
+    const t = this.tenant();
+    if (t) return publicBookRouterLink(t);
+    return ['/book', this.tenantId()];
   }
 
   submit(): void {

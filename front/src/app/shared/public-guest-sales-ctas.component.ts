@@ -33,7 +33,7 @@ import { TranslateModule } from '@ngx-translate/core';
           @if (showBook()) {
             <a
               class="btn"
-              [routerLink]="['/book', tenantId()]"
+              [routerLink]="bookRouterLink()"
               data-testid="loyalty-cta-book"
             >
               {{ 'LOYALTY_PUBLIC.CTA_BOOK' | translate }}
@@ -93,6 +93,8 @@ export class PublicGuestSalesCtasComponent {
   tenantId = input(0);
   /** Prefer public_slug for menu CTA (#413). */
   publicMenuRef = input<string | number | null>(null);
+  /** Prefer public_slug for /{slug}/book (#415). */
+  publicBookSlug = input<string | null>(null);
   /** When false, hide the menu CTA (channel unavailable for tenant). */
   showMenu = input(true);
   showBook = input(true);
@@ -102,5 +104,11 @@ export class PublicGuestSalesCtasComponent {
     const ref = this.publicMenuRef();
     if (ref != null && String(ref).trim() !== '') return ref;
     return this.tenantId();
+  }
+
+  bookRouterLink(): (string | number)[] {
+    const slug = this.publicBookSlug()?.trim();
+    if (slug) return ['/', slug, 'book'];
+    return ['/book', this.tenantId()];
   }
 }

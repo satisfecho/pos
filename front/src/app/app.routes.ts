@@ -150,5 +150,11 @@ export const routes: Routes = [
   { path: 'working-plan', pathMatch: 'full', canActivate: [authGuard, uiModuleGuard('working_plan'), scheduleGuard, workingPlanViewRedirectGuard], loadComponent: () => import('./working-plan/working-plan.component').then(m => m.WorkingPlanComponent) },
   { path: 'working-plan/:view', canActivate: [authGuard, uiModuleGuard('working_plan'), scheduleGuard], loadComponent: () => import('./working-plan/working-plan.component').then(m => m.WorkingPlanComponent) },
 
+  // Slug-first guest booking (#415): after all fixed segments so /working-plan/book etc. stay reserved
+  {
+    path: ':publicSlug/book',
+    loadComponent: () => import('./book/book.component').then((m) => m.BookComponent),
+  },
+
   { path: '**', redirectTo: '' }
 ];

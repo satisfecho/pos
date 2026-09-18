@@ -25,6 +25,7 @@ import {
 } from '../services/api.service';
 import { PublicGuestHeaderComponent } from '../shared/public-guest-header.component';
 import { resolvePublicPrimaryColor } from '../shared/public-brand-colors';
+import { publicBookRouterLink } from '../shared/public-book-path';
 import { LanguageService } from '../services/language.service';
 import { LegalLinksComponent } from '../shared/legal-links.component';
 import { contactPhoneValid } from '../shared/contact-validators';
@@ -581,6 +582,13 @@ export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
     const url = this.api.getTenantHeaderBackgroundUrl(fn, this.tenantId());
     if (!url) return null;
     return this.sanitizer.bypassSecurityTrustStyle(`url("${url}")`);
+  }
+
+  /** Canonical guest booking link (#415). */
+  bookRouterLink(): (string | number)[] {
+    const t = this.tenant();
+    if (t) return publicBookRouterLink(t);
+    return ['/book', this.tenantId()];
   }
 
   getLogoSafeUrl(url: string | null): SafeResourceUrl | null {

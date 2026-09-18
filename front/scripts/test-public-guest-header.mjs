@@ -48,6 +48,14 @@ async function main() {
   console.log('Headless:', headless);
   console.log('Open', bookUrl);
 
+  const apiRes = await fetch(`${baseUrl}/api/public/tenants/${TENANT_ID}`);
+  if (!apiRes.ok) throw new Error(`GET /public/tenants/${TENANT_ID} → ${apiRes.status}`);
+  const apiBody = await apiRes.json();
+  const publicSlug = (apiBody.public_slug || '').trim();
+  const menuRefs = publicSlug
+    ? [`/public-menu/${publicSlug}`, `/public-menu/${TENANT_ID}`]
+    : [`/public-menu/${TENANT_ID}`];
+
   const browser = await puppeteer.launch({
     executablePath: CHROME_PATH,
     headless,
@@ -56,6 +64,8 @@ async function main() {
   const page = await browser.newPage();
   await page.goto(bookUrl, { waitUntil: 'networkidle2', timeout: 30000 });
   await page.waitForSelector('[data-testid="public-guest-header"]', { timeout: 15000 });
+  // #415: numeric /book/{id} may canonicalize to /{slug}/book
+  await new Promise((r) => setTimeout(r, 800));
 
   const fails = [];
 
@@ -112,7 +122,7 @@ async function main() {
     };
   });
 
-  if (!menuHref || !menuHref.includes(`/public-menu/${TENANT_ID}`)) {
+  if (!menuHref || !menuRefs.some((ref) => menuHref.includes(ref))) {
     fails.push(`menu href unexpected: ${menuHref}`);
   }
   if (!waitHref || !waitHref.includes(`/waitlist/${TENANT_ID}`)) {
@@ -125,7 +135,8 @@ async function main() {
   if (sticky.top > 8) fails.push(`header not stuck to top after scroll (top=${sticky.top})`);
 
   // #364: hero "Book a table" pill scrolls to the booking form
-  await page.goto(bookUrl, { waitUntil: 'networkidle2', timeout: 30000 });
+  const bookPath = publicSlug ? `/${publicSlug}/book` : `/book/${TENANT_ID}`;
+  await page.goto(`${baseUrl}${bookPath}`, { waitUntil: 'networkidle2', timeout: 30000 });
   await page.waitForSelector('[data-testid="book-hero-cta"]', { timeout: 15000 });
   await page.waitForSelector('[data-testid="book-form"]', { timeout: 15000 });
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -150,9 +161,9 @@ async function main() {
 
   await page.click('[data-testid="public-guest-nav-menu"]');
   await page.waitForFunction(
-    (tid) => location.pathname.includes(`/public-menu/${tid}`),
+    (refs) => refs.some((ref) => location.pathname.includes(ref)),
     { timeout: 10000 },
-    TENANT_ID,
+    menuRefs,
   );
   await page.waitForSelector('[data-testid="public-guest-header"]', { timeout: 10000 });
 

@@ -2436,7 +2436,7 @@
     "EVENING_LABEL_PLACEHOLDER": "डिनर",
     "CITY": "शहर",
     "PUBLIC_SLUG": "सार्वजनिक मेनू URL स्लग",
-    "PUBLIC_SLUG_HINT": "/public-menu/{slug} (नाम-शहर) में उपयोग। अक्षर, अंक, हाइफ़न। खाली छोड़ें तो नाम और शहर से अपने आप बनेगा।"
+    "PUBLIC_SLUG_HINT": "/public-menu/{slug} और /{slug}/book (नाम-शहर) में उपयोग। अक्षर, अंक, हाइफ़न। खाली छोड़ें तो नाम और शहर से अपने आप बनेगा।"
   },
   "PAYMENTS": {
     "PAYMENT": "भुगतान",

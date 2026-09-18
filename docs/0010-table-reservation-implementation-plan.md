@@ -233,7 +233,7 @@ Optional: add `reservation_id` nullable FK later to link order to reservation wh
 | Item | Status | Notes |
 |------|--------|--------|
 | Reservation permissions | **To do** | Add `RESERVATION_READ` and `RESERVATION_WRITE` to `back/app/permissions.py`; assign to owner, admin, and staff (same pattern as TABLE_READ / TABLE_WRITE). |
-| Tenant for public booking | **Decided** | Public `POST /reservations` takes `tenant_id` in body. Public menu uses `Tenant.public_slug` (name-city, #413) with dual `/public-menu/{id\|slug}`; optional later for `/book/{slug}`. |
+| Tenant for public booking | **Decided** | Public `POST /reservations` takes `tenant_id` in body. Public menu and booking use `Tenant.public_slug` (name-city, #413/#415): `/public-menu/{id\|slug}` and `/{slug}/book` (numeric `/book/{id}` still works). |
 | Migration naming | **Convention** | Next timestamp, e.g. `back/migrations/20260313000000_add_reservation_table.sql`. |
 | Public vs staff create | **Decided** | One `POST /reservations`: with auth → staff (tenant from user); without auth → public (tenant_id required in body). |
 

@@ -23,6 +23,7 @@ import {
 import { PublicGuestHeaderComponent } from '../shared/public-guest-header.component';
 import { resolvePublicPrimaryColor } from '../shared/public-brand-colors';
 import { publicMenuTenantRef } from '../shared/public-menu-path';
+import { publicBookRouterLink } from '../shared/public-book-path';
 import { LanguageService } from '../services/language.service';
 import { LegalLinksComponent } from '../shared/legal-links.component';
 import { formatMoneyCents } from '../shared/currency-symbol';
@@ -232,6 +233,13 @@ export class PublicMenuComponent implements OnInit, OnDestroy {
   getWhatsAppUrl(phone: string): string {
     const digits = (phone || '').replace(/\D/g, '');
     return `https://wa.me/${digits}`;
+  }
+
+  /** Canonical guest booking link (#415). */
+  bookRouterLink(): (string | number)[] {
+    const t = this.tenant();
+    if (t) return publicBookRouterLink(t);
+    return ['/book', this.tenantId()];
   }
 
   private updateDocumentTitle(): void {

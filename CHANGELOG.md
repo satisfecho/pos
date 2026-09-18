@@ -42,6 +42,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - **Public menu Back to home (#386):** `/public-menu/:tenantId` (and delivery) **Back to home** goes to `/book/:tenantId` instead of marketing `/`.
 
+## [2.1.175] - 2026-09-18
+
+### Added
+
+- **Public booking URL slug (#415):** Guest booking prefers `/{public_slug}/book` (same name-city slug as the public menu). Numeric `/book/{id}` still works and redirects to the slug form when set. Guest nav, menu/delivery/waitlist/loyalty CTAs, and platform shortcuts prefer the slug path. Smoke: `npm run test:public-book-slug --prefix front`.
+
 ## [2.1.174] - 2026-09-14
 
 ### Added

@@ -94,6 +94,7 @@ import { resolvePublicPrimaryColor } from '../shared/public-brand-colors';
               <app-public-guest-sales-ctas
                 [tenantId]="tid"
                 [publicMenuRef]="tenant()?.public_slug?.trim() || tid"
+                [publicBookSlug]="tenant()?.public_slug?.trim() || null"
               />
             }
           </div>

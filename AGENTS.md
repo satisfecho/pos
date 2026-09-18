@@ -210,7 +210,7 @@ Exit 0 means tenant 1 has T01–T10 with the correct seat counts; exit 1 reports
 - **Frontend (run.sh):** http://localhost:4202 — **Frontend (Docker):** use HAProxy port from `docker compose ps` (e.g. http://127.0.0.1:4202).
 - **Backend API docs:** http://localhost:8020/docs
 - **Health check:** http://localhost:8020/health
-- **Public booking:** http://localhost:4202/book/{tenantId} (e.g. `/book/1`)
+- **Public booking:** http://localhost:4202/{public_slug}/book (or `/book/{tenantId}`, e.g. `/book/1`)
 - **Public waiting list:** http://localhost:4202/waitlist/{tenantId}
 - **Public Satisfecho Delivery:** http://localhost:4202/delivery/{tenantId}
 - **Public features (marketing):** http://localhost:4202/features — no login

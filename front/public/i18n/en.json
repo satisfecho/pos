@@ -2469,8 +2469,8 @@
     "EVENING_LABEL": "Evening service label",
     "EVENING_LABEL_PLACEHOLDER": "Dinner",
     "CITY": "City",
-    "PUBLIC_SLUG": "Public menu URL slug",
-    "PUBLIC_SLUG_HINT": "Used in /public-menu/{slug} (name-city). Letters, numbers, hyphens. Leave empty to auto-generate from name and city."
+    "PUBLIC_SLUG": "Public URL slug",
+    "PUBLIC_SLUG_HINT": "Used in /public-menu/{slug} and /{slug}/book (name-city). Letters, numbers, hyphens. Leave empty to auto-generate from name and city."
   },
   "PAYMENTS": {
     "PAYMENT": "Payment",

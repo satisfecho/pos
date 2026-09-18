@@ -2299,7 +2299,7 @@
     "EVENING_LABEL_PLACEHOLDER": "Вечеря",
     "CITY": "Град",
     "PUBLIC_SLUG": "Slug за публичното меню",
-    "PUBLIC_SLUG_HINT": "За /public-menu/{slug} (име-град). Букви, цифри, тирета. Празно = авто от име и град."
+    "PUBLIC_SLUG_HINT": "За /public-menu/{slug} и /{slug}/book (име-град). Букви, цифри, тирета. Празно = авто от име и град."
   },
   "PAYMENTS": {
     "PAYMENT": "Плащане:",

@@ -2265,7 +2265,7 @@
     "EVENING_LABEL_PLACEHOLDER": "Abendessen",
     "CITY": "Stadt",
     "PUBLIC_SLUG": "Öffentlicher Menü-URL-Slug",
-    "PUBLIC_SLUG_HINT": "Für /public-menu/{slug} (Name-Stadt). Buchstaben, Zahlen, Bindestriche. Leer lassen für Auto aus Name und Stadt."
+    "PUBLIC_SLUG_HINT": "Für /public-menu/{slug} und /{slug}/book (Name-Stadt). Buchstaben, Zahlen, Bindestriche. Leer lassen für Auto aus Name und Stadt."
   },
   "PAYMENTS": {
     "PAYMENT": "Zahlung",

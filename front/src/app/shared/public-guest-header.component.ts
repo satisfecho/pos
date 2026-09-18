@@ -50,7 +50,7 @@ export type PublicGuestNavKey = 'menu' | 'book' | 'waitlist' | 'delivery' | 'loy
             {{ 'PUBLIC_GUEST_NAV.MENU' | translate }}
           </a>
           <a
-            [routerLink]="['/book', tenantId()]"
+            [routerLink]="bookRouterLink()"
             class="public-guest-header__link"
             [class.is-active]="activePage() === 'book'"
             data-testid="public-guest-nav-book"
@@ -206,6 +206,8 @@ export class PublicGuestHeaderComponent implements OnInit {
   tenantId = input(0);
   /** Optional /public-menu path segment (slug preferred). Defaults to tenantId. */
   publicMenuRef = input<string | number | null>(null);
+  /** Optional public_slug for /{slug}/book (#415). */
+  publicBookSlug = input<string | null>(null);
   tenantName = input<string | null>(null);
   logoUrl = input<string | null>(null);
   /** Tenant public wash hex; when set, drives nav ink contrast (#411). */
@@ -216,11 +218,18 @@ export class PublicGuestHeaderComponent implements OnInit {
   private fetchedLogo = signal<string | null>(null);
   private fetchedBg = signal<string | null>(null);
   private fetchedMenuRef = signal<string | number | null>(null);
+  private fetchedBookSlug = signal<string | null>(null);
 
   name = computed(() => this.tenantName()?.trim() || this.fetchedName() || '');
   menuLinkRef = computed(
     () => this.publicMenuRef() ?? this.fetchedMenuRef() ?? this.tenantId(),
   );
+  bookRouterLink = computed((): (string | number)[] => {
+    const slug =
+      this.publicBookSlug()?.trim() || this.fetchedBookSlug()?.trim() || '';
+    if (slug) return ['/', slug, 'book'];
+    return ['/book', this.tenantId()];
+  });
   logoSafe = computed((): SafeResourceUrl | null => {
     const url = this.logoUrl() || this.fetchedLogo();
     if (!url) return null;
@@ -247,7 +256,8 @@ export class PublicGuestHeaderComponent implements OnInit {
     const haveBg = !!normalizeHex6(this.headerBackgroundColor());
     const haveMenuRef =
       this.publicMenuRef() != null && String(this.publicMenuRef()).trim() !== '';
-    if (haveName && haveLogo && haveBg && haveMenuRef) return;
+    const haveBookSlug = !!this.publicBookSlug()?.trim();
+    if (haveName && haveLogo && haveBg && haveMenuRef && haveBookSlug) return;
     this.api.getPublicTenant(id).subscribe({
       next: (t) => {
         if (!haveName) this.fetchedName.set(t.name);
@@ -259,6 +269,7 @@ export class PublicGuestHeaderComponent implements OnInit {
         }
         const slug = t.public_slug?.trim();
         this.fetchedMenuRef.set(slug || t.id);
+        if (!haveBookSlug) this.fetchedBookSlug.set(slug || null);
       },
       error: () => {
         /* Parent pages already show load errors. */

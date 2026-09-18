@@ -14,6 +14,7 @@ import { PublicGuestHeaderComponent } from '../shared/public-guest-header.compon
 import { LegalLinksComponent } from '../shared/legal-links.component';
 import { ReservationWeekSlotGridComponent } from '../shared/reservation-week-slot-grid.component';
 import { resolvePublicPrimaryColor } from '../shared/public-brand-colors';
+import { publicBookPath, publicBookRouterLink } from '../shared/public-book-path';
 import { tenantOpeningHoursHasMealSplit, resolveBookingServiceLabel } from '../shared/booking-meal-split';
 import { contactEmailValid, contactPhoneValid } from '../shared/contact-validators';
 import { ApiErrorMessageService } from '../services/api-error-message.service';
@@ -158,27 +159,38 @@ export class BookComponent implements OnInit {
     }
   });
 
-  constructor() {
-    const id = this.route.snapshot.paramMap.get('tenantId');
-    const n = id ? parseInt(id, 10) : 0;
-    if (n) this.tenantId.set(n);
-  }
-
   ngOnInit(): void {
-    const tid = this.tenantId();
-    if (!tid) {
+    const fromLegacy = (this.route.snapshot.paramMap.get('tenantId') || '').trim();
+    const fromSlugRoute = (this.route.snapshot.paramMap.get('publicSlug') || '').trim();
+    const refParam = fromSlugRoute || fromLegacy;
+    if (!refParam) {
       this.loading.set(false);
       return;
     }
-    this.api.getPublicTenant(tid).subscribe({
+    const numericId = /^\d+$/.test(refParam) ? parseInt(refParam, 10) : NaN;
+    if (Number.isFinite(numericId) && numericId >= 1) {
+      this.tenantId.set(numericId);
+    }
+
+    this.api.getPublicTenant(refParam).subscribe({
       next: (t) => {
         this.tenant.set(t);
+        this.tenantId.set(t.id);
         const url = this.api.getTenantLogoUrl(t.logo_filename ?? undefined, t.id);
         this.logoUrl.set(url);
+        const canonical = publicBookPath(t);
+        const current = (typeof window !== 'undefined' ? window.location.pathname : '')
+          .replace(/\/$/, '') || '';
+        if (canonical && current && canonical !== current) {
+          void this.router.navigate(publicBookRouterLink(t), {
+            replaceUrl: true,
+            queryParamsHandling: 'preserve',
+          });
+        }
         this.loading.set(false);
         this.formDate = this.tenantTodayDate();
         this.formTime = '';
-        this.api.getReservationBookZones(tid).subscribe({
+        this.api.getReservationBookZones(t.id).subscribe({
           next: (z) => {
             this.bookZones.set(z.floors);
             this.onSeatingPreferenceChange();
