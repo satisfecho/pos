@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** The Open menu icon on the staff order view did not form a clear mark.
+- **What was done:** Both Open menu SVGs in `orders.component.ts` now use a box plus an arrow. Click, labels, and visibility rules stayed the same.
+- **What was tested:** Tester result is PASS. Active and Not Paid Yet cards show the new icon, the click opens the menu, contrast is about 17.5:1, and `test:staff-menu-link` passed.
+- **Why closed:** All criteria passed.
+- **Closed at (UTC):** 2026-09-18 11:32
+---
+
 # Fix the Open menu icon on the internal order view
 
 ## GitHub Issues
