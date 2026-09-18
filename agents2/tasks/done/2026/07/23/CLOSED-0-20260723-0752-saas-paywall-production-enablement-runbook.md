@@ -55,7 +55,7 @@ Docs-only task (no product code). Pass if:
 ## Test report
 
 1. **Date/time (UTC):** 2026-07-23 07:58:24 – 07:59:11 UTC. Log window: `docker logs --since 10m` on `pos-back` / `pos-haproxy`.
-2. **Environment:** branch `development`; local compose `docker-compose.yml` + `docker-compose.dev.yml`; `BASE_URL=http://127.0.0.1:4202`; amvara9 via SSH (`/development/pos`, prod compose) + `https://www.satisfecho.de`.
+2. **Environment:** branch `development`; local compose `docker-compose.yml` + `docker-compose.dev.yml`; `BASE_URL=http://127.0.0.1:4202`; amvara9 via SSH (`the deploy directory`, prod compose) + `https://www.satisfecho.de`.
 3. **What was tested:** Docs criteria 1–6 from Testing instructions (Production enablement checklist in 0052, 0001 pointer, README blurb, `rg`, amvara9 flag still off, local `/saas/config` + grandfather Python one-liner).
 4. **Results:**
    - Criterion 1 — **PASS** — `docs/0052` § Production enablement (lines 63–102) ordered steps 1–7 cover Price+keys, webhook `/api/saas/webhook` + `SAAS_STRIPE_WEBHOOK_SECRET`, grandfather exec, enable+recreate, `GET /saas/config`, dry-run → `/paywall` → trial, `npm run test:paywall`, plus Rollback.

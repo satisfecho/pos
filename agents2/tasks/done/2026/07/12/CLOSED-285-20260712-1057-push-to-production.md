@@ -36,7 +36,7 @@ Recent merged work includes the waiting-list feature (**#282**, closed 2026-07-1
 - Synced `development` with remote; local smoke passed (landing HTTP 200, front build OK — NG8107 warnings only).
 - Promoted `development` → `master` at merge commit **`19601238`** (`Merge development: push to production (#285)`), pushed to `origin/master`.
 - **Shipped in promotion:** waiting-list feature (#282, `c1fda471`), CHANGELOG + v2.1.11 bump, migration `20260712120000_waiting_list_entry.sql`, public `/waitlist/:tenantId`, staff queue on `/reservations`.
-- **Deploy blocked:** GitHub Actions **deploy-amvara9** failed at SSH checkout step — `ssh: connect to host 167.235.138.59 port 22: Connection refused` (also from local `ssh amvara9`). Manual `workflow_dispatch` retry failed with same error.
+- **Deploy blocked:** GitHub Actions **deploy-amvara9** failed at SSH checkout step — `ssh: connect to host the production address port 22: Connection refused` (also from local `the production host`). Manual `workflow_dispatch` retry failed with same error.
 - Production still serves previous release: `app-version` **2.1.10** (`f0433b5a`). Landing and `/api/health` return **200** (old stack still running).
 - **Next step when SSH restored:** re-run deploy workflow (`gh workflow run deploy-amvara9.yml --ref master`) or push a no-op to `master`; verify `app-version` bumps to **2.1.11** and `/waitlist/1` loads on production.
 

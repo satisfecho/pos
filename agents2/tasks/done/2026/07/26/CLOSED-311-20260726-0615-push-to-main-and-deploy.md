@@ -27,7 +27,7 @@ See **`docs/0001-ci-cd-amvara9.md`**, **`.cursor/rules/commit-changelog-version.
 - Sync **`development`** (`./scripts/git-sync-development.sh`). Confirm local smoke: landing HTTP **200** on HAProxy port; `docker logs --since 10m pos-front` — no Angular build failures.
 - **Changelog / version:** If `[Unreleased]` has material items since **2.1.92**, cut a new semver section, bump **`front/package.json`** + lockfile, run **`node front/scripts/get-commit-hash.js`**, and commit **`commit-hash.ts`** with the bump on **`development`**. If nothing unreleased remains, promote **2.1.92** (or the latest cut on **`development`**) — do not invent empty churn bumps.
 - Merge **`development` → `master`** (fast-forward or merge commit) and **`git push origin master`**. Do not force-push. Do not treat GitHub “main” literally unless the remote branch was renamed.
-- Monitor **Deploy to amvara9** (`.github/workflows/deploy-amvara9.yml`). If GHA fails on marketing artifacts (known failure mode after **#308**), fall back to documented manual deploy via local **`ssh amvara9`** + **`scripts/deploy-amvara9.sh`**; do not claim success until production is updated.
+- Monitor **Deploy to amvara9** (`.github/workflows/deploy-amvara9.yml`). If GHA fails on marketing artifacts (known failure mode after **#308**), fall back to documented manual deploy via local **`the production host`** + **`scripts/deploy-amvara9.sh`**; do not claim success until production is updated.
 - Optionally publish a GitHub release tag matching the shipped semver with notes from the matching **`CHANGELOG.md`** section if a release is missing for that version.
 - Post-deploy smoke on **https://www.satisfecho.de**: `/` and `/api/health` **200**; landing **app-version** / footer semver + short hash match the promoted commit.
 - This is **release/ops**, not feature coding — fix only blockers that prevent a safe promote; append **Testing instructions** with merge SHA, workflow run URL (or manual deploy evidence), and smoke results.
@@ -50,7 +50,7 @@ See **`docs/0001-ci-cd-amvara9.md`**, **`.cursor/rules/commit-changelog-version.
    - `curl -sS -o /dev/null -w "%{http_code}\n" https://www.satisfecho.de/` → **200**
    - `curl -sS https://www.satisfecho.de/api/health` → `{"status":"ok"}` **200**
    - Landing meta `app-version` content **`2.1.92`**; footer short hash **`522369e2`**
-5. On amvara9: `cd /development/pos && git rev-parse --short HEAD` → **`522369e2`**; `front/package.json` version **2.1.92**.
+5. On amvara9: `cd the deploy directory && git rev-parse --short HEAD` → **`522369e2`**; `front/package.json` version **2.1.92**.
 
 ## Test report
 
@@ -90,5 +90,5 @@ Production received the 2.1.92 promote as intended: release published, merge on 
 # curl https://www.satisfecho.de/api/health → {"status":"ok"} HTTP 200
 # npm run test:landing-version BASE_URL=https://www.satisfecho.de
 #   Version element text: 2.1.97 f2c58558 …
-# ssh amvara9: SHORT=f2c58558 PKG=2.1.97
+# the production host: SHORT=f2c58558 PKG=2.1.97
 ```

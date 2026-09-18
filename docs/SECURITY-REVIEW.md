@@ -129,7 +129,7 @@ pip install pip-audit && pip-audit -r back/requirements.txt
 - `docs/0054-restaurant-groups.md` (join codes + share flags)
 - `.cursor/rules/security-secrets-tenant.mdc`
 - `.cursor/rules/security-untrusted-input-no-exfiltration.mdc`
-- `docs/0077-agent-untrusted-github-input.md` (agent loop + malicious issues / invisible UTF-8)
+- `docs/0077-agent-untrusted-github-input.md` (untrusted GitHub input; no host or credential details)
 - `AGENTS.md` (secrets, tenant boundaries)
 - `config.env.example` (`SAAS_*`, platform `STRIPE_*`)
 

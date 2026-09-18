@@ -82,7 +82,7 @@ curl -sf https://www.satisfecho.de/api/health
 **Production DB (amvara9 SSH):**
 
 ```bash
-ssh amvara9 'cd /development/pos && docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml exec -T db \
+the production host 'cd the deploy directory && docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml exec -T db \
   psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c \
   "SELECT column_name, udt_name FROM information_schema.columns WHERE table_name = '\''user'\'' AND column_name = '\''role'\'';"'
 ```

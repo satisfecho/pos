@@ -1,14 +1,14 @@
 ---
 ## Closing summary (TOP)
 
-- **What happened:** **Deploy to amvara9** failed at SSH because the workflow still used port **22** after amvara9 moved SSH to **60022**; marketing rsync and post-deploy smoke were skipped.
-- **What was done:** Added job-level **`DEPLOY_SSH_PORT`** (default **60022**) and **`-p $DEPLOY_SSH_PORT`** on all **`ssh-keyscan`**, **`ssh`**, and **`rsync -e ssh`** steps in **`.github/workflows/deploy-amvara9.yml`**; updated **`docs/0001-ci-cd-amvara9.md`**. Fix landed on **`master`** via **#295** promotion (**`59bd1dec`**, release **2.1.15**).
+- **What happened:** **Deploy to amvara9** failed at SSH because the workflow still used port **22** after amvara9 moved SSH to **the configured SSH port**; marketing rsync and post-deploy smoke were skipped.
+- **What was done:** Added job-level **`DEPLOY_SSH_PORT`** (default **the configured SSH port**) and **`-p $DEPLOY_SSH_PORT`** on all **`ssh-keyscan`**, **`ssh`**, and **`rsync -e ssh`** steps in **`.github/workflows/deploy-amvara9.yml`**; updated **`docs/0001-ci-cd-amvara9.md`**. Fix landed on **`master`** via **#295** promotion (**`59bd1dec`**, release **2.1.15**).
 - **What was tested:** GHA run **29255611539** — **success** (SSH checkout, marketing rsync, deploy, smoke). Production: landing **`200`**, **`/api/health`** **`200`**, **`app-version`** **2.1.15**; **`https://www.satisfecho.de/bosskebabypizzeria/`** serves the SPA (no placeholder).
 - **Why closed:** **#294** closed; deploy-blocker resolved after **`development` → `master`** merge. Follow-up promotion tracking continues on **#295** (**`UNTESTED-295-…`**).
 - **Closed at (UTC):** 2026-07-13 13:53
 ---
 
-# Fix GHA deploy: use SSH port 60022 for amvara9 (was 22)
+# Fix GHA deploy: use SSH port the configured SSH port for amvara9 (was 22)
 
 ## GitHub Issues
 - **Issue:** https://github.com/satisfecho/pos/issues/294
@@ -16,14 +16,14 @@
 
 ## Problem / goal
 
-The **Deploy to amvara9** GitHub Actions workflow fails at the SSH step with `ssh: connect to host 167.235.138.59 port 22: Connection refused` (example run: https://github.com/satisfecho/pos/actions/runs/29200152615). On the production server, SSH was moved from port **22** to **60022**; manual access works with `Port 60022` in `~/.ssh/config`, but **`.github/workflows/deploy-amvara9.yml`** still uses the default port.
+The **Deploy to amvara9** GitHub Actions workflow fails at the SSH step with `ssh: connect to host the production address port 22: Connection refused` (example run: https://github.com/satisfecho/pos/actions/runs/29200152615). On the production server, SSH was moved from port **22** to **the configured SSH port**; manual access works with `Port the configured SSH port` in `~/.ssh/config`, but **`.github/workflows/deploy-amvara9.yml`** still uses the default port.
 
 Because SSH never connects, later steps are skipped: marketing-site rsync, `scripts/deploy-amvara9.sh`, and post-deploy smoke. Marketing bundles may be fetched in CI but never land on the server — e.g. **https://satisfecho.de/bosskebabypizzeria/** still shows the placeholder (“Static files are missing”).
 
 ## High-level instructions for coder
 
-- Read **`docs/0001-ci-cd-amvara9.md`** and inspect **`.github/workflows/deploy-amvara9.yml`** — every **`ssh`**, **`ssh-keyscan`**, and **`rsync -e "ssh …"`** invocation must target port **60022** (not 22).
-- Prefer a single workflow-level env such as **`DEPLOY_SSH_PORT: 60022`** (or optional secret **`DEPLOY_SSH_PORT`** defaulting to 60022) and pass **`-p $DEPLOY_SSH_PORT`** consistently to all SSH/rsync commands, including the **Set up SSH** `ssh-keyscan` step.
+- Read **`docs/0001-ci-cd-amvara9.md`** and inspect **`.github/workflows/deploy-amvara9.yml`** — every **`ssh`**, **`ssh-keyscan`**, and **`rsync -e "ssh …"`** invocation must target port **the configured SSH port** (not 22).
+- Prefer a single workflow-level env such as **`DEPLOY_SSH_PORT: the configured SSH port`** (or optional secret **`DEPLOY_SSH_PORT`** defaulting to the configured SSH port) and pass **`-p $DEPLOY_SSH_PORT`** consistently to all SSH/rsync commands, including the **Set up SSH** `ssh-keyscan` step.
 - Do **not** change application code under **`back/`** or **`front/`** unless smoke tests reveal a separate defect; this is CI/deploy wiring only.
 - After the workflow change, verify locally that the YAML is valid and that no SSH call still omits the port (grep the workflow for bare `ssh` without `-p`).
 - Trigger or document a **`workflow_dispatch`** run on **`master`** (or merge a minimal fix to **`master`** per **`.cursor/rules/git-development-branch-workflow.mdc`**) and confirm the run passes: checkout on server, marketing rsync, **`deploy-amvara9.sh`**, smoke test (landing, app-version, **`/api/health`**).
@@ -33,7 +33,7 @@ Because SSH never connects, later steps are skipped: marketing-site rsync, `scri
 
 ## Implementation (feature coder)
 
-- Added job-level **`DEPLOY_SSH_PORT`** env (default **`60022`**, overridable via repository Variable **`DEPLOY_SSH_PORT`**).
+- Added job-level **`DEPLOY_SSH_PORT`** env (default **`the configured SSH port`**, overridable via repository Variable **`DEPLOY_SSH_PORT`**).
 - All **`ssh-keyscan`**, **`ssh`**, and **`rsync -e "ssh …"`** invocations in **`.github/workflows/deploy-amvara9.yml`** now pass **`-p $DEPLOY_SSH_PORT`**.
 - Updated **`docs/0001-ci-cd-amvara9.md`** optional secrets/variables table and workflow steps summary.
 - Local YAML parse check passed (`python3 -c "import yaml; yaml.safe_load(...)"`).
@@ -86,7 +86,7 @@ Per **Testing instructions**: green `deploy-amvara9` on `master`, production HTT
 | Criterion | Result | Evidence |
 |-----------|--------|----------|
 | Fix committed and on `master` | **FAIL** | `git show master:.github/workflows/deploy-amvara9.yml` still has `ssh-keyscan` / `ssh` **without** `-p`; `DEPLOY_SSH_PORT` absent. Local working tree has the fix but **uncommitted** (`git status`: modified `.github/workflows/deploy-amvara9.yml`, `docs/0001-ci-cd-amvara9.md`). |
-| Green GHA `deploy-amvara9` on `master` | **FAIL** | Latest run https://github.com/satisfecho/pos/actions/runs/29200152615 (2026-07-12, `master` @ `0923c654`) — **failure** at “Checkout latest code on amvara9”: `ssh: connect to host 167.235.138.59 port 22: Connection refused`. No newer successful run after the port fix. |
+| Green GHA `deploy-amvara9` on `master` | **FAIL** | Latest run https://github.com/satisfecho/pos/actions/runs/29200152615 (2026-07-12, `master` @ `0923c654`) — **failure** at “Checkout latest code on amvara9”: `ssh: connect to host the production address port 22: Connection refused`. No newer successful run after the port fix. |
 | Local workflow YAML valid | **PASS** | `python3 -c "import yaml; yaml.safe_load(...)"` on working-tree file → `YAML OK`. All `ssh` / `ssh-keyscan` / `rsync -e ssh` use `-p $DEPLOY_SSH_PORT` in working tree. |
 | Production landing HTTP 200 | **PASS** | `curl -sf -o /dev/null -w "%{http_code}" https://www.satisfecho.de/` → `200`. |
 | Production `/api/health` HTTP 200 | **PASS** | `curl` → `200`. |
@@ -111,7 +111,7 @@ The workflow edit in the working tree looks correct (single `DEPLOY_SSH_PORT` en
 
 **GHA failed step (run 29200152615):**
 ```
-ssh: connect to host 167.235.138.59 port 22: Connection refused
+ssh: connect to host the production address port 22: Connection refused
 ##[error]Process completed with exit code 255.
 ```
 

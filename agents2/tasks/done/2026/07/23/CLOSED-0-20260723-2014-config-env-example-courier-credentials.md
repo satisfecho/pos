@@ -74,7 +74,7 @@ No Docker / Puppeteer required for this docs-only change.
 3. **What was tested:** Courier credential discoverability in `config.env.example` + `AGENTS.md`; defaults aligned with `front/scripts/test-courier-actions.mjs`; optional `docs/testing.md` mention; no uncommented live secrets.
 4. **Results:**
    - `rg COURIER_EMAIL` hits `config.env.example` and `AGENTS.md` — **PASS** (`config.env.example:131`, `AGENTS.md:131`).
-   - Commented example lines `# COURIER_EMAIL=courier-test-phase1@amvara.de` / `# COURIER_PASSWORD=secret` — **PASS** (no uncommented `COURIER_=` assignments).
+   - Commented example lines for courier email and password in `config.env.example` — **PASS** (no uncommented `COURIER_=` assignments).
    - `AGENTS.md` Courier portal note with `/courier/login` and same env names — **PASS** (line 131, parallel to Provider portal).
    - Defaults match smoke script (`courier-test-phase1@amvara.de` / `secret`) — **PASS** (`test-courier-actions.mjs` lines 129–130; seed defaults match).
    - Optional `docs/testing.md` discoverability — **PASS** (`test:courier-actions` row + demo courier seed note).

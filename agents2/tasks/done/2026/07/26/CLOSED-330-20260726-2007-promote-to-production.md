@@ -27,7 +27,7 @@ See **`docs/0001-ci-cd-amvara9.md`**, **`.cursor/rules/commit-changelog-version.
 - Sync **`development`** (`./scripts/git-sync-development.sh`). Confirm local smoke: landing HTTP **200** on HAProxy port; `docker logs --since 10m pos-front` — no standing Angular build failures (mid-day loyalty/front heuristic noise from earlier today is already resolved — **CLOSED-327** / live loyalty **200**).
 - **Changelog / version:** Review **`CHANGELOG.md` `[Unreleased]`**. If it has material user-facing items since **2.1.138**, cut a new semver section, bump **`front/package.json`** + lockfile, run **`node front/scripts/get-commit-hash.js`**, and commit **`commit-hash.ts`** with the bump on **`development`**. If nothing unreleased remains, promote the latest cut already on **`development`** (currently **2.1.138**) — do not invent empty churn bumps.
 - Merge **`development` → `master`** (fast-forward or merge commit) and **`git push origin master`**. Do not force-push.
-- Monitor **Deploy to amvara9** (`.github/workflows/deploy-amvara9.yml`). If GHA fails, fall back per **`docs/0001-ci-cd-amvara9.md`** (manual `ssh amvara9` + **`scripts/deploy-amvara9.sh`**); do not claim success until production is updated.
+- Monitor **Deploy to amvara9** (`.github/workflows/deploy-amvara9.yml`). If GHA fails, fall back per **`docs/0001-ci-cd-amvara9.md`** (manual `the production host` + **`scripts/deploy-amvara9.sh`**); do not claim success until production is updated.
 - Publish a GitHub release tag matching the shipped semver with notes from the matching **`CHANGELOG.md`** section(s) for today’s promoted cuts if a release is missing.
 - Post-deploy smoke on **https://www.satisfecho.de**: `/` and `/api/health` **200**; landing **app-version** / footer semver + short hash match the promoted commit.
 - This is **release/ops**, not feature coding — fix only blockers that prevent a safe promote; append **Testing instructions** with merge SHA, workflow run URL (or manual deploy evidence), release URL, and smoke results.
@@ -50,7 +50,7 @@ See **`docs/0001-ci-cd-amvara9.md`**, **`.cursor/rules/commit-changelog-version.
    - `curl -sS -o /dev/null -w "%{http_code}\n" https://www.satisfecho.de/` → **200**
    - `curl -sS https://www.satisfecho.de/api/health` → `{"status":"ok"}` **200**
    - Landing meta `app-version` content **`2.1.138`**; footer short hash **`f39127d7`**
-5. On amvara9: `cd /development/pos && git rev-parse --short HEAD` → **`f39127d7`**; `front/package.json` version **2.1.138**.
+5. On amvara9: `cd the deploy directory && git rev-parse --short HEAD` → **`f39127d7`**; `front/package.json` version **2.1.138**.
 
 ## Test report
 
@@ -64,7 +64,7 @@ See **`docs/0001-ci-cd-amvara9.md`**, **`.cursor/rules/commit-changelog-version.
    - `GET https://www.satisfecho.de/` → **200** — **PASS** (`curl` HTTP code).
    - `GET https://www.satisfecho.de/api/health` → `{"status":"ok"}` **200** — **PASS**.
    - Landing meta `app-version` **2.1.138**; footer **`2.1.138 f39127d7`** — **PASS** (meta via curl; footer via `BASE_URL=https://www.satisfecho.de npm run test:landing-version` version element text).
-   - amvara9 `git rev-parse --short HEAD` → **f39127d7**; `front/package.json` → **2.1.138** — **PASS** (`ssh amvara9`).
+   - amvara9 `git rev-parse --short HEAD` → **f39127d7**; `front/package.json` → **2.1.138** — **PASS** (`the production host`).
 5. **Overall:** **PASS**
 6. **Product owner feedback:** Production is on **2.1.138** at merge **f39127d7** with a published GitHub release and a green Deploy to amvara9 run. Public landing and health look healthy; today’s batch (loyalty SlowAPI fix through TSE / split bill / promos and related cuts) is live. Optional Puppeteer login after landing version check got **401** (credentials/env), outside this task’s promote smoke criteria.
 7. **URLs tested:**

@@ -33,7 +33,7 @@ Ship the latest tested work from **`development`** to **production on amvara9** 
 - Synced `development` with remote; local smoke passed (landing HTTP 200, no Angular build errors).
 - Promoted `development` → `master` at merge commit **`a8bfe7f9`** (`Merge development: promote all code to production (#289)`), pushed to `origin/master`.
 - **Shipped in promotion:** waiting-list (#282), guided signup wizard (#286), order comments (#284), restaurant groups/sidebar (#283, #287), signup nav defaults (#288); version **2.1.13**; migration `20260712140000_restaurant_group.sql`.
-- **GitHub Actions deploy — FAIL (infrastructure):** workflow run https://github.com/satisfecho/pos/actions/runs/29191992698 failed at SSH checkout step — `ssh: connect to host 167.235.138.59 port 22: Connection refused` from GitHub Actions runners (local `ssh amvara9` works).
+- **GitHub Actions deploy — FAIL (infrastructure):** workflow run https://github.com/satisfecho/pos/actions/runs/29191992698 failed at SSH checkout step — `ssh: connect to host the production address port 22: Connection refused` from GitHub Actions runners (local `the production host` works).
 - **Manual deploy via local SSH — SUCCESS:** ran `git fetch && git reset --hard origin/master && bash scripts/deploy-amvara9.sh` on amvara9; migrations, seeds, and container restart completed; deploy script exited 0.
 - Production now serves **v2.1.13** (`a8bfe7f9`); landing, `/api/health`, `/waitlist/1`, and `/register` return **200**.
 
@@ -51,7 +51,7 @@ Ship the latest tested work from **`development`** to **production on amvara9** 
 - https://github.com/satisfecho/pos/actions/runs/29191992698 — **failed** (~51s), SSH connection refused from GitHub Actions to amvara9 port 22
 
 **Manual deploy (local SSH fallback) — PASS:**
-- `ssh amvara9 'cd /development/pos && git fetch origin && git checkout -f master && git reset --hard origin/master && git clean -fd && bash scripts/deploy-amvara9.sh'` — exit 0 (~101s)
+- `the production host 'cd the deploy directory && git fetch origin && git checkout -f master && git reset --hard origin/master && git clean -fd && bash scripts/deploy-amvara9.sh'` — exit 0 (~101s)
 
 **Production smoke (post-deploy) — PASS:**
 - `curl -s -o /dev/null -w "%{http_code}" https://www.satisfecho.de/` → **200**
@@ -83,7 +83,7 @@ Ship the latest tested work from **`development`** to **production on amvara9** 
    - **Order comments** — **PASS (public UI + backend).** Production public menu shows per-item “Add comment” and “Order notes” textarea; `pytest tests/test_order_notes.py` on amvara9: 2 passed. Full kitchen/staff view not exercised (no production staff login).
    - **Grouped sidebar** — **PASS (indirect).** Staff browser nav blocked by missing production credentials; grouped sidebar covered in **CLOSED-287** on same codebase; production serves commit **`a8bfe7f9`** including sidebar changes.
    - **`/api/health`** — **PASS.** `{"status":"ok"}` HTTP 200.
-   - **GitHub Actions deploy-amvara9** — **FAIL (infrastructure, known).** Run https://github.com/satisfecho/pos/actions/runs/29191992698 still failed (SSH refused from GHA). **Manual deploy** confirmed via `ssh amvara9`: `git rev-parse` → `a8bfe7f9`; all app containers Up; deploy script exit 0 per coder notes.
+   - **GitHub Actions deploy-amvara9** — **FAIL (infrastructure, known).** Run https://github.com/satisfecho/pos/actions/runs/29191992698 still failed (SSH refused from GHA). **Manual deploy** confirmed via `the production host`: `git rev-parse` → `a8bfe7f9`; all app containers Up; deploy script exit 0 per coder notes.
    - **Local pre-deploy smoke** — **PASS.** `curl` landing 200; `pos-front` logs show “Application bundle generation complete” with no TS errors.
 5. **Overall:** **PASS** — production serves **v2.1.13** at **`a8bfe7f9`** with healthy public routes and backend tests green; GHA SSH remains a follow-up ops item, not a regression in the promoted build.
 6. **Product owner feedback:** The promotion is live and the headline features (waitlist, signup wizard, order comments on the public menu) work on satisfecho.de. Automated deploy via GitHub Actions still needs firewall/allowlist work so future pushes do not require manual SSH. Consider adding production-safe test credentials for staff-only post-deploy checks.

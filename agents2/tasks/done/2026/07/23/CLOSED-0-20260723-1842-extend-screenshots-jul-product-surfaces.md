@@ -53,7 +53,7 @@
 # From repo root; app on 4202
 BASE_URL=http://127.0.0.1:4202 \
   LOGIN_EMAIL=… LOGIN_PASSWORD=… \
-  COURIER_EMAIL=courier-test-phase1@amvara.de COURIER_PASSWORD=secret \
+  COURIER_EMAIL and COURIER_PASSWORD from the environment \
   node front/scripts/capture-screenshots.mjs
 
 # Optional platform (when seeded):

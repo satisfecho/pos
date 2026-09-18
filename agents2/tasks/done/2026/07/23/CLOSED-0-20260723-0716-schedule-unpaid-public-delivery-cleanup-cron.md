@@ -46,7 +46,7 @@ Abandoned unpaid public Satisfecho Delivery checkouts can accumulate on **all** 
 
 1. **Docs present:** Confirm `docs/0001-ci-cd-amvara9.md` has subsection **Unpaid public Satisfecho Delivery cleanup (all tenants)** with:
    - Manual: `./scripts/cleanup-unpaid-public-delivery-on-server.sh` and `--dry-run`
-   - Copy-paste crontab: `15 * * * * cd /development/pos && ./scripts/cleanup-unpaid-public-delivery-on-server.sh >>/var/log/pos-unpaid-public-delivery-cleanup.log 2>&1`
+   - Copy-paste crontab: `15 * * * * cd the deploy directory && ./scripts/cleanup-unpaid-public-delivery-on-server.sh >>/var/log/pos-unpaid-public-delivery-cleanup.log 2>&1`
    - Install one-liner using `grep -q 'cleanup-unpaid-public-delivery-on-server.sh'`
    - Explicit note that this is **separate** from tenant-1 demo reset
 2. **Demo reset unchanged:** `docs/0001` § Daily demo data reset still has `0 4 * * *` … `reset-demo-data-on-server.sh` only (no merge of cleanup into that job).
