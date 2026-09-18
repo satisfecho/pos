@@ -42,3 +42,41 @@ See **`docs/0028-tenant-public-branding.md`** (public slug) and **`docs/0010-tab
    BASE_URL=http://127.0.0.1:4202 npm run test:public-guest-header --prefix front
    ```
 7. **Front build:** `docker logs --since 10m pos-front` — no TS/NG compile errors (bundle generation complete).
+
+## Test report
+
+- **Date/time (UTC):** 2026-09-18T07:54:01Z start → 2026-09-18T07:57:08Z end
+- **Log window:** pos-front / pos-back ~2026-09-18T07:45Z–07:57Z UTC
+- **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; `BASE_URL=http://127.0.0.1:4202`; branch `development`; tenant 1 `public_slug=demo-pizzeria-barcelona` via `GET /api/public/tenants/1`
+- **What was tested:** Slug book URL, numeric canonicalize, guest Menu/Book nav, reservation submit on slug page, `test:public-book-slug`, `test:public-guest-header`, front bundle health
+
+### Results
+
+| Criterion | Result | Evidence |
+|-----------|--------|----------|
+| App up + tenant slug | **PASS** | `/` and `/api/health` → 200; API returns `public_slug=demo-pizzeria-barcelona` |
+| Slug URL loads form | **PASS** | `test:public-book-slug`: `PASS slug book URL loads`; page `http://127.0.0.1:4202/demo-pizzeria-barcelona/book` with guest header + form |
+| Numeric canonicalize | **PASS** | `test:public-book-slug`: `/book/1` → `http://127.0.0.1:4202/demo-pizzeria-barcelona/book` |
+| Submit on slug page | **PASS** | Puppeteer on `/{slug}/book`: zone + slot grid + submit → success UI (`success: true`, stayed on slug book URL) |
+| Guest nav Menu/Book | **PASS** | Menu `href=/public-menu/demo-pizzeria-barcelona`; Book `href=/demo-pizzeria-barcelona/book`; `test:public-guest-header` OK (contrast 11.26:1) |
+| Automated smokes | **PASS** | `npm run test:public-book-slug` OK; `npm run test:public-guest-header` OK |
+| Front build | **PASS** | `Application bundle generation complete` repeatedly; no `error TS` / fatal NG compile errors (NG8107 optional-chain warnings only) |
+
+- **Overall:** **PASS**
+- **Product owner feedback:** Guests can book at `/{public_slug}/book`. Opening `/book/1` lands on the same slug URL. Sticky guest Menu/Book links stay on slug paths. Note: `debug-reservations-public.mjs` / `test-reservation-create.mjs` still abort when the URL is `…/book` without a trailing id segment (`includes('/book/')`); update those scripts later so deploy smokes match the new canonical shape.
+- **URLs tested:**
+  1. `http://127.0.0.1:4202/`
+  2. `http://127.0.0.1:4202/api/health`
+  3. `http://127.0.0.1:4202/api/public/tenants/1`
+  4. `http://127.0.0.1:4202/demo-pizzeria-barcelona/book`
+  5. `http://127.0.0.1:4202/book/1` (canonicalized to slug book)
+  6. Menu target `http://127.0.0.1:4202/public-menu/demo-pizzeria-barcelona` (href from guest nav)
+
+### Relevant log excerpts
+
+```
+pos-front: Application bundle generation complete. [0.385 seconds] - 2026-09-18T07:52:36.887Z
+test:public-book-slug: PASS slug book URL loads; PASS numeric /book/1 (url=…/demo-pizzeria-barcelona/book); OK public-book slug smoke
+test:public-guest-header: Contrast OK: 11.26:1; OK: sticky guest header on /book …
+slug submit: PASS submit; OK #415
+```
