@@ -31,6 +31,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+- **Open menu icon on staff orders (#416):** The Open menu button on the internal order view uses a complete box-and-arrow icon. Click still opens the table menu when `table_id` and `table_token` are set.
 - **Public guest nav contrast on light wash (#411):** Sticky `app-public-guest-header` picks dark or white ink from tenant `public_background_color` (`pickContrastingForeground`) so light washes no longer leave white-on-lime unreadable labels. Design rule `.cursor/rules/ui-contrast.mdc`; tester must fail unreadable contrast.
 - **Book a table hero pill scrolls to form (#364):** On `/book/:tenantId`, the hero **"Book a table"** pill is a button that smooth-scrolls to the booking form (clears sticky guest header). Smoke: `npm run test:public-guest-header --prefix front`.
 - **Platform operator role i18n (#409):** Add `USERS.ROLES.PLATFORM_OPERATOR` to all `front/public/i18n/*.json` locales so sidebar/users/working-plan show a translated label instead of the raw key.
