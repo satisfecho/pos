@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue #418 asked to make `README.md` shorter so each topic appears once.
+- **What was done:** The coder cut the repeated sections. Payments and the Revolut doc link stay in one Features row. `CHANGELOG.md` notes the edit. No version bump. `back/` and `front/` did not change.
+- **What was tested:** The tester reported PASS. One Revolut link, the cut sections are gone, Access Points keeps the URLs, the changelog has the note, and curl returned 200.
+- **Why closed:** All pass criteria passed.
+- **Closed at (UTC):** 2026-09-19 18:03
+---
+
 # Review README.md
 
 ## GitHub Issues
