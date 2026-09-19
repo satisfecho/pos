@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue #417 removed the unused folder `zz_cursor-agents-do-not-use` from git.
+- **What was done:** The coder deleted 192 tracked files in that folder. Live loop files stayed. `back/` and `front/` did not change.
+- **What was tested:** The tester reported PASS. Git tracks no files in that folder. Grep hits only this task file and `CHANGELOG.md`. The app on port 4202 returned 200.
+- **Why closed:** All pass criteria passed.
+- **Closed at (UTC):** 2026-09-19 17:42
+---
+
 # Remove unused zz_cursor-agents-do-not-use folder
 
 ## GitHub Issues
