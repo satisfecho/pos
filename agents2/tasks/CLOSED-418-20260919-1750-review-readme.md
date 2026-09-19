@@ -40,3 +40,26 @@
 **Pass/fail criteria**
 - **Pass:** one Revolut doc link, the repeated sections are gone, Access Points still lists the URLs, the changelog notes the edit, and curl returns 200.
 - **Fail:** `docs/REVOLUT.md` appears outside Payments, a cut section is back, Access Points lost its URL table, or curl is not 200.
+
+## Test report
+
+1. **Date/time (UTC):** start 2026-09-19T18:00:44Z, end 2026-09-19T18:01:59Z. Log window: `docker logs --since 5m pos-haproxy` (request at 18:00:53Z).
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`. `BASE_URL=http://127.0.0.1:4202`. Branch `development` at `0d04f5001`. No UI change, so no contrast check.
+3. **What was tested:** `README.md` states each topic once. Cut sections are gone. Access Points keeps the URL list. Unique facts stay. Changelog notes the edit. No version bump. The app still answers.
+4. **Results:**
+   - **PASS** — `rg -n "REVOLUT\\.md" README.md` shows one hit, line 90, Features **Payments** row.
+   - **PASS** — `rg -n "^## (Table Reservations|Internationalization|Deployment|Roadmap)$" README.md` printed nothing. Headings no longer include those sections or a long Documentation table. Documentation is two sentences and one `docs/README.md` link (line 211).
+   - **PASS** — `rg -n "docs/README.md" README.md` shows one hit (line 211).
+   - **PASS** — `rg -n "http://localhost:4202/api/docs" README.md` shows one hit (line 162, Access Points). Quick Start points to Access Points and does not list app, API docs, or health URLs.
+   - **PASS** — Unique facts stay: languages include French, Bulgarian, and Urdu (line 95); `docs/0008` session rules (line 84); end-user accounts and MFA are not shipped (line 86); Security Notes say use live Stripe keys (line 294); Configuration still has the env var table (lines 192–203).
+   - **PASS** — `CHANGELOG.md` `[Unreleased]` has `README (#418)`. Commit `0d04f5001` touched `README.md`, `CHANGELOG.md`, and the task file only. `front/package.json` stayed at `2.1.175`. No `back/` or `front/` edits.
+   - **PASS** — `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:4202/` returned `200`.
+5. **Overall:** **PASS**
+6. **Product owner feedback:** The README now says each topic once. Payments and the Revolut doc link stay in one row. The local app still answers on port 4202.
+7. **URLs tested:**
+   1. `http://127.0.0.1:4202/`
+8. **Relevant log excerpts:**
+
+```text
+192.168.65.1:63726 [19/Sep/2026:18:00:53.188] http_frontend frontend_backend/front1 0/0/0/2/2 200 3549 - - ---- 4/4/3/3/0 0/0 "GET / HTTP/1.1"
+```
