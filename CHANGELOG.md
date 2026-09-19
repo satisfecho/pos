@@ -44,6 +44,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - **Public menu Back to home (#386):** `/public-menu/:tenantId` (and delivery) **Back to home** goes to `/book/:tenantId` instead of marketing `/`.
 
+### Removed
+
+- **Unused agent prompt copy (#417):** Removed the old `zz_cursor-agents-do-not-use/` tree (old prompts and archived task copies). The live loop stays in `agents2/`.
+
 ## [2.1.175] - 2026-09-18
 
 ### Added
