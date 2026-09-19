@@ -43,3 +43,23 @@ The repo still tracks `zz_cursor-agents-do-not-use/`. That folder is an old copy
 **Pass/fail criteria**
 - **Pass:** the path has zero tracked files, grep hits only this task file and `CHANGELOG.md`, both live files exist, and curl returns 200.
 - **Fail:** any tracked file remains under that folder, another file still calls that path, a live loop file is missing, or curl is not 200.
+
+## Test report
+
+1. **Date/time (UTC):** start 2026-09-19T17:38:48Z, end 2026-09-19T17:40:23Z. Log window: `docker logs --since 2026-09-19T17:38:00Z pos-haproxy`.
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`. `BASE_URL=http://127.0.0.1:4202`. Branch `development` at `c963affaf`.
+3. **What was tested:** Git no longer tracks `zz_cursor-agents-do-not-use/`. No code, script, or doc calls that path except this task file and `CHANGELOG.md`. Live loop files still exist. The app still answers. No UI change, so no contrast check.
+4. **Results:**
+   - **PASS** — `git ls-files zz_cursor-agents-do-not-use` printed nothing. The folder is not on disk.
+   - **PASS** — `git grep zz_cursor-agents-do-not-use` listed only `CHANGELOG.md` (the task file was not in the index after the status rename). `git grep --untracked` listed only this task file and `CHANGELOG.md`.
+   - **PASS** — `test -f agents2/pos-cursor-loop.sh` and `test -f docs/agent-loop.md` both succeeded.
+   - **PASS** — `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:4202/` returned `200`.
+5. **Overall:** **PASS**
+6. **Product owner feedback:** The old agent prompt folder is gone from git. The live loop files remain. The local app still answers on port 4202.
+7. **URLs tested:**
+   1. `http://127.0.0.1:4202/`
+8. **Relevant log excerpts:**
+
+```text
+192.168.65.1:64960 [19/Sep/2026:17:38:56.512] http_frontend frontend_backend/front1 0/0/1/9/10 200 3549 - - ---- 4/4/3/3/0 0/0 "GET / HTTP/1.1"
+```
