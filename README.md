@@ -15,7 +15,7 @@
 
 **Restaurant POS and ordering infrastructure — self-hosted, multi-tenant, real-time.**
 
-_A point-of-sale system with a customer-facing menu, table management, reservations, and online payments (**Stripe** and optional **Revolut**). Staff use the Angular admin; customers order via QR codes and pay at the table. You keep full control of your data and deployment._
+_A point-of-sale system with a customer-facing menu, table management, and reservations. Staff use the Angular admin. Guests order via QR codes. You keep full control of your data and deployment._
 
 **Topics:** `restaurant-pos` · `multi-tenant` · `self-hosted` · `docker` · `fastapi` · `angular` · `postgresql` · `stripe` · `kitchen-display`
 
@@ -29,41 +29,39 @@ _A point-of-sale system with a customer-facing menu, table management, reservati
 
 POS2 is built for restaurants and venues that want:
 
-- **One place for everything** — Orders, tables, reservations, menu, and payments in a single stack.
-- **Customer ordering without apps** — Guests scan a table QR code, browse the menu, place orders, and pay with Stripe or Revolut (per-tenant). Optional table PIN keeps ordering secure.
-- **Real-time updates** — Order status (pending → preparing → ready → delivered → paid) flows to staff and customers over WebSockets.
-- **Multi-tenant from day one** — Each restaurant (tenant) has isolated data, settings, and Stripe configuration.
-- **Self-hosted** — Run on your own server or local network; no vendor lock-in.
-
-The frontend is Angular; the backend is FastAPI with PostgreSQL and Redis. All major flows are implemented and documented (see [ROADMAP.md](ROADMAP.md) and the `docs/` folder).
+- **One place for operations** — Orders, tables, reservations, and the menu in a single stack.
+- **Customer ordering without apps** — Guests scan a table QR code and browse the menu. An optional table PIN limits who can order.
+- **Real-time updates** — Order status (pending → preparing → ready → delivered → paid) reaches staff and guests over WebSockets.
+- **Multi-tenant from day one** — Each restaurant (tenant) has isolated data, settings, and its own payment setup.
+- **Self-hosted** — Run on your own server or local network. There is no vendor lock-in.
 
 ---
 
 ## Start with one feature
 
-You do not need the full POS on day one. Start with **one public feature** and add the rest when you are ready. Orders, kitchen display, inventory, and other areas stay in the same tenant — turn them on in **Settings → Navigation** when you need them.
+You do not need the full POS on day one. Start with **one public feature** and add the rest when you are ready. Other areas stay in the same tenant. Turn them on in **Settings → Navigation** when you need them.
 
 ### QR menu only (free to start)
 
-The **digital QR menu** is part of every plan. On **self-host (AGPLv3)** there is **no license fee**. On hosted Satisfecho you get a **free trial** with no card required — see live pricing at **`/pricing`** when the app is running.
+The **digital QR menu** is part of every plan. On **self-host (AGPLv3)** there is **no license fee**. On hosted Satisfecho you get a **free trial** with no card required. Live prices are on the Public pricing row below.
 
 1. **Register** your restaurant ([Getting Started](#getting-started) below).
 2. Add items under **Products** in the staff app.
 3. Create tables under **Tables** and open each table’s **QR code** (print or display it).
-4. Guests scan the code and browse **`/menu/{table_token}`** — no app install.
+4. Guests scan the code and browse **`/menu/{table_token}`**. They do not install an app.
 
-Add later when you want: table PIN security ([docs/0009-table-pin-security.md](docs/0009-table-pin-security.md)), Stripe or Revolut checkout in **Settings**, kitchen display, inventory.
+Add later when you want: table PIN, online checkout, kitchen display, and inventory. URLs are in [Access Points](#access-points).
 
 ### Reservations only
 
-Use **online booking** without running the full order flow.
+Use **online booking** without the full order flow.
 
 1. **Register** and sign in (see [Getting Started](#getting-started)).
 2. Turn on **Reservations & guest feedback** under **Settings → Navigation** if it is not already enabled.
-3. Share your public link: **`/book/{tenantId}`** (e.g. `http://localhost:4202/book/1`).
+3. Share **`/book/{tenantId}`**.
 4. Staff manage bookings at **`/reservations`**.
 
-Guests can join the **waiting list** at **`/waitlist/{tenantId}`** (linked from the book page). Full URLs and flows: [docs/0011-table-reservation-user-guide.md](docs/0011-table-reservation-user-guide.md).
+Guests can join the **waiting list** at **`/waitlist/{tenantId}`** (linked from the book page). Staff and guest flows: the Reservations row below.
 
 ### Screenshots
 
@@ -83,23 +81,23 @@ Staff dashboard, kitchen display, and customer menu — a quick visual sense of 
 
 | Area | What's included |
 |------|------------------|
-| **Orders** | Full lifecycle (pending → preparing → ready → delivered → paid). Session-based orders per browser. Item-level status; partial delivery; order modification and cancellation before delivery; soft delete with “Show removed items” in staff UI. **Print invoice** and **Print Factura** (with optional billing customer and tax breakdown) open the browser print dialog. See [docs/0017-billing-customers-factura.md](docs/0017-billing-customers-factura.md). |
+| **Orders** | Full lifecycle (pending → preparing → ready → delivered → paid). Session-based orders per browser. Item-level status; partial delivery; order modification and cancellation before delivery; soft delete with “Show removed items” in staff UI. Session rules and status reset: [docs/0008-order-management-logic.md](docs/0008-order-management-logic.md). **Print invoice** and **Print Factura** (with optional billing customer and tax breakdown) open the browser print dialog. See [docs/0017-billing-customers-factura.md](docs/0017-billing-customers-factura.md). |
 | **Tax (IVA)** | Tax-inclusive pricing with per-tenant tax rates (name, rate %, validity). Default tax in Settings; product-level tax override. Order items store applied tax snapshot for invoice breakdown. |
-| **Billing customers (Factura)** | Register customers that need a tax invoice with company details (name, company, CIF/tax ID, address, email, phone). List and search at `/customers`; from Orders, **Print Factura** lets you select a customer and print an invoice with “Bill to” block; optionally save the customer on the order. |
-| **Customer menu** | Browse menu, cart, place order, order history. Optional “immediate payment required” (checkout auto-opens after placing order). |
+| **Billing customers (Factura)** | Register customers that need a tax invoice with company details (name, company, CIF/tax ID, address, email, phone). List and search at `/customers`; from Orders, **Print Factura** lets you select a customer and print an invoice with “Bill to” block; optionally save the customer on the order. End-user accounts and MFA are not shipped ([docs/0002-customer-features-plan.md](docs/0002-customer-features-plan.md)). |
+| **Customer menu** | Browse menu, cart, place order, order history. |
 | **Kitchen display** | Dedicated full-screen view at `/kitchen`: large order cards, auto-refresh and WebSocket updates, optional sound on new orders. Read-only; same access as Orders. See [docs/0015-kitchen-display.md](docs/0015-kitchen-display.md). |
 | **Reports** | Sales & revenue at `/reports` (owner/admin): date range, summary (total revenue, order count, average payment per client), reservation count and by source (public/staff), by product/category/table/waiter, charts, CSV/Excel export. See [docs/0016-reports.md](docs/0016-reports.md). |
 | **Payments** | **Stripe** and **Revolut** (online checkout on the customer menu; per-tenant configuration in **Settings**). **Cash** and **card terminal (dataphone)** when staff marks the order paid. Optional **immediate payment required** (checkout opens right after placing order). Revolut sandbox and redirect URLs: [docs/REVOLUT.md](docs/REVOLUT.md). |
-| **Tables** | Table management, QR codes, canvas view. Table activation and 4-digit PIN so only present guests can order; PIN rate limiting via Redis. |
+| **Tables** | Table management, QR codes, canvas view. Table activation and 4-digit PIN so only present guests can order; PIN rate limiting via Redis. See [docs/0009-table-pin-security.md](docs/0009-table-pin-security.md). |
 | **Staff navigation** | After sign-in, the sidebar matches operational areas: **Dashboard**, **My shift** (optional), **Orders**, **Reservations** and **Guest feedback** (when the reservations module is enabled), **Tables** (list and canvas), **Kitchen** and **Bar** displays, **Customers**, **Products**, **Catalog** (when the providers module is enabled), **Reports**, **Working plan**, **Inventory** (items, suppliers, purchase orders, stock, reports — admin), **Users**, **Contracts** (when permitted), **Settings** (admin). |
 | **Reservations** | Staff: list, create, edit, seat, finish, cancel at `/reservations`. **Client notes** (from the customer at booking) and **owner notes** (internal staff notes). **Client technical info** (IP, user-agent, browser fingerprint, screen size) is recorded for public bookings and visible to staff. **No-show**: mark no-shows and **send reminders** by email and/or **WhatsApp** (when Twilio is configured). Public: book at `/book/:tenantId`, view/cancel at `/reservation?token=...`. **Waiting list:** public join at `/waitlist/:tenantId` (linked from the book page); staff manage the queue on the Reservations waiting-list tab. Table status: available / reserved / occupied. See [docs/0011-table-reservation-user-guide.md](docs/0011-table-reservation-user-guide.md). |
 | **Real-time** | WebSocket updates for order status; token-based WS auth (`/ws-token`). |
-| **i18n & currency** | Multiple UI languages (e.g. en, es, ca, de, zh-CN, hi); backend localized messages; per-tenant currency (EUR, USD, MXN, etc.). |
+| **i18n & currency** | Languages: English, Spanish, Catalan, German, French, Bulgarian, Chinese (Simplified), Hindi, Urdu (RTL). Files: `front/public/i18n/*.json`. Language picker in the admin sidebar and on the public menu. API: `?lang=es` (or another code) for localized messages. Per-tenant currency (EUR, USD, MXN, INR, CNY, TWD, and others). See [docs/0012-translation-implementation.md](docs/0012-translation-implementation.md). |
 | **Multi-tenant** | Isolated data per tenant; first user becomes owner; configurable roles (owner, admin, kitchen, bartender, waiter, receptionist, courier) and permissions (e.g. reservation read/write). |
 | **Restaurant groups** | Multi-location operators can **create**, **join**, or **leave** a restaurant group (Settings → Restaurant group) and optionally **share billing customers** and/or **product catalog** across sibling locations. See [docs/0054-restaurant-groups.md](docs/0054-restaurant-groups.md). |
 | **Satisfecho Delivery** | First-party delivery channel (not Glovo/Uber): staff **Delivery** tab on Orders, create/assign courier, public guest checkout at `/delivery/{tenantId}`. See [docs/0053-satisfecho-delivery-order-channel.md](docs/0053-satisfecho-delivery-order-channel.md). |
-| **Courier portal** | Couriers log in at `/courier/login` and work Mine / order actions at `/courier`. Demo credentials: `COURIER_EMAIL` / `COURIER_PASSWORD` in `config.env.example`. See [docs/0053-satisfecho-delivery-order-channel.md](docs/0053-satisfecho-delivery-order-channel.md). |
-| **SaaS signup paywall** | After guided signup (`/register` / `/signup`), new tenants may hit `/paywall` (trial or subscribe) when `SAAS_PAYWALL_ENABLED=true`. Default is `false` for local/demo. See [docs/0052-saas-signup-paywall.md](docs/0052-saas-signup-paywall.md). |
+| **Courier portal** | Couriers log in at `/courier/login` and work Mine / order actions at `/courier`. Demo credentials: `COURIER_EMAIL` / `COURIER_PASSWORD` in `config.env.example`. |
+| **SaaS signup paywall** | After guided signup (`/register` / `/signup`), new tenants may hit `/paywall` (trial or subscribe) when the paywall flag is on. See [docs/0052-saas-signup-paywall.md](docs/0052-saas-signup-paywall.md). |
 | **Public pricing** | Hosted trial/monthly price from live `GET /saas/config` at **`/pricing`** (no login). Self-host / AGPLv3 alternative; does not imply billing when paywall is off. |
 | **Platform operator** | Satisfecho platform admins log in at `/platform/login` and oversee tenants at `/platform`. Distinct from provider and tenant staff. See [docs/0059-platform-operator-portal.md](docs/0059-platform-operator-portal.md). |
 | **Products & images** | Staff manage products at `/products`. On deploy, demo products are linked to catalog provider products so the Products page shows images (beer/pizza/wine import); first load of `/products` backfills image URLs. |
@@ -108,7 +106,7 @@ Staff dashboard, kitchen display, and customer menu — a quick visual sense of 
 | **Public features (marketing)** | Product capabilities for prospects at **`/features`** (no login). Linked from the landing nav (“View all features”); uses the same landing site footer as the home page. |
 | **Public about** | Company / About us at **`/about`** (no login). Names **Amvara Consulting S.L.**; linked from marketing nav and footer Support. |
 
-Planned but not yet implemented: batch order operations, and stricter “must pay before continuing” flow. See [ROADMAP.md](ROADMAP.md).
+Planned, not yet implemented: Order Phase 4 (batch operations, audit, item replacement) and a stricter “must pay before continuing” flow. Further security items (for example CAPTCHA after failed logins) are in [ROADMAP.md](ROADMAP.md).
 
 ---
 
@@ -119,14 +117,11 @@ Planned but not yet implemented: batch order operations, and stricter “must pa
 - **Database:** PostgreSQL 18
 - **Cache / pub-sub:** Redis 7
 - **Real-time:** WebSocket bridge (custom service)
-- **Payments:** Stripe, Revolut (optional; see [docs/REVOLUT.md](docs/REVOLUT.md))
 - **Deployment:** Docker Compose, HAProxy
 
 ---
 
 ## Getting Started
-
-The quickest way to try POS out is to head over to [https://satisfecho.de/](https://satisfecho.de/) and set up your restaurant.
 
 ### Prerequisites
 
@@ -145,21 +140,17 @@ The quickest way to try POS out is to head over to [https://satisfecho.de/](http
    ```bash
    cp config.env.example config.env
    ```
-   For local development the defaults are fine. For production or a custom domain, set `API_URL`, `WS_URL`, `CORS_ORIGINS`, and `SECRET_KEY`. See [docs/0004-deployment.md](docs/0004-deployment.md).
+   Local defaults are enough to start. For production or a custom domain, set `API_URL`, `WS_URL`, `CORS_ORIGINS`, and `SECRET_KEY`. Use `https://` and `wss://` in production. See [docs/0004-deployment.md](docs/0004-deployment.md). Variable meanings are in [Configuration](#configuration).
 
 3. **Start all services**
    - **Local (development):** `docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file config.env up -d`
    - **Production (e.g. amvara9):** `docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file config.env up -d`
 
-4. **Find the app URL**  
-   Run `docker compose -f docker-compose.yml -f docker-compose.dev.yml ps` (or with `.prod.yml` if you used prod) and check the **PORTS** column for the `haproxy` service (e.g. `0.0.0.0:4202->4202/tcp` or `0.0.0.0:4203->4202/tcp`). The **host port** (4202 or 4203) is your app URL.
+4. **Find the app URL**
+   Run `docker compose -f docker-compose.yml -f docker-compose.dev.yml ps` (or with `.prod.yml` if you used prod). Read the **PORTS** column for `haproxy` (for example `0.0.0.0:4202->4202/tcp`). The host port is the app URL. The route list is [Access Points](#access-points). If the port is not 4202, use that port in those URLs.
 
-   - **App (recommended):** http://localhost:4202 (or the port shown for haproxy)
-   - **API docs:** http://localhost:4202/api/docs  
-   - **Health:** http://localhost:4202/api/health
-
-5. **Create an account**  
-   There is no pre-seeded user. Open **http://localhost:4202/register** (use your actual port), enter tenant name, email, and password. The first user becomes the tenant owner. Then sign in at the main URL.
+5. **Create an account**
+   There is no pre-seeded user. Open **`/register`** on that host. Enter tenant name, email, and password. The first user becomes the tenant owner. Then sign in at the app URL.
 
 ---
 
@@ -192,8 +183,6 @@ The quickest way to try POS out is to head over to [https://satisfecho.de/](http
 | **Customers (Factura)** | http://localhost:4202/customers |
 | **Dashboard (staff)** | http://localhost:4202/dashboard |
 
-If your frontend port is different (e.g. 4203), replace 4202 with that port. See [AGENTS.md](AGENTS.md) for how to detect the port and debug with logs.
-
 ---
 
 ## Configuration
@@ -209,42 +198,17 @@ Key variables in `config.env` (see `config.env.example` for the full list):
 | `CORS_ORIGINS` | Allowed frontend origins (comma-separated) | Yes (production) |
 | `POSTGRES_*` / `DB_*` | Database connection | Yes |
 | `STRIPE_CURRENCY` | Fallback currency if tenant has none | Optional |
-| `SAAS_PAYWALL_ENABLED` | When `true`, new restaurant signups hit `/paywall` (trial or subscribe) after guided signup; default `false` for local/demo. See [docs/0052-saas-signup-paywall.md](docs/0052-saas-signup-paywall.md) | Optional (default `false`) |
+| `SAAS_PAYWALL_ENABLED` | When `true`, new restaurant signups hit `/paywall` after guided signup. Default `false` for local/demo. | Optional (default `false`) |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM` | Optional; when set, reservation reminders can be sent via WhatsApp (in addition to email) | Optional |
 | `DEFAULT_PHONE_COUNTRY` | ISO country code (e.g. `ES`, `DE`) for normalizing reservation phone numbers to E.164 | Optional (default `ES`) |
 
-**Stripe** and **Revolut** credentials are configured per tenant in **Settings** (payment options) in the admin UI. Settings also include business profile, contact (phone, email, address, **Tax ID**, **CIF**), opening hours, and payment options. Revolut-specific env and setup are documented in [docs/REVOLUT.md](docs/REVOLUT.md). For deployment on a domain or IP, see [docs/0004-deployment.md](docs/0004-deployment.md).
+Settings also include business profile, contact (phone, email, address, **Tax ID**, **CIF**), and opening hours.
 
 ---
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [ROADMAP.md](ROADMAP.md) | Implemented vs planned features; security roadmap |
-| [docs/0020-rate-limiting-production.md](docs/0020-rate-limiting-production.md) | API rate limits (global, login, register, payments, public menu, uploads, admin), Redis, `X-Forwarded-For`, tests |
-| [docs/REVOLUT.md](docs/REVOLUT.md) | Revolut Merchant API: sandbox, redirect URLs, certificates, tenant setup |
-| [CHANGELOG.md](CHANGELOG.md) | Release notes and unreleased changes |
-| [AGENTS.md](AGENTS.md) | How to find the app port and view logs (for developers/agents) |
-| [docs/README.md](docs/README.md) | **Index of all documentation** (deployment, email, features, plans, testing) |
-| [docs/0008-order-management-logic.md](docs/0008-order-management-logic.md) | Order lifecycle, session rules, status reset |
-| [docs/0007-implementation-verification.md](docs/0007-implementation-verification.md) | What’s implemented vs Phase 4 (batch, audit, etc.) |
-| [docs/0010-table-reservation-implementation-plan.md](docs/0010-table-reservation-implementation-plan.md) | Reservations design and backend |
-| [docs/0011-table-reservation-user-guide.md](docs/0011-table-reservation-user-guide.md) | URLs and flows for staff and public booking / waiting list |
-| [docs/0019-no-show-implementation-plan.md](docs/0019-no-show-implementation-plan.md) | No-show status and reminder emails: plan and implementation guide |
-| [docs/0024-whatsapp-reminder-notes.md](docs/0024-whatsapp-reminder-notes.md) | WhatsApp reservation reminder: design, Twilio config, E.164 phone normalization |
-| [docs/0009-table-pin-security.md](docs/0009-table-pin-security.md) | Table activation and PIN validation |
-| [docs/0012-translation-implementation.md](docs/0012-translation-implementation.md) | i18n (frontend + backend + DB content) |
-| [docs/0004-deployment.md](docs/0004-deployment.md) | Domain/IP deployment and env vars |
-| [docs/0002-customer-features-plan.md](docs/0002-customer-features-plan.md) | Customer features plan (**partial**): staff Factura customers shipped; end-user accounts/MFA not shipped |
-| [docs/0005-email-sending-options.md](docs/0005-email-sending-options.md) | Email configuration options |
-| [docs/0013-verification-alternatives.md](docs/0013-verification-alternatives.md) | Verification flow alternatives |
-| [docs/0014-provider-portal.md](docs/0014-provider-portal.md) | Provider registration, login, and catalog management |
-| [docs/0015-kitchen-display.md](docs/0015-kitchen-display.md) | Kitchen display: full-screen view, auto-refresh, optional sound |
-| [docs/0017-billing-customers-factura.md](docs/0017-billing-customers-factura.md) | Billing customers (Factura): register company details, search, print invoice with “Bill to” |
-| [docs/0052-saas-signup-paywall.md](docs/0052-saas-signup-paywall.md) | SaaS signup paywall: trial or subscribe before staff app (`SAAS_PAYWALL_ENABLED`) |
-| [docs/0053-satisfecho-delivery-order-channel.md](docs/0053-satisfecho-delivery-order-channel.md) | Satisfecho Delivery: staff Delivery tab, courier API, public `/delivery/{tenantId}` checkout |
-| [docs/0054-restaurant-groups.md](docs/0054-restaurant-groups.md) | Restaurant groups: multi-location sharing of billing customers and products |
+Each feature row links to its guide. The full index is [docs/README.md](docs/README.md). Release notes are in [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -322,53 +286,13 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file config
 
 ---
 
-## Internationalization (i18n)
-
-- **Languages:** English, Spanish, Catalan, German, French, Bulgarian, Chinese (Simplified), Hindi, Urdu (RTL) — see `front/public/i18n/*.json`.
-- **Currency:** Per-tenant (e.g. EUR, USD, MXN, INR, CNY, TWD).
-- **Language picker:** In admin sidebar and on the public menu.
-- **API:** Use `?lang=es` (or other code) for localized API messages.
-
-See [docs/0012-translation-implementation.md](docs/0012-translation-implementation.md).
-
----
-
-## Table Reservations
-
-- **Staff:** Sign in → **Reservations** in the sidebar. List, create, edit, seat at a table, finish, or cancel. Tables canvas shows status **Reserved** (amber) when a reservation is assigned.
-- **Public:** Book at **`/book/:tenantId`** (e.g. `http://localhost:4202/book/1`). After booking, use the link to **view or cancel** at `/reservation?token=...`. **Waiting list:** **`/waitlist/:tenantId`** (linked from the book page). No login required.
-
-Details: [docs/0011-table-reservation-user-guide.md](docs/0011-table-reservation-user-guide.md).
-
----
-
-## Deployment
-
-For a custom domain or IP, set in `config.env`:
-
-- `API_URL` and `WS_URL` to your backend base URL (use `https://` and `wss://` for production).
-- `CORS_ORIGINS` to your frontend origin(s).
-
-Then restart: `docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file config.env up -d`.
-
-Full guide: [docs/0004-deployment.md](docs/0004-deployment.md).
-
----
-
-## Roadmap
-
-- **Done:** Order management, reservations, table PIN, Stripe, WebSocket, i18n, deployment docs. See [ROADMAP.md](ROADMAP.md) for the full list.
-- **Planned:** Order Phase 4 (batch, audit, item replacement), optional stricter “immediate payment” enforcement. Further security items (e.g. CAPTCHA after failed logins) are noted in [ROADMAP.md](ROADMAP.md).
-
----
-
 ## Security Notes
 
 - **Production:** Set a strong `SECRET_KEY` and `REFRESH_SECRET_KEY` in `config.env`.
 - **CORS:** Set `CORS_ORIGINS` to your real frontend origin(s); avoid `*` in production if possible.
 - **Database:** Use strong credentials; do not commit `config.env`.
-- **Stripe:** Use live keys in production and configure them per tenant in Settings.
-- **Rate limiting:** Global and per-route limits (login, register, payments, public menu, uploads, admin/management) are enforced via Redis; see [docs/0020-rate-limiting-production.md](docs/0020-rate-limiting-production.md) and [ROADMAP.md](ROADMAP.md). Table PIN attempts remain rate-limited as documented in [docs/0009-table-pin-security.md](docs/0009-table-pin-security.md).
+- **Stripe:** Use live keys in production. Set them per tenant in Settings.
+- **Rate limiting:** Global and per-route limits (login, register, payments, public menu, uploads, admin/management) use Redis. See [docs/0020-rate-limiting-production.md](docs/0020-rate-limiting-production.md). Table PIN attempts stay rate-limited.
 
 ---
 
@@ -378,10 +302,8 @@ Full guide: [docs/0004-deployment.md](docs/0004-deployment.md).
 |------|-------------|
 | **Services won’t start** | Check port conflicts; ensure `config.env` exists and is valid; run `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs`. |
 | **Frontend can’t reach API** | Confirm `API_URL` and `WS_URL` match how the browser reaches the app (e.g. through HAProxy). Check CORS and browser console. |
-| **Wrong port** | Run `docker compose -f docker-compose.yml -f docker-compose.dev.yml ps`, find the host port for `haproxy`, and open that URL (e.g. `http://localhost:4202`). |
+| **Wrong port** | Use the host port from [Quick Start](#quick-start). |
 | **DB connection errors** | Ensure `db` is healthy (`docker compose -f docker-compose.yml -f docker-compose.dev.yml ps`); with Compose, use `DB_HOST=db`. Check credentials in `config.env`. |
-
-More: [docs/0004-deployment.md](docs/0004-deployment.md) and [AGENTS.md](AGENTS.md).
 
 ---
 

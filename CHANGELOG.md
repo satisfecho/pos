@@ -19,6 +19,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- **README (#418):** Each topic is stated once. Payments, reservations, languages, deploy settings, and URLs are not repeated. Detail stays in `docs/`.
 - **Agent instructions:** `AGENTS.md` no longer names the git key file, production host access, or demo passwords. Those values stay in local env files. Archived agent task notes no longer include the production address, host alias, deploy path, or SSH port.
 - **Settings RAL5002 preset clarity (#367):** Public background colour preset is labelled **Apply RAL5002 (#1E22AA)** with hint/title that it is optional and does not lock the field; colour picker and hex stay in sync while typing.
 - **Settings → Loyalty club docs link (#394):** Loyalty club tab links to the runbook on GitHub (`docs/0066-club-loyalty.md`). Smoke: `npm run test:settings-loyalty-docs --prefix front`.
@@ -43,6 +44,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Book Time slot alignment (#369):** Public `/book` week summary keeps Time slot left-aligned under Date (no right-side float on wide viewports).
 
 - **Public menu Back to home (#386):** `/public-menu/:tenantId` (and delivery) **Back to home** goes to `/book/:tenantId` instead of marketing `/`.
+
+### Removed
+
+- **Unused agent prompt copy (#417):** Removed the old `zz_cursor-agents-do-not-use/` tree (old prompts and archived task copies). The live loop stays in `agents2/`.
 
 ## [2.1.175] - 2026-09-18
 
