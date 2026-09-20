@@ -49,13 +49,22 @@ Smoke: `npm run test:order-comments` from `front/` (see `docs/testing.md`). Unit
 
 Translation keys under `KITCHEN_DISPLAY.*` and `NAV.KITCHEN_DISPLAY` in `front/public/i18n/` (en, de, es, ca).
 
-## Prep stations (optional)
+## Prep stations (as many displays as you need)
 
-When the tenant defines **kitchen stations** under **Settings → Kitchen stations**, each product can be mapped to a station (or use tenant defaults for unmapped items by category: food vs beverages). Order lines then include `kitchen_station_id`, `kitchen_station_name`, and `kitchen_station_route` (`kitchen` | `bar`).
+You can run as many prep displays as the restaurant needs. Each product on an order is assigned to one station. That station shows only the lines it must prepare.
 
-- **Kitchen display** (`/kitchen`) and **Bar display** (`/bar`) show a **Station** filter when at least one station exists for that route. **All stations** shows every line for that display; a specific station shows only lines resolved to that station.
-- **Query param:** `?station=<id>` bookmarks a station view; omit or `all` for all stations.
-- **Printing:** Kitchen/receipt jobs can go to a LAN print agent via `POST /print-jobs` when an agent is online (`docs/0070-hardware-printing.md`). Otherwise browser / invoice print is unchanged. Per-station ticket split remains a follow-up; see `docs/PRINTING.md`.
+Examples:
+
+- A **starters** station has its own display. It shows only starters.
+- A **cocktails** station has its own display. It shows only drinks made at the bar.
+
+When a guest or a waiter places an order, each station sees its own products. The rest of the order stays on the other displays.
+
+Set this up under **Settings → Kitchen stations**. Map each product to a station, or use the tenant defaults for unmapped items (food vs beverages). Each order line then includes `kitchen_station_id`, `kitchen_station_name`, and `kitchen_station_route` (`kitchen` | `bar`).
+
+- **Kitchen display** (`/kitchen`) and **Bar display** (`/bar`) show a **Station** filter when at least one station exists for that route. **All stations** shows every line for that display. One station shows only the lines for that station.
+- **Bookmark:** open `?station=<id>` for one station. Omit the parameter, or use `all`, to show every station on that display.
+- **Printing:** Kitchen and receipt jobs can go to a LAN print agent via `POST /print-jobs` when an agent is online (`docs/0070-hardware-printing.md`). Otherwise browser and invoice print stay the same. A separate printed ticket per station is still a follow-up; see `docs/PRINTING.md`.
 
 ## Technical
 
