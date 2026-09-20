@@ -123,6 +123,8 @@ Planned, not yet implemented: Order Phase 4 (batch operations, audit, item repla
 
 ## Getting Started
 
+So, you really want to get your hands dirty and install? Then continue reading. If you want to try it out first, you may use the hosted version at [satisfecho.de](https://satisfecho.de). No worries, anything you do on satisfecho.de — your data, your menus — you can export at any time and import the same on a self-hosted stack. Open source, no lock-in. ;-)
+
 ### Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
