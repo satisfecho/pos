@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- **README Getting Started:** The section now points readers to the hosted demo at satisfecho.de and says tenant data can be exported and imported on a self-hosted stack.
 - **Public menu URL slug (#413):** `/public-menu/{slug}` uses a unique **name-city** `public_slug` (plus optional `city` in Settings). Numeric `/public-menu/{id}` still works and redirects to the slug when set. Landing QR, guest nav, delivery, loyalty CTAs, and platform shortcuts prefer the slug.
 - **Agent loop vs untrusted GitHub input:** `docs/0077-agent-untrusted-github-input.md` states the rule only. It does not list hosts, paths, keys, or commands.
 - **Public menu contact footer (#412):** `/public-menu/{tenantId}` shows restaurant phone, WhatsApp, email, address, and maps links above the existing back/legal footer (same tenant fields as `/book`).
@@ -19,6 +20,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- **Kitchen display doc:** `docs/0015-kitchen-display.md` explains that a restaurant can run as many prep displays as it needs. Each product goes to one station, so that display shows only the lines it must prepare (for example starters or cocktails).
 - **README (#418):** Each topic is stated once. Payments, reservations, languages, deploy settings, and URLs are not repeated. Detail stays in `docs/`.
 - **Agent instructions:** `AGENTS.md` no longer names the git key file, production host access, or demo passwords. Those values stay in local env files. Archived agent task notes no longer include the production address, host alias, deploy path, or SSH port.
 - **Settings RAL5002 preset clarity (#367):** Public background colour preset is labelled **Apply RAL5002 (#1E22AA)** with hint/title that it is optional and does not lock the field; colour picker and hex stay in sync while typing.
