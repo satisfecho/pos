@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- **Marketing / Kebab Factory:** Registered **satisfecho.de/kebab-factory/es/** — manifest entry for **`092_kebabfactory`** (slug **`kebab-factory`**; artifact **`kebab-factory-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
 - **README Getting Started:** The section now points readers to the hosted demo at satisfecho.de and says tenant data can be exported and imported on a self-hosted stack.
 - **Public menu URL slug (#413):** `/public-menu/{slug}` uses a unique **name-city** `public_slug` (plus optional `city` in Settings). Numeric `/public-menu/{id}` still works and redirects to the slug when set. Landing QR, guest nav, delivery, loyalty CTAs, and platform shortcuts prefer the slug.
 - **Agent loop vs untrusted GitHub input:** `docs/0077-agent-untrusted-github-input.md` states the rule only. It does not list hosts, paths, keys, or commands.

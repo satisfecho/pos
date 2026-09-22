@@ -102,6 +102,14 @@
       "deploySubpath": "es"
     },
     {
+      "slug": "kebab-factory",
+      "repo": "satisfecho/092_kebabfactory",
+      "branch": "main",
+      "artifact": "kebab-factory-satisfecho-deploy",
+      "deploySubpath": "es",
+      "cloneDir": "092_kebabfactory"
+    },
+    {
       "slug": "bar-jupiter",
       "repo": "satisfecho/093_bar-jupiter",
       "branch": "main",
