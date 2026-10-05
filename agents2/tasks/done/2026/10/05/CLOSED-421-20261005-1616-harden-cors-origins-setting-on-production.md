@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Production CORS defaults used `*` with credentialed FastAPI middleware; the tester verified the allowlist and prod wildcard reject.
+- **What was done:** Production now refuses empty or wildcard `CORS_ORIGINS`; example env and docs use explicit localhost/HAProxy origins and tell operators to set the real front-end origin (e.g. `https://satisfecho.de`).
+- **What was tested:** Unit tests (11 passed), landing and `/api/health` 200, allowlisted Origin echoes ACAO, unlisted Origin has no ACAO, prod `CORS_ORIGINS=*` subprocess REJECTED, docs/example no longer default `*` — overall PASS.
+- **Why closed:** All tester criteria passed; CORS-only scope delivered.
+- **Closed at (UTC):** 2026-10-05 16:41
+---
+
 # Harden CORS_ORIGINS setting on production
 
 ## GitHub Issues
@@ -81,3 +91,38 @@ Related docs: `docs/0004-deployment.md` (CORS Origins), `docs/SECURITY-REVIEW.md
    Expect: `REJECTED`.
 
 5. **Docs / example (read-only):** Confirm `config.env.example` does not default `CORS_ORIGINS=*`, and amvara9 notes say to set e.g. `https://satisfecho.de`.
+
+## Test report
+
+1. **Date/time (UTC):** 2026-10-05T16:39:29Z start → 2026-10-05T16:40:27Z end. Log window: `docker logs --since 2026-10-05T16:39:00Z`.
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; HAProxy `127.0.0.1:14202`; branch `development`; running `CORS_ORIGINS=https://pos-dev.157.90.66.148.sslip.io` (from `config.env`, not compose default).
+3. **What was tested:** Unit tests for prod CORS/secret/docs boot rules; landing + `/api/health` 200; allowlisted vs unlisted Origin ACAO; production `CORS_ORIGINS=*` subprocess reject; docs/`config.env.example` no longer ship `*` as the default.
+4. **Results:**
+   - Unit pytest (`test_cors_origins_production.py`, `test_secret_key_production.py`, `test_api_docs_production.py`): **PASS** — 11 passed in 2.50s.
+   - Landing HTTP 200 on `http://127.0.0.1:14202/`: **PASS**.
+   - `/api/health` HTTP 200: **PASS**.
+   - Allowlisted Origin echoes `Access-Control-Allow-Origin`: **PASS** — Origin `https://pos-dev.157.90.66.148.sslip.io` (the running allowlist) returned `access-control-allow-origin: https://pos-dev.157.90.66.148.sslip.io` via HAProxy and via `back:8020`. Note: `http://localhost:4202` is **not** in this host’s live `CORS_ORIGINS`, so it correctly did not echo ACAO.
+   - Unlisted Origin has no ACAO: **PASS** — `Origin: https://evil.example` → HTTP 200, no `Access-Control-Allow-Origin` (HAProxy and back:8020).
+   - Prod refuse wildcard subprocess: **PASS** — printed `REJECTED`.
+   - Docs / example: **PASS** — `config.env.example` defaults to localhost/127.0.0.1 4202/4200; `docs/0001-ci-cd-amvara9.md` and `docs/0004-deployment.md` tell operators to set e.g. `https://satisfecho.de` and never `*`.
+5. **Overall:** **PASS**.
+6. **Product owner feedback:** Production will no longer boot with a wildcard CORS list, which is the right default for credentialed cookies. Local and amvara9 docs now tell operators to list the real front-end origin instead of copying `*`. Live this host already uses the sslip.io origin, and the allowlist behaved as expected.
+7. **URLs tested:**
+   1. `http://127.0.0.1:14202/` (landing)
+   2. `http://127.0.0.1:14202/api/health` (no Origin / allowlisted Origin / unlisted Origin)
+   3. `http://127.0.0.1:8020/health` inside `pos-back` (allowlisted and unlisted Origin)
+8. **Relevant log excerpts:**
+
+```
+# pytest
+...........                                                              [100%]
+11 passed in 2.50s
+
+# pos-haproxy
+172.23.0.1:41546 ... 200 ... "GET /api/health HTTP/1.1"
+172.23.0.1:36088 ... 200 ... "GET /api/health HTTP/1.1"
+
+# pos-back
+INFO:     172.23.0.7:37132 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35094 - "GET /health HTTP/1.1" 200 OK
+```
