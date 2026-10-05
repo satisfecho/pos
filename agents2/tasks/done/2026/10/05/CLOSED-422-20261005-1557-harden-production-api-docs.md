@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Production left `/api/docs` and OpenAPI publicly reachable; this task gated them behind `PRODUCTION` / `ENABLE_API_DOCS`.
+- **What was done:** App-level `api_docs_enabled` disables FastAPI docs/redoc/openapi when production unless opt-in; docs, changelog, and `test_api_docs_production.py` updated.
+- **What was tested:** Pytest prod gate passed (404 when `PRODUCTION=true`); local HAProxy `:14202` returned 200 for `/api/docs`, OpenAPI, health, and landing. Overall PASS.
+- **Why closed:** All required criteria passed; optional Puppeteer/amvara9 checks skipped with clear rationale.
+- **Closed at (UTC):** 2026-10-05 16:22
+---
+
 # Harden /api/docs in production (#422)
 
 ## GitHub Issues
@@ -48,3 +58,33 @@
    Expect: `>>> RESULT: API docs at /api/docs load successfully.`
 
 4. **Optional after amvara9 recreate:** anonymous `GET /api/docs` and `/api/openapi.json` → **404**; `/api/health` and `/` still OK.
+
+## Test report
+
+1. **Date/time (UTC):** start 2026-10-05T16:21:15Z — end 2026-10-05T16:21:35Z. Log window: ~16:21–16:22 UTC.
+2. **Environment:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml`; HAProxy host `http://127.0.0.1:14202`; branch `development`. Back settings: `is_production=False`, `api_docs_enabled=True`.
+3. **What was tested:** Prod-like API docs gate via pytest; dev still serves `/api/docs` + `/api/openapi.json`; health and landing unaffected. Optional Puppeteer skipped (no host npm/`puppeteer-core`; front container lacks Chrome). Optional amvara9 not in scope for this run.
+4. **Results:**
+   - Unit / prod-like gate (`tests/test_api_docs_production.py`): **PASS** — `1 passed in 1.34s`.
+   - Dev `/api/docs` → 200: **PASS** — curl `http://127.0.0.1:14202/api/docs`.
+   - Dev `/api/openapi.json` → 200: **PASS** — curl same host.
+   - `/api/health` → 200: **PASS**.
+   - Landing `/` → 200: **PASS**.
+   - Optional Puppeteer: **SKIP** — Chrome/puppeteer not available on host or in front container (required curl checks cover docs availability).
+   - Optional amvara9 anonymous 404: **SKIP** — not requested for this local verification cycle.
+5. **Overall:** **PASS**
+6. **Product owner feedback:** Production gating is covered by the subprocess pytest (docs/redoc/openapi 404 when `PRODUCTION=true`, health still 200). Local Docker correctly keeps docs enabled for developers. Operators should still confirm amvara9 after the next prod recreate that anonymous `/api/docs` returns 404.
+7. **URLs tested:**
+   1. http://127.0.0.1:14202/api/docs
+   2. http://127.0.0.1:14202/api/openapi.json
+   3. http://127.0.0.1:14202/api/health
+   4. http://127.0.0.1:14202/
+8. **Relevant log excerpts (last section):**
+```
+pos-haproxy: GET /api/docs HTTP/1.1 → 200
+pos-haproxy: GET /api/openapi.json HTTP/1.1 → 200
+pos-haproxy: GET /api/health HTTP/1.1 → 200
+pos-haproxy: GET / HTTP/1.1 → 200
+pos-back: GET /docs / GET /openapi.json → 200 OK (dev)
+pytest: 1 passed in 1.34s
+```

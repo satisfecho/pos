@@ -372,13 +372,11 @@ app = FastAPI(
     lifespan=_app_lifespan,
 )
 
-# Parse CORS origins from environment (comma-separated)
+# Parse CORS origins from environment (comma-separated exact origins).
+# Production rejects '*' via Settings (#421); allow_credentials requires an allowlist.
 cors_origins_list = [
     origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()
 ]
-# Add wildcard for public menu access if not already present
-# if "*" not in cors_origins_list:
-#     cors_origins_list.append("*")
 
 app.add_middleware(
     CORSMiddleware,

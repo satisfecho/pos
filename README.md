@@ -291,7 +291,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file config
 ## Security Notes
 
 - **Production:** Set a strong `SECRET_KEY` and `REFRESH_SECRET_KEY` in `config.env`.
-- **CORS:** Set `CORS_ORIGINS` to your real frontend origin(s); avoid `*` in production if possible.
+- **CORS:** Set `CORS_ORIGINS` to your real frontend origin(s). Production refuses `*` at startup; use an exact allowlist (e.g. `https://satisfecho.de`).
 - **Database:** Use strong credentials; do not commit `config.env`.
 - **Stripe:** Use live keys in production. Set them per tenant in Settings.
 - **Rate limiting:** Global and per-route limits (login, register, payments, public menu, uploads, admin/management) use Redis. See [docs/0020-rate-limiting-production.md](docs/0020-rate-limiting-production.md). Table PIN attempts stay rate-limited.

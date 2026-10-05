@@ -103,7 +103,7 @@ The app mounted `StaticFiles` on `/uploads` over the entire `uploads/` tree. Sta
 - **SaaS / platform Stripe:** `SAAS_PAYWALL_ENABLED`, `SAAS_TRIAL_DAYS`, `SAAS_PLAN_PRICE_CENTS`, `SAAS_PLAN_CURRENCY`, `SAAS_STRIPE_PRICE_ID`, `SAAS_STRIPE_WEBHOOK_SECRET`, plus platform `STRIPE_SECRET_KEY` / `STRIPE_PUBLISHABLE_KEY` (documented in `config.env.example`). These are **platform** billing secrets — distinct from per-tenant guest payment keys stored on `Tenant`.
 - **Delivery webhook tokens:** Stored on `DeliveryMarketplaceIntegration.webhook_ingest_token`; treat like API keys (unique, rotatable). Do not put them in client-side marketing sites or commit them.
 - **Logging:** Avoid logging full request bodies, passwords, tokens, or Stripe/SaaS secrets; follow existing log patterns (delivery event logs already avoid raw secret dumps).
-- **Edge:** Terminate TLS at proxy; align `CORS_ORIGINS` with real front-end origins in production.
+- **Edge:** Terminate TLS at proxy; set `CORS_ORIGINS` to exact front-end origin(s) in production. When `PRODUCTION=true`, Settings **refuses to start** if `CORS_ORIGINS` is empty or contains `*` (credentialed CORS must use an allowlist; same-origin public menus do not need a wildcard). Dev may use `*` (e.g. `./run.sh` LAN). Tests: `back/tests/test_cors_origins_production.py`.
 
 ## 7. Dependencies (snapshot)
 

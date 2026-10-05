@@ -100,9 +100,17 @@ class Settings(BaseSettings):
         default="", validation_alias="REVOLUT_MERCHANT_SECRET"
     )
 
-    # CORS configuration
+    # CORS configuration (comma-separated exact origins; no * in production — see validator)
     cors_origins: str = Field(
-        default="http://localhost:4200", validation_alias="CORS_ORIGINS"
+        default=(
+            "http://localhost:4202,http://127.0.0.1:4202,"
+            "http://localhost:4200,http://127.0.0.1:4200"
+        ),
+        validation_alias="CORS_ORIGINS",
+        description=(
+            "Comma-separated front-end origins (protocol + host + port). "
+            "Production rejects '*' (credentialed CORS must use an explicit allowlist)."
+        ),
     )
     
     # Email configuration
@@ -357,6 +365,31 @@ class Settings(BaseSettings):
                 + ", ".join(bad)
                 + ". Set strong random values (see config.env.example; "
                 "deploy-amvara9.sh generates them on virgin deploy)."
+            )
+        return self
+
+    @model_validator(mode="after")
+    def _reject_wildcard_cors_in_production(self) -> "Settings":
+        """Refuse CORS_ORIGINS=* in production (#421).
+
+        With allow_credentials=True, a wildcard makes Starlette reflect any request
+        Origin. Public menus behind the same HAProxy host are same-origin and do not
+        need '*'. Dev/local may still use '*' (e.g. run.sh LAN testing).
+        """
+        if not self.is_production:
+            return self
+        parts = [p.strip() for p in (self.cors_origins or "").split(",") if p.strip()]
+        if not parts:
+            raise ValueError(
+                "Production requires CORS_ORIGINS to list at least one exact front-end "
+                "origin (e.g. https://satisfecho.de). See docs/0004-deployment.md."
+            )
+        if "*" in parts:
+            raise ValueError(
+                "Production refuses CORS_ORIGINS containing '*'. Set an explicit "
+                "allowlist of front-end origin(s) (protocol + host + port), e.g. "
+                "https://satisfecho.de. Same-origin public menus do not need a wildcard. "
+                "See docs/0004-deployment.md."
             )
         return self
 

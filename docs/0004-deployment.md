@@ -47,68 +47,67 @@ WS_URL=ws://localhost:8021
 
 ### CORS Origins (`CORS_ORIGINS`)
 
-This tells the backend which frontend origins are allowed to make requests:
+Comma-separated **exact** front-end origins (protocol + host + port) allowed to call the API with credentials. Auth cookies use `SameSite=Lax` + httponly; production still requires an allowlist so Starlette does not reflect arbitrary `Origin` values when `allow_credentials=True`.
 
-**Single Domain:**
+**Production (required allowlist — `*` refused at startup when `PRODUCTION=true`):**
 ```bash
-CORS_ORIGINS=https://app.yourdomain.com
-```
-
-**Multiple Domains:**
-```bash
+CORS_ORIGINS=https://satisfecho.de
+# or multiple:
 CORS_ORIGINS=https://app.yourdomain.com,https://admin.yourdomain.com
 ```
 
-**IP Address:**
+**IP Address (LAN / self-hosted):**
 ```bash
-CORS_ORIGINS=http://192.168.1.100:4200
+CORS_ORIGINS=http://192.168.1.100:4202
 ```
 
-**With Wildcard (for public menu access):**
+**Local Docker HAProxy (dev):**
 ```bash
-CORS_ORIGINS=https://app.yourdomain.com,*
+CORS_ORIGINS=http://localhost:4202,http://127.0.0.1:4202,http://localhost:4200,http://127.0.0.1:4200
 ```
+
+**Wildcard `*`:** Allowed only when **not** in production (e.g. `./run.sh` sets `CORS_ORIGINS=*` for phone/LAN testing). Do **not** use `*` on amvara9 / `docker-compose.prod.yml` — the backend refuses to boot. Public QR menus served through the same HAProxy host are **same-origin** and do not need a wildcard.
 
 ### Example config.env snippets
 
-**Domain with HTTPS:**
+**Domain with HTTPS (production):**
 ```bash
 # config.env
-API_URL=https://api.yourdomain.com
-WS_URL=wss://api.yourdomain.com
-CORS_ORIGINS=https://app.yourdomain.com,*
+API_URL=/api
+WS_URL=
+CORS_ORIGINS=https://satisfecho.de
 ```
 
-**IP Address on local network:**
+**IP Address on local network (dev / no PRODUCTION):**
 ```bash
 # config.env
 API_URL=http://192.168.1.100:8020
 WS_URL=ws://192.168.1.100:8021
-CORS_ORIGINS=http://192.168.1.100:4200,*
+CORS_ORIGINS=http://192.168.1.100:4202
 ```
 
 **Development (localhost):**
 ```bash
 # config.env
-API_URL=http://localhost:8020
-WS_URL=ws://localhost:8021
-CORS_ORIGINS=http://localhost:4200,*
+API_URL=/api
+WS_URL=
+CORS_ORIGINS=http://localhost:4202,http://127.0.0.1:4202,http://localhost:4200,http://127.0.0.1:4200
 ```
 
 **Production (server behind one port):**  
-Use full URLs to the API and WS (e.g. `https://yourdomain.com/api`, `wss://yourdomain.com/ws`) or internal host:port if the front is built with env at build time. Set `CORS_ORIGINS` to the exact origin(s) where users open the app. Set `SECRET_KEY` and `REFRESH_SECRET_KEY` to strong random values.
+Prefer relative `API_URL=/api` and empty `WS_URL` (same-origin). Set `CORS_ORIGINS` to the exact origin(s) where users open the app (e.g. `https://satisfecho.de`). Set `SECRET_KEY` and `REFRESH_SECRET_KEY` to strong random values.
 
 ### Production flag (`PRODUCTION`)
 
-`docker-compose.prod.yml` sets **`PRODUCTION=true`** on the **back** service so `settings.is_production` enables Secure auth cookies, production rate limits, **hides public API docs** (`/docs`, `/redoc`, `/openapi.json` → 404), and **refuses to boot** if `SECRET_KEY` or `REFRESH_SECRET_KEY` still starts with the documented `CHANGE_THIS…` placeholder. You do **not** need to set `PRODUCTION` in `config.env` for amvara9; the compose overlay wins over the mounted env file. Local **`docker-compose.dev.yml`** leaves it unset (`False`) so `/api/docs` stays available and placeholders remain usable for developers. Optional overrides in `config.env.example`: `PRODUCTION`, and `ENABLE_API_DOCS=true` only if you must remount Swagger in a production-like environment.
+`docker-compose.prod.yml` sets **`PRODUCTION=true`** on the **back** service so `settings.is_production` enables Secure auth cookies, production rate limits, **hides public API docs** (`/docs`, `/redoc`, `/openapi.json` → 404), **refuses to boot** if `SECRET_KEY` or `REFRESH_SECRET_KEY` still starts with the documented `CHANGE_THIS…` placeholder, and **refuses `CORS_ORIGINS=*`** (or an empty list). You do **not** need to set `PRODUCTION` in `config.env` for amvara9; the compose overlay wins over the mounted env file. Local **`docker-compose.dev.yml`** leaves it unset (`False`) so `/api/docs` stays available and placeholders / `*` remain usable for developers. Optional overrides in `config.env.example`: `PRODUCTION`, and `ENABLE_API_DOCS=true` only if you must remount Swagger in a production-like environment.
 
 ### Important notes
 
 1. **Production port 80**: With `docker-compose.prod.yml`, the frontend defaults to host port **80**. Set `FRONTEND_PORT` in `config.env` only if you need a different port.
 2. **HTTPS/WSS**: If using HTTPS for the API, use `wss://` (not `ws://`) for WebSocket.
-3. **CORS**: `CORS_ORIGINS` must include the exact URL where users access the frontend (protocol and port).
-4. **Wildcard**: `*` in CORS_ORIGINS allows public menu access from any origin (useful for QR code menus).
-5. **`PRODUCTION`**: Set by the prod compose overlay for **back** (Secure cookies, production rate limits, no public `/api/docs`, reject `CHANGE_THIS…` secrets); not required in `config.env`.
+3. **CORS**: `CORS_ORIGINS` must include the exact URL where users access the frontend (protocol and port). Production rejects `*`.
+4. **Wildcard**: `*` is for local/LAN only (e.g. `./run.sh`). Same-origin public menus do not need it.
+5. **`PRODUCTION`**: Set by the prod compose overlay for **back** (Secure cookies, production rate limits, no public `/api/docs`, reject `CHANGE_THIS…` secrets, reject CORS `*`); not required in `config.env`.
 
 ---
 
@@ -142,7 +141,7 @@ Steps to get the latest **master** or **main** branch deployed on a server where
    Do not overwrite it with the example. Ensure it has production values for:
    - `API_URL` – full URL to the API (e.g. `https://yourdomain.com/api` or `http://host:8020/api` if behind one port)
    - `WS_URL` – WebSocket URL (e.g. `wss://yourdomain.com/ws` or `ws://host:8021/ws`)
-   - `CORS_ORIGINS` – exact origin(s) where the frontend is served
+   - `CORS_ORIGINS` – exact origin(s) where the frontend is served (no `*`; e.g. `https://satisfecho.de`)
    - `SECRET_KEY` and `REFRESH_SECRET_KEY` – strong random values in production
 
 4. **Rebuild and start (production mode)**  

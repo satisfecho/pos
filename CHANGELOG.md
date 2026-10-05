@@ -14,6 +14,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.179] - 2026-10-05
+
+### Changed
+
+- **Production CORS allowlist (#421):** Example and compose defaults use local HAProxy origins (4202/4200) instead of `*`. When `PRODUCTION=true`, the backend refuses to start if `CORS_ORIGINS` is empty or contains `*`. Dev/`./run.sh` may still use `*` for LAN testing.
+
 ## [2.1.178] - 2026-10-05
 
 ### Changed

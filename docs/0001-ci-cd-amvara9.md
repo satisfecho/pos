@@ -8,7 +8,7 @@ When code is pushed to the **production branch** (**`master`**) of **https://git
 
 - **amvara9**: SSH key pair generated at `/root/.ssh/github_deploy`; public key added to `/root/.ssh/authorized_keys`.
 - Repo at `/development/pos` with **`origin`** pointing to **https://github.com/satisfecho/pos** so that `git pull origin master` pulls from satisfecho/pos. If the server was previously cloned from or pointed at raro42/pos2, run on amvara9: `cd /development/pos && git remote set-url origin https://github.com/satisfecho/pos.git`.
-- `config.env` created from `config.env.example`. Use **relative URLs** so registration and API work from any host (IP or domain): `API_URL=/api`, `WS_URL=` (empty; frontend then uses same-origin `/ws`). Edit SECRET_KEY, REFRESH_SECRET_KEY, CORS_ORIGINS, etc. as needed (virgin deploy via `deploy-amvara9.sh` generates non-placeholder secrets). **`PRODUCTION=true`** for the backend is set by **`docker-compose.prod.yml`** (Secure cookies, production rate limits, reject `CHANGE_THIS…` secrets); you do not need to add `PRODUCTION` to `config.env`.
+- `config.env` created from `config.env.example`. Use **relative URLs** so registration and API work from any host (IP or domain): `API_URL=/api`, `WS_URL=` (empty; frontend then uses same-origin `/ws`). Edit SECRET_KEY, REFRESH_SECRET_KEY, **CORS_ORIGINS** (exact production origin(s) such as `https://satisfecho.de` — not `*`), etc. as needed (virgin deploy via `deploy-amvara9.sh` generates non-placeholder secrets). **`PRODUCTION=true`** for the backend is set by **`docker-compose.prod.yml`** (Secure cookies, production rate limits, reject `CHANGE_THIS…` secrets, reject CORS `*`); you do not need to add `PRODUCTION` to `config.env`.
 - Optional **`.secrets`** (gitignored; see **`.secrets.example`**) for values that must not live in git — e.g. **`GOOGLE_ANALYTICS_MEASUREMENT_ID`** for GA4 ([0073-google-analytics.md](0073-google-analytics.md)). `deploy-amvara9.sh` and `./run.sh` pass `--env-file .secrets` when present.
 - Docker and Docker Compose must be installed on amvara9 for the deploy to run containers.
 
@@ -85,7 +85,7 @@ MARKETING_SYNC_FORCE=1 MARKETING_VERIFY_NO_PLACEHOLDERS=1 bash scripts/sync-all-
 ## First deploy
 
 1. Ensure **Docker** and **Docker Compose** are installed on amvara9.
-2. Edit `/development/pos/config.env` on amvara9 with production values (API_URL, WS_URL, CORS_ORIGINS, SECRET_KEY, etc.). See [0004-deployment.md](0004-deployment.md).
+2. Edit `/development/pos/config.env` on amvara9 with production values (`API_URL`, `WS_URL`, `CORS_ORIGINS=https://satisfecho.de` or your real front-end origin — never `*`, `SECRET_KEY`, etc.). See [0004-deployment.md](0004-deployment.md).
 3. Add `SSH_PRIVATE_KEY_AMVARA9` in GitHub as above.
 4. Push to `master` (or re-run the workflow from the Actions tab) to trigger the first deploy.
 
