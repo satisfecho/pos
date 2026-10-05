@@ -94,6 +94,7 @@ from . import table_cart as table_cart_svc
 from .translation_service import TranslationService
 from .messages import get_message
 from .api_errors import api_error_payload
+from .svg_sanitize import SvgSanitizeError, sanitize_svg
 
 # Minimum advance booking for public (unauthenticated) reservations
 RESERVATION_PUBLIC_MIN_LEAD_MINUTES = 10
@@ -492,6 +493,20 @@ AVIF_QUALITY = 85  # AVIF quality (1-100)
 STATIC_DIR = Path(__file__).parent.parent
 STATIC_DIR.mkdir(exist_ok=True)
 
+def _uploads_media_headers(*, is_svg: bool, download_name: str = "file") -> dict[str, str]:
+    """Hardening for /uploads responses (#419): nosniff; SVG as attachment + restrictive CSP."""
+    headers = {"X-Content-Type-Options": "nosniff"}
+    if is_svg:
+        safe_name = Path(download_name).name or "file.svg"
+        if not safe_name.lower().endswith(".svg"):
+            safe_name = f"{safe_name}.svg"
+        headers["Content-Disposition"] = f'attachment; filename="{safe_name}"'
+        headers["Content-Security-Policy"] = (
+            "default-src 'none'; style-src 'unsafe-inline'; sandbox"
+        )
+    return headers
+
+
 # Serve tenant logos via explicit route so path resolution is reliable (StaticFiles 404 in some setups)
 @app.get("/uploads/{tenant_id}/logo/{filename}", include_in_schema=False)
 def serve_tenant_logo(tenant_id: int, filename: str):
@@ -501,8 +516,13 @@ def serve_tenant_logo(tenant_id: int, filename: str):
     path = UPLOADS_DIR / str(tenant_id) / "logo" / filename
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Logo not found")
-    media_type = "image/svg+xml" if filename.lower().endswith(".svg") else None
-    return FileResponse(path, media_type=media_type)
+    is_svg = filename.lower().endswith(".svg")
+    media_type = "image/svg+xml" if is_svg else None
+    return FileResponse(
+        path,
+        media_type=media_type,
+        headers=_uploads_media_headers(is_svg=is_svg, download_name=filename),
+    )
 
 
 @app.get("/uploads/{tenant_id}/header/{filename}", include_in_schema=False)
@@ -513,8 +533,13 @@ def serve_tenant_header_background(tenant_id: int, filename: str):
     path = UPLOADS_DIR / str(tenant_id) / "header" / filename
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Header image not found")
-    media_type = "image/svg+xml" if filename.lower().endswith(".svg") else None
-    return FileResponse(path, media_type=media_type)
+    is_svg = filename.lower().endswith(".svg")
+    media_type = "image/svg+xml" if is_svg else None
+    return FileResponse(
+        path,
+        media_type=media_type,
+        headers=_uploads_media_headers(is_svg=is_svg, download_name=filename),
+    )
 
 
 # Serve provider product images via explicit route (StaticFiles often 404s on nested paths behind a proxy)
@@ -526,7 +551,11 @@ def serve_provider_product_image(provider_token: str, filename: str):
     path = UPLOADS_DIR / "providers" / provider_token / "products" / filename
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Image not found")
-    return FileResponse(path)
+    is_svg = filename.lower().endswith(".svg")
+    return FileResponse(
+        path,
+        headers=_uploads_media_headers(is_svg=is_svg, download_name=filename),
+    )
 
 
 # Serve tenant product images (StaticFiles often 404s on nested paths behind a proxy)
@@ -538,7 +567,11 @@ def serve_tenant_product_image(tenant_id: int, filename: str):
     path = UPLOADS_DIR / str(tenant_id) / "products" / filename
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Image not found")
-    return FileResponse(path)
+    is_svg = filename.lower().endswith(".svg")
+    return FileResponse(
+        path,
+        headers=_uploads_media_headers(is_svg=is_svg, download_name=filename),
+    )
 
 
 @app.get("/uploads/{tenant_id}/contracts/{filename}", include_in_schema=False)
@@ -5544,8 +5577,13 @@ async def upload_tenant_logo(
         )
 
     is_svg = content_type == "image/svg+xml"
-    if not is_svg:
-        # Optimize raster image locally (SVG is stored as-is)
+    if is_svg:
+        # Sanitize SVG (no PIL re-encode); reject script-bearing / unsafe markup (#419)
+        try:
+            contents = sanitize_svg(contents)
+        except SvgSanitizeError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+    else:
         contents = optimize_image(contents, content_type)
 
     # Create tenant logo directory

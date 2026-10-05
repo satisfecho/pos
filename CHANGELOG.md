@@ -14,6 +14,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.177] - 2026-10-05
+
+### Fixed
+
+- **Tenant logo SVG (#419):** SVG logos are sanitized on upload (script / event handlers / unsafe URLs rejected). Logo and related `/uploads` responses send `X-Content-Type-Options: nosniff`; SVG responses also use `Content-Disposition: attachment` and a restrictive CSP.
+
 ## [2.1.176] - 2026-10-04
 
 ### Added

@@ -42,6 +42,7 @@ The app mounted `StaticFiles` on `/uploads` over the entire `uploads/` tree. Sta
 
 - **`/uploads/providers/{token}/...`:** Non-`products` paths could still be served by `StaticFiles` if files were placed there. Provider `token` is a UUID (`models.Provider`). Prefer keeping only `products/` under each token directory.
 - **Path traversal:** Filename parameters on explicit routes reject `/`, `\`, and leading `.`. Rely on Starlette `StaticFiles` path normalization for the mount (avoid placing symlinks under `uploads/` in production).
+- **Tenant logo SVG (#419):** `POST /tenant/logo` still allows `image/svg+xml`, but uploads go through allowlist sanitize (`app/svg_sanitize.py`) and script / event-handler / `javascript:` markup is rejected. Explicit `/uploads/.../logo|header|products` responses set `X-Content-Type-Options: nosniff`; SVG responses also use `Content-Disposition: attachment` and a restrictive CSP. Front embeds logos with `<img>` (not object/iframe). Regression: `back/tests/test_tenant_logo_svg.py`.
 
 ## 2. Authentication and session security
 
@@ -137,6 +138,7 @@ pip install pip-audit && pip-audit -r back/requirements.txt
 
 | Date | Action |
 |------|--------|
+| 2026-10-05 | Tenant logo SVG (#419): sanitize on upload; nosniff / attachment / CSP on SVG serve; `test_tenant_logo_svg.py`. |
 | 2026-03-26 | Blocked public `/uploads/.../contracts/...`; added tests; initial `SECURITY-REVIEW.md`. |
 | 2026-07-22 | Delta pass for Satisfecho Delivery public create + `public_order_token` pay, marketplace delivery webhooks, courier fulfillment IDOR, and SaaS paywall middleware / platform Checkout. Clarified: still **no** inbound Stripe/Revolut *payment* webhooks; delivery ingest webhooks exist. Linked regression tests and residual risks. **Not a penetration test.** |
 | 2026-07-22 | SaaS: added signed `POST /saas/webhook` (`SAAS_STRIPE_WEBHOOK_SECRET`) for subscription lifecycle sync; residual risk updated from “no webhook” to ops readiness. Guest payment webhooks still absent. |
