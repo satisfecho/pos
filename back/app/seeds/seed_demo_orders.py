@@ -9,10 +9,11 @@ staff Delivery tab, kitchen cards, and courier Mine list are non-empty after boo
 Paid/completed orders are spread over the last ±90 days (more density in the last 30 days)
 so the default report date range shows revenue, by product, by table, etc.
 
-Idempotent: runs only when tenant 1 has no orders (clean deployment). Does not delete or
-change existing orders. Assigns `courier_user_id` only when a courier-role user already
-exists for the tenant (never creates users; run seed_demo_courier_user first via
-bootstrap / reset_demo_data).
+Idempotent: full table+delivery mix runs only when tenant 1 has no orders (clean
+deployment). If table orders already exist but there is no `satisfecho_delivery` row,
+seeds Delivery samples only (does not delete or change existing orders). Assigns
+`courier_user_id` only when a courier-role user already exists for the tenant
+(never creates users; run seed_demo_courier_user first via bootstrap / reset_demo_data).
 
 Usage:
   docker compose exec back python -m app.seeds.seed_demo_orders
@@ -257,20 +258,46 @@ def _seed_demo_orders(session: Session, tenant_id: int) -> int:
 
 def run() -> None:
     with Session(engine) as session:
-        # Only run when tenant 1 has no orders (clean deployment)
-        existing = session.exec(
-            select(Order.id).where(Order.tenant_id == DEMO_TENANT_ID).limit(1)
-        ).first()
-        if existing is not None:
-            print("Tenant 1 already has orders. Skipping demo orders seed.")
-            return
-
-        # Verify tenant and dependencies exist
         from app.models import Tenant
 
         tenant = session.get(Tenant, DEMO_TENANT_ID)
         if not tenant:
             print("Tenant 1 not found. Run bootstrap_demo first.")
+            return
+
+        existing_any = session.exec(
+            select(Order.id).where(Order.tenant_id == DEMO_TENANT_ID).limit(1)
+        ).first()
+        existing_delivery = session.exec(
+            select(Order.id)
+            .where(
+                Order.tenant_id == DEMO_TENANT_ID,
+                Order.order_channel == OrderChannel.satisfecho_delivery,
+            )
+            .limit(1)
+        ).first()
+
+        if existing_any is not None:
+            if existing_delivery is not None:
+                print("Tenant 1 already has orders (including Satisfecho Delivery). Skipping demo orders seed.")
+                return
+            products = session.exec(
+                select(Product).where(Product.tenant_id == DEMO_TENANT_ID)
+            ).all()
+            products_for_orders = [p for p in products if p.price_cents >= 0]
+            if not products_for_orders:
+                print(
+                    "Tenant 1: no products found for Delivery samples. "
+                    "Run seed_demo_products first."
+                )
+                return
+            n = _seed_demo_delivery_orders(session, DEMO_TENANT_ID, products_for_orders)
+            if n:
+                session.commit()
+                print(
+                    f"Tenant {DEMO_TENANT_ID}: created {n} Satisfecho Delivery demo orders "
+                    "(table orders already present)."
+                )
             return
 
         n = _seed_demo_orders(session, DEMO_TENANT_ID)

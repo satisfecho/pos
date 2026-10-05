@@ -1,5 +1,5 @@
 {
-  "feat_created": 1,
+  "feat_created": 0,
   "findings": [
     "2026-07-25T10:06:05Z: docs_stale\u00d714 + changelog_sparse owned (Unreleased empty post-2.1.32 cut); demo_tables_check=ok; NEW backlog=121; stamp-only rule queued (2014); post-#306 NEWs (2103/2112) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
     "2026-07-25T10:13:34Z: docs_stale\u00d714 + changelog_sparse owned (Unreleased empty post-2.1.32 cut); demo_tables_check=ok; NEW backlog=121; stamp-only rule queued (2014); post-#306 NEWs (2103/2112) already queued; unqueued stale docs=0; queued 0 FEAT + 0 NEW (no task spam)",
@@ -198,12 +198,18 @@
       "iso": "2026-09-14T11:03:01Z",
       "new": 1,
       "note": "weekly_due=yes (16d); no SIGNAL lines; demo ok; queued FEAT-0 roadmap Aug-Sep + NEW-0 preflight wire products/delivery checks; FEAT=4 from 001 left alone"
+    },
+    {
+      "feat": 0,
+      "iso": "2026-10-04T17:13:18Z",
+      "new": 1,
+      "note": "demo_waiting_list_check=fail + demo_delivery_orders_check=fail unowned; queued NEW-0-20261004-1713 repair via reset_demo_data; weekly_due=no; NEW backlog was 0; FEAT-388 left alone"
     }
   ],
-  "g008_signals": 1,
-  "last_agent_iso": "2026-09-14T11:03:01Z",
-  "last_agent_run_iso": "2026-09-14T11:03:01Z",
-  "last_run": "2026-09-17T13:54:56Z",
+  "g008_signals": 2,
+  "last_agent_iso": "2026-10-04T17:13:18Z",
+  "last_agent_run_iso": "2026-10-04T17:13:18Z",
+  "last_run": "2026-10-05T16:30:37Z",
   "last_signals": 0,
   "new_created": 1
 }

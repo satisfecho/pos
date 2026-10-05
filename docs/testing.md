@@ -605,14 +605,14 @@ npm run test:websocket --prefix front
 
 ### 11b. API docs (`/api/docs`)
 
-Swagger UI and OpenAPI spec load at `/api/docs` (no login).
+Swagger UI and OpenAPI spec load at `/api/docs` (no login) in **dev/local** (`PRODUCTION` unset/false). In production (`PRODUCTION=true`), `/api/docs`, `/api/redoc`, and `/api/openapi.json` are unmounted (404) unless `ENABLE_API_DOCS=true`. Backend unit coverage: `back/tests/test_api_docs_production.py`.
 
 ```bash
 npm run test:api-docs --prefix front
 # Or: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:api-docs --prefix front
 ```
 
-- **Env:** `BASE_URL` (auto-detect 4203/4202/4200), `HEADLESS`.
+- **Env:** `BASE_URL` (auto-detect 4203/4202/4200), `HEADLESS`. Run against local/dev only; do not expect this smoke to pass against production.
 
 ---
 
@@ -861,7 +861,7 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 - **Sync Product images after catalog import:** `docker compose exec back python -m app.seeds.sync_product_images` — repairs stale `Product.image_filename` from linked `TenantProduct`/provider files (safe for custom tenant uploads). Deploy runs this automatically.
 - **Product image health (deploy):** `docker compose exec back python -m app.seeds.check_product_image_health` — fails when public menu shows an image for a linked product but `/products` would not (tenant 1 by default).
 - **Demo courier user:** `docker compose exec back python -m app.seeds.seed_demo_courier_user` — ensures tenant 1 has one `courier` role user when missing (`COURIER_EMAIL` / `COURIER_PASSWORD`, defaults `courier-test-phase1@amvara.de` / `secret`). Bootstrap / `reset_demo_data` run this **before** demo orders so Delivery samples can assign courier / `out_for_delivery`.
-- **Demo orders (Reports + Delivery):** `docker compose exec back python -m app.seeds.seed_demo_orders` — seeds tenant 1 with paid/active **table** orders over ±90 days plus a small Satisfecho Delivery mix; idempotent (skips if orders exist). Bootstrap / `reset_demo_data` run this. Optional: `./run_seeds.sh --demo-orders` from `back/`.
+- **Demo orders (Reports + Delivery):** `docker compose exec back python -m app.seeds.seed_demo_orders` — seeds tenant 1 with paid/active **table** orders over ±90 days plus a small Satisfecho Delivery mix. Idempotent: skips when Delivery samples already exist; if only table orders exist, adds the Delivery mix without wiping them. Bootstrap / `reset_demo_data` run this. Optional: `./run_seeds.sh --demo-orders` from `back/`.
 - **Demo delivery orders check:** `docker compose exec back python -m app.seeds.check_demo_delivery_orders` (exit 0 = tenant 1 has ≥1 `order_channel=satisfecho_delivery` row; soft-warns if none have `courier_user_id`).
 - **Demo waiting list:** `docker compose exec back python -m app.seeds.seed_demo_waiting_list` — seeds tenant 1 with a few `waiting` + one `notified` entry for staff Waitlist / public `/waitlist/1`; idempotent (skips if entries exist). Bootstrap / `reset_demo_data` run this.
 - **Demo waiting list check:** `docker compose exec back python -m app.seeds.check_demo_waiting_list` (exit 0 = tenant 1 has ≥1 `waiting` and ≥1 `notified` row).

@@ -22,7 +22,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - SECRET_KEY=${SECRET_KEY:-CHANGE_THIS_IN_PRODUCTION}
       - STRIPE_CURRENCY=${STRIPE_CURRENCY:-usd}
-      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:4200}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:4202,http://127.0.0.1:4202,http://localhost:4200,http://127.0.0.1:4200}
       - ROOT_PATH=/api
       - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
       - SMTP_PORT=${SMTP_PORT:-587}
@@ -134,7 +134,7 @@ services:
       SECRET_KEY: ${SECRET_KEY:-CHANGE_THIS_IN_PRODUCTION}
       ALGORITHM: ${ALGORITHM:-HS256}
       API_URL: http://pos-back:8020
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4200}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4202,http://127.0.0.1:4202,http://localhost:4200,http://127.0.0.1:4200}
     depends_on:
       redis:
         condition: service_healthy

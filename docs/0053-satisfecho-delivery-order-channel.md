@@ -111,7 +111,7 @@ Tests: `back/tests/test_cleanup_unpaid_public_delivery.py`.
 
 `seed_demo_courier_user` (also run by `reset_demo_data` / `bootstrap_demo` before orders) ensures tenant 1 has one courier-role user when missing. Defaults: `COURIER_EMAIL=courier-test-phase1@amvara.de` / `COURIER_PASSWORD=secret` (same as `front/scripts/test-courier-actions.mjs`). Idempotent; does not create couriers on other tenants.
 
-`seed_demo_orders` (also run by `reset_demo_data`) includes a small mix of Satisfecho Delivery samples (`order_channel=satisfecho_delivery`, `table_id` null, address/phone) so the Delivery tab, kitchen cards, and courier Mine list stay populated after daily demo reset. Assigns `courier_user_id` when a courier exists (after the courier seed above).
+`seed_demo_orders` (also run by `reset_demo_data`) includes a small mix of Satisfecho Delivery samples (`order_channel=satisfecho_delivery`, `table_id` null, address/phone) so the Delivery tab, kitchen cards, and courier Mine list stay populated after daily demo reset. If tenant 1 already has table orders but no Delivery rows, it adds the Delivery mix without wiping table orders. Assigns `courier_user_id` when a courier exists (after the courier seed above).
 
 `seed_demo_delivery_settings` (also run by `reset_demo_data` / `bootstrap_demo`) sets tenant 1 `delivery_fee_cents=250` and postal codes `28001` / `28013` when fee and zone are still unset, so public `/delivery/1` shows a fee and rejects out-of-zone codes. Idempotent; does not overwrite operator-customized fee/zone. Check: `python -m app.seeds.check_demo_delivery_settings`.
 

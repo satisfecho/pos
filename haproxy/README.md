@@ -29,4 +29,5 @@ You can override these by setting environment variables:
 ## Testing
 
 - **Dev**: `http://localhost:4202/`, `http://localhost:4202/api/docs`, `ws://localhost:4202/ws/...`
-- **Prod**: `http://host/`, `http://host/api/docs`, `ws://host/ws/...` (or `https://` when SSL is configured)
+- **Prod**: `http://host/` (or `https://` when SSL is configured), `ws://host/ws/...` / `wss://…`.  
+  **Do not** assume public `/api/docs` in production: with `PRODUCTION=true`, the backend unmounts Swagger/ReDoc/OpenAPI (404 for anonymous `/api/docs` and `/api/openapi.json`). Prod HAProxy health checks use `GET /health`, not `/docs`. To temporarily remount docs in prod, set `ENABLE_API_DOCS=true` on **back** (documented in `config.env.example`).

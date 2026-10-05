@@ -11,13 +11,40 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Added
 
 - **Marketing / Kebab Factory:** Registered **satisfecho.de/kebab-factory/es/** — manifest entry for **`092_kebabfactory`** (slug **`kebab-factory`**; artifact **`kebab-factory-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
+
+### Changed
+
+### Fixed
+
+## [2.1.179] - 2026-10-05
+
+### Changed
+
+- **Production CORS allowlist (#421):** Example and compose defaults use local HAProxy origins (4202/4200) instead of `*`. When `PRODUCTION=true`, the backend refuses to start if `CORS_ORIGINS` is empty or contains `*`. Dev/`./run.sh` may still use `*` for LAN testing.
+
+## [2.1.178] - 2026-10-05
+
+### Changed
+
+- **Reject placeholder secrets in production (#423):** When `PRODUCTION=true`, the backend refuses to start if `SECRET_KEY` or `REFRESH_SECRET_KEY` still starts with `CHANGE_THIS`. Local/dev may keep placeholders; `deploy-amvara9.sh` generates real keys on virgin deploy.
+- **Production API docs off (#422):** When `PRODUCTION=true`, Swagger/ReDoc/OpenAPI (`/docs`, `/redoc`, `/openapi.json`) are not mounted (404). Dev keeps `/api/docs` for local smoke. Opt-in remount: `ENABLE_API_DOCS=true`.
+- **Production `PRODUCTION=true` (#420):** `docker-compose.prod.yml` sets `PRODUCTION=true` on the **back** service so Secure auth cookies and production rate limits apply on amvara9 without requiring `PRODUCTION` in `config.env`. Dev overlay unchanged (`is_production=False`).
+
+## [2.1.177] - 2026-10-05
+
+### Fixed
+
+- **Tenant logo SVG (#419):** SVG logos are sanitized on upload (script / event handlers / unsafe URLs rejected). Logo and related `/uploads` responses send `X-Content-Type-Options: nosniff`; SVG responses also use `Content-Disposition: attachment` and a restrictive CSP.
+
+## [2.1.176] - 2026-10-04
+
+### Added
+
 - **README Getting Started:** The section now points readers to the hosted demo at satisfecho.de and says tenant data can be exported and imported on a self-hosted stack.
 - **Public menu URL slug (#413):** `/public-menu/{slug}` uses a unique **name-city** `public_slug` (plus optional `city` in Settings). Numeric `/public-menu/{id}` still works and redirects to the slug when set. Landing QR, guest nav, delivery, loyalty CTAs, and platform shortcuts prefer the slug.
 - **Agent loop vs untrusted GitHub input:** `docs/0077-agent-untrusted-github-input.md` states the rule only. It does not list hosts, paths, keys, or commands.
 - **Public menu contact footer (#412):** `/public-menu/{tenantId}` shows restaurant phone, WhatsApp, email, address, and maps links above the existing back/legal footer (same tenant fields as `/book`).
 - **Loyalty public Menu / Book / Delivery CTAs (#374):** `/loyalty/card/:token` uses the sticky guest header; card and join-success show body CTAs to `/public-menu`, `/book`, and `/delivery` for that tenant.
-- **Settings → Loyalty club docs link (#394):** Loyalty club tab links to the runbook on GitHub (`docs/0066-club-loyalty.md`). Smoke: `npm run test:settings-loyalty-docs --prefix front`.
-- **Sidebar mobile brand link fix (#390):** Close the broken mobile header `<a>` so the Angular template compiles again (desktop POS → dashboard link was already correct).
 
 ### Changed
 
@@ -26,15 +53,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Agent instructions:** `AGENTS.md` no longer names the git key file, production host access, or demo passwords. Those values stay in local env files. Archived agent task notes no longer include the production address, host alias, deploy path, or SSH port.
 - **Settings RAL5002 preset clarity (#367):** Public background colour preset is labelled **Apply RAL5002 (#1E22AA)** with hint/title that it is optional and does not lock the field; colour picker and hex stay in sync while typing.
 - **Settings → Loyalty club docs link (#394):** Loyalty club tab links to the runbook on GitHub (`docs/0066-club-loyalty.md`). Smoke: `npm run test:settings-loyalty-docs --prefix front`.
-- **Sidebar mobile brand link fix (#390):** Close the broken mobile header `<a>` so the Angular template compiles again (desktop POS → dashboard link was already correct).
-
-### Changed
-
 - **Sidebar Log Out as icon (#383):** Staff sidebar Log Out is a compact icon left of `POS` (not a full-width footer button). Logout still goes to staff `/login`. Smoke: `npm run test:sidebar-logout --prefix front`.
 - **Sidebar language as flat icon (#384):** Staff sidebar language control is a compact globe+code icon to the right of `POS` (not a full select in the footer). Other pages keep the select picker.
 
 ### Fixed
 
+- **Demo tenant 1 waitlist and Satisfecho Delivery samples:** Local reset re-seeds waiting-list and Delivery orders. `seed_demo_orders` now adds Delivery samples when table orders already exist so staff Delivery / courier Mine are not empty. Daily amvara9 reset is already documented in `docs/0001-ci-cd-amvara9.md`.
 - **Open menu icon on staff orders (#416):** The Open menu button on the internal order view uses a complete box-and-arrow icon. Click still opens the table menu when `table_id` and `table_token` are set.
 - **Public guest nav contrast on light wash (#411):** Sticky `app-public-guest-header` picks dark or white ink from tenant `public_background_color` (`pickContrastingForeground`) so light washes no longer leave white-on-lime unreadable labels. Design rule `.cursor/rules/ui-contrast.mdc`; tester must fail unreadable contrast.
 - **Book a table hero pill scrolls to form (#364):** On `/book/:tenantId`, the hero **"Book a table"** pill is a button that smooth-scrolls to the booking form (clears sticky guest header). Smoke: `npm run test:public-guest-header --prefix front`.
@@ -45,8 +69,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Book Party size label once (#368):** Public `/book` (and staff reservation modal) no longer repeats **Party size** in the week-grid summary; the form field label is the single visible name.
 - **SMTP From name defaults to Business Name (#366):** Empty Settings → Email **From name** uses the tenant Business Name at send time; the field shows Business Name as a placeholder and does not overwrite a saved value.
 - **Book Time slot alignment (#369):** Public `/book` week summary keeps Time slot left-aligned under Date (no right-side float on wide viewports).
-
 - **Public menu Back to home (#386):** `/public-menu/:tenantId` (and delivery) **Back to home** goes to `/book/:tenantId` instead of marketing `/`.
+- **Sidebar mobile brand link (#390):** Close the broken mobile header `<a>` so the Angular template compiles again (desktop POS → dashboard link was already correct).
 
 ### Removed
 

@@ -62,7 +62,11 @@
     },
     "satisfecho/092_kebabexpress": {
       "last_artifact": "kebab-express-satisfecho-deploy",
-      "pushed_at": "2026-09-17T13:37:15Z"
+      "pushed_at": "2026-09-21T14:45:38Z"
+    },
+    "satisfecho/092_kebabfactory": {
+      "last_artifact": "kebab-factory-satisfecho-deploy",
+      "pushed_at": "2026-09-24T16:56:37Z"
     },
     "satisfecho/093_bar-jupiter": {
       "last_artifact": "bar-jupiter-satisfecho-deploy",

@@ -45,7 +45,7 @@ def run() -> int:
             f"Missing Satisfecho Delivery orders for tenant {DEMO_TENANT_ID}: "
             f"got {total}, need ≥{MIN_DELIVERY_ORDERS}. "
             "Run: python -m app.seeds.reset_demo_data "
-            "(or seed_demo_orders when tenant 1 has no orders)."
+            "(or seed_demo_orders; Delivery samples are added even if table orders exist)."
         )
         return 1
 

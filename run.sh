@@ -257,6 +257,8 @@ if [ "$DEV_MODE" = true ]; then
     COMPOSE_FILE="-f docker-compose.yml -f docker-compose.dev.yml"
     MODE_DESC="Development (hot reload + LAN access)"
     echo "📱 LAN access enabled for mobile testing"
+    # LAN / phone testing: wildcard OK only when PRODUCTION is unset (dev overlay).
+    # Prod overlay rejects CORS_ORIGINS=* at backend startup (#421).
     export CORS_ORIGINS="*"
 else
     echo "Starting POS Application in PRODUCTION mode..."

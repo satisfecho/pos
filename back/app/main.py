@@ -94,6 +94,7 @@ from . import table_cart as table_cart_svc
 from .translation_service import TranslationService
 from .messages import get_message
 from .api_errors import api_error_payload
+from .svg_sanitize import SvgSanitizeError, sanitize_svg
 
 # Minimum advance booking for public (unauthenticated) reservations
 RESERVATION_PUBLIC_MIN_LEAD_MINUTES = 10
@@ -289,12 +290,17 @@ def _get_requested_language(
     return "en"
 
 
-# Backend always serves the spec at /openapi.json (HAProxy strips /api before forwarding).
+# Backend serves the spec at /openapi.json when docs are enabled (HAProxy strips /api).
 # When behind a proxy at ROOT_PATH=/api, Swagger UI must fetch the spec from /api/openapi.json
 # so the browser request goes through HAProxy correctly; we pass that via swagger_ui_parameters.
+# Production (is_production) disables /docs, /redoc, /openapi.json unless ENABLE_API_DOCS=true.
 _swagger_ui_params = {"faviconUrl": "/favicon.ico"}
 if settings.root_path:
     _swagger_ui_params["url"] = f"{settings.root_path.rstrip('/')}/openapi.json"
+_api_docs_enabled = settings.api_docs_enabled
+_docs_url = "/docs" if _api_docs_enabled else None
+_redoc_url = "/redoc" if _api_docs_enabled else None
+_openapi_url = "/openapi.json" if _api_docs_enabled else None
 
 
 @asynccontextmanager
@@ -358,21 +364,19 @@ async def _app_lifespan(app: FastAPI):
 
 app = FastAPI(
     title="POS API",
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
+    docs_url=_docs_url,
+    redoc_url=_redoc_url,
+    openapi_url=_openapi_url,
     root_path=settings.root_path,
-    swagger_ui_parameters=_swagger_ui_params,
+    swagger_ui_parameters=_swagger_ui_params if _api_docs_enabled else None,
     lifespan=_app_lifespan,
 )
 
-# Parse CORS origins from environment (comma-separated)
+# Parse CORS origins from environment (comma-separated exact origins).
+# Production rejects '*' via Settings (#421); allow_credentials requires an allowlist.
 cors_origins_list = [
     origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()
 ]
-# Add wildcard for public menu access if not already present
-# if "*" not in cors_origins_list:
-#     cors_origins_list.append("*")
 
 app.add_middleware(
     CORSMiddleware,
@@ -492,6 +496,20 @@ AVIF_QUALITY = 85  # AVIF quality (1-100)
 STATIC_DIR = Path(__file__).parent.parent
 STATIC_DIR.mkdir(exist_ok=True)
 
+def _uploads_media_headers(*, is_svg: bool, download_name: str = "file") -> dict[str, str]:
+    """Hardening for /uploads responses (#419): nosniff; SVG as attachment + restrictive CSP."""
+    headers = {"X-Content-Type-Options": "nosniff"}
+    if is_svg:
+        safe_name = Path(download_name).name or "file.svg"
+        if not safe_name.lower().endswith(".svg"):
+            safe_name = f"{safe_name}.svg"
+        headers["Content-Disposition"] = f'attachment; filename="{safe_name}"'
+        headers["Content-Security-Policy"] = (
+            "default-src 'none'; style-src 'unsafe-inline'; sandbox"
+        )
+    return headers
+
+
 # Serve tenant logos via explicit route so path resolution is reliable (StaticFiles 404 in some setups)
 @app.get("/uploads/{tenant_id}/logo/{filename}", include_in_schema=False)
 def serve_tenant_logo(tenant_id: int, filename: str):
@@ -501,8 +519,13 @@ def serve_tenant_logo(tenant_id: int, filename: str):
     path = UPLOADS_DIR / str(tenant_id) / "logo" / filename
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Logo not found")
-    media_type = "image/svg+xml" if filename.lower().endswith(".svg") else None
-    return FileResponse(path, media_type=media_type)
+    is_svg = filename.lower().endswith(".svg")
+    media_type = "image/svg+xml" if is_svg else None
+    return FileResponse(
+        path,
+        media_type=media_type,
+        headers=_uploads_media_headers(is_svg=is_svg, download_name=filename),
+    )
 
 
 @app.get("/uploads/{tenant_id}/header/{filename}", include_in_schema=False)
@@ -513,8 +536,13 @@ def serve_tenant_header_background(tenant_id: int, filename: str):
     path = UPLOADS_DIR / str(tenant_id) / "header" / filename
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Header image not found")
-    media_type = "image/svg+xml" if filename.lower().endswith(".svg") else None
-    return FileResponse(path, media_type=media_type)
+    is_svg = filename.lower().endswith(".svg")
+    media_type = "image/svg+xml" if is_svg else None
+    return FileResponse(
+        path,
+        media_type=media_type,
+        headers=_uploads_media_headers(is_svg=is_svg, download_name=filename),
+    )
 
 
 # Serve provider product images via explicit route (StaticFiles often 404s on nested paths behind a proxy)
@@ -526,7 +554,11 @@ def serve_provider_product_image(provider_token: str, filename: str):
     path = UPLOADS_DIR / "providers" / provider_token / "products" / filename
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Image not found")
-    return FileResponse(path)
+    is_svg = filename.lower().endswith(".svg")
+    return FileResponse(
+        path,
+        headers=_uploads_media_headers(is_svg=is_svg, download_name=filename),
+    )
 
 
 # Serve tenant product images (StaticFiles often 404s on nested paths behind a proxy)
@@ -538,7 +570,11 @@ def serve_tenant_product_image(tenant_id: int, filename: str):
     path = UPLOADS_DIR / str(tenant_id) / "products" / filename
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Image not found")
-    return FileResponse(path)
+    is_svg = filename.lower().endswith(".svg")
+    return FileResponse(
+        path,
+        headers=_uploads_media_headers(is_svg=is_svg, download_name=filename),
+    )
 
 
 @app.get("/uploads/{tenant_id}/contracts/{filename}", include_in_schema=False)
@@ -5544,8 +5580,13 @@ async def upload_tenant_logo(
         )
 
     is_svg = content_type == "image/svg+xml"
-    if not is_svg:
-        # Optimize raster image locally (SVG is stored as-is)
+    if is_svg:
+        # Sanitize SVG (no PIL re-encode); reject script-bearing / unsafe markup (#419)
+        try:
+            contents = sanitize_svg(contents)
+        except SvgSanitizeError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+    else:
         contents = optimize_image(contents, content_type)
 
     # Create tenant logo directory

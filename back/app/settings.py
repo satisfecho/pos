@@ -19,6 +19,14 @@ for _root in _ENV_ROOT_CANDIDATES:
         if _p.exists() and _p not in _ENV_FILE_PATHS:
             _ENV_FILE_PATHS.append(_p)
 
+# Documented placeholders in config.env.example / Settings defaults (JWT + Fernet seed).
+_PLACEHOLDER_SECRET_PREFIX = "CHANGE_THIS"
+
+
+def _is_placeholder_secret(value: str) -> bool:
+    """True when value still uses the documented CHANGE_THIS… placeholder prefix."""
+    return (value or "").strip().upper().startswith(_PLACEHOLDER_SECRET_PREFIX)
+
 
 class Settings(BaseSettings):
     """
@@ -92,9 +100,17 @@ class Settings(BaseSettings):
         default="", validation_alias="REVOLUT_MERCHANT_SECRET"
     )
 
-    # CORS configuration
+    # CORS configuration (comma-separated exact origins; no * in production — see validator)
     cors_origins: str = Field(
-        default="http://localhost:4200", validation_alias="CORS_ORIGINS"
+        default=(
+            "http://localhost:4202,http://127.0.0.1:4202,"
+            "http://localhost:4200,http://127.0.0.1:4200"
+        ),
+        validation_alias="CORS_ORIGINS",
+        description=(
+            "Comma-separated front-end origins (protocol + host + port). "
+            "Production rejects '*' (credentialed CORS must use an explicit allowlist)."
+        ),
     )
     
     # Email configuration
@@ -169,6 +185,10 @@ class Settings(BaseSettings):
 
     # Production mode (enables secure cookies, stricter CORS, etc.)
     is_production: bool = Field(default=False, validation_alias="PRODUCTION")
+
+    # Opt-in to mount Swagger/ReDoc/OpenAPI when PRODUCTION=true (default: off in prod).
+    # Dev/local keeps docs available without setting this.
+    enable_api_docs: bool = Field(default=False, validation_alias="ENABLE_API_DOCS")
 
     # When behind a reverse proxy that mounts the API at a subpath (e.g. /api), set this so
     # OpenAPI docs and spec URLs are correct (e.g. /api/docs, /api/openapi.json).
@@ -330,6 +350,50 @@ class Settings(BaseSettings):
     )
 
     @model_validator(mode="after")
+    def _reject_placeholder_secrets_in_production(self) -> "Settings":
+        """Refuse to boot in production with world-known JWT/crypto placeholder secrets (#423)."""
+        if not self.is_production:
+            return self
+        bad: list[str] = []
+        if _is_placeholder_secret(self.secret_key):
+            bad.append("SECRET_KEY")
+        if _is_placeholder_secret(self.refresh_secret_key):
+            bad.append("REFRESH_SECRET_KEY")
+        if bad:
+            raise ValueError(
+                "Production refuses placeholder secrets: "
+                + ", ".join(bad)
+                + ". Set strong random values (see config.env.example; "
+                "deploy-amvara9.sh generates them on virgin deploy)."
+            )
+        return self
+
+    @model_validator(mode="after")
+    def _reject_wildcard_cors_in_production(self) -> "Settings":
+        """Refuse CORS_ORIGINS=* in production (#421).
+
+        With allow_credentials=True, a wildcard makes Starlette reflect any request
+        Origin. Public menus behind the same HAProxy host are same-origin and do not
+        need '*'. Dev/local may still use '*' (e.g. run.sh LAN testing).
+        """
+        if not self.is_production:
+            return self
+        parts = [p.strip() for p in (self.cors_origins or "").split(",") if p.strip()]
+        if not parts:
+            raise ValueError(
+                "Production requires CORS_ORIGINS to list at least one exact front-end "
+                "origin (e.g. https://satisfecho.de). See docs/0004-deployment.md."
+            )
+        if "*" in parts:
+            raise ValueError(
+                "Production refuses CORS_ORIGINS containing '*'. Set an explicit "
+                "allowlist of front-end origin(s) (protocol + host + port), e.g. "
+                "https://satisfecho.de. Same-origin public menus do not need a wildcard. "
+                "See docs/0004-deployment.md."
+            )
+        return self
+
+    @model_validator(mode="after")
     def _relax_rate_limits_in_dev(self) -> "Settings":
         """Use higher rate limits when not in production so DEV is less restrictive."""
         if not self.is_production:
@@ -347,6 +411,13 @@ class Settings(BaseSettings):
             self.rate_limit_waiting_list_per_hour = 200
             self.rate_limit_password_reset_per_hour = 100
         return self
+
+    @property
+    def api_docs_enabled(self) -> bool:
+        """Public /docs, /redoc, /openapi.json — on in dev; off in production unless ENABLE_API_DOCS."""
+        if self.enable_api_docs:
+            return True
+        return not self.is_production
 
     @property
     def database_url(self) -> str:
