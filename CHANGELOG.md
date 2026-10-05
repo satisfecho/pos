@@ -10,6 +10,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- **Marketing / Kebab Factory:** Registered **satisfecho.de/kebab-factory/es/** — manifest entry for **`092_kebabfactory`** (slug **`kebab-factory`**; artifact **`kebab-factory-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
+
 ### Changed
 
 ### Fixed

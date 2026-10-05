@@ -139,7 +139,7 @@ ITEMS_EN: dict[str, dict[str, str]] = {
         "HOW_3": "Review responses in the staff app and act on recurring themes.",
     },
     "kitchen-display": {
-        "HERO_TITLE": "Kitchen display",
+        "HERO_TITLE": "Kitchen Display",
         "HERO_SUBTITLE": "Full-screen kitchen view filtered to main courses and food items — clear tickets, faster prep, less paper.",
         "BENEFIT_1": "Kitchen staff see only food items — no drink tickets cluttering the screen.",
         "BENEFIT_2": "Order comments and modifiers show on each ticket.",
@@ -149,7 +149,7 @@ ITEMS_EN: dict[str, dict[str, str]] = {
         "HOW_3": "Bump tickets when ready; bar display handles beverages separately.",
     },
     "bar-display": {
-        "HERO_TITLE": "Bar display",
+        "HERO_TITLE": "Bar Display",
         "HERO_SUBTITLE": "Separate bar screen for beverages and drinks-only tickets — keep bar and kitchen workflows independent.",
         "BENEFIT_1": "Bar staff focus on drinks without food tickets on the same screen.",
         "BENEFIT_2": "Faster drink service during busy periods.",
