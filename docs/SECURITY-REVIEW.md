@@ -23,7 +23,7 @@ flowchart LR
   RBAC --> DB
 ```
 
-- **Sessions:** Short-lived JWT in `HttpOnly` cookie `access_token`; refresh in `refresh_token` with separate `REFRESH_SECRET_KEY`. `PRODUCTION=true` sets `secure` cookies (`back/app/main.py`).
+- **Sessions:** Short-lived JWT in `HttpOnly` cookie `access_token`; refresh in `refresh_token` with separate `REFRESH_SECRET_KEY`. `PRODUCTION=true` sets `secure` cookies (`back/app/main.py`). Prod compose (`docker-compose.prod.yml`) sets `PRODUCTION=true` on **back** so amvara9 gets Secure cookies without relying on `config.env`.
 - **Revocation:** `User.token_version` must match JWT claim (`back/app/security.py`).
 - **RBAC:** `require_permission` / `require_role` on mutating routes (`back/app/permissions.py`).
 
@@ -79,6 +79,7 @@ The app mounted `StaticFiles` on `/uploads` over the entire `uploads/` tree. Sta
 | SaaS signup paywall | Platform monetization of Satisfecho (not guest order Stripe). When `SAAS_PAYWALL_ENABLED=true`, middleware returns **402** `saas_subscription_required` for authenticated tenant staff on non-exempt paths (`back/app/saas_billing.py` / `saas_paywall_middleware` in `main.py`). Exempt prefixes include auth, `/saas/*`, `/onboarding/*`, `/products/*` (signup priming), `/users/me*`, `/public/*`, `/menu/*`, `/provider/*`, `/platform/*`, `/courier/*`. Checkout uses platform `STRIPE_SECRET_KEY` + optional `SAAS_STRIPE_PRICE_ID`. Entitlement: **`POST /saas/confirm-checkout`** (fast path) and **`POST /saas/webhook`** (signed with `SAAS_STRIPE_WEBHOOK_SECRET`) for `checkout.session.completed` / `customer.subscription.*`. Feature doc: `docs/0052-saas-signup-paywall.md`. Tests: `back/tests/test_saas_billing.py`. |
 | Rate limiting | `slowapi` + Redis; client IP from **first** `X-Forwarded-For` hop — **trust only when the edge proxy strips/spoof-proof headers** (see HAProxy config). Delivery create, **satisfecho-delivery-config**, **delivery-status**, and delivery webhooks share the public-menu IP bucket (track-page polling counts against the same budget). Public waiting-list create uses its own per-IP hour bucket (`RATE_LIMIT_WAITING_LIST_PER_HOUR`). |
 | Reservation delay notice | Extra Redis counter per IP + reservation id. |
+| API docs / OpenAPI (#422) | With `PRODUCTION=true`, FastAPI does **not** mount `/docs`, `/redoc`, or `/openapi.json` (anonymous → 404), so production does not publish the full API surface. Dev keeps docs for `test:api-docs`. Opt-in remount: `ENABLE_API_DOCS=true`. Prod HAProxy health uses `/health`, not `/docs`. Tests: `back/tests/test_api_docs_production.py`. |
 
 ### Residual risks (delivery / SaaS / courier)
 
@@ -98,7 +99,7 @@ The app mounted `StaticFiles` on `/uploads` over the entire `uploads/` tree. Sta
 
 ## 6. Secrets, config, logging
 
-- **Never commit** real `config.env`. Production must override `SECRET_KEY`, `REFRESH_SECRET_KEY`, DB password, payment secrets (`config.env.example` documents variables).
+- **Never commit** real `config.env`. Production must override `SECRET_KEY`, `REFRESH_SECRET_KEY`, DB password, payment secrets (`config.env.example` documents variables). When `PRODUCTION=true`, Settings **refuses to start** if `SECRET_KEY` or `REFRESH_SECRET_KEY` still starts with `CHANGE_THIS` (covers example defaults and Settings field defaults). Dev/local may keep placeholders. Virgin deploy via `scripts/deploy-amvara9.sh` generates random keys. Tests: `back/tests/test_secret_key_production.py`.
 - **SaaS / platform Stripe:** `SAAS_PAYWALL_ENABLED`, `SAAS_TRIAL_DAYS`, `SAAS_PLAN_PRICE_CENTS`, `SAAS_PLAN_CURRENCY`, `SAAS_STRIPE_PRICE_ID`, `SAAS_STRIPE_WEBHOOK_SECRET`, plus platform `STRIPE_SECRET_KEY` / `STRIPE_PUBLISHABLE_KEY` (documented in `config.env.example`). These are **platform** billing secrets — distinct from per-tenant guest payment keys stored on `Tenant`.
 - **Delivery webhook tokens:** Stored on `DeliveryMarketplaceIntegration.webhook_ingest_token`; treat like API keys (unique, rotatable). Do not put them in client-side marketing sites or commit them.
 - **Logging:** Avoid logging full request bodies, passwords, tokens, or Stripe/SaaS secrets; follow existing log patterns (delivery event logs already avoid raw secret dumps).
@@ -138,6 +139,8 @@ pip install pip-audit && pip-audit -r back/requirements.txt
 
 | Date | Action |
 |------|--------|
+| 2026-10-05 | Reject placeholder `SECRET_KEY` / `REFRESH_SECRET_KEY` when `PRODUCTION=true` (#423); `test_secret_key_production.py`. |
+| 2026-10-05 | API docs hardening (#422): unmount `/docs` `/redoc` `/openapi.json` when `PRODUCTION=true` unless `ENABLE_API_DOCS`; `test_api_docs_production.py`. |
 | 2026-10-05 | Tenant logo SVG (#419): sanitize on upload; nosniff / attachment / CSP on SVG serve; `test_tenant_logo_svg.py`. |
 | 2026-03-26 | Blocked public `/uploads/.../contracts/...`; added tests; initial `SECURITY-REVIEW.md`. |
 | 2026-07-22 | Delta pass for Satisfecho Delivery public create + `public_order_token` pay, marketplace delivery webhooks, courier fulfillment IDOR, and SaaS paywall middleware / platform Checkout. Clarified: still **no** inbound Stripe/Revolut *payment* webhooks; delivery ingest webhooks exist. Linked regression tests and residual risks. **Not a penetration test.** |

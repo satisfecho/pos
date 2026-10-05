@@ -605,14 +605,14 @@ npm run test:websocket --prefix front
 
 ### 11b. API docs (`/api/docs`)
 
-Swagger UI and OpenAPI spec load at `/api/docs` (no login).
+Swagger UI and OpenAPI spec load at `/api/docs` (no login) in **dev/local** (`PRODUCTION` unset/false). In production (`PRODUCTION=true`), `/api/docs`, `/api/redoc`, and `/api/openapi.json` are unmounted (404) unless `ENABLE_API_DOCS=true`. Backend unit coverage: `back/tests/test_api_docs_production.py`.
 
 ```bash
 npm run test:api-docs --prefix front
 # Or: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:api-docs --prefix front
 ```
 
-- **Env:** `BASE_URL` (auto-detect 4203/4202/4200), `HEADLESS`.
+- **Env:** `BASE_URL` (auto-detect 4203/4202/4200), `HEADLESS`. Run against local/dev only; do not expect this smoke to pass against production.
 
 ---
 

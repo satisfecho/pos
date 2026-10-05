@@ -19,6 +19,14 @@ for _root in _ENV_ROOT_CANDIDATES:
         if _p.exists() and _p not in _ENV_FILE_PATHS:
             _ENV_FILE_PATHS.append(_p)
 
+# Documented placeholders in config.env.example / Settings defaults (JWT + Fernet seed).
+_PLACEHOLDER_SECRET_PREFIX = "CHANGE_THIS"
+
+
+def _is_placeholder_secret(value: str) -> bool:
+    """True when value still uses the documented CHANGE_THIS… placeholder prefix."""
+    return (value or "").strip().upper().startswith(_PLACEHOLDER_SECRET_PREFIX)
+
 
 class Settings(BaseSettings):
     """
@@ -169,6 +177,10 @@ class Settings(BaseSettings):
 
     # Production mode (enables secure cookies, stricter CORS, etc.)
     is_production: bool = Field(default=False, validation_alias="PRODUCTION")
+
+    # Opt-in to mount Swagger/ReDoc/OpenAPI when PRODUCTION=true (default: off in prod).
+    # Dev/local keeps docs available without setting this.
+    enable_api_docs: bool = Field(default=False, validation_alias="ENABLE_API_DOCS")
 
     # When behind a reverse proxy that mounts the API at a subpath (e.g. /api), set this so
     # OpenAPI docs and spec URLs are correct (e.g. /api/docs, /api/openapi.json).
@@ -330,6 +342,25 @@ class Settings(BaseSettings):
     )
 
     @model_validator(mode="after")
+    def _reject_placeholder_secrets_in_production(self) -> "Settings":
+        """Refuse to boot in production with world-known JWT/crypto placeholder secrets (#423)."""
+        if not self.is_production:
+            return self
+        bad: list[str] = []
+        if _is_placeholder_secret(self.secret_key):
+            bad.append("SECRET_KEY")
+        if _is_placeholder_secret(self.refresh_secret_key):
+            bad.append("REFRESH_SECRET_KEY")
+        if bad:
+            raise ValueError(
+                "Production refuses placeholder secrets: "
+                + ", ".join(bad)
+                + ". Set strong random values (see config.env.example; "
+                "deploy-amvara9.sh generates them on virgin deploy)."
+            )
+        return self
+
+    @model_validator(mode="after")
     def _relax_rate_limits_in_dev(self) -> "Settings":
         """Use higher rate limits when not in production so DEV is less restrictive."""
         if not self.is_production:
@@ -347,6 +378,13 @@ class Settings(BaseSettings):
             self.rate_limit_waiting_list_per_hour = 200
             self.rate_limit_password_reset_per_hour = 100
         return self
+
+    @property
+    def api_docs_enabled(self) -> bool:
+        """Public /docs, /redoc, /openapi.json — on in dev; off in production unless ENABLE_API_DOCS."""
+        if self.enable_api_docs:
+            return True
+        return not self.is_production
 
     @property
     def database_url(self) -> str:

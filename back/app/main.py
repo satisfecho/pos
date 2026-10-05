@@ -290,12 +290,17 @@ def _get_requested_language(
     return "en"
 
 
-# Backend always serves the spec at /openapi.json (HAProxy strips /api before forwarding).
+# Backend serves the spec at /openapi.json when docs are enabled (HAProxy strips /api).
 # When behind a proxy at ROOT_PATH=/api, Swagger UI must fetch the spec from /api/openapi.json
 # so the browser request goes through HAProxy correctly; we pass that via swagger_ui_parameters.
+# Production (is_production) disables /docs, /redoc, /openapi.json unless ENABLE_API_DOCS=true.
 _swagger_ui_params = {"faviconUrl": "/favicon.ico"}
 if settings.root_path:
     _swagger_ui_params["url"] = f"{settings.root_path.rstrip('/')}/openapi.json"
+_api_docs_enabled = settings.api_docs_enabled
+_docs_url = "/docs" if _api_docs_enabled else None
+_redoc_url = "/redoc" if _api_docs_enabled else None
+_openapi_url = "/openapi.json" if _api_docs_enabled else None
 
 
 @asynccontextmanager
@@ -359,11 +364,11 @@ async def _app_lifespan(app: FastAPI):
 
 app = FastAPI(
     title="POS API",
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
+    docs_url=_docs_url,
+    redoc_url=_redoc_url,
+    openapi_url=_openapi_url,
     root_path=settings.root_path,
-    swagger_ui_parameters=_swagger_ui_params,
+    swagger_ui_parameters=_swagger_ui_params if _api_docs_enabled else None,
     lifespan=_app_lifespan,
 )
 

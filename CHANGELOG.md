@@ -14,6 +14,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.178] - 2026-10-05
+
+### Changed
+
+- **Reject placeholder secrets in production (#423):** When `PRODUCTION=true`, the backend refuses to start if `SECRET_KEY` or `REFRESH_SECRET_KEY` still starts with `CHANGE_THIS`. Local/dev may keep placeholders; `deploy-amvara9.sh` generates real keys on virgin deploy.
+- **Production API docs off (#422):** When `PRODUCTION=true`, Swagger/ReDoc/OpenAPI (`/docs`, `/redoc`, `/openapi.json`) are not mounted (404). Dev keeps `/api/docs` for local smoke. Opt-in remount: `ENABLE_API_DOCS=true`.
+- **Production `PRODUCTION=true` (#420):** `docker-compose.prod.yml` sets `PRODUCTION=true` on the **back** service so Secure auth cookies and production rate limits apply on amvara9 without requiring `PRODUCTION` in `config.env`. Dev overlay unchanged (`is_production=False`).
+
 ## [2.1.177] - 2026-10-05
 
 ### Fixed

@@ -98,12 +98,17 @@ CORS_ORIGINS=http://localhost:4200,*
 **Production (server behind one port):**  
 Use full URLs to the API and WS (e.g. `https://yourdomain.com/api`, `wss://yourdomain.com/ws`) or internal host:port if the front is built with env at build time. Set `CORS_ORIGINS` to the exact origin(s) where users open the app. Set `SECRET_KEY` and `REFRESH_SECRET_KEY` to strong random values.
 
+### Production flag (`PRODUCTION`)
+
+`docker-compose.prod.yml` sets **`PRODUCTION=true`** on the **back** service so `settings.is_production` enables Secure auth cookies, production rate limits, **hides public API docs** (`/docs`, `/redoc`, `/openapi.json` → 404), and **refuses to boot** if `SECRET_KEY` or `REFRESH_SECRET_KEY` still starts with the documented `CHANGE_THIS…` placeholder. You do **not** need to set `PRODUCTION` in `config.env` for amvara9; the compose overlay wins over the mounted env file. Local **`docker-compose.dev.yml`** leaves it unset (`False`) so `/api/docs` stays available and placeholders remain usable for developers. Optional overrides in `config.env.example`: `PRODUCTION`, and `ENABLE_API_DOCS=true` only if you must remount Swagger in a production-like environment.
+
 ### Important notes
 
 1. **Production port 80**: With `docker-compose.prod.yml`, the frontend defaults to host port **80**. Set `FRONTEND_PORT` in `config.env` only if you need a different port.
 2. **HTTPS/WSS**: If using HTTPS for the API, use `wss://` (not `ws://`) for WebSocket.
 3. **CORS**: `CORS_ORIGINS` must include the exact URL where users access the frontend (protocol and port).
 4. **Wildcard**: `*` in CORS_ORIGINS allows public menu access from any origin (useful for QR code menus).
+5. **`PRODUCTION`**: Set by the prod compose overlay for **back** (Secure cookies, production rate limits, no public `/api/docs`, reject `CHANGE_THIS…` secrets); not required in `config.env`.
 
 ---
 

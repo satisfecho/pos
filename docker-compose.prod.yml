@@ -2,6 +2,12 @@
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml up
 # HAProxy uses haproxy.prod.cfg + certbot/haproxy-certs; ports 80 and 443.
 services:
+  # Enables settings.is_production (Secure cookies, production rate limits).
+  # Compose env wins over mounted config.env; do not rely on operators setting PRODUCTION there.
+  back:
+    environment:
+      - PRODUCTION=true
+
   front:
     build:
       context: ./front
