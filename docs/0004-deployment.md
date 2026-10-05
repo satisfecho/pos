@@ -66,7 +66,7 @@ CORS_ORIGINS=http://192.168.1.100:4202
 CORS_ORIGINS=http://localhost:4202,http://127.0.0.1:4202,http://localhost:4200,http://127.0.0.1:4200
 ```
 
-**Wildcard `*`:** Allowed only when **not** in production (e.g. `./run.sh` sets `CORS_ORIGINS=*` for phone/LAN testing). Do **not** use `*` on amvara9 / `docker-compose.prod.yml` — the backend refuses to boot. Public QR menus served through the same HAProxy host are **same-origin** and do not need a wildcard.
+**Wildcard `*`:** Allowed only when **not** in production (e.g. `./run.sh` sets `CORS_ORIGINS=*` for phone/LAN testing). Do **not** use `*` on amvara9 / `docker-compose.prod.yml` — the backend refuses to boot. On amvara9, **`scripts/deploy-amvara9.sh`** rewrites empty/`*` `CORS_ORIGINS` to `https://satisfecho.de,https://www.satisfecho.de` (or **`PRODUCTION_CORS_ORIGINS`**) before migrate. Public QR menus served through the same HAProxy host are **same-origin** and do not need a wildcard.
 
 ### Example config.env snippets
 
