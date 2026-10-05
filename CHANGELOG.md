@@ -10,11 +10,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- **Marketing / Kebab Factory:** Registered **satisfecho.de/kebab-factory/es/** — manifest entry for **`092_kebabfactory`** (slug **`kebab-factory`**; artifact **`kebab-factory-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
-
 ### Changed
 
 ### Fixed
+
+## [2.1.180] - 2026-10-05
+
+### Fixed
+
+- **Deploy CORS rewrite (#424):** `deploy-amvara9.sh` replaces empty or `*` `CORS_ORIGINS` in server `config.env` with `https://satisfecho.de,https://www.satisfecho.de` (override via `PRODUCTION_CORS_ORIGINS`) so production migrate/boot succeeds after `PRODUCTION=true` rejects wildcards.
+
+### Added
+
+- **Marketing / Kebab Factory:** Registered **satisfecho.de/kebab-factory/es/** — manifest entry for **`092_kebabfactory`** (slug **`kebab-factory`**; artifact **`kebab-factory-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
 
 ## [2.1.179] - 2026-10-05
 

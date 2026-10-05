@@ -36,6 +36,22 @@ if [ ! -f config.env ]; then
   echo "Generated SECRET_KEY and REFRESH_SECRET_KEY."
 fi
 
+# Production compose sets PRODUCTION=true; backend refuses CORS_ORIGINS containing '*' or empty.
+# Legacy amvara9 config.env often still has CORS_ORIGINS=* — rewrite before migrate/boot.
+# Override with PRODUCTION_CORS_ORIGINS if the public origin(s) differ.
+PROD_CORS_DEFAULT="${PRODUCTION_CORS_ORIGINS:-https://satisfecho.de,https://www.satisfecho.de}"
+CORS_LINE="$(grep -E '^CORS_ORIGINS=' config.env 2>/dev/null | head -1 || true)"
+CORS_VAL="${CORS_LINE#CORS_ORIGINS=}"
+if [ -z "$CORS_VAL" ] || printf '%s' "$CORS_VAL" | grep -q '\*'; then
+  echo "Replacing unsafe/empty CORS_ORIGINS in config.env with ${PROD_CORS_DEFAULT} (PRODUCTION rejects '*')."
+  if grep -qE '^CORS_ORIGINS=' config.env; then
+    sed -i.bak "s|^CORS_ORIGINS=.*|CORS_ORIGINS=${PROD_CORS_DEFAULT}|" config.env
+  else
+    echo "CORS_ORIGINS=${PROD_CORS_DEFAULT}" >> config.env
+  fi
+  rm -f config.env.bak
+fi
+
 # Backup database before any deployment steps so we never lose data
 BACKUP_DIR="${BACKUP_DIR:-./backups}"
 BACKUP_RETAIN="${BACKUP_RETAIN:-10}"
