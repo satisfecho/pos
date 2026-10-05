@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Production could boot with the documented placeholder `SECRET_KEY` / `REFRESH_SECRET_KEY`, leaving JWTs and Fernet-backed payment secrets under a world-known key.
+- **What was done:** Settings validation rejects placeholder secrets when `is_production` is true; docs/deploy notes updated; unit coverage added; local/dev still allows placeholders.
+- **What was tested:** Six pytest cases passed; dev health 200 with placeholders; prod subprocess refuse returned `REJECTED`; deploy script still generates real keys on virgin setup.
+- **Why closed:** All tester criteria passed.
+- **Closed at (UTC):** 2026-10-05 16:32
+---
+
 # Reject default SECRET_KEY placeholder (#423)
 
 ## GitHub Issues
@@ -61,3 +71,26 @@ Startup does not reject the placeholder `SECRET_KEY` (`CHANGE_THIS_IN_PRODUCTION
    Expect: `REJECTED`.
 
 4. **Deploy guard (read-only):** Confirm `scripts/deploy-amvara9.sh` still sed-replaces the two `CHANGE_THIS_TO_…` example lines with generated hex keys on virgin `config.env`.
+
+## Test report
+
+1. **Date/time (UTC):** 2026-10-05T16:31:27Z start → 2026-10-05T16:31:37Z end. Log window: ~16:31Z (±5m).
+2. **Environment:** `docker-compose.yml` + `docker-compose.dev.yml`; `BASE_URL=http://127.0.0.1:14202` (HAProxy host port); branch `development` @ `4e717cad5`.
+3. **What was tested:** Unit tests for placeholder SECRET_KEY rejection in production; dev boot with placeholders; subprocess prod refuse; deploy script virgin-key generation (read-only).
+4. **Results:**
+   - Unit pytest (`test_secret_key_production.py` + `test_api_docs_production.py`): **PASS** — `6 passed in 1.92s`.
+   - Dev still boots (`is_production` + health): **PASS** — printed `False`; `/api/health` and `/` both HTTP `200`.
+   - Prod refuse placeholder SECRET_KEY (subprocess): **PASS** — output `REJECTED`.
+   - Deploy guard (`scripts/deploy-amvara9.sh`): **PASS** — virgin deploy still `openssl rand -hex 32` + sed-replaces both `CHANGE_THIS_TO_…` SECRET_KEY / REFRESH_SECRET_KEY lines.
+5. **Overall:** **PASS**
+6. **Product owner feedback:** Production will no longer start with the documented placeholder signing key, which closes a real foot-gun for hand-copied `config.env`. Local/dev remains convenient with placeholders. Deploy path still generates real keys on virgin amvara9 setup, so operators are covered end-to-end.
+7. **URLs tested:**
+   1. `http://127.0.0.1:14202/api/health` → 200
+   2. `http://127.0.0.1:14202/` → 200
+8. **Relevant log excerpts (last section):**
+   ```
+   pos-back: INFO: 172.23.0.7:39844 - "GET /health HTTP/1.1" 200 OK
+   pytest: ...... [100%] 6 passed in 1.92s
+   subprocess: REJECTED
+   is_production: False
+   ```
