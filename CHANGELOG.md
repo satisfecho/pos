@@ -14,6 +14,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.181] - 2026-10-08
+
+### Fixed
+
+- **Guest Stripe checkout 500 (#425):** `create-payment-intent` and `confirm-payment` return `JSONResponse` so SlowAPI can attach rate-limit headers after Stripe succeeds (bare `dict` returns caused HTTP 500).
+
 ## [2.1.180] - 2026-10-05
 
 ### Fixed
