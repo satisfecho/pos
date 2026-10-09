@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue #426 requested an immediate ship of tested `development` work to production (amvara9 / satisfecho.de).
+- **What was done:** Promoted `development` → `master` (merge `a2c3dcf5b`), published release **v2.1.181**, and confirmed Deploy to amvara9 GHA run **37866696584** succeeded.
+- **What was tested:** Tester PASS — master tip, green deploy, release tag, and production `/` + `/api/health` + `app-version` **2.1.181** all verified (2026-10-09T00:54:26Z–00:54:38Z UTC).
+- **Why closed:** All criteria passed; production is on **2.1.181**.
+- **Closed at (UTC):** 2026-10-09 00:56
+---
+
 # Ship to Production (#426)
 
 ## GitHub Issues
@@ -5,7 +15,7 @@
 - **426**
 
 ## Status
-- **UNTESTED** — Agent 010 promote + deploy completed **2026-10-09T00:53:27Z**.
+- **CLOSED** — Tester verification **PASS** **2026-10-09T00:54:26Z**–**00:54:38Z** UTC. Overall **PASS**.
 - Preflight: actionable. Local smoke: `http://127.0.0.1:14202/` and `/api/health` → 200. Version on development: **2.1.181** (Stripe guest checkout fix already in changelog); `[Unreleased]` empty — no bump.
 - Divergence at start: `origin/development` **894e3be22** ahead **3** / behind **2** vs `origin/master` **6eb40dc95**. After WIP commit tip **46a37d202** (ahead **4**). Promote with `AGENT_PROMOTE=1 AGENT_PROMOTE_FORCE=1` (env had `AGENT_PROMOTE=0`).
 - **Merge SHA:** `a2c3dcf5b` (`origin/master`). **Release:** https://github.com/satisfecho/pos/releases/tag/v2.1.181
@@ -38,3 +48,25 @@ See **`docs/0001-ci-cd-amvara9.md`**, **`scripts/promote-development-to-master.s
    - `curl -s -o /dev/null -w "%{http_code}" https://satisfecho.de/api/health` → **200**; body `{"status":"ok"}`
    - Landing HTML includes `<meta name="app-version" content="2.1.181">`
 5. Optional: open https://satisfecho.de/ and check footer shows **2.1.181** (commit-hash.ts baked hash **f08f00b81** from the version bump commit).
+
+## Test report
+
+1. **Date/time (UTC):** start **2026-10-09T00:54:26Z**, end **2026-10-09T00:54:38Z**. Log window N/A for amvara9 host containers (production HTTP + GitHub API evidence only).
+2. **Environment:** production **https://satisfecho.de**; branch verification via `git fetch origin master` / `origin/development`; no local compose for this release check.
+3. **What was tested:** Testing instructions 1–5 (master tip, Deploy to amvara9 GHA, release tag, production `/` + `/api/health` + `app-version` meta; optional version string in landing HTML).
+4. **Results:**
+   - Master tip **a2c3dcf5b** with subject “Merge development: release through 2.1.181 …” — **PASS** (`git rev-parse origin/master` / `git log -1`).
+   - GHA run **37866696584** conclusion **success**, headSha **a2c3dcf5b…**, completed **2026-10-09T00:52:56Z** — **PASS** (`gh run view`).
+   - Release **v2.1.181** on **master** — **PASS** (`gh release view`; https://github.com/satisfecho/pos/releases/tag/v2.1.181).
+   - `https://satisfecho.de/` → **HTTP 200** — **PASS**.
+   - `https://satisfecho.de/api/health` → **HTTP 200**, body `{"status":"ok"}` — **PASS**.
+   - Landing HTML `<meta name="app-version" content="2.1.181">` — **PASS** (grep on downloaded index).
+   - Optional footer hash **f08f00b81**: not present in static index HTML (likely in bundled JS); version **2.1.181** confirmed via meta — **PASS** (optional; meta sufficient).
+5. **Overall:** **PASS**.
+6. **Product owner feedback:** Production is on **2.1.181** after a clean promote and green amvara9 deploy. Health and landing respond correctly; ship request for #426 is satisfied. No further release action needed from this task.
+7. **URLs tested:**
+   1. https://satisfecho.de/
+   2. https://satisfecho.de/api/health
+   3. https://github.com/satisfecho/pos/actions/runs/37866696584
+   4. https://github.com/satisfecho/pos/releases/tag/v2.1.181
+8. **Relevant log excerpts:** N/A — no local Docker containers used; evidence is HTTP responses + GitHub Actions/release API as above. Deploy readiness inferred from GHA **success** (updatedAt **00:52:56Z**) before smoke at **00:54:35Z**, not a fixed sleep.
