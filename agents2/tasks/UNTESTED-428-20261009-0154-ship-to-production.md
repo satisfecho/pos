@@ -5,10 +5,12 @@
 - **428**
 
 ## Status
-- **WIP** — Agent 010 started **2026-10-09T01:56:04Z** UTC. Preflight: actionable.
-- Local smoke: `http://127.0.0.1:14202/` and `/api/health` → **200**. Front logs (10m): no Angular build failures.
+- **UNTESTED** — Promote + deploy completed **2026-10-09T02:01:27Z** UTC. Ready for tester.
+- Preflight: actionable. Local smoke: `http://127.0.0.1:14202/` and `/api/health` → **200**. Front logs (10m): no Angular build failures.
 - Version on development: **2.1.182** (guest confirm-payment StripeObject fix already in changelog); `[Unreleased]` empty — no bump.
-- Divergence at start: `origin/development` **8a80f9121** ahead **3** / behind **3** vs `origin/master` **a2c3dcf5b**. Will merge `master` into `development` then promote with `AGENT_PROMOTE_FORCE=1`.
+- Divergence at start: `origin/development` **8a80f9121** ahead **3** / behind **3** vs `origin/master` **a2c3dcf5b**. Merged `master` into `development` (**c190b36e5**), then promoted with `AGENT_PROMOTE=1 AGENT_PROMOTE_FORCE=1 AGENT_PROMOTE_WAIT_DEPLOY=1`.
+- **Merge SHA:** `15ae66b41` (`origin/master`). **Release:** https://github.com/satisfecho/pos/releases/tag/v2.1.182
+- **Deploy:** https://github.com/satisfecho/pos/actions/runs/37872305199 — success.
 
 ## Problem / goal
 Human asks to **ship now** to production (amvara9 / satisfecho.de): promote tested work from **`development`** to **`master`** and confirm deploy. Explicit production request under **`.cursor/rules/git-development-branch-workflow.mdc`** and **`docs/agent-loop.md`** (urgent / deploy-now path).
@@ -26,3 +28,14 @@ See **`docs/0001-ci-cd-amvara9.md`**, **`scripts/promote-development-to-master.s
 - Post-deploy smoke on production: `/` and `/api/health` **200**; landing version/footer hash match the promoted commit.
 - This is **release/ops**, not feature coding — fix only blockers that prevent a safe promote. Append **Testing instructions** with merge SHA, workflow/manual deploy evidence, and smoke results.
 - Comment on issue **#428** when promote + deploy are done (or if blocked by divergence/conflicts).
+
+## Testing instructions
+
+1. Confirm `origin/master` tip is merge **`15ae66b41`** (subject includes release through **2.1.182**).
+2. Confirm GitHub Actions run **37872305199** (“Deploy to amvara9”) conclusion **success**: https://github.com/satisfecho/pos/actions/runs/37872305199
+3. Confirm release **v2.1.182**: https://github.com/satisfecho/pos/releases/tag/v2.1.182
+4. Production smoke (already run by coder at **2026-10-09T02:01:27Z** UTC):
+   - `curl -s -o /dev/null -w "%{http_code}" https://satisfecho.de/` → **200**
+   - `curl -s -o /dev/null -w "%{http_code}" https://satisfecho.de/api/health` → **200**; body `{"status":"ok"}`
+   - Landing HTML includes `<meta name="app-version" content="2.1.182">`
+5. Optional: open https://satisfecho.de/ and check footer shows **2.1.182**.
