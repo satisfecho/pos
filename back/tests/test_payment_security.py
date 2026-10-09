@@ -131,6 +131,34 @@ class TestPaymentSecurity(PgClientTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["status"], "paid")
 
+    @patch("stripe.PaymentIntent.create")
+    def test_create_payment_intent_body_contract(self, mock_create):
+        """Success body still exposes client_secret, payment_intent_id, amount (#425)."""
+        response = self.client.post(
+            f"/menu/{self.table.token}/order",
+            json={
+                "items": [{"product_id": self.product.id, "quantity": 1}],
+                "notes": "Create intent body",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        order_id = response.json()["order_id"]
+
+        mock_intent = MagicMock()
+        mock_intent.client_secret = "cs_test_body"
+        mock_intent.id = "pi_body_contract"
+        mock_create.return_value = mock_intent
+
+        response = self.client.post(
+            f"/orders/{order_id}/create-payment-intent",
+            params={"table_token": self.table.token},
+        )
+        self.assertEqual(response.status_code, 200, response.text)
+        body = response.json()
+        self.assertEqual(body["client_secret"], "cs_test_body")
+        self.assertEqual(body["payment_intent_id"], "pi_body_contract")
+        self.assertEqual(body["amount"], 10000)
+
 
 if __name__ == "__main__":
     unittest.main()

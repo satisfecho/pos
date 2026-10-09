@@ -16266,7 +16266,7 @@ def create_payment_intent(
     table_token: str | None = None,
     public_order_token: str | None = None,
     session: Session = Depends(get_session),
-) -> dict:
+) -> JSONResponse:
     """Create a Stripe PaymentIntent for an order (table guest or public delivery)."""
     order, table, display_name = _resolve_guest_payment_order(
         session,
@@ -16327,11 +16327,14 @@ def create_payment_intent(
             description=f"Order #{order.id} at {tenant.name} - {display_name}",
         )
 
-        return {
-            "client_secret": intent.client_secret,
-            "payment_intent_id": intent.id,
-            "amount": total_cents,
-        }
+        # JSONResponse so slowapi can inject rate-limit headers (requires a Response instance)
+        return JSONResponse(
+            content={
+                "client_secret": intent.client_secret,
+                "payment_intent_id": intent.id,
+                "amount": total_cents,
+            }
+        )
     except stripe.error.StripeError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -16349,7 +16352,7 @@ def confirm_payment(
     table_token: str | None = None,
     public_order_token: str | None = None,
     session: Session = Depends(get_session),
-) -> dict:
+) -> JSONResponse:
     """Mark order as paid after successful Stripe payment."""
     order, table, display_name = _resolve_guest_payment_order(
         session,
@@ -16441,8 +16444,9 @@ def confirm_payment(
             "table_name": display_name,
             "status": order.status.value
         }, table_id=order.table_id)
-        
-        return {"status": "paid", "order_id": order.id}
+
+        # JSONResponse so slowapi can inject rate-limit headers (requires a Response instance)
+        return JSONResponse(content={"status": "paid", "order_id": order.id})
     except stripe.error.StripeError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
