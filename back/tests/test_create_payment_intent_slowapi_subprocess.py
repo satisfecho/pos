@@ -27,6 +27,7 @@ sys.path.insert(0, r"%s")
 
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
+from stripe import StripeObject
 
 from app import models
 from app.db import engine
@@ -110,7 +111,10 @@ def main() -> int:
         mock_retrieved.status = "succeeded"
         mock_retrieved.amount = amount
         mock_retrieved.id = "pi_slowapi_confirm_425"
-        mock_retrieved.metadata = {"order_id": str(order_id)}
+        # Real StripeObject (no .get) — same shape as live stripe-python 16 (#427)
+        mock_retrieved.metadata = StripeObject.construct_from(
+            {"order_id": str(order_id)}, key=None
+        )
         with patch("stripe.PaymentIntent.retrieve", return_value=mock_retrieved):
             r_conf = client.post(
                 f"/orders/{order_id}/confirm-payment",

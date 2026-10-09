@@ -14,6 +14,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.182] - 2026-10-09
+
+### Fixed
+
+- **Guest confirm-payment 500 (#427):** After Stripe succeeds, `confirm-payment` no longer crashes when PaymentIntent metadata is a stripe-python `StripeObject` (no `.get`). Order matching still returns a controlled 400 on mismatch.
+
 ## [2.1.181] - 2026-10-08
 
 ### Fixed

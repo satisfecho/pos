@@ -2,8 +2,15 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from pg_client_mixin import PgClientTestCase
+from stripe import StripeObject
 
 from app import models
+from app.main import _stripe_metadata_get
+
+
+def _stripe_metadata(**kwargs) -> StripeObject:
+    """Real StripeObject metadata (no .get) — regression guard for #427."""
+    return StripeObject.construct_from(kwargs, key=None)
 
 
 class TestPaymentSecurity(PgClientTestCase):
@@ -41,6 +48,16 @@ class TestPaymentSecurity(PgClientTestCase):
         self.session.commit()
         self.session.refresh(self.product)
 
+    def test_stripe_metadata_get_handles_stripeobject_without_dict_get(self):
+        """stripe-python 16 StripeObject has no .get; helper must not 500 (#427)."""
+        meta = _stripe_metadata(order_id="42", tenant_id="1")
+        with self.assertRaises(AttributeError):
+            meta.get("order_id")  # type: ignore[attr-defined]
+        self.assertEqual(_stripe_metadata_get(meta, "order_id"), "42")
+        self.assertIsNone(_stripe_metadata_get(meta, "missing"))
+        self.assertEqual(_stripe_metadata_get({"order_id": "7"}, "order_id"), "7")
+        self.assertIsNone(_stripe_metadata_get(None, "order_id"))
+
     @patch("stripe.PaymentIntent.retrieve")
     def test_prevent_payment_bypass_amount_mismatch(self, mock_retrieve):
         response = self.client.post(
@@ -58,7 +75,7 @@ class TestPaymentSecurity(PgClientTestCase):
         mock_intent.status = "succeeded"
         mock_intent.amount = 100
         mock_intent.id = "pi_cheap_123"
-        mock_intent.metadata = {"order_id": str(order_id)}
+        mock_intent.metadata = _stripe_metadata(order_id=str(order_id))
         mock_retrieve.return_value = mock_intent
 
         response = self.client.post(
@@ -88,7 +105,7 @@ class TestPaymentSecurity(PgClientTestCase):
         mock_intent.status = "succeeded"
         mock_intent.amount = 10000
         mock_intent.id = "pi_wrong_order"
-        mock_intent.metadata = {"order_id": "9999"}
+        mock_intent.metadata = _stripe_metadata(order_id="9999")
         mock_retrieve.return_value = mock_intent
 
         response = self.client.post(
@@ -96,6 +113,36 @@ class TestPaymentSecurity(PgClientTestCase):
             params={
                 "table_token": self.table.token,
                 "payment_intent_id": "pi_wrong_order",
+            },
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Payment mismatch: Payment does not belong to this order", response.json()["detail"])
+
+    @patch("stripe.PaymentIntent.retrieve")
+    def test_confirm_payment_missing_metadata_order_id_is_400(self, mock_retrieve):
+        """Missing order_id on StripeObject metadata → controlled 400, not 500 (#427)."""
+        response = self.client.post(
+            f"/menu/{self.table.token}/order",
+            json={
+                "items": [{"product_id": self.product.id, "quantity": 1}],
+                "notes": "Missing meta",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        order_id = response.json()["order_id"]
+
+        mock_intent = MagicMock()
+        mock_intent.status = "succeeded"
+        mock_intent.amount = 10000
+        mock_intent.id = "pi_no_meta_order"
+        mock_intent.metadata = _stripe_metadata(tenant_id="1")
+        mock_retrieve.return_value = mock_intent
+
+        response = self.client.post(
+            f"/orders/{order_id}/confirm-payment",
+            params={
+                "table_token": self.table.token,
+                "payment_intent_id": "pi_no_meta_order",
             },
         )
         self.assertEqual(response.status_code, 400)
@@ -118,7 +165,7 @@ class TestPaymentSecurity(PgClientTestCase):
         mock_intent.status = "succeeded"
         mock_intent.amount = 10000
         mock_intent.id = "pi_correct"
-        mock_intent.metadata = {"order_id": str(order_id)}
+        mock_intent.metadata = _stripe_metadata(order_id=str(order_id))
         mock_retrieve.return_value = mock_intent
 
         response = self.client.post(

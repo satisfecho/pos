@@ -1060,6 +1060,27 @@ def _guest_order_payable_total_cents(session: Session, order: models.Order) -> i
     return max(0, subtotal - discount)
 
 
+def _stripe_metadata_get(metadata: Any, key: str, default: Any = None) -> Any:
+    """Read a key from Stripe metadata (plain dict or stripe-python StripeObject).
+
+    stripe-python 16+ exposes PaymentIntent.metadata as StripeObject, which is
+    not a dict and has no ``.get`` — calling ``.get`` raises AttributeError (#427).
+    """
+    if metadata is None:
+        return default
+    to_dict = getattr(metadata, "to_dict", None)
+    if callable(to_dict):
+        try:
+            as_dict = to_dict()
+            if isinstance(as_dict, dict):
+                return as_dict.get(key, default)
+        except Exception:
+            pass
+    if isinstance(metadata, dict):
+        return metadata.get(key, default)
+    return getattr(metadata, key, default)
+
+
 def _take_away_table_token(session: Session, tenant_id: int) -> str | None:
     """Return token of the first active table named 'Take away' or 'Home ordering' (case-insensitive) for tenant."""
     tables = session.exec(
@@ -16384,8 +16405,8 @@ def confirm_payment(
             raise HTTPException(status_code=400, detail="Payment not completed")
 
         # Validation: Verify intent matches order
-        # 1. Check order ID in metadata
-        intent_order_id = intent.metadata.get("order_id")
+        # 1. Check order ID in metadata (StripeObject has no .get — see #427)
+        intent_order_id = _stripe_metadata_get(intent.metadata, "order_id")
         if not intent_order_id or str(intent_order_id) != str(order.id):
             raise HTTPException(
                 status_code=400,
