@@ -13,6 +13,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Changed
 
 ### Fixed
+- Menu ordering photos (`/menu/…`): use `object-fit: contain` on grid, featured, and detail images so offer posters are not cropped; remove hover image zoom (#429).
 
 ## [2.1.182] - 2026-10-09
 
