@@ -14,6 +14,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- **Front dev image:** Local `front/Dockerfile` base image is now `node:22.23.4-alpine` (was `node:20-alpine`). Prod `Dockerfile.prod` is unchanged.
+
 ### Fixed
 
 
