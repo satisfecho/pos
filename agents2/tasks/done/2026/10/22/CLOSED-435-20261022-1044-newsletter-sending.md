@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Issue #435 (newsletter sending for restaurant owners) was implemented and verified end-to-end.
+- **What was done:** Staff newsletter MVP shipped — compose/queue with consent gate, ~30/min worker, open/click tracking, Settings UI, docs, and tests.
+- **What was tested:** Migration/worker, 8 pytest cases, Puppeteer Settings smoke, live audience/campaigns/public open APIs, and clean front build — all PASS (optional live SMTP N/A).
+- **Why closed:** All required testing criteria passed.
+- **Closed at (UTC):** 2026-10-22 11:44
+---
+
 # Newsletter sending for restaurant owners (#435)
 
 ## GitHub Issues
@@ -43,3 +53,37 @@ Staff must check consent before queueing a campaign. No marketing opt-in column 
 4. **Manual (optional SMTP):** Settings → Email configured → Newsletter → compose → **Send test to me**; then queue a small audience with consent checked. Confirm history shows sent/opens/clicks and SMTP is not flooded (~30/min).
 5. **Front build:** `docker logs --since 10m pos-front` — no TS/NG bundle errors.
 6. **Docs:** Skim `docs/0079-newsletter.md`.
+
+## Test report
+
+1. **Date/time (UTC):** 2026-10-22T11:41:05Z start → 2026-10-22T11:43:34Z end. Log window: `pos-back` / `pos-front` ~11:28Z–11:43Z (migration/worker) and last 10–15m for API/UI.
+2. **Environment:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml`; HAProxy `BASE_URL=http://127.0.0.1:14202`; branch `development` @ `28bdc633e`. Puppeteer: host Chromium (`CHROME_PATH=/usr/bin/chromium-browser`) + `NODE_PATH` to front container `node_modules` volume; `HEADLESS=1`. Staff login via existing tenant-1 owner `newsletter-smoke@amvara.de` (ephemeral password set in DB for this run only — no `DEMO_LOGIN_*` in `config.env` on this host). Optional live SMTP send not run.
+3. **What was tested:** Migration + newsletter worker; `tests/test_newsletter.py`; Settings → Newsletter UI smoke; live staff/public newsletter HTTP; front build logs; `docs/0079-newsletter.md` skim.
+4. **Results:**
+   - Migrate / worker → **PASS** — `20261022130000_newsletter.sql` applied; tables `newsletter_campaign` / `newsletter_recipient` present; log `Newsletter worker started (interval=2.0s, ~30/min)` at 11:28:39Z.
+   - Backend pytest `tests/test_newsletter.py` → **PASS** — 8 passed in 3.63s.
+   - UI smoke Settings → Newsletter → **PASS** — Puppeteer: `OK newsletter settings smoke` (tab + compose subject + consent controls).
+   - Live API (owner token) → **PASS** — `GET /tenant/newsletter/audience` 200; `GET /tenant/newsletter/campaigns` 200; `GET /public/newsletter/o/notarealtoken` 200.
+   - Manual SMTP send → **N/A** — optional; tenant SMTP not exercised in this run.
+   - Front build (last 10m) → **PASS** — no TS/Application bundle errors; only existing NG8107 optional-chain warnings on unrelated menu template.
+   - Docs `docs/0079-newsletter.md` → **PASS** — audience/consent, ~30/min worker, tracking tokens, staff API documented.
+   - Contrast → **N/A** — no colour/branding chrome change in this slice; Settings newsletter section is standard staff form UI.
+5. **Overall:** **PASS**
+6. **Product owner feedback:** Owners can open Settings → Newsletter, see consent-gated compose, and the API/worker path is live with opaque open tracking. Worth a quick manual “Send test to me” once tenant SMTP is configured; marketing opt-in column remains a follow-up.
+7. **URLs tested:**
+   1. `http://127.0.0.1:14202/`
+   2. `http://127.0.0.1:14202/login?tenant=1`
+   3. `http://127.0.0.1:14202/settings` (Newsletter tab / compose section)
+   4. `http://127.0.0.1:8020/tenant/newsletter/audience`
+   5. `http://127.0.0.1:8020/tenant/newsletter/campaigns`
+   6. `http://127.0.0.1:8020/public/newsletter/o/notarealtoken`
+8. **Relevant log excerpts:**
+   ```
+   app.migrate - INFO -   - 20261022130000_newsletter.sql (version: 20261022130000, … status: applied)
+   app.newsletter_worker - INFO - Newsletter worker started (interval=2.0s, ~30/min)
+   pytest: ........ [100%] 8 passed in 3.63s
+   Puppeteer: OK newsletter settings smoke
+   GET /tenant/newsletter/audience … 200 OK
+   GET /tenant/newsletter/campaigns … 200 OK
+   (pos-front last 10m: no Application bundle / TS errors)
+   ```
