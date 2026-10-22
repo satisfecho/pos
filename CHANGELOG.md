@@ -10,14 +10,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+### Changed
+
+### Fixed
+
+
+## [2.1.186] - 2026-10-22
+
+### Added
+
+- **Newsletter sending (#435):** Settings → Newsletter lets owners/admins compose HTML email, queue sends to billing customers and/or reservation emails (~30/min via tenant SMTP), with open/click tracking and consent confirmation. Docs: `docs/0079-newsletter.md`.
+- **Customer-facing counter display (#434):** Public `/display/{table_token}` shows a live order summary (items, discounts, totals), payment option labels, and optional invoice email capture. Staff open it from Orders; docs in `docs/0078-customer-facing-display.md`.
 - **Upstream monitor (#432):** The agent loop now checks public activity on URY, FloCafe, NodeDR OrderRestro, and TastyIgniter about once a week. When something looks worth adapting, it can open at most one Satisfecho issue per project. The first scan only records a baseline and files nothing.
 
 ### Changed
 
 - **Front Node images (#433):** Dev and prod front Dockerfiles both use `node:22.23.4-alpine` (prod builder was `node:20-alpine`). Host prerequisite docs now say Node.js 22+.
-
-### Fixed
-
 
 ## [2.1.185] - 2026-10-14
 

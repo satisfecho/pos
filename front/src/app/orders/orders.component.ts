@@ -307,6 +307,17 @@ ModuleRegistry.registerModules([
                             {{ 'ORDERS.REQUEST_HQ_PREP' | translate }}
                           </button>
                         }
+                        @if (order.table_token) {
+                          <button
+                            type="button"
+                            class="btn btn-secondary"
+                            data-testid="open-customer-display"
+                            (click)="openCustomerDisplay(order)"
+                            [title]="'ORDERS.CUSTOMER_DISPLAY_HINT' | translate"
+                          >
+                            {{ 'ORDERS.CUSTOMER_DISPLAY' | translate }}
+                          </button>
+                        }
                         <button type="button" class="btn btn-edit-order" (click)="openOrderEdit(order)" [title]="'ORDERS.EDIT_ORDER' | translate">
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
@@ -626,6 +637,17 @@ ModuleRegistry.registerModules([
                               {{ 'ORDERS.REQUEST_HQ_PREP' | translate }}
                             </button>
                           }
+                          @if (order.table_token) {
+                            <button
+                              type="button"
+                              class="btn btn-secondary"
+                              data-testid="open-customer-display"
+                              (click)="openCustomerDisplay(order)"
+                              [title]="'ORDERS.CUSTOMER_DISPLAY_HINT' | translate"
+                            >
+                              {{ 'ORDERS.CUSTOMER_DISPLAY' | translate }}
+                            </button>
+                          }
                           <button type="button" class="btn btn-edit-order" (click)="openOrderEdit(order)" [title]="'ORDERS.EDIT_ORDER' | translate">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                               <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
@@ -844,6 +866,17 @@ ModuleRegistry.registerModules([
                           <span class="order-total">{{ 'ORDERS.TOTAL' | translate }}: {{ formatPrice(order.total_cents) }}</span>
                         </div>
                         <div class="order-actions">
+                          @if (order.table_token) {
+                            <button
+                              type="button"
+                              class="btn btn-secondary"
+                              data-testid="open-customer-display"
+                              (click)="openCustomerDisplay(order)"
+                              [title]="'ORDERS.CUSTOMER_DISPLAY_HINT' | translate"
+                            >
+                              {{ 'ORDERS.CUSTOMER_DISPLAY' | translate }}
+                            </button>
+                          }
                           <button type="button" class="btn btn-edit-order" (click)="openOrderEdit(order)" [title]="'ORDERS.EDIT_ORDER' | translate">
                             {{ 'COMMON.EDIT' | translate }}
                           </button>
@@ -3695,6 +3728,15 @@ export class OrdersComponent implements OnInit, OnDestroy {
       },
       error: () => this.showToast(this.translate.instant('ORDERS.OPEN_MENU_ERROR') || 'Could not open menu link', 'error')
     });
+  }
+
+  /** Open read-only customer-facing display for this table (#434). */
+  openCustomerDisplay(order: Order): void {
+    if (!order.table_token) {
+      this.showToast(this.translate.instant('ORDERS.CUSTOMER_DISPLAY_NO_TABLE'), 'error');
+      return;
+    }
+    window.open(`${window.location.origin}/display/${order.table_token}`, '_blank');
   }
 
   openFacturaModal(order: Order) {

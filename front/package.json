@@ -1,6 +1,6 @@
 {
   "name": "front",
-  "version": "2.1.185",
+  "version": "2.1.186",
   "scripts": {
     "ng": "ng",
     "prebuild": "node scripts/get-commit-hash.js",
@@ -47,6 +47,7 @@
     "test:otp-recovery-codes": "node scripts/test-otp-recovery-codes.mjs",
     "test:settings-providers": "node scripts/test-settings-providers.mjs",
     "test:settings-vertical-nav": "node scripts/test-settings-vertical-nav.mjs",
+    "test:newsletter-settings": "node scripts/test-newsletter-settings.mjs",
     "test:settings-printing-docs": "node scripts/test-settings-printing-docs.mjs",
     "test:settings-loyalty-docs": "node scripts/test-settings-loyalty-docs.mjs",
     "test:loyalty-recover": "node scripts/test-loyalty-recover.mjs",
@@ -55,6 +56,7 @@
     "test:kitchen-status-dropdown": "node scripts/test-kitchen-status-dropdown.mjs",
     "test:kitchen-timer": "node scripts/test-kitchen-timer.mjs",
     "test:bar-display": "node scripts/test-bar-display.mjs",
+    "test:customer-display": "node scripts/test-customer-display.mjs",
     "test:rate-limit": "node scripts/test-rate-limit.mjs",
     "test:rate-limit-puppeteer": "node scripts/test-rate-limit-puppeteer.mjs",
     "test:book-whatsapp": "node scripts/test-book-whatsapp-puppeteer.mjs",

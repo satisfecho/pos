@@ -321,6 +321,19 @@ npm run test:settings-vertical-nav --prefix front
 
 ---
 
+### 2d2. Settings → Newsletter
+
+Smoke for **Settings → Newsletter** (#435): logs in, opens `?section=newsletter`, asserts tab + compose section (`newsletter-subject`, consent checkbox). Does not send SMTP mail. See `docs/0079-newsletter.md`.
+
+```bash
+npm run test:newsletter-settings --prefix front
+# Or: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:newsletter-settings --prefix front
+```
+
+- **Env:** `BASE_URL`, `LOGIN_EMAIL`/`LOGIN_PASSWORD` or `DEMO_LOGIN_*`. `HEADLESS`.
+
+---
+
 ### 2e. Settings → Printing docs link
 
 Smoke test for the hardware printing runbook link (#397). Logs in, opens Settings → Printing, and asserts `data-testid="settings-printing-docs-link"` points at `docs/0070-hardware-printing.md` on GitHub (`target="_blank"`).
@@ -694,6 +707,20 @@ npm run test:bar-display --prefix front
 
 ---
 
+### 13b2. Customer display (counter) – route smoke (#434)
+
+Login, resolve Take Away (or first) table token, open `/display/{token}`, assert `[data-testid="customer-display"]` and empty/order/paid panel. When an order is open, also assert payment options and email capture.
+
+```bash
+npm run test:customer-display --prefix front
+# Or: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/test-customer-display.mjs
+```
+
+- **Env:** `BASE_URL`, `LOGIN_EMAIL`/`LOGIN_PASSWORD` or `DEMO_*` / `ADMIN_*`, optional `TABLE_TOKEN`, `HEADLESS`.
+- **Docs:** `docs/0078-customer-facing-display.md`.
+
+---
+
 ### 13c. Settings → logo upload
 
 Login as owner/admin, open Settings, upload a logo file, save, and assert success.
@@ -813,11 +840,13 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `test:sidebar-logout` | `scripts/test-sidebar-logout.mjs` (sidebar logout icon left of POS → `/login`; #383) |
 | `test:settings-providers` | `scripts/test-settings-providers.mjs` (Settings → Providers tab; personal providers smoke; uses .env, tenant=1) |
 | `test:settings-vertical-nav` | `scripts/test-settings-vertical-nav.mjs` (Settings vertical section menu + `?section=` / `#hash` deep links; #395, #365) |
+| `test:newsletter-settings` | `scripts/test-newsletter-settings.mjs` (Settings → Newsletter tab + compose UI; #435) |
 | `test:settings-printing-docs` | `scripts/test-settings-printing-docs.mjs` (Settings → Printing runbook link to docs/0070 on GitHub; #397) |
 | `test:settings-loyalty-docs` | `scripts/test-settings-loyalty-docs.mjs` (Settings → Loyalty club runbook link to docs/0066 on GitHub; #394) |
 | `test:bartender-role` | `scripts/test-bartender-role.mjs` (Users → Add user → role dropdown includes Bartender) |
 | `test:kitchen-status-dropdown` | `scripts/test-kitchen-status-dropdown.mjs` (Kitchen display: status dropdown visible, not clipped) |
 | `test:bar-display` | `scripts/test-bar-display.mjs` (Bar display `/bar`: route + chrome + Bar title) |
+| `test:customer-display` | `scripts/test-customer-display.mjs` (Customer display `/display/{token}`: chrome + empty/order/paid; #434) |
 | `test:settings-logo` | `scripts/test-settings-logo-upload.mjs` (Settings logo upload; owner/admin `LOGIN_*` / `DEMO_LOGIN_*`) |
 | `test:settings-otp-copy` | `scripts/test-settings-otp-copy.mjs` (Settings → Security OTP secret Copy; starts setup, checks clipboard, cancels; #377) |
 | `test:settings-otp-disable-password` | `scripts/test-settings-otp-disable-password.mjs` (Settings → Security disable OTP with account password while logged in; #401) |

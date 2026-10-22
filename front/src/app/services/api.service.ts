@@ -1118,6 +1118,31 @@ export interface SocialPostPublic {
   targets: SocialPostTargetPublic[];
 }
 
+export type NewsletterAudienceSource = 'billing_customers' | 'reservations' | 'both';
+
+export interface NewsletterAudienceResponse {
+  billing_customers: number;
+  reservations: number;
+  both: number;
+  sample_emails: string[];
+}
+
+export interface NewsletterCampaignPublic {
+  id: number;
+  subject: string;
+  audience_source: string;
+  status: string;
+  schedule_at: string;
+  recipient_count: number;
+  sent_count: number;
+  failed_count: number;
+  open_count: number;
+  click_count: number;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 /** Product customization question (e.g. meat doneness, spice 1–10, multi toppings) */
 export interface ProductBulkImportPreviewRow {
   row_index: number;
@@ -1565,6 +1590,8 @@ export interface Order {
   notes?: string;
   session_id?: string;
   customer_name?: string;
+  /** Guest email from customer display (#434). */
+  invoice_email?: string | null;
   billing_customer_id?: number | null;
   billing_customer?: BillingCustomer | null;
   created_at: string;
@@ -3361,12 +3388,26 @@ export class ApiService {
     });
   }
 
-  getCurrentOrder(tableToken: string, sessionId?: string): Observable<any> {
+  getCurrentOrder(tableToken: string, sessionId?: string, forDisplay = false): Observable<any> {
     let params = new HttpParams();
     if (sessionId) {
       params = params.set('session_id', sessionId);
     }
+    if (forDisplay) {
+      params = params.set('for_display', 'true');
+    }
     return this.http.get(`${this.apiUrl}/menu/${tableToken}/order`, { params });
+  }
+
+  /** Public customer display (#434): save invoice email on the active table order. */
+  setOrderInvoiceEmail(
+    tableToken: string,
+    email: string,
+  ): Observable<{ ok: boolean; invoice_email: string; order_id: number }> {
+    return this.http.post<{ ok: boolean; invoice_email: string; order_id: number }>(
+      `${this.apiUrl}/menu/${tableToken}/order/invoice-email`,
+      { email },
+    );
   }
 
   getTableCart(tableToken: string): Observable<TableCartResponse> {
@@ -3726,6 +3767,47 @@ export class ApiService {
     }
     fd.append('image', opts.image, opts.image.name);
     return this.http.post<SocialPostPublic>(`${this.apiUrl}/tenant/social/posts`, fd);
+  }
+
+  getNewsletterAudience(): Observable<NewsletterAudienceResponse> {
+    return this.http.get<NewsletterAudienceResponse>(`${this.apiUrl}/tenant/newsletter/audience`);
+  }
+
+  getNewsletterCampaigns(limit = 50): Observable<NewsletterCampaignPublic[]> {
+    return this.http.get<NewsletterCampaignPublic[]>(`${this.apiUrl}/tenant/newsletter/campaigns`, {
+      params: { limit: String(limit) },
+    });
+  }
+
+  createNewsletterCampaign(body: {
+    subject: string;
+    body_html: string;
+    body_text?: string | null;
+    audience_source: NewsletterAudienceSource;
+    consent_confirmed: boolean;
+    send_now: boolean;
+    schedule_at?: string | null;
+  }): Observable<NewsletterCampaignPublic> {
+    return this.http.post<NewsletterCampaignPublic>(`${this.apiUrl}/tenant/newsletter/campaigns`, body);
+  }
+
+  cancelNewsletterCampaign(id: number): Observable<NewsletterCampaignPublic> {
+    return this.http.post<NewsletterCampaignPublic>(
+      `${this.apiUrl}/tenant/newsletter/campaigns/${id}/cancel`,
+      {}
+    );
+  }
+
+  sendNewsletterTest(body: {
+    subject: string;
+    body_html: string;
+    body_text?: string | null;
+    to_email?: string | null;
+  }): Observable<{ ok: boolean; to_email: string }> {
+    return this.http.post<{ ok: boolean; to_email: string }>(
+      `${this.apiUrl}/tenant/newsletter/test-send`,
+      body
+    );
   }
 
   getKitchenDisplaySettings(): Observable<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }> {

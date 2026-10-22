@@ -1197,6 +1197,8 @@ class Order(TenantMixin, table=True):
     session_id: str | None = Field(default=None, index=True)  # Unique session identifier per browser
     customer_name: str | None = Field(default=None, index=True)  # Optional customer name for restaurant staff
     billing_customer_id: int | None = Field(default=None, foreign_key="billing_customer.id", index=True)  # For Factura
+    # Guest email from customer display (#434); invoice send may use BillingCustomer.email when linked
+    invoice_email: str | None = Field(default=None, max_length=255, index=True)
     # End-user account (Customer); optional — distinct from billing_customer_id
     customer_id: int | None = Field(default=None, foreign_key="customer.id", index=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -2617,3 +2619,52 @@ class PrintJobComplete(SQLModel):
 
     status: str = Field(max_length=16)  # done | failed
     error_message: str | None = Field(default=None, max_length=500)
+
+
+class NewsletterCampaign(SQLModel, table=True):
+    """Staff newsletter campaign: compose once, send rate-limited via tenant SMTP (#435)."""
+
+    __tablename__ = "newsletter_campaign"
+
+    id: int | None = Field(default=None, primary_key=True)
+    tenant_id: int = Field(foreign_key="tenant.id", index=True)
+    subject: str = Field(max_length=200)
+    body_html: str = Field(sa_column=Column(Text, nullable=False))
+    body_text: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    audience_source: str = Field(default="billing_customers", max_length=32)
+    status: str = Field(default="queued", max_length=32)
+    schedule_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+    consent_confirmed: bool = Field(default=False)
+    recipient_count: int = Field(default=0)
+    sent_count: int = Field(default=0)
+    failed_count: int = Field(default=0)
+    open_count: int = Field(default=0)
+    click_count: int = Field(default=0)
+    error_message: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    created_by_user_id: int | None = Field(default=None, foreign_key="user.id")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class NewsletterRecipient(SQLModel, table=True):
+    """One outbound newsletter message; tracking_token is opaque (no email in public URLs)."""
+
+    __tablename__ = "newsletter_recipient"
+
+    id: int | None = Field(default=None, primary_key=True)
+    campaign_id: int = Field(foreign_key="newsletter_campaign.id", index=True)
+    email: str = Field(max_length=320)
+    tracking_token: str = Field(max_length=64, unique=True, index=True)
+    status: str = Field(default="pending", max_length=32)
+    error_message: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    opened_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    click_count: int = Field(default=0)
+    sent_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
