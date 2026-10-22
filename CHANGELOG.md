@@ -14,7 +14,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **Front dev image:** Local `front/Dockerfile` base image is now `node:22.23.4-alpine` (was `node:20-alpine`). Prod `Dockerfile.prod` is unchanged.
+- **Front Node images (#433):** Dev and prod front Dockerfiles both use `node:22.23.4-alpine` (prod builder was `node:20-alpine`). Host prerequisite docs now say Node.js 22+.
 
 ### Fixed
 

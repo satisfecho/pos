@@ -46,7 +46,7 @@ Full-stack Point of Sale (POS) system.
 
 ## Setup & development
 
-**Prerequisites:** Docker & Docker Compose, Python 3.12+ (venv recommended), Node.js 18+.
+**Prerequisites:** Docker & Docker Compose, Python 3.12+ (venv recommended), Node.js 22+ (Docker front images use `node:22.23.4-alpine`).
 
 **Quick start:** Use `run.sh` to orchestrate the stack.
 
