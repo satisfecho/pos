@@ -1,4 +1,4 @@
-# Fiscal certified middleware — provider ADR (#342)
+# Fiscal certified middleware - provider ADR (#342)
 
 ## Purpose
 
@@ -26,7 +26,7 @@ Related: GitHub **#342**.
 
 | Option | API shape | Certification / coverage | Cost / effort | Notes |
 |--------|-----------|--------------------------|---------------|-------|
-| **Fiskaly SIGN ES** | REST auth + `PUT /clients/{id}/invoices/{id}` (`content` envelope); TEST `test.es.sign.fiskaly.com` / LIVE `live.es.sign.fiskaly.com` | AEAT social collaborator; Verifactu + TicketBAI territories | Per-org / per-invoice commercial; ~1–2 weeks adapter + taxpayer onboarding | **Chosen** |
+| **Fiskaly SIGN ES** | REST auth + `PUT /clients/{id}/invoices/{id}` (`content` envelope); TEST `test.es.sign.fiskaly.com` / LIVE `live.es.sign.fiskaly.com` | AEAT social collaborator; Verifactu + TicketBAI territories | Per-org / per-invoice commercial; ~1-2 weeks adapter + taxpayer onboarding | **Chosen** |
 | **Verifacti** | JSON submit → QR + AEAT remisión via their representation cert | Verifactu-focused; TicketBAI optional | Often simpler cert story for SMEs; separate vendor from TSE | Strong alternative if SIGN ES commercial terms fail |
 | **Efsta / other SIF middleware** | Vendor-specific | Varies | Extra integration | Keep via `generic` adapter |
 | **In-house AEAT SOAP** | Official packs | Own `declaración responsable` | Months + perpetual maintenance | Rejected (Phase 0) |

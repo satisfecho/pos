@@ -9,10 +9,10 @@ When creating new code, **first look up relevant MD files** that might give extr
 
 ## Where to Look
 
-- **`docs/`** – Implementation plans, user guides, and feature docs (e.g. `docs/0011-*.md`, `docs/REVOLUT.md`)
-- **`README.md`** – Project overview, setup, and main flows
-- **`AGENTS.md`** – Agent instructions and constraints
-- **Root or feature-specific `.md`** – Any markdown next to the area you’re changing
+- **`docs/`** - Implementation plans, user guides, and feature docs (e.g. `docs/0011-*.md`, `docs/REVOLUT.md`)
+- **`README.md`** - Project overview, setup, and main flows
+- **`AGENTS.md`** - Agent instructions and constraints
+- **Root or feature-specific `.md`** - Any markdown next to the area you’re changing
 
 ## What to Do
 

@@ -16,21 +16,21 @@ Marketplace orders still use `delivery_integration_id` / `external_order_ref`; c
 
 ## API
 
-- `POST /orders/satisfecho-delivery` — staff (`order:update_status`): create with items + address (+ optional phone/name/notes/courier). Kitchen is notified immediately.
-- `POST /public/tenants/{tenant_id}/satisfecho-delivery` — **public** (rate-limited): create with items + **required** address and phone (+ optional name/notes). No courier assign. Returns `public_order_token`, `total_cents`, and payment hints (`stripe_publishable_key`, `revolut_configured`). Kitchen/inventory notify is deferred until payment succeeds. Public creates set `session_id=public_satisfecho_delivery` so ops can TTL-clean abandoned unpaid rows (see below).
+- `POST /orders/satisfecho-delivery` - staff (`order:update_status`): create with items + address (+ optional phone/name/notes/courier). Kitchen is notified immediately.
+- `POST /public/tenants/{tenant_id}/satisfecho-delivery` - **public** (rate-limited): create with items + **required** address and phone (+ optional name/notes). No courier assign. Returns `public_order_token`, `total_cents`, and payment hints (`stripe_publishable_key`, `revolut_configured`). Kitchen/inventory notify is deferred until payment succeeds. Public creates set `session_id=public_satisfecho_delivery` so ops can TTL-clean abandoned unpaid rows (see below).
 - **Item `product_id` (#304):** On both staff and public Satisfecho Delivery create, each line `product_id` may be a tenant-scoped public-menu **`TenantProduct.id`** (resolved to the linked `Product` via `_resolve_product_lines` in `delivery_order_service`) or a legacy **`Product.id`**. Cross-tenant IDs must not resolve. Regression: `back/tests/test_public_satisfecho_delivery.py::test_public_create_accepts_tenant_product_menu_ids`; UI smoke: `npm run test:delivery-checkout` (see `docs/testing.md`).
-- `PUT /orders/{id}/delivery` — update delivery metadata on Satisfecho Delivery orders only.
-- `GET /orders` — includes `order_channel`, `delivery_address`, `customer_phone`, `courier_user_id`; `table_name` is `"Satisfecho Delivery"` for that channel.
-- `GET /users/couriers` — staff (`order:read`): list courier-role users for assign UI.
-- `GET /courier/orders` / `GET /courier/orders/{id}` — lists marketplace **and** Satisfecho Delivery; list rows include `courier_user_id`, `delivery_address`, `customer_phone`, and `total_cents` so the courier **Mine** tab can show staff-assigned deliveries; detail returns the same address/phone fields plus `allowed_actions`.
-- `POST /courier/orders/{id}/actions` — courier fulfillment mutations (`accept` | `reject` | `picked_up` | `delivered`). See **Courier status actions** below.
+- `PUT /orders/{id}/delivery` - update delivery metadata on Satisfecho Delivery orders only.
+- `GET /orders` - includes `order_channel`, `delivery_address`, `customer_phone`, `courier_user_id`; `table_name` is `"Satisfecho Delivery"` for that channel.
+- `GET /users/couriers` - staff (`order:read`): list courier-role users for assign UI.
+- `GET /courier/orders` / `GET /courier/orders/{id}` - lists marketplace **and** Satisfecho Delivery; list rows include `courier_user_id`, `delivery_address`, `customer_phone`, and `total_cents` so the courier **Mine** tab can show staff-assigned deliveries; detail returns the same address/phone fields plus `allowed_actions`.
+- `POST /courier/orders/{id}/actions` - courier fulfillment mutations (`accept` | `reject` | `picked_up` | `delivered`). See **Courier status actions** below.
 
 ### Guest payment (table or public delivery)
 
 Stripe/Revolut guest endpoints accept **exactly one** of:
 
-- `table_token` — existing table / take-away menu checkout, or
-- `public_order_token` — public Satisfecho Delivery checkout (signed, ~1h).
+- `table_token` - existing table / take-away menu checkout, or
+- `public_order_token` - public Satisfecho Delivery checkout (signed, ~1h).
 
 Endpoints: `POST /orders/{id}/create-payment-intent`, `confirm-payment`, `create-revolut-order`, `confirm-revolut-payment`.
 
@@ -38,10 +38,10 @@ Revolut success redirect for delivery: `{PUBLIC_APP_BASE_URL}/delivery/{tenantId
 
 ## Public UI
 
-- `/delivery/:tenantId` — cart + address (+ postal code / location when configured) + Stripe/Revolut pay; shows delivery fee before pay. Cart lines post the public-menu catalog id (`TenantProduct.id`); create accepts that id or legacy `Product.id` (see **Item `product_id`** under API).
-- `/delivery/:tenantId/payment-success` — confirms Revolut after redirect; links to track page.
-- `/delivery/:tenantId/track?order_id=&public_order_token=` — customer live status (polling; no maps).
-- `/public-menu/:tenantId` — read-only menu with a link to delivery checkout.
+- `/delivery/:tenantId` - cart + address (+ postal code / location when configured) + Stripe/Revolut pay; shows delivery fee before pay. Cart lines post the public-menu catalog id (`TenantProduct.id`); create accepts that id or legacy `Product.id` (see **Item `product_id`** under API).
+- `/delivery/:tenantId/payment-success` - confirms Revolut after redirect; links to track page.
+- `/delivery/:tenantId/track?order_id=&public_order_token=` - customer live status (polling; no maps).
+- `/public-menu/:tenantId` - read-only menu with a link to delivery checkout.
 
 ## Delivery fee and coverage (tenant settings)
 
@@ -57,10 +57,10 @@ Staff configure under **Settings → Payments → Satisfecho Delivery** (also vi
 
 Public helpers:
 
-- `GET /public/tenants/{tenant_id}/satisfecho-delivery-config` — fee + coverage hints (no secrets).
-- `GET /public/orders/{order_id}/delivery-status?public_order_token=` — coarse status for the track page.
+- `GET /public/tenants/{tenant_id}/satisfecho-delivery-config` - fee + coverage hints (no secrets).
+- `GET /public/orders/{order_id}/delivery-status?public_order_token=` - coarse status for the track page.
 
-Customer track statuses: `awaiting_payment` → `received` → `preparing` → `out_for_delivery` → `delivered` (also `cancelled`). Derived from pay state, item statuses, and courier `out_for_delivery` / completed — not a 1:1 map of raw `order.status` after online pay.
+Customer track statuses: `awaiting_payment` → `received` → `preparing` → `out_for_delivery` → `delivered` (also `cancelled`). Derived from pay state, item statuses, and courier `out_for_delivery` / completed - not a 1:1 map of raw `order.status` after online pay.
 
 `public_order_token` lifetime is **24 hours** (covers pay + track). Unpaid public checkout TTL cleanup remains **2 hours**.
 
@@ -103,7 +103,7 @@ docker compose exec back python -m app.seeds.cleanup_unpaid_public_delivery --dr
 docker compose exec back python -m app.seeds.cleanup_unpaid_public_delivery --ttl-hours 4 --tenant-id 1
 ```
 
-Optional ops: schedule on amvara9 host cron via `./scripts/cleanup-unpaid-public-delivery-on-server.sh` (hourly UTC). Install steps and copy-paste crontab: **`docs/0001-ci-cd-amvara9.md`** § Unpaid public Satisfecho Delivery cleanup. Separate from tenant-1 demo reset — demo reset already wipes tenant 1 orders, so it does not need this hook.
+Optional ops: schedule on amvara9 host cron via `./scripts/cleanup-unpaid-public-delivery-on-server.sh` (hourly UTC). Install steps and copy-paste crontab: **`docs/0001-ci-cd-amvara9.md`** § Unpaid public Satisfecho Delivery cleanup. Separate from tenant-1 demo reset - demo reset already wipes tenant 1 orders, so it does not need this hook.
 
 Tests: `back/tests/test_cleanup_unpaid_public_delivery.py`.
 
@@ -117,8 +117,8 @@ Tests: `back/tests/test_cleanup_unpaid_public_delivery.py`.
 
 ## Migration
 
-`back/migrations/20260720220000_order_satisfecho_delivery.sql` — columns + backfill marketplace channel from existing `delivery_integration_id`.
+`back/migrations/20260720220000_order_satisfecho_delivery.sql` - columns + backfill marketplace channel from existing `delivery_integration_id`.
 
-`back/migrations/20260721220000_order_status_out_for_delivery.sql` — adds `out_for_delivery` to the `orderstatus` enum.
+`back/migrations/20260721220000_order_status_out_for_delivery.sql` - adds `out_for_delivery` to the `orderstatus` enum.
 
-`back/migrations/20260723220000_delivery_zones_fees.sql` — tenant `delivery_fee_cents` / `delivery_radius_meters` / `delivery_postal_codes`; order `delivery_fee_cents` snapshot.
+`back/migrations/20260723220000_delivery_zones_fees.sql` - tenant `delivery_fee_cents` / `delivery_radius_meters` / `delivery_postal_codes`; order `delivery_fee_cents` snapshot.

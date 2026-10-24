@@ -2,7 +2,7 @@
 
 ## Decision: split **by amount** and **by line**
 
-Staff records one or more **payment legs** against a single `Order`. Each leg has an amount (cents), a payment method, and an optional payer label. The order stays unpaid until the sum of non-voided legs covers the order due (line items − order-level discounts + tip when tip is applied on settlement).
+Staff records one or more **payment legs** against a single `Order`. Each leg has an amount (cents), a payment method, and an optional payer label. The order stays unpaid until the sum of non-voided legs covers the order due (line items - order-level discounts + tip when tip is applied on settlement).
 
 | Option | Status | Notes |
 |--------|--------|--------|

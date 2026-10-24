@@ -1,4 +1,4 @@
-# Table Reservation – Implementation Plan
+# Table Reservation - Implementation Plan
 
 > **Shipped core / design history.** Guest and staff table reservations (and waiting list) are live. For how-to and ops, use **[0011-table-reservation-user-guide.md](0011-table-reservation-user-guide.md)**. This file keeps the original research, schema/API design, and phased plan for context. Bullets labelled “optional for a later phase” below are backlog ideas, not gaps in the essential scope.
 
@@ -8,10 +8,10 @@ This document summarizes findings from open-source reservation systems and the c
 
 ## Essential scope
 
-Two user groups were **essential** (first release — now shipped):
+Two user groups were **essential** (first release - now shipped):
 
-1. **Staff** – Create, edit, cancel, and list reservations; seat reservations at tables; finish reservations; see table status (available / reserved / occupied) on the table canvas.
-2. **Web end users (customers)** – Reserve a table via the web (date, time, party size, name, phone); view their reservation(s); cancel their reservation. No login required for the minimal flow (identify by phone or booking reference).
+1. **Staff** - Create, edit, cancel, and list reservations; seat reservations at tables; finish reservations; see table status (available / reserved / occupied) on the table canvas.
+2. **Web end users (customers)** - Reserve a table via the web (date, time, party size, name, phone); view their reservation(s); cancel their reservation. No login required for the minimal flow (identify by phone or booking reference).
 
 Optional later-phase ideas (backlog, not essential gaps): logged-in “My reservations,” email/SMS confirmations, opening-hours enforcement.
 
@@ -26,7 +26,7 @@ Optional later-phase ideas (backlog, not essential gaps): logged-in “My reserv
 | **ewradcliffe/restaurant-booking-system** | Django, PostgreSQL | name, date, time, guests, email, booked_by (user) | No table assignment (out of scope) | CRUD, auth, past-date validation |
 | **jossansik/Portfolio-project4-restaurant-booking** | Django, Heroku Postgres | Table, Reservation, Menu; date/time/guests; staff confirm | Tables + capacity; one active reservation per user; availability by date + guests | Availability, capacity, one-booking-per-user |
 | **pjborowiecki/SEAT-FRENZY** | Next.js 14, Drizzle, PlanetScale | Full booking + venue listing | Multi-tenant, booking management | Product vision (not schema detail) |
-| **natsumi-h/chopeseats** | MERN, Mantine | User, Booking, Restaurant | High-level only in README | — |
+| **natsumi-h/chopeseats** | MERN, Mantine | User, Booking, Restaurant | High-level only in README | - |
 
 ---
 
@@ -34,16 +34,16 @@ Optional later-phase ideas (backlog, not essential gaps): logged-in “My reserv
 
 ### 2.1 Reservation lifecycle (Seatable-style)
 
-- **booked** – Reservation created (date, time, party size, contact). No table required yet.
-- **seated** – Staff assigns a table; reservation is “seated” at that table (table holds `reservation_id` or reservation holds `table_id`).
-- **finished** – Guest done; table cleared, reservation closed.
-- **cancelled** – Reservation cancelled (no table link).
+- **booked** - Reservation created (date, time, party size, contact). No table required yet.
+- **seated** - Staff assigns a table; reservation is “seated” at that table (table holds `reservation_id` or reservation holds `table_id`).
+- **finished** - Guest done; table cleared, reservation closed.
+- **cancelled** - Reservation cancelled (no table link).
 
 ### 2.2 Table state
 
-- **available** – No active order, no reservation assigned (or reservation finished/cancelled).
-- **reserved** – Assigned to a reservation that is still **booked** (future or current slot); no order yet.
-- **occupied** – Has active order (current pos2 “occupied”) or reservation **seated** here and order may exist.
+- **available** - No active order, no reservation assigned (or reservation finished/cancelled).
+- **reserved** - Assigned to a reservation that is still **booked** (future or current slot); no order yet.
+- **occupied** - Has active order (current pos2 “occupied”) or reservation **seated** here and order may exist.
 
 So “reserved” = table is assigned to an upcoming/current reservation but guests not yet seated (no order). After seating, we already have “occupied” via existing order flow.
 
@@ -51,8 +51,8 @@ So “reserved” = table is assigned to an upcoming/current reservation but gue
 
 - **Reservation** (new): tenant-scoped; date, time, party_size, customer name/phone (and optionally user_id); **status** (booked | seated | finished | cancelled); **table_id** (optional, set when staff “seats” the reservation).
 - **Table** (existing): add optional **reservation_id** (or rely only on Reservation.table_id). Either:
-  - **Option A** – Table has `reservation_id`: when we seat, set `table.reservation_id` and reservation.status = seated; when we finish, clear `table.reservation_id` and set reservation.status = finished. “Reserved” then means: some reservation with status=booked has this table_id.
-  - **Option B** – Only Reservation has `table_id`. Table status “reserved” = exists reservation with table_id = this table and status = booked. No FK on Table. Simpler schema change; table status is derived from reservations.
+  - **Option A** - Table has `reservation_id`: when we seat, set `table.reservation_id` and reservation.status = seated; when we finish, clear `table.reservation_id` and set reservation.status = finished. “Reserved” then means: some reservation with status=booked has this table_id.
+  - **Option B** - Only Reservation has `table_id`. Table status “reserved” = exists reservation with table_id = this table and status = booked. No FK on Table. Simpler schema change; table status is derived from reservations.
 
 Recommendation: **Option B** (only `Reservation.table_id`). Table has no new column; “reserved” is computed: “exists reservation where table_id = table.id and status = 'booked' and date/time in relevant window”.
 
@@ -76,7 +76,7 @@ pos2 already has table activation (PIN, active order). Reservation “seating”
 
 ## 4. Proposed implementation plan
 
-### Phase 1 – Backend: Reservation model and CRUD
+### Phase 1 - Backend: Reservation model and CRUD
 
 1. **Migration**
    - Add table `reservation` (tenant_id, customer_name, customer_phone, reservation_date, reservation_time, party_size, status, table_id nullable FK to table, **token** unique nullable for public lookup/cancel, created_at, updated_at).
@@ -89,14 +89,14 @@ pos2 already has table activation (PIN, active order). Reservation “seating”
    - Pydantic schemas: ReservationCreate, ReservationUpdate, ReservationStatusUpdate, ReservationOut.
 
 3. **Endpoints**
-   - `POST /reservations` – create (status=booked); validate date/time not in past. Used by **staff** (authenticated) and **end users** (public endpoint, see Phase 4).
-   - `GET /reservations` – list by tenant; query params: date, status, phone (search). **Staff only** (permission RESERVATION_READ).
-   - `GET /reservations/{id}` – get one. Staff by id; end users by id + token or phone (see Phase 4).
-   - `PUT /reservations/{id}` – update (date, time, party_size, name, phone); only if status=booked. **Staff only** (or end user for own reservation with token).
-   - `PUT /reservations/{id}/status` – set status (cancel → cancelled; seat → seated and set table_id). Cancel: staff or end user (with token); seat/finish: staff only.
+   - `POST /reservations` - create (status=booked); validate date/time not in past. Used by **staff** (authenticated) and **end users** (public endpoint, see Phase 4).
+   - `GET /reservations` - list by tenant; query params: date, status, phone (search). **Staff only** (permission RESERVATION_READ).
+   - `GET /reservations/{id}` - get one. Staff by id; end users by id + token or phone (see Phase 4).
+   - `PUT /reservations/{id}` - update (date, time, party_size, name, phone); only if status=booked. **Staff only** (or end user for own reservation with token).
+   - `PUT /reservations/{id}/status` - set status (cancel → cancelled; seat → seated and set table_id). Cancel: staff or end user (with token); seat/finish: staff only.
    - Permissions: RESERVATION_READ, RESERVATION_WRITE for staff; **public** `POST /reservations` (and optionally public get/cancel by token) for end-user booking.
 
-### Phase 2 – Backend: Table status “reserved” and seat/finish
+### Phase 2 - Backend: Table status “reserved” and seat/finish
 
 4. **Table status**
    - In `GET /tables/with-status`, compute three states:
@@ -106,10 +106,10 @@ pos2 already has table activation (PIN, active order). Reservation “seating”
    - Return `status` as `"available" | "reserved" | "occupied"`.
 
 5. **Seat / finish**
-   - `PUT /reservations/{id}/seat` – body: `{ "table_id": number }`. Checks: reservation status=booked; table free (not occupied, not reserved by another); seat_count >= party_size. Set reservation.table_id and reservation.status=seated. Optionally auto-activate table and create order (reuse existing activate flow) so table becomes “occupied”.
-   - `PUT /reservations/{id}/finish` (or `POST /reservations/{id}/finish`) – set reservation.status=finished, reservation.table_id=null. If you linked an order to the reservation, you can leave order/table as-is (staff closes table separately) or close table in one go; design choice.
+   - `PUT /reservations/{id}/seat` - body: `{ "table_id": number }`. Checks: reservation status=booked; table free (not occupied, not reserved by another); seat_count >= party_size. Set reservation.table_id and reservation.status=seated. Optionally auto-activate table and create order (reuse existing activate flow) so table becomes “occupied”.
+   - `PUT /reservations/{id}/finish` (or `POST /reservations/{id}/finish`) - set reservation.status=finished, reservation.table_id=null. If you linked an order to the reservation, you can leave order/table as-is (staff closes table separately) or close table in one go; design choice.
 
-### Phase 3 – Frontend: Tables canvas and reservation list
+### Phase 3 - Frontend: Tables canvas and reservation list
 
 6. **Tables canvas**
    - Use existing `CanvasTable.status` and i18n. Add styling for `status === 'reserved'` (e.g. distinct color/pattern) and show “Reserved” in the side panel when selected table is reserved.
@@ -122,12 +122,12 @@ pos2 already has table activation (PIN, active order). Reservation “seating”
 8. **Create / edit reservation (staff)**
    - Form: date, time, party size, customer name, phone. Submit → POST or PUT. Validate not in past.
 
-### Phase 4 – End-user web booking (essential)
+### Phase 4 - End-user web booking (essential)
 
 9. **Public API for customers**
-   - **Public** `POST /reservations` – no auth; body: tenant_id or tenant slug, reservation_date, reservation_time, party_size, customer_name, customer_phone (and optionally customer_email). Returns created reservation with **token** (e.g. UUID) for later lookup/cancel. Validate: date/time not in past; rate limiting per IP/phone.
-   - **Public** `GET /reservations/by-token?token=xxx` – return one reservation (masked or full) for “view my reservation” and cancel flow. Token is returned on create and optionally in confirmation copy.
-   - **Public** `PUT /reservations/{id}/cancel` (or `PUT /reservations/{id}/status` with body `{ "status": "cancelled" }`) – allowed only with valid token (e.g. query param or header) or for the reservation that matches token. Idempotent if already cancelled.
+   - **Public** `POST /reservations` - no auth; body: tenant_id or tenant slug, reservation_date, reservation_time, party_size, customer_name, customer_phone (and optionally customer_email). Returns created reservation with **token** (e.g. UUID) for later lookup/cancel. Validate: date/time not in past; rate limiting per IP/phone.
+   - **Public** `GET /reservations/by-token?token=xxx` - return one reservation (masked or full) for “view my reservation” and cancel flow. Token is returned on create and optionally in confirmation copy.
+   - **Public** `PUT /reservations/{id}/cancel` (or `PUT /reservations/{id}/status` with body `{ "status": "cancelled" }`) - allowed only with valid token (e.g. query param or header) or for the reservation that matches token. Idempotent if already cancelled.
 
 10. **Customer booking page (frontend)**
    - **Booking form**: tenant context (e.g. from URL or tenant selector). Fields: date, time, party size, name, phone (required); optional email. Submit → call public `POST /reservations` → show success + reservation details + “View / Cancel” link (with token in URL or stored in sessionStorage).
@@ -137,7 +137,7 @@ pos2 already has table activation (PIN, active order). Reservation “seating”
 11. **Routing and tenant**
    - End-user booking must be reachable in a tenant-aware way (e.g. `/book` with tenant in path or subdomain, or tenant slug). Reuse existing tenant resolution (e.g. from menu/public pages) so the booking form knows which tenant_id to send.
 
-### Phase 5 – Polish and ops
+### Phase 5 - Polish and ops
 
 12. **Validation**
     - Opening hours / closed days (optional for v1): reject or warn for out-of-hours or closed days.
@@ -187,7 +187,7 @@ Optional: add `reservation_id` nullable FK later to link order to reservation wh
 
 ## 7. Implementation plan (ordered steps)
 
-### Backend (Phases 1–2)
+### Backend (Phases 1-2)
 
 | Step | Task | Delivered |
 |------|------|-----------|
@@ -207,7 +207,7 @@ Optional: add `reservation_id` nullable FK later to link order to reservation wh
 | 9 | Create / Edit reservation form (staff): date, time, party size, name, phone; POST/PUT /reservations | front |
 | 10 | Seat modal: list available tables (capacity ≥ party_size), confirm → PUT /reservations/{id}/seat | front |
 
-### End-user frontend (Phase 4 – essential)
+### End-user frontend (Phase 4 - essential)
 
 | Step | Task | Delivered |
 |------|------|-----------|

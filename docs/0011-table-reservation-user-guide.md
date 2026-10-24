@@ -1,4 +1,4 @@
-# Table reservation – User guide and URLs
+# Table reservation - User guide and URLs
 
 This document describes how table reservations work for **staff** and **end users**, the public URLs, and what has been implemented.
 
@@ -8,9 +8,9 @@ This document describes how table reservations work for **staff** and **end user
 
 ### Staff (admin dashboard)
 
-- **Reservations list** (`/reservations`): Filter by date, phone, status; create, edit, cancel, **seat at table**, and finish reservations. Table column shows assigned table name or "—" when not assigned.
+- **Reservations list** (`/reservations`): Filter by date, phone, status; create, edit, cancel, **seat at table**, and finish reservations. Table column shows assigned table name or "-" when not assigned.
 - **Waiting list tab** (`/reservations` → **Waiting list**): View the walk-in queue; filter by phone or status. Actions on active entries (`waiting` / `notified`): **Mark notified**, **Book table** (opens reservation form prefilled with guest details), **Mark seated**, **No show**, and **Cancel**.
-- **Guest feedback** (`/guest-feedback`): Review ratings and comments submitted via the public feedback link (when the reservations module is enabled). Includes a **trends** panel (averages, star distribution, daily volume) and **CSV export** — see `docs/0064-guest-feedback-analytics.md`.
+- **Guest feedback** (`/guest-feedback`): Review ratings and comments submitted via the public feedback link (when the reservations module is enabled). Includes a **trends** panel (averages, star distribution, daily volume) and **CSV export** - see `docs/0064-guest-feedback-analytics.md`.
 - **Tables canvas** (`/tables/canvas`): Table status **Reserved** (amber) when a reservation is assigned; **Available** / **Occupied** as before.
 - **Permissions**: `reservation:read` and `reservation:write` for owner, admin, waiter, receptionist.
 - **API**: List/create/update reservations; seat (assign table), finish, cancel; reservation responses include `table_name` when `table_id` is set.
@@ -84,17 +84,17 @@ The waiting list is for **walk-in guests** who want a table **without** picking 
    The guest sees name, party size, and phone (same contact validation as booking). No account required.
 
 3. **Submit**  
-   On success the page confirms they are on the waiting list. There is no public token page for waiting-list entries — the restaurant contacts the guest when a table is ready (staff mark entries **notified** in the admin).
+   On success the page confirms they are on the waiting list. There is no public token page for waiting-list entries - the restaurant contacts the guest when a table is ready (staff mark entries **notified** in the admin).
 
 ### Staff flow
 
 1. Open **`/reservations`** and select the **Waiting list** tab.
 2. The queue lists active entries (default filter: `waiting` and `notified`). Filter by phone or status as needed.
 3. For each active entry:
-   - **Mark notified** — guest has been called or messaged (`waiting` → `notified`).
-   - **Book table** — opens the new-reservation modal with name, phone, and party size prefilled; after saving, the entry is marked **seated**.
-   - **Mark seated** — guest seated without creating a timed reservation.
-   - **No show** / **Cancel** — remove the guest from the active queue.
+   - **Mark notified** - guest has been called or messaged (`waiting` → `notified`).
+   - **Book table** - opens the new-reservation modal with name, phone, and party size prefilled; after saving, the entry is marked **seated**.
+   - **Mark seated** - guest seated without creating a timed reservation.
+   - **No show** / **Cancel** - remove the guest from the active queue.
 
 Staff can also add waiting-list entries manually via the staff API (`POST /waiting-list`). See **`docs/0010-table-reservation-implementation-plan.md`** for API and schema detail.
 

@@ -6,7 +6,7 @@ Extends **`docs/0018-verifactu-fiscal-invoicing.md`**. Documents the **build-vs-
 
 Related: GitHub **#326** (complete VeriFactu), **#203** (initial stub).
 
-## Phase 0 — ADR: build vs buy
+## Phase 0 - ADR: build vs buy
 
 ### Context
 
@@ -23,7 +23,7 @@ Inventing SOAP/XML payloads or hash “huella” fields without the official AEA
 
 ### Decision
 
-**Prefer B — certified middleware** for AEAT submission and official huella/QR when going production.
+**Prefer B - certified middleware** for AEAT submission and official huella/QR when going production.
 
 **Phase 1 vendor pick (#342):** primary **Fiskaly SIGN ES**; runner-up Verifacti; generic HTTP adapter retained. Details: **`docs/0074-fiscal-certified-middleware.md`**.
 
@@ -61,7 +61,7 @@ Middleware (chosen provider) owns:
 | Fiskaly SIGN ES / generic / mock adapters | **Yes** (#342) |
 | Print Factura fiscal block (QR + disclaimer) | **Yes** when `fiscal_mode` is test/live |
 | Official AEAT huella algorithm / SOAP remisión | **Via middleware** (Fiskaly SIGN ES adapter wired; needs commercial credentials) |
-| `fiscal_mode: live` production remisión | **Gated** — unlock + provider credentials; mock OK only non-prod |
+| `fiscal_mode: live` production remisión | **Gated** - unlock + provider credentials; mock OK only non-prod |
 | Software-vendor `declaración responsable` for Satisfecho as SIF | **Not claimed** in this doc; legal/ops follow-up |
 
 ## Remaining gaps for “fully working” (#431)
@@ -74,7 +74,7 @@ Honest product status as of the #431 audit (not a certification claim):
 | **`FISCAL_LIVE_UNLOCK=true` on prod** only after sandbox sign-off | Platform ops | Keep `false` until credentials verified (`docs/0074`) |
 | **Per-merchant taxpayer / SIGN ES client onboarding** | Merchant + ops | Client UUID in `fiscal_aeat_api_secret` or `FISCAL_FISKALY_CLIENT_ID` |
 | **Fiskaly invoice payload fidelity** | Done in product (#431) | SIGN ES adapter maps order **line_items** with per-line IVA (`tax_rate_percent`); falls back to single 21% only when lines are missing |
-| **Issuer NIF quality** | Merchant data | Missing `tax_id`/`cif` falls back to placeholder `PENDING00` — QR/cotejo will be wrong until set |
+| **Issuer NIF quality** | Merchant data | Missing `tax_id`/`cif` falls back to placeholder `PENDING00` - QR/cotejo will be wrong until set |
 | **Staff UI for anulación** | Done in product (#431) | Orders Factura + edit-order show cancel (anulación) when an active alta exists; wired to `POST …/fiscal-invoice/cancel` |
 | **`declaración responsable` / legal SIF registration** | Legal / ops | Out of code; not claimed by Satisfecho alone |
 | **Marketing honesty** | Done for now | `/features` + Settings describe preparation/test; do not claim “AEAT certified live” until LIVE verified |
@@ -98,7 +98,7 @@ Per-tenant `fiscal_aeat_api_secret` may hold the Fiskaly **client UUID** (or oth
 Test host: `https://prewww2.aeat.es/wlpl/TIKE-CONT/ValidarQR`  
 Prod host: `https://www2.agenciatributaria.gob.es/wlpl/TIKE-CONT/ValidarQR`
 
-Query parameters (Orden HAC / AEAT QR technical note): `nif`, `numserie`, `fecha` (`DD-MM-YYYY`), `importe` (dot decimals). POS builds this URL from issuer NIF, full number, issue date, and order total. **Successful cotejo on AEAT’s site requires prior remisión** — printing the URL alone is not compliance.
+Query parameters (Orden HAC / AEAT QR technical note): `nif`, `numserie`, `fecha` (`DD-MM-YYYY`), `importe` (dot decimals). POS builds this URL from issuer NIF, full number, issue date, and order total. **Successful cotejo on AEAT’s site requires prior remisión** - printing the URL alone is not compliance.
 
 ## Testing
 

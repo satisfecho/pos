@@ -2,14 +2,14 @@
 
 ## Status: shipped
 
-Reservation reminders already support **email** and/or **WhatsApp** (Twilio). Staff uses one action — **Send reminder** (`POST /reservations/{id}/send-reminder`) — and the backend sends to every available channel. Phone-only reservations work when Twilio is configured (email is not required). The same channel logic is used by the autonomous reminder heartbeat (`reservation_reminder_heartbeat.py`, tenant flags `reservation_reminder_24h_enabled` / `reservation_reminder_2h_enabled`).
+Reservation reminders already support **email** and/or **WhatsApp** (Twilio). Staff uses one action - **Send reminder** (`POST /reservations/{id}/send-reminder`) - and the backend sends to every available channel. Phone-only reservations work when Twilio is configured (email is not required). The same channel logic is used by the autonomous reminder heartbeat (`reservation_reminder_heartbeat.py`, tenant flags `reservation_reminder_24h_enabled` / `reservation_reminder_2h_enabled`).
 
 **Two different “WhatsApp” surfaces (do not confuse them):**
 
 | Surface | What it does |
 |---------|----------------|
 | **Staff Send reminder** / heartbeat | Backend Twilio API sends a reminder to the **guest’s** `customer_phone` (`whatsapp_service.py`). |
-| **Public book page CTA** | Guest opens `https://wa.me/…` to chat the **restaurant’s** `tenant.whatsapp` (Settings). Link only — no Twilio send. Smoke: `npm run test:book-whatsapp --prefix front`. |
+| **Public book page CTA** | Guest opens `https://wa.me/…` to chat the **restaurant’s** `tenant.whatsapp` (Settings). Link only - no Twilio send. Smoke: `npm run test:book-whatsapp --prefix front`. |
 
 **Configure** (see `config.env.example`; never commit live secrets):
 
@@ -26,7 +26,7 @@ Reservation reminders already support **email** and/or **WhatsApp** (Twilio). St
 - Implementation: `back/app/whatsapp_service.py`. Response includes `email_sent` / `whatsapp_sent` (and optional `to_email` / `to_phone`).
 - Staff UI: Reservations list → **Send reminder** (`RESERVATIONS.SEND_REMINDER`); success alert reflects which channels delivered.
 - Manual send marks both `reminder_24h_sent_at` and `reminder_2h_sent_at` so the heartbeat will not resend.
-- The service sends a plain-text `Body` today; **no `ContentSid` wiring**. Production Meta/WhatsApp often requires an approved template for business-initiated messages — plan for that when leaving the Twilio sandbox.
+- The service sends a plain-text `Body` today; **no `ContentSid` wiring**. Production Meta/WhatsApp often requires an approved template for business-initiated messages - plan for that when leaving the Twilio sandbox.
 - WhatsApp body does **not** include the email `view_url` (`PUBLIC_APP_BASE_URL` + token); that link is email-only today.
 
 ### Operator checklist

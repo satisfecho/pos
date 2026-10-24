@@ -46,7 +46,7 @@ Would guests or staff benefit from voice and/or chat with the POS? The GitHub is
 
 1. Staff voice shortcuts that **propose** mutations (open table, mark item ready) with on-screen confirm.
 2. Public guest FAQ chat grounded on tenant menu/hours (server, rate-limited, no write tools).
-3. Optional cloud STT for Safari / mobile gaps — requires env secrets and a privacy review.
+3. Optional cloud STT for Safari / mobile gaps - requires env secrets and a privacy review.
 
 ## Feasibility result
 

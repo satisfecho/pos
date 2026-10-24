@@ -33,18 +33,18 @@ Columns on `tenant`:
 
 ## API
 
-- `GET /saas/config` — public plan flags (`enabled`, `trial_days`, `price_cents`, `currency`, `stripe_checkout_available`) plus a forward-compatible **`plans`** array (currently one `hosted_standard` tier with the same price/trial). Used by `/paywall`, signup, and the public **`/pricing`** page (#328).
-- `GET /saas/subscription` — current tenant status (auth)
-- `POST /saas/start-trial` — owner/admin; starts trial
-- `POST /saas/checkout-session` — Stripe Checkout URL when configured
-- `POST /saas/confirm-checkout` — after redirect with `session_id` (fast path)
-- `POST /saas/webhook` — Stripe billing webhook (signature via `SAAS_STRIPE_WEBHOOK_SECRET`); source of truth for subscription lifecycle
+- `GET /saas/config` - public plan flags (`enabled`, `trial_days`, `price_cents`, `currency`, `stripe_checkout_available`) plus a forward-compatible **`plans`** array (currently one `hosted_standard` tier with the same price/trial). Used by `/paywall`, signup, and the public **`/pricing`** page (#328).
+- `GET /saas/subscription` - current tenant status (auth)
+- `POST /saas/start-trial` - owner/admin; starts trial
+- `POST /saas/checkout-session` - Stripe Checkout URL when configured
+- `POST /saas/confirm-checkout` - after redirect with `session_id` (fast path)
+- `POST /saas/webhook` - Stripe billing webhook (signature via `SAAS_STRIPE_WEBHOOK_SECRET`); source of truth for subscription lifecycle
 
 ## Public pricing page
 
 Prospects can open **`/pricing`** (linked from landing / features nav and footer) to see:
 
-- **QR Menu free forever** — a dedicated zero-cost tier (and hero callout) before paid options; aligned with README **Start with one feature**.
+- **QR Menu free forever** - a dedicated zero-cost tier (and hero callout) before paid options; aligned with README **Start with one feature**.
 - Hosted monthly price and trial days from live `GET /saas/config` (env-driven; no drifting hardcoded copy).
 - A short “what’s included” list on the hosted tier (QR ordering, kitchen/bar, reservations, reports, loyalty).
 - Self-host / AGPLv3 as a zero license-cost alternative.
@@ -80,7 +80,7 @@ Public multi-step UX at **`/register`** (alias **`/signup`**) that primes a new 
 ### Guest path
 
 1. Landing (or `/features`) → **Create account** → `/register` (or `/signup`; same component).
-2. Wizard steps (client-side `step` 0–4):
+2. Wizard steps (client-side `step` 0-4):
    | Step | UI | What happens |
    |------|-----|----------------|
    | 0 | Intro + “Get started” | No API calls. |
@@ -89,7 +89,7 @@ Public multi-step UX at **`/register`** (alias **`/signup`**) that primes a new 
    | 3 | Photos / price tweak | Authenticated `PATCH`/`upload` on `/products/*` for those starter rows (optional images). |
    | 4 | Done (QR + public menu link) | Finish CTA: **`/paywall`** when `SAAS_PAYWALL_ENABLED=true`, else **`/dashboard`**. |
 3. When paywall is on: trial or Stripe Checkout on `/paywall` unlocks the staff app (see **Flow** and **API** above).
-4. Platform operators can later review the new tenant under `/platform` (signups metric, tenant detail) — see [0059-platform-operator-portal.md](0059-platform-operator-portal.md).
+4. Platform operators can later review the new tenant under `/platform` (signups metric, tenant detail) - see [0059-platform-operator-portal.md](0059-platform-operator-portal.md).
 
 ### Priming vs 402 middleware
 
@@ -108,41 +108,41 @@ Staff routes outside that set return **402** `saas_subscription_required` until 
 
 ### Smokes
 
-- Wizard UI only (no tenant create): `npm run test:guided-signup-wizard --prefix front` — see `docs/testing.md`.
+- Wizard UI only (no tenant create): `npm run test:guided-signup-wizard --prefix front` - see `docs/testing.md`.
 - Full paywall path (creates a tenant): `npm run test:paywall --prefix front` when the flag is on.
 
 ## Production enablement
 
-Keep **`SAAS_PAYWALL_ENABLED=false`** until this checklist is done. Do **not** flip the flag mid-deploy without webhook + Price ID ready — cancel / `past_due` / renewals will not sync. amvara9 ops pointer: [0001-ci-cd-amvara9.md](0001-ci-cd-amvara9.md) (§ SaaS paywall).
+Keep **`SAAS_PAYWALL_ENABLED=false`** until this checklist is done. Do **not** flip the flag mid-deploy without webhook + Price ID ready - cancel / `past_due` / renewals will not sync. amvara9 ops pointer: [0001-ci-cd-amvara9.md](0001-ci-cd-amvara9.md) (§ SaaS paywall).
 
 Ordered checklist (local or amvara9 `/development/pos`):
 
-1. **Stripe Price + platform keys** — Create a recurring Price in Stripe Dashboard (or API). Set in `config.env`:
+1. **Stripe Price + platform keys** - Create a recurring Price in Stripe Dashboard (or API). Set in `config.env`:
    - `STRIPE_SECRET_KEY` / `STRIPE_PUBLISHABLE_KEY` (platform SaaS Checkout)
    - `SAAS_STRIPE_PRICE_ID=price_…`
    - Optional display overrides: `SAAS_TRIAL_DAYS`, `SAAS_PLAN_PRICE_CENTS`, `SAAS_PLAN_CURRENCY`
-2. **Dashboard webhook** — Developers → Webhooks → endpoint **`https://<host>/api/saas/webhook`** (prod behind HAProxy; local: Stripe CLI forward to `{API}/saas/webhook`). Enable events listed under **Stripe webhook** above. Copy signing secret → `SAAS_STRIPE_WEBHOOK_SECRET=whsec_…`.
-3. **Confirm grandfathering** — Existing restaurants must stay `grandfathered` (migration already did this). Spot-check before enabling:
+2. **Dashboard webhook** - Developers → Webhooks → endpoint **`https://<host>/api/saas/webhook`** (prod behind HAProxy; local: Stripe CLI forward to `{API}/saas/webhook`). Enable events listed under **Stripe webhook** above. Copy signing secret → `SAAS_STRIPE_WEBHOOK_SECRET=whsec_…`.
+3. **Confirm grandfathering** - Existing restaurants must stay `grandfathered` (migration already did this). Spot-check before enabling:
    ```bash
    docker compose --env-file config.env exec -T back \
      python -c "from sqlmodel import Session, select; from app.db import engine; from app import models; s=Session(engine); rows=s.exec(select(models.Tenant.id, models.Tenant.name, models.Tenant.saas_subscription_status)).all(); print('\n'.join(f'{i}\t{n}\t{st}' for i,n,st in rows))"
    ```
-4. **Enable flag** — Set `SAAS_PAYWALL_ENABLED=true` in `config.env`, then recreate **back** so compose injects env:
+4. **Enable flag** - Set `SAAS_PAYWALL_ENABLED=true` in `config.env`, then recreate **back** so compose injects env:
    ```bash
    # Local
    docker compose --env-file config.env -f docker-compose.yml -f docker-compose.dev.yml up -d back
    # amvara9
    cd /development/pos && docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml up -d back
    ```
-5. **Verify config** — Expect `"enabled": true`:
+5. **Verify config** - Expect `"enabled": true`:
    ```bash
    # Local (HAProxy)
    curl -sS http://127.0.0.1:4202/api/saas/config
    # Production
    curl -sS https://www.satisfecho.de/api/saas/config
    ```
-6. **Dry-run signup** — Register a throwaway restaurant → finish onboarding → land on `/paywall` → **Start free trial** (or Checkout) → staff dashboard unlocks. Existing grandfathered tenants must still reach `/dashboard` without `/paywall`.
-7. **Smoke (optional)** — With paywall on:
+6. **Dry-run signup** - Register a throwaway restaurant → finish onboarding → land on `/paywall` → **Start free trial** (or Checkout) → staff dashboard unlocks. Existing grandfathered tenants must still reach `/dashboard` without `/paywall`.
+7. **Smoke (optional)** - With paywall on:
    ```bash
    BASE_URL=http://127.0.0.1:4202 REQUIRE_PAYWALL=1 npm run test:paywall --prefix front
    # Prod example:

@@ -37,7 +37,7 @@ Merge **`development` → `master`** (fast-forward or merge commit, per team hab
 |--------|---------|
 | **Daily cadence (default)** | At least once per day, integrate tested work from **`development`** into **`master`** and push so amvara9 deploys. The agent loop runs this via **`scripts/promote-development-to-master.sh`** (step **009**; default interval **`AGENT_PROMOTE_INTERVAL_HOURS=24`**). Not every single commit. |
 | **Big production change** | Large or high-risk change that **must** go live soon: security fixes, data-integrity fixes, payment/order critical paths, migrations that block deploy, multi-tenant outages, or similarly material production impact. State that in the PR/commit message or task. Use **`AGENT_PROMOTE_FORCE=1`** or merge manually. |
-| **Urgent / production in issue** | The linked **GitHub issue** (or explicit user instruction) says **urgent**, **hotfix**, **production**, **deploy now**, or equivalent — then merging to **`master`** immediately is allowed. Prefer label **`production-urgent`** on the issue when applicable. |
+| **Urgent / production in issue** | The linked **GitHub issue** (or explicit user instruction) says **urgent**, **hotfix**, **production**, **deploy now**, or equivalent - then merging to **`master`** immediately is allowed. Prefer label **`production-urgent`** on the issue when applicable. |
 
 If none of the above applies: **push `development` only**; do **not** merge to **`master`**. The loop will pick up pending commits on the next daily promote window.
 
@@ -45,7 +45,7 @@ If none of the above applies: **push `development` only**; do **not** merge to *
 
 - **Coder / tester / closer:** Work on **`development`**; never assume **`master`** must be updated the same hour.
 - **Committer / changelog:** Commit on **`development`** and **`git push origin development`**. Merge to **`master`** only per the table above (or leave it to loop step **009**).
-- **When the user says “push”** (no other qualifier): push **`development`**, not a blind push of whatever branch is current — if you are on **`master`**, switch back to **`development`** for ongoing work after any allowed **`master`** promotion.
+- **When the user says “push”** (no other qualifier): push **`development`**, not a blind push of whatever branch is current - if you are on **`master`**, switch back to **`development`** for ongoing work after any allowed **`master`** promotion.
 
 ## Conflicts with other instructions
 

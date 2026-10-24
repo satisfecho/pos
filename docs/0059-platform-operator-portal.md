@@ -1,4 +1,4 @@
-# Platform operator portal – Documentation
+# Platform operator portal - Documentation
 
 This document describes the **platform operator portal**: login and SaaS oversight for Satisfecho platform administrators. It is distinct from the **provider portal** (`/provider`) and **tenant staff** login (`/login`).
 
@@ -18,12 +18,12 @@ Platform operators can:
 - Open a **tenant detail** page at `/platform/tenants/{id}` with:
   - Owner and business contact (email, phone)
   - Activity stats (products, tables, users, orders, reservations)
-  - **Staff accounts** (email + role + **login count / last login**) — whom to contact
+  - **Staff accounts** (email + role + **login count / last login**) - whom to contact
   - Links to **public pages** for that tenant:
-    - `/public-menu/{id}` — guest menu
-    - `/{slug}/book` or `/book/{id}` — reservations / booking
-    - `/waitlist/{id}` — waitlist
-    - `/delivery/{id}` — Satisfecho Delivery checkout
+    - `/public-menu/{id}` - guest menu
+    - `/{slug}/book` or `/book/{id}` - reservations / booking
+    - `/waitlist/{id}` - waitlist
+    - `/delivery/{id}` - Satisfecho Delivery checkout
 
 Operator users live in the same `User` table with `role=platform_operator`, `tenant_id=NULL`, and `provider_id=NULL`.
 
@@ -80,7 +80,7 @@ The seed is idempotent: re-running updates the password and ensures role/tenant 
 
 ## 5. Security notes
 
-- Operator endpoints expose **tenant owner/staff emails** and business contact fields to **platform operators only** — not to other tenants or public users.
+- Operator endpoints expose **tenant owner/staff emails** and business contact fields to **platform operators only** - not to other tenants or public users.
 - Customer/guest PII (reservation guest emails, order customer data) is not shown on the platform dashboard.
 - Use a dedicated operator account; do not reuse tenant staff or provider credentials.
 - Protect `PLATFORM_OPERATOR_PASSWORD` like any admin secret (deployment env / secrets manager).

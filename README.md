@@ -1,6 +1,6 @@
 <div align="center">
 
-![POS2 — Restaurant POS and ordering](docs/banner.svg)
+![POS2 - Restaurant POS and ordering](docs/banner.svg)
 
 [![version](https://img.shields.io/github/v/release/satisfecho/pos?style=flat-square&label=version)](https://github.com/satisfecho/pos/releases)
 [![build](https://img.shields.io/github/check-runs/satisfecho/pos/master?style=flat-square&label=build)](https://github.com/satisfecho/pos/actions)
@@ -13,7 +13,7 @@
 [![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)](back/)
 [![PostgreSQL](https://img.shields.io/badge/db-PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)](docker-compose.yml)
 
-**Restaurant POS and ordering infrastructure — self-hosted, multi-tenant, real-time.**
+**Restaurant POS and ordering infrastructure - self-hosted, multi-tenant, real-time.**
 
 _A point-of-sale system with a customer-facing menu, table management, and reservations. Staff use the Angular admin. Guests order via QR codes. You keep full control of your data and deployment._
 
@@ -29,11 +29,11 @@ _A point-of-sale system with a customer-facing menu, table management, and reser
 
 POS2 is built for restaurants and venues that want:
 
-- **One place for operations** — Orders, tables, reservations, and the menu in a single stack.
-- **Customer ordering without apps** — Guests scan a table QR code and browse the menu. An optional table PIN limits who can order.
-- **Real-time updates** — Order status (pending → preparing → ready → delivered → paid) reaches staff and guests over WebSockets.
-- **Multi-tenant from day one** — Each restaurant (tenant) has isolated data, settings, and its own payment setup.
-- **Self-hosted** — Run on your own server or local network. There is no vendor lock-in.
+- **One place for operations** - Orders, tables, reservations, and the menu in a single stack.
+- **Customer ordering without apps** - Guests scan a table QR code and browse the menu. An optional table PIN limits who can order.
+- **Real-time updates** - Order status (pending → preparing → ready → delivered → paid) reaches staff and guests over WebSockets.
+- **Multi-tenant from day one** - Each restaurant (tenant) has isolated data, settings, and its own payment setup.
+- **Self-hosted** - Run on your own server or local network. There is no vendor lock-in.
 
 ---
 
@@ -65,12 +65,12 @@ Guests can join the **waiting list** at **`/waitlist/{tenantId}`** (linked from 
 
 ### Screenshots
 
-Staff dashboard, kitchen display, and customer menu — a quick visual sense of the product.
+Staff dashboard, kitchen display, and customer menu - a quick visual sense of the product.
 
 <p float="left">
-  <img src="docs/screenshots/dashboard.png" width="32%" alt="Staff dashboard — Catalog, Reservations, Kitchen, Reports" />
-  <img src="docs/screenshots/kitchen.png" width="32%" alt="Kitchen display — full-screen order cards" />
-  <img src="docs/screenshots/menu.png" width="32%" alt="Customer menu — browse, cart, place order" />
+  <img src="docs/screenshots/dashboard.png" width="32%" alt="Staff dashboard - Catalog, Reservations, Kitchen, Reports" />
+  <img src="docs/screenshots/kitchen.png" width="32%" alt="Kitchen display - full-screen order cards" />
+  <img src="docs/screenshots/menu.png" width="32%" alt="Customer menu - browse, cart, place order" />
 </p>
 
 *More screenshots (orders, reports, reservations, tables, provider portal) are listed in [docs/screenshots/README.md](docs/screenshots/README.md).*
@@ -89,7 +89,7 @@ Staff dashboard, kitchen display, and customer menu — a quick visual sense of 
 | **Reports** | Sales & revenue at `/reports` (owner/admin): date range, summary (total revenue, order count, average payment per client), reservation count and by source (public/staff), by product/category/table/waiter, charts, CSV/Excel export. See [docs/0016-reports.md](docs/0016-reports.md). |
 | **Payments** | **Stripe** and **Revolut** (online checkout on the customer menu; per-tenant configuration in **Settings**). **Cash** and **card terminal (dataphone)** when staff marks the order paid. Optional **immediate payment required** (checkout opens right after placing order). Revolut sandbox and redirect URLs: [docs/REVOLUT.md](docs/REVOLUT.md). |
 | **Tables** | Table management, QR codes, canvas view. Table activation and 4-digit PIN so only present guests can order; PIN rate limiting via Redis. See [docs/0009-table-pin-security.md](docs/0009-table-pin-security.md). |
-| **Staff navigation** | After sign-in, the sidebar matches operational areas: **Dashboard**, **My shift** (optional), **Orders**, **Reservations** and **Guest feedback** (when the reservations module is enabled), **Tables** (list and canvas), **Kitchen** and **Bar** displays, **Customers**, **Products**, **Catalog** (when the providers module is enabled), **Reports**, **Working plan**, **Inventory** (items, suppliers, purchase orders, stock, reports — admin), **Users**, **Contracts** (when permitted), **Settings** (admin). |
+| **Staff navigation** | After sign-in, the sidebar matches operational areas: **Dashboard**, **My shift** (optional), **Orders**, **Reservations** and **Guest feedback** (when the reservations module is enabled), **Tables** (list and canvas), **Kitchen** and **Bar** displays, **Customers**, **Products**, **Catalog** (when the providers module is enabled), **Reports**, **Working plan**, **Inventory** (items, suppliers, purchase orders, stock, reports - admin), **Users**, **Contracts** (when permitted), **Settings** (admin). |
 | **Reservations** | Staff: list, create, edit, seat, finish, cancel at `/reservations`. **Client notes** (from the customer at booking) and **owner notes** (internal staff notes). **Client technical info** (IP, user-agent, browser fingerprint, screen size) is recorded for public bookings and visible to staff. **No-show**: mark no-shows and **send reminders** by email and/or **WhatsApp** (when Twilio is configured). Public: book at `/book/:tenantId`, view/cancel at `/reservation?token=...`. **Waiting list:** public join at `/waitlist/:tenantId` (linked from the book page); staff manage the queue on the Reservations waiting-list tab. Table status: available / reserved / occupied. See [docs/0011-table-reservation-user-guide.md](docs/0011-table-reservation-user-guide.md). |
 | **Real-time** | WebSocket updates for order status; token-based WS auth (`/ws-token`). |
 | **i18n & currency** | Languages: English, Spanish, Catalan, German, French, Bulgarian, Chinese (Simplified), Hindi, Urdu (RTL). Files: `front/public/i18n/*.json`. Language picker in the admin sidebar and on the public menu. API: `?lang=es` (or another code) for localized messages. Per-tenant currency (EUR, USD, MXN, INR, CNY, TWD, and others). See [docs/0012-translation-implementation.md](docs/0012-translation-implementation.md). |
@@ -123,7 +123,7 @@ Planned, not yet implemented: Order Phase 4 (batch operations, audit, item repla
 
 ## Getting Started
 
-So, you really want to get your hands dirty and install? Then continue reading. If you want to try it out first, you may use the hosted version at [satisfecho.de](https://satisfecho.de). No worries, anything you do on satisfecho.de — your data, your menus — you can export at any time and import the same on a self-hosted stack. Open source, no lock-in. ;-)
+So, you really want to get your hands dirty and install? Then continue reading. If you want to try it out first, you may use the hosted version at [satisfecho.de](https://satisfecho.de). No worries, anything you do on satisfecho.de - your data, your menus - you can export at any time and import the same on a self-hosted stack. Open source, no lock-in. ;-)
 
 ### Prerequisites
 
@@ -226,12 +226,12 @@ Browser → Frontend (Angular) → Backend (FastAPI) → PostgreSQL
 
 **Services (Docker Compose):**
 
-- **haproxy** — Single entry point; routes `/` to frontend, `/api` to backend, `/ws` to WebSocket bridge. Port from `FRONTEND_PORT` (default 4202).
-- **front** — Angular SPA (dev server in container).
-- **back** — FastAPI app (Uvicorn).
-- **ws-bridge** — WebSocket server; subscribes to Redis and pushes order updates.
-- **db** — PostgreSQL 18.
-- **redis** — Cache and pub/sub.
+- **haproxy** - Single entry point; routes `/` to frontend, `/api` to backend, `/ws` to WebSocket bridge. Port from `FRONTEND_PORT` (default 4202).
+- **front** - Angular SPA (dev server in container).
+- **back** - FastAPI app (Uvicorn).
+- **ws-bridge** - WebSocket server; subscribes to Redis and pushes order updates.
+- **db** - PostgreSQL 18.
+- **redis** - Cache and pub/sub.
 
 ---
 
@@ -270,11 +270,11 @@ Do not edit existing migration files; add a new migration to change schema.
 
 ### PostgreSQL: connecting from your machine
 
-The Compose database publishes **`127.0.0.1:${POSTGRES_PORT:-5433}`** → container port **5432** (see `config.env`). The **superuser name** is **`POSTGRES_USER`** (default **`pos`**), same as **`DB_USER`** for the app — **not** the conventional PostgreSQL role name **`postgres`**.
+The Compose database publishes **`127.0.0.1:${POSTGRES_PORT:-5433}`** → container port **5432** (see `config.env`). The **superuser name** is **`POSTGRES_USER`** (default **`pos`**), same as **`DB_USER`** for the app - **not** the conventional PostgreSQL role name **`postgres`**.
 
 If **`docker logs pos-postgres`** shows **`FATAL: role "postgres" does not exist`**, a client (GUI, `psql`, or a copy-pasted DSN) is using username **`postgres`**. Point it at **`POSTGRES_USER`** / **`DB_USER`** and **`POSTGRES_PASSWORD`** / **`DB_PASSWORD`** from `config.env` instead.
 
-**Ad-hoc SQL:** There is no relation **`restaurantorder`**. Orders live in **`"order"`** (quoted — SQL keyword), line items in **`orderitem`**, floor tables in **`"table"`**. See [docs/0033-postgres-adhoc-sql-table-names.md](docs/0033-postgres-adhoc-sql-table-names.md).
+**Ad-hoc SQL:** There is no relation **`restaurantorder`**. Orders live in **`"order"`** (quoted - SQL keyword), line items in **`orderitem`**, floor tables in **`"table"`**. See [docs/0033-postgres-adhoc-sql-table-names.md](docs/0033-postgres-adhoc-sql-table-names.md).
 
 ### Hot reload
 

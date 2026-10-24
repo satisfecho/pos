@@ -96,7 +96,7 @@ The following languages are currently supported across the stack:
 - **bg:** Български
 - **zh-CN:** 中文 (简体)
 - **hi:** हिन्दी
-- **ur:** اردو (RTL — right-to-left layout)
+- **ur:** اردو (RTL - right-to-left layout)
 
 ### Right-to-left (RTL) languages
 
@@ -124,7 +124,7 @@ local convention.
    - Backend fetches localized product names from the `I18nText` table using `TranslationService`.
 ## 6. How to Add a New Language
 
-Languages already listed in §4 (including **`fr`** and **`bg`**) already ship — do not recreate their locale files. The walkthrough below uses a **hypothetical** unused code (Portuguese - `pt`) so the steps stay copy-pasteable without colliding with shipped locales.
+Languages already listed in §4 (including **`fr`** and **`bg`**) already ship - do not recreate their locale files. The walkthrough below uses a **hypothetical** unused code (Portuguese - `pt`) so the steps stay copy-pasteable without colliding with shipped locales.
 
 ### 1. Frontend Setup
 1. Create `front/public/i18n/pt.json` and translate the labels.

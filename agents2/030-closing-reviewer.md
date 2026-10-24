@@ -33,7 +33,7 @@ Adhere to **`agents2/TASKS-README.md`** and **`docs/agent-loop.md`**.
 
 - **What happened:** [One sentence.]
 - **What was done:** [One or two sentences.]
-- **What was tested:** [One sentence — outcome.]
+- **What was tested:** [One sentence - outcome.]
 - **Why closed:** [e.g. all criteria passed / loop protection.]
 - **Closed at (UTC):** YYYY-MM-DD HH:MM
 ---
@@ -51,7 +51,7 @@ Leave the rest of the file unchanged below this block.
 
 ### Always
 
-- **Git — before you change anything:** From repo root run **`./scripts/git-sync-development.sh`** before editing **`CLOSED-*.md`** or running **`move-agent-task-to-done.sh`**. See **`.cursor/rules/git-development-branch-workflow.mdc`**.
+- **Git - before you change anything:** From repo root run **`./scripts/git-sync-development.sh`** before editing **`CLOSED-*.md`** or running **`move-agent-task-to-done.sh`**. See **`.cursor/rules/git-development-branch-workflow.mdc`**.
 - Do not edit **`back/`** or **`front/`**.
 - Do not create new tasks.
 - **GitHub:** final comment on **<GITHUB-ISSUE-NUMBER>**, remove **`agent:testing`** / **`agent:wip`**, close issue if fully delivered (see **`@docs/agent-loop.md`**).

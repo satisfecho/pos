@@ -1,4 +1,4 @@
-# Sample finding (reference — not an active task)
+# Sample finding (reference - not an active task)
 
 This file shows what agent **008** might queue after a preflight run. **Do not** treat this as a live task; copy the structure into **`agents2/tasks/FEAT-0-…md`** when scheduling work.
 
@@ -14,7 +14,7 @@ This file shows what agent **008** might queue after a preflight run. **Do not**
 # Schedule daily demo data reset (tenant 1)
 
 ## GitHub Issues
-- **Issue:** (none — enhancement reviewer)
+- **Issue:** (none - enhancement reviewer)
 - **0**
 
 ## Problem / goal
@@ -41,4 +41,4 @@ Demo restaurant (tenant 1) accumulates orders and reservations on production. Sa
 
 **Preflight signal:** `changelog_sparse`
 
-Queue **`NEW-0-…-changelog-unreleased-entries.md`** only if **[Unreleased]** is empty while multiple user-visible commits landed — ask committer/coder to add bullets, not a full doc rewrite.
+Queue **`NEW-0-…-changelog-unreleased-entries.md`** only if **[Unreleased]** is empty while multiple user-visible commits landed - ask committer/coder to add bullets, not a full doc rewrite.

@@ -14,16 +14,16 @@ LOGIN_EMAIL=owner@amvara.de LOGIN_PASSWORD=secret node front/scripts/capture-scr
 
 Optional captures (skipped with a clear log line when unset or login fails):
 
-- `PROVIDER_TEST_EMAIL` / `PROVIDER_TEST_PASSWORD` — provider dashboard
-- `COURIER_EMAIL` / `COURIER_PASSWORD` (or `COURIER_TEST_*`) — courier portal home
-- `PLATFORM_OPERATOR_EMAIL` / `PLATFORM_OPERATOR_PASSWORD` — platform operator dashboard
+- `PROVIDER_TEST_EMAIL` / `PROVIDER_TEST_PASSWORD` - provider dashboard
+- `COURIER_EMAIL` / `COURIER_PASSWORD` (or `COURIER_TEST_*`) - courier portal home
+- `PLATFORM_OPERATOR_EMAIL` / `PLATFORM_OPERATOR_PASSWORD` - platform operator dashboard
 
 Public **delivery** and **waitlist** use `TENANT_ID` (default `1`) and need no extra credentials. Runs headless by default; set `HEADLESS=0` to open a visible browser.
 
 ## Adding screenshots manually
 
 1. Run the app locally or use a staging instance.
-2. Capture the screen (e.g. PNG or WebP, ~1200–1600px wide for readability).
+2. Capture the screen (e.g. PNG or WebP, ~1200-1600px wide for readability).
 3. Save the file here with the name listed below.
 4. Optionally strip or blur sensitive data (tenant name, real emails) if needed.
 
@@ -108,11 +108,11 @@ Operator dashboard at `/platform`. See [docs/0059-platform-operator-portal.md](.
 | File | Where it's used |
 |------|------------------|
 | `dashboard.png` | Main README (screenshot collage) |
-| `orders.png` | — |
+| `orders.png` | - |
 | `kitchen.png` | Main README (screenshot collage); docs/0015-kitchen-display.md |
 | `reports.png` | docs/0016-reports.md |
 | `reservations.png` | docs/0011-table-reservation-user-guide.md |
-| `tables.png` | — |
+| `tables.png` | - |
 | `menu.png` | Main README (screenshot collage) |
 | `provider.png` | docs/0014-provider-portal.md |
 | `delivery.png` | docs/0053-satisfecho-delivery-order-channel.md (optional) |

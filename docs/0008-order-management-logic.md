@@ -2,9 +2,9 @@
 
 > **Status: shipped core / design reference.** Session-scoped attribution (`OrderItem.added_by_session`, per-browser `session_id` in localStorage) and the main lifecycle rules are live.
 >
-> **Activated dine-in tables (PIN model):** Prefer [0009-table-pin-security.md](0009-table-pin-security.md). Those tables use **one shared active order** (`table.active_order_id`) plus an optional **shared draft cart** (`GET/POST /menu/{token}/cart`, Redis, WebSocket `cart_updated` — #349). That is **not** a return of the old unsafe “any browser on the token silently shares one unpaid order without PIN”. Take-away / inactive tables keep a **local-only** cart.
+> **Activated dine-in tables (PIN model):** Prefer [0009-table-pin-security.md](0009-table-pin-security.md). Those tables use **one shared active order** (`table.active_order_id`) plus an optional **shared draft cart** (`GET/POST /menu/{token}/cart`, Redis, WebSocket `cart_updated` - #349). That is **not** a return of the old unsafe “any browser on the token silently shares one unpaid order without PIN”. Take-away / inactive tables keep a **local-only** cart.
 >
-> Do **not** re-open a backlog that removes PIN activation or merges strangers’ take-away carts. Treat remaining edge-case and proposed-enhancement sections as reference — prefer current code and tests for behaviour.
+> Do **not** re-open a backlog that removes PIN activation or merges strangers’ take-away carts. Treat remaining edge-case and proposed-enhancement sections as reference - prefer current code and tests for behaviour.
 >
 > **Order / item comments (#284):** Optional free-text notes on `Order.notes` and `OrderItem.notes` (public menu **Add comment** + order-level note, staff edit on `/orders`, highlighted on `/kitchen` and `/bar`) are documented in [0015-kitchen-display.md](0015-kitchen-display.md#order-and-item-comments-284). This file remains the session/lifecycle design reference; do not treat comments as a separate schema project.
 
@@ -1405,7 +1405,7 @@ All customer-facing order modification endpoints require and validate `session_i
 3. Customer pays cash/terminal at bar
 4. Staff clicks "Not Paid Yet" tab → Sees order #11
 5. Staff clicks "Mark as Paid" → Enters payment method (cash/terminal)
-6. Order keeps `paid_at` and payment method; when all items are delivered, status is `completed` (or stays `paid` only while pre-pay service is unfinished — #345)
+6. Order keeps `paid_at` and payment method; when all items are delivered, status is `completed` (or stays `paid` only while pre-pay service is unfinished - #345)
 7. Order leaves "Active Orders" and appears only under "Order History"
 
 **Pre-pay:** Staff may mark as paid before all items are delivered. Status stays `paid` and the order remains under Active Orders until every active item is `delivered`; then status becomes `completed` and the order leaves Active Orders.

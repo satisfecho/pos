@@ -1,12 +1,12 @@
-# GitHub #52 — dedicated issues & plan
+# GitHub #52 - dedicated issues & plan
 
-> **Historical / closed umbrella.** Parent [#52](https://github.com/satisfecho/pos/issues/52) is **CLOSED** (2026-03-23). Do **not** file the pasted issue bodies below as new GitHub issues without product-owner review — they are archival drafts, not live backlog. For current roadmap status prefer **[0032-github-issues-roadmap.md](0032-github-issues-roadmap.md)** and shipped feature docs (e.g. **[0053-satisfecho-delivery-order-channel.md](0053-satisfecho-delivery-order-channel.md)**, table groups in **[0051-table-groups-mvp.md](0051-table-groups-mvp.md)**).
+> **Historical / closed umbrella.** Parent [#52](https://github.com/satisfecho/pos/issues/52) is **CLOSED** (2026-03-23). Do **not** file the pasted issue bodies below as new GitHub issues without product-owner review - they are archival drafts, not live backlog. For current roadmap status prefer **[0032-github-issues-roadmap.md](0032-github-issues-roadmap.md)** and shipped feature docs (e.g. **[0053-satisfecho-delivery-order-channel.md](0053-satisfecho-delivery-order-channel.md)**, table groups in **[0051-table-groups-mvp.md](0051-table-groups-mvp.md)**).
 
-**Parent:** [#52 — Various topics to enhance](https://github.com/satisfecho/pos/issues/52) (closed)
+**Parent:** [#52 - Various topics to enhance](https://github.com/satisfecho/pos/issues/52) (closed)
 
-The umbrella issue listed many themes. This document **planned** them as **separate GitHub issues** with suggested **order**, **dependencies**, and **ready-to-paste** titles and bodies. Phases A–E and the paste bodies below are kept for history only.
+The umbrella issue listed many themes. This document **planned** them as **separate GitHub issues** with suggested **order**, **dependencies**, and **ready-to-paste** titles and bodies. Phases A-E and the paste bodies below are kept for history only.
 
-**Filing on GitHub (historical note):** The guidance below was for when #52 was open. Prefer updating [0032-github-issues-roadmap.md](0032-github-issues-roadmap.md) and opening issues only when product owns a real gap — do not bulk-refile from this file.
+**Filing on GitHub (historical note):** The guidance below was for when #52 was open. Prefer updating [0032-github-issues-roadmap.md](0032-github-issues-roadmap.md) and opening issues only when product owns a real gap - do not bulk-refile from this file.
 
 ---
 
@@ -14,11 +14,11 @@ The umbrella issue listed many themes. This document **planned** them as **separ
 
 | Phase | Themes | Rationale |
 |-------|--------|-----------|
-| **A — Guest & CRM** | Surveys/Google extensions, birthdays | Builds on existing guest feedback, billing CRM, ties to [#54](https://github.com/satisfecho/pos/issues/54). |
-| **B — Floor & money** | Join tables, split invoice | High daily value for restaurants; touches orders, payments, printing. |
-| **C — Stock & supply** | Multi-warehouse, central kitchen → branches | Inventory and fulfillment model; larger schema + UX. |
-| **D — Growth & channels** | Marketing/promos, Uber Eats | Pricing engine + external APIs; compliance and ops overhead. |
-| **E — Platform** | Offline client, migration from other POS | Architecture and one-off tooling; long horizon. |
+| **A - Guest & CRM** | Surveys/Google extensions, birthdays | Builds on existing guest feedback, billing CRM, ties to [#54](https://github.com/satisfecho/pos/issues/54). |
+| **B - Floor & money** | Join tables, split invoice | High daily value for restaurants; touches orders, payments, printing. |
+| **C - Stock & supply** | Multi-warehouse, central kitchen → branches | Inventory and fulfillment model; larger schema + UX. |
+| **D - Growth & channels** | Marketing/promos, Uber Eats | Pricing engine + external APIs; compliance and ops overhead. |
+| **E - Platform** | Offline client, migration from other POS | Architecture and one-off tooling; long horizon. |
 
 ```mermaid
 flowchart LR
@@ -49,7 +49,7 @@ flowchart LR
 
 ---
 
-## Issue 1 — Multi-warehouse inventory (“almacenes”)
+## Issue 1 - Multi-warehouse inventory (“almacenes”)
 
 **Title:** `feat: Multi-warehouse inventory (almacenes / cold room, etc.)`
 
@@ -78,7 +78,7 @@ Tracked under umbrella [#52](https://github.com/satisfecho/pos/issues/52). Curre
 
 ---
 
-## Issue 2 — Split invoice / split bill
+## Issue 2 - Split invoice / split bill
 
 **Title:** `feat: Split bill / partial payments (multi-party, Stripe, Factura)`
 
@@ -97,7 +97,7 @@ Allow **splitting** an order bill: partial payments, multiple payers, or separat
 - Factura: one invoice per payer vs. single invoice with split notation (legal review).
 
 ## Dependencies
-- May interact with **join tables** (single party, merged tables) — align UX early.
+- May interact with **join tables** (single party, merged tables) - align UX early.
 
 ## Acceptance criteria (MVP)
 - [ ] Documented split model (data + API).
@@ -107,7 +107,7 @@ Allow **splitting** an order bill: partial payments, multiple payers, or separat
 
 ---
 
-## Issue 3 — Join tables (floor + session)
+## Issue 3 - Join tables (floor + session)
 
 **Title:** `feat: Join tables on floor plan (merged covers, billing options)`
 
@@ -118,7 +118,7 @@ Allow **splitting** an order bill: partial payments, multiple payers, or separat
 When guests **combine physical tables**, staff can **join** them in the POS: shared or separate bills, correct capacity for reservations/walk-ins.
 
 ## Context
-[#52](https://github.com/satisfecho/pos/issues/52). Per-table **session_id** for customer menu already exists — see `docs/0008-order-management-logic.md`.
+[#52](https://github.com/satisfecho/pos/issues/52). Per-table **session_id** for customer menu already exists - see `docs/0008-order-management-logic.md`.
 
 ## Scope (proposal)
 - Floor UI: select tables → “Join group” / “Unjoin”.
@@ -136,7 +136,7 @@ When guests **combine physical tables**, staff can **join** them in the POS: sha
 
 ---
 
-## Issue 4 — Offline-capable POS client
+## Issue 4 - Offline-capable POS client
 
 **Title:** `feat: Offline operation (queued orders, sync, conflict handling)`
 
@@ -150,7 +150,7 @@ Allow **critical flows** (e.g. take order, cash payment) to work with **intermit
 [#52](https://github.com/satisfecho/pos/issues/52). Large architecture: service worker, local persistence, idempotent APIs, conflict resolution.
 
 ## Scope (proposal)
-- Phase 0: spike — which surfaces (staff-only vs. customer menu) and offline duration targets.
+- Phase 0: spike - which surfaces (staff-only vs. customer menu) and offline duration targets.
 - Phase 1: read-only cache of menu/products; Phase 2: write queue with retry.
 
 ## Risks
@@ -163,7 +163,7 @@ Allow **critical flows** (e.g. take order, cash payment) to work with **intermit
 
 ---
 
-## Issue 5 — Migrate from existing POS / system
+## Issue 5 - Migrate from existing POS / system
 
 **Title:** `feat: Import / migration from external POS (CSV/API, runbook)`
 
@@ -188,7 +188,7 @@ Provide a **repeatable path** to import products, tables, customers, and optiona
 
 ---
 
-## Issue 6 — Guest feedback & Google presence (extensions)
+## Issue 6 - Guest feedback & Google presence (extensions)
 
 **Title:** `feat: Extend guest feedback & Google review journey (#52 / #54)`
 
@@ -205,7 +205,7 @@ Provide a **repeatable path** to import products, tables, customers, and optiona
 ## Possible extensions
 - NPS / short survey templates; optional post-reservation email/SMS link.
 - QR on receipt; staff dashboard aggregates (trends, export).
-- **Note:** Google does not allow posting reviews via API — links only.
+- **Note:** Google does not allow posting reviews via API - links only.
 
 ## Acceptance criteria
 - [ ] Prioritized backlog of extensions with **one** vertical implemented per release.
@@ -213,7 +213,7 @@ Provide a **repeatable path** to import products, tables, customers, and optiona
 
 ---
 
-## Issue 7 — Birthdays & occasions (reservations + automation)
+## Issue 7 - Birthdays & occasions (reservations + automation)
 
 **Title:** `feat: Birthdays on reservations + optional marketing triggers (#52 / #54)`
 
@@ -239,7 +239,7 @@ Capture **birthdays** for **guests** (e.g. on reservations), not only billing cu
 
 ---
 
-## Issue 8 — Marketing & special offers
+## Issue 8 - Marketing & special offers
 
 **Title:** `feat: Promotions & special offers (pricing rules, eligibility)`
 
@@ -265,7 +265,7 @@ Capture **birthdays** for **guests** (e.g. on reservations), not only billing cu
 
 ---
 
-## Issue 9 — Central kitchen → branches
+## Issue 9 - Central kitchen → branches
 
 **Title:** `feat: Central kitchen supplying branches (multi-site fulfillment)`
 
@@ -283,7 +283,7 @@ One **production kitchen** fulfils items for **multiple branches** (sucursales):
 - Phase 1: internal transfer / “fulfil at hub” flag on order or order items.
 
 ## Dependencies
-- **Multi-warehouse** may share some location concepts — align design.
+- **Multi-warehouse** may share some location concepts - align design.
 
 ## Acceptance criteria (MVP)
 - [ ] ADR choosing multi-tenant vs. single-tenant multi-site.
@@ -292,7 +292,7 @@ One **production kitchen** fulfils items for **multiple branches** (sucursales):
 
 ---
 
-## Issue 10 — Uber Eats (and similar) integration
+## Issue 10 - Uber Eats (and similar) integration
 
 **Title:** `feat: Third-party delivery menu sync & orders (Uber Eats, etc.)`
 
@@ -303,7 +303,7 @@ One **production kitchen** fulfils items for **multiple branches** (sucursales):
 Interface to **aggregators** (Uber Eats, …): menu sync, order ingestion, status callbacks (within API constraints).
 
 ## Context
-[#52](https://github.com/satisfecho/pos/issues/52). See `docs/0031-order-customizations-plan.md` (delivery integrations). First-party **Satisfecho Delivery** is already in product — [0053-satisfecho-delivery-order-channel.md](0053-satisfecho-delivery-order-channel.md); this issue is aggregators only.
+[#52](https://github.com/satisfecho/pos/issues/52). See `docs/0031-order-customizations-plan.md` (delivery integrations). First-party **Satisfecho Delivery** is already in product - [0053-satisfecho-delivery-order-channel.md](0053-satisfecho-delivery-order-channel.md); this issue is aggregators only.
 
 ## Scope (proposal)
 - Phase 0: vendor API review + sandbox credentials pattern (env, secrets).

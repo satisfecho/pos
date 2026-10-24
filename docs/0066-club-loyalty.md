@@ -7,7 +7,7 @@
 Tenant-scoped loyalty distinct from pricing promos (**#322**):
 
 - Guests join via public URL `/loyalty/{tenantId}` (optional `?ref=` referral code)
-- Bare `/loyalty` (no tenant id) shows a short “need a restaurant link” page — it does **not** redirect to the Satisfecho marketing landing (#373)
+- Bare `/loyalty` (no tenant id) shows a short “need a restaurant link” page - it does **not** redirect to the Satisfecho marketing landing (#373)
 - Staff enable rules under **Settings → Loyalty club**
 - Units (points or stamps) earn **once per paid order** when the order is linked to a membership
 - Staff redeem a reward at checkout → `order.loyalty_discount_cents` (order-level discount via `order_discounts.order_level_discount_cents`, shared with #322)
@@ -52,8 +52,8 @@ Membership API payloads include `vip_tier` (`null` \| `"silver"` \| `"gold"`). S
 - **Earn:** after `paid_at` is set (`mark-paid`, `finish`, Stripe/Revolut confirm), `loyalty_service.award_on_order_paid` runs if `loyalty_membership_id` is set. Idempotent (one `earn` ledger row per order). Also increments `lifetime_earn_units`.
 - **Birthday bonus (#331):** when `birthday_bonus_units > 0` and the member’s month/day matches `paid_at` (UTC), extra units are folded into that earn row (or a standalone earn with `order_id` null if the order already had an earn). Once per calendar year (`birthday_bonus_year`). Join accepts optional birthday; linked `BillingCustomer.birth_date` can seed month/day.
 - **Redeem:** `POST /orders/{id}/loyalty/redeem` with `membership_id` or `member_token`. Requires balance ≥ threshold; writes `redeem` ledger row and sets order discount fields.
-- **Manual adjust:** `POST /loyalty/memberships/{id}/adjust` — **owner/admin** (`loyalty:write`) only. Adjust does **not** change lifetime earn / VIP.
-- **Delete member:** `DELETE /loyalty/memberships/{id}` — **owner/admin** (`loyalty:write`) only; hard delete (see below).
+- **Manual adjust:** `POST /loyalty/memberships/{id}/adjust` - **owner/admin** (`loyalty:write`) only. Adjust does **not** change lifetime earn / VIP.
+- **Delete member:** `DELETE /loyalty/memberships/{id}` - **owner/admin** (`loyalty:write`) only; hard delete (see below).
 - **Permissions:** `loyalty:read`, `loyalty:write` (program + adjust + delete), `loyalty:redeem` (waiter+).
 - **Wallet push:** every ledger change best-effort notifies Apple (tag bump + APNs when configured) and Google (object PATCH).
 
@@ -63,7 +63,7 @@ Membership API payloads include `vip_tier` (`null` \| `"silver"` \| `"gold"`). S
 - PassKit web service: `/public/passkit/v1/devices/…`, `/public/passkit/v1/passes/…`, `/public/passkit/v1/log`
 - Staff: `GET/PUT /loyalty/program` (includes `wallet_passes_enabled`), memberships list/detail/adjust/delete (`GET /loyalty/memberships?search=`, `DELETE /loyalty/memberships/{id}`), order link + redeem
 
-Public loyalty GETs use `@public_menu_ip_limit()` (not `@limiter.limit(public_menu_ip_limit)` — that passes the helper function instead of a rate string and 500s under live SlowAPI). Join and recover use a dedicated per-hour limit. All SlowAPI-wrapped handlers take `request: Request` and `response: Response` so rate-limit headers inject correctly.
+Public loyalty GETs use `@public_menu_ip_limit()` (not `@limiter.limit(public_menu_ip_limit)` - that passes the helper function instead of a rate string and 500s under live SlowAPI). Join and recover use a dedicated per-hour limit. All SlowAPI-wrapped handlers take `request: Request` and `response: Response` so rate-limit headers inject correctly.
 
 ### Recovering a lost card (#372)
 
@@ -86,8 +86,8 @@ Line-level category % promos reduce `OrderItem.price_cents` and store a promo au
 
 **Do not invent signing formats.** Follow official docs:
 
-- Apple: [Wallet Developer Guide / PassKit](https://developer.apple.com/documentation/walletpasses) — `.pkpass` ZIP with `pass.json`, manifest SHA-1 hashes, PKCS#7 signature using Apple WWDR + Pass Type ID certificate.
-- Google: [Google Wallet API](https://developers.google.com/wallet) — issuer account + service account JWT; loyalty object/class updates for balance pushes.
+- Apple: [Wallet Developer Guide / PassKit](https://developer.apple.com/documentation/walletpasses) - `.pkpass` ZIP with `pass.json`, manifest SHA-1 hashes, PKCS#7 signature using Apple WWDR + Pass Type ID certificate.
+- Google: [Google Wallet API](https://developers.google.com/wallet) - issuer account + service account JWT; loyalty object/class updates for balance pushes.
 
 Implementation: `back/app/loyalty_wallet.py`.
 
@@ -95,7 +95,7 @@ Implementation: `back/app/loyalty_wallet.py`.
 
 Satisfecho uses **one shared** Apple Pass Type ID and **one** Google Wallet issuer for the platform (env below). Each pass’s `organizationName` / Google `issuerName` is the **restaurant tenant name**. Tenants can turn issuance off with `loyalty_program.wallet_passes_enabled` (Settings → Loyalty club) without disabling join or the balance card.
 
-**Apple multi-merchant note:** A single Pass Type ID for an organization’s own loyalty passes (branded per merchant in pass fields) is the usual SaaS pattern. Confirm ongoing Apple Developer Program terms for your account; if Apple requires a Pass Type ID per merchant, you would need per-tenant cert onboarding (not implemented — out of scope for this MVP).
+**Apple multi-merchant note:** A single Pass Type ID for an organization’s own loyalty passes (branded per merchant in pass fields) is the usual SaaS pattern. Confirm ongoing Apple Developer Program terms for your account; if Apple requires a Pass Type ID per merchant, you would need per-tenant cert onboarding (not implemented - out of scope for this MVP).
 
 ### Setup steps
 
@@ -137,11 +137,11 @@ When unavailable: join still works; balance card URL `/loyalty/card/{memberToken
 ### Issuance + push-update
 
 - **Apple join/download:** `GET /public/loyalty/members/{token}/wallet/apple.pkpass` builds a signed storeCard pass (balance + member name). `webServiceURL` points at `/public/passkit` for device registration and updated-pass fetch.
-- **Apple push:** On balance change, bump `apple_pass_updated_tag` and send empty APNs payload to registered devices when APNs `.p8` is configured (requires HTTP/2 / `h2` with httpx). Devices then `GET` the latest `.pkpass` — update, not reissue.
+- **Apple push:** On balance change, bump `apple_pass_updated_tag` and send empty APNs payload to registered devices when APNs `.p8` is configured (requires HTTP/2 / `h2` with httpx). Devices then `GET` the latest `.pkpass` - update, not reissue.
 - **Google join:** Create loyalty class (per tenant) + loyalty object; return JWT save URL (`google_save_url`).
 - **Google push:** `PATCH` loyalty object points balance on earn/redeem/adjust.
 
 ## Testing
 
-- `back/tests/test_club_loyalty.py` — tenant isolation, earn-once, redeem, non-negative balance, wallet unconfigured, VIP, referral.
-- `back/tests/test_loyalty_wallet.py` — `.pkpass` generation, Google create/PATCH (mocked HTTP), PassKit register + update list, tenant disable fallback.
+- `back/tests/test_club_loyalty.py` - tenant isolation, earn-once, redeem, non-negative balance, wallet unconfigured, VIP, referral.
+- `back/tests/test_loyalty_wallet.py` - `.pkpass` generation, Google create/PATCH (mocked HTTP), PassKit register + update list, tenant disable fallback.

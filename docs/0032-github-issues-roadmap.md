@@ -1,4 +1,4 @@
-# GitHub issues roadmap — [#52](https://github.com/satisfecho/pos/issues/52), [#53](https://github.com/satisfecho/pos/issues/53), [#54](https://github.com/satisfecho/pos/issues/54)
+# GitHub issues roadmap - [#52](https://github.com/satisfecho/pos/issues/52), [#53](https://github.com/satisfecho/pos/issues/53), [#54](https://github.com/satisfecho/pos/issues/54)
 
 This file **summarizes** large, multi-track items that are tracked on GitHub. It is not a commitment order; use it for planning and to split work into smaller issues.
 
@@ -6,23 +6,23 @@ This file **summarizes** large, multi-track items that are tracked on GitHub. It
 
 ---
 
-## [#52 — Various topics to enhance](https://github.com/satisfecho/pos/issues/52)
+## [#52 - Various topics to enhance](https://github.com/satisfecho/pos/issues/52)
 
 Umbrella list. **This table is the source of truth** for “is it done?” until each theme has its own GitHub issue.
 
 | Theme | Status in product | Docs / notes |
 |--------|-------------------|--------------|
-| **Multiple warehouses (“almacenes”)** | MVP shipped (#320) | Named warehouses per tenant; receive/adjust + stock filter by location. Transfers / WMS picking still open — [0061](0061-multi-warehouse-inventory.md). |
-| **Split invoice** | MVP shipped (#318, by-line #331) | Partial payments by amount and by order line; remaining balance; one Factura/VeriFactu alta when settled — [0071](0071-split-bill.md). |
-| **Join tables** | Floor-plan MVP shipped | Join/unjoin on `/tables/canvas` — [0051](0051-table-groups-mvp.md). Deeper multi-bill merge UX may still grow. |
-| **Offline operation** | MVP started (#319, deferred-card #333) | ADR + staff cash sale queue/idempotent sync; deferred-card intent (no PAN/CVV); TSE auto-sign on sync (#331). SW/full write queue and true offline card/fiscal later — [0063](0063-offline-capable-client.md). |
+| **Multiple warehouses (“almacenes”)** | MVP shipped (#320) | Named warehouses per tenant; receive/adjust + stock filter by location. Transfers / WMS picking still open - [0061](0061-multi-warehouse-inventory.md). |
+| **Split invoice** | MVP shipped (#318, by-line #331) | Partial payments by amount and by order line; remaining balance; one Factura/VeriFactu alta when settled - [0071](0071-split-bill.md). |
+| **Join tables** | Floor-plan MVP shipped | Join/unjoin on `/tables/canvas` - [0051](0051-table-groups-mvp.md). Deeper multi-bill merge UX may still grow. |
+| **Offline operation** | MVP started (#319, deferred-card #333) | ADR + staff cash sale queue/idempotent sync; deferred-card intent (no PAN/CVV); TSE auto-sign on sync (#331). SW/full write queue and true offline card/fiscal later - [0063](0063-offline-capable-client.md). |
 | **Migrate from existing system** | MVP shipped (#321) | Products + categories CSV CLI + cutover runbook ([0062](0062-pos-migration-import.md)); tables/customers/orders still open. |
 | **Opinion surveys / Google** | **Partial** | Guest feedback `/feedback/:id`, Google review URL, staff trends + CSV (#325 / [0064](0064-guest-feedback-analytics.md)). NPS / post-visit email-SMS still open → [#54](https://github.com/satisfecho/pos/issues/54). |
 | **Birthdays (“cumpleaños”)** | **Partial** | Reservation month/day (#324 / [0067](0067-guest-birthday.md)); billing-customer `birth_date`; loyalty birthday bonus once/year (#331 / [0066](0066-club-loyalty.md)). Automated outbound campaigns → [#54](https://github.com/satisfecho/pos/issues/54). |
-| **Marketing / special offers** | MVP shipped (#322) | Category %-off promotions — [0068](0068-price-promotions.md). Broader campaign automation → [#54](https://github.com/satisfecho/pos/issues/54). |
-| **Central kitchen → branches** | MVP started (#323) | Linked tenants via restaurant groups + hub kitchen; fulfillment record with prepared-at-HQ — [0069](0069-branch-hub-fulfillment.md). |
+| **Marketing / special offers** | MVP shipped (#322) | Category %-off promotions - [0068](0068-price-promotions.md). Broader campaign automation → [#54](https://github.com/satisfecho/pos/issues/54). |
+| **Central kitchen → branches** | MVP started (#323) | Linked tenants via restaurant groups + hub kitchen; fulfillment record with prepared-at-HQ - [0069](0069-branch-hub-fulfillment.md). |
 | **Satisfecho Delivery (first-party)** | **Partial / shipped core** | Own-channel delivery (API + staff UI + courier + public `/delivery/{tenantId}`). See [0053](0053-satisfecho-delivery-order-channel.md). Not the same as aggregator integrations below. |
-| **Uber Eats interface** | Not started | Aggregator menu sync / orders — see `docs/0031-order-customizations-plan.md` (delivery integrations). Distinct from first-party Satisfecho Delivery. |
+| **Uber Eats interface** | Not started | Aggregator menu sync / orders - see `docs/0031-order-customizations-plan.md` (delivery integrations). Distinct from first-party Satisfecho Delivery. |
 
 **Dedicated issues & phased plan:** Specs (copy-paste titles/bodies), dependency graph, and filing instructions are in **[0050-github-issue-52-split-plan.md](0050-github-issue-52-split-plan.md)**. After creating the GitHub issues, add their numbers in a comment on [#52](https://github.com/satisfecho/pos/issues/52) and optionally add an **Issue** column to the table above.
 
@@ -30,13 +30,13 @@ Umbrella list. **This table is the source of truth** for “is it done?” until
 
 ---
 
-## [#53 — Kitchen tickets (time gradients & stations)](https://github.com/satisfecho/pos/issues/53)
+## [#53 - Kitchen tickets (time gradients & stations)](https://github.com/satisfecho/pos/issues/53)
 
 **Intent:** Tickets **change appearance by age** (fresh → orange → red), with **category-aware** expected times (starters vs mains), **priority/claim** by staff, **clear order time** on every ticket, and eventually **station-specific** views (kitchen / bar / grill / cold / desserts).
 
 **Dependencies / design:**
 
-- Per–order-item or per-ticket **timestamps** already partially exist; may need **expected prep duration** by category or product.
+- Per-order-item or per-ticket **timestamps** already partially exist; may need **expected prep duration** by category or product.
 - Kitchen UI: `docs/0015-kitchen-display.md`, `front` kitchen component + WebSocket.
 - **Printing** routes may need separate layouts per station (future).
 
@@ -44,7 +44,7 @@ Umbrella list. **This table is the source of truth** for “is it done?” until
 
 ---
 
-## [#54 — Client satisfaction & post-purchase comms](https://github.com/satisfecho/pos/issues/54)
+## [#54 - Client satisfaction & post-purchase comms](https://github.com/satisfecho/pos/issues/54)
 
 **Intent:** Automated **SMS/email** campaigns from triggers; **feedback link** after visit; optional **contact capture**; tie-in to **Google Maps** reviews; loyalty / win-back / special occasions.
 
@@ -61,6 +61,6 @@ Umbrella list. **This table is the source of truth** for “is it done?” until
 
 ## Related
 
-- [#50](https://github.com/satisfecho/pos/issues/50) — order customizations: [0031-order-customizations-plan.md](0031-order-customizations-plan.md)
-- [ROADMAP.md](../ROADMAP.md) — high-level product status (refresh cadence documented there)
+- [#50](https://github.com/satisfecho/pos/issues/50) - order customizations: [0031-order-customizations-plan.md](0031-order-customizations-plan.md)
+- [ROADMAP.md](../ROADMAP.md) - high-level product status (refresh cadence documented there)
 - [All issues](https://github.com/satisfecho/pos/issues)

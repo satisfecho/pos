@@ -5,7 +5,7 @@ This document describes the UI test suite maintained for the POS project. All UI
 ## Prerequisites
 
 - **Chrome** installed (e.g. `/Applications/Google Chrome.app` on macOS).
-- **App built and running** (e.g. `docker compose up`; frontend must serve successfully — see `AGENTS.md` for port and logs). If the frontend build fails (e.g. TypeScript errors), UI tests will get 503 or timeouts.
+- **App built and running** (e.g. `docker compose up`; frontend must serve successfully - see `AGENTS.md` for port and logs). If the frontend build fails (e.g. TypeScript errors), UI tests will get 503 or timeouts.
 - Optional: `.env` in repo root with `DEMO_LOGIN_EMAIL`, `DEMO_LOGIN_PASSWORD` for tests that need login.
 
 Tests auto-detect the first responding port among **4203, 4202, 4200** when `BASE_URL` is not set. For production (e.g. satisfecho.de), set `BASE_URL` explicitly.
@@ -61,7 +61,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T back pyth
 
 Pytest sets **`RATE_LIMIT_ENABLED=false`** via `back/tests/conftest.py` (and `pg_client_mixin.py` for direct test runs) so rate limiting does not interfere with `TestClient`.
 
-**Docker dev — landing footer:** optional host **`COMMIT_HASH`** ( **`./run.sh`** exports it from **`git rev-parse --short HEAD`** when unset before **`docker compose up`**) keeps the footer git short hash aligned with the repo; see **README** / **AGENTS.md**.
+**Docker dev - landing footer:** optional host **`COMMIT_HASH`** ( **`./run.sh`** exports it from **`git rev-parse --short HEAD`** when unset before **`docker compose up`**) keeps the footer git short hash aligned with the repo; see **README** / **AGENTS.md**.
 
 `tests/test_public_menu_order_response.py` checks that the first public menu order response is **`created`** and the next is **`updated`** (same `order_id`).
 
@@ -175,7 +175,7 @@ npm run test:staff-delivery --prefix front
 
 ### 2a3a. Public Satisfecho Delivery checkout
 
-Smoke for public **`/delivery/:tenantId`** checkout (`docs/0053-satisfecho-delivery-order-channel.md`, shipped CLOSED-302 / #304): menu → cart → address → create order. Also asserts product `<img>` src uses **`/api/uploads/...`** (not bare `/uploads/...`, which 404s on HAProxy front — FEAT-312 / #312). Script is committed on `development` (`front/scripts/test-delivery-checkout.mjs`). Does not cover staff create/edit (`test:staff-delivery`), track page (`test:delivery-track`), or courier portal (`test:courier-actions`).
+Smoke for public **`/delivery/:tenantId`** checkout (`docs/0053-satisfecho-delivery-order-channel.md`, shipped CLOSED-302 / #304): menu → cart → address → create order. Also asserts product `<img>` src uses **`/api/uploads/...`** (not bare `/uploads/...`, which 404s on HAProxy front - FEAT-312 / #312). Script is committed on `development` (`front/scripts/test-delivery-checkout.mjs`). Does not cover staff create/edit (`test:staff-delivery`), track page (`test:delivery-track`), or courier portal (`test:courier-actions`).
 
 ```bash
 npm run test:delivery-checkout --prefix front
@@ -251,10 +251,10 @@ npm run test:working-plan --prefix front
 # Headless: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 LOGIN_EMAIL=... LOGIN_PASSWORD=... node front/scripts/test-working-plan.mjs
 ```
 
-- **Env:** `BASE_URL`, `LOGIN_EMAIL`/`LOGIN_PASSWORD` or `ADMIN_EMAIL`/`ADMIN_PASSWORD` or `DEMO_LOGIN_EMAIL`/`DEMO_LOGIN_PASSWORD` (from `.env`). `TENANT_ID` (default `1`) — login uses `/login?tenant=1` so the user is in the correct tenant. User must have schedule access (owner, admin, kitchen, bartender, waiter, receptionist). `HEADLESS`.
-- **Asserts:** After login, `/working-plan` loads; `[data-testid="working-plan-page"]` and `[data-testid="working-plan-add-shift"]` are present; week navigation is present; switching to Calendar view shows `[data-testid="working-plan-calendar-grid"]` with header and day cells; days that do not meet personnel requirements (too many or too few staff) are marked red; **Excel export** controls `[data-testid="working-plan-export-worker"]` and `[data-testid="working-plan-export-excel"]` are present when the tenant has schedulable users. The working-plan route is lazy-loaded—if UI changes don’t appear after editing, do a full page refresh or restart the dev server.
+- **Env:** `BASE_URL`, `LOGIN_EMAIL`/`LOGIN_PASSWORD` or `ADMIN_EMAIL`/`ADMIN_PASSWORD` or `DEMO_LOGIN_EMAIL`/`DEMO_LOGIN_PASSWORD` (from `.env`). `TENANT_ID` (default `1`) - login uses `/login?tenant=1` so the user is in the correct tenant. User must have schedule access (owner, admin, kitchen, bartender, waiter, receptionist). `HEADLESS`.
+- **Asserts:** After login, `/working-plan` loads; `[data-testid="working-plan-page"]` and `[data-testid="working-plan-add-shift"]` are present; week navigation is present; switching to Calendar view shows `[data-testid="working-plan-calendar-grid"]` with header and day cells; days that do not meet personnel requirements (too many or too few staff) are marked red; **Excel export** controls `[data-testid="working-plan-export-worker"]` and `[data-testid="working-plan-export-excel"]` are present when the tenant has schedulable users. The working-plan route is lazy-loaded-if UI changes don’t appear after editing, do a full page refresh or restart the dev server.
 
-**Calendar route smoke** (`test:working-plan-calendar` — differs from `test:working-plan`): opens **`/working-plan/calendar` directly** (no week-view navigation) and **fails if the page logs console errors**. Use this when changing the calendar route or lazy-load; use `test:working-plan` for week grid, in-page calendar switch, staffing colours, and Excel export asserts.
+**Calendar route smoke** (`test:working-plan-calendar` - differs from `test:working-plan`): opens **`/working-plan/calendar` directly** (no week-view navigation) and **fails if the page logs console errors**. Use this when changing the calendar route or lazy-load; use `test:working-plan` for week grid, in-page calendar switch, staffing colours, and Excel export asserts.
 
 ```bash
 npm run test:working-plan-calendar --prefix front
@@ -265,7 +265,7 @@ npm run test:working-plan-calendar --prefix front
 - **Env:** Same as `test:working-plan` (`BASE_URL`, `LOGIN_*` / `DEMO_LOGIN_*` / `ADMIN_*`, `TENANT_ID` default `1`, `HEADLESS`).
 - **Asserts:** After login, `/working-plan/calendar` loads; calendar chrome is present; no console `error` messages during the run.
 
-**Debug (inspect red / staffing days — not a pass/fail smoke):**
+**Debug (inspect red / staffing days - not a pass/fail smoke):**
 
 ```bash
 npm run debug:working-plan-calendar --prefix front
@@ -374,7 +374,7 @@ npm run test:tables-page --prefix front
 - **Env:** `BASE_URL`, `LOGIN_EMAIL`, `LOGIN_PASSWORD`, `HEADLESS`.
 - Asserts: on `/tables` after login; when view toggle exists, Table view shows `.tables-data-table` with header columns.
 
-**Tables canvas – view options and switching Floor plan / Tiles / Table:**
+**Tables canvas - view options and switching Floor plan / Tiles / Table:**
 
 ```bash
 npm run test:tables-canvas-view-options --prefix front
@@ -447,7 +447,7 @@ Tests for the provider portal: landing links, registration, login, and dashboard
 
 **Landing → provider links** (see §4): `test-landing-provider-links` checks footer links to `/provider/login` and `/provider/register`, the **Contact us** `mailto:hello@satisfecho.de` link, and that the register link opens the provider registration form.
 
-**Provider registration** (creates a new provider account; no cleanup — leaves DB entry):
+**Provider registration** (creates a new provider account; no cleanup - leaves DB entry):
 
 ```bash
 npm run test:provider-register --prefix front
@@ -539,7 +539,7 @@ npm run test:order-8-status --prefix front
 
 ---
 
-### 7b. Orders – order edit widget and status popover
+### 7b. Orders - order edit widget and status popover
 
 Review test for the staff Orders page: Edit button on cards and in History grid, order edit modal (add/remove/change items, billing, print), and status popover visibility (z-index). Logs in with tenant=1 (using `.env` credentials), opens `/staff/orders`, clicks Edit on the first order card and verifies the order edit modal opens; then checks the status dropdown is visible with sufficient z-index; then switches to Order History and clicks Edit in the grid and verifies the same modal opens.
 
@@ -631,7 +631,7 @@ npm run test:api-docs --prefix front
 
 ### 11c. amvara9 production smoke
 
-Landing, login page, public book page, and `/api/health` against production. **Default `BASE_URL` is `https://www.satisfecho.de`** — set an explicit local `BASE_URL` if you do not intend to hit prod.
+Landing, login page, public book page, and `/api/health` against production. **Default `BASE_URL` is `https://www.satisfecho.de`** - set an explicit local `BASE_URL` if you do not intend to hit prod.
 
 ```bash
 npm run test:amvara9-smoke --prefix front
@@ -681,7 +681,7 @@ npm run test:bartender-role --prefix front
 
 ---
 
-### 13. Kitchen display – status dropdown visible
+### 13. Kitchen display - status dropdown visible
 
 Login, open `/kitchen`, click the first clickable item status badge (e.g. "Preparando"), assert the status dropdown appears and is fully visible in the viewport (not clipped by the order card).
 
@@ -694,7 +694,7 @@ npm run test:kitchen-status-dropdown --prefix front
 
 ---
 
-### 13b. Bar display – route smoke
+### 13b. Bar display - route smoke
 
 Login, open `/bar`, assert URL contains `/bar`, kitchen/bar chrome (`.kitchen-view` header, timer settings, fullscreen toggle), and title is Bar display (not Kitchen).
 
@@ -707,7 +707,7 @@ npm run test:bar-display --prefix front
 
 ---
 
-### 13b2. Customer display (counter) – route smoke (#434)
+### 13b2. Customer display (counter) - route smoke (#434)
 
 Login, resolve Take Away (or first) table token, open `/display/{token}`, assert `[data-testid="customer-display"]` and empty/order/paid panel. When an order is open, also assert payment options and email capture.
 
@@ -747,7 +747,7 @@ npm run test:support-access --prefix front
 
 ---
 
-### 13e. Kitchen display – timer settings
+### 13e. Kitchen display - timer settings
 
 Login, open `/kitchen`, assert **Timer settings** is visible (and **Waiting** timer when orders exist).
 
@@ -760,7 +760,7 @@ npm run test:kitchen-timer --prefix front
 
 ---
 
-### 13f. Book page – WhatsApp CTA
+### 13f. Book page - WhatsApp CTA
 
 Public `/book/1` (no login): assert a WhatsApp link when the tenant has a WhatsApp number. Optional `API_BASE` if the API is on another origin than `BASE_URL`.
 
@@ -785,7 +785,7 @@ npm run test:public-guest-header --prefix front
 
 ---
 
-### 13g. My shift – venue clock QR
+### 13g. My shift - venue clock QR
 
 When venue clock QR is required, `/my-shift` loads clock-qr-status and shows **Scan venue QR** (`.scan-cta`) with no token in session. Prefer `OWNER_*` to toggle clock QR via API and `LOGIN_*` for the user opening My shift (often a waiter).
 
@@ -806,7 +806,7 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 |--------|-------------|
 | `debug:reservations` | `scripts/debug-reservations.mjs` |
 | `debug:reservations:public` | `scripts/debug-reservations-public.mjs` |
-| `debug:working-plan-calendar` | `scripts/debug-working-plan-calendar.mjs` (inspect red/staffing days on calendar; not a pass/fail smoke — use `test:working-plan` / `test:working-plan-calendar` for CI) |
+| `debug:working-plan-calendar` | `scripts/debug-working-plan-calendar.mjs` (inspect red/staffing days on calendar; not a pass/fail smoke - use `test:working-plan` / `test:working-plan-calendar` for CI) |
 | `test:working-plan` | `scripts/test-working-plan.mjs` (week view + in-page calendar switch, staffing colours, Excel export; needs schedule access + `LOGIN_*` / `DEMO_LOGIN_*`) |
 | `test:working-plan-calendar` | `scripts/test-working-plan-calendar.mjs` (direct `/working-plan/calendar` load; fails on console errors; same login env as `test:working-plan`) |
 | `test:register` | `scripts/test-register.mjs` |
@@ -864,7 +864,7 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `test:waiting-list` | `scripts/test-waiting-list.mjs` (public `/waitlist/:tenant` join → success; staff Reservations → Waitlist tab + GET `/waiting-list`) |
 | `test:restaurant-groups` | `scripts/test-restaurant-groups.mjs` (Settings → Restaurant group tab; create/join or member/leave UI; owner/admin) |
 | `test:order-comments` | `scripts/test-order-comments.mjs` (public Take Away menu: item + order comments → kitchen `.item-notes` / `.order-notes`; needs `LOGIN_*` / `DEMO_LOGIN_*`) |
-| `test:courier-actions` | `scripts/test-courier-actions.mjs` (courier portal status actions; `COURIER_EMAIL` / `COURIER_PASSWORD`, defaults `courier-test-phase1@amvara.de` / `secret` — also in `config.env.example`) |
+| `test:courier-actions` | `scripts/test-courier-actions.mjs` (courier portal status actions; `COURIER_EMAIL` / `COURIER_PASSWORD`, defaults `courier-test-phase1@amvara.de` / `secret` - also in `config.env.example`) |
 | `test:delivery-checkout` | `scripts/test-delivery-checkout.mjs` (public `/delivery/:tenantId` menu → cart → address → create; no login; see `docs/0053`) |
 | `test:delivery-track` | `scripts/test-delivery-track.mjs` (public `/delivery/:tenantId/track` invalid-token / error-state; see `docs/0053`) |
 | `test:staff-delivery` | `scripts/test-staff-delivery.mjs` (staff `/staff/orders`: create Satisfecho Delivery + edit address/phone; needs `LOGIN_*` / `DEMO_LOGIN_*`) |
@@ -879,22 +879,22 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 
 ## Backend / data checks (non-Puppeteer)
 
-- **Demo tables:** `docker compose exec back python -m app.seeds.check_demo_tables` (exit 0 = T01–T10 present for tenant 1).
+- **Demo tables:** `docker compose exec back python -m app.seeds.check_demo_tables` (exit 0 = T01-T10 present for tenant 1).
 - **Overbooking 0025 (one empty table / full slot):** `docker compose exec back python -m app.seeds.check_overbooking_0025` (exit 0 = pass; creates/cleanup test data on tenant 1). Isolated pytest: `docker compose exec back python3 -m pytest tests/test_overbooking_0025.py -q` (own tenant/tables; no `seed_demo_tables`). Scenario notes: `docs/0058-test-scenario-one-empty-table.md` (demo seats = 5×4 + 5×2 = 30).
 - **Seed tables:** `docker compose exec back python -m app.seeds.seed_demo_tables` (idempotent).
 - **Seed demo products:** `docker compose exec back python -m app.seeds.seed_demo_products` (idempotent; fills missing DEMO_PRODUCTS names on partial tenants).
-- **Import products CSV (migration #321):** dry-run then apply — see [0062-pos-migration-import.md](0062-pos-migration-import.md). Example: `docker compose exec back python -m app.seeds.import_products_csv --tenant-id 1 --csv /app/fixtures/migration/sample_products.csv --dry-run`. Tests: `docker compose exec back python3 -m pytest tests/test_import_products_csv.py -q`.
+- **Import products CSV (migration #321):** dry-run then apply - see [0062-pos-migration-import.md](0062-pos-migration-import.md). Example: `docker compose exec back python -m app.seeds.import_products_csv --tenant-id 1 --csv /app/fixtures/migration/sample_products.csv --dry-run`. Tests: `docker compose exec back python3 -m pytest tests/test_import_products_csv.py -q`.
 - **Demo products check:** `docker compose exec back python -m app.seeds.check_demo_products` (exit 0 = tenant 1 has all DEMO_PRODUCTS names; extra catalog rows OK).
-- **Link demo products to catalog (images on /products):** `docker compose exec back python -m app.seeds.link_demo_products_to_catalog` — links products without images to provider products that have images; deploy runs this after catalog imports.
-- **Clear orphan provider product images:** `docker compose exec back python -m app.seeds.clear_orphan_provider_product_images` — sets `ProviderProduct.image_filename` (and Product `providers/...` refs) to null when the file is missing under `uploads/providers/`, so catalog stops requesting 404 URLs.
-- **Sync Product images after catalog import:** `docker compose exec back python -m app.seeds.sync_product_images` — repairs stale `Product.image_filename` from linked `TenantProduct`/provider files (safe for custom tenant uploads). Deploy runs this automatically.
-- **Product image health (deploy):** `docker compose exec back python -m app.seeds.check_product_image_health` — fails when public menu shows an image for a linked product but `/products` would not (tenant 1 by default).
-- **Demo courier user:** `docker compose exec back python -m app.seeds.seed_demo_courier_user` — ensures tenant 1 has one `courier` role user when missing (`COURIER_EMAIL` / `COURIER_PASSWORD`, defaults `courier-test-phase1@amvara.de` / `secret`). Bootstrap / `reset_demo_data` run this **before** demo orders so Delivery samples can assign courier / `out_for_delivery`.
-- **Demo orders (Reports + Delivery):** `docker compose exec back python -m app.seeds.seed_demo_orders` — seeds tenant 1 with paid/active **table** orders over ±90 days plus a small Satisfecho Delivery mix. Idempotent: skips when Delivery samples already exist; if only table orders exist, adds the Delivery mix without wiping them. Bootstrap / `reset_demo_data` run this. Optional: `./run_seeds.sh --demo-orders` from `back/`.
+- **Link demo products to catalog (images on /products):** `docker compose exec back python -m app.seeds.link_demo_products_to_catalog` - links products without images to provider products that have images; deploy runs this after catalog imports.
+- **Clear orphan provider product images:** `docker compose exec back python -m app.seeds.clear_orphan_provider_product_images` - sets `ProviderProduct.image_filename` (and Product `providers/...` refs) to null when the file is missing under `uploads/providers/`, so catalog stops requesting 404 URLs.
+- **Sync Product images after catalog import:** `docker compose exec back python -m app.seeds.sync_product_images` - repairs stale `Product.image_filename` from linked `TenantProduct`/provider files (safe for custom tenant uploads). Deploy runs this automatically.
+- **Product image health (deploy):** `docker compose exec back python -m app.seeds.check_product_image_health` - fails when public menu shows an image for a linked product but `/products` would not (tenant 1 by default).
+- **Demo courier user:** `docker compose exec back python -m app.seeds.seed_demo_courier_user` - ensures tenant 1 has one `courier` role user when missing (`COURIER_EMAIL` / `COURIER_PASSWORD`, defaults `courier-test-phase1@amvara.de` / `secret`). Bootstrap / `reset_demo_data` run this **before** demo orders so Delivery samples can assign courier / `out_for_delivery`.
+- **Demo orders (Reports + Delivery):** `docker compose exec back python -m app.seeds.seed_demo_orders` - seeds tenant 1 with paid/active **table** orders over ±90 days plus a small Satisfecho Delivery mix. Idempotent: skips when Delivery samples already exist; if only table orders exist, adds the Delivery mix without wiping them. Bootstrap / `reset_demo_data` run this. Optional: `./run_seeds.sh --demo-orders` from `back/`.
 - **Demo delivery orders check:** `docker compose exec back python -m app.seeds.check_demo_delivery_orders` (exit 0 = tenant 1 has ≥1 `order_channel=satisfecho_delivery` row; soft-warns if none have `courier_user_id`).
-- **Demo waiting list:** `docker compose exec back python -m app.seeds.seed_demo_waiting_list` — seeds tenant 1 with a few `waiting` + one `notified` entry for staff Waitlist / public `/waitlist/1`; idempotent (skips if entries exist). Bootstrap / `reset_demo_data` run this.
+- **Demo waiting list:** `docker compose exec back python -m app.seeds.seed_demo_waiting_list` - seeds tenant 1 with a few `waiting` + one `notified` entry for staff Waitlist / public `/waitlist/1`; idempotent (skips if entries exist). Bootstrap / `reset_demo_data` run this.
 - **Demo waiting list check:** `docker compose exec back python -m app.seeds.check_demo_waiting_list` (exit 0 = tenant 1 has ≥1 `waiting` and ≥1 `notified` row).
-- **Demo delivery fee/zone:** `docker compose exec back python -m app.seeds.seed_demo_delivery_settings` — sets tenant 1 fee (250¢) + postal codes when unset; idempotent. Bootstrap / `reset_demo_data` run this.
+- **Demo delivery fee/zone:** `docker compose exec back python -m app.seeds.seed_demo_delivery_settings` - sets tenant 1 fee (250¢) + postal codes when unset; idempotent. Bootstrap / `reset_demo_data` run this.
 - **Demo delivery settings check:** `docker compose exec back python -m app.seeds.check_demo_delivery_settings` (exit 0 = tenant 1 has non-zero fee and/or postal/radius).
 - **008 soft watch:** `scripts/enhancement-reviewer-preflight.sh` soft-runs the five tenant-1 checks above (tables, waiting list, products, delivery orders, delivery settings) and bumps `G008_DEMO_SIGNALS` on unowned fail.
 
@@ -990,10 +990,10 @@ GO_AHEAD_LOOP=1 DURATION_SECONDS=120 INTERVAL_SECONDS=60 SKIP_TESTS=1 ./scripts/
 
 ## Known issues and follow-up (to address later)
 
-- **test-provider-register** — Often ends in “Unknown state” (no success or error banner after submit; stays on `/provider/register`). Likely backend/API or UI timing/selectors; to fix: confirm provider registration API and success/error UI, then adjust backend or test.
-- **debug-reservations-public** — API can return 422; time field (e.g. `20:00`) may trigger validation or parsing issues; success UI not shown. To fix: align reservations API and book form (time format/validation) so the test payload is accepted and success is visible.
-- **Login-based tests (demo-data, tables-page, reports, etc.)** — Can fail with 429 Too Many Requests when run in quick succession. To fix later: relax or bypass rate limiting in test env, or run login tests in a separate session / with delays.
-- **Test data cleanup** — Provider and restaurant registration tests create real DB rows and do not remove them. To fix later: add teardown (e.g. delete created provider/tenant), use a dedicated test DB that is reset, or document manual cleanup.
+- **test-provider-register** - Often ends in “Unknown state” (no success or error banner after submit; stays on `/provider/register`). Likely backend/API or UI timing/selectors; to fix: confirm provider registration API and success/error UI, then adjust backend or test.
+- **debug-reservations-public** - API can return 422; time field (e.g. `20:00`) may trigger validation or parsing issues; success UI not shown. To fix: align reservations API and book form (time format/validation) so the test payload is accepted and success is visible.
+- **Login-based tests (demo-data, tables-page, reports, etc.)** - Can fail with 429 Too Many Requests when run in quick succession. To fix later: relax or bypass rate limiting in test env, or run login tests in a separate session / with delays.
+- **Test data cleanup** - Provider and restaurant registration tests create real DB rows and do not remove them. To fix later: add teardown (e.g. delete created provider/tenant), use a dedicated test DB that is reset, or document manual cleanup.
 
 ---
 
@@ -1026,7 +1026,7 @@ Hard paywall for new restaurant signups when `SAAS_PAYWALL_ENABLED=true` (see `d
 # Paywall off (default): exits 0 with SKIP message
 BASE_URL=http://127.0.0.1:4202 npm run test:paywall --prefix front
 
-# Full path — set SAAS_PAYWALL_ENABLED=true in config.env, recreate back with env-file, then:
+# Full path - set SAAS_PAYWALL_ENABLED=true in config.env, recreate back with env-file, then:
 docker compose --env-file config.env -f docker-compose.yml -f docker-compose.dev.yml up -d back
 BASE_URL=http://127.0.0.1:4202 REQUIRE_PAYWALL=1 npm run test:paywall --prefix front
 # Restore SAAS_PAYWALL_ENABLED=false afterward for normal local/demo.

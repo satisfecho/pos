@@ -12,7 +12,7 @@ Recipients come from existing tenant data (no second CRM):
 | Reservations | Distinct `reservation.customer_email` for the tenant |
 | Both | Union, deduplicated |
 
-Staff must confirm opt-in (`consent_confirmed`) before a campaign is queued. There is no separate marketing-opt-in column in this slice — restaurants remain responsible for consent.
+Staff must confirm opt-in (`consent_confirmed`) before a campaign is queued. There is no separate marketing-opt-in column in this slice - restaurants remain responsible for consent.
 
 ## Sending
 
@@ -35,7 +35,7 @@ Tokens are opaque (no email in the URL). Only `http`/`https` destinations are al
 - `GET /tenant/newsletter/campaigns`
 - `POST /tenant/newsletter/campaigns`
 - `POST /tenant/newsletter/campaigns/{id}/cancel`
-- `POST /tenant/newsletter/test-send` — one immediate preview to the current user (or `to_email`)
+- `POST /tenant/newsletter/test-send` - one immediate preview to the current user (or `to_email`)
 
 ## Privacy note
 

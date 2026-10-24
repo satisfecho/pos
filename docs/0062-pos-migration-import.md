@@ -1,6 +1,6 @@
 # Import / migration from an existing POS (CSV cutover)
 
-**Status:** MVP shipped (#321) — products + categories via CSV CLI; staff UI CSV (#336).  
+**Status:** MVP shipped (#321) - products + categories via CSV CLI; staff UI CSV (#336).  
 **Related:** umbrella [#52](https://github.com/satisfecho/pos/issues/52), `docs/0050-github-issue-52-split-plan.md` Issue 5, `docs/0032-github-issues-roadmap.md`, [#336](https://github.com/satisfecho/pos/issues/336).
 
 ## Approach (how others ingest menus → Satisfecho)
@@ -13,7 +13,7 @@ Common POS / menu tools usually pick one of:
 | **AI / fuzzy column mapping** | Handles messy headers | Needs API key; must still preview before write |
 | **Vision from photos/PDFs** | Works when there is no spreadsheet | OCR/layout errors; privacy notice |
 
-**Satisfecho recommendation:** one pipeline — **parse → preview → explicit confirm** (create/update-by-name). Staff **Products → bulk import** accepts **JSON**, **CSV/TSV** (aliases + optional AI header map), and **menu-photo vision**. The CLI (`import_products_csv`) reuses the same parse/preview/confirm for large cutovers. Never auto-write without confirm. Excel `.xlsx` stays out of scope (export CSV first).
+**Satisfecho recommendation:** one pipeline - **parse → preview → explicit confirm** (create/update-by-name). Staff **Products → bulk import** accepts **JSON**, **CSV/TSV** (aliases + optional AI header map), and **menu-photo vision**. The CLI (`import_products_csv`) reuses the same parse/preview/confirm for large cutovers. Never auto-write without confirm. Excel `.xlsx` stays out of scope (export CSV first).
 
 ## What it does
 

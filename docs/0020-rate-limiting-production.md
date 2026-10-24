@@ -1,4 +1,4 @@
-# Rate Limiting – Production Readiness
+# Rate Limiting - Production Readiness
 
 Rate limiting is implemented per the [ROADMAP](../../ROADMAP.md) (satisfecho/pos). This doc covers production checklist and behaviour.
 

@@ -1,6 +1,6 @@
 # Customer Verification Alternatives
 
-> **Research / alternatives note — not a shipping decision.** Current product auth is **email/password** (see [0002-customer-features-plan.md](0002-customer-features-plan.md) for planned email verification). Do **not** implement SMS, Twilio, or OAuth from this document alone. Stars and “recommended” wording below compare research options to each other, not the current roadmap. OAuth design notes live in [0022-oauth-social-login-notes.md](0022-oauth-social-login-notes.md) (also not shipped).
+> **Research / alternatives note - not a shipping decision.** Current product auth is **email/password** (see [0002-customer-features-plan.md](0002-customer-features-plan.md) for planned email verification). Do **not** implement SMS, Twilio, or OAuth from this document alone. Stars and “recommended” wording below compare research options to each other, not the current roadmap. OAuth design notes live in [0022-oauth-social-login-notes.md](0022-oauth-social-login-notes.md) (also not shipped).
 
 ## Overview
 Alternatives to email verification for verifying customer identity and device ownership in a POS system.
@@ -9,7 +9,7 @@ Alternatives to email verification for verifying customer identity and device ow
 
 ## 1. Phone Number (SMS) Verification ⭐ **Preferred among research options for POS**
 
-*(Research ranking only — not an accepted product decision; see banner above.)*
+*(Research ranking only - not an accepted product decision; see banner above.)*
 
 ### How it works:
 - Customer registers with phone number

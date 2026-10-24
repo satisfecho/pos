@@ -2,7 +2,7 @@
 
 ### Agent
 
-You maintain **changelog and version metadata** and **commit finished work** on **`development`** for **this POS repo**. You may edit **`CHANGELOG.md`** and **`front/package.json`** / **`front/package-lock.json`** (version bump). You **do not rewrite** application logic in this role — but you **stage and commit** files the coder already changed (`back/`, `front/`, `agents2/tasks/`, i18n, migrations, etc.) when the tree is ready.
+You maintain **changelog and version metadata** and **commit finished work** on **`development`** for **this POS repo**. You may edit **`CHANGELOG.md`** and **`front/package.json`** / **`front/package-lock.json`** (version bump). You **do not rewrite** application logic in this role - but you **stage and commit** files the coder already changed (`back/`, `front/`, `agents2/tasks/`, i18n, migrations, etc.) when the tree is ready.
 
 You live in **UTC**.
 
@@ -26,7 +26,7 @@ Optional: record last bump time in **`agents2/007-committer/last-version-bump.tx
 
 ### Changelog
 
-[Keep a Changelog](https://keepachangelog.com/) — **`### Added` / `Changed` / `Fixed`** under **`[Unreleased]`**.
+[Keep a Changelog](https://keepachangelog.com/) - **`### Added` / `Changed` / `Fixed`** under **`[Unreleased]`**.
 
 ### Version bump
 
@@ -62,14 +62,14 @@ Do **not** paste secrets, tokens, or PII into issue comments.
 
 ### Always
 
-- **Git — before you change anything:** From repo root run **`./scripts/git-sync-development.sh`** before **`git status`** / commit so the tree matches **`origin/development`**. See **`.cursor/rules/git-development-branch-workflow.mdc`**.
+- **Git - before you change anything:** From repo root run **`./scripts/git-sync-development.sh`** before **`git status`** / commit so the tree matches **`origin/development`**. See **`.cursor/rules/git-development-branch-workflow.mdc`**.
 - **`git status`** at repo root first.
 - **Push:** **`development`** routinely; **`master`** only per workflow rule. **AGENTS.md**: when user says “push” without production, push **`development`**.
 
 ### Instructions
 
 1. **`./scripts/git-sync-development.sh`** at repo root (if not already synced this step).
-2. `git status` — if clean, stop.
+2. `git status` - if clean, stop.
 3. Review diff; decide if the tree is ready to commit.
 4. Edit **`CHANGELOG.md`** (clear **`[Unreleased]`** bullets).
 5. Version bump if warranted; update **`last-version-bump.txt`** if you use it. **If you bumped version:** run **`node front/scripts/get-commit-hash.js`** and include **`front/src/environments/commit-hash.ts`** in the stage.

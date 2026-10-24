@@ -12,6 +12,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- **Docs (#436):** Removed typographic em/en dashes from live Markdown and Cursor rules; ASCII hyphen only. Standing rule: `.cursor/rules/markdown-no-long-dashes.mdc` (archived `agents2/tasks/done/` left as historical).
+
 ### Fixed
 
 
@@ -75,7 +77,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- **Marketing / Kebab Factory:** Registered **satisfecho.de/kebab-factory/es/** — manifest entry for **`092_kebabfactory`** (slug **`kebab-factory`**; artifact **`kebab-factory-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
+- **Marketing / Kebab Factory:** Registered **satisfecho.de/kebab-factory/es/** - manifest entry for **`092_kebabfactory`** (slug **`kebab-factory`**; artifact **`kebab-factory-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
 
 ## [2.1.179] - 2026-10-05
 
@@ -250,13 +252,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Added
 
 - **Floating order total + CTA (#360):** Satisfecho Delivery shows a fixed bottom bar (item count, total, next-step button) on menu, cart, and address. QR menu cart bar shows total plus a **Checkout** button that opens the order sheet.
-- **Marketing / Kebab Express:** Registered **satisfecho.de/kebab-express/es/** — manifest entry for **`092_kebabexpress`** (slug **`kebab-express`** matches SPA **`baseHref`**; artifact **`kebab-express-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
+- **Marketing / Kebab Express:** Registered **satisfecho.de/kebab-express/es/** - manifest entry for **`092_kebabexpress`** (slug **`kebab-express`** matches SPA **`baseHref`**; artifact **`kebab-express-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
 
 ## [2.1.160] - 2026-08-26
 
 ### Changed
 
-- **Public pricing page (#358):** Added **QR Menu — free forever** as its own tier before paid plans, a hero callout, and optional **professional support** at **€50/h + tax** with a contact link.
+- **Public pricing page (#358):** Added **QR Menu - free forever** as its own tier before paid plans, a hero callout, and optional **professional support** at **€50/h + tax** with a contact link.
 
 ## [2.1.159] - 2026-08-26
 
@@ -300,7 +302,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Added
 
 - **User manual translations (#354):** Full manual body HTML for de, fr, ca, bg, hi, ur, and zh-CN. `/manual-usuario` loads each locale’s content file; missing files fall back to English.
-- **README starter paths (#355):** New “Start with one feature” section for newcomers who want only a QR menu or only online reservations — minimal setup steps, links to docs, and note that self-host has no license fee.
+- **README starter paths (#355):** New “Start with one feature” section for newcomers who want only a QR menu or only online reservations - minimal setup steps, links to docs, and note that self-host has no license fee.
 
 ## [2.1.154] - 2026-08-24
 
@@ -340,7 +342,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- **Feature landing pages (#347):** 31 public detail pages at `/features/{slug}` (e.g. `/features/reservations`, `/features/satisfecho-delivery`) with hero, benefits, how-it-works, and register/demo CTAs — no login. Grid cards on `/features` link to each page. Data-driven catalog in `feature-landings.ts`; `FEATURE_DETAIL.*` i18n in all locales; SEO meta and sitemap entries; honest preparation-only copy for invoicing/TSE. Smoke: `npm run test:features --prefix front`.
+- **Feature landing pages (#347):** 31 public detail pages at `/features/{slug}` (e.g. `/features/reservations`, `/features/satisfecho-delivery`) with hero, benefits, how-it-works, and register/demo CTAs - no login. Grid cards on `/features` link to each page. Data-driven catalog in `feature-landings.ts`; `FEATURE_DETAIL.*` i18n in all locales; SEO meta and sitemap entries; honest preparation-only copy for invoicing/TSE. Smoke: `npm run test:features --prefix front`.
 
 ## [2.1.148] - 2026-08-13
 
@@ -353,7 +355,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- **Talk to POS (#344):** Staff demo at `/talk` — browser voice (Web Speech) or typed commands map to navigation only (kitchen, tables, orders, etc.). No LLM, no API keys, no order/payment mutations. Doc: `docs/0076-talk-to-pos.md`. Smoke: `npm run test:talk --prefix front`.
+- **Talk to POS (#344):** Staff demo at `/talk` - browser voice (Web Speech) or typed commands map to navigation only (kitchen, tables, orders, etc.). No LLM, no API keys, no order/payment mutations. Doc: `docs/0076-talk-to-pos.md`. Smoke: `npm run test:talk --prefix front`.
 - **Promo video recorder:** `front/scripts/record-promo-video.mjs` (`npm run record-promo-video`) captures a short public-page walkthrough via Puppeteer screencast, letterboxes to 1080p with ffmpeg, and muxes a **CC BY-SA 4.0** music bed (default: Homage by Kjartan Abel). Documented in `docs/0075-promo-videos.md` (mac-stats-style live capture pattern), including Loom-style **circular talking-head PiP** (QuickTime record, ffmpeg loop/overlay parameters, trim lead-in, music-only) and a small **bottom end-credit** for the music author (last ~6s).
 
 ### Changed
@@ -389,7 +391,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- **End-user customer accounts (#340):** First vertical slice — `Customer` model (separate from staff `User` and Factura `BillingCustomer`), register/login with `customer_access_token`, email verification + resend, `/customer` portal (profile + order list), nullable `order.customer_id`. MFA and self-serve invoices deferred. Smoke: `npm run test:customer-register-login --prefix front`.
+- **End-user customer accounts (#340):** First vertical slice - `Customer` model (separate from staff `User` and Factura `BillingCustomer`), register/login with `customer_access_token`, email verification + resend, `/customer` portal (profile + order list), nullable `order.customer_id`. MFA and self-serve invoices deferred. Smoke: `npm run test:customer-register-login --prefix front`.
 
 ### Fixed
 
@@ -414,7 +416,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Offline deferred card (#333):** Archived the verified agents2 task after PASS checks (4 offline-cash pytest, landing smoke, i18n parity, staff queue→sync→mark-paid, API idempotency, no PAN/CVV or offline fiscal). The feature itself shipped in 2.1.140.
 - **Roadmap (#332):** Archived the verified agents2 docs task after PASS checks (ROADMAP structure, no stale Missing for 2026-07-26 CLOSED features, required doc links, recurring 008 cadence, changelog line). The rewrite itself shipped in 2.1.139.
 - **Production promote (#330):** Archived the verified agents2 ops task after PASS checks (GitHub release v2.1.138, `master` merge `f39127d7`, Deploy to amvara9 success, production landing/health/version smoke on satisfecho.de). Release/ops only; no new product code.
-- **Day close-out (#329):** Archived the verified agents2 meta task after PASS checks (GitHub open issues empty, live queue clear of leftover product work, day archives #311–#328 present, landing + loyalty public API smoke). Status inventory only; no product code.
+- **Day close-out (#329):** Archived the verified agents2 meta task after PASS checks (GitHub open issues empty, live queue clear of leftover product work, day archives #311-#328 present, landing + loyalty public API smoke). Status inventory only; no product code.
 - **VeriFactu (#326):** Archived the verified agents2 task after PASS checks (hash-chain migration, 7 fiscal pytest, Settings Test save + Live 400, issue/cancel ValidarQR + sandbox, immutability 409→anulacion, landing smoke, docs 0018/0065). The feature itself shipped in 2.1.134.
 - **Price promotions (#322):** Archived the verified agents2 task after PASS checks (7 pytest, Settings → Promotions create/toggle, QR menu live prices, order-line promo audit/tax, tenant isolation, landing smoke, front build). The feature itself shipped in 2.1.135.
 - **Migration (#321):** Archived the verified agents2 task after PASS checks (17 pytest, CLI dry-run on sample CSV, invalid apply refused with no writes, docs 0062, landing smoke). The CSV cutover toolkit itself shipped in 2.1.134.
@@ -438,7 +440,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Added
 
 - **Loyalty VIP + referral (#334):** Tenant-configurable VIP silver/gold thresholds on **lifetime earn** (not balance), surfaced on staff member list and public card; referral codes/links award referrer (and optional invitee) units once on successful referred join. Settings → Loyalty club; see `docs/0066-club-loyalty.md`.
-- **Offline deferred card (#333):** Staff offline sale panel can queue `payment_intent=card` (intent metadata only — no PAN/CVV). Sync creates an unpaid take-away order; card is collected online after reconnect. True offline card capture and offline fiscal numbering remain blocked; ADR updated in `docs/0063-offline-capable-client.md`.
+- **Offline deferred card (#333):** Staff offline sale panel can queue `payment_intent=card` (intent metadata only - no PAN/CVV). Sync creates an unpaid take-away order; card is collected online after reconnect. True offline card capture and offline fiscal numbering remain blocked; ADR updated in `docs/0063-offline-capable-client.md`.
 
 ## [2.1.139] - 2026-07-26
 
@@ -454,7 +456,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
-- **Club loyalty (#327):** Public join, balance, and wallet endpoints no longer return 500 under live SlowAPI — correct `@public_menu_ip_limit()` usage and inject `response: Response` like other public menu routes.
+- **Club loyalty (#327):** Public join, balance, and wallet endpoints no longer return 500 under live SlowAPI - correct `@public_menu_ip_limit()` usage and inject `response: Response` like other public menu routes.
 
 ### Changed
 
@@ -464,7 +466,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- **German TSE / KassenSichV preparation (#316):** Cloud-TSE ADR and Phase 1 MVP — per-tenant fiscal country and TSE mode (off/test/live, independent of VeriFactu), stub-signed sale/storno on pay and unmark-paid, receipt TSE fields (print-bridge + browser), DSFinV-K date-range export stub, Settings UI and `/features` honesty. Live mode stays gated until provider unlock; not marketed as BSI-certified. See `docs/0072-tse-fiscal-compliance.md`.
+- **German TSE / KassenSichV preparation (#316):** Cloud-TSE ADR and Phase 1 MVP - per-tenant fiscal country and TSE mode (off/test/live, independent of VeriFactu), stub-signed sale/storno on pay and unmark-paid, receipt TSE fields (print-bridge + browser), DSFinV-K date-range export stub, Settings UI and `/features` honesty. Live mode stays gated until provider unlock; not marketed as BSI-certified. See `docs/0072-tse-fiscal-compliance.md`.
 
 ## [2.1.136] - 2026-07-26
 
@@ -472,7 +474,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - **Split bill / partial payments (#318):** Staff can record multiple payment legs on one order (by amount), with remaining-balance reconciliation; order marks paid only when covered. One Factura/VeriFactu alta per settled order; loyalty still earns once. See `docs/0071-split-bill.md`.
 - **Public pricing page (#328):** Real `/pricing` route shows trial length and monthly hosted price from `GET /saas/config` (not hardcoded), plus AGPLv3 self-host tier; respects `SAAS_PAYWALL_ENABLED` so inactive billing is not implied everywhere. Multi-tier-ready `plans[]` on the config payload.
-- **Hardware printing (#317):** Option C ADR + LAN print agent — staff `POST /print-jobs` (kitchen|receipt), agent auth token, poll/claim/complete, Settings → Printing, ESC/POS agent script (`scripts/print-agent/`), browser `window.print()` fallback with offline warning (`docs/0070-hardware-printing.md`).
+- **Hardware printing (#317):** Option C ADR + LAN print agent - staff `POST /print-jobs` (kitchen|receipt), agent auth token, poll/claim/complete, Settings → Printing, ESC/POS agent script (`scripts/print-agent/`), browser `window.print()` fallback with offline warning (`docs/0070-hardware-printing.md`).
 
 ## [2.1.135] - 2026-07-26
 
@@ -486,11 +488,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- **Club loyalty (#327):** Tenant points/stamps program — Settings tab, public join `/loyalty/{tenantId}` + balance card, auto-earn once per paid order, staff redeem at checkout (`loyalty_discount_cents` until #322 promos), append-only ledger; Apple/Google Wallet issuance gated on certs (`docs/0066-club-loyalty.md`).
-- **VeriFactu (#326):** Production-path prep — Phase 0 build-vs-buy ADR (`docs/0065-verifactu-production.md`), internal hash chain, AEAT ValidarQR URL shape, test-mode sandbox submission, order immutability after fiscal issue, anulación (credit-note cancel) endpoint; `fiscal_mode: live` gated until middleware unlock. Official AEAT SOAP/huella still via certified middleware (not invented in-app).
+- **Club loyalty (#327):** Tenant points/stamps program - Settings tab, public join `/loyalty/{tenantId}` + balance card, auto-earn once per paid order, staff redeem at checkout (`loyalty_discount_cents` until #322 promos), append-only ledger; Apple/Google Wallet issuance gated on certs (`docs/0066-club-loyalty.md`).
+- **VeriFactu (#326):** Production-path prep - Phase 0 build-vs-buy ADR (`docs/0065-verifactu-production.md`), internal hash chain, AEAT ValidarQR URL shape, test-mode sandbox submission, order immutability after fiscal issue, anulación (credit-note cancel) endpoint; `fiscal_mode: live` gated until middleware unlock. Official AEAT SOAP/huella still via certified middleware (not invented in-app).
 - **Guest feedback (#325):** Staff trends dashboard (averages, star distribution, daily volume) and CSV export on `/guest-feedback`; APIs `GET /tenant/guest-feedback/summary` and `GET /tenant/guest-feedback/export` (`docs/0064-guest-feedback-analytics.md`).
-- **Migration (#321):** CSV cutover toolkit for products + categories — sample CSV, idempotent CLI (`--dry-run` / `--apply`), validation report that refuses writes on bad rows, and cutover runbook (`docs/0062-pos-migration-import.md`).
-- **Inventory (#320):** Multi-warehouse (almacenes) MVP — tenant-scoped warehouses, per-location stock on receive/adjust, warehouse CRUD under Inventory, and stock dashboard filter by location.
+- **Migration (#321):** CSV cutover toolkit for products + categories - sample CSV, idempotent CLI (`--dry-run` / `--apply`), validation report that refuses writes on bad rows, and cutover runbook (`docs/0062-pos-migration-import.md`).
+- **Inventory (#320):** Multi-warehouse (almacenes) MVP - tenant-scoped warehouses, per-location stock on receive/adjust, warehouse CRUD under Inventory, and stock dashboard filter by location.
 
 ## [2.1.133] - 2026-07-26
 
@@ -520,19 +522,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **Docs (0022):** Marked OAuth / social-login notes as **research / deferred** (auth remains email/password; do not queue implementation from this doc) and aligned README plus the 0019–0022 prioritisation guide.
+- **Docs (0022):** Marked OAuth / social-login notes as **research / deferred** (auth remains email/password; do not queue implementation from this doc) and aligned README plus the 0019-0022 prioritisation guide.
 
 ## [2.1.128] - 2026-07-26
 
 ### Changed
 
-- **Docs (0031 / #50):** Marked core order customizations as **shipped** (staff product questions, public menu answers including multi-select, kitchen/invoice summary); optional per-option price deltas remain open — aligned README and ROADMAP.
+- **Docs (0031 / #50):** Marked core order customizations as **shipped** (staff product questions, public menu answers including multi-select, kitchen/invoice summary); optional per-option price deltas remain open - aligned README and ROADMAP.
 
 ## [2.1.127] - 2026-07-26
 
 ### Changed
 
-- **Docs (0002):** Clarified the customer features plan as **partial** — staff Billing Customers (Factura) and fiscal invoices are shipped; end-user accounts, MFA, and self-serve history are not — and aligned README indexes plus ROADMAP.
+- **Docs (0002):** Clarified the customer features plan as **partial** - staff Billing Customers (Factura) and fiscal invoices are shipped; end-user accounts, MFA, and self-serve history are not - and aligned README indexes plus ROADMAP.
 
 ## [2.1.126] - 2026-07-26
 
@@ -608,7 +610,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **Docs (0023):** Refreshed prioritisation for docs 0019–0022 so **0021 (working plan)** is treated as shipped background and the next open item is **0022 (OAuth)**, with optional **0020** rate-limit follow-ups as non-blocking hardening; aligned the docs README index blurb.
+- **Docs (0023):** Refreshed prioritisation for docs 0019-0022 so **0021 (working plan)** is treated as shipped background and the next open item is **0022 (OAuth)**, with optional **0020** rate-limit follow-ups as non-blocking hardening; aligned the docs README index blurb.
 
 ## [2.1.114] - 2026-07-26
 
@@ -680,7 +682,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **Docs index:** Listed `SECURITY-REVIEW.md` under Quick links and Reference & notes in `docs/README.md` (structured security pass — not a pentest).
+- **Docs index:** Listed `SECURITY-REVIEW.md` under Quick links and Reference & notes in `docs/README.md` (structured security pass - not a pentest).
 - **Agent cursor-rules catalog:** Related link in `docs/agent-cursor-rules.md` now points at `agents2/TASKS-README.md` and the live `agents2/tasks/` queue (legacy `agents/tasks/` noted only).
 
 ## [2.1.102] - 2026-07-26
@@ -699,7 +701,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **Reservation confirmation email troubleshooting (0030):** Refreshed the ops runbook — current-status banner with links to Gmail setup (now `0056-gmail-setup.md`) and email research (0005), local Docker diagnose command, log strings aligned with the backend, and indexing under Email & SMTP plus Quick links in `docs/README.md`.
+- **Reservation confirmation email troubleshooting (0030):** Refreshed the ops runbook - current-status banner with links to Gmail setup (now `0056-gmail-setup.md`) and email research (0005), local Docker diagnose command, log strings aligned with the backend, and indexing under Email & SMTP plus Quick links in `docs/README.md`.
 
 ## [2.1.99] - 2026-07-26
 
@@ -718,7 +720,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **Root ROADMAP:** Listed shipped Jul areas under Completed Features — Satisfecho Delivery, waiting list, restaurant groups, SaaS signup paywall, platform operator portal, and order/item comments — with links to `docs/0052`–`0054`, platform operator, kitchen display, and reservation guides.
+- **Root ROADMAP:** Listed shipped Jul areas under Completed Features - Satisfecho Delivery, waiting list, restaurant groups, SaaS signup paywall, platform operator portal, and order/item comments - with links to `docs/0052`-`0054`, platform operator, kitchen display, and reservation guides.
 
 ## [2.1.96] - 2026-07-26
 
@@ -764,7 +766,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **Testing docs:** Indexed `npm run debug:working-plan-calendar` in `docs/testing.md` (working-plan §2b and npm scripts table) as a debug inspector for red/staffing days — not a pass/fail smoke; points to `test:working-plan` / `test:working-plan-calendar` for CI checks.
+- **Testing docs:** Indexed `npm run debug:working-plan-calendar` in `docs/testing.md` (working-plan §2b and npm scripts table) as a debug inspector for red/staffing days - not a pass/fail smoke; points to `test:working-plan` / `test:working-plan-calendar` for CI checks.
 
 ## [2.1.89] - 2026-07-26
 
@@ -782,7 +784,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **Postgres ad-hoc SQL docs (0033):** Documented the waiting-list table as `waiting_list_entry` (with tenant/status filters and an example active-queue query), and noted that Satisfecho Delivery rows live on `"order"` — there is no separate `deliveryorder` table.
+- **Postgres ad-hoc SQL docs (0033):** Documented the waiting-list table as `waiting_list_entry` (with tenant/status filters and an example active-queue query), and noted that Satisfecho Delivery rows live on `"order"` - there is no separate `deliveryorder` table.
 
 ## [2.1.86] - 2026-07-26
 
@@ -860,7 +862,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **SaaS signup docs:** Documented the guided restaurant signup wizard (`/register` / `/signup`) in `docs/0052-saas-signup-paywall.md` — steps 0–4, paywall vs dashboard finish destinations, 402-exempt priming paths, and a link to the platform operator portal — with a matching `docs/README.md` index blurb.
+- **SaaS signup docs:** Documented the guided restaurant signup wizard (`/register` / `/signup`) in `docs/0052-saas-signup-paywall.md` - steps 0-4, paywall vs dashboard finish destinations, 402-exempt priming paths, and a link to the platform operator portal - with a matching `docs/README.md` index blurb.
 
 ## [2.1.73] - 2026-07-26
 
@@ -921,13 +923,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **No-show docs (reminder channels):** `docs/0019-no-show-implementation-plan.md` now matches the live send-reminder API — email and/or WhatsApp when phone + Twilio are set — with a link to `docs/0024-whatsapp-reminder-notes.md`, and notes shipped scheduled reminders and `PUBLIC_APP_BASE_URL` view/cancel links.
+- **No-show docs (reminder channels):** `docs/0019-no-show-implementation-plan.md` now matches the live send-reminder API - email and/or WhatsApp when phone + Twilio are set - with a link to `docs/0024-whatsapp-reminder-notes.md`, and notes shipped scheduled reminders and `PUBLIC_APP_BASE_URL` view/cancel links.
 
 ## [2.1.63] - 2026-07-26
 
 ### Changed
 
-- **Kitchen display docs (order comments):** `docs/0015-kitchen-display.md` now documents optional order/item comments (#284) — public menu Add comment and order-level note, staff edit on `/orders`, highlighted full text on `/kitchen` and `/bar` — with a short pointer in `docs/0008-order-management-logic.md` and a `docs/README.md` index cue.
+- **Kitchen display docs (order comments):** `docs/0015-kitchen-display.md` now documents optional order/item comments (#284) - public menu Add comment and order-level note, staff edit on `/orders`, highlighted full text on `/kitchen` and `/bar` - with a short pointer in `docs/0008-order-management-logic.md` and a `docs/README.md` index cue.
 
 ## [2.1.62] - 2026-07-26
 
@@ -946,7 +948,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **Testing docs index:** `docs/testing.md` now documents five existing Puppeteer npm aliases — settings logo upload, support access, kitchen timer, book WhatsApp CTA, and my-shift clock QR — with how-to sections and npm scripts table rows.
+- **Testing docs index:** `docs/testing.md` now documents five existing Puppeteer npm aliases - settings logo upload, support access, kitchen timer, book WhatsApp CTA, and my-shift clock QR - with how-to sections and npm scripts table rows.
 
 ## [2.1.59] - 2026-07-26
 
@@ -978,9 +980,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **Docs index (0053 Feature guides):** `docs/README.md` Feature guides blurb for Satisfecho Delivery now covers public checkout, fee/zone/radius, guest `/track`, and unpaid TTL cleanup — not only the staff/courier API (#297 / #306).
+- **Docs index (0053 Feature guides):** `docs/README.md` Feature guides blurb for Satisfecho Delivery now covers public checkout, fee/zone/radius, guest `/track`, and unpaid TTL cleanup - not only the staff/courier API (#297 / #306).
 - **Courier portal test credentials:** Documented commented `COURIER_EMAIL` / `COURIER_PASSWORD` in `config.env.example`, plus matching manual-testing notes in `AGENTS.md` and the `test:courier-actions` row in `docs/testing.md` (defaults aligned with the smoke script and demo courier seed).
-- **Daily demo reset ops doc:** `docs/0001-ci-cd-amvara9.md` now states that tenant-1 daily reset clears/reseeds orders (including Satisfecho Delivery samples), reservations, and waiting-list entries — not only orders and reservations.
+- **Daily demo reset ops doc:** `docs/0001-ci-cd-amvara9.md` now states that tenant-1 daily reset clears/reseeds orders (including Satisfecho Delivery samples), reservations, and waiting-list entries - not only orders and reservations.
 - **Rate-limit ops doc:** `docs/0020-rate-limiting-production.md` now lists public `satisfecho-delivery-config` and `delivery-status` GETs under the shared public-menu IP bucket (`RATE_LIMIT_PUBLIC_MENU_PER_MINUTE`), including that track-page polling shares that budget.
 
 ## [2.1.55] - 2026-07-26
@@ -1186,7 +1188,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **Public `/features` page:** Added July capability cards — waiting list, Satisfecho Delivery, order comments, restaurant groups, guided signup, SaaS trial/paywall, and platform oversight — with localized copy in all shipped locales.
+- **Public `/features` page:** Added July capability cards - waiting list, Satisfecho Delivery, order comments, restaurant groups, guided signup, SaaS trial/paywall, and platform oversight - with localized copy in all shipped locales.
 - **Enhancement reviewer stamp:** Preflight now rotates `agents2/008-enhancement-reviewer/time-of-last-review.txt` when it exceeds a line cap (default 100), archiving older lines instead of letting the stamp grow without bound.
 
 ## [2.1.28] - 2026-07-23
@@ -1198,7 +1200,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
-- **Public Satisfecho Delivery checkout:** Catalog items from the public menu now create orders successfully — line IDs resolve `TenantProduct` → `Product` (still accepts legacy `Product.id`); regression pytest + delivery smoke cover create past cart (#304).
+- **Public Satisfecho Delivery checkout:** Catalog items from the public menu now create orders successfully - line IDs resolve `TenantProduct` → `Product` (still accepts legacy `Product.id`); regression pytest + delivery smoke cover create past cart (#304).
 
 ## [2.1.27] - 2026-07-23
 
@@ -1220,7 +1222,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
-- **Demo tables seed:** Tenants with a partial T01–T10 set (especially tenant 1) are repaired on seed — missing names are created and wrong seat counts corrected — so `check_demo_tables`, Take Away, and demo/book smokes stay green (#305).
+- **Demo tables seed:** Tenants with a partial T01-T10 set (especially tenant 1) are repaired on seed - missing names are created and wrong seat counts corrected - so `check_demo_tables`, Take Away, and demo/book smokes stay green (#305).
 
 ## [2.1.24] - 2026-07-22
 
@@ -1279,7 +1281,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Removed
 
-- **Marketing / Gustazo:** Stopped serving and syncing the Gustazo marketing SPA from POS — removed from **`config/marketing-sites.json`**, deleted **`front/sites/gustazo/`**, dropped Gustazo-only deploy smoke and legacy fetch wrappers; remaining marketing sites continue via the generic sync (#298).
+- **Marketing / Gustazo:** Stopped serving and syncing the Gustazo marketing SPA from POS - removed from **`config/marketing-sites.json`**, deleted **`front/sites/gustazo/`**, dropped Gustazo-only deploy smoke and legacy fetch wrappers; remaining marketing sites continue via the generic sync (#298).
 
 ## [2.1.17] - 2026-07-20
 
@@ -1291,7 +1293,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- **Platform operator portal:** Tenant list and detail pages for operators — owner/staff contact emails, activity stats (products, tables, users, orders, reservations), and links to each tenant's public menu, booking, and waitlist pages at **`/platform/tenants/{id}`** (#292).
+- **Platform operator portal:** Tenant list and detail pages for operators - owner/staff contact emails, activity stats (products, tables, users, orders, reservations), and links to each tenant's public menu, booking, and waitlist pages at **`/platform/tenants/{id}`** (#292).
 
 ### Changed
 
@@ -1301,140 +1303,140 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
-- **Deploy to amvara9 (GitHub Actions):** CI now connects over SSH port **60022** (amvara9 default) instead of port 22 — `ssh-keyscan`, `ssh`, and marketing-site `rsync` all honor optional repository Variable **`DEPLOY_SSH_PORT`**; restores checkout, bundle sync, and post-deploy smoke after the server moved SSH off port 22 (#294).
+- **Deploy to amvara9 (GitHub Actions):** CI now connects over SSH port **60022** (amvara9 default) instead of port 22 - `ssh-keyscan`, `ssh`, and marketing-site `rsync` all honor optional repository Variable **`DEPLOY_SSH_PORT`**; restores checkout, bundle sync, and post-deploy smoke after the server moved SSH off port 22 (#294).
 
 ### Changed
 
-- **Reservation user guide:** `docs/0011-table-reservation-user-guide.md` now documents the waiting list — guest flow at **`/waitlist/:tenantId`**, the link from **`/book/:tenantId`**, staff queue actions on **`/reservations`**, and local/production URL examples; **`README.md`** pointers updated to match (#282).
-- **Release / production:** Promoted **`development` → `master`** and deployed to amvara9 (**satisfecho.de**) — live **2.1.15** (#295).
+- **Reservation user guide:** `docs/0011-table-reservation-user-guide.md` now documents the waiting list - guest flow at **`/waitlist/:tenantId`**, the link from **`/book/:tenantId`**, staff queue actions on **`/reservations`**, and local/production URL examples; **`README.md`** pointers updated to match (#282).
+- **Release / production:** Promoted **`development` → `master`** and deployed to amvara9 (**satisfecho.de**) - live **2.1.15** (#295).
 
 ## [2.1.14] - 2026-07-12
 
 ### Added
 
-- **Platform operator portal:** SaaS operators sign in at **`/platform/login`** (platform auth scope) and view a read-only dashboard — tenant count, sign-ups in the last 30 days, login activity (24h and 7d), and tables of recent tenants and logins; accounts use the **`platform_operator`** role and are provisioned via **`ensure_platform_operator`** seed + env (#292).
+- **Platform operator portal:** SaaS operators sign in at **`/platform/login`** (platform auth scope) and view a read-only dashboard - tenant count, sign-ups in the last 30 days, login activity (24h and 7d), and tables of recent tenants and logins; accounts use the **`platform_operator`** role and are provisioned via **`ensure_platform_operator`** seed + env (#292).
 
 ### Changed
 
-- **Staff sidebar:** **Customers (Invoice)** (`/customers`) now appears under **Operations** alongside tables and kitchen/bar displays instead of under Catalog & inventory — the Operations group also shows when customers is the only visible sub-item (#290).
-- **Agent loop:** Weekly **enhancement reviewer** (agent **008**) scans docs/changelog drift, demo seed health, and the task queue — emits preflight signals and creates up to three **`FEAT-0-*`** / **`NEW-0-*`** follow-up tasks; **`pos-cursor-loop.sh`** adds an **`enhancement`** step (#291).
-- **Release / production:** Promoted **`development` → `master`** and deployed to amvara9 (**satisfecho.de**) — live **2.1.14** (#293).
+- **Staff sidebar:** **Customers (Invoice)** (`/customers`) now appears under **Operations** alongside tables and kitchen/bar displays instead of under Catalog & inventory - the Operations group also shows when customers is the only visible sub-item (#290).
+- **Agent loop:** Weekly **enhancement reviewer** (agent **008**) scans docs/changelog drift, demo seed health, and the task queue - emits preflight signals and creates up to three **`FEAT-0-*`** / **`NEW-0-*`** follow-up tasks; **`pos-cursor-loop.sh`** adds an **`enhancement`** step (#291).
+- **Release / production:** Promoted **`development` → `master`** and deployed to amvara9 (**satisfecho.de**) - live **2.1.14** (#293).
 
 ## [2.1.13] - 2026-07-12
 
 ### Added
 
-- **Restaurant groups:** Multi-location operators can create a restaurant group with a join code and optionally share billing customers and products across linked tenants — sibling locations see shared data read-only; Settings includes a **Restaurant group** tab for owners (#283).
-- **Staff sidebar:** Grouped navigation with collapsible sections (**Operations**, **Planning**, **Catalog & inventory**, **Administration**) — primary links (Home, My shift, Orders) stay top-level; groups hide when all child modules are disabled (#287).
+- **Restaurant groups:** Multi-location operators can create a restaurant group with a join code and optionally share billing customers and products across linked tenants - sibling locations see shared data read-only; Settings includes a **Restaurant group** tab for owners (#283).
+- **Staff sidebar:** Grouped navigation with collapsible sections (**Operations**, **Planning**, **Catalog & inventory**, **Administration**) - primary links (Home, My shift, Orders) stay top-level; groups hide when all child modules are disabled (#287).
 
 ### Changed
 
-- **New signups:** Fresh restaurants get a tighter default navigation — **Tables**, **Reservations**, and **Kitchen & bar** on; **Working plan**, **Product catalog**, **Inventory**, **Contracts**, and **Users** off — existing tenants are unchanged (#288).
-- **Release / production:** Promoted **`development` → `master`** and deployed to amvara9 (**satisfecho.de**) — live **2.1.13** at **`a8bfe7f9`** via manual SSH after GitHub Actions **deploy-amvara9** could not reach the server (SSH refused from runners); post-deploy smoke passed for waitlist, signup wizard, order comments, and **`/api/health`** (#285, #289).
+- **New signups:** Fresh restaurants get a tighter default navigation - **Tables**, **Reservations**, and **Kitchen & bar** on; **Working plan**, **Product catalog**, **Inventory**, **Contracts**, and **Users** off - existing tenants are unchanged (#288).
+- **Release / production:** Promoted **`development` → `master`** and deployed to amvara9 (**satisfecho.de**) - live **2.1.13** at **`a8bfe7f9`** via manual SSH after GitHub Actions **deploy-amvara9** could not reach the server (SSH refused from runners); post-deploy smoke passed for waitlist, signup wizard, order comments, and **`/api/health`** (#285, #289).
 
 ## [2.1.12] - 2026-07-12
 
 ### Added
 
-- **Order comments:** Guests can add optional free-text notes per cart line and for the whole order on the table menu — comments appear on the current-order tracker, kitchen and bar displays (highlighted), and staff order cards with inline edit (#284).
-- **Guided signup:** New multi-step restaurant onboarding at **`/register`** and **`/signup`** — collect address, phone, and maps link; confirm default starter beverages (coffee, Coca Cola, water) with prices; optional product photos; finish with a QR code for the public menu (#286).
+- **Order comments:** Guests can add optional free-text notes per cart line and for the whole order on the table menu - comments appear on the current-order tracker, kitchen and bar displays (highlighted), and staff order cards with inline edit (#284).
+- **Guided signup:** New multi-step restaurant onboarding at **`/register`** and **`/signup`** - collect address, phone, and maps link; confirm default starter beverages (coffee, Coca Cola, water) with prices; optional product photos; finish with a QR code for the public menu (#286).
 
 ## [2.1.11] - 2026-07-12
 
 ### Added
 
-- **Waiting list:** Guests can join a tenant waiting queue with name, party size, and phone — public form at **`/waitlist/:tenantId`** and a link from **`/book/:tenantId`** when no table is available; staff manage the queue on **`/reservations`** (Waiting list tab) with mark notified, book table, seated, and cancel actions (#282).
+- **Waiting list:** Guests can join a tenant waiting queue with name, party size, and phone - public form at **`/waitlist/:tenantId`** and a link from **`/book/:tenantId`** when no table is available; staff manage the queue on **`/reservations`** (Waiting list tab) with mark notified, book table, seated, and cancel actions (#282).
 
 ## [2.1.10] - 2026-07-07
 
 ### Fixed
 
-- **Demo Take Away menu:** Beverages no longer show wrong catalog images and descriptions (e.g. Coca Cola with a beer photo) — demo product linking now matches catalog names only, repairs mismatched links from prior round-robin runs, and clears stale `Product` image/description backfills when no catalog link remains (#280).
+- **Demo Take Away menu:** Beverages no longer show wrong catalog images and descriptions (e.g. Coca Cola with a beer photo) - demo product linking now matches catalog names only, repairs mismatched links from prior round-robin runs, and clears stale `Product` image/description backfills when no catalog link remains (#280).
 
 ### Changed
 
-- **Release / production:** Promoted **`development` → `master`** (including hotfix for stale demo product backfills) and confirmed green **Deploy to amvara9** on production (**satisfecho.de**) — live **2.1.10** at **`f0433b5a`** (#281).
+- **Release / production:** Promoted **`development` → `master`** (including hotfix for stale demo product backfills) and confirmed green **Deploy to amvara9** on production (**satisfecho.de**) - live **2.1.10** at **`f0433b5a`** (#281).
 
 ## [2.1.9] - 2026-07-06
 
 ### Fixed
 
-- **Table menu:** Guests opening the ordering menu via table QR or the landing **Take Away** demo no longer see each dish twice — `GET /menu/{table_token}` now skips legacy `Product` rows already represented by linked `TenantProduct` entries, matching the public-menu dedup from #258 (#278).
+- **Table menu:** Guests opening the ordering menu via table QR or the landing **Take Away** demo no longer see each dish twice - `GET /menu/{table_token}` now skips legacy `Product` rows already represented by linked `TenantProduct` entries, matching the public-menu dedup from #258 (#278).
 
 ### Changed
 
-- **Release / production:** Promoted **`development` → `master`** and confirmed green **Deploy to amvara9** on production (**satisfecho.de**) — live **2.1.9** includes the table-menu dedup fix (#279).
+- **Release / production:** Promoted **`development` → `master`** and confirmed green **Deploy to amvara9** on production (**satisfecho.de**) - live **2.1.9** includes the table-menu dedup fix (#279).
 
 ## [2.1.8] - 2026-07-02
 
 ### Added
 
-- **Features page:** New public **`/features`** route lists Satisfecho capabilities in four groups (guest experience, operations, business, platform) — QR menu, kitchen and bar displays, shift planning, online payments, inventory, courier portal, and more — with navigation from the landing page and localized copy in all locale files.
-- **Marketing / Ariba Döner:** Registered **satisfecho.de/ariba-doner/es/** — manifest entry for **`090_aribakebab`** (slug **`ariba-doner`** matches SPA **`baseHref`**; artifact **`ariba-doner-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
-- **Marketing / Amigo Kebab:** Registered **satisfecho.de/amigo-kebab/es/** — manifest entry for **`089_amigokebab`** (slug **`amigo-kebab`** matches SPA **`baseHref`**; artifact **`amigo-kebab-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
-- **Marketing / La Bella Toscana:** Registered **satisfecho.de/labellatoscana/es/** — manifest entry for **`060_labellatoscana`** (slug **`labellatoscana`** matches SPA **`baseHref`**; artifact **`labellatoscana-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
-- **Marketing / Pizza Luna:** Registered **satisfecho.de/pizzaluna/es/** — manifest entry for **`087_pizzalluna`** (slug **`pizzaluna`** matches SPA **`baseHref`**; artifact **`pizzaluna-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
-- **Marketing / Rico Kebab:** Registered **satisfecho.de/rico-kebab/** — manifest entry for **`088_ricokebab`** (slug matches SPA **`baseHref`** `/rico-kebab/`; artifact **`rico-kebab-satisfecho-deploy`**).
+- **Features page:** New public **`/features`** route lists Satisfecho capabilities in four groups (guest experience, operations, business, platform) - QR menu, kitchen and bar displays, shift planning, online payments, inventory, courier portal, and more - with navigation from the landing page and localized copy in all locale files.
+- **Marketing / Ariba Döner:** Registered **satisfecho.de/ariba-doner/es/** - manifest entry for **`090_aribakebab`** (slug **`ariba-doner`** matches SPA **`baseHref`**; artifact **`ariba-doner-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
+- **Marketing / Amigo Kebab:** Registered **satisfecho.de/amigo-kebab/es/** - manifest entry for **`089_amigokebab`** (slug **`amigo-kebab`** matches SPA **`baseHref`**; artifact **`amigo-kebab-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
+- **Marketing / La Bella Toscana:** Registered **satisfecho.de/labellatoscana/es/** - manifest entry for **`060_labellatoscana`** (slug **`labellatoscana`** matches SPA **`baseHref`**; artifact **`labellatoscana-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
+- **Marketing / Pizza Luna:** Registered **satisfecho.de/pizzaluna/es/** - manifest entry for **`087_pizzalluna`** (slug **`pizzaluna`** matches SPA **`baseHref`**; artifact **`pizzaluna-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
+- **Marketing / Rico Kebab:** Registered **satisfecho.de/rico-kebab/** - manifest entry for **`088_ricokebab`** (slug matches SPA **`baseHref`** `/rico-kebab/`; artifact **`rico-kebab-satisfecho-deploy`**).
 - **Demo tables:** **`seed_demo_tables`** idempotently ensures a **Take Away** table on tenant 1 so visitors can try guest ordering from the public landing demo without a physical table QR.
 
 ### Fixed
 
-- **Products / categories:** Translated category strings (e.g. **Entrantes**, **Plat principal**, **Vorspeisen**) are normalized to canonical English keys on product create/update, bulk import, and catalog merge — staff no longer see duplicate category options for the same logical category; existing data is repaired idempotently on migrate (#265).
-- **Products / categories:** Staff **Products** category dropdowns and **Product categories** now always list all five standard categories (Starters, Main Course, Desserts, Beverages, Sides) even when the tenant has no products yet — `GET /catalog/categories` seeds empty subcategory lists for missing standard keys in fixed order (#263).
+- **Products / categories:** Translated category strings (e.g. **Entrantes**, **Plat principal**, **Vorspeisen**) are normalized to canonical English keys on product create/update, bulk import, and catalog merge - staff no longer see duplicate category options for the same logical category; existing data is repaired idempotently on migrate (#265).
+- **Products / categories:** Staff **Products** category dropdowns and **Product categories** now always list all five standard categories (Starters, Main Course, Desserts, Beverages, Sides) even when the tenant has no products yet - `GET /catalog/categories` seeds empty subcategory lists for missing standard keys in fixed order (#263).
 - **Marketing / Rico Kebab:** Corrected manifest and **`front/sites/`** slug from **`ricokebab`** to **`rico-kebab`** so paths match production **`/rico-kebab/`** and the SPA **`baseHref`** (`088_ricokebab`).
 - **Marketing / Rico Kebab:** Sync **`rico-kebab-satisfecho-deploy`** into **`front/sites/rico-kebab/es/`** (manifest **`deploySubpath`**) so **`/rico-kebab/es/`** serves the current bundle instead of a stale root-only sync (`088_ricokebab` #2).
-- **Marketing / Boss Kebab:** Restored **satisfecho.de/bosskebabypizzeria/** — `baseHref` and deploy paths now match the live slug so Angular scripts and styles load instead of 404 (blank page) after marketing build and amvara9 sync (`085_Bosskebabypizzeria` #1).
+- **Marketing / Boss Kebab:** Restored **satisfecho.de/bosskebabypizzeria/** - `baseHref` and deploy paths now match the live slug so Angular scripts and styles load instead of 404 (blank page) after marketing build and amvara9 sync (`085_Bosskebabypizzeria` #1).
 
 ### Changed
 
-- **Landing and features pages:** Extracted the dark marketing footer (bottom CTA, account/partners/support links, version bar) into a shared component — **`/features`** now shows the same footer as the home page instead of a minimal back-home strip.
+- **Landing and features pages:** Extracted the dark marketing footer (bottom CTA, account/partners/support links, version bar) into a shared component - **`/features`** now shows the same footer as the home page instead of a minimal back-home strip.
 - **Landing page:** Hero headline now leads with **“Reduce your application costs by 50%”** and a subtitle about replacing multiple single-purpose apps with one open-source platform; the features preview section links to the full **`/features`** page.
-- **Landing page:** Restructured the site footer — bottom CTA, grouped **Account / Partners / Support** link columns, and version bar now share one dark footer block (no fixed overlay); QR demo card keeps a single **Open menu** action; new footer section labels in all locale files.
-- **Landing page:** Redesigned the **For guests** section with a dark two-column layout — clearer table-name label, **Try demo: Take Away** one-click ordering, and new localized strings in all locale files; table lookup and multi-restaurant picker behaviour unchanged.
+- **Landing page:** Restructured the site footer - bottom CTA, grouped **Account / Partners / Support** link columns, and version bar now share one dark footer block (no fixed overlay); QR demo card keeps a single **Open menu** action; new footer section labels in all locale files.
+- **Landing page:** Redesigned the **For guests** section with a dark two-column layout - clearer table-name label, **Try demo: Take Away** one-click ordering, and new localized strings in all locale files; table lookup and multi-restaurant picker behaviour unchanged.
 - **Contact us:** **Contact us** mailto links on login, register, and provider auth pages now use **hello@satisfecho.de**, matching the landing footer and current support address.
-- **Landing page:** Redesigned the public home with a dark gradient hero, navigation bar, feature cards, and a dedicated **QR demo** section — scannable code for tenant 1's live public menu with step-by-step copy, Book/Login actions, and localized strings in all locale files; guest table lookup and footer links unchanged.
+- **Landing page:** Redesigned the public home with a dark gradient hero, navigation bar, feature cards, and a dedicated **QR demo** section - scannable code for tenant 1's live public menu with step-by-step copy, Book/Login actions, and localized strings in all locale files; guest table lookup and footer links unchanged.
 - **Repository:** Removed a committed diagnostics zip archive from the repo root and added **`diagnostics_*.zip`** to **`.gitignore`** so local diagnostics dumps are not tracked in version control (#267).
 - **Marketing / Wimpi:** Removed carta and booking CTAs from **satisfecho.de/wimpi/es/** per venue request after marketing build and amvara9 deploy (`083_wimpi`).
-- **Public menu API:** `GET /public/tenants/{id}/menu` groups sections by **subcategory** when set (e.g. Carta principal, Ensaladas); otherwise by the **localized** standard category label (Desserts → Postres for `lang=es`) — marketing sites and `/public-menu/:id` show restaurant-style section titles instead of raw English category keys.
-- **Marketing / Wimpi:** Updated Google reviews copy on **satisfecho.de/wimpi/es/** — **4,8 / 5 · 239 valoraciones** (was 4,7 / 102) to match the current Google listing after marketing build and amvara9 deploy (`083_wimpi` #2).
-- **Agent loop:** Per-step wall-clock limits on **`cursor-agent`** in **`agents2/pos-cursor-loop.sh`** (default **25** minutes; tester **32** minutes for deploy polling) so a hung step does not block the whole cycle — on timeout the orchestrator logs and continues; **`TESTING-`** / **`WIP-`** tasks are retried on the next pass. Disable with **`AGENT_CURSOR_TIMEOUT=0`**.
+- **Public menu API:** `GET /public/tenants/{id}/menu` groups sections by **subcategory** when set (e.g. Carta principal, Ensaladas); otherwise by the **localized** standard category label (Desserts → Postres for `lang=es`) - marketing sites and `/public-menu/:id` show restaurant-style section titles instead of raw English category keys.
+- **Marketing / Wimpi:** Updated Google reviews copy on **satisfecho.de/wimpi/es/** - **4,8 / 5 · 239 valoraciones** (was 4,7 / 102) to match the current Google listing after marketing build and amvara9 deploy (`083_wimpi` #2).
+- **Agent loop:** Per-step wall-clock limits on **`cursor-agent`** in **`agents2/pos-cursor-loop.sh`** (default **25** minutes; tester **32** minutes for deploy polling) so a hung step does not block the whole cycle - on timeout the orchestrator logs and continues; **`TESTING-`** / **`WIP-`** tasks are retried on the next pass. Disable with **`AGENT_CURSOR_TIMEOUT=0`**.
 - **Marketing / Gustazo:** Removed gallery image **`local-04`** from live **satisfecho.de/gustazo/** after **`gustazo-dist`** bundle sync (`040_gustazo` #1).
 - **Agent tasks:** **`move-agent-task-to-done.sh`** now parses **`CLOSED-MKT-<repo>-<issue>-…`** filenames when archiving marketing tasks to **`agents2/tasks/done/`**.
-- **Marketing / Wimpi:** Mobile opening-hours layout on **satisfecho.de/wimpi/es/** — short weekday labels (LUN–DOM), wrapped rows on narrow viewports, full names from 720px up (`083_wimpi` #1).
-- **Agent loop:** Added **005 marketing repos reviewer** — preflight scans **`satisfecho/NNN_slug`** org repos for new sites, bundle updates, and untracked issues; registers **`config/marketing-sites.json`** and **`front/sites/<slug>/`**, can trigger **Deploy to amvara9**, and queues **`FEAT-MKT-*`** tasks for the feature coder. Wired into **`agents2/pos-cursor-loop.sh`** with gating env vars; **`010-feature-coder.md`** documents marketing-repo work.
-- **Release / production:** Promoted **`development` → `master`** and confirmed green **Deploy to amvara9** on production (**satisfecho.de**) — live **2.1.8** at merge **`de9faf4f`**.
+- **Marketing / Wimpi:** Mobile opening-hours layout on **satisfecho.de/wimpi/es/** - short weekday labels (LUN-DOM), wrapped rows on narrow viewports, full names from 720px up (`083_wimpi` #1).
+- **Agent loop:** Added **005 marketing repos reviewer** - preflight scans **`satisfecho/NNN_slug`** org repos for new sites, bundle updates, and untracked issues; registers **`config/marketing-sites.json`** and **`front/sites/<slug>/`**, can trigger **Deploy to amvara9**, and queues **`FEAT-MKT-*`** tasks for the feature coder. Wired into **`agents2/pos-cursor-loop.sh`** with gating env vars; **`010-feature-coder.md`** documents marketing-repo work.
+- **Release / production:** Promoted **`development` → `master`** and confirmed green **Deploy to amvara9** on production (**satisfecho.de**) - live **2.1.8** at merge **`de9faf4f`**.
 
 ## [2.1.7] - 2026-06-29
 
 ### Added
 
-- **Courier portal (Phase 2):** Couriers see a mobile-friendly delivery order list after login — **Available**, **Mine**, and **Completed** tabs with status badges and item summaries; tap an order for detail (customer, pickup context, notes, line items, total). New **`GET /courier/orders`** and **`GET /courier/orders/{id}`** APIs are tenant-scoped for delivery orders; **Mine** stays empty until assignment ships in a later phase (#275).
+- **Courier portal (Phase 2):** Couriers see a mobile-friendly delivery order list after login - **Available**, **Mine**, and **Completed** tabs with status badges and item summaries; tap an order for detail (customer, pickup context, notes, line items, total). New **`GET /courier/orders`** and **`GET /courier/orders/{id}`** APIs are tenant-scoped for delivery orders; **Mine** stays empty until assignment ships in a later phase (#275).
 
 ### Changed
 
-- **Landing page:** Public home now shows a single **Restaurant Demo** card for tenant 1 instead of listing every registered restaurant — localized title via **`LANDING.RESTAURANT_DEMO_NAME`**; Book, login, and public-menu QR links still target tenant 1 (#276).
-- **Release / production:** Promoted **`development` → `master`** and confirmed green **Deploy to amvara9** on production (**satisfecho.de**) — live **2.1.7** at merge **`34e1eed4`** (#277; includes courier order list #275 and landing demo filter #276).
+- **Landing page:** Public home now shows a single **Restaurant Demo** card for tenant 1 instead of listing every registered restaurant - localized title via **`LANDING.RESTAURANT_DEMO_NAME`**; Book, login, and public-menu QR links still target tenant 1 (#276).
+- **Release / production:** Promoted **`development` → `master`** and confirmed green **Deploy to amvara9** on production (**satisfecho.de**) - live **2.1.7** at merge **`34e1eed4`** (#277; includes courier order list #275 and landing demo filter #276).
 
 ## [2.1.6] - 2026-06-22
 
 ### Fixed
 
-- **Courier / auth:** Aligned production **`user.role`** column from legacy PostgreSQL enum **`userrole`** to **`user_role`** so **`courier`** role queries succeed — **`POST /api/token?scope=courier`** no longer returns **500** after migrate (#273).
+- **Courier / auth:** Aligned production **`user.role`** column from legacy PostgreSQL enum **`userrole`** to **`user_role`** so **`courier`** role queries succeed - **`POST /api/token?scope=courier`** no longer returns **500** after migrate (#273).
 
 ## [2.1.5] - 2026-06-21
 
 ### Added
 
-- **Courier portal (Phase 1):** New **Courier** role for tenant-scoped delivery drivers — owners/admins assign it in **Users**; couriers sign in at **`/courier/login`**, land on a placeholder **`/courier`** home, and use **`GET /courier/me`** for profile and tenant context; route guards keep couriers off staff pages and staff off courier routes (#270).
-- **Pricing helper:** Optional per-serving ice, lemon, and other garnish costs in a visible **Garnishes** section — amounts combine with **Extra fixed cost** before pour-cost or margin calculation (#269).
+- **Courier portal (Phase 1):** New **Courier** role for tenant-scoped delivery drivers - owners/admins assign it in **Users**; couriers sign in at **`/courier/login`**, land on a placeholder **`/courier`** home, and use **`GET /courier/me`** for profile and tenant context; route guards keep couriers off staff pages and staff off courier routes (#270).
+- **Pricing helper:** Optional per-serving ice, lemon, and other garnish costs in a visible **Garnishes** section - amounts combine with **Extra fixed cost** before pour-cost or margin calculation (#269).
 
 ### Fixed
 
-- **Working plan / schedule:** Staff with `schedule:write` who are not owner or admin can create, edit, delete, and bulk-assign **only their own** shifts — cross-user writes return 403 on the API and edit/delete controls are hidden for others' shifts in **Working plan** (#271).
+- **Working plan / schedule:** Staff with `schedule:write` who are not owner or admin can create, edit, delete, and bulk-assign **only their own** shifts - cross-user writes return 403 on the API and edit/delete controls are hidden for others' shifts in **Working plan** (#271).
 
 ### Changed
 
-- **Release / production:** Promoted **`development` → `master`** and deployed to amvara9 (**satisfecho.de**) — live **2.1.5** (#272; includes courier portal #270, pricing helper #269, schedule write auth #271).
+- **Release / production:** Promoted **`development` → `master`** and deployed to amvara9 (**satisfecho.de**) - live **2.1.5** (#272; includes courier portal #270, pricing helper #269, schedule write auth #271).
 
 ## [2.1.4] - 2026-06-01
 
@@ -1447,7 +1449,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Fixed
 
 - **Products:** Image upload failures (e.g. file too large) now show an inline error in the add/edit form instead of only in the browser network tab (#259).
-- **Settings / tenant purge:** **Delete restaurant permanently** now commits the database transaction — previously the API returned success but the tenant was rolled back and remained in the database.
+- **Settings / tenant purge:** **Delete restaurant permanently** now commits the database transaction - previously the API returned success but the tenant was rolled back and remained in the database.
 
 ### Changed
 
@@ -1462,24 +1464,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
-- **Public menu:** Each product appears once when it is linked both as an active tenant product and a legacy **`Product`** row — public menu API dedupes before grouping (#258).
+- **Public menu:** Each product appears once when it is linked both as an active tenant product and a legacy **`Product`** row - public menu API dedupes before grouping (#258).
 
 ## [2.1.1] - 2026-06-01
 
 ### Added
 
-- **Users / support access:** Owners and admins can grant temporary Administrator access to **`support@satisfecho.de`** from **Users** via **Add Satisfecho support** — pre-filled create or edit modal, **Support** badge on the user card, and guidance hints in all locales (#257).
+- **Users / support access:** Owners and admins can grant temporary Administrator access to **`support@satisfecho.de`** from **Users** via **Add Satisfecho support** - pre-filled create or edit modal, **Support** badge on the user card, and guidance hints in all locales (#257).
 
 ## [2.1.0] - 2026-06-01
 
 ### Added
 
 - **Landing / public menu:** Scannable QR code on each restaurant card on **`/`** opens a read-only **`/public-menu/:tenantId`** page (grouped menu, language picker, tenant branding) via the public menu API (#254).
-- **Public API / marketing:** Read-only **`GET /public/tenants/{tenant_id}/menu`** for external marketing sites — grouped categories, optional **`lang`** query, tenant currency and price formatting, product images; no auth (#250).
+- **Public API / marketing:** Read-only **`GET /public/tenants/{tenant_id}/menu`** for external marketing sites - grouped categories, optional **`lang`** query, tenant currency and price formatting, product images; no auth (#250).
 
 ### Changed
 
-- **Landing / public menu:** Each tenant QR on **`/`** is now a link — desktop visitors can click through to **`/public-menu/:tenantId`** (same URL as scan); hint copy mentions scan or click and the link has a localized accessible name in all nine locales (#255).
+- **Landing / public menu:** Each tenant QR on **`/`** is now a link - desktop visitors can click through to **`/public-menu/:tenantId`** (same URL as scan); hint copy mentions scan or click and the link has a localized accessible name in all nine locales (#255).
 - **Release / production:** Promoted **`development` → `master`** and confirmed green **Deploy to amvara9** on production (**satisfecho.de**) (#253). Closes the pending promotion noted for #252.
 
 ### Fixed
@@ -1497,24 +1499,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- **Public API / marketing:** read-only **`GET /public/tenants/{tenant_id}/menu`** for external marketing sites — grouped categories, optional **`lang`** query, tenant currency and price formatting, product images; no auth; same product visibility rules as the table menu (#250).
+- **Public API / marketing:** read-only **`GET /public/tenants/{tenant_id}/menu`** for external marketing sites - grouped categories, optional **`lang`** query, tenant currency and price formatting, product images; no auth; same product visibility rules as the table menu (#250).
 
 ### Fixed
 
-- **Staff UI / sidebar:** mobile nav scroll no longer jumps back to the top after changing staff routes — **`ngOnDestroy`** no longer overwrites the saved scroll position with zero when the drawer closes (#215).
+- **Staff UI / sidebar:** mobile nav scroll no longer jumps back to the top after changing staff routes - **`ngOnDestroy`** no longer overwrites the saved scroll position with zero when the drawer closes (#215).
 
 ## [2.0.85] - 2026-05-28
 
 ### Added
 
-- **Products / pricing helper:** modal from **Calculate ideal price** on the product form — **recipe/cost** flow (`GET /api/pricing/product/{id}/suggest`) using recipe cost via `calculate_product_cost` or `Product.cost_cents`, and **container simulator** (`POST /api/pricing/simulate`) with unit conversion; pour cost / margin / markup targets, waste, fixed extra, rounding; **Use this price** fills the price field only. Backend **`pricing_service.suggest_price`**, **`pricing_routes`**, pytest **`tests/test_pricing_service.py`**. New **`PRICING.*`** strings in all nine locale files (#209).
+- **Products / pricing helper:** modal from **Calculate ideal price** on the product form - **recipe/cost** flow (`GET /api/pricing/product/{id}/suggest`) using recipe cost via `calculate_product_cost` or `Product.cost_cents`, and **container simulator** (`POST /api/pricing/simulate`) with unit conversion; pour cost / margin / markup targets, waste, fixed extra, rounding; **Use this price** fills the price field only. Backend **`pricing_service.suggest_price`**, **`pricing_routes`**, pytest **`tests/test_pricing_service.py`**. New **`PRICING.*`** strings in all nine locale files (#209).
 - **Login / tenant picker:** staff login now shows the selected restaurant name and logo when opened from `/login?tenant=…`, with a link back to choose a different restaurant (#206).
 - **Fiscal invoicing (Spain / VeriFactu preparation):** per-tenant **`fiscal_mode`** (off / test / live), **`fiscal_invoice`** table with series and sequential numbering, **POST/GET `/orders/{id}/fiscal-invoice`** (stub AEAT payloads; no production AEAT HTTP call), **Settings → Payments** fiscal section, and **Print Factura** / edit-order print with **QR + disclaimer** when fiscal mode is on (#203).
 - **Kitchen / bar displays:** header control to enter **browser fullscreen** (Fullscreen API with `webkit` / `moz` / `ms` fallbacks); exit via the same control, Escape, or leaving the page. Shared **`/kitchen`** and **`/bar`** view (`KitchenDisplayComponent`) (#202).
-- **Settings / marketing — social posts (admin):** **Social posts** tab — compose **image + caption**, **Meta OAuth** (tokens encrypted server-side), **Facebook Page** and **Instagram Business** channels (IG needs **`PUBLIC_APP_BASE_URL`** for Graph image URL), **publish now / schedule**, **history** with per-channel status; background worker publishes due posts (#199).
+- **Settings / marketing - social posts (admin):** **Social posts** tab - compose **image + caption**, **Meta OAuth** (tokens encrypted server-side), **Facebook Page** and **Instagram Business** channels (IG needs **`PUBLIC_APP_BASE_URL`** for Graph image URL), **publish now / schedule**, **history** with per-channel status; background worker publishes due posts (#199).
 - **Settings / delivery marketplaces (admin):** **Integrations** tab for third-party delivery brands; per-tenant **encrypted** API credentials, **test connection** (stub adapters for Uber Eats, Glovo, Deliveroo + sandbox), **catalog mapping** (external item id → POS product), **event log**, and **webhook ingest** URL. Ingested orders use the same **Order** / kitchen flow (no `table_id`); list as **Delivery** in the orders UI (#198).
 - **Products / bulk import:** staff **JSON** bulk import (paste or file) with a read-only **preview** and explicit **confirm** before any rows are saved; optional menu-photo **vision** path feeds the same preview. Preview rows use **category** and **subcategory** dropdowns aligned with the single-product form (#242, #244).
-- **Inventory:** **centiliter (cl)** volume unit — migration, API enum, unit pickers in inventory, purchase orders, and pricing helper (#214).
+- **Inventory:** **centiliter (cl)** volume unit - migration, API enum, unit pickers in inventory, purchase orders, and pricing helper (#214).
 
 ### Fixed
 
@@ -1526,12 +1528,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Security / HTTP headers (production):** nginx **`server_tokens off`** in **`front/nginx.conf`** (prod image) and HAProxy **`http-response del-header Server`** on the public prod frontend so responses no longer expose **`Server: nginx/1.x`** (#210).
 - **Dashboard / sidebar:** the home **Settings** card and the sidebar **Settings** entry now use the **same gear icon** and the **same translated title** in every locale (aligned `DASHBOARD.SETTINGS_TITLE` with `NAV.SETTINGS` where they differed) (#208).
 - **Frontend / dependencies:** aligned **`@angular/cli`**, **`@angular/build`**, and **`@angular/ssr`** to **21.0.6** and refreshed **`front/package-lock.json`** so the **`@angular/build`** peer dependency **`@angular/ssr@^21.0.6`** is satisfied (previously **21.0.5**).
-- **Settings / marketing — Social posts:** compose area uses a **secondary button + filename** (hidden file input) and preview below, matching other image pickers; **Publish immediately** is a standard inline checkbox row without the global full-width input styling on the control (#201).
-- **Settings / marketing — Social posts:** section cards (**Connected networks**, **Compose**, **History**), image preview with remove, taller caption field, helper text under controls, disabled-state hint for publish/schedule, and responsive history table (#200).
+- **Settings / marketing - Social posts:** compose area uses a **secondary button + filename** (hidden file input) and preview below, matching other image pickers; **Publish immediately** is a standard inline checkbox row without the global full-width input styling on the control (#201).
+- **Settings / marketing - Social posts:** section cards (**Connected networks**, **Compose**, **History**), image preview with remove, taller caption field, helper text under controls, disabled-state hint for publish/schedule, and responsive history table (#200).
 - **Staff UI / sidebar:** tenant **Settings → name** shows on its **own line below** version and commit hash (muted, slightly smaller than version); top logo line is **POS** only; long names ellipsis with full text in `title`. Mobile header stacks **POS** then org name (#197).
 - **API / rate limiting:** centralized SlowAPI helpers in **`back/app/rate_limits.py`**; **`admin_user_limit`** on included routers (**`/inventory`**, **`/reports`** (incl. attendance Excel), **`/staff-contracts`**, **`/staff-contract-templates`**, **`/tenant/data-export`**, **`/tenant/purge`**); **`public_menu_ip_limit`** on public tenant discovery (**`/public/tenants*`**, **`/public/legal-urls`**) and **`GET /internal/validate-table/{table_token}`**. **`docs/0020-rate-limiting-production.md`** updated (#193).
 - Repository: ignored **`claude-session.log`** and **`agents2/001-gh-reviewer/time-of-last-review.txt`** (001 reviewer local stamp) so routine agent runs do not produce recurring diffs; stopped tracking the stamp file in Git.
-- Agents: **`agents2/pos-cursor-loop.sh`** committer defaults **`AGENT_COMMITTER_USE_CURSOR=1`** — **`040-committer.md`** via **`cursor-agent`** commits finished work with a human-readable **`CHANGELOG.md`**, **`Refs #N`** in the message, and **`scripts/link-commit-to-github-issues.sh`** comments on linked issues after push; stamp-only **`agents2/001-gh-reviewer/time-of-last-review.txt`** still commits locally (**`AGENT_COMMITTER_LOCAL`**).
+- Agents: **`agents2/pos-cursor-loop.sh`** committer defaults **`AGENT_COMMITTER_USE_CURSOR=1`** - **`040-committer.md`** via **`cursor-agent`** commits finished work with a human-readable **`CHANGELOG.md`**, **`Refs #N`** in the message, and **`scripts/link-commit-to-github-issues.sh`** comments on linked issues after push; stamp-only **`agents2/001-gh-reviewer/time-of-last-review.txt`** still commits locally (**`AGENT_COMMITTER_LOCAL`**).
 - Agents: **`AGENT_001_LOCAL_LOG_REVIEWER`** (default on): **`agents2/pos-cursor-loop.sh`** skips **`cursor-agent`** for **001** when only Docker log heuristics fire and **`G001_GH_OK=1`** with zero untracked issues; appends a stamp to **`agents2/001-gh-reviewer/time-of-last-review.txt`**; digest and Ollama triage stay local. **`AGENT_001_LOCAL_LOG_REVIEWER=0`** restores **`cursor-agent`** for that case. **`have_cursor_agent`** is checked only when the gate would invoke **`cursor-agent`**.
 - Agents: 001 log triage (**`scripts/agent-ollama-log-triage.sh`**): **Ollama first** by default, then llama.cpp (**`AGENT_001_LLAMA_CPP_FIRST=1`** restores llama-first); one **alternate-backend** attempt if the primary reply is ambiguous; stricter **SKIP**/**ESCALATE** prompt and last-word parse; default **`OLLAMA_MODEL`** **`Gemma4:latest`** (loop passes it explicitly); optional **`AGENT_001_LOG_TRIAGE_DEBUG=1`**; **`docs/agent-loop.md`** updated for triage order and when **`cursor-agent`** still runs for **001**.
 - Agents: GitHub reviewer (001) recorded latest preflight run in `agents2/001-gh-reviewer/time-of-last-review.txt`.
@@ -1540,11 +1542,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Products:** price fields use a flex currency cell so the symbol no longer overlaps digits in narrow columns or at high zoom (#231).
 - **Products:** standard subcategory codes (e.g. Fish, Meat) show translated labels in filters, forms, and menu; custom tenant subcategory names stay unchanged (#234).
 - **Inventory / purchase orders:** status **help panel** (ⓘ) on list and detail describing all six statuses, with a **44×44** toggle and partial-receipt hint in the receive modal (#225, #226).
-- **Inventory:** corrected and added i18n for PO placeholders, expected delivery column, detail labels, unit/category dropdowns, friendlier reorder copy, and transaction-type badges in **Recent transactions** (#216–#220, #228).
+- **Inventory:** corrected and added i18n for PO placeholders, expected delivery column, detail labels, unit/category dropdowns, friendlier reorder copy, and transaction-type badges in **Recent transactions** (#216-#220, #228).
 - **Inventory / purchase orders:** create modal **Order total** updates live with line edits; **Submit → Approve → Receive** and **cancel** wired on list and detail; status badges share one stylesheet (#223, #224, #229).
 - **Inventory:** amounts format with the tenant **`currency_code`** via **`Intl`** instead of a hardcoded **`$`** (#222).
 - **Inventory:** adjust-stock modal uses segmented controls instead of stretched native radios (#221).
-- **Tables / floor plan:** new tables get non-overlapping default positions with an **overlap** hint on the canvas; **zoom** controls moved clear of the shape palette; palette shape names translated; long seat labels ellipsis inside the sidebar (#238–#240).
+- **Tables / floor plan:** new tables get non-overlapping default positions with an **overlap** hint on the canvas; **zoom** controls moved clear of the shape palette; palette shape names translated; long seat labels ellipsis inside the sidebar (#238-#240).
 - **Tables / tiles:** equal-height cards with side-by-side session actions; **joined** groups use compact collapsible member rows with per-table QR (#236, #237).
 - **Tables / floor plan:** failed **table-join** API restores the pre-drag layout instead of leaving tables stacked (#235).
 - **Kitchen / bar display:** background poll and WebSocket refresh no longer show full-page loading or close open item-status dropdowns (#230).
@@ -1556,7 +1558,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - **Login (staff):** sign-in is no longer blocked when **iOS Safari / Keychain** autofills email and password without updating the reactive form; values are synced from the inputs on submit before validation, the submit button stays available when the form is not loading, and invalid empty submit shows field hints instead of a silent no-op (#204).
 
-- **Landing / mobile:** public **`/`** layout on narrow viewports — language picker sits in the hero toolbar, value bullets stack at a consistent width, and the table-code input row no longer overflows (~320px+); wide desktop layout unchanged (#207).
+- **Landing / mobile:** public **`/`** layout on narrow viewports - language picker sits in the hero toolbar, value bullets stack at a consistent width, and the table-code input row no longer overflows (~320px+); wide desktop layout unchanged (#207).
 
 - **Delivery integrations / webhooks:** creating order lines from marketplace payloads resolved **`Product`** via **`exec(select(...)).first()`**, which could return a SQLAlchemy **`Row`** and broke **`price_cents`** access; loading by primary key restores webhook ingest (**#198**).
 
@@ -1577,7 +1579,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **Documentation:** **`config.env.example`** — PAT must cover **every** listed marketing repo, not Gustazo alone.
+- **Documentation:** **`config.env.example`** - PAT must cover **every** listed marketing repo, not Gustazo alone.
 
 ## [2.0.82] - 2026-04-21
 
@@ -1620,7 +1622,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Added
 
 - **Marketing SPAs** (repos named **`NNN_slug`**, three digits + underscore): **`config/marketing-sites.json`** lists **`slug`**, **`repo`**, **`branch`**, **`artifact`**, optional **`cloneDir`**, and **`autoDiscoverSiblingRepos`** to scan **`POS_REPO_ROOT/../*`** for **`^[0-9]{3}_*/package.json`**. **`scripts/sync-all-marketing-sites.sh`** fills **`front/sites/<slug>/`** from GitHub Actions artifacts (**`curl`/`jq`**, token **`MARKETING_ARTIFACT_TOKEN`** with fallbacks **`GUSTAZO_ARTIFACT_TOKEN`** / **`GH_TOKEN`**) or runs **`ng build`** in a sibling clone with **`--base-href /<slug>/`**. **`flatten-marketing-for-angular.sh`** mirrors into **`front/marketing-flat/<slug>/`** for **`development-no-ssr`**; **`front/scripts/generate-marketing-nginx-include.sh`** emits nginx **`location`** blocks at **prod image** build.
-- **`scripts/fetch-marketing-artifact.sh`** — generic artifact download; **`scripts/fetch-gustazo-artifact.sh`** remains a thin wrapper for **`front/sites/gustazo`**. **`scripts/sync-gustazo-for-dev.sh`** delegates to **`sync-all-marketing-sites.sh`**.
+- **`scripts/fetch-marketing-artifact.sh`** - generic artifact download; **`scripts/fetch-gustazo-artifact.sh`** remains a thin wrapper for **`front/sites/gustazo`**. **`scripts/sync-gustazo-for-dev.sh`** delegates to **`sync-all-marketing-sites.sh`**.
 - **Local dev**: optional sync on **`pos-front` start** via **`SYNC_MARKETING_ON_START`** (fallback **`SYNC_GUSTAZO_ON_START`**). **`docker-compose.dev.yml`** continues to mount **`./scripts`** and **`.:/repo`** with **`POS_REPO_ROOT=/repo`**.
 
 ### Changed
@@ -1664,7 +1666,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - API: when PostgreSQL is unreachable, DB-backed endpoints return **503** with JSON **`detail`** instead of a generic **500**.
 - English locale: restored full `front/public/i18n/en.json` after a fragment had broken the UI (#178).
 - Frontend: `TenantSummary` in `api.service.ts` extended to match the backend (`take_away_table_token`, reservation fields), fixing template compile errors on book and reservation views.
-- Reports: monthly attendance Excel — staff filter hint appears above the dropdown (#171).
+- Reports: monthly attendance Excel - staff filter hint appears above the dropdown (#171).
 
 ## [2.0.72] - 2026-04-06
 

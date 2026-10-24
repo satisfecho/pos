@@ -4,8 +4,8 @@ This directory is used for Let's Encrypt (certbot) and the combined PEM that HAP
 
 ## Layout
 
-- **`certbot/www/`** — Webroot for `certbot certonly --webroot`. Your HTTP server must serve `/.well-known/acme-challenge/` from this path (HAProxy or front must route that path here; see docs).
-- **`certbot/haproxy-certs/`** — Combined PEM file(s) for HAProxy. Mounted read-only into the container at `/etc/haproxy/certs`. HAProxy loads all `.pem` files from this directory for `bind *:443 ssl crt /etc/haproxy/certs`.
+- **`certbot/www/`** - Webroot for `certbot certonly --webroot`. Your HTTP server must serve `/.well-known/acme-challenge/` from this path (HAProxy or front must route that path here; see docs).
+- **`certbot/haproxy-certs/`** - Combined PEM file(s) for HAProxy. Mounted read-only into the container at `/etc/haproxy/certs`. HAProxy loads all `.pem` files from this directory for `bind *:443 ssl crt /etc/haproxy/certs`.
 
 ## Create/renew certificate (amvara9)
 

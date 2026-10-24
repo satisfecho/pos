@@ -12,7 +12,7 @@ Related: GitHub **#316**. Spain VeriFactu remains separate (`docs/0018-verifactu
 - This product’s **test** path uses a **local signed stub** (`pos.tse.stub.v1`) and an optional HTTP hook to a cloud TSE provider. That is **not** a claim of BSI certification or Finanzamt acceptance.
 - Do **not** market Satisfecho as “TSE certified live” until provider credentials + certified path are verified.
 
-## Phase 0 — ADR: cloud TSE vs local hardware
+## Phase 0 - ADR: cloud TSE vs local hardware
 
 ### Context
 
@@ -27,7 +27,7 @@ Multi-tenant SaaS POS (cloud backend, restaurants on LAN) cannot reliably attach
 
 ### Decision
 
-**Prefer B — cloud certified TSE** for production. POS owns tenant config, transaction persistence, receipt fields, and DSFinV-K export shape. The cloud provider owns the certified signing module and storage.
+**Prefer B - cloud certified TSE** for production. POS owns tenant config, transaction persistence, receipt fields, and DSFinV-K export shape. The cloud provider owns the certified signing module and storage.
 
 **Phase 1 vendor pick (#342):** primary **Fiskaly SIGN DE**; runner-up Epson/Swissbit cloud; generic HTTP adapter retained. Details: **`docs/0074-fiscal-certified-middleware.md`**.
 
@@ -102,5 +102,5 @@ See task **#316** / **#342** Testing instructions and pytest `back/tests/test_ts
 | Receipt TSE fields + print payload | **Yes** |
 | DSFinV-K date-range stub export | **Yes** (stub) |
 | Cloud provider certified signing | **Fiskaly SIGN DE adapter wired**; needs commercial TSS credentials |
-| `tse_mode: live` | **Gated** — unlock + provider credentials; mock OK only non-prod |
+| `tse_mode: live` | **Gated** - unlock + provider credentials; mock OK only non-prod |
 | Kassenmeldepflicht UI | **Deferred** (Phase 2) |

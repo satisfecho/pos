@@ -27,7 +27,7 @@ Tenants can define **multiple stock locations** (warehouses), e.g. Main kitchen,
 - Inter-warehouse transfer UI / transfer transactions as a first-class flow
 - Full WMS picking / barcode multi-bin
 - Sale COGS deducting from a non-default warehouse (sales still update global item qty / FIFO batches)
-- Cross-tenant / multi-branch logistics — that is **hub fulfillment** on restaurant groups ([0069](0069-branch-hub-fulfillment.md)), not warehouses
+- Cross-tenant / multi-branch logistics - that is **hub fulfillment** on restaurant groups ([0069](0069-branch-hub-fulfillment.md)), not warehouses
 
 ## UI
 

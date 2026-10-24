@@ -1,6 +1,6 @@
 # Implementation Verification Report
 
-> **Historical verification snapshot (2026-01-13).** Point-in-time PASS/FAIL against `0008-order-management-logic.md`. Do **not** treat hard-coded `main.py` line numbers as current source of truth — the codebase has moved (Satisfecho Delivery, courier, waiting list, etc.). For current order behaviour prefer [`0008-order-management-logic.md`](0008-order-management-logic.md), live code, and tests.
+> **Historical verification snapshot (2026-01-13).** Point-in-time PASS/FAIL against `0008-order-management-logic.md`. Do **not** treat hard-coded `main.py` line numbers as current source of truth - the codebase has moved (Satisfecho Delivery, courier, waiting list, etc.). For current order behaviour prefer [`0008-order-management-logic.md`](0008-order-management-logic.md), live code, and tests.
 
 ## Date: 2026-01-13
 

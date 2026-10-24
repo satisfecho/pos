@@ -8,8 +8,8 @@ When code is pushed to the **production branch** (**`master`**) of **https://git
 
 - **amvara9**: SSH key pair generated at `/root/.ssh/github_deploy`; public key added to `/root/.ssh/authorized_keys`.
 - Repo at `/development/pos` with **`origin`** pointing to **https://github.com/satisfecho/pos** so that `git pull origin master` pulls from satisfecho/pos. If the server was previously cloned from or pointed at raro42/pos2, run on amvara9: `cd /development/pos && git remote set-url origin https://github.com/satisfecho/pos.git`.
-- `config.env` created from `config.env.example`. Use **relative URLs** so registration and API work from any host (IP or domain): `API_URL=/api`, `WS_URL=` (empty; frontend then uses same-origin `/ws`). Edit SECRET_KEY, REFRESH_SECRET_KEY, **CORS_ORIGINS** (exact production origin(s) such as `https://satisfecho.de` — not `*`), etc. as needed (virgin deploy via `deploy-amvara9.sh` generates non-placeholder secrets). If `CORS_ORIGINS` is empty or still `*`, **`deploy-amvara9.sh`** rewrites it to `https://satisfecho.de,https://www.satisfecho.de` (override with **`PRODUCTION_CORS_ORIGINS`**) before migrate/boot. **`PRODUCTION=true`** for the backend is set by **`docker-compose.prod.yml`** (Secure cookies, production rate limits, reject `CHANGE_THIS…` secrets, reject CORS `*`); you do not need to add `PRODUCTION` to `config.env`.
-- Optional **`.secrets`** (gitignored; see **`.secrets.example`**) for values that must not live in git — e.g. **`GOOGLE_ANALYTICS_MEASUREMENT_ID`** for GA4 ([0073-google-analytics.md](0073-google-analytics.md)). `deploy-amvara9.sh` and `./run.sh` pass `--env-file .secrets` when present.
+- `config.env` created from `config.env.example`. Use **relative URLs** so registration and API work from any host (IP or domain): `API_URL=/api`, `WS_URL=` (empty; frontend then uses same-origin `/ws`). Edit SECRET_KEY, REFRESH_SECRET_KEY, **CORS_ORIGINS** (exact production origin(s) such as `https://satisfecho.de` - not `*`), etc. as needed (virgin deploy via `deploy-amvara9.sh` generates non-placeholder secrets). If `CORS_ORIGINS` is empty or still `*`, **`deploy-amvara9.sh`** rewrites it to `https://satisfecho.de,https://www.satisfecho.de` (override with **`PRODUCTION_CORS_ORIGINS`**) before migrate/boot. **`PRODUCTION=true`** for the backend is set by **`docker-compose.prod.yml`** (Secure cookies, production rate limits, reject `CHANGE_THIS…` secrets, reject CORS `*`); you do not need to add `PRODUCTION` to `config.env`.
+- Optional **`.secrets`** (gitignored; see **`.secrets.example`**) for values that must not live in git - e.g. **`GOOGLE_ANALYTICS_MEASUREMENT_ID`** for GA4 ([0073-google-analytics.md](0073-google-analytics.md)). `deploy-amvara9.sh` and `./run.sh` pass `--env-file .secrets` when present.
 - Docker and Docker Compose must be installed on amvara9 for the deploy to run containers.
 
 ## What you need to do: add the private key to GitHub
@@ -85,7 +85,7 @@ MARKETING_SYNC_FORCE=1 MARKETING_VERIFY_NO_PLACEHOLDERS=1 bash scripts/sync-all-
 ## First deploy
 
 1. Ensure **Docker** and **Docker Compose** are installed on amvara9.
-2. Edit `/development/pos/config.env` on amvara9 with production values (`API_URL`, `WS_URL`, `CORS_ORIGINS=https://satisfecho.de` or your real front-end origin — never `*`, `SECRET_KEY`, etc.). See [0004-deployment.md](0004-deployment.md).
+2. Edit `/development/pos/config.env` on amvara9 with production values (`API_URL`, `WS_URL`, `CORS_ORIGINS=https://satisfecho.de` or your real front-end origin - never `*`, `SECRET_KEY`, etc.). See [0004-deployment.md](0004-deployment.md).
 3. Add `SSH_PRIVATE_KEY_AMVARA9` in GitHub as above.
 4. Push to `master` (or re-run the workflow from the Actions tab) to trigger the first deploy.
 
@@ -106,7 +106,7 @@ If the demo account **ralf@roeber.de** no longer works on amvara9, it was almost
 
 **To restore a working demo login:**
 
-1. **Option A – Use the remaining Cobalto user**  
+1. **Option A - Use the remaining Cobalto user**  
    If there is still an owner user for tenant "Cobalto" (tenant id 1), set their password to match dev:
    ```bash
    cd /development/pos
@@ -114,7 +114,7 @@ If the demo account **ralf@roeber.de** no longer works on amvara9, it was almost
    ```
    Log in with that email and the password above. You can change the user’s email to ralf@roeber.de later in Settings or via DB if needed.
 
-2. **Option B – Re-register**  
+2. **Option B - Re-register**  
    Open `https://<amvara9-domain>/register` and register again with ralf@roeber.de (and the desired password). This creates a new tenant. Use this if you want a separate "Roeber" tenant again.
 
 **Do not run `remove_extra_tenants`** on amvara9 unless you intentionally want a single-tenant (Cobalto-only) server and accept that all other tenants and their users will be deleted.
@@ -145,11 +145,11 @@ Or add the line manually with `crontab -e`:
 0 4 * * * cd /development/pos && ./scripts/reset-demo-data-on-server.sh >>/var/log/pos-demo-reset.log 2>&1
 ```
 
-Ensure the script is executable (`chmod +x scripts/reset-demo-data-on-server.sh`; it is committed executable in the repo). If `check_demo_tables` fails (missing T01–T10), repair tables first (`python -m app.seeds.seed_demo_tables`) before relying on the daily reset.
+Ensure the script is executable (`chmod +x scripts/reset-demo-data-on-server.sh`; it is committed executable in the repo). If `check_demo_tables` fails (missing T01-T10), repair tables first (`python -m app.seeds.seed_demo_tables`) before relying on the daily reset.
 
 ## Unpaid public Satisfecho Delivery cleanup (all tenants)
 
-Abandoned unpaid **public** Satisfecho Delivery checkouts can accumulate on **any** tenant (kitchen was never notified). The idempotent CLI cancels rows past the default **2h** TTL; it does **not** touch staff-created delivery orders. Demo reset (tenant 1 only) does **not** replace this job — keep both crons.
+Abandoned unpaid **public** Satisfecho Delivery checkouts can accumulate on **any** tenant (kitchen was never notified). The idempotent CLI cancels rows past the default **2h** TTL; it does **not** touch staff-created delivery orders. Demo reset (tenant 1 only) does **not** replace this job - keep both crons.
 
 Manual (from `/development/pos` on amvara9):
 
@@ -177,11 +177,11 @@ Or add the line manually with `crontab -e`:
 15 * * * * cd /development/pos && ./scripts/cleanup-unpaid-public-delivery-on-server.sh >>/var/log/pos-unpaid-public-delivery-cleanup.log 2>&1
 ```
 
-Ensure the script is executable (`chmod +x scripts/cleanup-unpaid-public-delivery-on-server.sh`; it is committed executable in the repo). This cron is **separate** from the tenant-1 demo reset above — do not merge them.
+Ensure the script is executable (`chmod +x scripts/cleanup-unpaid-public-delivery-on-server.sh`; it is committed executable in the repo). This cron is **separate** from the tenant-1 demo reset above - do not merge them.
 
 ## Virgin / fresh install (fully automatic)
 
-On a clean clone to `/development/pos` with no `config.env`, the deploy script creates `config.env` from `config.env.example` (with generated secrets) and uses relative `API_URL=/api` so registration works from any host. After migrations, **bootstrap_demo** runs: if no tenants exist, it creates tenant 1 "Demo Restaurant" and seeds T01–T10, demo products, and demo orders (paid + active over ±90 days) so Reports show data. Then **beer, pizza, wine** catalog imports run; **link_demo_products_to_catalog** runs so tenant products without images are linked to catalog provider products — when staff open `/products`, images are backfilled. The **first user to register** is assigned as owner of that tenant and gets the demo data immediately (no manual seed step). The app listens on port 80; reach it at **http://167.235.138.59** or your domain.
+On a clean clone to `/development/pos` with no `config.env`, the deploy script creates `config.env` from `config.env.example` (with generated secrets) and uses relative `API_URL=/api` so registration works from any host. After migrations, **bootstrap_demo** runs: if no tenants exist, it creates tenant 1 "Demo Restaurant" and seeds T01-T10, demo products, and demo orders (paid + active over ±90 days) so Reports show data. Then **beer, pizza, wine** catalog imports run; **link_demo_products_to_catalog** runs so tenant products without images are linked to catalog provider products - when staff open `/products`, images are backfilled. The **first user to register** is assigned as owner of that tenant and gets the demo data immediately (no manual seed step). The app listens on port 80; reach it at **http://167.235.138.59** or your domain.
 
 ## SaaS paywall (keep off until ready)
 
@@ -205,7 +205,7 @@ BASE_URL=http://167.235.138.59 HEADLESS=1 LOGIN_EMAIL=your-owner@amvara.de LOGIN
 # Or BASE_URL=https://satisfecho.de when DNS is set
 ```
 
-**3. Optional – full reservation tests:**
+**3. Optional - full reservation tests:**
 ```bash
 # From repo root
 STAFF_TEST=1 BASE_URLS="https://satisfecho.de" HEADLESS=1 ./scripts/run-reservation-tests.sh

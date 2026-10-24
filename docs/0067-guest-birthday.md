@@ -13,8 +13,8 @@ Capture optional **month/day** birthdays for reservation guests (not only Factur
 
 | Column | Type | Notes |
 |--------|------|--------|
-| `guest_birthday_month` | smallint nullable | 1–12 |
-| `guest_birthday_day` | smallint nullable | 1–31; pair with month (both null or both set) |
+| `guest_birthday_month` | smallint nullable | 1-12 |
+| `guest_birthday_day` | smallint nullable | 1-31; pair with month (both null or both set) |
 | `guest_birthday_marketing_consent` | boolean | default false; only meaningful when tenant marketing is enabled |
 
 Year of birth is **not** stored (privacy).

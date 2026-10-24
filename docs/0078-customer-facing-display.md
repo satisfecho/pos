@@ -10,7 +10,7 @@
 ## What guests see
 
 - Live line items, subtotal, loyalty discount (when applied), tip, and total.
-- Payment options (cash, card terminal, online when Stripe/Revolut is configured) — **labels only**; staff still confirms payment on the staff UI.
+- Payment options (cash, card terminal, online when Stripe/Revolut is configured) - **labels only**; staff still confirms payment on the staff UI.
 - Optional **invoice email** field; stored on `order.invoice_email` via `POST /menu/{table_token}/order/invoice-email`.
 - Thank-you state when the order is paid (`for_display=true` keeps the paid active order visible).
 

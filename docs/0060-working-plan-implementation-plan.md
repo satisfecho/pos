@@ -1,4 +1,4 @@
-# Working Plan (Kitchen, Bar, Waiters) – Implementation Plan
+# Working Plan (Kitchen, Bar, Waiters) - Implementation Plan
 
 > **Historical / pre-build.** The working plan feature has shipped. Use **[0021-working-plan.md](0021-working-plan.md)** for current behaviour and ops. This file keeps the original BetterShift evaluation and in-house build plan for context only.
 
@@ -14,7 +14,7 @@ This document describes a plan to implement a **working plan** (shift schedule /
 
 | Aspect | BetterShift | POS2 need |
 |--------|-------------|-----------|
-| **Data model** | Shifts belong to **calendars**; a shift is a time slot (title, start/end, color) on a calendar. There is **no `user_id` on a shift** – it’s “this calendar has these blocks” and sharing is at calendar level. | We need **assignments**: “user X works on date Y from 09:00–14:00”. I.e. shifts must reference our **User** (kitchen/bartender/waiter) and be scoped by **tenant**. |
+| **Data model** | Shifts belong to **calendars**; a shift is a time slot (title, start/end, color) on a calendar. There is **no `user_id` on a shift** - it’s “this calendar has these blocks” and sharing is at calendar level. | We need **assignments**: “user X works on date Y from 09:00-14:00”. I.e. shifts must reference our **User** (kitchen/bartender/waiter) and be scoped by **tenant**. |
 | **Multi-tenancy** | No tenant/organization; model is global users + calendars + shares. | Everything in POS2 is **tenant-scoped** (restaurant); users and data are per-tenant. |
 | **User / auth** | Own user table and **Better Auth** (OAuth, OIDC, etc.). | We use **JWT + tenant-scoped users** with roles (owner, admin, kitchen, bartender, waiter). Our users already exist in PostgreSQL. |
 | **Stack** | Next.js, React, SQLite, Drizzle. Full standalone app. | Angular frontend, FastAPI backend, PostgreSQL. We need a **page inside our app**, not a second app. |
@@ -24,7 +24,7 @@ This document describes a plan to implement a **working plan** (shift schedule /
 
 - **Light integration** (e.g. iframe + link): possible but gives two UIs, two auth systems, and no shared notion of “our waiters/kitchen/bar” or tenant. Not a good fit.
 - **Deep integration** (fork, add tenant_id, add user_id to shifts, swap auth/DB): effectively a full port and long-term maintenance of their codebase.
-- **Building our own** MVP (one `shift` table, CRUD API, one Angular page) is aligned with our stack, tenant and user model, and the scope in §1–2. We can deliver a minimal working plan quickly and extend later (reports, “on shift” filters, export).
+- **Building our own** MVP (one `shift` table, CRUD API, one Angular page) is aligned with our stack, tenant and user model, and the scope in §1-2. We can deliver a minimal working plan quickly and extend later (reports, “on shift” filters, export).
 
 **Recommendation: develop the working plan in-house** as described in this document. Use BetterShift only as UI/UX inspiration (e.g. week view, presets) if desired.
 
@@ -32,10 +32,10 @@ This document describes a plan to implement a **working plan** (shift schedule /
 
 ## 1. Goals
 
-- **Define who works when** – Assign staff (by role: kitchen, bartender, waiter) to date-based slots (e.g. morning, evening, or custom time ranges).
-- **Single source of truth** – One place for managers to maintain the weekly/daily rota; visible to staff and usable for reports and optional automation.
-- **Reuse existing roles** – Build on `UserRole` (kitchen, bartender, waiter) and tenant-scoped `User`; no new “staff type” beyond role.
-- **Keep scope bounded** – No payroll, no clock-in/out, no automatic assignment of orders to “on-shift” staff in the first version. Optional later: filter floor/table waiter lists by “on shift today”.
+- **Define who works when** - Assign staff (by role: kitchen, bartender, waiter) to date-based slots (e.g. morning, evening, or custom time ranges).
+- **Single source of truth** - One place for managers to maintain the weekly/daily rota; visible to staff and usable for reports and optional automation.
+- **Reuse existing roles** - Build on `UserRole` (kitchen, bartender, waiter) and tenant-scoped `User`; no new “staff type” beyond role.
+- **Keep scope bounded** - No payroll, no clock-in/out, no automatic assignment of orders to “on-shift” staff in the first version. Optional later: filter floor/table waiter lists by “on shift today”.
 
 ---
 
@@ -127,8 +127,8 @@ This document describes a plan to implement a **working plan** (shift schedule /
 
 - **Toolbar**: Date range selector (e.g. week picker: “Week of 17 Mar 2025” with prev/next); optional “Today”.
 - **Main area**: 
-  - **Option 1 – Table**: Rows = days in range, columns = roles (Kitchen, Bar, Waiters) or “Morning”/“Evening”; cells show assigned staff names (and time if needed). Click cell to add/edit.
-  - **Option 2 – List**: List of shifts grouped by day; each line: date, time range, label, user name, role. Buttons: Add shift, Edit, Delete.
+  - **Option 1 - Table**: Rows = days in range, columns = roles (Kitchen, Bar, Waiters) or “Morning”/“Evening”; cells show assigned staff names (and time if needed). Click cell to add/edit.
+  - **Option 2 - List**: List of shifts grouped by day; each line: date, time range, label, user name, role. Buttons: Add shift, Edit, Delete.
 - **Add/Edit shift modal**: Dropdown for User (filter by role: kitchen, bartender, waiter), date picker, start time, end time, optional label. Validate start < end.
 - **Empty state**: “No shifts in this period. Add a shift to build your working plan.”
 
@@ -153,14 +153,14 @@ This document describes a plan to implement a **working plan** (shift schedule /
 
 ## 7. Implementation phases
 
-### Phase 1 – Backend
+### Phase 1 - Backend
 
 1. Migration: create `shift` table.
 2. SQLModel: `Shift` model; Pydantic schemas: `ShiftCreate`, `ShiftUpdate`, `ShiftResponse` (include user name, role for list).
 3. Permissions: add `SCHEDULE_READ`, `SCHEDULE_WRITE`; assign to owner and admin.
 4. Endpoints: GET list (with date range), GET one, POST, PUT, DELETE. Ensure all filter by `tenant_id` and that selected user belongs to tenant and has role kitchen/bartender/waiter.
 
-### Phase 2 – Frontend
+### Phase 2 - Frontend
 
 5. Route and guard: `/working-plan`, show only for users with SCHEDULE_READ.
 6. Working plan page: date range selector, list or table of shifts, “Add shift” button.
@@ -169,7 +169,7 @@ This document describes a plan to implement a **working plan** (shift schedule /
 9. Dashboard and nav: link to Working plan for owner/admin.
 10. i18n: all new keys in `en` (and optionally other locales).
 
-### Phase 3 – Optional enhancements (later)
+### Phase 3 - Optional enhancements (later)
 
 - Reports: filter “by waiter” / “by role” already exist; optional “only on-shift staff” filter using schedule.
 - Tables/Floors: when assigning default waiter or table waiter, optionally restrict dropdown to users on shift today (requires “who is on shift today” API or client-side filter).
@@ -192,7 +192,7 @@ This document describes a plan to implement a **working plan** (shift schedule /
 
 ## 9. References
 
-- **Existing roles**: `back/app/models.py` – `UserRole` (kitchen, bartender, waiter).
-- **Permissions**: `back/app/permissions.py` – add new permissions and role mapping.
-- **Similar feature**: Reservations (date/time, tenant-scoped) – `docs/0010-table-reservation-implementation-plan.md`.
+- **Existing roles**: `back/app/models.py` - `UserRole` (kitchen, bartender, waiter).
+- **Permissions**: `back/app/permissions.py` - add new permissions and role mapping.
+- **Similar feature**: Reservations (date/time, tenant-scoped) - `docs/0010-table-reservation-implementation-plan.md`.
 - **Opening hours**: Settings “split shifts” (morning/evening) are for **business hours**, not staff shifts; reuse labels only if desired (e.g. “Morning”/“Evening” in dropdown).

@@ -1,7 +1,7 @@
 # <Short title>
 
 ## GitHub Issues
-- **Issue:** (none — enhancement reviewer) or https://github.com/satisfecho/pos/issues/<N>
+- **Issue:** (none - enhancement reviewer) or https://github.com/satisfecho/pos/issues/<N>
 - **0** (when no issue)
 
 ## Problem / goal
@@ -15,6 +15,6 @@
 
 ## High-level instructions for coder
 
-- <Actionable bullets — no code patches>
+- <Actionable bullets - no code patches>
 - <Reference `docs/…`, seeds, or deploy scripts>
 - <Pass/fail criteria for tester>
