@@ -12,6 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- **README Star History (#437):** Added a short note on why stars help the project keep moving, plus a single CTA to open GitHub issues; chart image/link unchanged.
 - **Docs (#436):** Removed typographic em/en dashes from live Markdown and Cursor rules; ASCII hyphen only. Standing rule: `.cursor/rules/markdown-no-long-dashes.mdc` (archived `agents2/tasks/done/` left as historical).
 
 ### Fixed

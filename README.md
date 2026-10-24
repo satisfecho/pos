@@ -332,4 +332,8 @@ The full license text is in [`LICENSE`](LICENSE) (GNU Affero General Public Lice
 
 ## Star History
 
+Stars keep us moving. Every star is a quiet thank-you that tells us this project matters to someone - and that energy helps us keep shipping.
+
+If you hit a bug, have an idea, or want to help shape the product, please [open an issue](https://github.com/satisfecho/pos/issues). We read them.
+
 [![Star History Chart](https://api.star-history.com/svg?repos=satisfecho/pos&type=Date)](https://star-history.com/#satisfecho/pos&Date)
