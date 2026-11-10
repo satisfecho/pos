@@ -12,7 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **Docs screenshots (#441):** Removed staff `dashboard.png` from the repo and README collage (kitchen + menu only); capture script no longer regenerates it.
+- **Docs screenshots (#441):** Removed staff `dashboard.png` from the repo and README collage (kitchen + menu only); capture script no longer regenerates it. Archived the verified agents2 task after PASS checks (file absence, docs refs, collage, capture script, landing smoke).
 
 ### Fixed
 
