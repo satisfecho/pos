@@ -199,6 +199,7 @@ def _submit_fiskaly_sign_es(
     req = payload.get("request_payload") if isinstance(payload.get("request_payload"), dict) else {}
     cancels = payload.get("cancels_full_number") or req.get("cancels_full_number") or ""
     order_id = payload.get("order_id") or req.get("order_id") or ""
+    items = fiskaly_items_from_line_items(req.get("line_items"), amount_cents=amount_cents)
 
     if record_type == "anulacion":
         content: dict[str, Any] = {
@@ -206,18 +207,7 @@ def _submit_fiskaly_sign_es(
             "number": full_number[:60],
             "text": f"Anulacion {cancels}".strip(),
             "full_amount": full_amount,
-            "items": [
-                {
-                    "text": "Fiscal cancellation",
-                    "quantity": "1",
-                    "unit_amount": full_amount,
-                    "full_amount": full_amount,
-                    "system": {
-                        "type": "REGULAR",
-                        "category": {"type": "VAT", "rate": "21.00"},
-                    },
-                }
-            ],
+            "items": items,
         }
     else:
         content = {
@@ -225,18 +215,7 @@ def _submit_fiskaly_sign_es(
             "number": full_number[:60],
             "text": f"Order {order_id}".strip(),
             "full_amount": full_amount,
-            "items": [
-                {
-                    "text": "POS sale",
-                    "quantity": "1",
-                    "unit_amount": full_amount,
-                    "full_amount": full_amount,
-                    "system": {
-                        "type": "REGULAR",
-                        "category": {"type": "VAT", "rate": "21.00"},
-                    },
-                }
-            ],
+            "items": items,
         }
 
     url = f"{base}/clients/{client_id}/invoices/{invoice_id}"
@@ -321,3 +300,69 @@ def _parse_json_body(resp: requests.Response) -> dict[str, Any]:
         return parsed if isinstance(parsed, dict) else {"raw": parsed}
     except Exception:
         return {"raw": (resp.text or "")[:500]}
+
+
+def _fmt_money_cents(cents: int) -> str:
+    return f"{int(cents) / 100:.2f}"
+
+
+def _fmt_vat_rate(rate_percent: int | float | None) -> str:
+    try:
+        val = float(rate_percent) if rate_percent is not None else 21.0
+    except (TypeError, ValueError):
+        val = 21.0
+    return f"{val:.2f}"
+
+
+def fiskaly_items_from_line_items(
+    line_items: Any,
+    *,
+    amount_cents: int,
+) -> list[dict[str, Any]]:
+    """Map POS fiscal line_items (multi-rate IVA) → Fiskaly SIGN ES content.items.
+
+    Falls back to a single 21% line when line_items are missing/empty so older
+    records and mock paths keep working.
+    """
+    if isinstance(line_items, list) and line_items:
+        out: list[dict[str, Any]] = []
+        for raw in line_items:
+            if not isinstance(raw, dict):
+                continue
+            full_cents = int(raw.get("full_amount_cents") or 0)
+            unit_cents = raw.get("unit_amount_cents")
+            if unit_cents is None:
+                unit_cents = full_cents
+            qty = str(raw.get("quantity") or "1")
+            text = str(raw.get("text") or "Item").strip()[:120] or "Item"
+            rate = raw.get("vat_rate_percent")
+            if rate is None:
+                rate = 21
+            out.append(
+                {
+                    "text": text,
+                    "quantity": qty,
+                    "unit_amount": _fmt_money_cents(int(unit_cents)),
+                    "full_amount": _fmt_money_cents(full_cents),
+                    "system": {
+                        "type": "REGULAR",
+                        "category": {"type": "VAT", "rate": _fmt_vat_rate(rate)},
+                    },
+                }
+            )
+        if out:
+            return out
+
+    full_amount = _fmt_money_cents(amount_cents)
+    return [
+        {
+            "text": "POS sale",
+            "quantity": "1",
+            "unit_amount": full_amount,
+            "full_amount": full_amount,
+            "system": {
+                "type": "REGULAR",
+                "category": {"type": "VAT", "rate": "21.00"},
+            },
+        }
+    ]

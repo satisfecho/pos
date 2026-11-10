@@ -41,7 +41,7 @@ All product code lives in **this repo**. Coordination files live under **`agents
 
 ### Always
 
-- **Git — before you change anything:** From repo root run **`./scripts/git-sync-development.sh`** (or **`git fetch origin`**, **`git checkout development`**, **`git pull --rebase --autostash origin development`**) so you integrate other agents’ pushes before editing. **`agents2/pos-cursor-loop.sh`** does this at each step; interactive runs must do it manually. See **`.cursor/rules/git-development-branch-workflow.mdc`**.
+- **Git - before you change anything:** From repo root run **`./scripts/git-sync-development.sh`** (or **`git fetch origin`**, **`git checkout development`**, **`git pull --rebase --autostash origin development`**) so you integrate other agents’ pushes before editing. **`agents2/pos-cursor-loop.sh`** does this at each step; interactive runs must do it manually. See **`.cursor/rules/git-development-branch-workflow.mdc`**.
 - Prefer **removing** or **simplifying** over adding when the task allows.
 - **Read `docs/`** and **`AGENTS.md`** for the area you touch.
 - **Do not** run **`npm install`**; use **`npm ci --ignore-scripts`** in **`front/`** if you must refresh deps (pin versions).

@@ -1,11 +1,11 @@
-# Table groups (join / unjoin) — behaviour
+# Table groups (join / unjoin) - behaviour
 
-**Status (shipped):** Floor-plan **join / unjoin** on `/tables/canvas`, combined seat counts for seating, reservation pool capacity for joined sets, and **per-table QR tokens** (unchanged by join) are live. Treat this doc as the behavioural / operator reference — not an unfinished MVP plan. Distinct from restaurant multi-location groups ([0054-restaurant-groups.md](0054-restaurant-groups.md)).
+**Status (shipped):** Floor-plan **join / unjoin** on `/tables/canvas`, combined seat counts for seating, reservation pool capacity for joined sets, and **per-table QR tokens** (unchanged by join) are live. Treat this doc as the behavioural / operator reference - not an unfinished MVP plan. Distinct from restaurant multi-location groups ([0054-restaurant-groups.md](0054-restaurant-groups.md)).
 
 ## Staff
 
 - Tables can be **joined** on the floor plan (`/tables/canvas`):
-  - **Touch / drag (tablet primary):** Drag one table onto another until their footprints **actually overlap** in **floor canvas coordinates** (strict axis-aligned intersection for rectangle / booth / bar; circle / oval pairs use the same ellipse geometry as on the canvas—zoom/pan only change the view transform, not stored positions). Adjacent tables that are close but not overlapping do **not** open the dialog. Hold overlap briefly (~160 ms) so accidental joins while swiping past are unlikely; on release, confirm **Join** in the dialog. Backend errors (orders, reservations) surface in the banner as for the Join button.
+  - **Touch / drag (tablet primary):** Drag one table onto another until their footprints **actually overlap** in **floor canvas coordinates** (strict axis-aligned intersection for rectangle / booth / bar; circle / oval pairs use the same ellipse geometry as on the canvas-zoom/pan only change the view transform, not stored positions). Adjacent tables that are close but not overlapping do **not** open the dialog. Hold overlap briefly (~160 ms) so accidental joins while swiping past are unlikely; on release, confirm **Join** in the dialog. Backend errors (orders, reservations) surface in the banner as for the Join button.
   - **Desktop / accessibility:** **Ctrl+click** (⌘+click on Mac) to multi-select tables on the same floor, then **Join tables**.
 - **Unjoin** clears the group; each table keeps its own name and QR token.
 - Join requires: same floor, no open orders, no active table session, no booked or seated reservation on any selected table.
@@ -15,4 +15,4 @@
 ## Customer menu / QR (`/menu/...`)
 
 - Each physical table still has its **own** `table_token` and `table_id`. Joining does **not** merge customer sessions or orders across tokens.
-- Prefer directing guests to a **single** table’s QR for ordering. If guests use two different table links, they get **separate** `(table_id, session_id)` orders per `docs/0008-order-management-logic.md` — staff see both under the same party only by context, not by automatic merging. (No automatic cross-token order merge — by design, not a gap.)
+- Prefer directing guests to a **single** table’s QR for ordering. If guests use two different table links, they get **separate** `(table_id, session_id)` orders per `docs/0008-order-management-logic.md` - staff see both under the same party only by context, not by automatic merging. (No automatic cross-token order merge - by design, not a gap.)

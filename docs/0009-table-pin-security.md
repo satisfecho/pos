@@ -14,7 +14,7 @@ Table PIN security is **live**. Prefer this status section (and current code) ov
 **Optional GPS / location check**
 
 - Tenant fields `latitude` / `longitude` / `location_radius_meters` / `location_check_enabled` (default **off**) and Settings UI exist.
-- When enabled, public `POST /menu/{table_token}/order` may flag (not block) orders outside the radius via `flagged_for_review` / `location_flagged` — **not** a missing epic; leave off unless the restaurant opts in.
+- When enabled, public `POST /menu/{table_token}/order` may flag (not block) orders outside the radius via `flagged_for_review` / `location_flagged` - **not** a missing epic; leave off unless the restaurant opts in.
 - Do **not** start a new GPS product track from this doc.
 
 Anything below is **operator / reference** detail (workflows, schema, API shapes, troubleshooting).

@@ -4,7 +4,7 @@ This document describes how Revolut is used in this POS and how to set up the Re
 
 ## What we use
 
-- **Revolut Merchant API** — scope: **Accept Payments through a checkout extension**
+- **Revolut Merchant API** - scope: **Accept Payments through a checkout extension**
 - We create orders via the Merchant API and redirect customers to Revolut Checkout. After payment, Revolut redirects back to our app; we then confirm the payment and mark the order as paid.
 
 We do **not** use Open Banking (AISP/PISP/CBPII) or Revolut Reader / Tap to Pay. We only need the checkout-extension scope.
@@ -41,7 +41,7 @@ The backend builds:
 
 So the base URL (e.g. `https://satisfecho.de`) must be registered. If Revolut validates by path prefix, use e.g. `https://satisfecho.de/menu/` and `http://localhost:4202/menu/`.
 
-### 3. Sandbox certificates (CSR) — required to continue
+### 3. Sandbox certificates (CSR) - required to continue
 
 If the sandbox blocks “Continue” until a CSR is uploaded, you must generate a CSR and upload it so Revolut can issue sandbox certificates (e.g. transport and signing). Follow the steps below.
 
@@ -49,7 +49,7 @@ If the sandbox blocks “Continue” until a CSR is uploaded, you must generate 
 
 Run **one** of the following, depending on what Revolut’s page shows.
 
-**Option A — Revolut gives you an exact command**  
+**Option A - Revolut gives you an exact command**  
 Use the exact command from the Revolut sandbox page (including `-subj` and `-outform der`). It may look like:
 
 ```bash
@@ -60,7 +60,7 @@ openssl req -new -newkey rsa:2048 -nodes -out revolut.csr -keyout private.key \
 
 Replace `YOUR_ORG_NAME`, `YOUR_OU`, and `YOUR_CN` with the values Revolut specifies (e.g. organisation, organisational unit, and a client/app identifier).
 
-**Option B — Generic command (if Revolut does not give one)**
+**Option B - Generic command (if Revolut does not give one)**
 
 From a **temporary directory** (not inside the repo, so the private key is never committed):
 
@@ -73,12 +73,12 @@ openssl req -new -newkey rsa:2048 -nodes -out revolut.csr -keyout private.key \
 
 Adjust `-subj` to your details:
 
-- `C` — ISO 3166-1 alpha-2 country (e.g. ES, GB)
-- `ST` — State (can be empty)
-- `L` — Locality/City
-- `O` — Organisation name
-- `OU` — Organisational unit (optional)
-- `CN` — Common name (e.g. app/sandbox identifier; use Revolut’s value if they provide one)
+- `C` - ISO 3166-1 alpha-2 country (e.g. ES, GB)
+- `ST` - State (can be empty)
+- `L` - Locality/City
+- `O` - Organisation name
+- `OU` - Organisational unit (optional)
+- `CN` - Common name (e.g. app/sandbox identifier; use Revolut’s value if they provide one)
 
 Revolut often expects the CSR in **DER** format (`-outform der`). If their form asks for PEM, generate again without `-outform der` and upload the `.csr` file they produce.
 
@@ -154,7 +154,7 @@ Put these in **`config.env`** (copy from `config.env.example` if needed). The fi
 
 - **Revolut** charges the **menu subtotal only** (active line items). Tips are **not** included in the Revolut order amount.
 - **Configurable tips** apply when staff uses **Mark as paid** or **Finish order** in the POS (`PUT /orders/{id}/mark-paid`, `PUT /orders/{id}/finish`) with optional `tip_percent`. Allowed values come from the tenant’s **`tip_preset_percents`** (up to four percentages, set in **Settings**). If the column is still `NULL` after older databases, the app treats presets as **5 / 10 / 15 / 20** (see migration `20260323140000_tenant_tip_presets_and_order_tip.sql`).
-- **Tip VAT on invoices:** **`tip_tax_rate_percent`** (integer **0–100**, database default **0**) is used only to split **gross** tip into a VAT portion for the printed invoice breakdown. **Default 0** means no VAT line for tips—set this to your jurisdiction’s rate if tips must appear in the same VAT summary as goods.
+- **Tip VAT on invoices:** **`tip_tax_rate_percent`** (integer **0-100**, database default **0**) is used only to split **gross** tip into a VAT portion for the printed invoice breakdown. **Default 0** means no VAT line for tips-set this to your jurisdiction’s rate if tips must appear in the same VAT summary as goods.
 
 ---
 
@@ -177,6 +177,6 @@ Put these in **`config.env`** (copy from `config.env.example` if needed). The fi
 
 ## References
 
-- [Revolut Merchant API — Orders](https://developer.revolut.com/docs/merchant/orders)
+- [Revolut Merchant API - Orders](https://developer.revolut.com/docs/merchant/orders)
 - [Revolut Create an order](https://developer.revolut.com/docs/merchant/create-order)
 - [Order and payment lifecycle](https://developer.revolut.com/docs/guides/accept-payments/other-resources/order-payment-flow) (if linked from Revolut docs)

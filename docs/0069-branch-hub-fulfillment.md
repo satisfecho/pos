@@ -3,20 +3,20 @@
 **Status:** Phase 0 ADR + MVP slice (#323)  
 **Related:** umbrella [#52](https://github.com/satisfecho/pos/issues/52) Issue 9 in [0050](0050-github-issue-52-split-plan.md); restaurant groups [0054](0054-restaurant-groups.md); multi-warehouse [0061](0061-multi-warehouse-inventory.md) (#320)
 
-## Phase 0 — ADR: same-tenant multi-location vs linked-tenant
+## Phase 0 - ADR: same-tenant multi-location vs linked-tenant
 
 | Option | Pros | Cons |
 |--------|------|------|
-| **A — Same tenant, many “sites”** | One auth domain; simpler stock rollup | Collides with today’s tenant = location model; floors/staff/orders already tenant-scoped |
-| **B — Linked tenants (restaurant group) + hub flag** | Reuses shipped groups (#283); each branch keeps own orders/staff; aligns with multi-location operators | Cross-tenant reads need explicit sibling rules |
+| **A - Same tenant, many “sites”** | One auth domain; simpler stock rollup | Collides with today’s tenant = location model; floors/staff/orders already tenant-scoped |
+| **B - Linked tenants (restaurant group) + hub flag** | Reuses shipped groups (#283); each branch keeps own orders/staff; aligns with multi-location operators | Cross-tenant reads need explicit sibling rules |
 
-**Decision: B — linked tenants via restaurant groups.** Designate one **member** as the **hub kitchen** (`restaurant_group.hub_tenant_id`). Branch orders stay on the branch tenant; the hub records fulfillment progress against that order without merging order ledgers.
+**Decision: B - linked tenants via restaurant groups.** Designate one **member** as the **hub kitchen** (`restaurant_group.hub_tenant_id`). Branch orders stay on the branch tenant; the hub records fulfillment progress against that order without merging order ledgers.
 
 ### Vocabulary (shared with #320)
 
 | Term | Meaning |
 |------|---------|
-| **Warehouse** | Stock location **inside one tenant** (Main, cold room, bar) — [0061](0061-multi-warehouse-inventory.md). |
+| **Warehouse** | Stock location **inside one tenant** (Main, cold room, bar) - [0061](0061-multi-warehouse-inventory.md). |
 | **Branch / location** | A **tenant** that is a restaurant-group member ([0054](0054-restaurant-groups.md)). |
 | **Hub kitchen** | The group member designated to produce for siblings (`hub_tenant_id`). |
 | **Hub fulfillment** | Transfer-style record linking a **branch order** to the hub with a prep status. |

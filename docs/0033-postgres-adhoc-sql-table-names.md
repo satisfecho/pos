@@ -15,9 +15,9 @@ This codebase does **not** define a table named `restaurantorder`. That name usu
 
 | Concept | PostgreSQL identifier | Notes |
 |--------|------------------------|--------|
-| Restaurant **order** (header: table, status, payment, …) | **`"order"`** | `order` is a **reserved word** — use **double quotes** in SQL. Satisfecho Delivery rows live here too (`order_channel`, `delivery_address`, …) — there is **no** separate `deliveryorder` table. |
+| Restaurant **order** (header: table, status, payment, …) | **`"order"`** | `order` is a **reserved word** - use **double quotes** in SQL. Satisfecho Delivery rows live here too (`order_channel`, `delivery_address`, …) - there is **no** separate `deliveryorder` table. |
 | Order **line items** | **`orderitem`** | Lowercase, unquoted is fine. |
-| Physical **tables** (seats, floor plan) | **`"table"`** | `table` is reserved — **double quotes** in SQL. |
+| Physical **tables** (seats, floor plan) | **`"table"`** | `table` is reserved - **double quotes** in SQL. |
 | Walk-in **waiting list** | **`waiting_list_entry`** | Not `waitinglist` / `waitlist`. Filter by **`tenant_id`** and **`status`** (`waiting`, `notified`, `seated`, `cancelled`, `no_show`). |
 | Multi-location **restaurant group** | **`restaurant_group`** | Not `restaurantgroup`. Columns: `id`, `name`, `join_code`, `share_products`, `share_customers`, `created_at`. See [0054-restaurant-groups.md](0054-restaurant-groups.md). |
 | Group **membership** (tenant ↔ group) | **`restaurant_group_member`** | Not `group_member` / `restaurantgroupmember`. Join via **`group_id`** → `restaurant_group.id`; one row per **`tenant_id`** (`joined_at`). |
@@ -67,6 +67,6 @@ To list every member of a known group, filter on `m.group_id` instead of `m.tena
 
 ## Related
 
-- **Connection user:** The database superuser is **`POSTGRES_USER`** (default **`pos`**), not **`postgres`**. If logs show `FATAL: role "postgres" does not exist`, fix the client DSN — see **PostgreSQL: connecting from your machine** in the root [README.md](../README.md).
+- **Connection user:** The database superuser is **`POSTGRES_USER`** (default **`pos`**), not **`postgres`**. If logs show `FATAL: role "postgres" does not exist`, fix the client DSN - see **PostgreSQL: connecting from your machine** in the root [README.md](../README.md).
 
 - **Schema source of truth:** SQLModel models in `back/app/models.py` and versioned SQL under `back/migrations/`.

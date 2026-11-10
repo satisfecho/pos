@@ -60,6 +60,7 @@ from .delivery_integration_routes import (
     public_router as delivery_public_router,
 )
 from .social_routes import router as social_router
+from .newsletter_routes import router as newsletter_router, public_router as newsletter_public_router
 from .print_routes import staff_router as print_staff_router, agent_router as print_agent_router
 from .customer_routes import router as customer_router
 from .work_session_serialization import serialize_work_session, work_session_net_duration_minutes
@@ -335,7 +336,27 @@ async def _app_lifespan(app: FastAPI):
     app.state.social_publish_task = social_task
     logger.info("Social publish worker started")
 
+    from .newsletter_worker import newsletter_worker_loop
+
+    stop_newsletter = asyncio.Event()
+    newsletter_task = asyncio.create_task(newsletter_worker_loop(stop=stop_newsletter))
+    app.state.newsletter_stop = stop_newsletter
+    app.state.newsletter_task = newsletter_task
+    logger.info("Newsletter worker started (~30/min)")
+
     yield
+
+    stop_nl = getattr(app.state, "newsletter_stop", None)
+    task_nl = getattr(app.state, "newsletter_task", None)
+    if stop_nl:
+        stop_nl.set()
+    if task_nl and not task_nl.done():
+        task_nl.cancel()
+        try:
+            await task_nl
+        except asyncio.CancelledError:
+            pass
+    logger.info("Newsletter worker stopped")
 
     stop_soc = getattr(app.state, "social_publish_stop", None)
     task_soc = getattr(app.state, "social_publish_task", None)
@@ -618,6 +639,8 @@ app.include_router(staff_contract_router, prefix="/staff-contracts", tags=["Staf
 app.include_router(delivery_integration_router, prefix="/tenant", tags=["Delivery integrations"])
 app.include_router(delivery_public_router, tags=["Delivery integrations"])
 app.include_router(social_router, prefix="/tenant", tags=["Marketing — social"])
+app.include_router(newsletter_router, prefix="/tenant", tags=["Marketing — newsletter"])
+app.include_router(newsletter_public_router, tags=["Marketing — newsletter"])
 app.include_router(
     staff_contract_template_router,
     prefix="/staff-contract-templates",
@@ -12972,6 +12995,154 @@ def delete_table_cart_item(
     return _cart_response(True, cart)
 
 
+def _public_menu_payment_options(tenant: models.Tenant | None) -> dict:
+    """Read-only payment labels for customer-facing display (#434)."""
+    stripe_ok = bool(
+        tenant
+        and tenant.stripe_publishable_key
+        and str(tenant.stripe_publishable_key).strip()
+    )
+    revolut_ok = bool(
+        tenant
+        and (
+            (tenant.revolut_merchant_secret and tenant.revolut_merchant_secret.strip())
+            or (settings.revolut_merchant_secret and settings.revolut_merchant_secret.strip())
+        )
+    )
+    return {
+        "cash": True,
+        "card_terminal": True,
+        "stripe": stripe_ok,
+        "revolut": revolut_ok,
+    }
+
+
+def _resolve_table_active_order(
+    session: Session,
+    table: models.Table,
+    session_id: str | None,
+    *,
+    include_paid: bool = False,
+) -> models.Order | None:
+    """Resolve the current order for a public table token (menu / customer display)."""
+    active_order = None
+    closed = {models.OrderStatus.cancelled}
+    if not include_paid:
+        closed.add(models.OrderStatus.paid)
+
+    if table.active_order_id:
+        shared_order = session.get(models.Order, table.active_order_id)
+        if shared_order and shared_order.status not in closed:
+            if include_paid or "[PAID:" not in (shared_order.notes or ""):
+                active_order = shared_order
+
+    if not active_order:
+        _not_closed = ~models.Order.status.in_(list(closed))
+        if session_id:
+            potential_orders = session.exec(
+                select(models.Order)
+                .where(
+                    models.Order.table_id == table.id,
+                    models.Order.session_id == session_id,
+                    models.Order.deleted_at.is_(None),
+                    _not_closed,
+                )
+                .order_by(models.Order.created_at.desc())
+            ).all()
+        else:
+            potential_orders = session.exec(
+                select(models.Order)
+                .where(
+                    models.Order.table_id == table.id,
+                    models.Order.deleted_at.is_(None),
+                    _not_closed,
+                )
+                .order_by(models.Order.created_at.desc())
+            ).all()
+
+        for order in potential_orders:
+            if include_paid or "[PAID:" not in (order.notes or ""):
+                active_order = order
+                break
+
+    if not active_order and table.active_order_id:
+        active_order = session.get(models.Order, table.active_order_id)
+        if active_order and active_order.status == models.OrderStatus.cancelled:
+            active_order = None
+        elif (
+            active_order
+            and not include_paid
+            and (
+                active_order.status == models.OrderStatus.paid
+                or "[PAID:" in (active_order.notes or "")
+            )
+        ):
+            active_order = None
+
+    return active_order
+
+
+def _public_order_summary_dict(
+    session: Session,
+    order: models.Order,
+    tenant: models.Tenant | None,
+) -> dict:
+    items = session.exec(
+        select(models.OrderItem)
+        .where(
+            models.OrderItem.order_id == order.id,
+            models.OrderItem.removed_by_customer == False,
+        )
+        .order_by(models.OrderItem.id.desc())
+    ).all()
+    all_items = session.exec(
+        select(models.OrderItem).where(models.OrderItem.order_id == order.id)
+    ).all()
+    computed_status = compute_order_status_from_items(all_items)
+    if order.status == models.OrderStatus.paid or order.paid_at:
+        status_value = models.OrderStatus.paid.value
+    else:
+        status_value = computed_status.value
+    subtotal_cents = sum(item.price_cents * item.quantity for item in items)
+    loyalty_discount = order_level_discount_cents(order)
+    tip_amt = int(getattr(order, "tip_amount_cents", 0) or 0)
+    total_cents = max(0, subtotal_cents - loyalty_discount) + tip_amt
+    return {
+        "id": order.id,
+        "status": status_value,
+        "notes": order.notes,
+        "session_id": order.session_id,
+        "customer_name": order.customer_name,
+        "invoice_email": getattr(order, "invoice_email", None),
+        "created_at": order.created_at.isoformat(),
+        "paid_at": order.paid_at.isoformat() if order.paid_at else None,
+        "payment_method": order.payment_method,
+        "items": [
+            {
+                "id": item.id,
+                "product_id": item.product_id,
+                "product_name": item.product_name,
+                "quantity": item.quantity,
+                "price_cents": item.price_cents,
+                "notes": item.notes,
+                "customization_answers": getattr(item, "customization_answers", None) or None,
+                "customization_summary": getattr(item, "customization_summary", None) or None,
+                "line_modifiers": getattr(item, "line_modifiers", None) or None,
+                "line_modifiers_summary": getattr(item, "line_modifiers_summary", None) or None,
+                "status": item.status.value if hasattr(item.status, "value") else str(item.status),
+                "tax_rate_percent": getattr(item, "tax_rate_percent", None),
+                "tax_amount_cents": getattr(item, "tax_amount_cents", None),
+            }
+            for item in items
+        ],
+        "subtotal_cents": subtotal_cents,
+        "loyalty_discount_cents": loyalty_discount,
+        "tip_amount_cents": tip_amt if tip_amt else None,
+        "total_cents": total_cents,
+        "payment_options": _public_menu_payment_options(tenant),
+    }
+
+
 @app.get("/menu/{table_token}/order")
 @limiter.limit(
     f"{getattr(settings, 'rate_limit_public_menu_per_minute', 30)}/minute"
@@ -12980,6 +13151,10 @@ def get_current_order(
     request: Request,
     table_token: str,
     session_id: str | None = Query(None, description="Session identifier for order isolation"),
+    for_display: bool = Query(
+        False,
+        description="When true, include paid active order for customer display (#434)",
+    ),
     session: Session = Depends(get_session),
 ) -> dict:
     """Public endpoint - get current active order for a table (if any)."""
@@ -12990,106 +13165,75 @@ def get_current_order(
     if not table:
         raise HTTPException(status_code=404, detail="Table not found")
 
-    active_order = None
+    active_order = _resolve_table_active_order(
+        session, table, session_id, include_paid=for_display
+    )
 
-    # Prefer the table's shared active order (created when staff activates the table).
-    # This is the canonical order for the PIN-based shared-order model.
-    if table.active_order_id:
-        shared_order = session.get(models.Order, table.active_order_id)
-        if (
-            shared_order
-            and shared_order.status
-            not in (models.OrderStatus.paid, models.OrderStatus.cancelled)
-            and "[PAID:" not in (shared_order.notes or "")
-        ):
-            active_order = shared_order
-
-    # Fallback: search by session_id or any open order (not paid/cancelled; backward
-    # compatibility for tables activated before the shared-order model was introduced).
     if not active_order:
-        _not_closed = ~models.Order.status.in_(
-            [models.OrderStatus.paid, models.OrderStatus.cancelled]
+        tenant = session.get(models.Tenant, table.tenant_id) if table.tenant_id else None
+        return JSONResponse(
+            content={
+                "order": None,
+                "payment_options": _public_menu_payment_options(tenant),
+            }
         )
-        if session_id:
-            potential_orders = session.exec(
-                select(models.Order).where(
-                    models.Order.table_id == table.id,
-                    models.Order.session_id == session_id,
-                    models.Order.deleted_at.is_(None),
-                    _not_closed,
-                ).order_by(models.Order.created_at.desc())
-            ).all()
-        else:
-            potential_orders = session.exec(
-                select(models.Order).where(
-                    models.Order.table_id == table.id,
-                    models.Order.deleted_at.is_(None),
-                    _not_closed,
-                ).order_by(models.Order.created_at.desc())
-            ).all()
 
-        for order in potential_orders:
-            if "[PAID:" not in (order.notes or ""):
-                active_order = order
-                break
-
-    # Table shared order: when no order matched session_id, use table's active order so customer sees current order
-    if not active_order and table.active_order_id:
-        active_order = session.get(models.Order, table.active_order_id)
-        if active_order and active_order.status in (
-            models.OrderStatus.paid,
-            models.OrderStatus.cancelled,
-        ):
-            active_order = None
-        if active_order and "[PAID:" in (active_order.notes or ""):
-            active_order = None
-
-    if not active_order:
-        return JSONResponse(content={"order": None})
-
-    # Get order items (exclude removed items for customer view)
-    # Order by ID descending so newest items appear first (for customer view)
-    items = session.exec(
-        select(models.OrderItem).where(
-            models.OrderItem.order_id == active_order.id,
-            models.OrderItem.removed_by_customer == False
-        ).order_by(models.OrderItem.id.desc())
-    ).all()
-    
-    # Compute order status from items
-    all_items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == active_order.id)).all()
-    computed_status = compute_order_status_from_items(all_items)
-
-    payload = {
-        "order": {
-            "id": active_order.id,
-            "status": computed_status.value,
-            "notes": active_order.notes,
-            "session_id": active_order.session_id,
-            "customer_name": active_order.customer_name,
-            "created_at": active_order.created_at.isoformat(),
-            "items": [
-                {
-                    "id": item.id,
-                    "product_id": item.product_id,
-                    "product_name": item.product_name,
-                    "quantity": item.quantity,
-                    "price_cents": item.price_cents,
-                    "notes": item.notes,
-                    "customization_answers": getattr(item, "customization_answers", None) or None,
-                    "customization_summary": getattr(item, "customization_summary", None) or None,
-                    "line_modifiers": getattr(item, "line_modifiers", None) or None,
-                    "line_modifiers_summary": getattr(item, "line_modifiers_summary", None) or None,
-                    "status": item.status.value if hasattr(item.status, "value") else str(item.status),
-                    "tax_rate_percent": getattr(item, "tax_rate_percent", None),
-                    "tax_amount_cents": getattr(item, "tax_amount_cents", None),
-                }
-                for item in items
-            ],
-            "total_cents": sum(item.price_cents * item.quantity for item in items),
-        }
-    }
+    tenant = session.get(models.Tenant, active_order.tenant_id)
+    payload = {"order": _public_order_summary_dict(session, active_order, tenant)}
     return JSONResponse(content=payload)
+
+
+class InvoiceEmailBody(_BaseModel):
+    email: str = Field(..., min_length=3, max_length=255)
+
+
+@app.post("/menu/{table_token}/order/invoice-email")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_public_menu_per_minute', 30)}/minute",
+    key_func=_rate_limit_key,
+)
+def set_order_invoice_email(
+    request: Request,
+    response: Response,
+    table_token: str,
+    body: InvoiceEmailBody,
+    session: Session = Depends(get_session),
+) -> dict:
+    """Public: guest enters email on customer display for invoice / receipt (#434)."""
+    table = session.exec(
+        select(models.Table).where(models.Table.token == table_token)
+    ).first()
+    if not table:
+        raise HTTPException(status_code=404, detail="Table not found")
+
+    active_order = _resolve_table_active_order(
+        session, table, None, include_paid=True
+    )
+    if not active_order:
+        raise HTTPException(status_code=404, detail="No active order")
+    if active_order.status == models.OrderStatus.cancelled:
+        raise HTTPException(status_code=400, detail="Order is cancelled")
+
+    try:
+        email = normalize_email_address(body.email)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Invalid email address")
+
+    active_order.invoice_email = email
+    session.add(active_order)
+    session.commit()
+    session.refresh(active_order)
+
+    publish_order_update(
+        active_order.tenant_id,
+        {
+            "type": "invoice_email_set",
+            "order_id": active_order.id,
+            "table_id": table.id,
+        },
+        table_id=table.id,
+    )
+    return {"ok": True, "invoice_email": email, "order_id": active_order.id}
 
 
 def _menu_order_history_session_scope(session_id: str):
@@ -14514,6 +14658,7 @@ def list_orders(
             "notes": order.notes,
             "session_id": order.session_id,
             "customer_name": order.customer_name,
+            "invoice_email": getattr(order, "invoice_email", None),
             "billing_customer_id": order.billing_customer_id,
             "billing_customer": billing_customer,
             "created_at": order.created_at.isoformat(),

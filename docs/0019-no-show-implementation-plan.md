@@ -1,4 +1,4 @@
-# No-show feature – Implementation plan and documentation
+# No-show feature - Implementation plan and documentation
 
 This document describes the **no-show** feature for reservations: why it exists, what was implemented, and how to implement or extend it (e.g. in a fork or another codebase).
 
@@ -12,9 +12,9 @@ Guests sometimes do not show up for a reservation. If the only outcomes are “b
 
 ### Goals
 
-1. **Record no-shows** – A distinct status so “did not show” is not conflated with “cancelled”.
-2. **Free the table** – Marking a reservation as no-show must release the table (same as cancel/finish).
-3. **Reduce no-shows** – Optional reminder before the reservation via **email** and/or **WhatsApp** (see [0024-whatsapp-reminder-notes.md](0024-whatsapp-reminder-notes.md)).
+1. **Record no-shows** - A distinct status so “did not show” is not conflated with “cancelled”.
+2. **Free the table** - Marking a reservation as no-show must release the table (same as cancel/finish).
+3. **Reduce no-shows** - Optional reminder before the reservation via **email** and/or **WhatsApp** (see [0024-whatsapp-reminder-notes.md](0024-whatsapp-reminder-notes.md)).
 
 ### Scope (implemented)
 
@@ -24,8 +24,8 @@ Guests sometimes do not show up for a reservation. If the only outcomes are “b
 
 ### Out of scope (optional extensions)
 
-- No-show count in reports – aggregate by status (reports already expose some overbooking/no-show signals; extend as needed).
-- Deposits or penalties – product decision.
+- No-show count in reports - aggregate by status (reports already expose some overbooking/no-show signals; extend as needed).
+- Deposits or penalties - product decision.
 
 Shipped after the original plan (not re-specified here): scheduled 24h/2h reminder heartbeat; optional view/cancel link in the reminder email when `PUBLIC_APP_BASE_URL` and a reservation `token` are set.
 
@@ -49,7 +49,7 @@ Table availability and “next available slot” logic already consider only `bo
 
 Use this section to re-implement the feature elsewhere or to add similar behaviour (e.g. another status or reminder type).
 
-### 3.1 Backend – Model
+### 3.1 Backend - Model
 
 **File:** `back/app/models.py`
 
@@ -66,7 +66,7 @@ class ReservationStatus(str, Enum):
 
 2. **Database:** If `reservation.status` is a `VARCHAR` (e.g. length 20), no migration is needed. If you use a PostgreSQL enum type, add a migration to add the new value to that enum.
 
-### 3.2 Backend – Status update handler
+### 3.2 Backend - Status update handler
 
 **File:** `back/app/main.py` (or wherever `PUT /reservations/{id}/status` is implemented)
 
@@ -77,7 +77,7 @@ In the handler that applies `ReservationStatusUpdate`:
 
 No other reservation endpoints need to treat `no_show` specially: list/filter already work by status string; table “reserved” logic should only consider `booked` (and optionally `seated`) for reservations that hold a table.
 
-### 3.3 Backend – Reminder email
+### 3.3 Backend - Reminder email
 
 **File:** `back/app/email_service.py`
 
@@ -93,7 +93,7 @@ No other reservation endpoints need to treat `no_show` specially: list/filter al
 4. Load tenant for name and SMTP; call `send_reservation_reminder(...)` when email is present; send WhatsApp when phone is present and configured (see [0024](0024-whatsapp-reminder-notes.md)).
 5. Return e.g. `{"email_sent": bool, "whatsapp_sent": bool, "to_email": …, "to_phone": …}` or 400/503 with a clear message if no channel is available or send fails.
 
-### 3.4 Frontend – API and types
+### 3.4 Frontend - API and types
 
 **File:** `front/src/app/services/api.service.ts`
 
@@ -102,7 +102,7 @@ No other reservation endpoints need to treat `no_show` specially: list/filter al
 
 No change to existing `updateReservationStatus(id, status)` is needed; the backend already accepts `no_show`.
 
-### 3.5 Frontend – Reservations UI
+### 3.5 Frontend - Reservations UI
 
 **File:** `front/src/app/reservations/reservations.component.ts` (or equivalent)
 
@@ -119,10 +119,10 @@ No change to existing `updateReservationStatus(id, status)` is needed; the backe
 
 Under the reservations section, add keys such as:
 
-- `STATUS_NO_SHOW` – label for the status (e.g. “No-show”, “Nicht erschienen”).
-- `NO_SHOW` – button label (e.g. “Mark as no-show”).
-- `NO_SHOW_CONFIRM_TITLE` and `NO_SHOW_CONFIRM_MESSAGE` – confirmation modal text.
-- `SEND_REMINDER`, `REMINDER_SENT`, `REMINDER_FAILED` – for the reminder action and feedback.
+- `STATUS_NO_SHOW` - label for the status (e.g. “No-show”, “Nicht erschienen”).
+- `NO_SHOW` - button label (e.g. “Mark as no-show”).
+- `NO_SHOW_CONFIRM_TITLE` and `NO_SHOW_CONFIRM_MESSAGE` - confirmation modal text.
+- `SEND_REMINDER`, `REMINDER_SENT`, `REMINDER_FAILED` - for the reminder action and feedback.
 
 Use the same key names in every locale so the app does not fall back to the key string.
 

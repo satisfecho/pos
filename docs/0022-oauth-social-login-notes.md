@@ -1,6 +1,6 @@
-# OAuth / Social Login (Google, Microsoft, Facebook, GitHub) – Notes and Recommendation
+# OAuth / Social Login (Google, Microsoft, Facebook, GitHub) - Notes and Recommendation
 
-> **Status: research / deferred.** Not implemented. Auth remains **email/password JWT** (`POST /token`); there is no `user_oauth_account` table, no `/auth/{provider}/authorize` surface, and no social login buttons. Keep these notes for a future product decision — do **not** treat this document as an active sprint plan or queue OAuth implementation from it alone.
+> **Status: research / deferred.** Not implemented. Auth remains **email/password JWT** (`POST /token`); there is no `user_oauth_account` table, no `/auth/{provider}/authorize` surface, and no social login buttons. Keep these notes for a future product decision - do **not** treat this document as an active sprint plan or queue OAuth implementation from it alone.
 
 This document captures thoughts on adding “Sign in with Google / Microsoft / Facebook / GitHub” so users can use those accounts to log in to the POS app.
 
@@ -93,7 +93,7 @@ This can be implemented incrementally: e.g. Google and Microsoft first (broad co
 
 ---
 
-## 10. Microsoft Accounts – specifics
+## 10. Microsoft Accounts - specifics
 
 Microsoft uses **Azure AD / Microsoft Entra ID** (OAuth 2.0 and OpenID Connect). Same pattern as Google; a few details:
 

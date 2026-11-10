@@ -27,6 +27,7 @@ MKT_REVIEW_FILE="${SCRIPTDIR}/005-marketing-repos-reviewer/time-of-last-review.t
 MKT_PREFLIGHT="${REPO_ROOT}/scripts/marketing-repos-preflight.sh"
 ENH_REVIEW_FILE="${SCRIPTDIR}/008-enhancement-reviewer/time-of-last-review.txt"
 ENH_PREFLIGHT="${REPO_ROOT}/scripts/enhancement-reviewer-preflight.sh"
+UPSTREAM_PREFLIGHT="${REPO_ROOT}/scripts/upstream-repos-preflight.sh"
 FEAT_PREFLIGHT="${REPO_ROOT}/scripts/agent-feat-waiting-human-preflight.sh"
 
 cd "$SCRIPTDIR" || exit 1
@@ -72,7 +73,7 @@ cursor_agent_timeout_seconds_for() {
     handoff) mins="${AGENT_HANDOFF_TIMEOUT_MINUTES:-${AGENT_CURSOR_TIMEOUT_MINUTES:-20}}" ;;
     closing) mins="${AGENT_CLOSING_TIMEOUT_MINUTES:-${AGENT_CURSOR_TIMEOUT_MINUTES:-20}}" ;;
     committer) mins="${AGENT_COMMITTER_TIMEOUT_MINUTES:-${AGENT_CURSOR_TIMEOUT_MINUTES:-20}}" ;;
-    log|marketing|enhancement) mins="${AGENT_REVIEWER_TIMEOUT_MINUTES:-${AGENT_CURSOR_TIMEOUT_MINUTES:-25}}" ;;
+    log|marketing|enhancement|upstream) mins="${AGENT_REVIEWER_TIMEOUT_MINUTES:-${AGENT_CURSOR_TIMEOUT_MINUTES:-25}}" ;;
     *) mins="${AGENT_CURSOR_TIMEOUT_MINUTES:-25}" ;;
   esac
   echo $((mins * 60))
@@ -412,6 +413,8 @@ committer_paths_all_local_stamp_allowlist() {
       agents2/005-marketing-repos-reviewer/last-scan.json) ;;
       agents2/008-enhancement-reviewer/time-of-last-review.txt) ;;
       agents2/008-enhancement-reviewer/last-scan.json) ;;
+      agents2/011-upstream-monitor/time-of-last-review.txt) ;;
+      agents2/011-upstream-monitor/last-scan.json) ;;
       *) return 1 ;;
     esac
   done < <(committer_changed_paths)
@@ -701,6 +704,81 @@ Then follow 008-enhancement-reviewer.md — weekly improvement sweep; create up 
   fi
 }
 
+# G011_* set by scripts/upstream-repos-preflight.sh (sourced via eval of Summary lines).
+prepare_011_preflight_context() {
+  local ctx="$1"
+  G011_GH_OK=0
+  G011_GH_AUTH_FAILED=0
+  G011_DUE=0
+  G011_CHANGES=0
+  G011_BASELINE=0
+  mkdir -p "$(dirname "$ctx")"
+  if [[ ! -x "$UPSTREAM_PREFLIGHT" ]]; then
+    echo "G011 preflight script missing: $UPSTREAM_PREFLIGHT" >"$ctx"
+    return 0
+  fi
+  UPSTREAM_PREFLIGHT_READONLY="${2:-1}" POS_REPO_ROOT="$REPO_ROOT" AGENT_GH_REPO="$GH_REPO" bash "$UPSTREAM_PREFLIGHT" "$ctx" || true
+  local line
+  while IFS= read -r line; do
+    case "$line" in
+      G011_GH_OK=*) eval "$line" 2>/dev/null || true ;;
+      G011_GH_AUTH_FAILED=*) eval "$line" 2>/dev/null || true ;;
+      G011_DUE=*) eval "$line" 2>/dev/null || true ;;
+      G011_CHANGES=*) eval "$line" 2>/dev/null || true ;;
+      G011_BASELINE=*) eval "$line" 2>/dev/null || true ;;
+    esac
+  done < <(grep -E '^G011_' "$ctx" 2>/dev/null || true)
+}
+
+should_run_011_cursor_agent() {
+  [[ "${AGENT_UPSTREAM_MONITOR_ALWAYS:-0}" == "1" ]] && return 0
+  [[ "${AGENT_011_SKIP_PREFLIGHT:-0}" == "1" ]] && return 0
+  [[ "${G011_GH_OK:-0}" != "1" ]] && return 1
+  [[ "${G011_DUE:-0}" != "1" ]] && return 1
+  (( G011_CHANGES > 0 ))
+}
+
+step_upstream_monitor() {
+  echo "-----> upstream monitor (011) <----"
+  mkdir -p "$AGENT_LOOP_TMP"
+  local ctx="${AGENT_LOOP_TMP}/011-latest-context.txt"
+  prepare_011_preflight_context "$ctx" 1
+  echo "----- 011 preflight digest: $ctx"
+  if [[ "${G011_GH_AUTH_FAILED:-0}" == "1" ]]; then
+    echo "!!! 011 / GitHub: auth failed — upstream scan incomplete. Fix gh auth login !!!" >&2
+  fi
+  if should_run_011_cursor_agent; then
+    if ! have_cursor_agent; then
+      echo "----- upstream monitor (011) (skip: cursor-agent not on PATH)" >&2
+      UPSTREAM_PREFLIGHT_READONLY=0 POS_REPO_ROOT="$REPO_ROOT" AGENT_GH_REPO="$GH_REPO" bash "$UPSTREAM_PREFLIGHT" "$ctx" >/dev/null 2>&1 || true
+      return 0
+    fi
+    if ! sync_repo; then
+      echo "----- upstream monitor (011) (skip: git sync failed)" >&2
+      return 0
+    fi
+    local msg
+    msg="Run 011: Read the preflight digest first (absolute path): $ctx
+Then follow 011-upstream-monitor.md — for relevant CHANGE lines only, open at most one satisfecho/pos issue per watched project (max 3) with an upstream-watch dedupe key and a short adaptation goal. Do not port code. Do not create FEAT/NEW tasks. Stamp agents2/011-upstream-monitor/time-of-last-review.txt. Do your job."
+    run_agent "upstream monitor (011)" \
+      "true" \
+      "011-upstream-monitor.md" \
+      "$msg" \
+      "upstream"
+    UPSTREAM_PREFLIGHT_READONLY=0 POS_REPO_ROOT="$REPO_ROOT" AGENT_GH_REPO="$GH_REPO" bash "$UPSTREAM_PREFLIGHT" "$ctx" >/dev/null 2>&1 || true
+  else
+    if [[ "${G011_DUE:-0}" != "1" ]]; then
+      echo "----- upstream monitor (011) (skip: interval not elapsed)"
+    else
+      echo "----- upstream monitor (011) (skip: no upstream changes since last scan; baseline=${G011_BASELINE:-0})"
+    fi
+    echo "----- Override: AGENT_UPSTREAM_MONITOR_ALWAYS=1 or AGENT_011_SKIP_PREFLIGHT=1 or UPSTREAM_WATCH_FORCE=1"
+    if [[ "${G011_DUE:-0}" == "1" && "${G011_GH_OK:-0}" == "1" && "${G011_CHANGES:-0}" -eq 0 ]]; then
+      UPSTREAM_PREFLIGHT_READONLY=0 POS_REPO_ROOT="$REPO_ROOT" AGENT_GH_REPO="$GH_REPO" bash "$UPSTREAM_PREFLIGHT" "$ctx" >/dev/null 2>&1 || true
+    fi
+  fi
+}
+
 step_feat() {
   if ! any_root_task_glob 'FEAT-*.md'; then
     echo "----- feature coding (FEAT) (skip: no FEAT-*.md — no sync, no agent)"
@@ -919,6 +997,7 @@ run_full_cycle() {
   run_step "001 log reviewer" step_log_reviewer
   run_step "005 marketing repos" step_marketing_repos
   run_step "008 enhancement reviewer" step_enhancement_reviewer
+  run_step "011 upstream monitor" step_upstream_monitor
   local i=0
   local has_feat has_actionable_feat
   while (( i < 5 )); do
@@ -964,6 +1043,7 @@ Usage: $(basename "$0") [COMMAND]
     log, log-reviewer, 001   Log / incident reviewer (001; runs first in full cycle)
     marketing, mkt, 005      Marketing repos reviewer (NNN_slug org repos → deploy / FEAT-MKT)
     enhancement, enhance, 008  Enhancement reviewer (weekly docs/demo/queue sweep → FEAT-0 / NEW-0)
+    upstream, 011            Upstream monitor (URY, FloCafe, OrderRestro, TastyIgniter → POS issues)
     feat, feature   Feature coder (FEAT-*.md in agents2/tasks/)
     coder           Coder (NEW-*.md or WIP-*.md; prompt agents2/002-coder/CODER.md)
     handoff, 012    Feature-coder handoff (WIP-*.md → verify complete → UNTESTED-*.md)
@@ -985,7 +1065,7 @@ Environment:
   AGENT_LOG_REVIEWER_ALWAYS  If 1, always invoke 001 cursor-agent (skip preflight gate).
   AGENT_001_SKIP_PREFLIGHT   If 1, always invoke 001 (legacy); digest still written when built.
   AGENT_001_RUN_WHEN_GH_UNKNOWN  If 1, run 001 when gh failed/missing and digest otherwise empty.
-  AGENT_COMMITTER_LOCAL        If not 0 (default 1), when the dirty tree is only allowlisted stamp/scan files (001/005/008 time-of-last-review / last-scan.json), skip commit and cursor-agent (leave stamps local). Set to 0 to fall through (not recommended for stamp-only).
+  AGENT_COMMITTER_LOCAL        If not 0 (default 1), when the dirty tree is only allowlisted stamp/scan files (001/005/008/011 time-of-last-review / last-scan.json), skip commit and cursor-agent (leave stamps local). Set to 0 to fall through (not recommended for stamp-only).
   AGENT_COMMITTER_USE_CURSOR   If 1 (default), run 040-committer via cursor-agent when there are non-stamp changes. Set to 0 to disable cursor committer (manual commits only).
   AGENT_001_LOCAL_LOG_REVIEWER  If not 0 (default 1), never invoke cursor-agent for 001 when only Docker log heuristics fired and GitHub preflight succeeded with zero untracked issues (fully local digest + optional Ollama triage). Set to 0 to allow cursor-agent for that case (e.g. auto NEW-* from logs).
   AGENT_001_OLLAMA_LOG_TRIAGE  If 0, never run local LLM triage. Otherwise (default) triage runs when llama.cpp OpenAI API responds (GET \$LLAMA_CPP_BASE_URL/models, default http://127.0.0.1:8080/v1) and python3 exists, or when ollama list shows ≥1 model at OLLAMA_HOST (default http://127.0.0.1:11434) — only for log-only 001 signals. LLAMA_CPP_MODEL (default Bonsai-8B.gguf); OLLAMA_MODEL (default Gemma4:latest). Default triage order is Ollama first, then llama.cpp; AGENT_001_LLAMA_CPP_FIRST=1 restores llama-first. AGENT_001_SKIP_LLAMA_CPP=1 forces Ollama only.   AGENT_001_LOG_TRIAGE_DEBUG=1 prints triage script stderr (llama.cpp / ollama errors).
@@ -996,7 +1076,11 @@ Environment:
   AGENT_TESTER_TIMEOUT_MINUTES     Tester step limit (default: 32; deploy poll + prod checks).
   AGENT_FEAT_TIMEOUT_MINUTES       Feature coder limit (default: same as AGENT_CURSOR_TIMEOUT_MINUTES).
   AGENT_CODER_TIMEOUT_MINUTES      Main coder limit (default: same as AGENT_CURSOR_TIMEOUT_MINUTES).
-  AGENT_REVIEWER_TIMEOUT_MINUTES   001 / 005 / 008 limit (default: same as AGENT_CURSOR_TIMEOUT_MINUTES).
+  AGENT_REVIEWER_TIMEOUT_MINUTES   001 / 005 / 008 / 011 limit (default: same as AGENT_CURSOR_TIMEOUT_MINUTES).
+  AGENT_UPSTREAM_MONITOR_ALWAYS  If 1, always invoke 011 cursor-agent.
+  AGENT_011_SKIP_PREFLIGHT         If 1, always invoke 011 (legacy always-run).
+  UPSTREAM_WATCH_INTERVAL_DAYS     Days between GitHub scans (default: 7, from config/upstream-watch.json).
+  UPSTREAM_WATCH_FORCE             If 1, preflight scans GitHub even when the interval has not elapsed.
   AGENT_ENHANCEMENT_REVIEWER_ALWAYS  If 1, always invoke 008 cursor-agent.
   AGENT_008_SKIP_PREFLIGHT         If 1, always invoke 008 (legacy always-run).
   AGENT_FEAT_REVIEWER_ALWAYS       If 1, always invoke 006 feature coder (skip waiting-human preflight).
@@ -1007,7 +1091,7 @@ Docker / app stack: start separately from repo root with ./run.sh -dev
 
 Git: FEAT/NEW-WIP/tester/closing/committer run scripts/git-sync-development.sh only when that step has work (queue or uncommitted changes). 001 syncs when its gate opens.
 
-Prompt files in this directory (agents2/): 001-gh-reviewer.md, 005-marketing-repos-reviewer.md, 008-enhancement-reviewer.md, 010-feature-coder.md, 012-feature-coder-handoff.md (runs after coder when WIP-*.md exists), 020-test.md, 030-closing-reviewer.md, 040-committer.md; task naming: TASKS-README.md. Main coder (NEW/WIP): 002-coder/CODER.md. See docs/agent-loop.md.
+Prompt files in this directory (agents2/): 001-gh-reviewer.md, 005-marketing-repos-reviewer.md, 008-enhancement-reviewer.md, 011-upstream-monitor.md, 010-feature-coder.md, 012-feature-coder-handoff.md (runs after coder when WIP-*.md exists), 020-test.md, 030-closing-reviewer.md, 040-committer.md; task naming: TASKS-README.md. Main coder (NEW/WIP): 002-coder/CODER.md. See docs/agent-loop.md.
 EOF
 }
 
@@ -1020,6 +1104,7 @@ if [[ -n "${1:-}" ]]; then
     log | log-reviewer | 001) step_log_reviewer ;;
     marketing | mkt | 005) step_marketing_repos ;;
     enhancement | enhance | 008) step_enhancement_reviewer ;;
+    upstream | 011) step_upstream_monitor ;;
     feat | feature) step_feat ;;
     coder) step_coder ;;
     handoff | 012 | feature-handoff) step_feature_coder_handoff ;;

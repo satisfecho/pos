@@ -8,9 +8,9 @@ alwaysApply: true
 When the user says **"commit"** (or asks to commit changes):
 
 1. **Review and update** before committing:
-   - **CHANGELOG.md** — Ensure `[Unreleased]` reflects the current changes; move items to a new version section if cutting a release.
-   - **README.md** — Update if the change affects setup, usage, or documented behavior.
-   - **docs/** — Scan relevant `.md` files (e.g. feature docs, deployment, troubleshooting) and update any that are affected by the change.
+   - **CHANGELOG.md** - Ensure `[Unreleased]` reflects the current changes; move items to a new version section if cutting a release.
+   - **README.md** - Update if the change affects setup, usage, or documented behavior.
+   - **docs/** - Scan relevant `.md` files (e.g. feature docs, deployment, troubleshooting) and update any that are affected by the change.
 
 2. **Version bump** when the changelog has **substantial or important changes**:
    - "Reasonable size" = multiple items under Unreleased, or user-visible fixes/features.

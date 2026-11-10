@@ -8,7 +8,7 @@ This document complements **`docs/0017-billing-customers-factura.md`**. It descr
 
 - **No production AEAT submission** is implemented as a direct AEAT HTTP/SOAP client in this codebase. Real endpoints, certificates, and payload field mapping **must** follow the **official AEAT technical documentation**, **certified middleware**, and **professional tax advice**. See **`docs/0065-verifactu-production.md`** (Phase 0 ADR: prefer buy/middleware).
 - Enabling **live** mode is **gated** (`FISCAL_LIVE_UNLOCK` + middleware URL) and does **not** by itself satisfy legal filing obligations.
-- Internal hash chain uses schema **`pos.fiscal.hash.v1`** — this is **not** a claim of the official AEAT huella algorithm until middleware supplies it.
+- Internal hash chain uses schema **`pos.fiscal.hash.v1`** - this is **not** a claim of the official AEAT huella algorithm until middleware supplies it.
 - **Offline POS:** Staff offline sync (`docs/0063-offline-capable-client.md`, #319/#333) **must not** allocate fiscal series or call **issue** while disconnected. Issue only when online on a **paid** order; deferred offline numbering is not approved.
 
 ## Tenant configuration
@@ -49,6 +49,10 @@ Configure via **Settings → Payments** (fiscal section) or **PUT `/tenant/setti
 
 When **`fiscal_mode`** is `test` or `live`, **Print Factura** (orders modal) and **print from edit order** call **issue** first, then render the invoice HTML including the **fiscal block** (QR + text).
 
+Angular API client: `issueOrderFiscalInvoice`, `getOrderFiscalInvoice`, `cancelOrderFiscalInvoice` (`api.service.ts`). When **`fiscal_mode`** is `test`/`live` and an active alta exists, **Orders** (Print Factura modal and Edit order) show **Cancel fiscal invoice (anulación)** wired to the cancel API. After anulación, delete/edit are allowed again. Delete-order errors still surface the server `detail` string when present.
+
+See **`docs/0065-verifactu-production.md`** (*Remaining gaps*) for what is still missing for production live remisión.
+
 ## Environment
 
 | Variable | Meaning |
@@ -62,11 +66,12 @@ Per-tenant secrets use **`fiscal_aeat_api_secret`** (optional).
 ## Testing
 
 1. Set tenant **`fiscal_mode`** to **`test`** and save Settings.
-2. Mark an order **paid**, then **Print Factura** — expect success and invoice showing fiscal number + QR block (ValidarQR URL).
-3. Attempt to delete or edit line items on that order — expect **409** until fiscal cancel.
-4. **POST** `/orders/{id}/fiscal-invoice/cancel` — expect anulación number; delete should then succeed.
-5. Set **`fiscal_mode`** to **`off`** — print should match prior behaviour without calling issue (browser-only).
-6. Unpaid order with fiscal mode on — issue should fail with a clear error.
-7. Setting **`fiscal_mode: live`** without unlock/middleware — expect **400**.
+2. Mark an order **paid**, then **Print Factura** - expect success and invoice showing fiscal number + QR block (ValidarQR URL).
+3. Attempt to delete or edit line items on that order - expect **409** until fiscal cancel.
+4. **Cancel fiscal invoice (anulación)** in Orders (Factura / edit order) or **POST** `/orders/{id}/fiscal-invoice/cancel` - expect anulación number; delete should then succeed.
+5. Multi-rate: order with lines at different IVA rates - issued `request_payload.line_items` and Fiskaly SIGN ES items should reflect those rates (not a single hardcoded 21%).
+6. Set **`fiscal_mode`** to **`off`** - print should match prior behaviour without calling issue (browser-only).
+7. Unpaid order with fiscal mode on - issue should fail with a clear error.
+8. Setting **`fiscal_mode: live`** without unlock/middleware - expect **400**.
 
 See also **`docs/0065-verifactu-production.md`**.

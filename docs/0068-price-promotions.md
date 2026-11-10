@@ -4,7 +4,7 @@
 
 ## Goal
 
-Tenant-scoped **pricing promotions** distinct from social-media scheduling (#199–#201) and from club loyalty earn/redeem (#327):
+Tenant-scoped **pricing promotions** distinct from social-media scheduling (#199-#201) and from club loyalty earn/redeem (#327):
 
 - Staff create/enable rules under **Settings → Promotions**
 - MVP rule type: **`percent_off_category`** (e.g. 20% off `Beverages`)
@@ -15,8 +15,8 @@ Tenant-scoped **pricing promotions** distinct from social-media scheduling (#199
 
 ## Stackability / loyalty
 
-- **Line promos:** at most one promo per line — highest `percent_off` wins (ties: lowest id). The `stackable` flag is reserved for future multi-promo stacking.
-- **Order-level:** loyalty redemption still writes `order.loyalty_discount_cents`. All payable and fiscal totals subtract it via `order_discounts.order_level_discount_cents` (shared path). Do not invent a second discount field for coupons later — extend that helper.
+- **Line promos:** at most one promo per line - highest `percent_off` wins (ties: lowest id). The `stackable` flag is reserved for future multi-promo stacking.
+- **Order-level:** loyalty redemption still writes `order.loyalty_discount_cents`. All payable and fiscal totals subtract it via `order_discounts.order_level_discount_cents` (shared path). Do not invent a second discount field for coupons later - extend that helper.
 
 ## Data model
 
@@ -24,7 +24,7 @@ Tenant-scoped **pricing promotions** distinct from social-media scheduling (#199
 |-----------------|------|
 | `price_promotion` | Tenant rules |
 | `orderitem.list_price_cents` | Pre-promo unit price (null if no promo) |
-| `orderitem.discount_cents` | Unit discount (list − paid) |
+| `orderitem.discount_cents` | Unit discount (list - paid) |
 | `orderitem.promo_id` | FK to rule (nullable) |
 | `orderitem.promo_snapshot` | Immutable `{id,name,promo_type,percent_off,category,stackable}` |
 
@@ -37,7 +37,7 @@ Migration: `back/migrations/20260726171000_price_promotions.sql`.
 
 ## Permissions
 
-`promo:read`, `promo:write` — owner/admin.
+`promo:read`, `promo:write` - owner/admin.
 
 ## Testing
 

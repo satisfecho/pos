@@ -4,7 +4,7 @@ globs: front/**
 alwaysApply: false
 ---
 
-# Frontend – Run Headless Smoke Test
+# Frontend - Run Headless Smoke Test
 
 When you change code under `front/` (Angular app):
 

@@ -41,20 +41,125 @@ def _issuer_nif(tenant: models.Tenant) -> str:
     return raw[:9] if raw else "PENDING00"
 
 
-def order_fiscal_amount_cents(session: Session, order: models.Order) -> int:
-    items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order.id)).all()
-    active = [
+def _active_order_items(session: Session, order_id: int) -> list[models.OrderItem]:
+    items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order_id)).all()
+    return [
         i
         for i in items
         if not i.removed_by_customer
         and i.removed_by_user_id is None
         and i.status != models.OrderItemStatus.cancelled
     ]
+
+
+def order_fiscal_amount_cents(session: Session, order: models.Order) -> int:
+    active = _active_order_items(session, order.id)
     subtotal = sum(i.price_cents * i.quantity for i in active)
     tip = int(order.tip_amount_cents or 0)
     fee = int(getattr(order, "delivery_fee_cents", 0) or 0)
     discount = order_level_discount_cents(order)
     return max(0, subtotal - discount + tip + fee)
+
+
+def build_fiscal_line_items(
+    session: Session,
+    order: models.Order,
+    tenant: models.Tenant,
+    *,
+    amount_cents: int | None = None,
+) -> list[dict[str, Any]]:
+    """Build tax-inclusive line items (multi-rate IVA) for middleware payloads.
+
+    Amounts are tax-inclusive cents (same as OrderItem.price_cents). VAT rate comes
+    from each line's tax_rate_percent; missing rates default to 21% (ES standard).
+    Tip / delivery fee are separate lines. Order-level discount is applied as a
+    proportional reduction so line totals match the fiscal amount.
+    """
+    target = int(amount_cents) if amount_cents is not None else order_fiscal_amount_cents(session, order)
+    lines: list[dict[str, Any]] = []
+    for item in _active_order_items(session, order.id):
+        qty = max(1, int(item.quantity or 1))
+        unit_cents = int(item.price_cents or 0)
+        full_cents = unit_cents * qty
+        rate = item.tax_rate_percent
+        if rate is None:
+            rate = 21
+        lines.append(
+            {
+                "text": (item.product_name or "Item").strip()[:120] or "Item",
+                "quantity": str(qty),
+                "unit_amount_cents": unit_cents,
+                "full_amount_cents": full_cents,
+                "vat_rate_percent": int(rate),
+            }
+        )
+
+    tip = int(order.tip_amount_cents or 0)
+    if tip > 0:
+        tip_rate = getattr(tenant, "tip_tax_rate_percent", None)
+        if tip_rate is None:
+            tip_rate = 0
+        lines.append(
+            {
+                "text": "Tip",
+                "quantity": "1",
+                "unit_amount_cents": tip,
+                "full_amount_cents": tip,
+                "vat_rate_percent": int(tip_rate),
+            }
+        )
+
+    fee = int(getattr(order, "delivery_fee_cents", 0) or 0)
+    if fee > 0:
+        lines.append(
+            {
+                "text": "Delivery fee",
+                "quantity": "1",
+                "unit_amount_cents": fee,
+                "full_amount_cents": fee,
+                "vat_rate_percent": 21,
+            }
+        )
+
+    if not lines:
+        lines.append(
+            {
+                "text": "POS sale",
+                "quantity": "1",
+                "unit_amount_cents": target,
+                "full_amount_cents": target,
+                "vat_rate_percent": 21,
+            }
+        )
+        return lines
+
+    gross = sum(int(l["full_amount_cents"]) for l in lines)
+    discount = max(0, gross - target)
+    if discount > 0 and gross > 0:
+        # Apply order-level discount proportionally; fix remainder on the last line.
+        remaining = discount
+        for idx, line in enumerate(lines):
+            if idx == len(lines) - 1:
+                cut = remaining
+            else:
+                cut = (discount * int(line["full_amount_cents"])) // gross
+                remaining -= cut
+            new_full = max(0, int(line["full_amount_cents"]) - cut)
+            line["full_amount_cents"] = new_full
+            qty = max(1, int(line["quantity"] or "1"))
+            line["unit_amount_cents"] = new_full // qty if qty else new_full
+
+    # If still short/over (rounding), adjust last line so middleware full_amount matches.
+    total = sum(int(l["full_amount_cents"]) for l in lines)
+    if total != target and lines:
+        delta = target - total
+        last = lines[-1]
+        new_full = max(0, int(last["full_amount_cents"]) + delta)
+        last["full_amount_cents"] = new_full
+        qty = max(1, int(last["quantity"] or "1"))
+        last["unit_amount_cents"] = new_full // qty if qty else new_full
+
+    return lines
 
 
 def _canonical_hash_payload(
@@ -170,6 +275,7 @@ def build_issue_payload(
     amount_cents: int,
     previous_hash: str,
     record_hash: str,
+    line_items: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     bc = None
     if billing_customer:
@@ -178,7 +284,7 @@ def build_issue_payload(
             "company_name": billing_customer.company_name,
             "tax_id": billing_customer.tax_id,
         }
-    return {
+    payload: dict[str, Any] = {
         "schema": "pos.fiscal_invoice.v2",
         "hash_schema": HASH_SCHEMA,
         "record_type": record_type,
@@ -195,6 +301,9 @@ def build_issue_payload(
             "certified middleware when configured; see docs/0065-verifactu-production.md."
         ),
     }
+    if line_items is not None:
+        payload["line_items"] = line_items
+    return payload
 
 
 def get_fiscal_alta(
@@ -377,6 +486,9 @@ def issue_or_get_fiscal_invoice(
         issued_at=issued_at,
         amount_cents=amount_cents,
     )
+    line_items = build_fiscal_line_items(
+        session, order, tenant_locked, amount_cents=amount_cents
+    )
     req_payload = build_issue_payload(
         order,
         tenant_locked,
@@ -386,6 +498,7 @@ def issue_or_get_fiscal_invoice(
         amount_cents=amount_cents,
         previous_hash=previous_hash,
         record_hash=record_hash,
+        line_items=line_items,
     )
     resp_payload = {
         "status": "issued_local",
@@ -483,6 +596,16 @@ def cancel_fiscal_invoice(
         issued_at=issued_at,
         amount_cents=amount_cents,
     )
+    # Prefer alta line items so anulación multi-rate IVA matches the original invoice.
+    alta_lines = None
+    if isinstance(alta.request_payload, dict):
+        raw_lines = alta.request_payload.get("line_items")
+        if isinstance(raw_lines, list) and raw_lines:
+            alta_lines = raw_lines
+    if alta_lines is None:
+        alta_lines = build_fiscal_line_items(
+            session, order, tenant_locked, amount_cents=amount_cents
+        )
     req_payload = build_issue_payload(
         order,
         tenant_locked,
@@ -492,6 +615,7 @@ def cancel_fiscal_invoice(
         amount_cents=amount_cents,
         previous_hash=previous_hash,
         record_hash=record_hash,
+        line_items=alta_lines,
     )
     req_payload["cancels_full_number"] = alta.full_number
     req_payload["cancels_fiscal_invoice_id"] = alta.id

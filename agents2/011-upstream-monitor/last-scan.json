@@ -1,0 +1,44 @@
+{
+  "projects": {
+    "flocafe": {
+      "branch": "main",
+      "docs": {
+        "CHANGELOG.md": "3dabf3fe3ff3cd586a45b08be801a66efd0b9701"
+      },
+      "head_sha": "0d77bb355ac3ac6c16c34020257b5837651de159",
+      "milestones": "v3.13.0 - Frontline Speed & Mobile Parity | v3.14.0 - Financials & Customer Display | v3.15.0 - Catalog, Inventory & Promotions | v4.0.0 - Global Payments & Expansion",
+      "pushed_at": "2026-11-10T10:26:34Z",
+      "release_tag": "3.13.23",
+      "repo": "FreeOpenSourcePOS/FloCafe"
+    },
+    "orderrestro": {
+      "branch": "master",
+      "docs": {
+        "ROADMAP.md": "2817616bf013decc3e8fa31c3ffc804e9fe88dda"
+      },
+      "head_sha": "7b9b849c536e79aea74b8939b8f2f2e2f0b06e68",
+      "milestones": "",
+      "pushed_at": "2026-11-09T08:13:11Z",
+      "release_tag": "v1.22.0",
+      "repo": "Raktim94/nodedr-restaurant-pos"
+    },
+    "tastyigniter": {
+      "branch": "4.x",
+      "docs": {},
+      "head_sha": "ebb91a30c76f6f1197675bb0fe5546a4ed266fe6",
+      "milestones": "4.0",
+      "pushed_at": "2026-11-09T22:05:53Z",
+      "release_tag": "v4.5.0",
+      "repo": "tastyigniter/TastyIgniter"
+    },
+    "ury": {
+      "branch": "version-2",
+      "docs": {},
+      "head_sha": "79215b29d2161675344c29810ebb8b6fe710f9b6",
+      "milestones": "",
+      "pushed_at": "2026-11-10T11:28:23Z",
+      "release_tag": "v3.0.0-beta.2",
+      "repo": "ury-erp/ury"
+    }
+  }
+}

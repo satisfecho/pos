@@ -1,0 +1,31 @@
+{
+  "interval_days": 7,
+  "max_commits": 12,
+  "max_issues_per_run": 3,
+  "projects": [
+    {
+      "id": "ury",
+      "name": "URY",
+      "repo": "ury-erp/ury",
+      "public_docs": []
+    },
+    {
+      "id": "flocafe",
+      "name": "FloCafe",
+      "repo": "FreeOpenSourcePOS/FloCafe",
+      "public_docs": ["CHANGELOG.md"]
+    },
+    {
+      "id": "orderrestro",
+      "name": "NodeDR OrderRestro",
+      "repo": "Raktim94/nodedr-restaurant-pos",
+      "public_docs": ["ROADMAP.md"]
+    },
+    {
+      "id": "tastyigniter",
+      "name": "TastyIgniter",
+      "repo": "tastyigniter/TastyIgniter",
+      "public_docs": []
+    }
+  ]
+}

@@ -10,5 +10,5 @@ When you change colours, backgrounds, or chrome under `front/`:
 
 1. **Check contrast** for text and icons against their background. Aim for **WCAG AA** (about **4.5:1** for normal text, **3:1** for large text / UI chrome).
 2. Prefer shared tokens (`--color-text`, `--color-on-primary`, `--hero-header-fg` via `pickContrastingForeground` in `front/src/app/shared/public-brand-colors.ts`) over one-off hex pairs.
-3. Tenant public washes (`public_background_color`) may be light or dark — never assume white or black ink is always safe on the sticky guest nav or similar chrome. See `docs/0028-tenant-public-branding.md`.
+3. Tenant public washes (`public_background_color`) may be light or dark - never assume white or black ink is always safe on the sticky guest nav or similar chrome. See `docs/0028-tenant-public-branding.md`.
 4. If contrast fails, fix tokens/styles before shipping; do not leave unreadable UI for the tester to catch alone.

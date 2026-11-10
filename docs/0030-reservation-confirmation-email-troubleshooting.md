@@ -1,6 +1,6 @@
 # Reservation confirmation email troubleshooting (amvara9)
 
-**Status (ops troubleshooting — current):** Use this runbook when a booking has a customer email but no confirmation arrives. For **SMTP setup** (Gmail App Password, Settings → Email fields) see [`0056-gmail-setup.md`](0056-gmail-setup.md). For **provider comparison / research** (SendGrid, Resend, etc.) see [`0005-email-sending-options.md`](0005-email-sending-options.md) — research only, not a shipping checklist.
+**Status (ops troubleshooting - current):** Use this runbook when a booking has a customer email but no confirmation arrives. For **SMTP setup** (Gmail App Password, Settings → Email fields) see [`0056-gmail-setup.md`](0056-gmail-setup.md). For **provider comparison / research** (SendGrid, Resend, etc.) see [`0005-email-sending-options.md`](0005-email-sending-options.md) - research only, not a shipping checklist.
 
 When public bookings include a customer email but no confirmation email is received, check the following.
 

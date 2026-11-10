@@ -4,7 +4,7 @@ globs: front/**
 alwaysApply: false
 ---
 
-# Angular Frontend – Verify Build via Docker Logs
+# Angular Frontend - Verify Build via Docker Logs
 
 When you change frontend (Angular) code under `front/`:
 

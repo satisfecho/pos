@@ -24,15 +24,15 @@ Open **Settings → Restaurant group** (`settings-restaurant-group-section`).
 
 ### Not in a group yet
 
-1. **Create a new group** — enter a name; optionally enable share products / share customers; **Create group**. The UI then shows the generated **join code**.
-2. **Join an existing group** — paste another location’s join code; **Join group**.
+1. **Create a new group** - enter a name; optionally enable share products / share customers; **Create group**. The UI then shows the generated **join code**.
+2. **Join an existing group** - paste another location’s join code; **Join group**.
 
 ### Already in a group
 
 - Edit **name** and the two share flags; **Save**.
 - Copy / share the read-only **join code** with other location owners.
 - See **Member locations** (current location is labelled).
-- **Leave group** — removes this tenant from the group. If no members remain, the group row is deleted.
+- **Leave group** - removes this tenant from the group. If no members remain, the group row is deleted.
 
 ## Sharing semantics
 
@@ -40,7 +40,7 @@ Defaults on create: both share flags are **off** unless checked in the UI.
 
 ### Hub kitchen (central prep for branches)
 
-Optional: designate one **member** as the **hub kitchen** (`hub_tenant_id`). Sibling branches can create a **hub fulfillment** on an order; the hub marks it **prepared at HQ**. Stock locations remain **warehouses within a tenant** ([0061](0061-multi-warehouse-inventory.md)) — do not confuse warehouses with branches. Full guide: [0069](0069-branch-hub-fulfillment.md).
+Optional: designate one **member** as the **hub kitchen** (`hub_tenant_id`). Sibling branches can create a **hub fulfillment** on an order; the hub marks it **prepared at HQ**. Stock locations remain **warehouses within a tenant** ([0061](0061-multi-warehouse-inventory.md)) - do not confuse warehouses with branches. Full guide: [0069](0069-branch-hub-fulfillment.md).
 
 ### `share_customers`
 

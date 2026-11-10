@@ -6,12 +6,12 @@ Slot capacity checks, overbooking detection, and prevention are **live** in prod
 
 **What shipped**
 
-- **Report:** `GET /reservations/overbooking-report` — per-slot seats/tables demand vs capacity (`over_seats` / `over_tables`).
+- **Report:** `GET /reservations/overbooking-report` - per-slot seats/tables demand vs capacity (`over_seats` / `over_tables`).
 - **Prevention:** create/update reservation returns **400** when the slot would exceed capacity; public next-available respects remaining capacity.
 - **UI:** overbooking indicators on the reservations list; remaining capacity on create/edit; Reports summary card when `overbooking_slots_count > 0` (see [0016-reports.md](0016-reports.md)).
 - **Verify:** scenario notes in [0058-test-scenario-one-empty-table.md](0058-test-scenario-one-empty-table.md); checker `python -m app.seeds.check_overbooking_0025` (exit 0 = pass; tenant 1); pytest `python3 -m pytest tests/test_overbooking_0025.py` (isolated tenant).
 
-Anything below that still reads as “future work” is **optional polish** or historical design context — not “not implemented”.
+Anything below that still reads as “future work” is **optional polish** or historical design context - not “not implemented”.
 
 ---
 
@@ -81,7 +81,7 @@ So “tables seated” = tables that are **occupied** because of a seated reserv
 
 We define overbooking as:
 
-- **Slot overbooking:** For a given (tenant, date, time) — or (tenant, date, time window) — the number of **active** reservations (e.g. booked + seated) leads to:
+- **Slot overbooking:** For a given (tenant, date, time) - or (tenant, date, time window) - the number of **active** reservations (e.g. booked + seated) leads to:
   - more **guests** than total available seats, and/or
   - more **parties** than available tables.
 
@@ -119,10 +119,10 @@ What was in scope for the original enhancement is defined below. Anything not li
 4. **Next-available (public)**
    - Change `GET /reservations/next-available` so it returns the first slot where adding one more reservation would not exceed capacity: `reserved_guests + requested_party_size ≤ total_seats` and `reserved_parties + 1 ≤ total_tables`. Use a default or query param for party size if needed. Slots remain 15-minute steps within opening hours.
 
-5. **Seat modal – upcoming reservations with no table**
+5. **Seat modal - upcoming reservations with no table**
    - When the seat flow needs data (e.g. existing `GET /tables/with-status` or a dedicated call), also return a count of other reservations for the same tenant and same date with status `booked`, `table_id` null, and `reservation_time` > now (or ≥ the reservation being seated). Frontend shows in the seat modal: “You have N upcoming reservations today with no table assigned.”
 
-6. **Seat modal – this table has an upcoming reservation**
+6. **Seat modal - this table has an upcoming reservation**
    - Extend `GET /tables/with-status` so each table includes `upcoming_reservation: { reservation_id, reservation_time, customer_name } | null` when the table is “reserved” (a booked reservation with that `table_id`, same tenant, reservation_date ≥ today, reservation_time > now). In the seat modal, when listing tables (or when the user selects a table), if `upcoming_reservation` is set, show: “Table X has an upcoming reservation at HH:MM (Name). Seat here anyway?” and keep the “Seat” action (staff can confirm). No blocking.
 
 **Frontend**
@@ -153,7 +153,7 @@ What was in scope for the original enhancement is defined below. Anything not li
 
 ---
 
-## 4. Summary (historical — shipped)
+## 4. Summary (historical - shipped)
 
 | Area | Before | Shipped (design intent) |
 |------|--------|----------|
@@ -163,6 +163,6 @@ What was in scope for the original enhancement is defined below. Anything not li
 | **Detection** | None | `GET /reservations/overbooking-report` with per-slot metrics and over_seats / over_tables flags. |
 | **Prevention** | None | Validate on create/update; return 400 if slot over capacity. Next-available returns first slot with capacity. |
 | **UX** | No capacity info | Overbooking indicators per slot in list; show remaining capacity in create/edit and keep form open on save error; overbooking summary in reports. |
-| **Seat modal** | None | (1) Show “You have N upcoming reservations today with no table assigned.” (2) For tables with upcoming_reservation: show “Table X has upcoming reservation at HH:MM (Name). Seat here anyway?” — allow Seat. |
+| **Seat modal** | None | (1) Show “You have N upcoming reservations today with no table assigned.” (2) For tables with upcoming_reservation: show “Table X has upcoming reservation at HH:MM (Name). Seat here anyway?” - allow Seat. |
 
 Core of the above is **shipped**. Out of scope for the original enhancement (and still not required to treat the feature as done): no new columns/tables for duration-only pre-assign, no floor-level capacity, no blocking of the seat action (warn only). See the **Status: shipped** section for live pointers.

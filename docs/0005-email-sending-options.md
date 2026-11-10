@@ -1,6 +1,6 @@
 # Email Sending Options for POS2 System
 
-> **Research / options comparison — not an implementation backlog.** Day-to-day Gmail/SMTP setup: **[0056-gmail-setup.md](0056-gmail-setup.md)**. Missing reservation confirmation emails: **[0030-reservation-confirmation-email-troubleshooting.md](0030-reservation-confirmation-email-troubleshooting.md)**. Do not treat provider shopping below as open product work.
+> **Research / options comparison - not an implementation backlog.** Day-to-day Gmail/SMTP setup: **[0056-gmail-setup.md](0056-gmail-setup.md)**. Missing reservation confirmation emails: **[0030-reservation-confirmation-email-troubleshooting.md](0030-reservation-confirmation-email-troubleshooting.md)**. Do not treat provider shopping below as open product work.
 
 ## Proton Mail Analysis
 

@@ -108,11 +108,45 @@ class TestFiscalInvoiceApi(PgClientTestCase):
             product_name="Fiscal Dish",
             quantity=2,
             price_cents=1000,
+            tax_rate_percent=10,
             status=models.OrderItemStatus.delivered,
         )
         self.session.add(item)
         self.session.commit()
         self.item = item
+
+        # Second paid order with multi-rate lines (10% + 21%) for payload fidelity tests
+        product_svc = models.Product(
+            name="Fiscal Service",
+            price_cents=500,
+            tenant_id=self.tenant.id,
+        )
+        self.session.add(product_svc)
+        self.session.commit()
+        self.session.refresh(product_svc)
+        self.session.add(
+            models.OrderItem(
+                order_id=self.order_paid2.id,
+                product_id=product.id,
+                product_name="Fiscal Dish",
+                quantity=1,
+                price_cents=1000,
+                tax_rate_percent=10,
+                status=models.OrderItemStatus.delivered,
+            )
+        )
+        self.session.add(
+            models.OrderItem(
+                order_id=self.order_paid2.id,
+                product_id=product_svc.id,
+                product_name="Fiscal Service",
+                quantity=1,
+                price_cents=500,
+                tax_rate_percent=21,
+                status=models.OrderItemStatus.delivered,
+            )
+        )
+        self.session.commit()
 
         self.t_other = models.Tenant(name="Other")
         self.session.add(self.t_other)
@@ -276,6 +310,60 @@ class TestFiscalInvoiceApi(PgClientTestCase):
         h = _bearer_headers(self.owner_other)
         r = self.client.post(f"/orders/{self.order_paid.id}/fiscal-invoice/issue", headers=h)
         self.assertEqual(r.status_code, 404, r.text)
+
+    def test_issue_stores_multi_rate_line_items(self) -> None:
+        h = _bearer_headers(self.owner)
+        r = self.client.post(f"/orders/{self.order_paid2.id}/fiscal-invoice/issue", headers=h)
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        self.assertEqual(body["amount_cents"], 1500)
+        from sqlmodel import select
+
+        from app.models import FiscalInvoice
+
+        fi = self.session.exec(
+            select(FiscalInvoice).where(
+                FiscalInvoice.order_id == self.order_paid2.id,
+                FiscalInvoice.record_type == "alta",
+            )
+        ).first()
+        self.assertIsNotNone(fi)
+        lines = (fi.request_payload or {}).get("line_items")
+        self.assertIsInstance(lines, list)
+        self.assertEqual(len(lines), 2)
+        rates = sorted(int(x["vat_rate_percent"]) for x in lines)
+        self.assertEqual(rates, [10, 21])
+        self.assertEqual(sum(int(x["full_amount_cents"]) for x in lines), 1500)
+
+    def test_fiskaly_items_from_line_items_multi_rate(self) -> None:
+        from app.fiscal_providers import fiskaly_items_from_line_items
+
+        items = fiskaly_items_from_line_items(
+            [
+                {
+                    "text": "Dish",
+                    "quantity": "2",
+                    "unit_amount_cents": 1000,
+                    "full_amount_cents": 2000,
+                    "vat_rate_percent": 10,
+                },
+                {
+                    "text": "Service",
+                    "quantity": "1",
+                    "unit_amount_cents": 500,
+                    "full_amount_cents": 500,
+                    "vat_rate_percent": 21,
+                },
+            ],
+            amount_cents=2500,
+        )
+        self.assertEqual(len(items), 2)
+        self.assertEqual(items[0]["system"]["category"]["rate"], "10.00")
+        self.assertEqual(items[1]["system"]["category"]["rate"], "21.00")
+        self.assertEqual(items[0]["full_amount"], "20.00")
+        fallback = fiskaly_items_from_line_items(None, amount_cents=1000)
+        self.assertEqual(len(fallback), 1)
+        self.assertEqual(fallback[0]["system"]["category"]["rate"], "21.00")
 
 
 if __name__ == "__main__":

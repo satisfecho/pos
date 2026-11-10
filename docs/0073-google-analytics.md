@@ -7,7 +7,7 @@ Satisfecho loads the standard Google tag (**gtag.js**) in the Angular shell (`fr
 | Location | Purpose |
 |----------|---------|
 | **`.secrets`** (gitignored) | Preferred for the real `GOOGLE_ANALYTICS_MEASUREMENT_ID=G-…` on laptops and amvara9 |
-| **`.secrets.example`** | Documented placeholder only — no real ID |
+| **`.secrets.example`** | Documented placeholder only - no real ID |
 | **`config.env`** | Also works if you set the same variable (also gitignored); prefer `.secrets` for tokens/IDs |
 
 `./run.sh` and **`scripts/deploy-amvara9.sh`** pass `--env-file .secrets` when the file exists (after `config.env`). Manual compose:

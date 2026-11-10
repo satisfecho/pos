@@ -49,7 +49,7 @@ WS_URL=ws://localhost:8021
 
 Comma-separated **exact** front-end origins (protocol + host + port) allowed to call the API with credentials. Auth cookies use `SameSite=Lax` + httponly; production still requires an allowlist so Starlette does not reflect arbitrary `Origin` values when `allow_credentials=True`.
 
-**Production (required allowlist — `*` refused at startup when `PRODUCTION=true`):**
+**Production (required allowlist - `*` refused at startup when `PRODUCTION=true`):**
 ```bash
 CORS_ORIGINS=https://satisfecho.de
 # or multiple:
@@ -66,7 +66,7 @@ CORS_ORIGINS=http://192.168.1.100:4202
 CORS_ORIGINS=http://localhost:4202,http://127.0.0.1:4202,http://localhost:4200,http://127.0.0.1:4200
 ```
 
-**Wildcard `*`:** Allowed only when **not** in production (e.g. `./run.sh` sets `CORS_ORIGINS=*` for phone/LAN testing). Do **not** use `*` on amvara9 / `docker-compose.prod.yml` — the backend refuses to boot. On amvara9, **`scripts/deploy-amvara9.sh`** rewrites empty/`*` `CORS_ORIGINS` to `https://satisfecho.de,https://www.satisfecho.de` (or **`PRODUCTION_CORS_ORIGINS`**) before migrate. Public QR menus served through the same HAProxy host are **same-origin** and do not need a wildcard.
+**Wildcard `*`:** Allowed only when **not** in production (e.g. `./run.sh` sets `CORS_ORIGINS=*` for phone/LAN testing). Do **not** use `*` on amvara9 / `docker-compose.prod.yml` - the backend refuses to boot. On amvara9, **`scripts/deploy-amvara9.sh`** rewrites empty/`*` `CORS_ORIGINS` to `https://satisfecho.de,https://www.satisfecho.de` (or **`PRODUCTION_CORS_ORIGINS`**) before migrate. Public QR menus served through the same HAProxy host are **same-origin** and do not need a wildcard.
 
 ### Example config.env snippets
 
@@ -139,10 +139,10 @@ Steps to get the latest **master** or **main** branch deployed on a server where
 
 3. **Keep your existing `config.env`**  
    Do not overwrite it with the example. Ensure it has production values for:
-   - `API_URL` – full URL to the API (e.g. `https://yourdomain.com/api` or `http://host:8020/api` if behind one port)
-   - `WS_URL` – WebSocket URL (e.g. `wss://yourdomain.com/ws` or `ws://host:8021/ws`)
-   - `CORS_ORIGINS` – exact origin(s) where the frontend is served (no `*`; e.g. `https://satisfecho.de`)
-   - `SECRET_KEY` and `REFRESH_SECRET_KEY` – strong random values in production
+   - `API_URL` - full URL to the API (e.g. `https://yourdomain.com/api` or `http://host:8020/api` if behind one port)
+   - `WS_URL` - WebSocket URL (e.g. `wss://yourdomain.com/ws` or `ws://host:8021/ws`)
+   - `CORS_ORIGINS` - exact origin(s) where the frontend is served (no `*`; e.g. `https://satisfecho.de`)
+   - `SECRET_KEY` and `REFRESH_SECRET_KEY` - strong random values in production
 
 4. **Rebuild and start (production mode)**  
    From the project root (`/development/pos`):
@@ -156,7 +156,7 @@ Steps to get the latest **master** or **main** branch deployed on a server where
    ```
 
 6. **(Optional) Seed demo tables**  
-   If you use tenant id 1 as the demo restaurant and need T01–T10:
+   If you use tenant id 1 as the demo restaurant and need T01-T10:
    ```bash
    docker compose --env-file config.env exec back python -m app.seeds.seed_demo_tables
    ```
@@ -197,7 +197,7 @@ That script starts in **production** mode (build + prod compose override) and ru
 | 4 | `docker compose --env-file config.env -f docker-compose.yml -f docker-compose.prod.yml up --build -d` |
 | 5 | `docker compose --env-file config.env exec back python -m app.migrate` |
 | 6 | (Optional) `docker compose --env-file config.env exec back python -m app.seeds.seed_demo_tables` |
-| 7 | (Optional) daily demo reset cron — see [0001-ci-cd-amvara9.md](0001-ci-cd-amvara9.md#daily-demo-data-reset-tenant-1); unpaid public delivery cleanup cron — see [0001 § Unpaid public…](0001-ci-cd-amvara9.md#unpaid-public-satisfecho-delivery-cleanup-all-tenants) |
+| 7 | (Optional) daily demo reset cron - see [0001-ci-cd-amvara9.md](0001-ci-cd-amvara9.md#daily-demo-data-reset-tenant-1); unpaid public delivery cleanup cron - see [0001 § Unpaid public…](0001-ci-cd-amvara9.md#unpaid-public-satisfecho-delivery-cleanup-all-tenants) |
 | 8 | Check logs and `/api/health` |
 
 ---

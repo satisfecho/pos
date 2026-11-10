@@ -6,9 +6,9 @@
 
 | Option | Summary | Decision |
 |--------|---------|----------|
-| **A** — WebApp Hardware Bridge | Browser → `ws://localhost:8443` → local bridge → printer | Deferred (good for staff-PC-only; no cloud queue) |
-| **B** — Browser extension + native host | Extension + Native Messaging | Rejected for MVP (extra install surface) |
-| **C** — Headless LAN agent | Staff UI → `POST /print-jobs` → cloud queue → agent poll → ESC/POS `:9100` | **Chosen default** |
+| **A** - WebApp Hardware Bridge | Browser → `ws://localhost:8443` → local bridge → printer | Deferred (good for staff-PC-only; no cloud queue) |
+| **B** - Browser extension + native host | Extension + Native Messaging | Rejected for MVP (extra install surface) |
+| **C** - Headless LAN agent | Staff UI → `POST /print-jobs` → cloud queue → agent poll → ESC/POS `:9100` | **Chosen default** |
 
 **Why C:** Backend already runs outside the restaurant WiFi (`docs/PRINTING.md`). Staff-triggered and automatic kitchen tickets share one authenticated queue. The agent only needs outbound HTTPS. Browser `window.print()` remains the fallback when no agent has heartbeated within 60s.
 
@@ -63,7 +63,7 @@ python3 scripts/print-agent/print_agent.py
 ```
 
 3. Confirm **online** in Settings → Printing (`last_seen` within ~60s).
-4. From Orders, print Factura / kitchen ticket — agent should claim the job without a browser print dialog.
+4. From Orders, print Factura / kitchen ticket - agent should claim the job without a browser print dialog.
 5. If agent is offline, UI falls back to `window.print()` and shows a bridge-offline warning.
 
 ### Troubleshooting

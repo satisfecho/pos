@@ -53,8 +53,8 @@ docker exec pos-haproxy kill -HUP 1
 
 The durable setup uses **the same path** `./certbot/haproxy-certs`, so if `satisfecho.de.pem` is already there, HAProxy will use it after deploy. If it was lost, check:
 
-- **Let's Encrypt** — `/etc/letsencrypt/live/satisfecho.de/` (fullchain.pem + privkey.pem); combine and write to `certbot/haproxy-certs/satisfecho.de.pem`.
-- **Old path** — `/development/pos/certbot/haproxy-certs/` (might still be there if not wiped).
+- **Let's Encrypt** - `/etc/letsencrypt/live/satisfecho.de/` (fullchain.pem + privkey.pem); combine and write to `certbot/haproxy-certs/satisfecho.de.pem`.
+- **Old path** - `/development/pos/certbot/haproxy-certs/` (might still be there if not wiped).
 
 ## Restoring or renewing the certificate
 
@@ -93,11 +93,11 @@ After placing at least one `.pem` in `certbot/haproxy-certs/`, reload or restart
 
 | Item | Purpose |
 |------|--------|
-| **Webroot** | `/development/pos/certbot/www` – for `certbot certonly --webroot -w ...` |
-| **Host path for PEM** | `/development/pos/certbot/haproxy-certs/` (e.g. satisfecho.de.pem) – not wiped by deploy |
-| **.gitignore** | `certbot/www/`, `certbot/haproxy-certs/*.pem` – certs never committed |
+| **Webroot** | `/development/pos/certbot/www` - for `certbot certonly --webroot -w ...` |
+| **Host path for PEM** | `/development/pos/certbot/haproxy-certs/` (e.g. satisfecho.de.pem) - not wiped by deploy |
+| **.gitignore** | `certbot/www/`, `certbot/haproxy-certs/*.pem` - certs never committed |
 | **Compose** | `./certbot/haproxy-certs` → `/etc/haproxy/certs:ro` in HAProxy |
-| **haproxy.prod.cfg** (prod/amvara9) | `bind *:443 ssl crt /etc/haproxy/certs` — local/dev uses `haproxy.cfg` (no HTTPS) |
+| **haproxy.prod.cfg** (prod/amvara9) | `bind *:443 ssl crt /etc/haproxy/certs` - local/dev uses `haproxy.cfg` (no HTTPS) |
 | **Deploy script** | `mkdir -p certbot/www certbot/haproxy-certs`; does not delete or overwrite certs |
 | **Reload** | `docker exec pos-haproxy kill -HUP 1` after updating the PEM (no downtime) |
 

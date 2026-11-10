@@ -2,7 +2,7 @@
 
 How we produce short Satisfecho promo clips: live browser click-around + **copyleft** background music + optional **Loom-style talking-head PiP**, letterboxed to 1080p.
 
-**Pattern (mac-stats):** The companion project [mac-stats](https://github.com/raro42/mac-stats/) ships `screens/mac-stats-features.mp4` — a live window capture with an ambient bed (see that repo’s `screens/README.md`). For this **web** app we use the same idea with **Puppeteer screencast** instead of ScreenCaptureKit. The social “product demo + corner face cam” layout matches common Loom / X-style clips (screen full-frame, circular head overlay, music bed — **no** mic narration required).
+**Pattern (mac-stats):** The companion project [mac-stats](https://github.com/raro42/mac-stats/) ships `screens/mac-stats-features.mp4` - a live window capture with an ambient bed (see that repo’s `screens/README.md`). For this **web** app we use the same idea with **Puppeteer screencast** instead of ScreenCaptureKit. The social “product demo + corner face cam” layout matches common Loom / X-style clips (screen full-frame, circular head overlay, music bed - **no** mic narration required).
 
 ## Working set (`tmp/promo/`, gitignored)
 
@@ -64,9 +64,9 @@ Goal: product screencast full-frame; **small circular face** bottom-right; **mus
 1. Open **QuickTime Player** → **File → New Movie Recording**.
 2. Click **▾** next to the record button:
    - Camera: built-in or Continuity Camera
-   - **Microphone: None** (preferred — we keep the music bed only). If you record with mic on, discard that track at mux time.
+   - **Microphone: None** (preferred - we keep the music bed only). If you record with mic on, discard that track at mux time.
 3. Frame head + shoulders; look at the lens; plain background helps.
-4. Record ~20–40s (shorter is fine — we **loop** it for the full promo length).
+4. Record ~20-40s (shorter is fine - we **loop** it for the full promo length).
 5. Save as `tmp/promo/talking-head.mov`.
 
 No spoken script is required when the bed is music-only. If you later want narration, record mic on and map that track instead of (or under) the bed.
@@ -116,7 +116,7 @@ ffmpeg -y \
   "$OUT"
 ```
 
-**Do not** feed an already-PiP’d `latest.mp4` back in as `BASE` — you will stack two faces. Keep a music-only master, or re-run `record-promo-video` and PiP once.
+**Do not** feed an already-PiP’d `latest.mp4` back in as `BASE` - you will stack two faces. Keep a music-only master, or re-run `record-promo-video` and PiP once.
 
 ### Optional tweaks
 
@@ -192,7 +192,7 @@ Still put the full attribution in the YouTube / OpenCloud description (see below
 
 **Requirement:** beds must be **copyleft** (e.g. **CC BY-SA**), not “mystery free MP3” or unverified example tracks.
 
-| Default bed | Homage — Kjartan Abel |
+| Default bed | Homage - Kjartan Abel |
 |-------------|------------------------|
 | License | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) |
 | Source | https://kjartan-abel.com/library/homage/ |
@@ -222,8 +222,8 @@ Licensed under CC BY-SA 4.0.
 Track: Homage
 Artist: Kjartan Abel
 Source: https://kjartan-abel.com/library/homage/
-License: CC BY-SA 4.0 — https://creativecommons.org/licenses/by-sa/4.0/
-Attribution: Homage by Kjartan Abel. https://kjartan-abel.com/library — CC BY-SA 4.0.
+License: CC BY-SA 4.0 - https://creativecommons.org/licenses/by-sa/4.0/
+Attribution: Homage by Kjartan Abel. https://kjartan-abel.com/library - CC BY-SA 4.0.
 ```
 
 ---

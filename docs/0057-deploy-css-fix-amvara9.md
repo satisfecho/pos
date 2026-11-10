@@ -54,8 +54,8 @@ That warning was **out of scope** for this fix. When ready, switch to Node 24 (e
 
 | Item | Status |
 |------|--------|
-| Front image not updated on deploy | **Shipped** — `deploy-amvara9.sh` builds front with `--no-cache` |
-| index.html cached too long | **Shipped** — `front/nginx.conf` no-cache headers on SPA document |
+| Front image not updated on deploy | **Shipped** - `deploy-amvara9.sh` builds front with `--no-cache` |
+| index.html cached too long | **Shipped** - `front/nginx.conf` no-cache headers on SPA document |
 | Node.js 20 deprecation | Unrelated; fix later when ready |
 
 Operators hitting wrong CSS after a deploy should first confirm the latest deploy ran `build --no-cache front` and that browsers are not holding an old `index.html`; see also [0001-ci-cd-amvara9.md](0001-ci-cd-amvara9.md) and [0004-deployment.md](0004-deployment.md).

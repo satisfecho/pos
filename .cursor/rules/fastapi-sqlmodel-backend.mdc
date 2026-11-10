@@ -4,9 +4,9 @@ globs: back/**
 alwaysApply: false
 ---
 
-# Backend – FastAPI, SQLModel, migrations
+# Backend - FastAPI, SQLModel, migrations
 
 - **Schema changes** go through versioned SQL under **`back/migrations/`** and the runner **`python -m app.migrate`** (see **`back/migrations/README.md`** and **`back/migrations/EXAMPLE_NEW_MIGRATION.md`**). Prefer timestamped filenames for new migrations. After adding SQL, run migrate in Docker and **`--check`** when the docs say to.
 - **Models:** Keep SQLModel / table definitions consistent with the DB; ensure new models are **imported** so metadata is registered wherever the app expects (follow existing `app/models.py` / `main.py` patterns).
 - **API contract:** Use explicit request/response types; preserve **tenant isolation** and auth checks consistent with neighboring routes. For behaviour rules, skim **`docs/`** and **`AGENTS.md`** for payments, reservations, and multi-tenant notes.
-- **Tests:** Run **`pytest`** inside the **`back`** container (see **`AGENTS.md`** / **`docs/testing.md`**) — e.g. `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back python3 -m pytest` with a path or `-q` as appropriate. Do not rely on unverified API behaviour.
+- **Tests:** Run **`pytest`** inside the **`back`** container (see **`AGENTS.md`** / **`docs/testing.md`**) - e.g. `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec back python3 -m pytest` with a path or `-q` as appropriate. Do not rely on unverified API behaviour.

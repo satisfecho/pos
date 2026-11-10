@@ -37,12 +37,12 @@ Restaurants often need to issue **tax invoices (Factura)** to B2B customers or a
 - **Model**: `BillingCustomer` (tenant-scoped): `name`, `company_name`, `tax_id`, `address`, `email`, `phone`, optional `birth_date` (date only).
 - **Order**: Optional `billing_customer_id`; `GET /orders` includes `billing_customer_id` and nested `billing_customer` when set.
 - **Endpoints**:
-  - `GET /billing-customers?search=...` — list (with optional search).
-  - `POST /billing-customers` — create.
-  - `GET /billing-customers/:id` — get one.
-  - `PUT /billing-customers/:id` — update.
-  - `DELETE /billing-customers/:id` — delete.
-  - `PUT /orders/:id/billing-customer` — set or clear `billing_customer_id` (body: `{ "billing_customer_id": number | null }`).
+  - `GET /billing-customers?search=...` - list (with optional search).
+  - `POST /billing-customers` - create.
+  - `GET /billing-customers/:id` - get one.
+  - `PUT /billing-customers/:id` - update.
+  - `DELETE /billing-customers/:id` - delete.
+  - `PUT /orders/:id/billing-customer` - set or clear `billing_customer_id` (body: `{ "billing_customer_id": number | null }`).
 - **Permissions**: `billing_customer:read`, `billing_customer:write` (see `back/app/permissions.py`).
 - **Migration**: `back/migrations/20260316140000_add_billing_customer.sql` (creates `billing_customer` table and `order.billing_customer_id`).
 

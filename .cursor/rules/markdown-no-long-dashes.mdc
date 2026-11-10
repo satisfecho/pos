@@ -1,0 +1,17 @@
+---
+description: No typographic long dashes in Markdown or Cursor rules
+alwaysApply: true
+---
+
+# Markdown: no long dashes
+
+In **`.md`** and **`.mdc`** files, do **not** use typographic long dashes:
+
+- Em dash (U+2014)
+- En dash (U+2013)
+- Figure dash (U+2012)
+- Unicode minus (U+2212)
+
+Use a plain ASCII hyphen `-`, or rephrase. Keep intentional ASCII `--` in shell/CLI examples and code fences. Do not change URLs or code identifiers.
+
+Archived task history under **`agents2/tasks/done/`** need not be rewritten unless you are already editing that file.

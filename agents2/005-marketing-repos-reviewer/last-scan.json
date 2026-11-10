@@ -46,7 +46,7 @@
     },
     "satisfecho/088_ricokebab": {
       "last_artifact": "rico-kebab-satisfecho-deploy",
-      "pushed_at": "2026-09-17T13:49:05Z"
+      "pushed_at": "2026-10-22T11:08:55Z"
     },
     "satisfecho/089_amigokebab": {
       "last_artifact": "amigo-kebab-satisfecho-deploy",
@@ -62,7 +62,7 @@
     },
     "satisfecho/092_kebabexpress": {
       "last_artifact": "kebab-express-satisfecho-deploy",
-      "pushed_at": "2026-09-21T14:45:38Z"
+      "pushed_at": "2026-10-22T11:08:24Z"
     },
     "satisfecho/092_kebabfactory": {
       "last_artifact": "kebab-factory-satisfecho-deploy",
@@ -70,7 +70,7 @@
     },
     "satisfecho/093_bar-jupiter": {
       "last_artifact": "bar-jupiter-satisfecho-deploy",
-      "pushed_at": "2026-09-17T02:22:44Z"
+      "pushed_at": "2026-10-22T11:08:26Z"
     }
   }
 }
