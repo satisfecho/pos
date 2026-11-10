@@ -18,7 +18,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Agent host gh auth / queue (#438, #439):** Restored working `gh` keyring auth on the agent host, documented the Agent host refresh path in `docs/agent-loop.md` and `config.env.example`, and re-posted waiting notices on #438 (prod 500 investigation; still blocked on amvara9 SSH) and #439 (crypto payment plan; awaiting product decisions). No product code.
 - **README Star History (#437):** Added a short note on why stars help the project keep moving, plus a single CTA to open GitHub issues; chart image/link unchanged.
 - **Docs (#436):** Removed typographic em/en dashes from live Markdown and Cursor rules; ASCII hyphen only. Standing rule: `.cursor/rules/markdown-no-long-dashes.mdc` (archived `agents2/tasks/done/` left as historical).
-- **ROADMAP / docs index:** Shipped surface now runs through **2026-10-22** (customer-facing counter display, newsletter, VeriFactu staff anulación / multi-rate IVA). `docs/README.md` indexes **0078** and **0079**; `docs/0032` notes newsletter MVP vs open #54 automation.
+- **ROADMAP / docs index:** Shipped surface now runs through **2026-10-22** (customer-facing counter display, newsletter, VeriFactu staff anulación / multi-rate IVA). `docs/README.md` indexes **0078** and **0079**; `docs/0032` notes newsletter MVP vs open #54 automation. Archived the verified agents2 docs task after PASS checks (Shipped date, theme coverage, CHANGELOG/CLOSED evidence).
 - **Marketing sites:** Refreshed Material Symbols font URLs on existing landings; Rico Kebab hero asset and bundle hash update.
 
 ### Fixed
