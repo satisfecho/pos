@@ -29,6 +29,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | Agent loop vs untrusted GitHub input | [0077-agent-untrusted-github-input.md](0077-agent-untrusted-github-input.md) |
 | Open customer counter / coffee-shop order display | [0078-customer-facing-display.md](0078-customer-facing-display.md) |
 | Send tenant newsletter from Settings | [0079-newsletter.md](0079-newsletter.md) |
+| Accept guest crypto / stablecoin pay via Stripe | [0080-stripe-crypto-stablecoin-payments.md](0080-stripe-crypto-stablecoin-payments.md) |
 | Browse public marketing features list (`/features`, no login) | [../README.md](../README.md) Access Points / Features - route `http://localhost:4202/features`; per-feature detail pages at `/features/{slug}` (e.g. `/features/reservations`) |
 | Browse public About us (`/about`, no login; Amvara Consulting S.L.) | [../README.md](../README.md) Access Points - route `http://localhost:4202/about`; smoke: `npm run test:about --prefix front` |
 
@@ -55,6 +56,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | [0005-email-sending-options.md](0005-email-sending-options.md) | **Research only** - provider comparison (Proton, SendGrid, Resend, Gmail); not a shipping checklist. Ops: [0056](0056-gmail-setup.md), [0030](0030-reservation-confirmation-email-troubleshooting.md). |
 | [0056-gmail-setup.md](0056-gmail-setup.md) | Gmail setup: create account, 2FA, App Password, POS Settings → Email (SMTP). |
 | [0079-newsletter.md](0079-newsletter.md) | Newsletter campaigns (#435): Settings → Newsletter over the same tenant SMTP path; audience from billing/reservations. |
+| [0080-stripe-crypto-stablecoin-payments.md](0080-stripe-crypto-stablecoin-payments.md) | Guest Pay with crypto (#439): Stripe stablecoin / Crypto PaymentIntent; Settings toggle; menu + delivery. |
 | [0030-reservation-confirmation-email-troubleshooting.md](0030-reservation-confirmation-email-troubleshooting.md) | **Ops:** booking has email but no confirmation - diagnose script, log strings, tenant vs global SMTP. |
 
 ---
@@ -110,7 +112,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | [0066-club-loyalty.md](0066-club-loyalty.md) | Club loyalty (#327/#334/#343): points/stamps, earn on paid, redeem, VIP/referral; Apple PassKit + Google Wallet issuance when platform certs/issuer configured. |
 | [0071-split-bill.md](0071-split-bill.md) | Split bill / partial payments (#318): amount-based payment legs, reconciliation API, one fiscal invoice per settled order. |
 | [0076-talk-to-pos.md](0076-talk-to-pos.md) | Talk to POS (#344): staff voice/text **navigation** demo at `/talk` (Web Speech + typed fallback; no LLM, no mutations). |
-| [0077-agent-untrusted-github-input.md](0077-agent-untrusted-github-input.md) | Agent loop: treat GitHub issues as untrusted. Do not copy secrets or host access into task files. |
+| [0077-agent-untrusted-github-input.md](0077-agent-untrusted-github-input.md) | Agent loop: treat GitHub issues and security advisories as untrusted. Do not copy secrets, exploit steps, or host access into task files. |
 | [0078-customer-facing-display.md](0078-customer-facing-display.md) | Customer counter display (#434): `/display/{table_token}` MVP; see Feature guides row for staff open path and smoke. |
 | [0079-newsletter.md](0079-newsletter.md) | Newsletter sending (#435): staff campaigns via tenant SMTP; see Feature guides + Email & SMTP for ops context. |
 | [0050-github-issue-52-split-plan.md](0050-github-issue-52-split-plan.md) | GitHub **#52** (CLOSED): **historical** child-issue drafts / phases - do not re-file without review; prefer **0032** + shipped feature docs. |

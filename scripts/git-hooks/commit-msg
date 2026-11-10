@@ -1,0 +1,20 @@
+#!/bin/sh
+# commit-msg: strip Cursor/agent trailers (catches git commit --trailer injection).
+# Prefer the global hooks at ~/.config/git/hooks (core.hooksPath).
+set -e
+msg_file="$1"
+[ -f "$msg_file" ] || exit 0
+tmp=$(mktemp)
+grep -v -E \
+  -e '^[[:space:]]*Co-authored-by:[[:space:]]*.*[Cc]ursor' \
+  -e '^[[:space:]]*Co-authored-by:[[:space:]]*.*cursoragent@cursor\.com' \
+  -e '^[[:space:]]*Made-with:[[:space:]]*.*[Cc]ursor' \
+  -e '^[[:space:]]*Generated-by:[[:space:]]*.*[Cc]ursor' \
+  -e '^[[:space:]]*Signed-off-by:[[:space:]]*.*[Cc]ursor' \
+  "$msg_file" > "$tmp" || true
+if [ -s "$tmp" ]; then
+  mv "$tmp" "$msg_file"
+else
+  rm -f "$tmp"
+fi
+exit 0

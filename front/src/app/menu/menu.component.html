@@ -970,6 +970,30 @@
           </button>
           }
 
+          @if (tenantStripeCryptoConfigured()) {
+          <button class="payment-option-btn" (click)="selectPayCrypto()" [disabled]="paymentRequestSending()">
+            <div class="payment-option-icon">
+              @if (paymentRequestSending()) {
+              <span class="spinner-small"></span>
+              } @else {
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M8 12h8M12 8v8" />
+              </svg>
+              }
+            </div>
+            <div class="payment-option-text">
+              <span class="payment-option-title">{{ paymentRequestSending() ? ('PAYMENTS.PROCESSING' | translate) : ('PAYMENTS.PAY_WITH_CRYPTO' | translate) }}</span>
+              <span class="payment-option-desc">{{ 'PAYMENTS.PAY_WITH_CRYPTO_DESC' | translate }}</span>
+            </div>
+            @if (!paymentRequestSending()) {
+            <svg class="payment-option-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9,18 15,12 9,6" />
+            </svg>
+            }
+          </button>
+          }
+
           <button class="payment-option-btn" (click)="selectPayCard()">
             <div class="payment-option-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">

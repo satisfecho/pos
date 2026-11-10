@@ -205,6 +205,142 @@ class TestPaymentSecurity(PgClientTestCase):
         self.assertEqual(body["client_secret"], "cs_test_body")
         self.assertEqual(body["payment_intent_id"], "pi_body_contract")
         self.assertEqual(body["amount"], 10000)
+        self.assertEqual(body["method"], "card")
+
+    def test_create_crypto_payment_intent_requires_toggle(self):
+        """method=crypto without stripe_crypto_enabled → 400 (#439)."""
+        response = self.client.post(
+            f"/menu/{self.table.token}/order",
+            json={
+                "items": [{"product_id": self.product.id, "quantity": 1}],
+                "notes": "Crypto off",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        order_id = response.json()["order_id"]
+
+        response = self.client.post(
+            f"/orders/{order_id}/create-payment-intent",
+            params={"table_token": self.table.token, "method": "crypto"},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("not enabled", response.json()["detail"].lower())
+
+    @patch("stripe.PaymentIntent.create")
+    def test_create_crypto_payment_intent_uses_crypto_pm_types(self, mock_create):
+        """method=crypto creates PaymentIntent with payment_method_types=crypto (#439)."""
+        self.tenant.stripe_crypto_enabled = True
+        self.tenant.stripe_publishable_key = "pk_test_crypto"
+        self.session.add(self.tenant)
+        self.session.commit()
+
+        response = self.client.post(
+            f"/menu/{self.table.token}/order",
+            json={
+                "items": [{"product_id": self.product.id, "quantity": 1}],
+                "notes": "Crypto on",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        order_id = response.json()["order_id"]
+
+        mock_intent = MagicMock()
+        mock_intent.client_secret = "cs_test_crypto"
+        mock_intent.id = "pi_crypto"
+        mock_create.return_value = mock_intent
+
+        response = self.client.post(
+            f"/orders/{order_id}/create-payment-intent",
+            params={"table_token": self.table.token, "method": "crypto"},
+        )
+        self.assertEqual(response.status_code, 200, response.text)
+        body = response.json()
+        self.assertEqual(body["method"], "crypto")
+        self.assertEqual(body["payment_intent_id"], "pi_crypto")
+        kwargs = mock_create.call_args.kwargs
+        self.assertEqual(kwargs.get("payment_method_types"), ["crypto"])
+        self.assertEqual(kwargs["metadata"].get("pay_kind"), "crypto")
+
+    @patch("stripe.PaymentIntent.retrieve")
+    def test_confirm_crypto_payment_sets_payment_method_crypto(self, mock_retrieve):
+        """Confirm with pay_kind=crypto marks order payment_method=crypto (#439)."""
+        response = self.client.post(
+            f"/menu/{self.table.token}/order",
+            json={
+                "items": [{"product_id": self.product.id, "quantity": 1}],
+                "notes": "Crypto confirm",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        order_id = response.json()["order_id"]
+
+        mock_intent = MagicMock()
+        mock_intent.status = "succeeded"
+        mock_intent.amount = 10000
+        mock_intent.id = "pi_crypto_ok"
+        mock_intent.metadata = _stripe_metadata(order_id=str(order_id), pay_kind="crypto")
+        mock_retrieve.return_value = mock_intent
+
+        response = self.client.post(
+            f"/orders/{order_id}/confirm-payment",
+            params={
+                "table_token": self.table.token,
+                "payment_intent_id": "pi_crypto_ok",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "paid")
+
+        order = self.session.get(models.Order, order_id)
+        self.session.refresh(order)
+        self.assertEqual(order.payment_method, "crypto")
+
+    def test_guest_order_rejects_negative_quantity(self):
+        """OrderItemCreate requires quantity >= 1 so totals cannot be shrunk (#440)."""
+        response = self.client.post(
+            f"/menu/{self.table.token}/order",
+            json={
+                "items": [
+                    {"product_id": self.product.id, "quantity": 1},
+                    {"product_id": self.product.id, "quantity": -1},
+                ],
+            },
+        )
+        self.assertEqual(response.status_code, 422)
+
+    def test_guest_order_rejects_zero_quantity(self):
+        response = self.client.post(
+            f"/menu/{self.table.token}/order",
+            json={
+                "items": [{"product_id": self.product.id, "quantity": 0}],
+            },
+        )
+        self.assertEqual(response.status_code, 422)
+
+    @patch("stripe.PaymentIntent.create")
+    def test_guest_payment_intent_amount_matches_server_quantity(self, mock_create):
+        """PaymentIntent amount must follow server-side line quantities (#440)."""
+        response = self.client.post(
+            f"/menu/{self.table.token}/order",
+            json={
+                "items": [{"product_id": self.product.id, "quantity": 2}],
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        order_id = response.json()["order_id"]
+
+        mock_intent = MagicMock()
+        mock_intent.client_secret = "cs_test_qty"
+        mock_intent.id = "pi_qty"
+        mock_create.return_value = mock_intent
+
+        response = self.client.post(
+            f"/orders/{order_id}/create-payment-intent",
+            params={"table_token": self.table.token},
+        )
+        self.assertEqual(response.status_code, 200, response.text)
+        kwargs = mock_create.call_args.kwargs
+        self.assertEqual(kwargs["amount"], 20000)
 
 
 if __name__ == "__main__":

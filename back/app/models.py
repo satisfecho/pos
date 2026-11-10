@@ -140,6 +140,8 @@ class Tenant(SQLModel, table=True):
     stripe_publishable_key: str | None = Field(
         default=None
     )  # Stripe publishable key for this tenant
+    # Guest Pay with crypto (Stripe stablecoin / Crypto payment method); requires Stripe keys + Dashboard enablement
+    stripe_crypto_enabled: bool = Field(default=False)
 
     revolut_merchant_secret: str | None = Field(
         default=None
@@ -1684,7 +1686,8 @@ class ShiftWeekCopy(SQLModel):
 
 class OrderItemCreate(SQLModel):
     product_id: int
-    quantity: int
+    # Guest/staff create + merge paths; reject zero/negative so payable totals cannot be shrunk (#440).
+    quantity: int = Field(ge=1)
     notes: str | None = None
     source: str | None = None  # "tenant_product" or "product" to distinguish between TenantProduct and legacy Product
     # Values: str | int | list[str] (multi-select choice), etc.
@@ -1882,6 +1885,7 @@ class TenantUpdate(SQLModel):
 
     stripe_secret_key: str | None = None
     stripe_publishable_key: str | None = None
+    stripe_crypto_enabled: bool | None = None
     revolut_merchant_secret: str | None = None
     # inventory_tracking_enabled: bool | None = None  # Commented out - migration not applied
 

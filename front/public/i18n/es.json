@@ -318,7 +318,8 @@
     "DELIVERY_FEE": "Gastos de envío",
     "SUBTOTAL": "Subtotal",
     "TRACK_ORDER": "Seguir tu pedido",
-    "FLOATING_BAR_ARIA": "Total del pedido y continuar"
+    "FLOATING_BAR_ARIA": "Total del pedido y continuar",
+    "PAY_CRYPTO": "Pagar con cripto"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Para llevar y pedido a domicilio",
@@ -2340,7 +2341,9 @@
     "NEWSLETTER_TEST_FAIL": "Falló el envío de prueba. Revise SMTP en Ajustes → Email.",
     "NEWSLETTER_QUEUED_OK": "Campaña en cola. Se envían unas 30 mensajes por minuto.",
     "NEWSLETTER_SEND_FAIL": "No se pudo encolar la campaña. Revise audiencia, consentimiento y SMTP.",
-    "NEWSLETTER_CANCEL_FAIL": "No se pudo cancelar la campaña."
+    "NEWSLETTER_CANCEL_FAIL": "No se pudo cancelar la campaña.",
+    "STRIPE_CRYPTO_ENABLED": "Aceptar cripto (stablecoins) vía Stripe",
+    "STRIPE_CRYPTO_ENABLED_HINT": "Muestra Pagar con cripto en el menú público y en el checkout de delivery. Activa Stablecoins and Crypto en el Dashboard de Stripe primero. Se liquida en tu saldo Stripe; los reembolsos vuelven como stablecoins al monedero del cliente."
   },
   "PAYMENTS": {
     "PAYMENT": "Pago",
@@ -2374,7 +2377,12 @@
     "WAITER_ON_WAY": "¡El camarero viene en camino!",
     "WAITER_ON_WAY_DESC": "Un miembro del personal estará contigo en breve.",
     "PAYMENT_REQUESTED": "¡Pago solicitado!",
-    "PAYMENT_REQUESTED_DESC": "Un camarero vendrá a tu mesa para procesar el pago."
+    "PAYMENT_REQUESTED_DESC": "Un camarero vendrá a tu mesa para procesar el pago.",
+    "PAY_WITH_CRYPTO": "Pagar con cripto",
+    "PAY_WITH_CRYPTO_DESC": "Paga con stablecoins vía Stripe (USDC y monederos compatibles)",
+    "CRYPTO_NOT_CONFIGURED": "Los pagos con cripto no están configurados. Pide ayuda al personal.",
+    "CRYPTO_START_FAILED": "No se pudo iniciar el pago con cripto.",
+    "CRYPTO_CONFIRM_FAILED": "No se pudo confirmar el pago con cripto. Pide ayuda al personal."
   },
   "ERRORS": {
     "GENERIC": "Algo salió mal. Por favor, inténtalo de nuevo.",

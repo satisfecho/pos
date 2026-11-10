@@ -318,7 +318,8 @@
     "DELIVERY_FEE": "Delivery fee",
     "SUBTOTAL": "Subtotal",
     "TRACK_ORDER": "Track your order",
-    "FLOATING_BAR_ARIA": "Обща сума и продължи"
+    "FLOATING_BAR_ARIA": "Обща сума и продължи",
+    "PAY_CRYPTO": "Плащане с крипто"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Отнемане и поръчване на дома",
@@ -2340,7 +2341,9 @@
     "NEWSLETTER_TEST_FAIL": "Тестовото изпращане не успя. Проверете SMTP в Настройки → Имейл.",
     "NEWSLETTER_QUEUED_OK": "Кампанията е в опашката. Около 30 съобщения в минута.",
     "NEWSLETTER_SEND_FAIL": "Кампанията не може да се добави в опашката. Проверете аудитория, съгласие и SMTP.",
-    "NEWSLETTER_CANCEL_FAIL": "Кампанията не може да бъде отменена."
+    "NEWSLETTER_CANCEL_FAIL": "Кампанията не може да бъде отменена.",
+    "STRIPE_CRYPTO_ENABLED": "Приемане на крипто (стейбълкойни) чрез Stripe",
+    "STRIPE_CRYPTO_ENABLED_HINT": "Показва Плащане с крипто в публичното меню и delivery checkout. Първо активирайте Stablecoins and Crypto в Stripe Dashboard. Средствата влизат в Stripe баланса; възстановяванията връщат стейбълкойни към портфейла на госта."
   },
   "PAYMENTS": {
     "PAYMENT": "Плащане:",
@@ -2374,7 +2377,12 @@
     "WAITER_ON_WAY": "Сервитьорът е на път!",
     "WAITER_ON_WAY_DESC": "Скоро ще ви обслужи член на персонала.",
     "PAYMENT_REQUESTED": "Заявено плащане!",
-    "PAYMENT_REQUESTED_DESC": "Сервитьор ще дойде на масата за плащане."
+    "PAYMENT_REQUESTED_DESC": "Сервитьор ще дойде на масата за плащане.",
+    "PAY_WITH_CRYPTO": "Плащане с крипто",
+    "PAY_WITH_CRYPTO_DESC": "Плащане със стейбълкойни чрез Stripe (USDC и поддържани портфейли)",
+    "CRYPTO_NOT_CONFIGURED": "Крипто плащанията не са конфигурирани. Попитайте персонала.",
+    "CRYPTO_START_FAILED": "Неуспешен старт на крипто плащане.",
+    "CRYPTO_CONFIRM_FAILED": "Крипто плащането не можа да бъде потвърдено. Попитайте персонала."
   },
   "ERRORS": {
     "GENERIC": "Something went wrong. Please try again.",

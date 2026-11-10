@@ -301,7 +301,17 @@
               {{ 'DELIVERY_CHECKOUT.PAY_REVOLUT' | translate }}
             </button>
           }
-          @if (!stripeReady() && !revolutConfigured()) {
+          @if (stripeCryptoConfigured()) {
+            <button
+              type="button"
+              class="btn btn-secondary"
+              [disabled]="processingPayment()"
+              (click)="payWithCrypto()"
+            >
+              {{ 'DELIVERY_CHECKOUT.PAY_CRYPTO' | translate }}
+            </button>
+          }
+          @if (!stripeReady() && !revolutConfigured() && !stripeCryptoConfigured()) {
             <p class="form-error">{{ 'DELIVERY_CHECKOUT.PAY_NOT_CONFIGURED' | translate }}</p>
           }
         </div>

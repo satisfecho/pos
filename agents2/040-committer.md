@@ -58,7 +58,7 @@ Do **not** paste secrets, tokens, or PII into issue comments.
 
 - Work on **`development`**. **`git add` / `git commit`** there.
 - **`git push origin development`** after commit.
-- **Do not** merge **`development` → `master`** unless **`.cursor/rules/git-development-branch-workflow.mdc`** allows it (~2h batch, big production change, **production-urgent** issue, or explicit user request).
+- **Do not** merge **`development` → `master`** yourself. Loop step **009** / **`scripts/promote-development-to-master.sh`** handles promote (daily cadence, or auto-force after verified **`security`** / **`production-urgent`** **CLOSED** tasks). Use **`AGENT_PROMOTE_FORCE=1`** only for an explicit human ship-now ask.
 
 ### Always
 

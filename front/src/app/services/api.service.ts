@@ -1686,6 +1686,7 @@ export interface PublicSatisfechoDeliveryOrderResponse {
   public_order_token: string;
   stripe_publishable_key?: string | null;
   revolut_configured: boolean;
+  stripe_crypto_configured?: boolean;
   created_at?: string | null;
 }
 
@@ -1737,6 +1738,7 @@ export interface MenuResponse {
   tenant_currency_code?: string | null;
   tenant_stripe_publishable_key?: string | null;
   tenant_revolut_configured?: boolean;
+  tenant_stripe_crypto_configured?: boolean;
   tenant_immediate_payment_required?: boolean;
   tenant_public_background_color?: string | null;
   tenant_public_primary_color?: string | null;
@@ -1810,6 +1812,8 @@ export interface TenantSettings {
   country_code?: string | null;
   stripe_secret_key?: string | null;
   stripe_publishable_key?: string | null;
+  /** When true, guest menu/delivery may offer Stripe stablecoin (crypto) pay (#439). */
+  stripe_crypto_enabled?: boolean;
   revolut_merchant_secret?: string | null;
   logo_size_bytes?: number | null;
   logo_size_formatted?: string | null;
@@ -3469,12 +3473,16 @@ export class ApiService {
     orderId: number,
     tableToken: string | null,
     publicOrderToken?: string | null,
+    method?: 'card' | 'crypto' | null,
   ): Observable<any> {
     const params = new URLSearchParams();
     if (publicOrderToken) {
       params.set('public_order_token', publicOrderToken);
     } else if (tableToken) {
       params.set('table_token', tableToken);
+    }
+    if (method === 'crypto') {
+      params.set('method', 'crypto');
     }
     return this.http.post(`${this.apiUrl}/orders/${orderId}/create-payment-intent?${params.toString()}`, {});
   }

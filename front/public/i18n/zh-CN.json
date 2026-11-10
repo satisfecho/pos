@@ -428,7 +428,8 @@
     "INVALID_TENANT": "餐厅链接无效。",
     "TENANT_NOT_FOUND": "未找到该餐厅。",
     "LOAD_FAILED": "无法加载配送菜单，请稍后再试。",
-    "FLOATING_BAR_ARIA": "订单合计并继续"
+    "FLOATING_BAR_ARIA": "订单合计并继续",
+    "PAY_CRYPTO": "加密货币支付"
   },
   "DELIVERY_TRACK": {
     "TITLE": "Track your order",
@@ -2477,7 +2478,9 @@
     "NEWSLETTER_TEST_FAIL": "测试发送失败。请在 设置 → 邮件 中检查 SMTP。",
     "NEWSLETTER_QUEUED_OK": "活动已排队。约每分钟发送 30 封。",
     "NEWSLETTER_SEND_FAIL": "无法排队活动。请检查受众、同意与 SMTP。",
-    "NEWSLETTER_CANCEL_FAIL": "无法取消活动。"
+    "NEWSLETTER_CANCEL_FAIL": "无法取消活动。",
+    "STRIPE_CRYPTO_ENABLED": "通过 Stripe 接受加密货币（稳定币）",
+    "STRIPE_CRYPTO_ENABLED_HINT": "在公开菜单和外卖结账中显示加密货币支付。请先在 Stripe 控制台启用 Stablecoins and Crypto。结算到您的 Stripe 余额；退款以稳定币退回客人钱包。"
   },
   "PAYMENTS": {
     "PAYMENT": "支付",
@@ -2511,7 +2514,12 @@
     "WAITER_ON_WAY": "服务员正在赶来！",
     "WAITER_ON_WAY_DESC": "工作人员很快就会到您身边。",
     "PAYMENT_REQUESTED": "已请求付款！",
-    "PAYMENT_REQUESTED_DESC": "服务员将到您的餐桌处理付款。"
+    "PAYMENT_REQUESTED_DESC": "服务员将到您的餐桌处理付款。",
+    "PAY_WITH_CRYPTO": "加密货币支付",
+    "PAY_WITH_CRYPTO_DESC": "通过 Stripe 使用稳定币支付（USDC 及支持的钱包）",
+    "CRYPTO_NOT_CONFIGURED": "未配置加密货币支付。请向工作人员求助。",
+    "CRYPTO_START_FAILED": "无法开始加密货币支付。",
+    "CRYPTO_CONFIRM_FAILED": "无法确认加密货币支付。请向工作人员求助。"
   },
   "ERRORS": {
     "GENERIC": "出错了，请重试。",

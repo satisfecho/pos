@@ -318,7 +318,8 @@
     "DELIVERY_FEE": "Liefergebühr",
     "SUBTOTAL": "Zwischensumme",
     "TRACK_ORDER": "Bestellung verfolgen",
-    "FLOATING_BAR_ARIA": "Bestellsumme und weiter"
+    "FLOATING_BAR_ARIA": "Bestellsumme und weiter",
+    "PAY_CRYPTO": "Mit Krypto zahlen"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Mitnahme & Lieferservice",
@@ -2306,7 +2307,9 @@
     "NEWSLETTER_TEST_FAIL": "Testversand fehlgeschlagen. SMTP unter Einstellungen → E-Mail prüfen.",
     "NEWSLETTER_QUEUED_OK": "Kampagne eingereiht. Versand mit ca. 30 Nachrichten pro Minute.",
     "NEWSLETTER_SEND_FAIL": "Kampagne konnte nicht eingereiht werden. Empfänger, Einwilligung und SMTP prüfen.",
-    "NEWSLETTER_CANCEL_FAIL": "Kampagne konnte nicht abgebrochen werden."
+    "NEWSLETTER_CANCEL_FAIL": "Kampagne konnte nicht abgebrochen werden.",
+    "STRIPE_CRYPTO_ENABLED": "Krypto (Stablecoins) über Stripe akzeptieren",
+    "STRIPE_CRYPTO_ENABLED_HINT": "Zeigt Mit Krypto zahlen im öffentlichen Menü und Delivery-Checkout. Aktivieren Sie zuerst Stablecoins and Crypto im Stripe-Dashboard. Auszahlung auf Ihr Stripe-Guthaben; Rückerstattungen gehen als Stablecoins an das Gast-Wallet."
   },
   "PAYMENTS": {
     "PAYMENT": "Zahlung",
@@ -2340,7 +2343,12 @@
     "WAITER_ON_WAY": "Der Kellner ist unterwegs!",
     "WAITER_ON_WAY_DESC": "Ein Mitarbeiter wird gleich bei Ihnen sein.",
     "PAYMENT_REQUESTED": "Zahlung angefordert!",
-    "PAYMENT_REQUESTED_DESC": "Ein Kellner wird an Ihren Tisch kommen, um die Zahlung abzuwickeln."
+    "PAYMENT_REQUESTED_DESC": "Ein Kellner wird an Ihren Tisch kommen, um die Zahlung abzuwickeln.",
+    "PAY_WITH_CRYPTO": "Mit Krypto zahlen",
+    "PAY_WITH_CRYPTO_DESC": "Mit Stablecoins über Stripe zahlen (USDC und unterstützte Wallets)",
+    "CRYPTO_NOT_CONFIGURED": "Krypto-Zahlungen sind nicht konfiguriert. Bitte fragen Sie das Personal.",
+    "CRYPTO_START_FAILED": "Krypto-Zahlung konnte nicht gestartet werden.",
+    "CRYPTO_CONFIRM_FAILED": "Krypto-Zahlung konnte nicht bestätigt werden. Bitte fragen Sie das Personal."
   },
   "ERRORS": {
     "GENERIC": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.",

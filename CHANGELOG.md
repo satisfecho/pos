@@ -10,19 +10,44 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [2.1.188] - 2026-11-10
+
+### Added
+
+- **Agent loop (001):** Preflight also watches repository **security advisories** (`triage` / `draft` / `published`). Untracked GHSA ids wake **001**, which opens a tracking issue (`security-advisory: GHSA-…`) and queues **`FEAT-`**. Docs: `docs/agent-loop.md`, `agents2/001-gh-reviewer.md`.
+- **Agent loop (009):** After a verified **`CLOSED-#N`** task, promote auto-forces **`development` → `master`** when pending commits reference issue **#N** labeled **`security`** or **`production-urgent`** (no 24h wait). Disable with **`AGENT_PROMOTE_SECURITY_FORCE=0`**.
+
+### Changed
+
+- **Pay with crypto (#439):** Archived the verified agents2 task after PASS retest (Settings toggle plus menu/delivery Pay with crypto confirmed on the rebuilt front).
+
+### Fixed
+
+- **Guest order quantity (#440):** Reject zero and negative line quantities on guest/staff create and merge so payable totals cannot be shrunk; payment intents keep using server-side quantities. Docs: `docs/SECURITY-REVIEW.md`.
+
+## [2.1.187] - 2026-11-10
+
+### Added
+
+- **Guest Pay with crypto / stablecoins via Stripe (#439):** Tenant Settings toggle; public menu and Satisfecho Delivery offer Stripe Crypto (`method=crypto` PaymentIntent); confirm marks `payment_method=crypto`. Docs: `docs/0080-stripe-crypto-stablecoin-payments.md`.
 - **Agent loop watchdog (reboot-safe):** systemd unit **`pos-cursor-loop.service`** (`Restart=always`, enable on boot) via **`scripts/install-pos-cursor-loop-systemd.sh`**, plus a 5-minute cron **`scripts/watchdog-pos-cursor-loop.sh`** that restarts the loop if it stops. Docs: `docs/agent-loop.md`.
 - **Marketing landings:** Published tenant sites for Bar Jupiter, Kebab Express, and Kebab Factory under `front/sites/`.
 
 ### Changed
 
-- **Agent queue (#438, #439):** Parked FEAT tasks for production 500 investigation (blocked on amvara9/GitHub access) and a crypto-payment adaptation plan awaiting product decisions; no product code yet. Queued a host ops task to restore working `gh` auth so parked FEATs can receive waiting notices.
+- **Agent host gh auth / queue (#438, #439):** Restored working `gh` keyring auth on the agent host, documented the Agent host refresh path in `docs/agent-loop.md` and `config.env.example`, and cleared waiting notices after human replies (prod access restored; crypto MVP decisions recorded).
 - **README Star History (#437):** Added a short note on why stars help the project keep moving, plus a single CTA to open GitHub issues; chart image/link unchanged.
 - **Docs (#436):** Removed typographic em/en dashes from live Markdown and Cursor rules; ASCII hyphen only. Standing rule: `.cursor/rules/markdown-no-long-dashes.mdc` (archived `agents2/tasks/done/` left as historical).
-- **ROADMAP / docs index:** Shipped surface now runs through **2026-10-22** (customer-facing counter display, newsletter, VeriFactu staff anulación / multi-rate IVA). `docs/README.md` indexes **0078** and **0079**; `docs/0032` notes newsletter MVP vs open #54 automation.
+- **ROADMAP / docs index:** Shipped surface now runs through **2026-10-22** (customer-facing counter display, newsletter, VeriFactu staff anulación / multi-rate IVA). `docs/README.md` indexes **0078**, **0079**, and **0080**; `docs/0032` notes newsletter MVP vs open #54 automation. Archived the verified agents2 docs task after PASS checks (Shipped date, theme coverage, CHANGELOG/CLOSED evidence).
 - **Marketing sites:** Refreshed Material Symbols font URLs on existing landings; Rico Kebab hero asset and bundle hash update.
 
 ### Fixed
 
+- **Delete floor 500 (#438):** Unlink tables (`floor_id=null`) before deleting a floor; repair `table_floor_id_fkey` to `ON DELETE SET NULL` so Postgres matches the API docs.
 
 ## [2.1.186] - 2026-10-22
 
