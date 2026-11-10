@@ -1060,7 +1060,14 @@
     "SPLIT_LINE_TOTAL": "Общо за избраните редове",
     "CUSTOMER_DISPLAY": "Клиентски дисплей",
     "CUSTOMER_DISPLAY_HINT": "Отворете клиентското резюме на поръчката на втори екран",
-    "CUSTOMER_DISPLAY_NO_TABLE": "Тази поръчка няма връзка към маса за клиентски дисплей"
+    "CUSTOMER_DISPLAY_NO_TABLE": "Тази поръчка няма връзка към маса за клиентски дисплей",
+    "SPLIT_BY_GUEST_SESSION": "Pay by guest session",
+    "SPLIT_BY_GUEST_SESSION_HINT": "Select a guest browser session to pay all of their still-unpaid items.",
+    "PAY_GUEST_SESSION": "Pay this guest",
+    "GUEST_SESSION_LABEL": "Guest {{shortId}}",
+    "GUEST_SESSION_UNKNOWN": "Unassigned items",
+    "ISSUE_PAYER_FACTURA": "Issue Factura for payer",
+    "PAYER_FACTURA_ISSUED": "Payer Factura issued."
   },
   "CUSTOMERS": {
     "TITLE": "Клиенти (фактура)",
@@ -2390,7 +2397,10 @@
     "PAY_WITH_CRYPTO_DESC": "Плащане със стейбълкойни чрез Stripe (USDC и поддържани портфейли)",
     "CRYPTO_NOT_CONFIGURED": "Крипто плащанията не са конфигурирани. Попитайте персонала.",
     "CRYPTO_START_FAILED": "Неуспешен старт на крипто плащане.",
-    "CRYPTO_CONFIRM_FAILED": "Крипто плащането не можа да бъде потвърдено. Попитайте персонала."
+    "CRYPTO_CONFIRM_FAILED": "Крипто плащането не можа да бъде потвърдено. Попитайте персонала.",
+    "PAY_MY_ITEMS": "Pay my items",
+    "PAY_MY_ITEMS_DESC": "Pay only the dishes you ordered — others can pay their own share",
+    "PARTIAL_PAYMENT_SUCCESS": "Your share is paid. Remaining balance stays on the table."
   },
   "ERRORS": {
     "GENERIC": "Something went wrong. Please try again.",
@@ -2884,7 +2894,11 @@
     "FEAT_OPEN_SOURCE_TITLE": "Отворен код",
     "FEAT_OPEN_SOURCE_DESC": "Самостоятелен хостинг или облак — преглеждайте, разширявайте и избягвайте заключване към доставчик.",
     "FEAT_TSE_TITLE": "Германски TSE (подготовка за KassenSichV)",
-    "FEAT_TSE_DESC": "Опционален tse_mode на наемател (test/live) с подписани заглушки на транзакции, TSE полета на бележки и заглушка за DSFinV-K експорт по дата. Живият режим използва облачен TSE доставчик (Fiskaly SIGN DE), когато е отключен — не се рекламира като сертифициран от BSI, докато продукционните данни не са проверени."
+    "FEAT_TSE_DESC": "Опционален tse_mode на наемател (test/live) с подписани заглушки на транзакции, TSE полета на бележки и заглушка за DSFinV-K експорт по дата. Живият режим използва облачен TSE доставчик (Fiskaly SIGN DE), когато е отключен — не се рекламира като сертифициран от BSI, докато продукционните данни не са проверени.",
+    "FEAT_SPLIT_BILL_TITLE": "Split bill",
+    "FEAT_SPLIT_BILL_DESC": "Split one check by amount, by line, or by guest session — partial payments until the table is settled.",
+    "FEAT_JOIN_TABLES_TITLE": "Join tables",
+    "FEAT_JOIN_TABLES_DESC": "Merge neighboring tables into one party on the floor canvas — shared covers and one bill path."
   },
   "PRICING_PAGE": {
     "BADGE": "Прости hosted цени",
@@ -3420,6 +3434,26 @@
         "HOW_1": "Клонирайте хранилището и следвайте настройката в README.",
         "HOW_2": "Стартирайте с Docker Compose на вашата инфраструктура.",
         "HOW_3": "Или се регистрирайте за хостван Satisfecho с управлявани актуализации."
+      },
+      "split-bill": {
+        "HERO_TITLE": "Split bill",
+        "HERO_SUBTITLE": "Let each guest pay their share — by amount, by line, or by guest session — with a clear remaining balance until the check is settled.",
+        "BENEFIT_1": "Record cash, card terminal, or online legs against one order without confusing the kitchen ticket.",
+        "BENEFIT_2": "Pay selected dishes or a guest session in one tap so large parties leave faster.",
+        "BENEFIT_3": "One fiscal Factura when the order is fully paid (optional per-payer Factura when enabled).",
+        "HOW_1": "Open the order and choose Mark as paid / Finish.",
+        "HOW_2": "Enter a partial amount, select lines, or pick a guest session, then record the payment.",
+        "HOW_3": "Repeat until remaining is zero — the order marks paid and loyalty earns once."
+      },
+      "join-tables": {
+        "HERO_TITLE": "Join tables",
+        "HERO_SUBTITLE": "Combine tables into one party on the floor canvas so hosts seat large groups and staff share one bill path.",
+        "BENEFIT_1": "Drag-overlap or multi-select tables on the same floor, then join them.",
+        "BENEFIT_2": "Joined parties show a group label on orders so waiters see the merged table.",
+        "BENEFIT_3": "Split the bill on the joined order without unjoining first.",
+        "HOW_1": "Open Tables → canvas and select the tables to merge.",
+        "HOW_2": "Join tables (drag-overlap or Ctrl/⌘+click then Join).",
+        "HOW_3": "Seat the party and take orders as usual; unjoin when the group leaves."
       }
     }
   },

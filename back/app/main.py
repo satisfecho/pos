@@ -77,7 +77,9 @@ from .fiscal_invoice_service import (
     cancel_fiscal_invoice,
     fiscal_invoice_public_dict,
     get_fiscal_alta,
+    get_fiscal_alta_for_payment,
     issue_or_get_fiscal_invoice,
+    issue_or_get_fiscal_invoice_for_payment,
 )
 from .tse_service import (
     assert_tse_mode_allowed,
@@ -14839,6 +14841,7 @@ def list_orders(
         row_out["amount_paid_cents"] = recon["amount_paid_cents"]
         row_out["amount_remaining_cents"] = recon["amount_remaining_cents"]
         row_out["payments"] = recon["payments"]
+        row_out["guest_sessions"] = recon.get("guest_sessions") or []
         if tg_label:
             row_out["table_group_label"] = tg_label
         ff = hub_by_order.get(order.id) if order.id is not None else None
@@ -15070,6 +15073,7 @@ def post_order_payment(
         tip_amount_cents=body.tip_amount_cents,
         note=body.note,
         order_item_ids=body.order_item_ids,
+        guest_session_id=body.guest_session_id,
         settle_if_covered=True,
     )
 
@@ -15422,6 +15426,69 @@ def issue_order_fiscal_invoice(
     fi = issue_or_get_fiscal_invoice(session, tenant, order)
     session.commit()
     session.refresh(fi)
+    return fiscal_invoice_public_dict(fi)
+
+
+@app.post("/orders/{order_id}/payments/{payment_id}/fiscal-invoice/issue")
+def issue_payment_fiscal_invoice(
+    order_id: int,
+    payment_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.ORDER_READ))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Issue or return a per-payer fiscal alta for one payment leg (#443 F)."""
+    tenant = session.exec(
+        select(models.Tenant).where(models.Tenant.id == current_user.tenant_id)
+    ).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    order = session.exec(
+        select(models.Order).where(
+            models.Order.id == order_id,
+            models.Order.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not order or order.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    payment = session.get(models.OrderPayment, payment_id)
+    if (
+        not payment
+        or payment.order_id != order.id
+        or payment.tenant_id != current_user.tenant_id
+    ):
+        raise HTTPException(status_code=404, detail="Payment not found")
+    fi = issue_or_get_fiscal_invoice_for_payment(session, tenant, order, payment)
+    session.commit()
+    session.refresh(fi)
+    return fiscal_invoice_public_dict(fi)
+
+
+@app.get("/orders/{order_id}/payments/{payment_id}/fiscal-invoice")
+def get_payment_fiscal_invoice(
+    order_id: int,
+    payment_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.ORDER_READ))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Read per-payer fiscal alta if present (#443 F)."""
+    order = session.exec(
+        select(models.Order).where(
+            models.Order.id == order_id,
+            models.Order.tenant_id == current_user.tenant_id,
+        )
+    ).first()
+    if not order or order.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    payment = session.get(models.OrderPayment, payment_id)
+    if (
+        not payment
+        or payment.order_id != order.id
+        or payment.tenant_id != current_user.tenant_id
+    ):
+        raise HTTPException(status_code=404, detail="Payment not found")
+    fi = get_fiscal_alta_for_payment(session, current_user.tenant_id, payment_id)
+    if not fi:
+        raise HTTPException(status_code=404, detail="Fiscal invoice not found")
     return fiscal_invoice_public_dict(fi)
 
 
@@ -16583,11 +16650,13 @@ def create_payment_intent(
     table_token: str | None = None,
     public_order_token: str | None = None,
     method: str | None = None,
+    body: models.GuestPaymentIntentCreate | None = None,
     session: Session = Depends(get_session),
 ) -> JSONResponse:
     """Create a Stripe PaymentIntent for an order (table guest or public delivery).
 
     Pass ``method=crypto`` for Stripe stablecoin / Crypto payment method (#439).
+    Optional body may request a **partial** intent by amount, lines, or guest session (#443 E).
     """
     order, table, display_name = _resolve_guest_payment_order(
         session,
@@ -16596,11 +16665,58 @@ def create_payment_intent(
         public_order_token=public_order_token,
     )
 
-    # Calculate total from order items (+ delivery fee for Satisfecho Delivery)
-    total_cents = _guest_order_payable_total_cents(session, order)
+    if order.paid_at or order.status == models.OrderStatus.paid:
+        raise HTTPException(status_code=400, detail="Order is already paid")
 
-    if total_cents <= 0:
-        raise HTTPException(status_code=400, detail="Order has no items")
+    recon = order_pay_svc.reconciliation_dict(session, order)
+    remaining = int(recon.get("amount_remaining_cents") or 0)
+    if remaining <= 0:
+        # Fall back to legacy full-order total when no legs exist yet.
+        remaining = _guest_order_payable_total_cents(session, order)
+    if remaining <= 0:
+        raise HTTPException(status_code=400, detail="Order has no remaining balance")
+
+    payload = body or models.GuestPaymentIntentCreate()
+    charge_cents = remaining
+    line_ids: list[int] | None = None
+    guest_sid = (payload.guest_session_id or "").strip() or None
+    split_meta = "0"
+
+    if guest_sid or (payload.order_item_ids and len(payload.order_item_ids) > 0):
+        if guest_sid and payload.order_item_ids:
+            raise HTTPException(
+                status_code=400,
+                detail="Provide either guest_session_id or order_item_ids, not both",
+            )
+        if guest_sid:
+            line_ids = order_pay_svc.resolve_guest_session_item_ids(
+                session, order=order, guest_session_id=guest_sid
+            )
+        else:
+            line_ids = [int(x) for x in (payload.order_item_ids or [])]
+        charge_cents, _items = order_pay_svc.resolve_line_payment_amount(
+            session, order=order, order_item_ids=line_ids
+        )
+        split_meta = "1"
+        if payload.amount_cents is not None and int(payload.amount_cents) != charge_cents:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"amount_cents {int(payload.amount_cents)} does not match "
+                    f"selected lines total {charge_cents}"
+                ),
+            )
+    elif payload.amount_cents is not None:
+        charge_cents = int(payload.amount_cents)
+        if charge_cents < 1:
+            raise HTTPException(status_code=400, detail="amount_cents must be at least 1")
+        if charge_cents > remaining:
+            raise HTTPException(
+                status_code=400,
+                detail=f"amount_cents {charge_cents} exceeds remaining {remaining}",
+            )
+        if charge_cents < remaining:
+            split_meta = "1"
 
     # Get tenant for description, currency, and Stripe keys
     tenant = session.exec(
@@ -16642,7 +16758,13 @@ def create_payment_intent(
         metadata = {
             "order_id": str(order.id),
             "tenant_id": str(order.tenant_id),
+            "split_pay": split_meta,
+            "charge_cents": str(charge_cents),
         }
+        if guest_sid:
+            metadata["guest_session_id"] = guest_sid[:128]
+        if line_ids:
+            metadata["order_item_ids"] = ",".join(str(i) for i in line_ids)[:500]
         if is_crypto:
             metadata["pay_kind"] = "crypto"
         if table is not None:
@@ -16650,7 +16772,7 @@ def create_payment_intent(
         else:
             metadata["order_channel"] = models.OrderChannel.satisfecho_delivery.value
         create_kwargs: dict[str, Any] = {
-            "amount": total_cents,
+            "amount": charge_cents,
             "currency": stripe_currency,
             "api_key": stripe_secret_key,
             "metadata": metadata,
@@ -16665,7 +16787,9 @@ def create_payment_intent(
             content={
                 "client_secret": intent.client_secret,
                 "payment_intent_id": intent.id,
-                "amount": total_cents,
+                "amount": charge_cents,
+                "amount_remaining_cents": remaining,
+                "split_pay": split_meta == "1",
                 "method": "crypto" if is_crypto else "card",
             }
         )
@@ -16687,7 +16811,10 @@ def confirm_payment(
     public_order_token: str | None = None,
     session: Session = Depends(get_session),
 ) -> JSONResponse:
-    """Mark order as paid after successful Stripe payment."""
+    """Record a Stripe PaymentIntent as a payment leg; mark paid when balance is covered.
+
+    Supports full settlement (legacy) and partial multi-intent legs (#443 E).
+    """
     order, table, display_name = _resolve_guest_payment_order(
         session,
         order_id,
@@ -16726,63 +16853,144 @@ def confirm_payment(
                 detail="Payment mismatch: Payment does not belong to this order",
             )
 
-        # 2. Check amount (includes delivery fee for Satisfecho Delivery)
-        total_cents = _guest_order_payable_total_cents(session, order)
+        # Idempotent: same PaymentIntent already recorded
+        existing_leg = order_pay_svc.find_payment_by_stripe_intent(
+            session, order_id=order.id, stripe_payment_intent_id=payment_intent_id
+        )
+        if existing_leg is not None:
+            recon = order_pay_svc.reconciliation_dict(session, order)
+            return JSONResponse(
+                content={
+                    "status": "paid" if order.paid_at else "partial",
+                    "order_id": order.id,
+                    "amount_remaining_cents": recon.get("amount_remaining_cents"),
+                    "payment": order_pay_svc.payment_to_dict(session, existing_leg),
+                }
+            )
 
-        if intent.amount != total_cents:
+        if order.paid_at or order.status == models.OrderStatus.paid:
+            raise HTTPException(status_code=400, detail="Order is already paid")
+
+        recon_before = order_pay_svc.reconciliation_dict(session, order)
+        remaining = int(recon_before.get("amount_remaining_cents") or 0)
+        if remaining <= 0:
+            remaining = _guest_order_payable_total_cents(session, order)
+
+        split_pay = str(_stripe_metadata_get(intent.metadata, "split_pay") or "0") == "1"
+        meta_ids_raw = _stripe_metadata_get(intent.metadata, "order_item_ids") or ""
+        guest_sid = _stripe_metadata_get(intent.metadata, "guest_session_id")
+        line_ids: list[int] | None = None
+        if meta_ids_raw:
+            try:
+                line_ids = [int(x) for x in str(meta_ids_raw).split(",") if str(x).strip()]
+            except ValueError as exc:
+                raise HTTPException(
+                    status_code=400, detail="Payment mismatch: invalid order_item_ids metadata"
+                ) from exc
+
+        # Amount rules: partial intents must match remaining or selected lines;
+        # legacy full intents must match remaining (or full order when no prior legs).
+        if intent.amount < 1 or intent.amount > remaining:
             raise HTTPException(
                 status_code=400,
-                detail=f"Payment mismatch: Amount {intent.amount} does not match order total {total_cents}",
+                detail=(
+                    f"Payment mismatch: Amount {intent.amount} is not valid for "
+                    f"remaining balance {remaining}"
+                ),
             )
+        if not split_pay and intent.amount != remaining:
+            # Legacy full-pay path: still accept exact remaining (handles prior staff legs).
+            total_cents = _guest_order_payable_total_cents(session, order)
+            if intent.amount != total_cents and intent.amount != remaining:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        f"Payment mismatch: Amount {intent.amount} does not match "
+                        f"order total {total_cents}"
+                    ),
+                )
 
-        was_unpaid = order.status != models.OrderStatus.paid and order.paid_at is None
         pay_kind = _stripe_metadata_get(intent.metadata, "pay_kind")
         settlement_method = "crypto" if pay_kind == "crypto" else "stripe"
-        # Mark order as paid (completed when all items already delivered — #345)
-        order.payment_method = settlement_method
-        order.paid_at = datetime.now(timezone.utc)
-        order.bill_requested_at = None
-        order.notes = f"{order.notes or ''}\n[PAID: {payment_intent_id}]".strip()
-        order.status = order_pay_svc.status_after_full_payment(session, order)
-        session.add(order)
-        session.flush()
-        order_pay_svc.ensure_full_payment_leg(
+        was_unpaid = order.paid_at is None
+
+        # Prefer explicit line ids from intent metadata; guest_session_id is label-only then.
+        use_guest = str(guest_sid) if (guest_sid and not line_ids) else None
+        payment, recon = order_pay_svc.record_payment(
             session,
             order=order,
+            amount_cents=int(intent.amount) if not line_ids and not use_guest else None,
             payment_method=settlement_method,
             paid_by_user_id=None,
+            payer_label=(f"Guest {str(guest_sid)[:8]}" if guest_sid else None),
             stripe_payment_intent_id=payment_intent_id,
+            order_item_ids=line_ids,
+            guest_session_id=use_guest,
+            settle_if_covered=True,
+            note=f"Stripe {payment_intent_id}",
         )
-        session.commit()
 
-        try:
+        if order.paid_at:
+            order.bill_requested_at = None
+            order.notes = f"{order.notes or ''}\n[PAID: {payment_intent_id}]".strip()
+            session.add(order)
+            session.commit()
             session.refresh(order)
-            if loyalty_svc.award_on_order_paid(session, order):
-                session.commit()
-        except Exception:
-            logging.getLogger(__name__).exception(
-                "loyalty award failed after stripe confirm order_id=%s", order.id
+            try:
+                if loyalty_svc.award_on_order_paid(session, order):
+                    session.commit()
+            except Exception:
+                logging.getLogger(__name__).exception(
+                    "loyalty award failed after stripe confirm order_id=%s", order.id
+                )
+
+            if (
+                was_unpaid
+                and table is None
+                and _order_channel_value(order) == models.OrderChannel.satisfecho_delivery.value
+            ):
+                from app.delivery_order_service import publish_satisfecho_delivery_order
+
+                publish_satisfecho_delivery_order(session, order)
+
+            publish_order_update(
+                order.tenant_id,
+                {
+                    "type": "order_paid",
+                    "order_id": order.id,
+                    "table_name": display_name,
+                    "status": order.status.value,
+                },
+                table_id=order.table_id,
+            )
+            return JSONResponse(
+                content={
+                    "status": "paid",
+                    "order_id": order.id,
+                    "amount_remaining_cents": 0,
+                    "payment": order_pay_svc.payment_to_dict(session, payment),
+                }
             )
 
-        if (
-            was_unpaid
-            and table is None
-            and _order_channel_value(order) == models.OrderChannel.satisfecho_delivery.value
-        ):
-            from app.delivery_order_service import publish_satisfecho_delivery_order
-
-            publish_satisfecho_delivery_order(session, order)
-
-        # Notify tenant
-        publish_order_update(order.tenant_id, {
-            "type": "order_paid",
-            "order_id": order.id,
-            "table_name": display_name,
-            "status": order.status.value
-        }, table_id=order.table_id)
-
-        # JSONResponse so slowapi can inject rate-limit headers (requires a Response instance)
-        return JSONResponse(content={"status": "paid", "order_id": order.id})
+        publish_order_update(
+            order.tenant_id,
+            {
+                "type": "order_payment_recorded",
+                "order_id": order.id,
+                "table_name": display_name,
+                "amount_cents": payment.amount_cents,
+                "amount_remaining_cents": recon.get("amount_remaining_cents"),
+            },
+            table_id=order.table_id,
+        )
+        return JSONResponse(
+            content={
+                "status": "partial",
+                "order_id": order.id,
+                "amount_remaining_cents": recon.get("amount_remaining_cents"),
+                "payment": order_pay_svc.payment_to_dict(session, payment),
+            }
+        )
     except stripe.error.StripeError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

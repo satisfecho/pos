@@ -140,6 +140,68 @@ def unallocated_order_items(session: Session, order: models.Order) -> list[model
     return [i for i in active_order_items(session, order.id) if i.id not in taken]
 
 
+def _session_key_for_item(item: models.OrderItem, order: models.Order) -> str | None:
+    """Guest browser session that owns a line (added_by_session, else order.session_id)."""
+    raw = getattr(item, "added_by_session", None) or getattr(order, "session_id", None)
+    if raw is None:
+        return None
+    sid = str(raw).strip()
+    return sid or None
+
+
+def guest_session_groups(
+    session: Session, order: models.Order
+) -> list[dict]:
+    """Unallocated lines grouped by guest session for split-by-session (#443 / 0071 D)."""
+    groups: dict[str | None, list[models.OrderItem]] = {}
+    for item in unallocated_order_items(session, order):
+        key = _session_key_for_item(item, order)
+        groups.setdefault(key, []).append(item)
+    out: list[dict] = []
+    for key, items in groups.items():
+        ids = [i.id for i in items if i.id is not None]
+        amount = sum(int(i.price_cents) * int(i.quantity) for i in items)
+        out.append(
+            {
+                "guest_session_id": key,
+                "order_item_ids": ids,
+                "amount_cents": amount,
+                "item_count": len(ids),
+            }
+        )
+    # Stable: known sessions first (sorted), then unassigned (None) last.
+    out.sort(key=lambda g: (g["guest_session_id"] is None, g["guest_session_id"] or ""))
+    return out
+
+
+def resolve_guest_session_item_ids(
+    session: Session,
+    *,
+    order: models.Order,
+    guest_session_id: str | None,
+) -> list[int]:
+    """Expand a guest_session_id to unallocated order_item ids.
+
+    Pass empty string or the literal ``__none__`` to select lines with no session.
+    """
+    raw = (guest_session_id or "").strip()
+    want_none = raw in ("", "__none__", "__unassigned__")
+    want = None if want_none else raw
+    ids: list[int] = []
+    for item in unallocated_order_items(session, order):
+        key = _session_key_for_item(item, order)
+        if want_none and key is None and item.id is not None:
+            ids.append(item.id)
+        elif not want_none and key == want and item.id is not None:
+            ids.append(item.id)
+    if not ids:
+        raise HTTPException(
+            status_code=400,
+            detail="No unallocated order items for that guest session",
+        )
+    return ids
+
+
 def resolve_line_payment_amount(
     session: Session,
     *,
@@ -186,6 +248,7 @@ def reconciliation_dict(session: Session, order: models.Order) -> dict:
         "is_fully_paid": remaining == 0 and due > 0 and order.paid_at is not None,
         "payments": [payment_to_dict(session, p) for p in payments],
         "unallocated_order_item_ids": [i.id for i in unalloc if i.id is not None],
+        "guest_sessions": guest_session_groups(session, order),
     }
 
 
@@ -196,6 +259,19 @@ def settlement_payment_method(payments: list[models.OrderPayment]) -> str:
     if len(methods) > 1:
         return "split"
     return "cash"
+
+
+def find_payment_by_stripe_intent(
+    session: Session, *, order_id: int, stripe_payment_intent_id: str
+) -> models.OrderPayment | None:
+    """Return an active payment leg already tied to this PaymentIntent (idempotent confirm)."""
+    pid = (stripe_payment_intent_id or "").strip()
+    if not pid:
+        return None
+    for p in list_active_payments(session, order_id):
+        if (p.stripe_payment_intent_id or "").strip() == pid:
+            return p
+    return None
 
 
 def record_payment(
@@ -210,12 +286,13 @@ def record_payment(
     note: str | None = None,
     stripe_payment_intent_id: str | None = None,
     order_item_ids: list[int] | None = None,
+    guest_session_id: str | None = None,
     settle_if_covered: bool = True,
 ) -> tuple[models.OrderPayment, dict]:
     """Append a payment leg. When settle_if_covered and remaining hits 0, mark order paid.
 
-    Pass ``order_item_ids`` for split-by-line (amount derived from lines). Otherwise
-    ``amount_cents`` is required (split by amount).
+    Pass ``order_item_ids`` for split-by-line, ``guest_session_id`` for session split
+    (amount derived from lines), or ``amount_cents`` for split by amount.
     """
     if order.deleted_at is not None:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -224,10 +301,32 @@ def record_payment(
     if order.status == models.OrderStatus.paid or order.paid_at:
         raise HTTPException(status_code=400, detail="Order is already paid")
 
+    if stripe_payment_intent_id:
+        existing_pi = find_payment_by_stripe_intent(
+            session, order_id=order.id, stripe_payment_intent_id=stripe_payment_intent_id
+        )
+        if existing_pi is not None:
+            return existing_pi, reconciliation_dict(session, order)
+
+    resolved_ids = list(order_item_ids) if order_item_ids else None
+    if guest_session_id is not None and str(guest_session_id).strip() != "":
+        if resolved_ids:
+            raise HTTPException(
+                status_code=400,
+                detail="Provide either guest_session_id or order_item_ids, not both",
+            )
+        resolved_ids = resolve_guest_session_item_ids(
+            session, order=order, guest_session_id=guest_session_id
+        )
+        if not payer_label:
+            sid = str(guest_session_id).strip()
+            if sid not in ("__none__", "__unassigned__"):
+                payer_label = f"Guest {sid[:8]}"
+
     line_items: list[models.OrderItem] = []
-    if order_item_ids:
+    if resolved_ids:
         amt, line_items = resolve_line_payment_amount(
-            session, order=order, order_item_ids=order_item_ids
+            session, order=order, order_item_ids=resolved_ids
         )
         if amount_cents is not None and int(amount_cents) != amt:
             raise HTTPException(
@@ -240,7 +339,7 @@ def record_payment(
         if amount_cents is None:
             raise HTTPException(
                 status_code=400,
-                detail="amount_cents is required when order_item_ids is omitted",
+                detail="amount_cents is required when order_item_ids and guest_session_id are omitted",
             )
         amt = int(amount_cents)
         if amt < 1:

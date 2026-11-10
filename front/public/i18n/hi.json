@@ -324,7 +324,11 @@
     "FEAT_OPEN_SOURCE_TITLE": "ओपन सोर्स",
     "FEAT_OPEN_SOURCE_DESC": "सेल्फ़-होस्ट करें या क्लाउड में चलाएँ — जाँचें, विस्तार करें, और विक्रेता लॉक-इन से बचें।",
     "FEAT_TSE_TITLE": "जर्मन TSE (KassenSichV तैयारी)",
-    "FEAT_TSE_DESC": "वैकल्पिक प्रति-टेनेंट tse_mode (टेस्ट/लाइव) साइन किए गए ट्रांज़ैक्शन स्टब, रसीद TSE फ़ील्ड और DSFinV-K डेट-रेंज एक्सपोर्ट स्टब के साथ। लाइव मोड अनलॉक होने पर क्लाउड TSE प्रोवाइडर (Fiskaly SIGN DE) का उपयोग करता है — उत्पादन क्रेडेंशियल सत्यापित होने तक BSI-प्रमाणित के रूप में नहीं बेचा जाता।"
+    "FEAT_TSE_DESC": "वैकल्पिक प्रति-टेनेंट tse_mode (टेस्ट/लाइव) साइन किए गए ट्रांज़ैक्शन स्टब, रसीद TSE फ़ील्ड और DSFinV-K डेट-रेंज एक्सपोर्ट स्टब के साथ। लाइव मोड अनलॉक होने पर क्लाउड TSE प्रोवाइडर (Fiskaly SIGN DE) का उपयोग करता है — उत्पादन क्रेडेंशियल सत्यापित होने तक BSI-प्रमाणित के रूप में नहीं बेचा जाता।",
+    "FEAT_SPLIT_BILL_TITLE": "Split bill",
+    "FEAT_SPLIT_BILL_DESC": "Split one check by amount, by line, or by guest session — partial payments until the table is settled.",
+    "FEAT_JOIN_TABLES_TITLE": "Join tables",
+    "FEAT_JOIN_TABLES_DESC": "Merge neighboring tables into one party on the floor canvas — shared covers and one bill path."
   },
   "PRICING_PAGE": {
     "BADGE": "सरल होस्टेड मूल्य",
@@ -1197,7 +1201,14 @@
     "SPLIT_LINE_TOTAL": "चयनित पंक्तियों का योग",
     "CUSTOMER_DISPLAY": "ग्राहक डिस्प्ले",
     "CUSTOMER_DISPLAY_HINT": "दूसरी स्क्रीन पर ग्राहक-उन्मुख ऑर्डर सारांश खोलें",
-    "CUSTOMER_DISPLAY_NO_TABLE": "इस ऑर्डर के पास ग्राहक डिस्प्ले के लिए टेबल लिंक नहीं है"
+    "CUSTOMER_DISPLAY_NO_TABLE": "इस ऑर्डर के पास ग्राहक डिस्प्ले के लिए टेबल लिंक नहीं है",
+    "SPLIT_BY_GUEST_SESSION": "Pay by guest session",
+    "SPLIT_BY_GUEST_SESSION_HINT": "Select a guest browser session to pay all of their still-unpaid items.",
+    "PAY_GUEST_SESSION": "Pay this guest",
+    "GUEST_SESSION_LABEL": "Guest {{shortId}}",
+    "GUEST_SESSION_UNKNOWN": "Unassigned items",
+    "ISSUE_PAYER_FACTURA": "Issue Factura for payer",
+    "PAYER_FACTURA_ISSUED": "Payer Factura issued."
   },
   "CUSTOMERS": {
     "TITLE": "ग्राहक (इनवॉइस)",
@@ -2527,7 +2538,10 @@
     "PAY_WITH_CRYPTO_DESC": "Stripe के माध्यम से स्टेबलकॉइन से भुगतान करें (USDC और समर्थित वॉलेट)",
     "CRYPTO_NOT_CONFIGURED": "क्रिप्टो भुगतान कॉन्फ़िगर नहीं है। कृपया स्टाफ़ से पूछें।",
     "CRYPTO_START_FAILED": "क्रिप्टो भुगतान शुरू नहीं हो सका।",
-    "CRYPTO_CONFIRM_FAILED": "क्रिप्टो भुगतान की पुष्टि नहीं हो सकी। कृपया स्टाफ़ से पूछें।"
+    "CRYPTO_CONFIRM_FAILED": "क्रिप्टो भुगतान की पुष्टि नहीं हो सकी। कृपया स्टाफ़ से पूछें।",
+    "PAY_MY_ITEMS": "Pay my items",
+    "PAY_MY_ITEMS_DESC": "Pay only the dishes you ordered — others can pay their own share",
+    "PARTIAL_PAYMENT_SUCCESS": "Your share is paid. Remaining balance stays on the table."
   },
   "ERRORS": {
     "GENERIC": "कुछ गलत हो गया। कृपया पुन: प्रयास करें।",
@@ -3420,6 +3434,26 @@
         "HOW_1": "रिपॉज़िटरी क्लोन करें और README सेटअप का पालन करें।",
         "HOW_2": "अपने इंफ़्रा पर Docker Compose से चलाएँ।",
         "HOW_3": "या प्रबंधित अपडेट के साथ होस्टेड Satisfecho के लिए रजिस्टर करें।"
+      },
+      "split-bill": {
+        "HERO_TITLE": "Split bill",
+        "HERO_SUBTITLE": "Let each guest pay their share — by amount, by line, or by guest session — with a clear remaining balance until the check is settled.",
+        "BENEFIT_1": "Record cash, card terminal, or online legs against one order without confusing the kitchen ticket.",
+        "BENEFIT_2": "Pay selected dishes or a guest session in one tap so large parties leave faster.",
+        "BENEFIT_3": "One fiscal Factura when the order is fully paid (optional per-payer Factura when enabled).",
+        "HOW_1": "Open the order and choose Mark as paid / Finish.",
+        "HOW_2": "Enter a partial amount, select lines, or pick a guest session, then record the payment.",
+        "HOW_3": "Repeat until remaining is zero — the order marks paid and loyalty earns once."
+      },
+      "join-tables": {
+        "HERO_TITLE": "Join tables",
+        "HERO_SUBTITLE": "Combine tables into one party on the floor canvas so hosts seat large groups and staff share one bill path.",
+        "BENEFIT_1": "Drag-overlap or multi-select tables on the same floor, then join them.",
+        "BENEFIT_2": "Joined parties show a group label on orders so waiters see the merged table.",
+        "BENEFIT_3": "Split the bill on the joined order without unjoining first.",
+        "HOW_1": "Open Tables → canvas and select the tables to merge.",
+        "HOW_2": "Join tables (drag-overlap or Ctrl/⌘+click then Join).",
+        "HOW_3": "Seat the party and take orders as usual; unjoin when the group leaves."
       }
     }
   },

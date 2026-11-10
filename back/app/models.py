@@ -1171,6 +1171,11 @@ class FiscalInvoice(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     tenant_id: int = Field(foreign_key="tenant.id", index=True)
     order_id: int = Field(foreign_key="order.id", index=True)
+    # Optional per-payer alta scoped to a payment leg (#443 / 0071 deferred F).
+    # Null = classic one-alta-per-order document.
+    order_payment_id: int | None = Field(
+        default=None, foreign_key="order_payment.id", index=True
+    )
     series: str = Field(max_length=32)
     doc_number: int = Field()
     full_number: str = Field(max_length=64)
@@ -1817,8 +1822,9 @@ class OrderMarkPaid(SQLModel):
 class OrderPaymentCreate(SQLModel):
     """Staff records a partial or settling payment leg (#318).
 
-    Provide either ``amount_cents`` (split by amount) or non-empty ``order_item_ids``
-    (split by line; amount is derived from those lines).
+    Provide either ``amount_cents`` (split by amount), non-empty ``order_item_ids``
+    (split by line; amount is derived from those lines), or ``guest_session_id``
+    (split by guest browser session; expands to that session's unallocated lines).
     """
 
     amount_cents: int | None = Field(default=None, ge=1)
@@ -1827,6 +1833,18 @@ class OrderPaymentCreate(SQLModel):
     tip_amount_cents: int | None = Field(default=None, ge=0)
     note: str | None = Field(default=None, max_length=500)
     order_item_ids: list[int] | None = None
+    guest_session_id: str | None = Field(default=None, max_length=128)
+
+
+class GuestPaymentIntentCreate(SQLModel):
+    """Optional body for guest Stripe PaymentIntent (#443 E multi-intent).
+
+    Omit all fields to charge the full remaining balance (legacy behaviour).
+    """
+
+    amount_cents: int | None = Field(default=None, ge=1)
+    order_item_ids: list[int] | None = None
+    guest_session_id: str | None = Field(default=None, max_length=128)
 
 
 class OfflineCashOrderCreate(SQLModel):

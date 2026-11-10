@@ -1060,7 +1060,14 @@
     "SPLIT_LINE_TOTAL": "Total de líneas seleccionadas",
     "CUSTOMER_DISPLAY": "Pantalla del cliente",
     "CUSTOMER_DISPLAY_HINT": "Abrir el resumen del pedido orientado al cliente en una segunda pantalla",
-    "CUSTOMER_DISPLAY_NO_TABLE": "Este pedido no tiene enlace de mesa para la pantalla del cliente"
+    "CUSTOMER_DISPLAY_NO_TABLE": "Este pedido no tiene enlace de mesa para la pantalla del cliente",
+    "SPLIT_BY_GUEST_SESSION": "Pagar por sesión de comensal",
+    "SPLIT_BY_GUEST_SESSION_HINT": "Elige una sesión del navegador del comensal para pagar todos sus platos aún sin pagar.",
+    "PAY_GUEST_SESSION": "Pagar este comensal",
+    "GUEST_SESSION_LABEL": "Comensal {{shortId}}",
+    "GUEST_SESSION_UNKNOWN": "Ítems sin asignar",
+    "ISSUE_PAYER_FACTURA": "Emitir Factura del pagador",
+    "PAYER_FACTURA_ISSUED": "Factura del pagador emitida."
   },
   "CUSTOMERS": {
     "TITLE": "Clientes (Factura)",
@@ -2390,7 +2397,10 @@
     "PAY_WITH_CRYPTO_DESC": "Paga con stablecoins vía Stripe (USDC y monederos compatibles)",
     "CRYPTO_NOT_CONFIGURED": "Los pagos con cripto no están configurados. Pide ayuda al personal.",
     "CRYPTO_START_FAILED": "No se pudo iniciar el pago con cripto.",
-    "CRYPTO_CONFIRM_FAILED": "No se pudo confirmar el pago con cripto. Pide ayuda al personal."
+    "CRYPTO_CONFIRM_FAILED": "No se pudo confirmar el pago con cripto. Pide ayuda al personal.",
+    "PAY_MY_ITEMS": "Pagar mis platos",
+    "PAY_MY_ITEMS_DESC": "Paga solo lo que pediste — el resto puede pagar su parte",
+    "PARTIAL_PAYMENT_SUCCESS": "Tu parte está pagada. El resto sigue en la mesa."
   },
   "ERRORS": {
     "GENERIC": "Algo salió mal. Por favor, inténtalo de nuevo.",
@@ -2884,7 +2894,11 @@
     "FEAT_OPEN_SOURCE_TITLE": "Código abierto",
     "FEAT_OPEN_SOURCE_DESC": "Autoaloje o ejecute en la nube — inspeccione, amplíe y evite el bloqueo de proveedor.",
     "FEAT_TSE_TITLE": "TSE alemana (preparación KassenSichV)",
-    "FEAT_TSE_DESC": "Modo tse_mode opcional por local (test/live) con stubs de transacciones firmadas, campos TSE en el ticket y stub de exportación DSFinV-K por rango de fechas. El modo live usa un proveedor TSE en la nube (Fiskaly SIGN DE) cuando se desbloquea — no se comercializa como certificado BSI hasta verificar las credenciales de producción."
+    "FEAT_TSE_DESC": "Modo tse_mode opcional por local (test/live) con stubs de transacciones firmadas, campos TSE en el ticket y stub de exportación DSFinV-K por rango de fechas. El modo live usa un proveedor TSE en la nube (Fiskaly SIGN DE) cuando se desbloquea — no se comercializa como certificado BSI hasta verificar las credenciales de producción.",
+    "FEAT_SPLIT_BILL_TITLE": "Dividir cuenta",
+    "FEAT_SPLIT_BILL_DESC": "Divide la cuenta por importe, por línea o por sesión de comensal — pagos parciales hasta saldar la mesa.",
+    "FEAT_JOIN_TABLES_TITLE": "Unir mesas",
+    "FEAT_JOIN_TABLES_DESC": "Une mesas vecinas en un solo grupo en el plano — cubiertos compartidos y un camino de cuenta."
   },
   "PRICING_PAGE": {
     "BADGE": "Precios hosted simples",
@@ -3420,6 +3434,26 @@
         "HOW_1": "Clone el repositorio y siga el setup del README.",
         "HOW_2": "Ejecute con Docker Compose en su infraestructura.",
         "HOW_3": "O regístrese en Satisfecho alojado con actualizaciones gestionadas."
+      },
+      "split-bill": {
+        "HERO_TITLE": "Dividir cuenta",
+        "HERO_SUBTITLE": "Cada comensal paga su parte — por importe, por línea o por sesión — con un saldo restante claro hasta cerrar la cuenta.",
+        "BENEFIT_1": "Registra efectivo, datáfono u online sobre un mismo pedido sin confundir cocina.",
+        "BENEFIT_2": "Paga platos seleccionados o una sesión de comensal de un toque para grupos grandes.",
+        "BENEFIT_3": "Una Factura fiscal cuando el pedido está pagado del todo (Factura por pagador opcional).",
+        "HOW_1": "Abre el pedido y elige Marcar como pagado / Finalizar.",
+        "HOW_2": "Introduce un importe parcial, selecciona líneas o una sesión, y registra el pago.",
+        "HOW_3": "Repite hasta que el restante sea cero — el pedido se marca pagado y el loyalty se acredita una vez."
+      },
+      "join-tables": {
+        "HERO_TITLE": "Unir mesas",
+        "HERO_SUBTITLE": "Combina mesas en un grupo en el plano para sentar grupos grandes y compartir un camino de cuenta.",
+        "BENEFIT_1": "Arrastra hasta solapar o multi-selecciona mesas del mismo piso y únelas.",
+        "BENEFIT_2": "Los grupos unidos muestran una etiqueta en los pedidos.",
+        "BENEFIT_3": "Divide la cuenta del pedido unido sin desunir primero.",
+        "HOW_1": "Abre Mesas → plano y selecciona las mesas a unir.",
+        "HOW_2": "Une mesas (solapar o Ctrl/⌘+clic y Unir).",
+        "HOW_3": "Sienta al grupo y toma pedidos; desune cuando se vayan."
       }
     }
   },

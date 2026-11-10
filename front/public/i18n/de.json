@@ -1060,7 +1060,14 @@
     "SPLIT_LINE_TOTAL": "Summe ausgewählter Positionen",
     "CUSTOMER_DISPLAY": "Kundendisplay",
     "CUSTOMER_DISPLAY_HINT": "Kundenansicht der Bestellung auf einem zweiten Bildschirm öffnen",
-    "CUSTOMER_DISPLAY_NO_TABLE": "Diese Bestellung hat keinen Tisch-Link für das Kundendisplay"
+    "CUSTOMER_DISPLAY_NO_TABLE": "Diese Bestellung hat keinen Tisch-Link für das Kundendisplay",
+    "SPLIT_BY_GUEST_SESSION": "Nach Gastsitzung zahlen",
+    "SPLIT_BY_GUEST_SESSION_HINT": "Wählen Sie eine Browser-Sitzung, um alle noch offenen Positionen dieses Gastes zu zahlen.",
+    "PAY_GUEST_SESSION": "Diesen Gast zahlen",
+    "GUEST_SESSION_LABEL": "Gast {{shortId}}",
+    "GUEST_SESSION_UNKNOWN": "Nicht zugewiesene Positionen",
+    "ISSUE_PAYER_FACTURA": "Factura für Zahler ausstellen",
+    "PAYER_FACTURA_ISSUED": "Zahler-Factura ausgestellt."
   },
   "CUSTOMERS": {
     "TITLE": "Kunden (Rechnung)",
@@ -2356,7 +2363,10 @@
     "PAY_WITH_CRYPTO_DESC": "Mit Stablecoins über Stripe zahlen (USDC und unterstützte Wallets)",
     "CRYPTO_NOT_CONFIGURED": "Krypto-Zahlungen sind nicht konfiguriert. Bitte fragen Sie das Personal.",
     "CRYPTO_START_FAILED": "Krypto-Zahlung konnte nicht gestartet werden.",
-    "CRYPTO_CONFIRM_FAILED": "Krypto-Zahlung konnte nicht bestätigt werden. Bitte fragen Sie das Personal."
+    "CRYPTO_CONFIRM_FAILED": "Krypto-Zahlung konnte nicht bestätigt werden. Bitte fragen Sie das Personal.",
+    "PAY_MY_ITEMS": "Meine Gerichte zahlen",
+    "PAY_MY_ITEMS_DESC": "Nur Ihre Bestellung zahlen — andere Gäste zahlen ihren Anteil",
+    "PARTIAL_PAYMENT_SUCCESS": "Ihr Anteil ist bezahlt. Der Rest bleibt am Tisch."
   },
   "ERRORS": {
     "GENERIC": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.",
@@ -2884,7 +2894,11 @@
     "FEAT_OPEN_SOURCE_TITLE": "Open Source",
     "FEAT_OPEN_SOURCE_DESC": "Self-Hosting oder Cloud — prüfen, erweitern und Vendor Lock-in vermeiden.",
     "FEAT_TSE_TITLE": "Deutsche TSE (KassenSichV-Vorbereitung)",
-    "FEAT_TSE_DESC": "Optionaler Mandanten-Modus tse_mode (test/live) mit signierten Transaktions-Stubs, TSE-Belegfeldern und DSFinV-K-Datumsbereich-Export-Stub. Live-Modus nutzt einen Cloud-TSE-Anbieter (Fiskaly SIGN DE), sobald freigeschaltet — wird nicht als BSI-zertifiziert vermarktet, bis Produktions-Credentials geprüft sind."
+    "FEAT_TSE_DESC": "Optionaler Mandanten-Modus tse_mode (test/live) mit signierten Transaktions-Stubs, TSE-Belegfeldern und DSFinV-K-Datumsbereich-Export-Stub. Live-Modus nutzt einen Cloud-TSE-Anbieter (Fiskaly SIGN DE), sobald freigeschaltet — wird nicht als BSI-zertifiziert vermarktet, bis Produktions-Credentials geprüft sind.",
+    "FEAT_SPLIT_BILL_TITLE": "Rechnung teilen",
+    "FEAT_SPLIT_BILL_DESC": "Teilen Sie die Rechnung nach Betrag, Position oder Gastsitzung — Teilzahlungen bis der Tisch beglichen ist.",
+    "FEAT_JOIN_TABLES_TITLE": "Tische verbinden",
+    "FEAT_JOIN_TABLES_DESC": "Benachbarte Tische auf dem Grundriss zu einer Partei verbinden — gemeinsame Couverts und ein Rechnungsweg."
   },
   "PRICING_PAGE": {
     "BADGE": "Einfache Hosted-Preise",
@@ -3420,6 +3434,26 @@
         "HOW_1": "Repository klonen und dem README-Setup folgen.",
         "HOW_2": "Mit Docker Compose auf Ihrer Infrastruktur betreiben.",
         "HOW_3": "Oder für gehostetes Satisfecho mit verwalteten Updates registrieren."
+      },
+      "split-bill": {
+        "HERO_TITLE": "Rechnung teilen",
+        "HERO_SUBTITLE": "Jeder Gast zahlt seinen Anteil — nach Betrag, Position oder Sitzung — mit klarem Restbetrag bis zum Abschluss.",
+        "BENEFIT_1": "Bargeld, Terminal oder Online auf eine Bestellung buchen, ohne die Küche zu verwirren.",
+        "BENEFIT_2": "Ausgewählte Gerichte oder eine Gastsitzung mit einem Tippen zahlen.",
+        "BENEFIT_3": "Eine Steuerrechnung wenn die Bestellung voll bezahlt ist (optional pro Zahler).",
+        "HOW_1": "Bestellung öffnen und Als bezahlt markieren / Abschließen wählen.",
+        "HOW_2": "Teilbetrag eingeben, Positionen oder Sitzung wählen und Zahlung erfassen.",
+        "HOW_3": "Wiederholen bis Rest null ist — Bestellung gilt als bezahlt, Loyalty einmal."
+      },
+      "join-tables": {
+        "HERO_TITLE": "Tische verbinden",
+        "HERO_SUBTITLE": "Tische auf dem Grundriss zu einer Partei verbinden — große Gruppen setzen und einen Rechnungsweg teilen.",
+        "BENEFIT_1": "Per Drag-Überlappung oder Mehrfachauswahl auf derselben Etage verbinden.",
+        "BENEFIT_2": "Verbundene Parteien zeigen eine Gruppenbezeichnung auf Bestellungen.",
+        "BENEFIT_3": "Rechnung der verbundenen Bestellung teilen ohne vorher zu trennen.",
+        "HOW_1": "Tische → Grundriss öffnen und Tische auswählen.",
+        "HOW_2": "Tische verbinden (Überlappung oder Strg/⌘+Klick dann Verbinden).",
+        "HOW_3": "Gruppe setzen und Bestellungen aufnehmen; trennen wenn sie gehen."
       }
     }
   },

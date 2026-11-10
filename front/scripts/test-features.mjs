@@ -144,14 +144,25 @@ async function main() {
     if (brandIsHome) console.log('   Brand nav to home: OK');
     if (shell.registerOk) console.log('   Register CTA: OK');
 
-    console.log('3. Opening feature detail /features/reservations from grid...');
+    console.log('3. Checking split-bill + join-tables marketing cards (#443)...');
+    for (const slug of ['split-bill', 'join-tables']) {
+      const href = `/features/${slug}`;
+      const link = await page.$(`a.features-card__link[href="${href}"]`);
+      if (!link) {
+        console.error(`FAIL: No link to ${href} on /features grid.`);
+        process.exit(1);
+      }
+      console.log(`   Grid link to ${href}: OK`);
+    }
+
+    console.log('4. Opening feature detail /features/reservations from grid...');
     const hasDetailLink = await page.$('a.features-card__link[href="/features/reservations"]');
     if (!hasDetailLink) {
       console.error('FAIL: No link to /features/reservations on /features grid.');
       process.exit(1);
     }
     console.log('   Grid link to /features/reservations: OK');
-    const detailHref = new URL('/features/reservations', baseUrl).href;
+    const detailHref = new URL('/features/reservations', baseUrl).href
     const detailResponse = await page.goto(detailHref, {
       waitUntil: 'networkidle2',
       timeout: 20000,

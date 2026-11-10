@@ -324,7 +324,11 @@
     "FEAT_OPEN_SOURCE_TITLE": "开源",
     "FEAT_OPEN_SOURCE_DESC": "可自托管或上云——查看源码、扩展功能，避免厂商锁定。",
     "FEAT_TSE_TITLE": "德国 TSE（KassenSichV 准备）",
-    "FEAT_TSE_DESC": "可选按租户 tse_mode（测试/正式），含已签名交易存根、小票 TSE 字段与 DSFinV-K 日期范围导出存根。正式模式在解锁后使用云 TSE 提供商（Fiskaly SIGN DE）——在生产凭证验证前，不以 BSI 认证对外宣传。"
+    "FEAT_TSE_DESC": "可选按租户 tse_mode（测试/正式），含已签名交易存根、小票 TSE 字段与 DSFinV-K 日期范围导出存根。正式模式在解锁后使用云 TSE 提供商（Fiskaly SIGN DE）——在生产凭证验证前，不以 BSI 认证对外宣传。",
+    "FEAT_SPLIT_BILL_TITLE": "Split bill",
+    "FEAT_SPLIT_BILL_DESC": "Split one check by amount, by line, or by guest session — partial payments until the table is settled.",
+    "FEAT_JOIN_TABLES_TITLE": "Join tables",
+    "FEAT_JOIN_TABLES_DESC": "Merge neighboring tables into one party on the floor canvas — shared covers and one bill path."
   },
   "PRICING_PAGE": {
     "BADGE": "简洁托管定价",
@@ -1197,7 +1201,14 @@
     "SPLIT_LINE_TOTAL": "所选菜品合计",
     "CUSTOMER_DISPLAY": "顾客显示屏",
     "CUSTOMER_DISPLAY_HINT": "在第二块屏幕上打开面向顾客的订单摘要",
-    "CUSTOMER_DISPLAY_NO_TABLE": "此订单没有可用于顾客显示屏的桌台链接"
+    "CUSTOMER_DISPLAY_NO_TABLE": "此订单没有可用于顾客显示屏的桌台链接",
+    "SPLIT_BY_GUEST_SESSION": "Pay by guest session",
+    "SPLIT_BY_GUEST_SESSION_HINT": "Select a guest browser session to pay all of their still-unpaid items.",
+    "PAY_GUEST_SESSION": "Pay this guest",
+    "GUEST_SESSION_LABEL": "Guest {{shortId}}",
+    "GUEST_SESSION_UNKNOWN": "Unassigned items",
+    "ISSUE_PAYER_FACTURA": "Issue Factura for payer",
+    "PAYER_FACTURA_ISSUED": "Payer Factura issued."
   },
   "CUSTOMERS": {
     "TITLE": "客户（发票）",
@@ -2527,7 +2538,10 @@
     "PAY_WITH_CRYPTO_DESC": "通过 Stripe 使用稳定币支付（USDC 及支持的钱包）",
     "CRYPTO_NOT_CONFIGURED": "未配置加密货币支付。请向工作人员求助。",
     "CRYPTO_START_FAILED": "无法开始加密货币支付。",
-    "CRYPTO_CONFIRM_FAILED": "无法确认加密货币支付。请向工作人员求助。"
+    "CRYPTO_CONFIRM_FAILED": "无法确认加密货币支付。请向工作人员求助。",
+    "PAY_MY_ITEMS": "Pay my items",
+    "PAY_MY_ITEMS_DESC": "Pay only the dishes you ordered — others can pay their own share",
+    "PARTIAL_PAYMENT_SUCCESS": "Your share is paid. Remaining balance stays on the table."
   },
   "ERRORS": {
     "GENERIC": "出错了，请重试。",
@@ -3420,6 +3434,26 @@
         "HOW_1": "克隆仓库并按 README 完成设置。",
         "HOW_2": "在您的基础设施上用 Docker Compose 运行。",
         "HOW_3": "或注册托管版 Satisfecho，由我们管理更新。"
+      },
+      "split-bill": {
+        "HERO_TITLE": "Split bill",
+        "HERO_SUBTITLE": "Let each guest pay their share — by amount, by line, or by guest session — with a clear remaining balance until the check is settled.",
+        "BENEFIT_1": "Record cash, card terminal, or online legs against one order without confusing the kitchen ticket.",
+        "BENEFIT_2": "Pay selected dishes or a guest session in one tap so large parties leave faster.",
+        "BENEFIT_3": "One fiscal Factura when the order is fully paid (optional per-payer Factura when enabled).",
+        "HOW_1": "Open the order and choose Mark as paid / Finish.",
+        "HOW_2": "Enter a partial amount, select lines, or pick a guest session, then record the payment.",
+        "HOW_3": "Repeat until remaining is zero — the order marks paid and loyalty earns once."
+      },
+      "join-tables": {
+        "HERO_TITLE": "Join tables",
+        "HERO_SUBTITLE": "Combine tables into one party on the floor canvas so hosts seat large groups and staff share one bill path.",
+        "BENEFIT_1": "Drag-overlap or multi-select tables on the same floor, then join them.",
+        "BENEFIT_2": "Joined parties show a group label on orders so waiters see the merged table.",
+        "BENEFIT_3": "Split the bill on the joined order without unjoining first.",
+        "HOW_1": "Open Tables → canvas and select the tables to merge.",
+        "HOW_2": "Join tables (drag-overlap or Ctrl/⌘+click then Join).",
+        "HOW_3": "Seat the party and take orders as usual; unjoin when the group leaves."
       }
     }
   },

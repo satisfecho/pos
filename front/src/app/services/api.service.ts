@@ -1477,6 +1477,8 @@ export interface OrderItem {
 export interface FiscalInvoicePublic {
   id: number;
   order_id: number;
+  /** Set when this alta is scoped to one payment leg (#443 F). */
+  order_payment_id?: number | null;
   series: string;
   doc_number: number;
   full_number: string;
@@ -1492,6 +1494,14 @@ export interface FiscalInvoicePublic {
   submission_status?: string;
   sandbox_submitted_at?: string | null;
   cancels_fiscal_invoice_id?: number | null;
+}
+
+/** Unallocated lines grouped by guest browser session (#443 D). */
+export interface OrderGuestSessionGroup {
+  guest_session_id: string | null;
+  order_item_ids: number[];
+  amount_cents: number;
+  item_count: number;
 }
 
 /** German TSE transaction metadata (KassenSichV preparation — not a certification claim). */
@@ -1616,6 +1626,8 @@ export interface Order {
   amount_paid_cents?: number;
   amount_remaining_cents?: number;
   payments?: OrderPaymentLeg[];
+  /** Guest-session split groups (#443 D) */
+  guest_sessions?: OrderGuestSessionGroup[];
   /** Waiter marked urgent — guest waiting (kitchen/bar). */
   staff_urgent?: boolean;
   /** When set, joined tables label e.g. "T1 + T2" for staff context */
@@ -3063,6 +3075,7 @@ export class ApiService {
       tip_amount_cents?: number | null;
       note?: string | null;
       order_item_ids?: number[] | null;
+      guest_session_id?: string | null;
     }
   ): Observable<{
     status: string;
@@ -3075,6 +3088,7 @@ export class ApiService {
     paid_at?: string | null;
     payment_method?: string | null;
     unallocated_order_item_ids?: number[];
+    guest_sessions?: OrderGuestSessionGroup[];
   }> {
     return this.http.post<{
       status: string;
@@ -3187,6 +3201,20 @@ export class ApiService {
 
   issueOrderFiscalInvoice(orderId: number): Observable<FiscalInvoicePublic> {
     return this.http.post<FiscalInvoicePublic>(`${this.apiUrl}/orders/${orderId}/fiscal-invoice/issue`, {});
+  }
+
+  /** Per-payer Factura prep for one payment leg (#443 F). */
+  issuePaymentFiscalInvoice(orderId: number, paymentId: number): Observable<FiscalInvoicePublic> {
+    return this.http.post<FiscalInvoicePublic>(
+      `${this.apiUrl}/orders/${orderId}/payments/${paymentId}/fiscal-invoice/issue`,
+      {},
+    );
+  }
+
+  getPaymentFiscalInvoice(orderId: number, paymentId: number): Observable<FiscalInvoicePublic> {
+    return this.http.get<FiscalInvoicePublic>(
+      `${this.apiUrl}/orders/${orderId}/payments/${paymentId}/fiscal-invoice`,
+    );
   }
 
   getOrderFiscalInvoice(orderId: number): Observable<FiscalInvoicePublic> {
@@ -3498,6 +3526,11 @@ export class ApiService {
     tableToken: string | null,
     publicOrderToken?: string | null,
     method?: 'card' | 'crypto' | null,
+    body?: {
+      amount_cents?: number | null;
+      order_item_ids?: number[] | null;
+      guest_session_id?: string | null;
+    } | null,
   ): Observable<any> {
     const params = new URLSearchParams();
     if (publicOrderToken) {
@@ -3508,7 +3541,14 @@ export class ApiService {
     if (method === 'crypto') {
       params.set('method', 'crypto');
     }
-    return this.http.post(`${this.apiUrl}/orders/${orderId}/create-payment-intent?${params.toString()}`, {});
+    const payload: Record<string, unknown> = {};
+    if (body?.amount_cents != null) payload['amount_cents'] = body.amount_cents;
+    if (body?.order_item_ids?.length) payload['order_item_ids'] = body.order_item_ids;
+    if (body?.guest_session_id) payload['guest_session_id'] = body.guest_session_id;
+    return this.http.post(
+      `${this.apiUrl}/orders/${orderId}/create-payment-intent?${params.toString()}`,
+      payload,
+    );
   }
 
   confirmPayment(

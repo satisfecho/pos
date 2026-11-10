@@ -946,6 +946,35 @@
             }
           </button>
 
+          <button
+            class="payment-option-btn"
+            (click)="selectPayMyItemsOnline()"
+            [disabled]="paymentRequestSending()"
+            data-testid="pay-my-items-online"
+          >
+            <div class="payment-option-icon">
+              @if (paymentRequestSending()) {
+              <span class="spinner-small"></span>
+              } @else {
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              }
+            </div>
+            <div class="payment-option-text">
+              <span class="payment-option-title">{{ paymentRequestSending() ? ('PAYMENTS.PROCESSING' | translate) : ('PAYMENTS.PAY_MY_ITEMS' | translate) }}</span>
+              <span class="payment-option-desc">{{ 'PAYMENTS.PAY_MY_ITEMS_DESC' | translate }}</span>
+            </div>
+            @if (!paymentRequestSending()) {
+            <svg class="payment-option-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9,18 15,12 9,6" />
+            </svg>
+            }
+          </button>
+
           @if (tenantRevolutConfigured()) {
           <button class="payment-option-btn" (click)="selectPayRevolut()" [disabled]="paymentRequestSending()">
             <div class="payment-option-icon">
