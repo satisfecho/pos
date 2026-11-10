@@ -80,14 +80,15 @@ Public multi-step UX at **`/register`** (alias **`/signup`**) that primes a new 
 ### Guest path
 
 1. Landing (or `/features`) → **Create account** → `/register` (or `/signup`; same component).
-2. Wizard steps (client-side `step` 0-4):
+2. Wizard steps (client-side `step` 0-5):
    | Step | UI | What happens |
    |------|-----|----------------|
-   | 0 | Intro + “Get started” | No API calls. |
-   | 1 | Restaurant + owner account | `POST /register` creates tenant + owner user; then login. Tenant `saas_subscription_status` is `none` when paywall is on, else `grandfathered`. Optional address / phone / maps URL stored on the tenant. |
-   | 2 | Starter products | `POST /onboarding/starter-products` seeds default beverages (Coffee, Coca Cola, Water) for the new tenant. |
-   | 3 | Photos / price tweak | Authenticated `PATCH`/`upload` on `/products/*` for those starter rows (optional images). |
-   | 4 | Done (QR + public menu link) | Finish CTA: **`/paywall`** when `SAAS_PAYWALL_ENABLED=true`, else **`/dashboard`**. |
+   | 0 | Intro + "Get started" | No API calls. |
+   | 1 | Restaurant + owner account | `POST /register` creates tenant + owner user with `email_verified=false` and emails a six-digit code (#442). Tenant `saas_subscription_status` is `none` when paywall is on, else `grandfathered`. Optional address / phone / maps URL stored on the tenant. Staff login is blocked until verify. |
+   | 2 | Email verification | Owner enters the code; `POST /register/verify-email` then login. Platform operator (`PLATFORM_OPERATOR_EMAIL`) is notified on success. |
+   | 3 | Starter products | `POST /onboarding/starter-products` seeds default beverages (Coffee, Coca Cola, Water) for the new tenant. |
+   | 4 | Photos / price tweak | Authenticated `PATCH`/`upload` on `/products/*` for those starter rows (optional images). |
+   | 5 | Done (QR + public menu link) | Finish CTA: **`/paywall`** when `SAAS_PAYWALL_ENABLED=true`, else **`/dashboard`**. |
 3. When paywall is on: trial or Stripe Checkout on `/paywall` unlocks the staff app (see **Flow** and **API** above).
 4. Platform operators can later review the new tenant under `/platform` (signups metric, tenant detail) - see [0059-platform-operator-portal.md](0059-platform-operator-portal.md).
 

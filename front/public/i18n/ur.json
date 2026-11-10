@@ -579,7 +579,15 @@
     "SIGNUP_GO_DASHBOARD": "اسٹاف ڈیش بورڈ کھولیں",
     "SIGNUP_CONTINUE_PAYWALL": "پلانز کی طرف جاری رکھیں",
     "LOGOUT": "لاگ آؤٹ",
-    "OTP_RECOVERY_HINT": "Lost your phone? Use one unused recovery code instead. Each recovery code works only once."
+    "OTP_RECOVERY_HINT": "Lost your phone? Use one unused recovery code instead. Each recovery code works only once.",
+    "SIGNUP_STEP_TITLE_VERIFY": "ای میل کی تصدیق کریں",
+    "SIGNUP_VERIFY_HINT": "ہم نے آپ کے ای میل پر چھ ہندسوں کا کوڈ بھیجا ہے۔ جاری رکھنے کے لیے نیچے درج کریں۔",
+    "SIGNUP_VERIFY_CODE": "تصدیقی کوڈ",
+    "SIGNUP_VERIFY_CODE_PLACEHOLDER": "123456",
+    "SIGNUP_VERIFY_SUBMIT": "ای میل تصدیق کریں",
+    "SIGNUP_VERIFY_RESEND": "کوڈ دوبارہ بھیجیں",
+    "SIGNUP_VERIFY_RESENT": "کوڈ بھیج دیا گیا",
+    "SIGNUP_VERIFY_FAILED": "کوڈ کی تصدیق نہیں ہو سکی۔ چیک کر کے دوبارہ کوشش کریں۔"
   },
   "MENU": {
     "TITLE": "مینو",

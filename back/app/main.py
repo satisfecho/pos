@@ -101,6 +101,8 @@ from .svg_sanitize import SvgSanitizeError, sanitize_svg
 RESERVATION_PUBLIC_MIN_LEAD_MINUTES = 10
 from .permissions import Permission, require_permission, require_role, has_permission, can_manage_all_schedules
 from . import email_service as email_svc
+from . import owner_signup as owner_signup_svc
+from . import inactive_tenant_housekeeping as inactive_tenant_svc
 from .reservation_email_template import MAX_BODY_LEN, MAX_SUBJECT_LEN
 from . import whatsapp_service as whatsapp_svc
 from .phone_utils import normalize_phone_to_e164
@@ -2747,7 +2749,7 @@ class OnboardingStarterProductsBody(_BaseModel):
 
 @app.post("/register")
 @limiter.limit(f"{getattr(settings, 'rate_limit_register_per_hour', 3)}/hour")
-def register(
+async def register(
     request: Request,
     tenant_name: str,
     email: str,
@@ -2812,15 +2814,115 @@ def register(
         full_name=full_name,
         tenant_id=tenant.id,
         role=models.UserRole.owner,  # First user of a tenant is always the owner
+        email_verified=False,
     )
     session.add(user)
     session.commit()
+    session.refresh(user)
+
+    email_sent = await owner_signup_svc.issue_and_send_owner_code(user, session, lang)
 
     # JSONResponse so slowapi can inject rate-limit headers (sync + headers_enabled)
     return JSONResponse(
-        content={"status": "created", "tenant_id": tenant.id, "email": email},
+        content={
+            "status": "created",
+            "tenant_id": tenant.id,
+            "email": email,
+            "email_verified": False,
+            "verification_required": True,
+            "verification_email_sent": email_sent,
+        },
         status_code=status.HTTP_201_CREATED,
     )
+
+
+@app.post("/register/verify-email")
+@limiter.limit(f"{getattr(settings, 'rate_limit_password_reset_per_hour', 5)}/hour")
+async def register_verify_email(
+    request: Request,
+    body: models.OwnerSignupVerifyBody,
+    lang: str = Depends(_get_requested_language),
+    session: Session = Depends(get_session),
+) -> JSONResponse:
+    """Confirm restaurant owner email with the 6-digit code from signup mail (#442)."""
+    try:
+        email = normalize_email_address(body.email)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=api_error_payload("invalid_email", lang))
+    code = (body.code or "").strip()
+    if len(code) != 6 or not code.isdigit():
+        raise HTTPException(
+            status_code=400,
+            detail=api_error_payload("owner_signup_verification_invalid", lang),
+        )
+
+    user = session.exec(select(models.User).where(models.User.email == email)).first()
+    if (
+        not user
+        or user.role != models.UserRole.owner
+        or user.tenant_id is None
+        or not user.email_verification_code_hash
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail=api_error_payload("owner_signup_verification_invalid", lang),
+        )
+    if owner_signup_svc.code_is_expired(user.email_verification_sent_at):
+        raise HTTPException(
+            status_code=400,
+            detail=api_error_payload("owner_signup_verification_invalid", lang),
+        )
+    if owner_signup_svc.hash_code(code) != user.email_verification_code_hash:
+        raise HTTPException(
+            status_code=400,
+            detail=api_error_payload("owner_signup_verification_invalid", lang),
+        )
+
+    user.email_verified = True
+    user.email_verification_code_hash = None
+    user.email_verification_sent_at = None
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+    tenant = session.get(models.Tenant, user.tenant_id) if user.tenant_id else None
+    await owner_signup_svc.notify_platform_of_verified_owner(
+        owner_email=user.email,
+        tenant_id=user.tenant_id,
+        tenant_name=tenant.name if tenant else None,
+        lang=lang,
+    )
+
+    return JSONResponse(
+        content={
+            "status": "ok",
+            "email": user.email,
+            "tenant_id": user.tenant_id,
+            "email_verified": True,
+        }
+    )
+
+
+@app.post("/register/resend-verification")
+@limiter.limit(f"{getattr(settings, 'rate_limit_password_reset_per_hour', 5)}/hour")
+async def register_resend_verification(
+    request: Request,
+    body: models.OwnerSignupResendBody,
+    lang: str = Depends(_get_requested_language),
+    session: Session = Depends(get_session),
+) -> dict:
+    """Always return ok to avoid email enumeration; send only when owner is unverified."""
+    msg = get_message("owner_signup_verification_resent", lang)
+    try:
+        email = normalize_email_address(body.email)
+    except ValueError:
+        return {"status": "ok", "message": msg}
+
+    user = owner_signup_svc.find_unverified_owner_by_email(session, email)
+    if user is None:
+        return {"status": "ok", "message": msg}
+    await owner_signup_svc.issue_and_send_owner_code(user, session, lang)
+    return {"status": "ok", "message": msg}
 
 
 @app.post("/onboarding/starter-products")
@@ -2954,6 +3056,9 @@ def _login_scope_label(user: models.User, scope: str | None) -> str:
 
 
 def _record_login_event(session: Session, user: models.User, scope: str | None) -> None:
+    now = datetime.now(timezone.utc)
+    user.last_login_at = now
+    session.add(user)
     event = models.LoginEvent(
         user_id=user.id,
         role=user.role,
@@ -2963,6 +3068,7 @@ def _record_login_event(session: Session, user: models.User, scope: str | None) 
     )
     session.add(event)
     session.commit()
+    inactive_tenant_svc.clear_inactivity_warning_on_login(session, user)
 
 
 @app.post("/token")
@@ -3003,6 +3109,13 @@ def login_for_access_token(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=api_error_payload("incorrect_username_or_password", lang),
             headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    gate = owner_signup_svc.owner_email_gate_blocks_login(session, user)
+    if gate:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=api_error_payload(gate, lang),
         )
 
     # If OTP is enabled, require second factor; do not issue tokens yet
@@ -3127,6 +3240,12 @@ def login_with_otp(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=api_error_payload("invalid_otp_code", lang),
+        )
+    gate = owner_signup_svc.owner_email_gate_blocks_login(session, user)
+    if gate:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=api_error_payload(gate, lang),
         )
     token_data = _token_data_for_user(user)
     access_token = security.create_access_token(

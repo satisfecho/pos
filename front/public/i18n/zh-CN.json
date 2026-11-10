@@ -704,7 +704,15 @@
     "SIGNUP_GO_DASHBOARD": "打开员工后台",
     "SIGNUP_CONTINUE_PAYWALL": "继续选择套餐",
     "LOGOUT": "退出登录",
-    "OTP_RECOVERY_HINT": "Lost your phone? Use one unused recovery code instead. Each recovery code works only once."
+    "OTP_RECOVERY_HINT": "Lost your phone? Use one unused recovery code instead. Each recovery code works only once.",
+    "SIGNUP_STEP_TITLE_VERIFY": "确认您的邮箱",
+    "SIGNUP_VERIFY_HINT": "我们已向您的邮箱发送六位验证码。请在下方输入以继续。",
+    "SIGNUP_VERIFY_CODE": "验证码",
+    "SIGNUP_VERIFY_CODE_PLACEHOLDER": "123456",
+    "SIGNUP_VERIFY_SUBMIT": "验证邮箱",
+    "SIGNUP_VERIFY_RESEND": "重新发送验证码",
+    "SIGNUP_VERIFY_RESENT": "验证码已发送",
+    "SIGNUP_VERIFY_FAILED": "无法验证该验证码。请检查后重试。"
   },
   "PAYWALL": {
     "TITLE": "选择套餐以继续",

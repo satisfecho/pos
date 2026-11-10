@@ -704,7 +704,15 @@
     "SIGNUP_GO_DASHBOARD": "Obrir tauler de personal",
     "SIGNUP_CONTINUE_PAYWALL": "Continuar als plans",
     "LOGOUT": "Tancar la sessió",
-    "OTP_RECOVERY_HINT": "Has perdut el telèfon? Usa un codi de recuperació no usat. Cada codi de recuperació només funciona una vegada."
+    "OTP_RECOVERY_HINT": "Has perdut el telèfon? Usa un codi de recuperació no usat. Cada codi de recuperació només funciona una vegada.",
+    "SIGNUP_STEP_TITLE_VERIFY": "Confirma el correu",
+    "SIGNUP_VERIFY_HINT": "T'hem enviat un codi de sis dígits al correu. Introdueix-lo a sota per continuar.",
+    "SIGNUP_VERIFY_CODE": "Codi de verificació",
+    "SIGNUP_VERIFY_CODE_PLACEHOLDER": "123456",
+    "SIGNUP_VERIFY_SUBMIT": "Verifica el correu",
+    "SIGNUP_VERIFY_RESEND": "Reenvia el codi",
+    "SIGNUP_VERIFY_RESENT": "Codi enviat",
+    "SIGNUP_VERIFY_FAILED": "No s'ha pogut verificar el codi. Comprova'l i torna-ho a provar."
   },
   "PAYWALL": {
     "TITLE": "Tria un pla per continuar",

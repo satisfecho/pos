@@ -20,6 +20,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | Understand reservations / waiting list (staff + public) | [0011-table-reservation-user-guide.md](0011-table-reservation-user-guide.md) |
 | Guest / staff Satisfecho Delivery (checkout, courier, track) | [0053-satisfecho-delivery-order-channel.md](0053-satisfecho-delivery-order-channel.md) |
 | Enable or understand SaaS signup paywall (keep off until runbook) | [0052-saas-signup-paywall.md](0052-saas-signup-paywall.md) |
+| Owner signup email verify + inactive tenant cleanup (#442) | [0088-owner-signup-email-verify-inactive-tenants.md](0088-owner-signup-email-verify-inactive-tenants.md) |
 | Platform operator oversight (`/platform`) | [0059-platform-operator-portal.md](0059-platform-operator-portal.md) |
 | Manage multi-location restaurant groups | [0054-restaurant-groups.md](0054-restaurant-groups.md) |
 | Rate limits (production) | [0020-rate-limiting-production.md](0020-rate-limiting-production.md) |
@@ -77,6 +78,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | [0059-platform-operator-portal.md](0059-platform-operator-portal.md) | Platform operator portal: SaaS metrics and tenant oversight. |
 | [0051-table-groups-mvp.md](0051-table-groups-mvp.md) | Floor-plan table join/unjoin (**shipped** reference): combined seats and reservation pool for joined tables - not restaurant multi-location groups ([0054](0054-restaurant-groups.md)). |
 | [0052-saas-signup-paywall.md](0052-saas-signup-paywall.md) | Hard paywall for restaurant signups: trial/subscribe before staff app (issue #296). Includes guided `/register`/`/signup` wizard steps and 402-exempt priming paths. Keep off until ready; production enablement checklist in the doc (see also amvara9 § SaaS paywall in 0001). |
+| [0088-owner-signup-email-verify-inactive-tenants.md](0088-owner-signup-email-verify-inactive-tenants.md) | Owner signup 6-digit email verify, platform notify, and inactive tenant soft/hard delete (#442). |
 | [0053-satisfecho-delivery-order-channel.md](0053-satisfecho-delivery-order-channel.md) | Satisfecho Delivery: staff Delivery tab / courier API, public checkout `/delivery/{tenantId}`, fee/postal/radius coverage, guest track `/delivery/{tenantId}/track`, unpaid public TTL cleanup (issue #297 / #306). |
 | [0054-restaurant-groups.md](0054-restaurant-groups.md) | Restaurant groups: multi-location join codes; optional shared billing customers/products (issue #283). |
 | [0055-public-seo.md](0055-public-seo.md) | Public SEO for satisfecho.de: titles/meta/OG, robots.txt, sitemap.xml, noindex for staff shells (issue #307). |

@@ -111,6 +111,19 @@ async function registerTenant(baseUrl, { tenantName, email, password, fullName, 
   }
 }
 
+async function verifyOwnerEmail(baseUrl, email, code) {
+  const res = await fetch(`${baseUrl}/api/register/verify-email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code }),
+    signal: AbortSignal.timeout(20000),
+  });
+  const text = await res.text();
+  if (!res.ok) {
+    throw new Error(`POST /api/register/verify-email failed: ${res.status} ${text}`);
+  }
+}
+
 async function main() {
   const baseUrl = await detectBaseUrl();
   const requirePaywall = truthy(process.env.REQUIRE_PAYWALL);
@@ -161,6 +174,18 @@ async function main() {
     phone,
   });
   console.log('   Registered tenant_id:', created.tenant_id ?? '(unknown)');
+
+  const verifyCode = (process.env.REGISTER_VERIFY_CODE || process.env.OWNER_SIGNUP_FIXED_CODE || '').trim();
+  if (!/^\d{6}$/.test(verifyCode)) {
+    console.error(
+      'FAIL: owner email verify required after register. Set OWNER_SIGNUP_FIXED_CODE=424242 ' +
+        '(non-production) in config.env and recreate back, or pass REGISTER_VERIFY_CODE=………',
+    );
+    process.exit(1);
+  }
+  console.log('1b. Verifying owner email with six-digit code…');
+  await verifyOwnerEmail(baseUrl, email, verifyCode);
+  console.log('   Email verified.');
 
   const browser = await puppeteer.launch({
     executablePath: CHROME_PATH,

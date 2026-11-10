@@ -342,6 +342,17 @@ def delete_tenant_cascade(session: Session, tenant_id: int) -> list[str]:
 
     user_ids_subq = select(models.User.id).where(models.User.tenant_id == tenant_id)
     session.exec(delete(models.PasswordResetToken).where(models.PasswordResetToken.user_id.in_(user_ids_subq)))
+    session.exec(
+        delete(models.UserOtpRecoveryCode).where(
+            models.UserOtpRecoveryCode.user_id.in_(user_ids_subq)
+        )
+    )
+    session.exec(
+        delete(models.LoginEvent).where(
+            (models.LoginEvent.tenant_id == tenant_id)
+            | (models.LoginEvent.user_id.in_(user_ids_subq))
+        )
+    )
 
     for fl in session.exec(select(models.Floor).where(models.Floor.tenant_id == tenant_id)).all():
         fl.default_waiter_id = None

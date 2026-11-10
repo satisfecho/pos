@@ -276,6 +276,17 @@ class Tenant(SQLModel, table=True):
     saas_stripe_customer_id: str | None = Field(default=None, max_length=255)
     saas_stripe_subscription_id: str | None = Field(default=None, max_length=255)
 
+    # Inactive tenant housekeeping (#442): soft-delete then hard-delete after grace
+    soft_deleted_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    inactivity_warning_sent_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    hard_delete_after: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+
     users: list["User"] = Relationship(back_populates="tenant")
 
 
@@ -310,6 +321,25 @@ class User(SQLModel, table=True):
     otp_secret: str | None = Field(default=None, exclude=True)  # Never serialized in API responses
     otp_enabled: bool = Field(default=False)
     employee_number: str | None = Field(default=None, max_length=64)
+
+    # Owner signup email verification (#442). Default True so existing / admin-created staff stay active.
+    email_verified: bool = Field(default=True)
+    email_verification_code_hash: str | None = Field(default=None, max_length=64, index=True)
+    email_verification_sent_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    last_login_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+
+
+class OwnerSignupVerifyBody(SQLModel):
+    email: str
+    code: str = Field(min_length=6, max_length=6)
+
+
+class OwnerSignupResendBody(SQLModel):
+    email: str
 
 
 class UserOtpRecoveryCode(SQLModel, table=True):

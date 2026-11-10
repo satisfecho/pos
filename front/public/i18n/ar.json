@@ -290,7 +290,15 @@
     "SIGNUP_GO_DASHBOARD": "افتح لوحة تحكم الموظفين",
     "SIGNUP_CONTINUE_PAYWALL": "المتابعة إلى الخطط",
     "LOGOUT": "تسجيل الخروج",
-    "OTP_RECOVERY_HINT": "Lost your phone? Use one unused recovery code instead. Each recovery code works only once."
+    "OTP_RECOVERY_HINT": "Lost your phone? Use one unused recovery code instead. Each recovery code works only once.",
+    "SIGNUP_STEP_TITLE_VERIFY": "أكد بريدك الإلكتروني",
+    "SIGNUP_VERIFY_HINT": "أرسلنا رمزًا مكونًا من ستة أرقام إلى بريدك. أدخله أدناه للمتابعة.",
+    "SIGNUP_VERIFY_CODE": "رمز التحقق",
+    "SIGNUP_VERIFY_CODE_PLACEHOLDER": "123456",
+    "SIGNUP_VERIFY_SUBMIT": "تأكيد البريد",
+    "SIGNUP_VERIFY_RESEND": "إعادة إرسال الرمز",
+    "SIGNUP_VERIFY_RESENT": "تم إرسال الرمز",
+    "SIGNUP_VERIFY_FAILED": "تعذر التحقق من الرمز. تحقق منه وحاول مرة أخرى."
   },
   "DASHBOARD": {
     "TITLE": "لوحة التحكم",

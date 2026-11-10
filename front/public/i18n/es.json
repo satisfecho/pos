@@ -579,7 +579,15 @@
     "SIGNUP_GO_DASHBOARD": "Abrir panel de personal",
     "SIGNUP_CONTINUE_PAYWALL": "Continuar a los planes",
     "LOGOUT": "Cerrar sesión",
-    "OTP_RECOVERY_HINT": "¿Perdiste el teléfono? Usa un código de recuperación no usado. Cada código de recuperación sirve solo una vez."
+    "OTP_RECOVERY_HINT": "¿Perdiste el teléfono? Usa un código de recuperación no usado. Cada código de recuperación sirve solo una vez.",
+    "SIGNUP_STEP_TITLE_VERIFY": "Confirma tu correo",
+    "SIGNUP_VERIFY_HINT": "Te enviamos un código de seis dígitos a tu correo. Introdúcelo abajo para continuar.",
+    "SIGNUP_VERIFY_CODE": "Código de verificación",
+    "SIGNUP_VERIFY_CODE_PLACEHOLDER": "123456",
+    "SIGNUP_VERIFY_SUBMIT": "Verificar correo",
+    "SIGNUP_VERIFY_RESEND": "Reenviar código",
+    "SIGNUP_VERIFY_RESENT": "Código enviado",
+    "SIGNUP_VERIFY_FAILED": "No se pudo verificar el código. Compruébalo e inténtalo de nuevo."
   },
   "MENU": {
     "TITLE": "Menú",

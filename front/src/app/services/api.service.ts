@@ -320,6 +320,9 @@ export interface RegisterResponse {
   tenant_id?: number;
   provider_id?: number;
   email: string;
+  email_verified?: boolean;
+  verification_required?: boolean;
+  verification_email_sent?: boolean;
 }
 
 /** One catalog tier from GET /saas/config (multi-tier ready; #328) */
@@ -2147,6 +2150,27 @@ export class ApiService {
       }
     });
     return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, null, { params });
+  }
+
+  verifyOwnerSignupEmail(email: string, code: string): Observable<{
+    status: string;
+    email: string;
+    tenant_id?: number;
+    email_verified: boolean;
+  }> {
+    return this.http.post<{
+      status: string;
+      email: string;
+      tenant_id?: number;
+      email_verified: boolean;
+    }>(`${this.apiUrl}/register/verify-email`, { email, code });
+  }
+
+  resendOwnerSignupVerification(email: string): Observable<{ status: string; message?: string }> {
+    return this.http.post<{ status: string; message?: string }>(
+      `${this.apiUrl}/register/resend-verification`,
+      { email },
+    );
   }
 
   seedOnboardingStarterProducts(

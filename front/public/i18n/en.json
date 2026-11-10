@@ -738,7 +738,15 @@
     "SIGNUP_COMPLETE_LEAD": "Share this QR code so guests can view your menu and order.",
     "SIGNUP_GO_DASHBOARD": "Open staff dashboard",
     "SIGNUP_CONTINUE_PAYWALL": "Continue to plans",
-    "LOGOUT": "Log out"
+    "LOGOUT": "Log out",
+    "SIGNUP_STEP_TITLE_VERIFY": "Confirm your email",
+    "SIGNUP_VERIFY_HINT": "We sent a six-digit code to your email. Enter it below to continue.",
+    "SIGNUP_VERIFY_CODE": "Verification code",
+    "SIGNUP_VERIFY_CODE_PLACEHOLDER": "123456",
+    "SIGNUP_VERIFY_SUBMIT": "Verify email",
+    "SIGNUP_VERIFY_RESEND": "Resend code",
+    "SIGNUP_VERIFY_RESENT": "Code sent",
+    "SIGNUP_VERIFY_FAILED": "Could not verify that code. Check it and try again."
   },
   "PAYWALL": {
     "TITLE": "Choose a plan to continue",

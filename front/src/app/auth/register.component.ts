@@ -204,6 +204,37 @@ const STARTER_DEFAULTS: StarterProductState[] = [
         }
 
         @if (step() === 2) {
+          <p class="signup-step-hint">{{ 'AUTH.SIGNUP_VERIFY_HINT' | translate }}</p>
+          <form [formGroup]="verifyForm" (ngSubmit)="submitVerify()">
+            <div class="form-group">
+              <label for="verify_code">{{ 'AUTH.SIGNUP_VERIFY_CODE' | translate }}</label>
+              <input
+                id="verify_code"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="6"
+                autocomplete="one-time-code"
+                formControlName="code"
+                data-testid="signup-verify-code"
+                [placeholder]="translate.instant('AUTH.SIGNUP_VERIFY_CODE_PLACEHOLDER')"
+              >
+            </div>
+            @if (error()) {
+              <div class="error-banner">{{ error() }}</div>
+            }
+            <div class="wizard-nav">
+              <button type="button" class="btn-secondary" (click)="resendVerifyCode()" [disabled]="loading() || resendCooldown()">
+                {{ resendCooldown() ? ('AUTH.SIGNUP_VERIFY_RESENT' | translate) : ('AUTH.SIGNUP_VERIFY_RESEND' | translate) }}
+              </button>
+              <button type="submit" class="btn-submit" [disabled]="verifyForm.invalid || loading()" data-testid="signup-verify-submit">
+                {{ loading() ? ('COMMON.SAVING' | translate) : ('AUTH.SIGNUP_VERIFY_SUBMIT' | translate) }}
+              </button>
+            </div>
+          </form>
+        }
+
+        @if (step() === 3) {
           <p class="signup-step-hint">{{ 'AUTH.SIGNUP_PRODUCTS_HINT' | translate }}</p>
           <div class="starter-products">
             @for (item of starterProducts(); track item.name) {
@@ -226,14 +257,14 @@ const STARTER_DEFAULTS: StarterProductState[] = [
             <div class="error-banner">{{ error() }}</div>
           }
           <div class="wizard-nav">
-            <button type="button" class="btn-secondary" (click)="step.set(1)">{{ 'COMMON.BACK' | translate }}</button>
+            <button type="button" class="btn-secondary" (click)="step.set(2)">{{ 'COMMON.BACK' | translate }}</button>
             <button type="button" class="btn-submit" [disabled]="loading() || !hasEnabledStarter()" (click)="submitProducts()">
               {{ loading() ? ('COMMON.SAVING' | translate) : ('COMMON.NEXT' | translate) }}
             </button>
           </div>
         }
 
-        @if (step() === 3) {
+        @if (step() === 4) {
           <p class="signup-step-hint">{{ 'AUTH.SIGNUP_PHOTOS_HINT' | translate }}</p>
           <div class="photo-uploads">
             @for (product of onboardedProducts(); track product.id) {
@@ -257,14 +288,14 @@ const STARTER_DEFAULTS: StarterProductState[] = [
             <div class="error-banner">{{ error() }}</div>
           }
           <div class="wizard-nav">
-            <button type="button" class="btn-secondary" (click)="step.set(2)">{{ 'COMMON.BACK' | translate }}</button>
+            <button type="button" class="btn-secondary" (click)="step.set(3)">{{ 'COMMON.BACK' | translate }}</button>
             <button type="button" class="btn-submit" [disabled]="loading()" (click)="submitPhotos()">
               {{ loading() ? ('COMMON.SAVING' | translate) : ('COMMON.NEXT' | translate) }}
             </button>
           </div>
         }
 
-        @if (step() === 4) {
+        @if (step() === 5) {
           <div class="signup-complete">
             <p class="signup-complete-lead">{{ 'AUTH.SIGNUP_COMPLETE_LEAD' | translate }}</p>
             @if (tenantId()) {
@@ -630,6 +661,8 @@ export class RegisterComponent implements OnInit {
   legalTermsUrl = signal<string | null>(null);
   legalPrivacyUrl = signal<string | null>(null);
   tenantId = signal<number | null>(null);
+  pendingPassword = signal('');
+  resendCooldown = signal(false);
   starterProducts = signal<StarterProductState[]>(STARTER_DEFAULTS.map((p) => ({ ...p })));
   onboardedProducts = signal<OnboardedProduct[]>([]);
   pendingPhotos = new Map<number, File>();
@@ -652,6 +685,10 @@ export class RegisterComponent implements OnInit {
     },
   );
 
+  verifyForm = this.fb.group({
+    code: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
+  });
+
   ngOnInit(): void {
     this.api.getPublicLegalUrls().subscribe({
       next: (u) => {
@@ -670,6 +707,7 @@ export class RegisterComponent implements OnInit {
     const keys = [
       'AUTH.SIGNUP_STEP_TITLE_INTRO',
       'AUTH.SIGNUP_STEP_TITLE_ACCOUNT',
+      'AUTH.SIGNUP_STEP_TITLE_VERIFY',
       'AUTH.SIGNUP_STEP_TITLE_PRODUCTS',
       'AUTH.SIGNUP_STEP_TITLE_PHOTOS',
       'AUTH.SIGNUP_STEP_TITLE_DONE',
@@ -753,19 +791,11 @@ export class RegisterComponent implements OnInit {
     const { password_confirm, ...payload } = this.accountForm.value;
     this.api.register(payload).subscribe({
       next: (res) => {
-        const email = payload.email as string;
-        const password = payload.password as string;
         this.tenantId.set(res.tenant_id ?? null);
-        this.api.login(email, password).subscribe({
-          next: () => {
-            this.loading.set(false);
-            this.step.set(2);
-          },
-          error: (err) => {
-            this.loading.set(false);
-            this.error.set(this.apiErr.fromHttpError(err, 'AUTH.LOGIN_FAILED'));
-          },
-        });
+        this.pendingPassword.set((payload.password as string) || '');
+        this.verifyForm.reset({ code: '' });
+        this.loading.set(false);
+        this.step.set(2);
       },
       error: (err) => {
         this.loading.set(false);
@@ -776,6 +806,53 @@ export class RegisterComponent implements OnInit {
             : undefined;
         this.error.set(this.apiErr.fromHttpError(err, 'COMMON.API_REQUEST_FAILED'));
         this.emailAlreadyRegistered.set(err.status === 400 && code === 'email_already_registered');
+      },
+    });
+  }
+
+  submitVerify(): void {
+    if (!this.verifyForm.valid) return;
+    const email = (this.accountForm.get('email')?.value || '').trim();
+    const code = (this.verifyForm.get('code')?.value || '').trim();
+    if (!email || !code) return;
+    this.error.set('');
+    this.loading.set(true);
+    this.api.verifyOwnerSignupEmail(email, code).subscribe({
+      next: () => {
+        const password = this.pendingPassword();
+        this.api.login(email, password).subscribe({
+          next: () => {
+            this.pendingPassword.set('');
+            this.loading.set(false);
+            this.step.set(3);
+          },
+          error: (err) => {
+            this.loading.set(false);
+            this.error.set(this.apiErr.fromHttpError(err, 'AUTH.LOGIN_FAILED'));
+          },
+        });
+      },
+      error: (err) => {
+        this.loading.set(false);
+        this.error.set(this.apiErr.fromHttpError(err, 'AUTH.SIGNUP_VERIFY_FAILED'));
+      },
+    });
+  }
+
+  resendVerifyCode(): void {
+    const email = (this.accountForm.get('email')?.value || '').trim();
+    if (!email || this.loading() || this.resendCooldown()) return;
+    this.error.set('');
+    this.loading.set(true);
+    this.api.resendOwnerSignupVerification(email).subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.resendCooldown.set(true);
+        setTimeout(() => this.resendCooldown.set(false), 4000);
+      },
+      error: (err) => {
+        this.loading.set(false);
+        this.error.set(this.apiErr.fromHttpError(err, 'COMMON.API_REQUEST_FAILED'));
       },
     });
   }
@@ -793,7 +870,7 @@ export class RegisterComponent implements OnInit {
       next: (res) => {
         this.onboardedProducts.set(res.products);
         this.loading.set(false);
-        this.step.set(3);
+        this.step.set(4);
       },
       error: (err) => {
         this.loading.set(false);
@@ -805,7 +882,7 @@ export class RegisterComponent implements OnInit {
   submitPhotos(): void {
     const products = this.onboardedProducts();
     if (products.length === 0) {
-      this.step.set(4);
+      this.step.set(5);
       return;
     }
     this.error.set('');
@@ -837,7 +914,7 @@ export class RegisterComponent implements OnInit {
     chain
       .then(() => {
         this.loading.set(false);
-        this.step.set(4);
+        this.step.set(5);
       })
       .catch((err) => {
         this.loading.set(false);

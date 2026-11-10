@@ -579,7 +579,15 @@
     "SIGNUP_GO_DASHBOARD": "Personal-Dashboard öffnen",
     "SIGNUP_CONTINUE_PAYWALL": "Weiter zu den Plänen",
     "LOGOUT": "Abmelden",
-    "OTP_RECOVERY_HINT": "Handy verloren? Nutzen Sie einen unbenutzten Wiederherstellungscode. Jeder Wiederherstellungscode funktioniert nur einmal."
+    "OTP_RECOVERY_HINT": "Handy verloren? Nutzen Sie einen unbenutzten Wiederherstellungscode. Jeder Wiederherstellungscode funktioniert nur einmal.",
+    "SIGNUP_STEP_TITLE_VERIFY": "E-Mail bestätigen",
+    "SIGNUP_VERIFY_HINT": "Wir haben einen sechsstelligen Code an Ihre E-Mail gesendet. Geben Sie ihn unten ein, um fortzufahren.",
+    "SIGNUP_VERIFY_CODE": "Bestätigungscode",
+    "SIGNUP_VERIFY_CODE_PLACEHOLDER": "123456",
+    "SIGNUP_VERIFY_SUBMIT": "E-Mail bestätigen",
+    "SIGNUP_VERIFY_RESEND": "Code erneut senden",
+    "SIGNUP_VERIFY_RESENT": "Code gesendet",
+    "SIGNUP_VERIFY_FAILED": "Code konnte nicht bestätigt werden. Prüfen und erneut versuchen."
   },
   "MENU": {
     "TITLE": "Speisekarte",

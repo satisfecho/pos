@@ -704,7 +704,15 @@
     "SIGNUP_GO_DASHBOARD": "स्टाफ डैशबोर्ड खोलें",
     "SIGNUP_CONTINUE_PAYWALL": "प्लान पर जारी रखें",
     "LOGOUT": "लॉग आउट",
-    "OTP_RECOVERY_HINT": "Lost your phone? Use one unused recovery code instead. Each recovery code works only once."
+    "OTP_RECOVERY_HINT": "Lost your phone? Use one unused recovery code instead. Each recovery code works only once.",
+    "SIGNUP_STEP_TITLE_VERIFY": "ईमेल की पुष्टि करें",
+    "SIGNUP_VERIFY_HINT": "हमने आपके ईमेल पर छह अंकों का कोड भेजा है। जारी रखने के लिए नीचे दर्ज करें।",
+    "SIGNUP_VERIFY_CODE": "सत्यापन कोड",
+    "SIGNUP_VERIFY_CODE_PLACEHOLDER": "123456",
+    "SIGNUP_VERIFY_SUBMIT": "ईमेल सत्यापित करें",
+    "SIGNUP_VERIFY_RESEND": "कोड फिर भेजें",
+    "SIGNUP_VERIFY_RESENT": "कोड भेजा गया",
+    "SIGNUP_VERIFY_FAILED": "कोड सत्यापित नहीं हो सका। जाँचकर फिर कोशिश करें।"
   },
   "PAYWALL": {
     "TITLE": "जारी रखने के लिए एक प्लान चुनें",

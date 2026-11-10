@@ -579,7 +579,15 @@
     "SIGNUP_GO_DASHBOARD": "Отвори таблото",
     "SIGNUP_CONTINUE_PAYWALL": "Към плановете",
     "LOGOUT": "Изход",
-    "OTP_RECOVERY_HINT": "Lost your phone? Use one unused recovery code instead. Each recovery code works only once."
+    "OTP_RECOVERY_HINT": "Lost your phone? Use one unused recovery code instead. Each recovery code works only once.",
+    "SIGNUP_STEP_TITLE_VERIFY": "Потвърдете имейла",
+    "SIGNUP_VERIFY_HINT": "Изпратихме шестцифрен код на имейла ви. Въведете го по-долу, за да продължите.",
+    "SIGNUP_VERIFY_CODE": "Код за потвърждение",
+    "SIGNUP_VERIFY_CODE_PLACEHOLDER": "123456",
+    "SIGNUP_VERIFY_SUBMIT": "Потвърди имейл",
+    "SIGNUP_VERIFY_RESEND": "Изпрати кода отново",
+    "SIGNUP_VERIFY_RESENT": "Кодът е изпратен",
+    "SIGNUP_VERIFY_FAILED": "Кодът не можа да бъде потвърден. Проверете и опитайте отново."
   },
   "MENU": {
     "TITLE": "Меню",

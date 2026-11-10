@@ -579,7 +579,15 @@
     "SIGNUP_GO_DASHBOARD": "Ouvrir le tableau de bord",
     "SIGNUP_CONTINUE_PAYWALL": "Continuer vers les offres",
     "LOGOUT": "Se déconnecter",
-    "OTP_RECOVERY_HINT": "Téléphone perdu ? Utilisez un code de récupération inutilisé. Chaque code de récupération ne fonctionne qu’une fois."
+    "OTP_RECOVERY_HINT": "Téléphone perdu ? Utilisez un code de récupération inutilisé. Chaque code de récupération ne fonctionne qu’une fois.",
+    "SIGNUP_STEP_TITLE_VERIFY": "Confirmez votre e-mail",
+    "SIGNUP_VERIFY_HINT": "Nous avons envoyé un code à six chiffres à votre e-mail. Saisissez-le ci-dessous pour continuer.",
+    "SIGNUP_VERIFY_CODE": "Code de vérification",
+    "SIGNUP_VERIFY_CODE_PLACEHOLDER": "123456",
+    "SIGNUP_VERIFY_SUBMIT": "Vérifier l'e-mail",
+    "SIGNUP_VERIFY_RESEND": "Renvoyer le code",
+    "SIGNUP_VERIFY_RESENT": "Code envoyé",
+    "SIGNUP_VERIFY_FAILED": "Impossible de vérifier ce code. Vérifiez-le et réessayez."
   },
   "MENU": {
     "TITLE": "Menu",
