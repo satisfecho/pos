@@ -1686,7 +1686,8 @@ class ShiftWeekCopy(SQLModel):
 
 class OrderItemCreate(SQLModel):
     product_id: int
-    quantity: int
+    # Guest/staff create + merge paths; reject zero/negative so payable totals cannot be shrunk (#440).
+    quantity: int = Field(ge=1)
     notes: str | None = None
     source: str | None = None  # "tenant_product" or "product" to distinguish between TenantProduct and legacy Product
     # Values: str | int | list[str] (multi-select choice), etc.
