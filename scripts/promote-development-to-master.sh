@@ -11,6 +11,7 @@
 #   AGENT_PROMOTE=0                    Disable (exit 0).
 #   AGENT_PROMOTE_INTERVAL_HOURS       Min hours since last master tip (default: 24).
 #   AGENT_PROMOTE_FORCE=1              Ignore cadence; still no-ops if already up to date.
+#   AGENT_PROMOTE_SECURITY_FORCE=0      Disable auto-force for verified security / production-urgent (default: on).
 #   AGENT_PROMOTE_DRY_RUN=1            Print plan only; no merge/push/release.
 #   AGENT_PROMOTE_CREATE_RELEASE=0     Skip GitHub release creation (default: create if missing).
 #   AGENT_PROMOTE_WAIT_DEPLOY=1        Poll "Deploy to amvara9" until completed (default: 0).
@@ -18,6 +19,11 @@
 #   AGENT_GH_REPO                      Default satisfecho/pos.
 #
 # Exit codes: 0 = promoted or clean skip; 1 = error / blocked; 2 = skipped (cadence / disabled).
+#
+# Auto-force (security / urgent): when development is ahead and a pending commit
+# references issue #N that is labeled security or production-urgent, and a CLOSED
+# task for #N exists (agents2/tasks or done/), cadence is ignored so verified
+# security fixes ship to master (and amvara9) without waiting for the daily window.
 
 set -euo pipefail
 
@@ -27,12 +33,80 @@ cd "$REPO_ROOT"
 GH_REPO="${AGENT_GH_REPO:-satisfecho/pos}"
 INTERVAL_HOURS="${AGENT_PROMOTE_INTERVAL_HOURS:-24}"
 FORCE="${AGENT_PROMOTE_FORCE:-0}"
+SECURITY_FORCE="${AGENT_PROMOTE_SECURITY_FORCE:-1}"
 DRY_RUN="${AGENT_PROMOTE_DRY_RUN:-0}"
 CREATE_RELEASE="${AGENT_PROMOTE_CREATE_RELEASE:-1}"
 WAIT_DEPLOY="${AGENT_PROMOTE_WAIT_DEPLOY:-0}"
 WAIT_MINUTES="${AGENT_PROMOTE_WAIT_MINUTES:-45}"
+PROMOTE_REASON="daily"
 
 log() { echo "----- promote: $*" >&2; }
+
+# True if agents2 has a CLOSED task for issue #num (root queue or done/ archive).
+closed_task_exists_for_issue() {
+  local num="$1"
+  local f
+  shopt -s nullglob
+  for f in \
+    "$REPO_ROOT/agents2/tasks/CLOSED-${num}-"*.md \
+    "$REPO_ROOT/agents2/tasks/done/"*/*/*/CLOSED-${num}-*.md
+  do
+    [[ -f "$f" ]] || continue
+    shopt -u nullglob
+    return 0
+  done
+  shopt -u nullglob
+  return 1
+}
+
+# True if GitHub issue #num has label security or production-urgent.
+issue_is_security_or_urgent() {
+  local num="$1"
+  local labels
+  [[ -n "$num" ]] || return 1
+  if ! command -v gh >/dev/null 2>&1; then
+    return 1
+  fi
+  labels="$(gh issue view "$num" --repo "$GH_REPO" --json labels -q '[.labels[].name] | join(",")' 2>/dev/null || true)"
+  [[ -n "$labels" ]] || return 1
+  [[ "$labels" == *security* || "$labels" == *production-urgent* ]]
+}
+
+# If pending commits reference a verified security / production-urgent CLOSED issue, force promote.
+maybe_auto_force_security_urgent() {
+  local num nums reason=""
+  if [[ "$FORCE" == "1" ]]; then
+    return 0
+  fi
+  if [[ "$SECURITY_FORCE" != "1" ]]; then
+    log "security auto-force disabled (AGENT_PROMOTE_SECURITY_FORCE=${SECURITY_FORCE})"
+    return 0
+  fi
+  nums="$(
+    git log origin/master..origin/development --format=%B 2>/dev/null \
+      | grep -oE '(^|[^A-Za-z0-9_])#[0-9]+' \
+      | grep -oE '[0-9]+' \
+      | sort -nu || true
+  )"
+  if [[ -z "${nums:-}" ]]; then
+    return 0
+  fi
+  while IFS= read -r num; do
+    [[ -z "$num" || "$num" == "0" ]] && continue
+    if ! closed_task_exists_for_issue "$num"; then
+      continue
+    fi
+    if issue_is_security_or_urgent "$num"; then
+      FORCE=1
+      PROMOTE_REASON="security/urgent #${num}"
+      reason="issue #${num} (security or production-urgent) has CLOSED task"
+      break
+    fi
+  done <<< "$nums"
+  if [[ "$FORCE" == "1" && -n "$reason" ]]; then
+    log "auto-force: ${reason} — promote now (skip ${INTERVAL_HOURS}h cadence)"
+  fi
+}
 
 if [[ "${AGENT_PROMOTE:-1}" == "0" ]]; then
   log "disabled (AGENT_PROMOTE=0)"
@@ -124,17 +198,19 @@ if [[ "$AHEAD" -eq 0 ]]; then
   exit 0
 fi
 
+maybe_auto_force_security_urgent
+
 MASTER_EPOCH="$(git log -1 --format=%ct origin/master)"
 NOW_EPOCH="$(date +%s)"
 AGE_HOURS=$(( (NOW_EPOCH - MASTER_EPOCH) / 3600 ))
-log "master tip age ≈ ${AGE_HOURS}h (interval=${INTERVAL_HOURS}h force=${FORCE})"
+log "master tip age ≈ ${AGE_HOURS}h (interval=${INTERVAL_HOURS}h force=${FORCE} reason=${PROMOTE_REASON})"
 
 if [[ "$FORCE" != "1" && "$AGE_HOURS" -lt "$INTERVAL_HOURS" ]]; then
   log "skip: cadence not due yet (${AGE_HOURS}h < ${INTERVAL_HOURS}h). Set AGENT_PROMOTE_FORCE=1 to promote now."
   exit 2
 fi
 
-SUBJECT="Merge development: release through ${VERSION} (daily promote; ${AHEAD} commit(s) from ${DEV_SHA})."
+SUBJECT="Merge development: release through ${VERSION} (${PROMOTE_REASON}; ${AHEAD} commit(s) from ${DEV_SHA})."
 
 if [[ "$DRY_RUN" == "1" ]]; then
   log "DRY_RUN: would checkout master, merge origin/development, push origin master"

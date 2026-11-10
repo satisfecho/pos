@@ -62,5 +62,6 @@ Leave the rest of the file unchanged below this block.
 2. Read **`agents2/TASKS-README.md`**.
 3. List **`agents2/tasks/CLOSED-*.md`** (not in **`done/`**).
 4. Prepend **Closing summary**; run **`./scripts/move-agent-task-to-done.sh`**.
-5. Use ```bash gh``` command to remove all lables from <GITHUB-ISSUE-NUMBER> and close the issue.
+5. Use ```bash gh``` command to comment on **`<GITHUB-ISSUE-NUMBER>`**, remove agent workflow labels (`agent:testing`, `agent:wip`, `agent:planned`, …), and close the issue when fully delivered.
+6. **Security / production-urgent:** Do **not** remove labels **`security`** or **`production-urgent`**. Keep them so step **009** can auto-force **`development` → `master`** after this archive (see **`docs/agent-loop.md`**). Do **not** merge to **`master`** yourself.
 

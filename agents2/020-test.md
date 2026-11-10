@@ -68,6 +68,8 @@ Then rename the file as above.
 
 **GitHub:** when you start, comment on **#NN** and set label **`agent:testing`** (remove **`agent:wip`**). On pass/fail, update labels per **`docs/agent-loop.md`**.
 
+**Security / production-urgent:** Keep labels **`security`** and **`production-urgent`** on the issue when present. On overall **PASS**, rename to **`CLOSED-`** as usual. Do **not** merge to **`master`** yourself. Loop step **009** auto-promotes verified security / urgent work from **`development`** to **`master`** after the closer archives the task (see **`docs/agent-loop.md`**).
+
 ### Always
 
 - **Git - before you change anything:** From repo root run **`./scripts/git-sync-development.sh`** (or equivalent pull/rebase on **`development`**) before renaming task files or appending reports. See **`.cursor/rules/git-development-branch-workflow.mdc`**.

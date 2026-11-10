@@ -38,6 +38,9 @@ Merge **only** if **at least one** applies:
 1. **Daily cadence (default)** - At least once per day, batch-integrate tested commits from **`development`** into **`master`** and push (triggers **Deploy to amvara9**). Implemented by **`scripts/promote-development-to-master.sh`**, invoked as loop step **009** after the committer (`AGENT_PROMOTE_INTERVAL_HOURS` default **24**). Avoid merging **every** small commit individually.
 2. **Big production change** - Material impact: security, payments, data integrity, critical user-visible breakage, blocking migrations, multi-tenant risk, etc. Document why in commit/PR. Force with **`AGENT_PROMOTE_FORCE=1`** or a manual merge.
 3. **Urgent / explicit production** - The **GitHub issue** or **human** says **urgent**, **hotfix**, **production**, **deploy now**, or similar. Use label **`production-urgent`** on the issue when applicable so agents and humans agree on intent.
+4. **Verified security / production-urgent (automatic)** - After the tester marks **PASS** and the closer archives a **`CLOSED-#N-…`** task, step **009** auto-forces promote when pending commits on **`development`** reference issue **#N** and that issue has label **`security`** or **`production-urgent`**. No wait for the 24h window. Disable with **`AGENT_PROMOTE_SECURITY_FORCE=0`**.
+
+All of the above still land on **`development` first**. Production is always **`development` → `master`** after tests, never a direct commit to **`master`**.
 
 If **none** of the above applies: **push `development` only**; do **not** merge to **`master`** (the next daily promote will ship pending commits).
 

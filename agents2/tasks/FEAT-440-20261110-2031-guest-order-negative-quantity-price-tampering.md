@@ -10,7 +10,7 @@
 Public guest order create accepts unbounded line `quantity`. Negative quantities can reduce the guest payable total so a take-away guest can underpay. Enforce `quantity >= 1` on create/merge paths and keep payment totals consistent with server-side quantities.
 
 ## High-level instructions for coder
-- Prefer `production-urgent` / security fix on `development`, then promote when ready.
+- Implement and verify on `development` first. Keep labels `security` and `production-urgent`. After tester PASS and closer archives CLOSED, loop step 009 auto-promotes to `master` (production).
 - Validate guest order item quantity lower bound in the API model and create-order path.
 - Confirm guest payment amount uses the same server-side totals after the guard.
 - Add or extend backend tests for rejected negative (and zero) quantities.

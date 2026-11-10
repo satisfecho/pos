@@ -69,6 +69,7 @@ Repository advisories are **not** issues. The preflight lists open ones (`triage
      ```
    - For **high** or **critical**, also add label **`production-urgent`** when that label exists.
    - Create **`FEAT-<N>-YYYYMMDD-HHMM-<kebab-slug>.md`** as in the GitHub sweep below. Include both the issue URL and the advisory URL / GHSA id under **GitHub Issues**.
+   - In the FEAT instructions: implement on **`development`**; after tester **PASS** and closer **CLOSED**, loop **009** auto-promotes to **`master`** while **`security`** / **`production-urgent`** labels remain.
    - Comment + label **`agent:planned`** on the tracking issue.
 
 ### GitHub sweep - **do this every run**

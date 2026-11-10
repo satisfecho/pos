@@ -1116,6 +1116,7 @@ Environment:
   AGENT_PROMOTE              If 0, skip 009 daily promote (default: 1).
   AGENT_PROMOTE_INTERVAL_HOURS  Min hours since last master tip before promote (default: 24).
   AGENT_PROMOTE_FORCE=1      Promote even if cadence not due (still no-ops if already up to date).
+  AGENT_PROMOTE_SECURITY_FORCE  If not 0 (default 1), auto-force promote when pending commits reference a CLOSED security / production-urgent issue.
   AGENT_GIT_SYNC             If 0, skip git fetch/pull before each step (default: 1).
   AGENT_LOOP_TMP             Directory for 001 preflight digest (default: \$TMPDIR/pos-agent-loop).
   AGENT_GH_REPO              Repo for gh issue list and security-advisories API (default: satisfecho/pos).

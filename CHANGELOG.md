@@ -11,6 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Added
 
 - **Agent loop (001):** Preflight also watches repository **security advisories** (`triage` / `draft` / `published`). Untracked GHSA ids wake **001**, which opens a tracking issue (`security-advisory: GHSA-…`) and queues **`FEAT-`**. Docs: `docs/agent-loop.md`, `agents2/001-gh-reviewer.md`.
+- **Agent loop (009):** After a verified **`CLOSED-#N`** task, promote auto-forces **`development` → `master`** when pending commits reference issue **#N** labeled **`security`** or **`production-urgent`** (no 24h wait). Disable with **`AGENT_PROMOTE_SECURITY_FORCE=0`**.
 
 ### Changed
 
