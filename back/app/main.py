@@ -2910,19 +2910,20 @@ async def register_resend_verification(
     body: models.OwnerSignupResendBody,
     lang: str = Depends(_get_requested_language),
     session: Session = Depends(get_session),
-) -> dict:
+) -> JSONResponse:
     """Always return ok to avoid email enumeration; send only when owner is unverified."""
+    # JSONResponse so slowapi can inject rate-limit headers (headers_enabled)
     msg = get_message("owner_signup_verification_resent", lang)
     try:
         email = normalize_email_address(body.email)
     except ValueError:
-        return {"status": "ok", "message": msg}
+        return JSONResponse(content={"status": "ok", "message": msg})
 
     user = owner_signup_svc.find_unverified_owner_by_email(session, email)
     if user is None:
-        return {"status": "ok", "message": msg}
+        return JSONResponse(content={"status": "ok", "message": msg})
     await owner_signup_svc.issue_and_send_owner_code(user, session, lang)
-    return {"status": "ok", "message": msg}
+    return JSONResponse(content={"status": "ok", "message": msg})
 
 
 @app.post("/onboarding/starter-products")
