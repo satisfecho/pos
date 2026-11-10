@@ -1692,6 +1692,17 @@ const SETTINGS_SECTION_HASH: Record<SettingsSectionId, string> = {
                     <label>{{ 'SETTINGS.STRIPE_SECRET_KEY' | translate }}</label>
                     <input type="password" [(ngModel)]="formData.stripe_secret_key" name="stripe_secret_key" placeholder="••••••••••••••••" />
                   </div>
+                  <div class="form-group checkbox-group">
+                    <label>
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="formData.stripe_crypto_enabled"
+                        name="stripe_crypto_enabled"
+                      />
+                      {{ 'SETTINGS.STRIPE_CRYPTO_ENABLED' | translate }}
+                    </label>
+                    <p class="hint">{{ 'SETTINGS.STRIPE_CRYPTO_ENABLED_HINT' | translate }}</p>
+                  </div>
 
                   <h3>{{ 'SETTINGS.REVOLUT_INTEGRATION' | translate }}</h3>
                   <div class="form-group">
@@ -3692,6 +3703,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     currency_code: 'EUR',
     stripe_secret_key: null,
     stripe_publishable_key: null,
+    stripe_crypto_enabled: false,
     revolut_merchant_secret: null,
     immediate_payment_required: false,
     timezone: null,
@@ -3943,6 +3955,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           currency_code: settings.currency_code || 'EUR',
           stripe_secret_key: null,
           stripe_publishable_key: settings.stripe_publishable_key || null,
+          stripe_crypto_enabled: !!settings.stripe_crypto_enabled,
           revolut_merchant_secret: null,
           immediate_payment_required: settings.immediate_payment_required || false,
           timezone: settings.timezone || null,

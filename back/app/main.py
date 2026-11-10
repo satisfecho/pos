@@ -1104,6 +1104,21 @@ def _stripe_metadata_get(metadata: Any, key: str, default: Any = None) -> Any:
     return getattr(metadata, key, default)
 
 
+def _tenant_stripe_crypto_configured(tenant: models.Tenant | None) -> bool:
+    """True when owner enabled crypto and Stripe keys exist (tenant or platform fallback)."""
+    if tenant is None or not getattr(tenant, "stripe_crypto_enabled", False):
+        return False
+    secret = (
+        (tenant.stripe_secret_key or "").strip()
+        or (settings.stripe_secret_key or "").strip()
+    )
+    publishable = (
+        (tenant.stripe_publishable_key or "").strip()
+        or (settings.stripe_publishable_key or "").strip()
+    )
+    return bool(secret and publishable)
+
+
 def _take_away_table_token(session: Session, tenant_id: int) -> str | None:
     """Return token of the first active table named 'Take away' or 'Home ordering' (case-insensitive) for tenant."""
     tables = session.exec(
@@ -1552,6 +1567,7 @@ def create_public_satisfecho_delivery_order(
         "public_order_token": _sign_public_delivery_order_token(order.id, tenant_id),
         "stripe_publishable_key": stripe_key,
         "revolut_configured": revolut_configured,
+        "stripe_crypto_configured": _tenant_stripe_crypto_configured(tenant),
         "created_at": order.created_at.isoformat() if order.created_at else None,
     }
 
@@ -4464,6 +4480,8 @@ def update_tenant_settings(
         ):
             tenant.revolut_merchant_secret = tenant_update.revolut_merchant_secret.strip()
         # Empty = don't change (same as Stripe secret)
+    if tenant_update.stripe_crypto_enabled is not None:
+        tenant.stripe_crypto_enabled = bool(tenant_update.stripe_crypto_enabled)
 
     if tenant_update.fiscal_mode is not None:
         fm = tenant_update.fiscal_mode.strip().lower() if isinstance(tenant_update.fiscal_mode, str) else ""
@@ -8247,6 +8265,18 @@ def delete_floor(
 
     if not floor:
         raise HTTPException(status_code=404, detail="Floor not found")
+
+    # Explicit unlink: some DBs still have table_floor_id_fkey without ON DELETE SET NULL
+    # (ADD COLUMN IF NOT EXISTS skipped the cascade when the column already existed).
+    tables_on_floor = session.exec(
+        select(models.Table).where(
+            models.Table.floor_id == floor_id,
+            models.Table.tenant_id == current_user.tenant_id,
+        )
+    ).all()
+    for table in tables_on_floor:
+        table.floor_id = None
+        session.add(table)
 
     session.delete(floor)
     session.commit()
@@ -12746,6 +12776,7 @@ def get_menu(
                 or (settings.revolut_merchant_secret and settings.revolut_merchant_secret.strip())
             )
         ),
+        "tenant_stripe_crypto_configured": _tenant_stripe_crypto_configured(tenant),
         "tenant_immediate_payment_required": tenant.immediate_payment_required
         if tenant
         else False,
@@ -16431,9 +16462,13 @@ def create_payment_intent(
     order_id: int,
     table_token: str | None = None,
     public_order_token: str | None = None,
+    method: str | None = None,
     session: Session = Depends(get_session),
 ) -> JSONResponse:
-    """Create a Stripe PaymentIntent for an order (table guest or public delivery)."""
+    """Create a Stripe PaymentIntent for an order (table guest or public delivery).
+
+    Pass ``method=crypto`` for Stripe stablecoin / Crypto payment method (#439).
+    """
     order, table, display_name = _resolve_guest_payment_order(
         session,
         order_id,
@@ -16454,6 +16489,13 @@ def create_payment_intent(
 
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
+
+    is_crypto = (method or "").strip().lower() == "crypto"
+    if is_crypto and not getattr(tenant, "stripe_crypto_enabled", False):
+        raise HTTPException(
+            status_code=400,
+            detail="Crypto payments are not enabled for this restaurant",
+        )
 
     # Use tenant-specific Stripe keys, fallback to global config
     stripe_secret_key = tenant.stripe_secret_key or settings.stripe_secret_key
@@ -16481,17 +16523,22 @@ def create_payment_intent(
             "order_id": str(order.id),
             "tenant_id": str(order.tenant_id),
         }
+        if is_crypto:
+            metadata["pay_kind"] = "crypto"
         if table is not None:
             metadata["table_id"] = str(table.id)
         else:
             metadata["order_channel"] = models.OrderChannel.satisfecho_delivery.value
-        intent = stripe.PaymentIntent.create(
-            amount=total_cents,
-            currency=stripe_currency,
-            api_key=stripe_secret_key,
-            metadata=metadata,
-            description=f"Order #{order.id} at {tenant.name} - {display_name}",
-        )
+        create_kwargs: dict[str, Any] = {
+            "amount": total_cents,
+            "currency": stripe_currency,
+            "api_key": stripe_secret_key,
+            "metadata": metadata,
+            "description": f"Order #{order.id} at {tenant.name} - {display_name}",
+        }
+        if is_crypto:
+            create_kwargs["payment_method_types"] = ["crypto"]
+        intent = stripe.PaymentIntent.create(**create_kwargs)
 
         # JSONResponse so slowapi can inject rate-limit headers (requires a Response instance)
         return JSONResponse(
@@ -16499,6 +16546,7 @@ def create_payment_intent(
                 "client_secret": intent.client_secret,
                 "payment_intent_id": intent.id,
                 "amount": total_cents,
+                "method": "crypto" if is_crypto else "card",
             }
         )
     except stripe.error.StripeError as e:
@@ -16568,8 +16616,10 @@ def confirm_payment(
             )
 
         was_unpaid = order.status != models.OrderStatus.paid and order.paid_at is None
+        pay_kind = _stripe_metadata_get(intent.metadata, "pay_kind")
+        settlement_method = "crypto" if pay_kind == "crypto" else "stripe"
         # Mark order as paid (completed when all items already delivered — #345)
-        order.payment_method = "stripe"
+        order.payment_method = settlement_method
         order.paid_at = datetime.now(timezone.utc)
         order.bill_requested_at = None
         order.notes = f"{order.notes or ''}\n[PAID: {payment_intent_id}]".strip()
@@ -16579,7 +16629,7 @@ def confirm_payment(
         order_pay_svc.ensure_full_payment_leg(
             session,
             order=order,
-            payment_method="stripe",
+            payment_method=settlement_method,
             paid_by_user_id=None,
             stripe_payment_intent_id=payment_intent_id,
         )

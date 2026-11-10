@@ -318,7 +318,8 @@
     "DELIVERY_FEE": "Delivery fee",
     "SUBTOTAL": "Subtotal",
     "TRACK_ORDER": "Track your order",
-    "FLOATING_BAR_ARIA": "آرڈر کل اور آگے بڑھیں"
+    "FLOATING_BAR_ARIA": "آرڈر کل اور آگے بڑھیں",
+    "PAY_CRYPTO": "کرپٹو سے ادائیگی"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "ٹیک آوے اور گھر پر آرڈر",
@@ -2340,7 +2341,9 @@
     "NEWSLETTER_TEST_FAIL": "ٹیسٹ بھیجنا ناکام۔ Settings → Email میں SMTP چیک کریں۔",
     "NEWSLETTER_QUEUED_OK": "مہم قطار میں۔ تقریباً 30 پیغام/منٹ۔",
     "NEWSLETTER_SEND_FAIL": "مہم قطار میں نہیں لگی۔ سامعین، رضامندی اور SMTP چیک کریں۔",
-    "NEWSLETTER_CANCEL_FAIL": "مہم منسوخ نہیں ہو سکی۔"
+    "NEWSLETTER_CANCEL_FAIL": "مہم منسوخ نہیں ہو سکی۔",
+    "STRIPE_CRYPTO_ENABLED": "Stripe کے ذریعے کرپٹو (اسٹیبل کوائنز) قبول کریں",
+    "STRIPE_CRYPTO_ENABLED_HINT": "عوامی مینو اور ڈیلیوری چیک آؤٹ پر کرپٹو سے ادائیگی دکھاتا ہے۔ پہلے Stripe Dashboard میں Stablecoins and Crypto فعال کریں۔ تصفیہ آپ کے Stripe بیلنس میں ہوتا ہے؛ ریفنڈز مہمان کے والیٹ میں اسٹیبل کوائنز کے طور پر واپس آتے ہیں۔"
   },
   "PAYMENTS": {
     "PAYMENT": "ادائیگی",
@@ -2374,7 +2377,12 @@
     "WAITER_ON_WAY": "ویٹر ہے پر طریقہ!",
     "WAITER_ON_WAY_DESC": "ممبر کا عملہ گا ہو کے ساتھ آپ جلد.",
     "PAYMENT_REQUESTED": "ادائیگی requested!",
-    "PAYMENT_REQUESTED_DESC": "ویٹر گا آئیں کو آپ کا میز کو پروسیس ادائیگی."
+    "PAYMENT_REQUESTED_DESC": "ویٹر گا آئیں کو آپ کا میز کو پروسیس ادائیگی.",
+    "PAY_WITH_CRYPTO": "کرپٹو سے ادائیگی",
+    "PAY_WITH_CRYPTO_DESC": "Stripe کے ذریعے اسٹیبل کوائن سے ادائیگی (USDC اور معاون والٹس)",
+    "CRYPTO_NOT_CONFIGURED": "کرپٹو ادائیگیاں ترتیب نہیں دی گئیں۔ عملے سے مدد طلب کریں۔",
+    "CRYPTO_START_FAILED": "کرپٹو ادائیگی شروع نہیں ہو سکی۔",
+    "CRYPTO_CONFIRM_FAILED": "کرپٹو ادائیگی کی تصدیق نہیں ہو سکی۔ عملے سے مدد طلب کریں۔"
   },
   "ERRORS": {
     "GENERIC": "کچھ غلط ہو گیا۔ براہ کرم دوبارہ کوشش کریں۔",

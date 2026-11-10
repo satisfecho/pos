@@ -428,7 +428,8 @@
     "INVALID_TENANT": "Invalid restaurant link.",
     "TENANT_NOT_FOUND": "Restaurant not found.",
     "LOAD_FAILED": "Could not load the delivery menu. Please try again later.",
-    "FLOATING_BAR_ARIA": "Order total and continue"
+    "FLOATING_BAR_ARIA": "Order total and continue",
+    "PAY_CRYPTO": "Pay with crypto"
   },
   "DELIVERY_TRACK": {
     "TITLE": "Track your order",
@@ -2511,7 +2512,9 @@
     "NEWSLETTER_TEST_FAIL": "Test send failed. Check SMTP under Settings → Email.",
     "NEWSLETTER_QUEUED_OK": "Campaign queued. Messages send at about 30 per minute.",
     "NEWSLETTER_SEND_FAIL": "Could not queue the campaign. Check audience, consent, and SMTP.",
-    "NEWSLETTER_CANCEL_FAIL": "Could not cancel the campaign."
+    "NEWSLETTER_CANCEL_FAIL": "Could not cancel the campaign.",
+    "STRIPE_CRYPTO_ENABLED": "Accept crypto (stablecoins) via Stripe",
+    "STRIPE_CRYPTO_ENABLED_HINT": "Shows Pay with crypto on the public menu and delivery checkout. Enable Stablecoins and Crypto in your Stripe Dashboard first. Settles to your Stripe balance; refunds return stablecoins to the guest wallet."
   },
   "PAYMENTS": {
     "PAYMENT": "Payment",
@@ -2545,7 +2548,12 @@
     "WAITER_ON_WAY": "Waiter is on the way!",
     "WAITER_ON_WAY_DESC": "A member of staff will be with you shortly.",
     "PAYMENT_REQUESTED": "Payment requested!",
-    "PAYMENT_REQUESTED_DESC": "A waiter will come to your table to process the payment."
+    "PAYMENT_REQUESTED_DESC": "A waiter will come to your table to process the payment.",
+    "PAY_WITH_CRYPTO": "Pay with crypto",
+    "PAY_WITH_CRYPTO_DESC": "Pay with stablecoins via Stripe (USDC and supported wallets)",
+    "CRYPTO_NOT_CONFIGURED": "Crypto payments are not configured. Please ask staff for assistance.",
+    "CRYPTO_START_FAILED": "Failed to start crypto payment.",
+    "CRYPTO_CONFIRM_FAILED": "Crypto payment could not be confirmed. Please ask staff for help."
   },
   "ERRORS": {
     "GENERIC": "Something went wrong. Please try again.",

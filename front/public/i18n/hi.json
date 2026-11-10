@@ -428,7 +428,8 @@
     "INVALID_TENANT": "अमान्य रेस्तरां लिंक।",
     "TENANT_NOT_FOUND": "रेस्तरां नहीं मिला।",
     "LOAD_FAILED": "डिलीवरी मेनू लोड नहीं हो सका। बाद में पुनः प्रयास करें।",
-    "FLOATING_BAR_ARIA": "ऑर्डर कुल और आगे बढ़ें"
+    "FLOATING_BAR_ARIA": "ऑर्डर कुल और आगे बढ़ें",
+    "PAY_CRYPTO": "क्रिप्टो से भुगतान करें"
   },
   "DELIVERY_TRACK": {
     "TITLE": "Track your order",
@@ -2477,7 +2478,9 @@
     "NEWSLETTER_TEST_FAIL": "परीक्षण भेजना विफल। Settings → Email में SMTP जाँचें।",
     "NEWSLETTER_QUEUED_OK": "अभियान कतार में। लगभग 30 संदेश/मिनट।",
     "NEWSLETTER_SEND_FAIL": "अभियान कतार में नहीं लगा। ऑडियंस, सहमति और SMTP जाँचें।",
-    "NEWSLETTER_CANCEL_FAIL": "अभियान रद्द नहीं हो सका।"
+    "NEWSLETTER_CANCEL_FAIL": "अभियान रद्द नहीं हो सका।",
+    "STRIPE_CRYPTO_ENABLED": "Stripe के माध्यम से क्रिप्टो (स्टेबलकॉइन) स्वीकार करें",
+    "STRIPE_CRYPTO_ENABLED_HINT": "सार्वजनिक मेनू और डिलीवरी चेकआउट पर क्रिप्टो से भुगतान दिखाता है। पहले Stripe Dashboard में Stablecoins and Crypto सक्षम करें। निपटान आपके Stripe बैलेंस में होता है; रिफंड गेस्ट वॉलेट में स्टेबलकॉइन के रूप में लौटते हैं।"
   },
   "PAYMENTS": {
     "PAYMENT": "भुगतान",
@@ -2511,7 +2514,12 @@
     "WAITER_ON_WAY": "वेटर रास्ते में है!",
     "WAITER_ON_WAY_DESC": "एक स्टाफ सदस्य जल्द ही आपके पास आएगा।",
     "PAYMENT_REQUESTED": "भुगतान अनुरोध किया गया!",
-    "PAYMENT_REQUESTED_DESC": "एक वेटर भुगतान प्रक्रिया के लिए आपकी टेबल पर आएगा।"
+    "PAYMENT_REQUESTED_DESC": "एक वेटर भुगतान प्रक्रिया के लिए आपकी टेबल पर आएगा।",
+    "PAY_WITH_CRYPTO": "क्रिप्टो से भुगतान करें",
+    "PAY_WITH_CRYPTO_DESC": "Stripe के माध्यम से स्टेबलकॉइन से भुगतान करें (USDC और समर्थित वॉलेट)",
+    "CRYPTO_NOT_CONFIGURED": "क्रिप्टो भुगतान कॉन्फ़िगर नहीं है। कृपया स्टाफ़ से पूछें।",
+    "CRYPTO_START_FAILED": "क्रिप्टो भुगतान शुरू नहीं हो सका।",
+    "CRYPTO_CONFIRM_FAILED": "क्रिप्टो भुगतान की पुष्टि नहीं हो सकी। कृपया स्टाफ़ से पूछें।"
   },
   "ERRORS": {
     "GENERIC": "कुछ गलत हो गया। कृपया पुन: प्रयास करें।",

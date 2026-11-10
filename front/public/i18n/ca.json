@@ -428,7 +428,8 @@
     "INVALID_TENANT": "Enllaç de restaurant no vàlid.",
     "TENANT_NOT_FOUND": "Restaurant no trobat.",
     "LOAD_FAILED": "No s'ha pogut carregar el menú de lliurament. Torneu-ho a provar més tard.",
-    "FLOATING_BAR_ARIA": "Total de la comanda i continuar"
+    "FLOATING_BAR_ARIA": "Total de la comanda i continuar",
+    "PAY_CRYPTO": "Pagar amb cripto"
   },
   "DELIVERY_TRACK": {
     "TITLE": "Track your order",
@@ -2477,7 +2478,9 @@
     "NEWSLETTER_TEST_FAIL": "Ha fallat l’enviament de prova. Reviseu SMTP a Configuració → Email.",
     "NEWSLETTER_QUEUED_OK": "Campanya a la cua. Uns 30 missatges per minut.",
     "NEWSLETTER_SEND_FAIL": "No s’ha pogut posar la campanya a la cua. Reviseu audiència, consentiment i SMTP.",
-    "NEWSLETTER_CANCEL_FAIL": "No s’ha pogut cancel·lar la campanya."
+    "NEWSLETTER_CANCEL_FAIL": "No s’ha pogut cancel·lar la campanya.",
+    "STRIPE_CRYPTO_ENABLED": "Acceptar cripto (stablecoins) via Stripe",
+    "STRIPE_CRYPTO_ENABLED_HINT": "Mostra Pagar amb cripto al menú públic i al checkout de delivery. Activa Stablecoins and Crypto al Dashboard de Stripe primer. Es liquida al teu saldo Stripe; els reemborsaments tornen com a stablecoins a la cartera del client."
   },
   "PAYMENTS": {
     "PAYMENT": "Pagament",
@@ -2511,7 +2514,12 @@
     "WAITER_ON_WAY": "El cambrer ve de camí!",
     "WAITER_ON_WAY_DESC": "Un membre del personal serà amb tu en breu.",
     "PAYMENT_REQUESTED": "Pagament sol·licitat!",
-    "PAYMENT_REQUESTED_DESC": "Un cambrer vindrà a la teva taula per processar el pagament."
+    "PAYMENT_REQUESTED_DESC": "Un cambrer vindrà a la teva taula per processar el pagament.",
+    "PAY_WITH_CRYPTO": "Pagar amb cripto",
+    "PAY_WITH_CRYPTO_DESC": "Paga amb stablecoins via Stripe (USDC i moneders compatibles)",
+    "CRYPTO_NOT_CONFIGURED": "Els pagaments amb cripto no estan configurats. Demana ajuda al personal.",
+    "CRYPTO_START_FAILED": "No s'ha pogut iniciar el pagament amb cripto.",
+    "CRYPTO_CONFIRM_FAILED": "No s'ha pogut confirmar el pagament amb cripto. Demana ajuda al personal."
   },
   "ERRORS": {
     "GENERIC": "Alguna cosa ha anat malament. Si us plau, torna-ho a provar.",

@@ -82,6 +82,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   tenantPublicBackgroundColor = signal<string | null>(null);
   tenantPublicPrimaryColor = signal<string | null>(null);
   tenantRevolutConfigured = signal(false);
+  tenantStripeCryptoConfigured = signal(false);
   tenantHeaderBackgroundFilename = signal<string | null>(null);
 
   // Cart & Orders
@@ -316,11 +317,14 @@ export class MenuComponent implements OnInit, OnDestroy {
           this.api.setTenantStripeKey(data.tenant_stripe_publishable_key);
         }
         this.tenantRevolutConfigured.set(!!data.tenant_revolut_configured);
+        this.tenantStripeCryptoConfigured.set(!!data.tenant_stripe_crypto_configured);
 
         // Table session status
         this.tableIsActive.set(data.table_is_active !== false);  // Default true for backward compatibility
         this.tableRequiresPin.set(data.table_requires_pin === true);
         this.sharedCartEnabled.set(data.table_shared_cart === true);
+
+        this.maybeCompleteCryptoReturn();
 
         // Check if the table session has changed (table was closed and reopened).
         // If active_order_id differs from what we stored, clear stale data and
@@ -1555,6 +1559,111 @@ export class MenuComponent implements OnInit, OnDestroy {
         this.paymentRequestSending.set(false);
         alert(err.error?.detail || 'Failed to start Revolut payment.');
       },
+    });
+  }
+
+  selectPayCrypto() {
+    if (!this.currentOrderId || !this.tableToken) return;
+    const stripeKey = this.api.getStripePublishableKey();
+    if (!stripeKey) {
+      alert(this.translate.instant('PAYMENTS.CRYPTO_NOT_CONFIGURED'));
+      return;
+    }
+    this.paymentRequestSending.set(true);
+    this.api.createPaymentIntent(this.currentOrderId, this.tableToken, null, 'crypto').subscribe({
+      next: async (response: any) => {
+        this.clientSecret = response.client_secret;
+        this.paymentIntentId = response.payment_intent_id;
+        try {
+          await this.ensureStripe();
+          const returnUrl = new URL(window.location.href);
+          returnUrl.searchParams.set('crypto_pay', '1');
+          returnUrl.searchParams.set('order_id', String(this.currentOrderId));
+          const { error } = await this.stripe.confirmPayment({
+            clientSecret: this.clientSecret,
+            confirmParams: {
+              payment_method_data: { type: 'crypto' },
+              return_url: returnUrl.toString(),
+            },
+          });
+          if (error) {
+            this.paymentRequestSending.set(false);
+            alert(error.message || this.translate.instant('PAYMENTS.CRYPTO_START_FAILED'));
+          }
+        } catch (e: any) {
+          this.paymentRequestSending.set(false);
+          alert(e?.message || this.translate.instant('PAYMENTS.CRYPTO_START_FAILED'));
+        }
+      },
+      error: (err) => {
+        this.paymentRequestSending.set(false);
+        alert(err.error?.detail || this.translate.instant('PAYMENTS.CRYPTO_START_FAILED'));
+      },
+    });
+  }
+
+  private maybeCompleteCryptoReturn() {
+    const qp = this.route.snapshot.queryParamMap;
+    if (qp.get('crypto_pay') !== '1') return;
+    const paymentIntentId = qp.get('payment_intent');
+    const orderIdRaw = qp.get('order_id');
+    const orderId = orderIdRaw ? Number(orderIdRaw) : NaN;
+    if (!paymentIntentId || !Number.isFinite(orderId) || orderId <= 0 || !this.tableToken) {
+      return;
+    }
+    this.processingPayment.set(true);
+    this.api.confirmPayment(orderId, this.tableToken, paymentIntentId).subscribe({
+      next: () => {
+        this.processingPayment.set(false);
+        this.paymentSuccess.set(true);
+        this.showPaymentModal.set(true);
+        this.loadStoredOrders();
+        this.loadOrderHistory();
+        this.clearCryptoReturnParams();
+      },
+      error: (err) => {
+        this.processingPayment.set(false);
+        alert(err.error?.detail || this.translate.instant('PAYMENTS.CRYPTO_CONFIRM_FAILED'));
+        this.clearCryptoReturnParams();
+      },
+    });
+  }
+
+  private clearCryptoReturnParams() {
+    try {
+      const url = new URL(window.location.href);
+      for (const key of [
+        'crypto_pay',
+        'order_id',
+        'payment_intent',
+        'payment_intent_client_secret',
+        'redirect_status',
+      ]) {
+        url.searchParams.delete(key);
+      }
+      window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  private ensureStripe(): Promise<void> {
+    if (this.stripe) {
+      return Promise.resolve();
+    }
+    if ((window as any).Stripe) {
+      this.stripe = (window as any).Stripe(this.api.getStripePublishableKey());
+      return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://js.stripe.com/v3/';
+      script.onload = () => {
+        this.stripe = (window as any).Stripe(this.api.getStripePublishableKey());
+        resolve();
+      };
+      script.onerror = () => reject(new Error('Failed to load payment system'));
+      document.head.appendChild(script);
     });
   }
 

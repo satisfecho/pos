@@ -1345,7 +1345,12 @@
     "WAITER_ON_WAY": "النادل في الطريق!",
     "WAITER_ON_WAY_DESC": "سيصل أحد الموظفين إليك قريبًا.",
     "PAYMENT_REQUESTED": "تم طلب الدفع!",
-    "PAYMENT_REQUESTED_DESC": "سيأتي النادل إلى طاولتك لإتمام عملية الدفع."
+    "PAYMENT_REQUESTED_DESC": "سيأتي النادل إلى طاولتك لإتمام عملية الدفع.",
+    "PAY_WITH_CRYPTO": "الدفع بالعملات الرقمية",
+    "PAY_WITH_CRYPTO_DESC": "ادفع بالعملات المستقرة عبر Stripe (USDC والمحافظ المدعومة)",
+    "CRYPTO_NOT_CONFIGURED": "المدفوعات بالعملات الرقمية غير مُعدّة. اطلب المساعدة من الموظفين.",
+    "CRYPTO_START_FAILED": "تعذر بدء الدفع بالعملات الرقمية.",
+    "CRYPTO_CONFIRM_FAILED": "تعذر تأكيد الدفع بالعملات الرقمية. اطلب المساعدة من الموظفين."
   },
   "NOTIFICATIONS": {
     "CALL_WAITER_YOURS": "يناديك!",
@@ -1654,7 +1659,8 @@
     "BACK_HOME": "العودة للرئيسية",
     "INVALID_TENANT": "رابط المطعم غير صالح.",
     "TENANT_NOT_FOUND": "المطعم غير موجود.",
-    "LOAD_FAILED": "تعذر تحميل منيو التوصيل. يرجى المحاولة لاحقًا."
+    "LOAD_FAILED": "تعذر تحميل منيو التوصيل. يرجى المحاولة لاحقًا.",
+    "PAY_CRYPTO": "الدفع بالعملات الرقمية"
   },
   "DELIVERY_TRACK": {
     "TITLE": "تتبع طلبك",
@@ -2658,7 +2664,9 @@
     "NEWSLETTER_TEST_FAIL": "فشل إرسال الاختبار. تحقق من SMTP في الإعدادات ← البريد.",
     "NEWSLETTER_QUEUED_OK": "الحملة في قائمة الانتظار. نحو 30 رسالة في الدقيقة.",
     "NEWSLETTER_SEND_FAIL": "تعذر وضع الحملة في القائمة. تحقق من الجمهور والموافقة وSMTP.",
-    "NEWSLETTER_CANCEL_FAIL": "تعذر إلغاء الحملة."
+    "NEWSLETTER_CANCEL_FAIL": "تعذر إلغاء الحملة.",
+    "STRIPE_CRYPTO_ENABLED": "قبول العملات الرقمية (المستقرة) عبر Stripe",
+    "STRIPE_CRYPTO_ENABLED_HINT": "يعرض الدفع بالعملات الرقمية في القائمة العامة ودفع التوصيل. فعّل Stablecoins and Crypto في لوحة Stripe أولاً. تُسوّى إلى رصيد Stripe؛ تُعاد المبالغ كعملات مستقرة إلى محفظة الضيف."
   },
   "PROVIDER_AUTH": {
     "NO_ACCOUNT": "ليس لديك حساب مورد؟",

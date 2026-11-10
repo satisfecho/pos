@@ -29,6 +29,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | Agent loop vs untrusted GitHub input | [0077-agent-untrusted-github-input.md](0077-agent-untrusted-github-input.md) |
 | Open customer counter / coffee-shop order display | [0078-customer-facing-display.md](0078-customer-facing-display.md) |
 | Send tenant newsletter from Settings | [0079-newsletter.md](0079-newsletter.md) |
+| Accept guest crypto / stablecoin pay via Stripe | [0080-stripe-crypto-stablecoin-payments.md](0080-stripe-crypto-stablecoin-payments.md) |
 | Browse public marketing features list (`/features`, no login) | [../README.md](../README.md) Access Points / Features - route `http://localhost:4202/features`; per-feature detail pages at `/features/{slug}` (e.g. `/features/reservations`) |
 | Browse public About us (`/about`, no login; Amvara Consulting S.L.) | [../README.md](../README.md) Access Points - route `http://localhost:4202/about`; smoke: `npm run test:about --prefix front` |
 
@@ -55,6 +56,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | [0005-email-sending-options.md](0005-email-sending-options.md) | **Research only** - provider comparison (Proton, SendGrid, Resend, Gmail); not a shipping checklist. Ops: [0056](0056-gmail-setup.md), [0030](0030-reservation-confirmation-email-troubleshooting.md). |
 | [0056-gmail-setup.md](0056-gmail-setup.md) | Gmail setup: create account, 2FA, App Password, POS Settings → Email (SMTP). |
 | [0079-newsletter.md](0079-newsletter.md) | Newsletter campaigns (#435): Settings → Newsletter over the same tenant SMTP path; audience from billing/reservations. |
+| [0080-stripe-crypto-stablecoin-payments.md](0080-stripe-crypto-stablecoin-payments.md) | Guest Pay with crypto (#439): Stripe stablecoin / Crypto PaymentIntent; Settings toggle; menu + delivery. |
 | [0030-reservation-confirmation-email-troubleshooting.md](0030-reservation-confirmation-email-troubleshooting.md) | **Ops:** booking has email but no confirmation - diagnose script, log strings, tenant vs global SMTP. |
 
 ---

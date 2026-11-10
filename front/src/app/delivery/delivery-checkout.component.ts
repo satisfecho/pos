@@ -86,6 +86,7 @@ export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
   subtotalCents = signal(0);
   deliveryFeeCents = signal(0);
   revolutConfigured = signal(false);
+  stripeCryptoConfigured = signal(false);
   stripeReady = signal(false);
 
   showStripeForm = signal(false);
@@ -156,6 +157,7 @@ export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
     }
     this.tenantId.set(tid);
     this.updateDocumentTitle();
+    this.maybeCompleteCryptoReturn();
 
     this.api.getPublicTenant(tid).subscribe({
       next: (t) => {
@@ -399,6 +401,7 @@ export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
           this.subtotalCents.set(res.subtotal_cents ?? res.total_cents);
           this.deliveryFeeCents.set(res.delivery_fee_cents ?? 0);
           this.revolutConfigured.set(!!res.revolut_configured);
+          this.stripeCryptoConfigured.set(!!res.stripe_crypto_configured);
           const key = res.stripe_publishable_key || environment.stripePublishableKey || '';
           this.api.setTenantStripeKey(res.stripe_publishable_key || null);
           this.stripeReady.set(!!key);
@@ -447,6 +450,123 @@ export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
         );
       },
     });
+  }
+
+  payWithCrypto(): void {
+    const oid = this.orderId();
+    const token = this.publicOrderToken();
+    if (!oid || !token) return;
+    if (!this.api.getStripePublishableKey()) {
+      this.cardError.set(this.translate.instant('DELIVERY_CHECKOUT.PAY_NOT_CONFIGURED'));
+      return;
+    }
+    this.processingPayment.set(true);
+    this.cardError.set('');
+    this.api.createPaymentIntent(oid, null, token, 'crypto').subscribe({
+      next: async (response: any) => {
+        this.clientSecret = response.client_secret;
+        this.paymentIntentId = response.payment_intent_id;
+        try {
+          await this.ensureStripeJs();
+          const returnUrl = new URL(window.location.href);
+          returnUrl.searchParams.set('crypto_pay', '1');
+          returnUrl.searchParams.set('order_id', String(oid));
+          returnUrl.searchParams.set('public_order_token', token);
+          const { error } = await this.stripe.confirmPayment({
+            clientSecret: this.clientSecret,
+            confirmParams: {
+              payment_method_data: { type: 'crypto' },
+              return_url: returnUrl.toString(),
+            },
+          });
+          if (error) {
+            this.processingPayment.set(false);
+            this.cardError.set(
+              error.message || this.translate.instant('DELIVERY_CHECKOUT.PAY_FAILED'),
+            );
+          }
+        } catch {
+          this.processingPayment.set(false);
+          this.cardError.set(this.translate.instant('DELIVERY_CHECKOUT.PAY_FAILED'));
+        }
+      },
+      error: (err) => {
+        this.processingPayment.set(false);
+        this.cardError.set(
+          err.error?.detail || this.translate.instant('DELIVERY_CHECKOUT.PAY_FAILED'),
+        );
+      },
+    });
+  }
+
+  private ensureStripeJs(): Promise<void> {
+    if (this.stripe) {
+      return Promise.resolve();
+    }
+    if ((window as any).Stripe) {
+      this.stripe = (window as any).Stripe(this.api.getStripePublishableKey());
+      return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://js.stripe.com/v3/';
+      script.onload = () => {
+        this.stripe = (window as any).Stripe(this.api.getStripePublishableKey());
+        resolve();
+      };
+      script.onerror = () => reject(new Error('stripe_load_failed'));
+      document.head.appendChild(script);
+    });
+  }
+
+  private maybeCompleteCryptoReturn(): void {
+    const qp = this.route.snapshot.queryParamMap;
+    if (qp.get('crypto_pay') !== '1') return;
+    const paymentIntentId = qp.get('payment_intent');
+    const orderIdRaw = qp.get('order_id');
+    const token = qp.get('public_order_token') || this.publicOrderToken();
+    const orderId = orderIdRaw ? Number(orderIdRaw) : NaN;
+    if (!paymentIntentId || !token || !Number.isFinite(orderId) || orderId <= 0) {
+      return;
+    }
+    this.orderId.set(orderId);
+    this.publicOrderToken.set(token);
+    this.step.set('pay');
+    this.processingPayment.set(true);
+    this.api.confirmPayment(orderId, null, paymentIntentId, token).subscribe({
+      next: () => {
+        this.processingPayment.set(false);
+        this.paymentSuccess.set(true);
+        this.step.set('success');
+        this.clearCryptoReturnParams();
+      },
+      error: (err) => {
+        this.processingPayment.set(false);
+        this.cardError.set(
+          err.error?.detail || this.translate.instant('DELIVERY_CHECKOUT.CONFIRM_FAILED'),
+        );
+        this.clearCryptoReturnParams();
+      },
+    });
+  }
+
+  private clearCryptoReturnParams(): void {
+    try {
+      const url = new URL(window.location.href);
+      for (const key of [
+        'crypto_pay',
+        'order_id',
+        'public_order_token',
+        'payment_intent',
+        'payment_intent_client_secret',
+        'redirect_status',
+      ]) {
+        url.searchParams.delete(key);
+      }
+      window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+    } catch {
+      /* ignore */
+    }
   }
 
   payWithStripe(): void {

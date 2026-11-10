@@ -318,7 +318,8 @@
     "DELIVERY_FEE": "Delivery fee",
     "SUBTOTAL": "Subtotal",
     "TRACK_ORDER": "Track your order",
-    "FLOATING_BAR_ARIA": "Total de la commande et continuer"
+    "FLOATING_BAR_ARIA": "Total de la commande et continuer",
+    "PAY_CRYPTO": "Payer en crypto"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "À emporter et livraison",
@@ -2287,7 +2288,9 @@
     "NEWSLETTER_TEST_FAIL": "Échec de l’envoi test. Vérifiez SMTP dans Paramètres → E-mail.",
     "NEWSLETTER_QUEUED_OK": "Campagne mise en file. Environ 30 messages par minute.",
     "NEWSLETTER_SEND_FAIL": "Impossible de mettre la campagne en file. Vérifiez audience, consentement et SMTP.",
-    "NEWSLETTER_CANCEL_FAIL": "Impossible d’annuler la campagne."
+    "NEWSLETTER_CANCEL_FAIL": "Impossible d’annuler la campagne.",
+    "STRIPE_CRYPTO_ENABLED": "Accepter la crypto (stablecoins) via Stripe",
+    "STRIPE_CRYPTO_ENABLED_HINT": "Affiche Payer en crypto sur le menu public et le checkout livraison. Activez d'abord Stablecoins and Crypto dans le Dashboard Stripe. Règlement sur votre solde Stripe ; les remboursements reviennent en stablecoins vers le portefeuille du client."
   },
   "PAYMENTS": {
     "PAYMENT": "Paiement",
@@ -2321,7 +2324,12 @@
     "WAITER_ON_WAY": "Le serveur arrive !",
     "WAITER_ON_WAY_DESC": "Un membre du personnel sera à votre table sous peu.",
     "PAYMENT_REQUESTED": "Paiement demandé !",
-    "PAYMENT_REQUESTED_DESC": "Un serveur viendra à votre table pour encaisser."
+    "PAYMENT_REQUESTED_DESC": "Un serveur viendra à votre table pour encaisser.",
+    "PAY_WITH_CRYPTO": "Payer en crypto",
+    "PAY_WITH_CRYPTO_DESC": "Payer en stablecoins via Stripe (USDC et portefeuilles pris en charge)",
+    "CRYPTO_NOT_CONFIGURED": "Les paiements crypto ne sont pas configurés. Demandez au personnel.",
+    "CRYPTO_START_FAILED": "Impossible de démarrer le paiement crypto.",
+    "CRYPTO_CONFIRM_FAILED": "Le paiement crypto n'a pas pu être confirmé. Demandez au personnel."
   },
   "ERRORS": {
     "GENERIC": "Une erreur s'est produite. Réessayez.",
