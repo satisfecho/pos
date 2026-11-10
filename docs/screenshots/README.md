@@ -29,12 +29,6 @@ Public **delivery** and **waitlist** use `TENANT_ID` (default `1`) and need no e
 
 ## Screenshots
 
-### Staff dashboard
-
-Quick links to Catalog, Reservations, Kitchen, Reports, and more. Used in the [main README](../../README.md) screenshot collage.
-
-![Staff dashboard at /dashboard](dashboard.png)
-
 ### Orders
 
 Orders list with order cards, status, items, and actions.
@@ -107,7 +101,6 @@ Operator dashboard at `/platform`. See [docs/0059-platform-operator-portal.md](.
 
 | File | Where it's used |
 |------|------------------|
-| `dashboard.png` | Main README (screenshot collage) |
 | `orders.png` | - |
 | `kitchen.png` | Main README (screenshot collage); docs/0015-kitchen-display.md |
 | `reports.png` | docs/0016-reports.md |

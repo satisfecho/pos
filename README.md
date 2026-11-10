@@ -65,12 +65,11 @@ Guests can join the **waiting list** at **`/waitlist/{tenantId}`** (linked from 
 
 ### Screenshots
 
-Staff dashboard, kitchen display, and customer menu - a quick visual sense of the product.
+Kitchen display and customer menu - a quick visual sense of the product.
 
 <p float="left">
-  <img src="docs/screenshots/dashboard.png" width="32%" alt="Staff dashboard - Catalog, Reservations, Kitchen, Reports" />
-  <img src="docs/screenshots/kitchen.png" width="32%" alt="Kitchen display - full-screen order cards" />
-  <img src="docs/screenshots/menu.png" width="32%" alt="Customer menu - browse, cart, place order" />
+  <img src="docs/screenshots/kitchen.png" width="48%" alt="Kitchen display - full-screen order cards" />
+  <img src="docs/screenshots/menu.png" width="48%" alt="Customer menu - browse, cart, place order" />
 </p>
 
 *More screenshots (orders, reports, reservations, tables, provider portal) are listed in [docs/screenshots/README.md](docs/screenshots/README.md).*
