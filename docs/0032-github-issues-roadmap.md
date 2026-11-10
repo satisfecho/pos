@@ -19,7 +19,7 @@ Umbrella list. **This table is the source of truth** for “is it done?” until
 | **Migrate from existing system** | MVP shipped (#321) | Products + categories CSV CLI + cutover runbook ([0062](0062-pos-migration-import.md)); tables/customers/orders still open. |
 | **Opinion surveys / Google** | **Partial** | Guest feedback `/feedback/:id`, Google review URL, staff trends + CSV (#325 / [0064](0064-guest-feedback-analytics.md)). NPS / post-visit email-SMS still open → [#54](https://github.com/satisfecho/pos/issues/54). |
 | **Birthdays (“cumpleaños”)** | **Partial** | Reservation month/day (#324 / [0067](0067-guest-birthday.md)); billing-customer `birth_date`; loyalty birthday bonus once/year (#331 / [0066](0066-club-loyalty.md)). Automated outbound campaigns → [#54](https://github.com/satisfecho/pos/issues/54). |
-| **Marketing / special offers** | MVP shipped (#322) | Category %-off promotions - [0068](0068-price-promotions.md). Broader campaign automation → [#54](https://github.com/satisfecho/pos/issues/54). |
+| **Marketing / special offers** | MVP shipped (#322); newsletter MVP (#435) | Category %-off promotions - [0068](0068-price-promotions.md). Staff newsletter compose/send (consent, ~30/min, open/click) - [0079](0079-newsletter.md). Trigger-based post-visit SMS/email automation still open → [#54](https://github.com/satisfecho/pos/issues/54). |
 | **Central kitchen → branches** | MVP started (#323) | Linked tenants via restaurant groups + hub kitchen; fulfillment record with prepared-at-HQ - [0069](0069-branch-hub-fulfillment.md). |
 | **Satisfecho Delivery (first-party)** | **Partial / shipped core** | Own-channel delivery (API + staff UI + courier + public `/delivery/{tenantId}`). See [0053](0053-satisfecho-delivery-order-channel.md). Not the same as aggregator integrations below. |
 | **Uber Eats interface** | Not started | Aggregator menu sync / orders - see `docs/0031-order-customizations-plan.md` (delivery integrations). Distinct from first-party Satisfecho Delivery. |
@@ -48,12 +48,15 @@ Umbrella list. **This table is the source of truth** for “is it done?” until
 
 **Intent:** Automated **SMS/email** campaigns from triggers; **feedback link** after visit; optional **contact capture**; tie-in to **Google Maps** reviews; loyalty / win-back / special occasions.
 
+**Status in product (partial):** Guest feedback + Google review URL shipped (#325). Manual staff **newsletter** compose/send MVP shipped (#435 / [0079](0079-newsletter.md)) - not the same as trigger-based post-visit automation. Remaining: automated post-visit / win-back SMS/email, richer segmentation.
+
 **Overlap with codebase:**
 
-- Guest feedback and public tenant branding may already cover part of “feedback link”; extend rather than duplicate.
-- **Marketing automation** implies new subsystems: consent, templates, provider (SMTP vs SMS gateway), queues, unsubscribe.
+- Guest feedback and public tenant branding may already cover part of "feedback link"; extend rather than duplicate.
+- Newsletter MVP reused tenant SMTP, consent, queue, and open/click tracking; **trigger-based** campaigns and SMS still need new work.
+- **Marketing automation** beyond manual send implies: event triggers, SMS gateway, richer unsubscribe/segmentation UI.
 
-**Suggested slices:** (1) feedback URL + optional contact on existing flow, (2) tenant-configurable **Google review** deep link + optional **Google Maps place/directions** link on public book / reservation / feedback pages, (3) outbound email for one trigger (e.g. post-order thank-you), (4) SMS provider + compliance, (5) segmentation / campaigns UI.
+**Suggested slices:** (1) feedback URL + optional contact on existing flow - largely shipped, (2) tenant-configurable **Google review** deep link + optional **Google Maps place/directions** link on public book / reservation / feedback pages - largely shipped, (3) outbound email for one trigger (e.g. post-order thank-you) - still open (manual newsletter is not this), (4) SMS provider + compliance, (5) segmentation / campaigns UI.
 
 **Note:** Google does **not** allow third parties to **post** reviews via API; only to **link** guests to the official “Write a review” / Maps listing flow.
 

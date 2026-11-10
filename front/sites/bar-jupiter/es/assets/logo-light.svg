@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Júpiter">
+  <rect width="200" height="200" rx="24" fill="#f3f2ee"/>
+  <ellipse cx="100" cy="100" rx="86" ry="22" fill="none" stroke="#8a6f16" stroke-width="3.2"/>
+  <ellipse cx="100" cy="100" rx="70" ry="16" fill="none" stroke="#8a6f16" stroke-width="1.2" opacity="0.55"/>
+  <circle cx="100" cy="100" r="38" fill="#efece4" stroke="#8a6f16" stroke-width="2"/>
+  <text x="100" y="112" text-anchor="middle" fill="#141414" font-family="Georgia, 'Times New Roman', serif" font-size="42" font-weight="700" letter-spacing="2">J</text>
+</svg>

@@ -11,12 +11,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Added
 
 - **Agent loop watchdog (reboot-safe):** systemd unit **`pos-cursor-loop.service`** (`Restart=always`, enable on boot) via **`scripts/install-pos-cursor-loop-systemd.sh`**, plus a 5-minute cron **`scripts/watchdog-pos-cursor-loop.sh`** that restarts the loop if it stops. Docs: `docs/agent-loop.md`.
+- **Marketing landings:** Published tenant sites for Bar Jupiter, Kebab Express, and Kebab Factory under `front/sites/`.
 
 ### Changed
 
-- **Agent queue (#438, #439):** Parked FEAT tasks for production 500 investigation (blocked on amvara9/GitHub access) and a crypto-payment adaptation plan awaiting product decisions; no product code yet.
+- **Agent queue (#438, #439):** Parked FEAT tasks for production 500 investigation (blocked on amvara9/GitHub access) and a crypto-payment adaptation plan awaiting product decisions; no product code yet. Queued a host ops task to restore working `gh` auth so parked FEATs can receive waiting notices.
 - **README Star History (#437):** Added a short note on why stars help the project keep moving, plus a single CTA to open GitHub issues; chart image/link unchanged.
 - **Docs (#436):** Removed typographic em/en dashes from live Markdown and Cursor rules; ASCII hyphen only. Standing rule: `.cursor/rules/markdown-no-long-dashes.mdc` (archived `agents2/tasks/done/` left as historical).
+- **ROADMAP / docs index:** Shipped surface now runs through **2026-10-22** (customer-facing counter display, newsletter, VeriFactu staff anulación / multi-rate IVA). `docs/README.md` indexes **0078** and **0079**; `docs/0032` notes newsletter MVP vs open #54 automation.
+- **Marketing sites:** Refreshed Material Symbols font URLs on existing landings; Rico Kebab hero asset and bundle hash update.
 
 ### Fixed
 

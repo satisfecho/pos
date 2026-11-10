@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="es" dir="ltr" data-beasties-container>
+  <head>
+    <meta charset="utf-8">
+    <title>Kebab Express Pizzeria — Kebab y pizza en Nou Barris</title>
+    <base href="/kebab-express/es/">
+    <!-- Dev (base /): evita /es/main.js 404; en prod la base es /es/ etc. y no se altera la URL. -->
+    <script>
+      (function () {
+        var base = document.querySelector('base');
+        var bh = base && base.getAttribute('href');
+        if (!bh) return;
+        var basePath;
+        try {
+          basePath = new URL(bh, window.location.origin).pathname;
+        } catch (e) {
+          return;
+        }
+        if (basePath !== '/' && basePath !== '') return;
+        var langs = { es: 1, ca: 1, en: 1, fr: 1, de: 1, it: 1, pt: 1 };
+        var deploy = 'kebab-express';
+        var parts = window.location.pathname.split('/').filter(Boolean);
+        var localeIdx = -1;
+        if (parts[0] === deploy && parts.length > 1 && langs[parts[1]]) {
+          localeIdx = 1;
+        } else if (parts.length && langs[parts[0]]) {
+          localeIdx = 0;
+        }
+        if (localeIdx < 0) return;
+        var tail = parts.length > localeIdx + 1 ? '/' + parts.slice(localeIdx + 1).join('/') : '/';
+        window.history.replaceState(null, '', tail + window.location.search + window.location.hash);
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+    <meta name="description" content="Kebab y pizza en Carrer d'En Tissó, 9 (08016 La Prosperitat, Nou Barris, Barcelona). Pedido online, a domicilio, para llevar y comer en local. Abierto todos los días.">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="canonical" href="https://satisfecho.de/kebab-express/es/">
+    <link rel="alternate" hreflang="es" href="https://satisfecho.de/kebab-express/es/">
+    <link rel="alternate" hreflang="x-default" href="https://satisfecho.de/kebab-express/es/">
+    <link rel="sitemap" type="application/xml" href="https://satisfecho.de/kebab-express/es/sitemap.xml">
+
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_ES">
+    <meta property="og:site_name" content="Kebab Express Pizzeria">
+    <meta property="og:title" content="Kebab Express Pizzeria — Kebab y pizza en Nou Barris">
+    <meta property="og:description" content="Kebab y pizza en Carrer d'En Tissó, 9, La Prosperitat (Nou Barris, 08016). Pedido online, a domicilio y para llevar.">
+    <meta property="og:url" content="https://satisfecho.de/kebab-express/es/">
+    <meta property="og:image" content="https://satisfecho.de/kebab-express/es/assets/hero-poster.jpg">
+    <meta property="og:image:alt" content="Kebab Express Pizzeria en Nou Barris, Barcelona">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Kebab Express Pizzeria — Kebab y pizza en Nou Barris">
+    <meta name="twitter:description" content="Kebab y pizza en Carrer d'En Tissó, 9, La Prosperitat (Nou Barris, 08016).">
+    <meta name="twitter:image" content="https://satisfecho.de/kebab-express/es/assets/hero-poster.jpg">
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": ["Restaurant", "LocalBusiness"],
+        "@id": "https://satisfecho.de/kebab-express/es/#local",
+        "name": "Kebab Express Pizzeria",
+        "url": "https://satisfecho.de/kebab-express/es/",
+        "image": "https://satisfecho.de/kebab-express/es/assets/hero-poster.jpg",
+        "telephone": "+34931059194",
+        "servesCuisine": ["Kebab", "Pizza", "Turkish", "Mediterranean"],
+        "priceRange": "€",
+        "menu": "https://satisfecho.de/kebab-express/es/#carta",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Carrer d'En Tissó, 9",
+          "addressLocality": "Barcelona",
+          "addressRegion": "Cataluña",
+          "postalCode": "08016",
+          "addressCountry": "ES"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 41.44379,
+          "longitude": 2.18214
+        },
+        "hasMap": "https://www.google.com/maps/search/?api=1&query=Carrer%20d%27En%20Tiss%C3%B3%209%2C%2008016%20Barcelona",
+        "openingHoursSpecification": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"
+          ],
+          "opens": "12:00",
+          "closes": "23:30"
+        },
+        "areaServed": [
+          { "@type": "AdministrativeArea", "name": "Nou Barris" },
+          { "@type": "Place", "name": "La Prosperitat" },
+          {
+            "@type": "PostalAddress",
+            "postalCode": "08016",
+            "addressLocality": "Barcelona",
+            "addressCountry": "ES"
+          }
+        ],
+        "acceptsReservations": true,
+        "potentialAction": {
+          "@type": "OrderAction",
+          "target": "https://satisfecho.de/book/153"
+        }
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <style>@font-face{font-family:'Bebas Neue';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/bebasneue/v16/JTUSjIg69CK48gW7PXoo9Wdhyzbi.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;}@font-face{font-family:'Bebas Neue';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/bebasneue/v16/JTUSjIg69CK48gW7PXoo9Wlhyw.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}@font-face{font-family:'Cormorant Garamond';font-style:italic;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3smX5slCNuHLi8bLeY9MK7whWMhyjYrGFEsdtdc62E6zd5LDf-hdM8Efs.woff2) format('woff2');unicode-range:U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;}@font-face{font-family:'Cormorant Garamond';font-style:italic;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3smX5slCNuHLi8bLeY9MK7whWMhyjYrGFEsdtdc62E6zd5LDf-jNM8Efs.woff2) format('woff2');unicode-range:U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;}@font-face{font-family:'Cormorant Garamond';font-style:italic;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3smX5slCNuHLi8bLeY9MK7whWMhyjYrGFEsdtdc62E6zd5LDf-h9M8Efs.woff2) format('woff2');unicode-range:U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;}@font-face{font-family:'Cormorant Garamond';font-style:italic;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3smX5slCNuHLi8bLeY9MK7whWMhyjYrGFEsdtdc62E6zd5LDf-htM8Efs.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;}@font-face{font-family:'Cormorant Garamond';font-style:italic;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3smX5slCNuHLi8bLeY9MK7whWMhyjYrGFEsdtdc62E6zd5LDf-iNM8.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYpHtKgS4.woff2) format('woff2');unicode-range:U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;}@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYrXtKgS4.woff2) format('woff2');unicode-range:U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;}@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYpntKgS4.woff2) format('woff2');unicode-range:U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;}@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYp3tKgS4.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;}@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtK.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYpHtKgS4.woff2) format('woff2');unicode-range:U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;}@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYrXtKgS4.woff2) format('woff2');unicode-range:U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;}@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYpntKgS4.woff2) format('woff2');unicode-range:U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;}@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYp3tKgS4.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;}@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtK.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}@font-face{font-family:'DM Sans';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu6-K6h9Q.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;}@font-face{font-family:'DM Sans';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}@font-face{font-family:'DM Sans';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu6-K6h9Q.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;}@font-face{font-family:'DM Sans';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}@font-face{font-family:'DM Sans';font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu6-K6h9Q.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;}@font-face{font-family:'DM Sans';font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}@font-face{font-family:'DM Sans';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu6-K6h9Q.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;}@font-face{font-family:'DM Sans';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}</style>
+    <style>@font-face{font-family:'Material Symbols Outlined';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/materialsymbolsoutlined/v380/kJF1BvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oDMzByHX9rA6RzaxHMPdY43zj-jCxv3fzvRNU22ZXGJpEpjC_1v-p_4MrImHCIJIZrDCdHOej.woff2) format('woff2');}.material-symbols-outlined{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-feature-settings:'liga';-webkit-font-smoothing:antialiased;}</style>
+  <style>*,*:before,*:after{box-sizing:border-box}html{scroll-behavior:smooth;color-scheme:dark}body{margin:0;min-height:100vh;background:var(--bg)}:root{--bg:#000000;--bg-elevated:#0d0d0d;--surface:rgba(255, 255, 255, .04);--border:rgba(212, 175, 55, .22);--text:#f5f5f5;--text-muted:#9a9a9a;--muted-label:#5a5a5a;--boss-charcoal:#1a1a1a;--red:#c41e3a;--red-dim:#9e1830;--gold:#d4af37;--gold-dim:#b8962e;--white:#ffffff;--font-display:"Bebas Neue", system-ui, sans-serif;--font-serif:"Cormorant Garamond", Georgia, serif;--font-sans:"DM Sans", system-ui, sans-serif;--fg-088:rgba(255, 255, 255, .88);--fg-085:rgba(255, 255, 255, .85);--fg-092:rgba(255, 255, 255, .92);--fg-095:rgba(255, 255, 255, .95);--fg-090:rgba(255, 255, 255, .9);--fg-045:rgba(255, 255, 255, .45);--fg-032:rgba(255, 255, 255, .32);--fg-020:rgba(255, 255, 255, .2);--line-035:rgba(255, 255, 255, .35);--line-020:rgba(255, 255, 255, .2);--line-005:rgba(255, 255, 255, .05);--line-015:rgba(255, 255, 255, .15);--surface-tap:rgba(255, 255, 255, .05);--inset-hi:rgba(255, 255, 255, .05);--dot-off:rgba(255, 255, 255, .22);--shadow-elev:rgba(0, 0, 0, .45);--hover-fg:#ffffff;--video-bg:#000000;--backdrop-overlay:rgba(0, 0, 0, .55);--chip-bg-soft:rgba(0, 0, 0, .25);--top-grad-a:rgba(4, 3, 2, .94);--top-grad-b:rgba(10, 8, 6, .94);--top-grad-c:rgba(20, 16, 12, .93);--hero-hours-grad-top:rgba(13, 13, 13, .98);--panel-grad-top:#121212;--panel-grad-bot:#0a0a0a;--panel-shadow-a:rgba(0, 0, 0, .35);--panel-shadow-b:rgba(0, 0, 0, .65);--drawer-grad-top:#0f0f0f;--drawer-grad-bot:#060606;--drawer-shadow:rgba(0, 0, 0, .5);--footer-bg:#050505;--card-surface-solid:rgba(12, 12, 12, .88);--hours-open-fg:#86efac;--hours-open-border:rgba(74, 222, 128, .78);--hours-open-ring:rgba(74, 222, 128, .2);--hours-closed-fg:#fca5a5;--hours-closed-border:rgba(248, 113, 113, .82);--hours-closed-ring:rgba(248, 113, 113, .15)}</style><link rel="stylesheet" href="styles-VKX3FXJW.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="styles-VKX3FXJW.css"></noscript></head>
+  <body>
+    <noscript>
+      <p>
+        Kebab Express Pizzeria — kebab y pizza en Carrer d'En Tissó, 9, 08016 La Prosperitat, Nou Barris (Barcelona).
+        Teléfono 931 059 194. Pedido online, a domicilio, para llevar y comer en local.
+      </p>
+    </noscript>
+    <app-root></app-root>
+  <script src="polyfills-2NJIWUID.js" type="module"></script><script src="main-DZ4I7BFT.js" type="module"></script></body>
+</html>
