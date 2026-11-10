@@ -10,6 +10,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- **Agent loop watchdog (reboot-safe):** systemd unit **`pos-cursor-loop.service`** (`Restart=always`, enable on boot) via **`scripts/install-pos-cursor-loop-systemd.sh`**, plus a 5-minute cron **`scripts/watchdog-pos-cursor-loop.sh`** that restarts the loop if it stops. Docs: `docs/agent-loop.md`.
+
 ### Changed
 
 - **Agent queue (#438, #439):** Parked FEAT tasks for production 500 investigation (blocked on amvara9/GitHub access) and a crypto-payment adaptation plan awaiting product decisions; no product code yet.

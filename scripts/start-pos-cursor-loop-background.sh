@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 # Start agents2/pos-cursor-loop.sh detached with nohup.
 #
-# Usage (repo root):
+# Preferred (reboot-safe + Restart=always): install the systemd unit instead:
+#   ./scripts/install-pos-cursor-loop-systemd.sh
+#   ./scripts/watchdog-pos-cursor-loop.sh --status
+#
+# Usage (repo root, legacy / no-systemd hosts):
 #   ./scripts/start-pos-cursor-loop-background.sh
 #   ./scripts/start-pos-cursor-loop-background.sh --restart   # kill existing pid first
 #

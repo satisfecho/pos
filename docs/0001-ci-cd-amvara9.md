@@ -4,6 +4,13 @@ When code is pushed to the **production branch** (**`master`**) of **https://git
 
 **Daily promote (agent loop):** **`agents2/pos-cursor-loop.sh`** step **009** runs **`scripts/promote-development-to-master.sh`** after the committer when **`development`** is ahead of **`master`** and the last master tip is at least **`AGENT_PROMOTE_INTERVAL_HOURS`** old (default **24**). That merge+push to **`master`** is what triggers this workflow. Manual: `AGENT_PROMOTE_FORCE=1 ./scripts/promote-development-to-master.sh` (optional **`AGENT_PROMOTE_WAIT_DEPLOY=1`** to poll the Actions run).
 
+**Keep the agent loop up on amvara9 (once):** install the systemd unit + cron watchdog so the loop survives reboot and process death - see **`docs/agent-loop.md`** (*Keep the loop running*):
+
+```bash
+cd /development/pos && ./scripts/install-pos-cursor-loop-systemd.sh
+systemctl status pos-cursor-loop
+```
+
 ## Server setup (already done)
 
 - **amvara9**: SSH key pair generated at `/root/.ssh/github_deploy`; public key added to `/root/.ssh/authorized_keys`.

@@ -1,0 +1,12 @@
+# Optional environment for systemd unit pos-cursor-loop.service
+# Installed to /etc/default/pos-cursor-loop (does not overwrite an existing file).
+#
+# Uncomment to override defaults from agents2/pos-cursor-loop.sh:
+
+# AGENT_LOOP_SLEEP_MINUTES=5
+# AGENT_PROMOTE=1
+# AGENT_PROMOTE_INTERVAL_HOURS=24
+# AGENT_GIT_SYNC=1
+# AGENT_CURSOR_TIMEOUT_MINUTES=25
+# OLLAMA_MODEL=Gemma4:latest
+# OLLAMA_HOST=http://127.0.0.1:11434

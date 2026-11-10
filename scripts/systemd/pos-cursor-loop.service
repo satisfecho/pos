@@ -1,0 +1,27 @@
+[Unit]
+Description=POS Cursor agent loop (pos-cursor-loop)
+Documentation=file://__POS_REPO__/docs/agent-loop.md
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=__POS_REPO__
+# cursor-agent lives under ~/.local/bin; login PATH often omits it for non-interactive services.
+Environment=HOME=__POS_HOME__
+Environment=PATH=__POS_HOME__/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+EnvironmentFile=-/etc/default/pos-cursor-loop
+ExecStartPre=/bin/mkdir -p __POS_REPO__/tmp
+ExecStart=__POS_REPO__/agents2/pos-cursor-loop.sh
+Restart=always
+RestartSec=30
+KillMode=mixed
+TimeoutStopSec=90
+# Soft crash storm guard (systemd still restarts after the window).
+StartLimitIntervalSec=300
+StartLimitBurst=10
+StandardOutput=append:__POS_REPO__/tmp/pos-cursor-loop.log
+StandardError=append:__POS_REPO__/tmp/pos-cursor-loop.log
+
+[Install]
+WantedBy=multi-user.target
