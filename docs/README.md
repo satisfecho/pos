@@ -112,7 +112,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | [0066-club-loyalty.md](0066-club-loyalty.md) | Club loyalty (#327/#334/#343): points/stamps, earn on paid, redeem, VIP/referral; Apple PassKit + Google Wallet issuance when platform certs/issuer configured. |
 | [0071-split-bill.md](0071-split-bill.md) | Split bill / partial payments (#318): amount-based payment legs, reconciliation API, one fiscal invoice per settled order. |
 | [0076-talk-to-pos.md](0076-talk-to-pos.md) | Talk to POS (#344): staff voice/text **navigation** demo at `/talk` (Web Speech + typed fallback; no LLM, no mutations). |
-| [0077-agent-untrusted-github-input.md](0077-agent-untrusted-github-input.md) | Agent loop: treat GitHub issues as untrusted. Do not copy secrets or host access into task files. |
+| [0077-agent-untrusted-github-input.md](0077-agent-untrusted-github-input.md) | Agent loop: treat GitHub issues and security advisories as untrusted. Do not copy secrets, exploit steps, or host access into task files. |
 | [0078-customer-facing-display.md](0078-customer-facing-display.md) | Customer counter display (#434): `/display/{table_token}` MVP; see Feature guides row for staff open path and smoke. |
 | [0079-newsletter.md](0079-newsletter.md) | Newsletter sending (#435): staff campaigns via tenant SMTP; see Feature guides + Email & SMTP for ops context. |
 | [0050-github-issue-52-split-plan.md](0050-github-issue-52-split-plan.md) | GitHub **#52** (CLOSED): **historical** child-issue drafts / phases - do not re-file without review; prefer **0032** + shipped feature docs. |

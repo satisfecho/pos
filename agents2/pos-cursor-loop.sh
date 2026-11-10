@@ -137,6 +137,24 @@ issue_linked_in_root_tasks() {
   return 1
 }
 
+# True if GHSA id is already referenced in a root-level task file (dedupe hint for 001 advisory preflight).
+advisory_linked_in_root_tasks() {
+  local ghsa="$1"
+  local f bn
+  [[ -n "$ghsa" ]] || return 1
+  shopt -s nullglob
+  for f in "$TASKDIR"/*.md; do
+    bn=$(basename "$f")
+    [[ "$bn" == "README.md" ]] && continue
+    if grep -qiF "$ghsa" "$f" 2>/dev/null; then
+      shopt -u nullglob
+      return 0
+    fi
+  done
+  shopt -u nullglob
+  return 1
+}
+
 # ISO timestamp from first line of time-of-last-review.txt, or empty.
 # grep exits 1 when no match; with set -o pipefail that must not fail the caller.
 last_review_iso_utc() {
@@ -155,6 +173,7 @@ gh_stderr_looks_like_auth_failure() {
 # G001_GH_OK: 1 if gh produced an open-issues list (issue list or api fallback); 0 if gh missing or both failed.
 # G001_GH_AUTH_FAILED: 1 if gh stderr indicated 401 / bad credentials (so the loop can warn loudly).
 # G001_UNTRACKED_ISSUES: count of open issues with no #NN / issues/NN link in root tasks (0 if gh failed).
+# G001_UNTRACKED_ADVISORIES: count of open repo security advisories (triage/draft/published) with no GHSA in root tasks.
 # G001_LOG_SIGNALS: 1 if heuristic incident lines found in recent container logs.
 prepare_001_preflight_context() {
   local ctx="$1"
@@ -162,6 +181,7 @@ prepare_001_preflight_context() {
   G001_GH_OK=0
   G001_GH_AUTH_FAILED=0
   G001_UNTRACKED_ISSUES=0
+  G001_UNTRACKED_ADVISORIES=0
   G001_LOG_SIGNALS=0
   local utc
   utc=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
@@ -172,10 +192,11 @@ prepare_001_preflight_context() {
     echo "=== GitHub (open issues, limit 40) ==="
   } >"$ctx"
 
-  local gh_list_err gh_api_err
+  local gh_list_err gh_api_err gh_adv_err
   gh_list_err="$(dirname "$ctx")/gh-issue-list-stderr.$$"
   gh_api_err="$(dirname "$ctx")/gh-api-stderr.$$"
-  rm -f "$gh_list_err" "$gh_api_err"
+  gh_adv_err="$(dirname "$ctx")/gh-advisory-list-stderr.$$"
+  rm -f "$gh_list_err" "$gh_api_err" "$gh_adv_err"
 
   if command -v gh >/dev/null 2>&1; then
     if gh issue list --repo "$GH_REPO" --state open -L 40 --json number,title,labels,url,updatedAt >>"$ctx" 2>"$gh_list_err"; then
@@ -231,8 +252,37 @@ prepare_001_preflight_context() {
         rm -f "$gh_api_err"
       fi
     fi
+
+    {
+      echo ""
+      echo "=== GitHub (repository security advisories; open = triage|draft|published) ==="
+    } >>"$ctx"
+    if gh api "repos/${GH_REPO}/security-advisories" \
+      --jq '.[] | select(.state == "triage" or .state == "draft" or .state == "published") | {ghsa_id,state,severity,summary,html_url,updated_at}' >>"$ctx" 2>"$gh_adv_err"; then
+      local ghsa untracked_adv=0
+      while IFS= read -r ghsa; do
+        [[ -z "${ghsa:-}" ]] && continue
+        if ! advisory_linked_in_root_tasks "$ghsa"; then
+          untracked_adv=$((untracked_adv + 1))
+          echo "UNTRACKED_IN_TASKS advisory $ghsa" >>"$ctx"
+        fi
+      done < <(gh api "repos/${GH_REPO}/security-advisories" \
+        --jq '.[] | select(.state == "triage" or .state == "draft" or .state == "published") | .ghsa_id' 2>/dev/null || true)
+      G001_UNTRACKED_ADVISORIES=$untracked_adv
+      rm -f "$gh_adv_err"
+    else
+      {
+        echo "(gh security-advisories list failed — stderr below)"
+        cat "$gh_adv_err" 2>/dev/null || true
+        echo "Note: needs repo security advisory read access (same gh auth as issues when available)."
+      } >>"$ctx"
+      if gh_stderr_looks_like_auth_failure "$gh_adv_err"; then
+        G001_GH_AUTH_FAILED=1
+      fi
+      rm -f "$gh_adv_err"
+    fi
   else
-    echo "(gh not on PATH — cannot list issues)" >>"$ctx"
+    echo "(gh not on PATH — cannot list issues or security advisories)" >>"$ctx"
   fi
 
   {
@@ -280,7 +330,7 @@ prepare_001_preflight_context() {
   {
     echo ""
     echo "=== Preflight summary ==="
-    echo "G001_GH_OK=$G001_GH_OK G001_GH_AUTH_FAILED=$G001_GH_AUTH_FAILED G001_UNTRACKED_ISSUES=$G001_UNTRACKED_ISSUES G001_LOG_SIGNALS=$G001_LOG_SIGNALS"
+    echo "G001_GH_OK=$G001_GH_OK G001_GH_AUTH_FAILED=$G001_GH_AUTH_FAILED G001_UNTRACKED_ISSUES=$G001_UNTRACKED_ISSUES G001_UNTRACKED_ADVISORIES=$G001_UNTRACKED_ADVISORIES G001_LOG_SIGNALS=$G001_LOG_SIGNALS"
   } >>"$ctx"
 }
 
@@ -294,12 +344,16 @@ should_run_001_cursor_agent() {
   fi
   if [[ "$G001_LOG_SIGNALS" == "1" ]]; then
     # Default: do not spend cursor-agent on log-only noise when GitHub queue is empty.
-    if [[ "${AGENT_001_LOCAL_LOG_REVIEWER:-1}" != "0" ]] && [[ "$G001_GH_OK" == "1" ]] && [[ "${G001_UNTRACKED_ISSUES:-0}" -eq 0 ]]; then
+    if [[ "${AGENT_001_LOCAL_LOG_REVIEWER:-1}" != "0" ]] && [[ "$G001_GH_OK" == "1" ]] \
+      && [[ "${G001_UNTRACKED_ISSUES:-0}" -eq 0 ]] && [[ "${G001_UNTRACKED_ADVISORIES:-0}" -eq 0 ]]; then
       return 1
     fi
     return 0
   fi
   if [[ "$G001_GH_OK" == "1" ]] && [[ "${G001_UNTRACKED_ISSUES:-0}" -gt 0 ]]; then
+    return 0
+  fi
+  if [[ "${G001_UNTRACKED_ADVISORIES:-0}" -gt 0 ]]; then
     return 0
   fi
   if [[ "$G001_GH_OK" == "0" ]] && [[ "${AGENT_001_RUN_WHEN_GH_UNKNOWN:-0}" == "1" ]]; then
@@ -325,7 +379,7 @@ local_llm_triage_available() {
   return 1
 }
 
-# If only Docker heuristics fired (no untracked issues), local LLM may clear G001_LOG_SIGNALS.
+# If only Docker heuristics fired (no untracked issues/advisories), local LLM may clear G001_LOG_SIGNALS.
 # Default: Ollama first, then llama.cpp (AGENT_001_LLAMA_CPP_FIRST=1 for legacy llama-first order).
 maybe_local_llm_downgrade_log_signals() {
   local ctx="$1"
@@ -341,6 +395,7 @@ maybe_local_llm_downgrade_log_signals() {
   local_llm_triage_available || return 0
   [[ "$G001_LOG_SIGNALS" == "1" ]] || return 0
   [[ "${G001_UNTRACKED_ISSUES:-0}" -eq 0 ]] || return 0
+  [[ "${G001_UNTRACKED_ADVISORIES:-0}" -eq 0 ]] || return 0
   local triage_script="${REPO_ROOT}/scripts/agent-ollama-log-triage.sh"
   [[ -f "$triage_script" ]] || return 0
   echo "----- 001 local LLM log triage: auto (${triage_label})"
@@ -495,7 +550,7 @@ append_001_local_no_cursor_stamp() {
   local ctx="$1"
   local iso line
   iso=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-  line="${iso} UTC | 001 local (no cursor-agent) | FEAT: 0 | NEW: 0 | G001_GH_OK=${G001_GH_OK} G001_UNTRACKED_ISSUES=${G001_UNTRACKED_ISSUES} G001_LOG_SIGNALS=${G001_LOG_SIGNALS} | digest: ${ctx}"
+  line="${iso} UTC | 001 local (no cursor-agent) | FEAT: 0 | NEW: 0 | G001_GH_OK=${G001_GH_OK} G001_UNTRACKED_ISSUES=${G001_UNTRACKED_ISSUES} G001_UNTRACKED_ADVISORIES=${G001_UNTRACKED_ADVISORIES:-0} G001_LOG_SIGNALS=${G001_LOG_SIGNALS} | digest: ${ctx}"
   mkdir -p "$(dirname "$LAST_REVIEW_FILE")"
   printf '%s\n\n' "$line" >>"$LAST_REVIEW_FILE"
   {
@@ -544,17 +599,19 @@ step_log_reviewer() {
     fi
     local msg
     msg="Run 001: Read the preflight digest first (absolute path): $ctx
-Then follow 001-gh-reviewer.md — (A) GitHub → up to 3 × FEAT-*.md (dedupe as documented). (B) Docker logs → NEW-*.md only for real standing incidents (digest is heuristic; you may run docker logs yourself). gh comment/label. Task conventions: TASKS-README.md. Do your job."
+Then follow 001-gh-reviewer.md — (A) Security advisories first (triage/draft/published → tracking issue + FEAT, prefer over ordinary issues). (B) GitHub issues → up to 3 × FEAT-*.md total including advisory FEATs (dedupe as documented). (C) Docker logs → NEW-*.md only for real standing incidents (digest is heuristic; you may run docker logs yourself). gh comment/label. Task conventions: TASKS-README.md. Do your job."
     run_agent "log reviewer (001)" \
       "true" \
       "001-gh-reviewer.md" \
       "$msg" \
       "log"
-  elif [[ "$G001_LOG_SIGNALS" == "1" ]] && [[ "$G001_GH_OK" == "1" ]] && [[ "${G001_UNTRACKED_ISSUES:-0}" -eq 0 ]] && [[ "${AGENT_001_LOCAL_LOG_REVIEWER:-1}" != "0" ]]; then
-    echo "----- log reviewer (001) (skip cursor-agent: local log review — Docker heuristics only, GitHub ok, zero untracked issues)"
+  elif [[ "$G001_LOG_SIGNALS" == "1" ]] && [[ "$G001_GH_OK" == "1" ]] \
+    && [[ "${G001_UNTRACKED_ISSUES:-0}" -eq 0 ]] && [[ "${G001_UNTRACKED_ADVISORIES:-0}" -eq 0 ]] \
+    && [[ "${AGENT_001_LOCAL_LOG_REVIEWER:-1}" != "0" ]]; then
+    echo "----- log reviewer (001) (skip cursor-agent: local log review — Docker heuristics only, GitHub ok, zero untracked issues/advisories)"
     append_001_local_no_cursor_stamp "$ctx"
   else
-    echo "----- log reviewer (001) (skip: nothing for 001 — no open issues missing a task link, no log incident heuristics)"
+    echo "----- log reviewer (001) (skip: nothing for 001 — no open issues/advisories missing a task link, no log incident heuristics)"
     echo "----- Override: AGENT_LOG_REVIEWER_ALWAYS=1 or AGENT_001_SKIP_PREFLIGHT=1 (always invoke); AGENT_001_RUN_WHEN_GH_UNKNOWN=1 if gh failed but you still want a run; AGENT_001_LOCAL_LOG_REVIEWER=0 to invoke cursor-agent when only Docker heuristics fire."
   fi
 }
@@ -1061,13 +1118,13 @@ Environment:
   AGENT_PROMOTE_FORCE=1      Promote even if cadence not due (still no-ops if already up to date).
   AGENT_GIT_SYNC             If 0, skip git fetch/pull before each step (default: 1).
   AGENT_LOOP_TMP             Directory for 001 preflight digest (default: \$TMPDIR/pos-agent-loop).
-  AGENT_GH_REPO              Repo for gh issue list (default: satisfecho/pos).
+  AGENT_GH_REPO              Repo for gh issue list and security-advisories API (default: satisfecho/pos).
   AGENT_LOG_REVIEWER_ALWAYS  If 1, always invoke 001 cursor-agent (skip preflight gate).
   AGENT_001_SKIP_PREFLIGHT   If 1, always invoke 001 (legacy); digest still written when built.
   AGENT_001_RUN_WHEN_GH_UNKNOWN  If 1, run 001 when gh failed/missing and digest otherwise empty.
   AGENT_COMMITTER_LOCAL        If not 0 (default 1), when the dirty tree is only allowlisted stamp/scan files (001/005/008/011 time-of-last-review / last-scan.json), skip commit and cursor-agent (leave stamps local). Set to 0 to fall through (not recommended for stamp-only).
   AGENT_COMMITTER_USE_CURSOR   If 1 (default), run 040-committer via cursor-agent when there are non-stamp changes. Set to 0 to disable cursor committer (manual commits only).
-  AGENT_001_LOCAL_LOG_REVIEWER  If not 0 (default 1), never invoke cursor-agent for 001 when only Docker log heuristics fired and GitHub preflight succeeded with zero untracked issues (fully local digest + optional Ollama triage). Set to 0 to allow cursor-agent for that case (e.g. auto NEW-* from logs).
+  AGENT_001_LOCAL_LOG_REVIEWER  If not 0 (default 1), never invoke cursor-agent for 001 when only Docker log heuristics fired and GitHub preflight succeeded with zero untracked issues and zero untracked security advisories (fully local digest + optional Ollama triage). Set to 0 to allow cursor-agent for that case (e.g. auto NEW-* from logs).
   AGENT_001_OLLAMA_LOG_TRIAGE  If 0, never run local LLM triage. Otherwise (default) triage runs when llama.cpp OpenAI API responds (GET \$LLAMA_CPP_BASE_URL/models, default http://127.0.0.1:8080/v1) and python3 exists, or when ollama list shows ≥1 model at OLLAMA_HOST (default http://127.0.0.1:11434) — only for log-only 001 signals. LLAMA_CPP_MODEL (default Bonsai-8B.gguf); OLLAMA_MODEL (default Gemma4:latest). Default triage order is Ollama first, then llama.cpp; AGENT_001_LLAMA_CPP_FIRST=1 restores llama-first. AGENT_001_SKIP_LLAMA_CPP=1 forces Ollama only.   AGENT_001_LOG_TRIAGE_DEBUG=1 prints triage script stderr (llama.cpp / ollama errors).
   AGENT_MARKETING_REVIEWER_ALWAYS  If 1, always invoke 005 cursor-agent.
   AGENT_005_SKIP_PREFLIGHT         If 1, always invoke 005 (legacy always-run).

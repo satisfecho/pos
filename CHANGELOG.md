@@ -10,6 +10,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- **Agent loop (001):** Preflight also watches repository **security advisories** (`triage` / `draft` / `published`). Untracked GHSA ids wake **001**, which opens a tracking issue (`security-advisory: GHSA-…`) and queues **`FEAT-`**. Docs: `docs/agent-loop.md`, `agents2/001-gh-reviewer.md`.
+
 ### Changed
 
 - **Pay with crypto (#439):** Archived the verified agents2 task after PASS retest (Settings toggle plus menu/delivery Pay with crypto confirmed on the rebuilt front).
