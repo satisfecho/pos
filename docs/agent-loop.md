@@ -14,11 +14,11 @@ This document defines a **multi-agent workflow** for this repository, modeled on
 - **Separation of concerns:** Review/analysis agents do not implement; coders implement; testers verify with evidence; closing reviewer archives; committer handles changelog/version only.
 - **POS alignment:** Follow **`AGENTS.md`**, **`.cursor/rules/`** (catalog: **`docs/agent-cursor-rules.md`**), Docker-based backend tests, Puppeteer smokes (**`docs/testing.md`**), and **no new host installs** (see user/project rules).
 
-## Decision plane (Laya-shaped)
+## Decision plane ([Laya](https://github.com/NandhaKishorM/laya)-shaped)
 
 We are integrating a **decision plane** into the thin loop: **tool coordinator** (next action / skip / escalate before a paid worker) and **answer quality gate** (keep / one repair / reopen after a result). Pattern write-up: [raro42/agents-explained](https://github.com/raro42/agents-explained).
 
-Today this repo still uses **shell preflight** plus **Ollama / rules** for cheap triage. Laya clients are not required for every tick yet. Same roles; swap the decision head when ready.
+Today this repo still uses **shell preflight** plus **Ollama / rules** for cheap triage. [Laya](https://github.com/NandhaKishorM/laya) clients are not required for every tick yet. Same roles; swap the decision head when ready.
 
 ---
 
