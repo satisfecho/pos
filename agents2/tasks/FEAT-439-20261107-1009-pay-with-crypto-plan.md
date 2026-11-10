@@ -6,8 +6,8 @@
 
 ## Status
 - **Blocked - waiting for human** (product direction): plan drafted below; need decisions on approach, MVP surface, provider, assets, refunds before any code.
-- **Waiting notice posted:** 2026-11-07T10:15:36Z
-- **Note:** `gh issue comment` for the plan + waiting notice **failed** with Bad credentials (HTTP 401) at that timestamp. Re-post the plan body from **Adaptation plan (010)** once `gh auth` works; do not treat the missing issue comment as a human reply.
+- **Waiting notice posted:** 2026-11-10T12:35:00Z (re-posted after gh auth restored; earlier 2026-11-07 attempt failed with 401 and never landed on the issue)
+- **Note:** GitHub comment now live: https://github.com/satisfecho/pos/issues/439#issuecomment-6767444297 - do not treat agent waiting text as a human reply.
 
 ## Problem / goal
 Product ask: explore **payment via cryptocurrency**. Issue explicitly says **think and plan, do not code**. Deliver a concrete adaptation plan for Satisfecho POS (staff + public menu payment options), aligned with existing card/online flows (Stripe/Revolut - see `docs/REVOLUT.md`, split-bill / offline payment docs). No implementation in this task.
@@ -74,5 +74,5 @@ Do **not** build wallet custody, seed handling, or raw chain monitoring in `back
 
 ### Agent notes
 - Synced `development`; left task as **FEAT** (no WIP / no product code).
-- Plan written here; GitHub comment blocked by invalid `gh` token (same class of failure as FEAT-438).
-- When humans reply with decisions and `gh` works: clear blocked status, implement the agreed slice in a later 010 pass (then FEAT → WIP).
+- Plan written here; waiting notice + decision list posted on #439 after gh auth restore (WIP-0 restore-agent-host-gh-auth).
+- When humans reply with decisions: clear blocked status, implement the agreed slice in a later 010 pass (then FEAT → WIP).

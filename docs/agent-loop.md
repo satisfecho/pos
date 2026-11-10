@@ -229,6 +229,13 @@ Optional: track last version bump time in **`agents2/007-committer/last-version-
 - Expose to tools as **`GH_TOKEN`** / **`GITHUB_TOKEN`** (many tools accept either). **Never** commit tokens; use shell env, CI secrets, or local keychain via `gh`.
 - In **GitHub Actions**, the default `GITHUB_TOKEN` can comment and label on the same repo when workflows are enabled.
 
+**Agent host refresh (when `gh` returns 401):**
+
+1. Check whether a stale env token is overriding keyring auth: `echo "GH=${GH_TOKEN:+set} GITHUB=${GITHUB_TOKEN:+set}"` then `gh api user -q .login`. Stale `GH_TOKEN` / `GITHUB_TOKEN` values override `gh auth login` and cause **HTTP 401**.
+2. Prefer keyring: `unset GH_TOKEN GITHUB_TOKEN` then re-check `gh api user -q .login`. The loop already does this via `ensure_gh_auth_env` in **`agents2/pos-cursor-loop.sh`**.
+3. If still failing: `gh auth login` (HTTPS, scopes including **repo** / Issues) or export a fresh scoped PAT as **`GH_TOKEN`** (do not commit it; do not paste into task files).
+4. Smoke: `gh issue view NN --repo satisfecho/pos` and `gh issue comment NN --repo satisfecho/pos --body "…"`.
+
 ### Linking a task file to an issue
 
 At the top of each task markdown (or immediately under the title), add a stable pointer:
