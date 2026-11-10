@@ -104,7 +104,7 @@ maybe_auto_force_security_urgent() {
     fi
   done <<< "$nums"
   if [[ "$FORCE" == "1" && -n "$reason" ]]; then
-    log "auto-force: ${reason} — promote now (skip ${INTERVAL_HOURS}h cadence)"
+    log "auto-force: ${reason} - promote now (skip ${INTERVAL_HOURS}h cadence)"
   fi
 }
 
