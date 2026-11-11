@@ -14,6 +14,29 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.190] - 2026-11-10
+
+### Added
+
+- **Split bill + join tables as Features (#443):** Public marketing pages `/features/split-bill` and `/features/join-tables`.
+- **Guest-session split payments (#443):** Staff can pay unallocated lines by guest browser session; reconciliation returns `guest_sessions[]`.
+- **Stripe multi-intent partial pay (#443):** Guest create-payment-intent accepts amount / lines / session; confirm records a payment leg and settles only when remaining is zero. Menu **Pay my items** uses a session-scoped intent.
+- **Per-payer Factura prep (#443):** After full settlement, staff can issue a fiscal alta per payment leg (`order_payment_id`); mutually exclusive with the classic order-level Factura. Still VeriFactu preparation, not production AEAT filing.
+
+### Changed
+
+- **Docs (#443):** Updated split-bill and VeriFactu docs plus the roadmap row for split/join.
+
+## [2.1.189] - 2026-11-10
+
+### Changed
+
+- **Docs screenshots (#441):** Removed staff `dashboard.png` from the repo and README collage (kitchen + menu only); capture script no longer regenerates it. Archived the verified agents2 task after PASS checks (file absence, docs refs, collage, capture script, landing smoke).
+
+### Fixed
+
+- **Owner signup resend (#442):** Resending the signup verification code no longer 500s when rate limiting is on (`JSONResponse` so SlowAPI can set headers). Regression test covers SlowAPI-enabled load; docs note the response shape.
+
 ## [2.1.188] - 2026-11-10
 
 ### Added

@@ -30,7 +30,8 @@ Configure via **Settings → Payments** (fiscal section) or **PUT `/tenant/setti
 
 | Method | Path | Role |
 |--------|------|------|
-| **POST** | `/orders/{order_id}/fiscal-invoice/issue` | Issue or return existing fiscal **alta** (**idempotent** per order). Requires **`order:read`**. |
+| **POST** | `/orders/{order_id}/fiscal-invoice/issue` | Issue or return existing fiscal **alta** (**idempotent** per order, `order_payment_id` null). Requires **`order:read`**. |
+| **POST** | `/orders/{order_id}/payments/{payment_id}/fiscal-invoice/issue` | Optional per-payer **alta** after the order is fully paid (#443). Mutually exclusive with order-level alta. |
 | **GET** | `/orders/{order_id}/fiscal-invoice` | Read persisted fiscal **alta** if present. |
 | **POST** | `/orders/{order_id}/fiscal-invoice/cancel` | Issue **anulación** (credit-note cancel) for the alta; then order may be deleted/edited again. |
 
@@ -40,7 +41,7 @@ Configure via **Settings → Payments** (fiscal section) or **PUT `/tenant/setti
 - **Soft-deleted orders**: Not found (`404`).
 - **Cancelled orders**: Cannot issue (`400`).
 - **Order status**: Must be **`paid`** or **`completed`**.
-- **Idempotency**: At most **one** fiscal **alta** per `(tenant_id, order_id)`; repeated calls return the same record.
+- **Idempotency**: At most **one** order-level fiscal **alta** per `(tenant_id, order_id)` where `order_payment_id` is null; repeated calls return the same record. Per-payer altas are idempotent per `(tenant_id, order_payment_id)`.
 - **Immutability**: While an active (non-cancelled) alta exists, staff **cannot** soft-delete the order, change line items/amounts, or set status to cancelled (`409`). Use **cancel** (anulación) first.
 - **Hash chain**: Each new row stores `previous_hash` / `record_hash` (tenant-scoped chronological chain).
 - **QR**: `verification_qr_content` is an AEAT ValidarQR URL (`nif`, `numserie`, `fecha`, `importe`). Cotejo on AEAT’s site requires prior remisión.

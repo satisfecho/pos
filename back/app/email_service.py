@@ -345,6 +345,132 @@ async def send_customer_verification_email(
     return await send_email(to_email, subject, html_content, text_content)
 
 
+async def send_owner_signup_verification_email(
+    to_email: str,
+    code: str,
+    lang: str = "en",
+) -> bool:
+    """Send restaurant owner signup 6-digit verification code (global SMTP)."""
+    subject = get_message("email_owner_signup_verify_subject", lang)
+    heading = get_message("email_owner_signup_verify_heading", lang)
+    intro = get_message("email_owner_signup_verify_intro", lang)
+    code_label = get_message("email_owner_signup_verify_code_label", lang)
+    disclaimer = get_message("email_owner_signup_verify_disclaimer", lang)
+    automated = get_message("email_owner_signup_verify_automated_footer", lang)
+    safe_code = html.escape(code)
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .code {{ font-size: 32px; letter-spacing: 0.35em; font-weight: bold; text-align: center; margin: 24px 0; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>{html.escape(heading)}</h1>
+            <p>{html.escape(intro)}</p>
+            <p>{html.escape(code_label)}</p>
+            <p class="code">{safe_code}</p>
+            <p>{html.escape(disclaimer)}</p>
+            <hr>
+            <p style="color: #666; font-size: 12px;">{html.escape(automated)}</p>
+        </div>
+    </body>
+    </html>
+    """
+    text_content = f"""{heading}
+
+{intro}
+
+{code_label}: {code}
+
+{disclaimer}
+"""
+    return await send_email(to_email, subject, html_content, text_content)
+
+
+async def send_platform_owner_signup_notify(
+    to_email: str,
+    *,
+    owner_email: str,
+    tenant_id: int | None,
+    tenant_name: str,
+    lang: str = "en",
+) -> bool:
+    """Notify platform operator that a restaurant owner completed email verification."""
+    subject = get_message("email_platform_owner_signup_subject", lang)
+    heading = get_message("email_platform_owner_signup_heading", lang)
+    body = get_message(
+        "email_platform_owner_signup_body",
+        lang,
+        owner_email=owner_email,
+        tenant_id=tenant_id if tenant_id is not None else "-",
+        tenant_name=tenant_name or "-",
+    )
+    automated = get_message("email_platform_owner_signup_automated_footer", lang)
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"></head>
+    <body>
+        <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial,sans-serif;color:#333;">
+            <h1>{html.escape(heading)}</h1>
+            <p>{html.escape(body)}</p>
+            <hr>
+            <p style="color:#666;font-size:12px;">{html.escape(automated)}</p>
+        </div>
+    </body>
+    </html>
+    """
+    text_content = f"""{heading}
+
+{body}
+"""
+    return await send_email(to_email, subject, html_content, text_content)
+
+
+async def send_inactive_tenant_warning_email(
+    to_email: str,
+    *,
+    tenant_name: str,
+    grace_days: int,
+    lang: str = "en",
+) -> bool:
+    """Warn owner that inactive tenant data will be removed after grace_days."""
+    subject = get_message("email_inactive_tenant_warning_subject", lang, tenant_name=tenant_name)
+    heading = get_message("email_inactive_tenant_warning_heading", lang)
+    body = get_message(
+        "email_inactive_tenant_warning_body",
+        lang,
+        tenant_name=tenant_name,
+        grace_days=grace_days,
+    )
+    automated = get_message("email_inactive_tenant_warning_automated_footer", lang)
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"></head>
+    <body>
+        <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial,sans-serif;color:#333;">
+            <h1>{html.escape(heading)}</h1>
+            <p>{html.escape(body)}</p>
+            <hr>
+            <p style="color:#666;font-size:12px;">{html.escape(automated)}</p>
+        </div>
+    </body>
+    </html>
+    """
+    text_content = f"""{heading}
+
+{body}
+"""
+    return await send_email(to_email, subject, html_content, text_content)
+
+
 async def send_reservation_confirmation(
     to_email: str,
     customer_name: str,

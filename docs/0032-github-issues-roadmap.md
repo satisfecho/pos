@@ -13,8 +13,8 @@ Umbrella list. **This table is the source of truth** for “is it done?” until
 | Theme | Status in product | Docs / notes |
 |--------|-------------------|--------------|
 | **Multiple warehouses (“almacenes”)** | MVP shipped (#320) | Named warehouses per tenant; receive/adjust + stock filter by location. Transfers / WMS picking still open - [0061](0061-multi-warehouse-inventory.md). |
-| **Split invoice** | MVP shipped (#318, by-line #331) | Partial payments by amount and by order line; remaining balance; one Factura/VeriFactu alta when settled - [0071](0071-split-bill.md). |
-| **Join tables** | Floor-plan MVP shipped | Join/unjoin on `/tables/canvas` - [0051](0051-table-groups-mvp.md). Deeper multi-bill merge UX may still grow. |
+| **Split invoice** | Shipped (#318, by-line #331, #443) | Partial payments by amount, line, and guest session; Stripe multi-intent legs; optional per-payer Factura prep; Features marketing - [0071](0071-split-bill.md). |
+| **Join tables** | Floor-plan MVP shipped + Features marketing (#443) | Join/unjoin on `/tables/canvas` - [0051](0051-table-groups-mvp.md); `/features/join-tables`. |
 | **Offline operation** | MVP started (#319, deferred-card #333) | ADR + staff cash sale queue/idempotent sync; deferred-card intent (no PAN/CVV); TSE auto-sign on sync (#331). SW/full write queue and true offline card/fiscal later - [0063](0063-offline-capable-client.md). |
 | **Migrate from existing system** | MVP shipped (#321) | Products + categories CSV CLI + cutover runbook ([0062](0062-pos-migration-import.md)); tables/customers/orders still open. |
 | **Opinion surveys / Google** | **Partial** | Guest feedback `/feedback/:id`, Google review URL, staff trends + CSV (#325 / [0064](0064-guest-feedback-analytics.md)). NPS / post-visit email-SMS still open → [#54](https://github.com/satisfecho/pos/issues/54). |

@@ -76,6 +76,12 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         'Accept card payments at the table or when booking via Stripe and Revolut Checkout.',
       ),
       item(
+        'split-bill',
+        'SPLIT_BILL',
+        'Split bill — Satisfecho',
+        'Split one check by amount, by line, or by guest session — partial payments until the table is settled.',
+      ),
+      item(
         'order-comments',
         'ORDER_COMMENTS',
         'Order comments — Satisfecho',
@@ -116,6 +122,12 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         'TABLES',
         'Tables & floor plan — Satisfecho',
         'Manage tables, seat counts, and a visual floor canvas for your dining room.',
+      ),
+      item(
+        'join-tables',
+        'JOIN_TABLES',
+        'Join tables — Satisfecho',
+        'Merge neighboring tables into one party on the floor canvas — shared covers and one bill path.',
       ),
       item(
         'my-shift',

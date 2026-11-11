@@ -6,6 +6,7 @@ import {
   ApiService,
   Order,
   OrderItem,
+  OrderGuestSessionGroup,
   TenantSettings,
   BillingCustomer,
   TenantProduct,
@@ -1358,11 +1359,49 @@ ModuleRegistry.registerModules([
                           <li>
                             {{ formatPrice(p.amount_cents) }} · {{ p.payment_method }}
                             @if (p.payer_label) { ({{ p.payer_label }}) }
+                            @if (payOrder.paid_at && fiscalInvoicingEnabled()) {
+                              <button
+                                type="button"
+                                class="btn btn-sm btn-secondary"
+                                style="margin-left: 0.5rem;"
+                                [attr.data-testid]="'issue-payer-factura-' + p.id"
+                                (click)="issuePayerFactura(payOrder, p.id)"
+                                [disabled]="processingPayment()"
+                              >
+                                {{ 'ORDERS.ISSUE_PAYER_FACTURA' | translate }}
+                              </button>
+                            }
                           </li>
                         }
                       </ul>
                     }
                     @if (!paymentModalFinishMode() && paymentAmountRemainingCents(payOrder) > 0) {
+                      @if (guestSessionGroups(payOrder).length > 0) {
+                        <div class="form-group" data-testid="split-by-guest-session">
+                          <label>{{ 'ORDERS.SPLIT_BY_GUEST_SESSION' | translate }}</label>
+                          <p class="modal-hint">{{ 'ORDERS.SPLIT_BY_GUEST_SESSION_HINT' | translate }}</p>
+                          <ul class="split-line-list">
+                            @for (g of guestSessionGroups(payOrder); track guestSessionTrack(g)) {
+                              <li class="split-line-row" style="justify-content: space-between; gap: 0.5rem;">
+                                <span>
+                                  {{ guestSessionLabel(g) }}
+                                  — {{ formatPrice(g.amount_cents) }}
+                                  ({{ g.item_count }})
+                                </span>
+                                <button
+                                  type="button"
+                                  class="btn btn-sm btn-secondary"
+                                  [attr.data-testid]="'pay-guest-session-' + guestSessionTrack(g)"
+                                  (click)="confirmGuestSessionPayment(g)"
+                                  [disabled]="processingPayment()"
+                                >
+                                  {{ 'ORDERS.PAY_GUEST_SESSION' | translate }}
+                                </button>
+                              </li>
+                            }
+                          </ul>
+                        </div>
+                      }
                       <div class="form-group" data-testid="split-by-line">
                         <label>{{ 'ORDERS.SPLIT_BY_LINE' | translate }}</label>
                         <p class="modal-hint">{{ 'ORDERS.SPLIT_BY_LINE_HINT' | translate }}</p>
@@ -4674,6 +4713,87 @@ export class OrdersComponent implements OnInit, OnDestroy {
     );
   }
 
+  guestSessionGroups(order: Order): OrderGuestSessionGroup[] {
+    return (order.guest_sessions || []).filter((g) => (g.amount_cents || 0) > 0 && (g.item_count || 0) > 0);
+  }
+
+  guestSessionTrack(g: OrderGuestSessionGroup): string {
+    return g.guest_session_id || '__none__';
+  }
+
+  guestSessionLabel(g: OrderGuestSessionGroup): string {
+    if (!g.guest_session_id) {
+      return this.translate.instant('ORDERS.GUEST_SESSION_UNKNOWN');
+    }
+    return this.translate.instant('ORDERS.GUEST_SESSION_LABEL', {
+      shortId: g.guest_session_id.slice(0, 8),
+    });
+  }
+
+  confirmGuestSessionPayment(g: OrderGuestSessionGroup) {
+    const order = this.orderToMarkPaid();
+    if (!order || !this.paymentMethod) return;
+    const sid = g.guest_session_id || '__none__';
+    this.processingPayment.set(true);
+    this.api
+      .recordOrderPayment(order.id, {
+        guest_session_id: sid,
+        payment_method: this.paymentMethod,
+        payer_label: this.partialPaymentPayerLabel.trim() || null,
+      })
+      .subscribe({
+        next: (res) => {
+          this.processingPayment.set(false);
+          this.partialPaymentPayerLabel = '';
+          this.selectedSplitLineIds = new Set();
+          if (res.status === 'paid' || res.paid_at) {
+            this.showToast(this.translate.instant('COMMON.SUCCESS'), 'success');
+            this.closePaymentModal();
+            this.loadOrders();
+            return;
+          }
+          const updated: Order = {
+            ...order,
+            amount_due_cents: res.amount_due_cents,
+            amount_paid_cents: res.amount_paid_cents,
+            amount_remaining_cents: res.amount_remaining_cents,
+            payments: res.payments,
+            guest_sessions: res.guest_sessions,
+          };
+          this.orderToMarkPaid.set(updated);
+          this.showToast(this.translate.instant('ORDERS.PARTIAL_PAYMENT_RECORDED'), 'success');
+          this.loadOrders();
+        },
+        error: (err) => {
+          this.processingPayment.set(false);
+          const detail = err?.error?.detail || this.translate.instant('ORDERS.FAILED_TO_MARK_PAID');
+          this.showToast(
+            typeof detail === 'string' ? detail : this.translate.instant('ORDERS.FAILED_TO_MARK_PAID'),
+            'error',
+          );
+        },
+      });
+  }
+
+  issuePayerFactura(order: Order, paymentId: number) {
+    if (!order?.id || !paymentId || !this.fiscalInvoicingEnabled()) return;
+    this.processingPayment.set(true);
+    this.api.issuePaymentFiscalInvoice(order.id, paymentId).subscribe({
+      next: (fi) => {
+        this.processingPayment.set(false);
+        this.showToast(
+          `${this.translate.instant('ORDERS.PAYER_FACTURA_ISSUED')} ${fi.full_number}`,
+          'success',
+        );
+      },
+      error: (err) => {
+        this.processingPayment.set(false);
+        const detail = err?.error?.detail || this.translate.instant('ORDERS.FAILED_TO_MARK_PAID');
+        this.showToast(typeof detail === 'string' ? detail : 'Factura error', 'error');
+      },
+    });
+  }
+
   isSplitLineSelected(itemId: number | undefined | null): boolean {
     return itemId != null && this.selectedSplitLineIds.has(itemId);
   }
@@ -4761,6 +4881,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
           amount_paid_cents: res.amount_paid_cents,
           amount_remaining_cents: res.amount_remaining_cents,
           payments: res.payments,
+          guest_sessions: res.guest_sessions,
         };
         this.orderToMarkPaid.set(updated);
         this.showToast(this.translate.instant('ORDERS.PARTIAL_PAYMENT_RECORDED'), 'success');

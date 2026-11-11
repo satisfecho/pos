@@ -1540,7 +1540,13 @@ export class MenuComponent implements OnInit, OnDestroy {
   selectPayOnline() {
     // Show loading state in the payment options sheet while we create the intent
     this.paymentRequestSending.set(true);
-    this.doStripeCheckout();
+    this.doStripeCheckout(false);
+  }
+
+  /** Pay only this browser session's unallocated lines via a separate Stripe intent (#443 E). */
+  selectPayMyItemsOnline() {
+    this.paymentRequestSending.set(true);
+    this.doStripeCheckout(true);
   }
 
   selectPayRevolut() {
@@ -1731,7 +1737,7 @@ export class MenuComponent implements OnInit, OnDestroy {
 
   // --- Stripe flow (existing, now triggered from payment options) ---
 
-  private async doStripeCheckout() {
+  private async doStripeCheckout(payMySessionOnly = false) {
     // Verify Stripe publishable key is configured before proceeding
     const stripeKey = this.api.getStripePublishableKey();
     if (!stripeKey) {
@@ -1743,7 +1749,11 @@ export class MenuComponent implements OnInit, OnDestroy {
     // Reset stale state from previous attempts
     this.paymentSuccess.set(false);
     this.cardError.set('');
-    this.api.createPaymentIntent(this.currentOrderId, this.tableToken).subscribe({
+    const body =
+      payMySessionOnly && this.sessionId
+        ? { guest_session_id: this.sessionId }
+        : null;
+    this.api.createPaymentIntent(this.currentOrderId, this.tableToken, null, 'card', body).subscribe({
       next: async (response: any) => {
         this.clientSecret = response.client_secret;
         this.paymentIntentId = response.payment_intent_id;
@@ -1826,9 +1836,12 @@ export class MenuComponent implements OnInit, OnDestroy {
       this.processingPayment.set(false);
     } else if (paymentIntent.status === 'succeeded') {
       this.api.confirmPayment(this.currentOrderId, this.tableToken, this.paymentIntentId).subscribe({
-        next: () => {
+        next: (res: any) => {
           this.processingPayment.set(false);
           this.paymentSuccess.set(true);
+          if (res?.status === 'partial') {
+            this.cardError.set(this.translate.instant('PAYMENTS.PARTIAL_PAYMENT_SUCCESS'));
+          }
           this.loadStoredOrders();
           this.loadOrderHistory();
         },

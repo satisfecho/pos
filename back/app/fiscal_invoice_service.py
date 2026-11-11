@@ -309,18 +309,52 @@ def build_issue_payload(
 def get_fiscal_alta(
     session: Session, tenant_id: int, order_id: int
 ) -> models.FiscalInvoice | None:
+    """Classic one-alta-per-order row (order_payment_id is null)."""
     return session.exec(
         select(models.FiscalInvoice).where(
             models.FiscalInvoice.tenant_id == tenant_id,
             models.FiscalInvoice.order_id == order_id,
             models.FiscalInvoice.record_type == "alta",
+            models.FiscalInvoice.order_payment_id == None,  # noqa: E711
         )
     ).first()
 
 
+def get_fiscal_alta_for_payment(
+    session: Session, tenant_id: int, order_payment_id: int
+) -> models.FiscalInvoice | None:
+    return session.exec(
+        select(models.FiscalInvoice).where(
+            models.FiscalInvoice.tenant_id == tenant_id,
+            models.FiscalInvoice.order_payment_id == order_payment_id,
+            models.FiscalInvoice.record_type == "alta",
+        )
+    ).first()
+
+
+def list_payment_fiscal_altas(
+    session: Session, tenant_id: int, order_id: int
+) -> list[models.FiscalInvoice]:
+    return list(
+        session.exec(
+            select(models.FiscalInvoice).where(
+                models.FiscalInvoice.tenant_id == tenant_id,
+                models.FiscalInvoice.order_id == order_id,
+                models.FiscalInvoice.record_type == "alta",
+                models.FiscalInvoice.order_payment_id != None,  # noqa: E711
+            )
+        ).all()
+    )
+
+
 def order_has_active_fiscal_alta(session: Session, tenant_id: int, order_id: int) -> bool:
     fi = get_fiscal_alta(session, tenant_id, order_id)
-    return bool(fi and fi.status not in ("cancelled", "void"))
+    if fi and fi.status not in ("cancelled", "void"):
+        return True
+    for pfi in list_payment_fiscal_altas(session, tenant_id, order_id):
+        if pfi.status not in ("cancelled", "void"):
+            return True
+    return False
 
 
 def assert_order_fiscally_mutable(session: Session, tenant_id: int, order_id: int) -> None:
@@ -427,6 +461,20 @@ def issue_or_get_fiscal_invoice(
         raise HTTPException(status_code=400, detail="Invalid fiscal_mode")
     if mode == "live":
         assert_fiscal_mode_allowed("live")
+
+    payer_altas = [
+        p
+        for p in list_payment_fiscal_altas(session, tenant.id, order.id)
+        if p.status not in ("cancelled", "void")
+    ]
+    if payer_altas:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "This order already has per-payer fiscal invoices. "
+                "Issue or print those payment Facturas instead of a single order Factura."
+            ),
+        )
 
     existing = get_fiscal_alta(session, tenant.id, order.id)
     if existing:
@@ -659,6 +707,7 @@ def fiscal_invoice_public_dict(fi: models.FiscalInvoice) -> dict[str, Any]:
     return {
         "id": fi.id,
         "order_id": fi.order_id,
+        "order_payment_id": getattr(fi, "order_payment_id", None),
         "series": fi.series,
         "doc_number": fi.doc_number,
         "full_number": fi.full_number,
@@ -679,3 +728,180 @@ def fiscal_invoice_public_dict(fi: models.FiscalInvoice) -> dict[str, Any]:
         ),
         "cancels_fiscal_invoice_id": getattr(fi, "cancels_fiscal_invoice_id", None),
     }
+
+
+def issue_or_get_fiscal_invoice_for_payment(
+    session: Session,
+    tenant: models.Tenant,
+    order: models.Order,
+    payment: models.OrderPayment,
+) -> models.FiscalInvoice:
+    """Per-payer Factura prep (#443 F): one alta per payment leg after the order is settled.
+
+    Uses the payment amount and allocated lines when present. Still VeriFactu *preparation*
+    (same sandbox/middleware path as order-level); not a claim of production AEAT filing.
+    Mutually exclusive with a classic order-level alta on the same order.
+    """
+    mode = (tenant.fiscal_mode or "off").strip().lower()
+    if mode == "off":
+        raise HTTPException(status_code=400, detail="Fiscal invoicing is disabled for this tenant")
+    if mode not in ("test", "live"):
+        raise HTTPException(status_code=400, detail="Invalid fiscal_mode")
+    if mode == "live":
+        assert_fiscal_mode_allowed("live")
+
+    if payment.tenant_id != tenant.id or payment.order_id != order.id:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    if payment.voided_at is not None:
+        raise HTTPException(status_code=400, detail="Cannot issue Factura for a voided payment")
+    if not payment.id:
+        raise HTTPException(status_code=400, detail="Payment is not persisted")
+
+    if order.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.status == models.OrderStatus.cancelled:
+        raise HTTPException(status_code=400, detail="Cannot issue fiscal invoice for a cancelled order")
+    if order.status not in _ISSUABLE_STATUSES or not order.paid_at:
+        raise HTTPException(
+            status_code=400,
+            detail="Order must be fully paid before issuing per-payer fiscal invoices",
+        )
+
+    order_level = get_fiscal_alta(session, tenant.id, order.id)
+    if order_level and order_level.status not in ("cancelled", "void"):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "This order already has an order-level fiscal invoice. "
+                "Cancel it (anulación) before issuing per-payer Facturas."
+            ),
+        )
+
+    existing = get_fiscal_alta_for_payment(session, tenant.id, payment.id)
+    if existing:
+        if mode == "test" and (
+            not existing.sandbox_submitted_at
+            or existing.submission_status
+            in ("local_only", "middleware_error", "middleware_unreachable")
+        ):
+            submit_sandbox(session, existing, tenant)
+        elif mode == "live" and existing.submission_status not in LIVE_OK_STATUSES:
+            submit_sandbox(session, existing, tenant, require_live_success=True)
+        return existing
+
+    billing_customer = None
+    if order.billing_customer_id:
+        billing_customer = session.get(models.BillingCustomer, order.billing_customer_id)
+        if billing_customer and billing_customer.tenant_id != tenant.id:
+            billing_customer = None
+
+    tenant_locked = session.exec(
+        select(models.Tenant).where(models.Tenant.id == tenant.id).with_for_update()
+    ).first()
+    if not tenant_locked:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    series = (tenant_locked.fiscal_invoice_series or "VF").strip() or "VF"
+    num = int(tenant_locked.fiscal_invoice_next_number or 1)
+    full_number = f"{series}-{num}"
+    issued_at = datetime.now(timezone.utc)
+    amount_cents = int(payment.amount_cents or 0)
+    if amount_cents < 1:
+        raise HTTPException(status_code=400, detail="Payment amount must be at least 1 cent")
+
+    issuer_nif = _issuer_nif(tenant_locked)
+    previous_hash = _last_chain_hash(session, tenant.id)
+    record_hash = compute_record_hash(
+        tenant_id=tenant.id,
+        record_type="alta",
+        full_number=full_number,
+        amount_cents=amount_cents,
+        issuer_nif=issuer_nif,
+        issued_at=issued_at,
+        previous_hash=previous_hash,
+        order_id=order.id,
+    )
+    qr_content = build_verification_qr_url(
+        mode=mode,
+        issuer_nif=issuer_nif,
+        full_number=full_number,
+        issued_at=issued_at,
+        amount_cents=amount_cents,
+    )
+    # Prefer allocated lines for this payment; fall back to amount-only payload lines.
+    from app.order_payment_service import payment_line_ids, active_order_items
+
+    line_ids = set(payment_line_ids(session, payment.id))
+    if line_ids:
+        items = [i for i in active_order_items(session, order.id) if i.id in line_ids]
+        line_items = []
+        for i in items:
+            line_items.append(
+                {
+                    "order_item_id": i.id,
+                    "product_name": i.product_name,
+                    "quantity": i.quantity,
+                    "price_cents": i.price_cents,
+                    "tax_rate_percent": getattr(i, "tax_rate_percent", None),
+                    "tax_amount_cents": getattr(i, "tax_amount_cents", None),
+                }
+            )
+    else:
+        line_items = build_fiscal_line_items(
+            session, order, tenant_locked, amount_cents=amount_cents
+        )
+
+    req_payload = build_issue_payload(
+        order,
+        tenant_locked,
+        full_number,
+        billing_customer,
+        record_type="alta",
+        amount_cents=amount_cents,
+        previous_hash=previous_hash,
+        record_hash=record_hash,
+        line_items=line_items,
+    )
+    if payment.payer_label:
+        req_payload["payer_label"] = payment.payer_label
+    req_payload["order_payment_id"] = payment.id
+    resp_payload = {
+        "status": "issued_local",
+        "note": (
+            "Per-payer Factura prep (#443). No direct AEAT HTTP call; "
+            "sandbox/middleware may follow in test mode."
+        ),
+        "hash_schema": HASH_SCHEMA,
+    }
+
+    fi = models.FiscalInvoice(
+        tenant_id=tenant.id,
+        order_id=order.id,
+        order_payment_id=payment.id,
+        series=series,
+        doc_number=num,
+        full_number=full_number,
+        mode=mode,
+        status="issued",
+        issued_at=issued_at,
+        request_payload=req_payload,
+        response_payload=resp_payload,
+        verification_qr_content=qr_content,
+        verification_text=_verification_text(mode, "local_only"),
+        record_type="alta",
+        previous_hash=previous_hash,
+        record_hash=record_hash,
+        amount_cents=amount_cents,
+        submission_status="local_only",
+    )
+    tenant_locked.fiscal_invoice_next_number = num + 1
+    session.add(fi)
+    session.add(tenant_locked)
+    session.flush()
+
+    if mode == "test":
+        submit_sandbox(session, fi, tenant_locked)
+    elif mode == "live":
+        submit_sandbox(session, fi, tenant_locked, require_live_success=True)
+
+    return fi

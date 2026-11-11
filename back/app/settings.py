@@ -165,6 +165,22 @@ class Settings(BaseSettings):
         validation_alias="PASSWORD_RESET_TOKEN_EXPIRE_MINUTES",
     )
 
+    # Owner (restaurant) signup 6-digit email verification (#442)
+    owner_signup_verification_expire_minutes: int = Field(
+        default=30,
+        validation_alias="OWNER_SIGNUP_VERIFICATION_EXPIRE_MINUTES",
+    )
+    # Non-production only: force a known 6-digit code for local/smoke tests (ignored when PRODUCTION=true)
+    owner_signup_fixed_code: str = Field(
+        default="",
+        validation_alias="OWNER_SIGNUP_FIXED_CODE",
+    )
+    # Same mailbox as /platform login seed (ensure_platform_operator); used for signup notify
+    platform_operator_email: str = Field(
+        default="",
+        validation_alias="PLATFORM_OPERATOR_EMAIL",
+    )
+
     # Meta (Facebook / Instagram marketing OAuth + Graph API)
     meta_app_id: str = Field(default="", validation_alias="META_APP_ID")
     meta_app_secret: str = Field(default="", validation_alias="META_APP_SECRET")

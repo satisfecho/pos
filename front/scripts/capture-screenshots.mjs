@@ -10,7 +10,7 @@
  *
  * Env:
  *   BASE_URL                     App URL (default: http://127.0.0.1:4202, then auto-detect 4203, 4202, 4200)
- *   LOGIN_EMAIL                  Staff (owner/admin) email — required for dashboard, orders, kitchen, reports, reservations, tables, menu
+ *   LOGIN_EMAIL                  Staff (owner/admin) email — required for orders, kitchen, reports, reservations, tables, menu
  *   LOGIN_PASSWORD               Staff password
  *   TENANT_ID                    Public delivery / waitlist tenant (default 1)
  *   PROVIDER_TEST_EMAIL          Optional: provider login for provider dashboard screenshot
@@ -158,10 +158,7 @@ async function main() {
     await staffLogin(page, baseUrl, loginEmail, loginPassword);
 
     console.log('\nCapturing staff screenshots...');
-    await capture(page, baseUrl, '/dashboard', 'dashboard.png', {
-      waitSelector: '.quick-actions, .page-header, app-sidebar',
-      delayMs: 1000,
-    });
+    // Staff /dashboard screenshot intentionally omitted (sensitive demo data; #441).
     await capture(page, baseUrl, '/staff/orders', 'orders.png', {
       waitSelector: '.orders-page, [data-testid="orders-page"], app-orders, main',
       delayMs: 1000,

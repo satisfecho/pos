@@ -324,7 +324,11 @@
     "FEAT_OPEN_SOURCE_TITLE": "Codi obert",
     "FEAT_OPEN_SOURCE_DESC": "Autoallotgeu o executeu al núvol — inspeccioneu, amplieu i eviteu el bloqueig de proveïdor.",
     "FEAT_TSE_TITLE": "TSE alemanya (preparació KassenSichV)",
-    "FEAT_TSE_DESC": "Mode tse_mode opcional per local (test/live) amb stubs de transaccions signades, camps TSE al tiquet i stub d’exportació DSFinV-K per interval de dates. El mode live usa un proveïdor TSE al núvol (Fiskaly SIGN DE) quan es desbloqueja — no es comercialitza com a certificat BSI fins a verificar les credencials de producció."
+    "FEAT_TSE_DESC": "Mode tse_mode opcional per local (test/live) amb stubs de transaccions signades, camps TSE al tiquet i stub d’exportació DSFinV-K per interval de dates. El mode live usa un proveïdor TSE al núvol (Fiskaly SIGN DE) quan es desbloqueja — no es comercialitza com a certificat BSI fins a verificar les credencials de producció.",
+    "FEAT_SPLIT_BILL_TITLE": "Dividir el compte",
+    "FEAT_SPLIT_BILL_DESC": "Divideix el compte per import, per línia o per sessió de comensal — pagaments parcials fins a liquidar la taula.",
+    "FEAT_JOIN_TABLES_TITLE": "Unir taules",
+    "FEAT_JOIN_TABLES_DESC": "Uneix taules veïnes en un sol grup al plànol — coberts compartits i un camí de compte."
   },
   "PRICING_PAGE": {
     "BADGE": "Preus hosted senzills",
@@ -704,7 +708,15 @@
     "SIGNUP_GO_DASHBOARD": "Obrir tauler de personal",
     "SIGNUP_CONTINUE_PAYWALL": "Continuar als plans",
     "LOGOUT": "Tancar la sessió",
-    "OTP_RECOVERY_HINT": "Has perdut el telèfon? Usa un codi de recuperació no usat. Cada codi de recuperació només funciona una vegada."
+    "OTP_RECOVERY_HINT": "Has perdut el telèfon? Usa un codi de recuperació no usat. Cada codi de recuperació només funciona una vegada.",
+    "SIGNUP_STEP_TITLE_VERIFY": "Confirma el correu",
+    "SIGNUP_VERIFY_HINT": "T'hem enviat un codi de sis dígits al correu. Introdueix-lo a sota per continuar.",
+    "SIGNUP_VERIFY_CODE": "Codi de verificació",
+    "SIGNUP_VERIFY_CODE_PLACEHOLDER": "123456",
+    "SIGNUP_VERIFY_SUBMIT": "Verifica el correu",
+    "SIGNUP_VERIFY_RESEND": "Reenvia el codi",
+    "SIGNUP_VERIFY_RESENT": "Codi enviat",
+    "SIGNUP_VERIFY_FAILED": "No s'ha pogut verificar el codi. Comprova'l i torna-ho a provar."
   },
   "PAYWALL": {
     "TITLE": "Tria un pla per continuar",
@@ -1189,7 +1201,14 @@
     "SPLIT_LINE_TOTAL": "Total de línies seleccionades",
     "CUSTOMER_DISPLAY": "Pantalla del client",
     "CUSTOMER_DISPLAY_HINT": "Obre el resum de la comanda orientat al client en una segona pantalla",
-    "CUSTOMER_DISPLAY_NO_TABLE": "Aquesta comanda no té enllaç de taula per a la pantalla del client"
+    "CUSTOMER_DISPLAY_NO_TABLE": "Aquesta comanda no té enllaç de taula per a la pantalla del client",
+    "SPLIT_BY_GUEST_SESSION": "Pagar per sessió de comensal",
+    "SPLIT_BY_GUEST_SESSION_HINT": "Tria una sessió del navegador per pagar tots els plats encara sense pagar d’aquest comensal.",
+    "PAY_GUEST_SESSION": "Pagar aquest comensal",
+    "GUEST_SESSION_LABEL": "Comensal {{shortId}}",
+    "GUEST_SESSION_UNKNOWN": "Ítems sense assignar",
+    "ISSUE_PAYER_FACTURA": "Emetre Factura del pagador",
+    "PAYER_FACTURA_ISSUED": "Factura del pagador emesa."
   },
   "CUSTOMERS": {
     "TITLE": "Clients (Factura)",
@@ -2519,7 +2538,10 @@
     "PAY_WITH_CRYPTO_DESC": "Paga amb stablecoins via Stripe (USDC i moneders compatibles)",
     "CRYPTO_NOT_CONFIGURED": "Els pagaments amb cripto no estan configurats. Demana ajuda al personal.",
     "CRYPTO_START_FAILED": "No s'ha pogut iniciar el pagament amb cripto.",
-    "CRYPTO_CONFIRM_FAILED": "No s'ha pogut confirmar el pagament amb cripto. Demana ajuda al personal."
+    "CRYPTO_CONFIRM_FAILED": "No s'ha pogut confirmar el pagament amb cripto. Demana ajuda al personal.",
+    "PAY_MY_ITEMS": "Pagar els meus plats",
+    "PAY_MY_ITEMS_DESC": "Paga només el que has demanat — la resta pot pagar la seva part",
+    "PARTIAL_PAYMENT_SUCCESS": "La teva part està pagada. La resta queda a la taula."
   },
   "ERRORS": {
     "GENERIC": "Alguna cosa ha anat malament. Si us plau, torna-ho a provar.",
@@ -3412,6 +3434,26 @@
         "HOW_1": "Cloneu el repositori i seguiu el setup del README.",
         "HOW_2": "Executeu amb Docker Compose a la vostra infraestructura.",
         "HOW_3": "O registreu-vos a Satisfecho allotjat amb actualitzacions gestionades."
+      },
+      "split-bill": {
+        "HERO_TITLE": "Dividir el compte",
+        "HERO_SUBTITLE": "Cada comensal paga la seva part — per import, línia o sessió — amb un saldo restant clar.",
+        "BENEFIT_1": "Registra efectiu, datàfon o en línia sobre una mateixa comanda.",
+        "BENEFIT_2": "Paga plats seleccionats o una sessió amb un toc.",
+        "BENEFIT_3": "Una Factura fiscal quan la comanda està pagada (Factura per pagador opcional).",
+        "HOW_1": "Obre la comanda i tria Marcar com a pagat / Finalitzar.",
+        "HOW_2": "Introdueix un import parcial, selecciona línies o una sessió i registra el pagament.",
+        "HOW_3": "Repeteix fins que el restant sigui zero."
+      },
+      "join-tables": {
+        "HERO_TITLE": "Unir taules",
+        "HERO_SUBTITLE": "Combina taules en un grup al plànol per seure grups grans.",
+        "BENEFIT_1": "Arrossega fins a solapar o multi-selecciona i uneix.",
+        "BENEFIT_2": "Els grups units mostren una etiqueta a les comandes.",
+        "BENEFIT_3": "Divideix el compte de la comanda unida sense desunir primer.",
+        "HOW_1": "Obre Taules → plànol i selecciona les taules.",
+        "HOW_2": "Uneix (solapar o Ctrl/⌘+clic i Unir).",
+        "HOW_3": "Seu el grup i pren comandes; desuneix quan se’n vagin."
       }
     }
   },

@@ -186,6 +186,23 @@ Or add the line manually with `crontab -e`:
 
 Ensure the script is executable (`chmod +x scripts/cleanup-unpaid-public-delivery-on-server.sh`; it is committed executable in the repo). This cron is **separate** from the tenant-1 demo reset above - do not merge them.
 
+### Inactive tenant housekeeping (#442)
+
+Restaurant tenants with no owner login for **30 days** get a **7-day** removal warning email; after that grace they are **soft-deleted** (login blocked). **60 days** after soft-delete they are **hard-deleted** (no legal retention). Demo tenant id **1** is skipped unless `--include-demo` is passed. Notify mailbox for successful owner email verify is **`PLATFORM_OPERATOR_EMAIL`** (same as `/platform` login).
+
+```bash
+./scripts/inactive-tenant-housekeeping-on-server.sh --dry-run
+./scripts/inactive-tenant-housekeeping-on-server.sh
+```
+
+**Host cron (preferred, UTC daily at 04:25):**
+
+```cron
+25 4 * * * cd /development/pos && ./scripts/inactive-tenant-housekeeping-on-server.sh >>/var/log/pos-inactive-tenant-housekeeping.log 2>&1
+```
+
+Separate from the tenant-1 demo reset and the unpaid public delivery cleanup.
+
 ## Virgin / fresh install (fully automatic)
 
 On a clean clone to `/development/pos` with no `config.env`, the deploy script creates `config.env` from `config.env.example` (with generated secrets) and uses relative `API_URL=/api` so registration works from any host. After migrations, **bootstrap_demo** runs: if no tenants exist, it creates tenant 1 "Demo Restaurant" and seeds T01-T10, demo products, and demo orders (paid + active over ±90 days) so Reports show data. Then **beer, pizza, wine** catalog imports run; **link_demo_products_to_catalog** runs so tenant products without images are linked to catalog provider products - when staff open `/products`, images are backfilled. The **first user to register** is assigned as owner of that tenant and gets the demo data immediately (no manual seed step). The app listens on port 80; reach it at **http://167.235.138.59** or your domain.

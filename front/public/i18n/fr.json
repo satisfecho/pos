@@ -579,7 +579,15 @@
     "SIGNUP_GO_DASHBOARD": "Ouvrir le tableau de bord",
     "SIGNUP_CONTINUE_PAYWALL": "Continuer vers les offres",
     "LOGOUT": "Se déconnecter",
-    "OTP_RECOVERY_HINT": "Téléphone perdu ? Utilisez un code de récupération inutilisé. Chaque code de récupération ne fonctionne qu’une fois."
+    "OTP_RECOVERY_HINT": "Téléphone perdu ? Utilisez un code de récupération inutilisé. Chaque code de récupération ne fonctionne qu’une fois.",
+    "SIGNUP_STEP_TITLE_VERIFY": "Confirmez votre e-mail",
+    "SIGNUP_VERIFY_HINT": "Nous avons envoyé un code à six chiffres à votre e-mail. Saisissez-le ci-dessous pour continuer.",
+    "SIGNUP_VERIFY_CODE": "Code de vérification",
+    "SIGNUP_VERIFY_CODE_PLACEHOLDER": "123456",
+    "SIGNUP_VERIFY_SUBMIT": "Vérifier l'e-mail",
+    "SIGNUP_VERIFY_RESEND": "Renvoyer le code",
+    "SIGNUP_VERIFY_RESENT": "Code envoyé",
+    "SIGNUP_VERIFY_FAILED": "Impossible de vérifier ce code. Vérifiez-le et réessayez."
   },
   "MENU": {
     "TITLE": "Menu",
@@ -1052,7 +1060,14 @@
     "SPLIT_LINE_TOTAL": "Total des lignes sélectionnées",
     "CUSTOMER_DISPLAY": "Écran client",
     "CUSTOMER_DISPLAY_HINT": "Ouvrir le résumé de commande côté client sur un second écran",
-    "CUSTOMER_DISPLAY_NO_TABLE": "Cette commande n'a pas de lien de table pour l'écran client"
+    "CUSTOMER_DISPLAY_NO_TABLE": "Cette commande n'a pas de lien de table pour l'écran client",
+    "SPLIT_BY_GUEST_SESSION": "Payer par session",
+    "SPLIT_BY_GUEST_SESSION_HINT": "Choisissez une session navigateur pour payer tous les articles encore impayés de ce convive.",
+    "PAY_GUEST_SESSION": "Payer ce convive",
+    "GUEST_SESSION_LABEL": "Convive {{shortId}}",
+    "GUEST_SESSION_UNKNOWN": "Articles non assignés",
+    "ISSUE_PAYER_FACTURA": "Émettre la Factura du payeur",
+    "PAYER_FACTURA_ISSUED": "Factura du payeur émise."
   },
   "CUSTOMERS": {
     "TITLE": "Clients (Facture)",
@@ -2329,7 +2344,10 @@
     "PAY_WITH_CRYPTO_DESC": "Payer en stablecoins via Stripe (USDC et portefeuilles pris en charge)",
     "CRYPTO_NOT_CONFIGURED": "Les paiements crypto ne sont pas configurés. Demandez au personnel.",
     "CRYPTO_START_FAILED": "Impossible de démarrer le paiement crypto.",
-    "CRYPTO_CONFIRM_FAILED": "Le paiement crypto n'a pas pu être confirmé. Demandez au personnel."
+    "CRYPTO_CONFIRM_FAILED": "Le paiement crypto n'a pas pu être confirmé. Demandez au personnel.",
+    "PAY_MY_ITEMS": "Payer mes plats",
+    "PAY_MY_ITEMS_DESC": "Payez seulement ce que vous avez commandé — les autres paient leur part",
+    "PARTIAL_PAYMENT_SUCCESS": "Votre part est payée. Le reste reste sur la table."
   },
   "ERRORS": {
     "GENERIC": "Une erreur s'est produite. Réessayez.",
@@ -2876,7 +2894,11 @@
     "FEAT_OPEN_SOURCE_TITLE": "Open source",
     "FEAT_OPEN_SOURCE_DESC": "Auto-hébergez ou exécutez dans le cloud — inspectez, étendez et évitez le verrouillage fournisseur.",
     "FEAT_TSE_TITLE": "TSE allemande (préparation KassenSichV)",
-    "FEAT_TSE_DESC": "Mode tse_mode optionnel par établissement (test/live) avec stubs de transactions signées, champs TSE sur le ticket et stub d’export DSFinV-K par plage de dates. Le mode live utilise un fournisseur TSE cloud (Fiskaly SIGN DE) une fois débloqué — non commercialisé comme certifié BSI tant que les identifiants de production ne sont pas vérifiés."
+    "FEAT_TSE_DESC": "Mode tse_mode optionnel par établissement (test/live) avec stubs de transactions signées, champs TSE sur le ticket et stub d’export DSFinV-K par plage de dates. Le mode live utilise un fournisseur TSE cloud (Fiskaly SIGN DE) une fois débloqué — non commercialisé comme certifié BSI tant que les identifiants de production ne sont pas vérifiés.",
+    "FEAT_SPLIT_BILL_TITLE": "Partager l’addition",
+    "FEAT_SPLIT_BILL_DESC": "Partagez l’addition par montant, par ligne ou par session — paiements partiels jusqu’au solde.",
+    "FEAT_JOIN_TABLES_TITLE": "Joindre des tables",
+    "FEAT_JOIN_TABLES_DESC": "Fusionnez des tables voisines en un groupe sur le plan — couverts partagés et un chemin de facture."
   },
   "PRICING_PAGE": {
     "BADGE": "Tarifs hébergés simples",
@@ -3412,6 +3434,26 @@
         "HOW_1": "Clonez le dépôt et suivez le setup du README.",
         "HOW_2": "Exécutez avec Docker Compose sur votre infrastructure.",
         "HOW_3": "Ou inscrivez-vous à Satisfecho hébergé avec mises à jour gérées."
+      },
+      "split-bill": {
+        "HERO_TITLE": "Partager l’addition",
+        "HERO_SUBTITLE": "Chaque convive paie sa part — par montant, ligne ou session — avec un reste clair jusqu’au règlement.",
+        "BENEFIT_1": "Enregistrez espèces, TPE ou en ligne sur une commande sans brouiller la cuisine.",
+        "BENEFIT_2": "Payez des plats sélectionnés ou une session en un geste pour les grands groupes.",
+        "BENEFIT_3": "Une Facture fiscale quand la commande est soldée (Facture par payeur optionnelle).",
+        "HOW_1": "Ouvrez la commande et choisissez Marquer payé / Terminer.",
+        "HOW_2": "Saisissez un montant partiel, des lignes ou une session, puis enregistrez.",
+        "HOW_3": "Répétez jusqu’à reste zéro — commande payée et fidélité une seule fois."
+      },
+      "join-tables": {
+        "HERO_TITLE": "Joindre des tables",
+        "HERO_SUBTITLE": "Combinez des tables en un groupe sur le plan pour accueillir les grandes parties.",
+        "BENEFIT_1": "Glisser-chevaucher ou multi-sélectionner puis joindre.",
+        "BENEFIT_2": "Les groupes joints affichent un libellé sur les commandes.",
+        "BENEFIT_3": "Partagez l’addition de la commande jointe sans déjoindre d’abord.",
+        "HOW_1": "Ouvrez Tables → plan et sélectionnez les tables.",
+        "HOW_2": "Joignez (chevauchement ou Ctrl/⌘+clic puis Joindre).",
+        "HOW_3": "Asseyez le groupe et prenez les commandes ; déjoignez à leur départ."
       }
     }
   },

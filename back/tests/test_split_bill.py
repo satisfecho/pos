@@ -278,3 +278,73 @@ class TestSplitBill(PgClientTestCase):
         self.assertEqual(body2["amount_remaining_cents"], 0)
         self.assertEqual(body2["payment_method"], "split")
         self.assertEqual(sorted(body2["unallocated_order_item_ids"]), [])
+
+    def test_split_by_guest_session(self) -> None:
+        """Pay unallocated lines by added_by_session (#443 D)."""
+        order = models.Order(
+            tenant_id=self.tenant.id,
+            table_id=self.table.id,
+            status=models.OrderStatus.completed,
+            session_id="shared-table",
+        )
+        self.session.add(order)
+        self.session.commit()
+        self.session.refresh(order)
+        p2 = models.Product(
+            tenant_id=self.tenant.id,
+            name="Salad",
+            price_cents=700,
+            category="Sides",
+        )
+        self.session.add(p2)
+        self.session.commit()
+        self.session.refresh(p2)
+        i1 = models.OrderItem(
+            order_id=order.id,
+            product_id=self.product.id,
+            product_name=self.product.name,
+            quantity=1,
+            price_cents=1000,
+            status=models.OrderItemStatus.delivered,
+            added_by_session="guest-aaa",
+        )
+        i2 = models.OrderItem(
+            order_id=order.id,
+            product_id=p2.id,
+            product_name=p2.name,
+            quantity=1,
+            price_cents=700,
+            status=models.OrderItemStatus.delivered,
+            added_by_session="guest-bbb",
+        )
+        self.session.add(i1)
+        self.session.add(i2)
+        self.session.commit()
+        self.session.refresh(i1)
+        self.session.refresh(i2)
+        h = _bearer_headers(self.admin)
+
+        g = self.client.get(f"/orders/{order.id}/payments", headers=h)
+        self.assertEqual(g.status_code, 200, g.text)
+        sessions = g.json().get("guest_sessions") or []
+        self.assertEqual(len(sessions), 2)
+
+        r1 = self.client.post(
+            f"/orders/{order.id}/payments",
+            headers=h,
+            json={"guest_session_id": "guest-aaa", "payment_method": "cash"},
+        )
+        self.assertEqual(r1.status_code, 200, r1.text)
+        body1 = r1.json()
+        self.assertEqual(body1["status"], "partial")
+        self.assertEqual(body1["amount_paid_cents"], 1000)
+        self.assertEqual(body1["payment"]["order_item_ids"], [i1.id])
+
+        r2 = self.client.post(
+            f"/orders/{order.id}/payments",
+            headers=h,
+            json={"guest_session_id": "guest-bbb", "payment_method": "terminal"},
+        )
+        self.assertEqual(r2.status_code, 200, r2.text)
+        self.assertEqual(r2.json()["status"], "paid")
+        self.assertEqual(r2.json()["amount_remaining_cents"], 0)

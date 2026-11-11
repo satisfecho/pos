@@ -290,7 +290,15 @@
     "SIGNUP_GO_DASHBOARD": "افتح لوحة تحكم الموظفين",
     "SIGNUP_CONTINUE_PAYWALL": "المتابعة إلى الخطط",
     "LOGOUT": "تسجيل الخروج",
-    "OTP_RECOVERY_HINT": "Lost your phone? Use one unused recovery code instead. Each recovery code works only once."
+    "OTP_RECOVERY_HINT": "Lost your phone? Use one unused recovery code instead. Each recovery code works only once.",
+    "SIGNUP_STEP_TITLE_VERIFY": "أكد بريدك الإلكتروني",
+    "SIGNUP_VERIFY_HINT": "أرسلنا رمزًا مكونًا من ستة أرقام إلى بريدك. أدخله أدناه للمتابعة.",
+    "SIGNUP_VERIFY_CODE": "رمز التحقق",
+    "SIGNUP_VERIFY_CODE_PLACEHOLDER": "123456",
+    "SIGNUP_VERIFY_SUBMIT": "تأكيد البريد",
+    "SIGNUP_VERIFY_RESEND": "إعادة إرسال الرمز",
+    "SIGNUP_VERIFY_RESENT": "تم إرسال الرمز",
+    "SIGNUP_VERIFY_FAILED": "تعذر التحقق من الرمز. تحقق منه وحاول مرة أخرى."
   },
   "DASHBOARD": {
     "TITLE": "لوحة التحكم",
@@ -508,7 +516,14 @@
     "TSE_DISCLAIMER": "سجل TSE تجريبي — لا يمثل ادعاءً باعتماد BSI TR-03153.",
     "CUSTOMER_DISPLAY": "شاشة العميل",
     "CUSTOMER_DISPLAY_HINT": "افتح ملخص الطلب الموجه للعميل على شاشة ثانية",
-    "CUSTOMER_DISPLAY_NO_TABLE": "هذا الطلب ليس له رابط طاولة لشاشة العميل"
+    "CUSTOMER_DISPLAY_NO_TABLE": "هذا الطلب ليس له رابط طاولة لشاشة العميل",
+    "SPLIT_BY_GUEST_SESSION": "Pay by guest session",
+    "SPLIT_BY_GUEST_SESSION_HINT": "Select a guest browser session to pay all of their still-unpaid items.",
+    "PAY_GUEST_SESSION": "Pay this guest",
+    "GUEST_SESSION_LABEL": "Guest {{shortId}}",
+    "GUEST_SESSION_UNKNOWN": "Unassigned items",
+    "ISSUE_PAYER_FACTURA": "Issue Factura for payer",
+    "PAYER_FACTURA_ISSUED": "Payer Factura issued."
   },
   "ORDER_STATUS": {
     "pending": "قيد الانتظار",
@@ -1350,7 +1365,10 @@
     "PAY_WITH_CRYPTO_DESC": "ادفع بالعملات المستقرة عبر Stripe (USDC والمحافظ المدعومة)",
     "CRYPTO_NOT_CONFIGURED": "المدفوعات بالعملات الرقمية غير مُعدّة. اطلب المساعدة من الموظفين.",
     "CRYPTO_START_FAILED": "تعذر بدء الدفع بالعملات الرقمية.",
-    "CRYPTO_CONFIRM_FAILED": "تعذر تأكيد الدفع بالعملات الرقمية. اطلب المساعدة من الموظفين."
+    "CRYPTO_CONFIRM_FAILED": "تعذر تأكيد الدفع بالعملات الرقمية. اطلب المساعدة من الموظفين.",
+    "PAY_MY_ITEMS": "Pay my items",
+    "PAY_MY_ITEMS_DESC": "Pay only the dishes you ordered — others can pay their own share",
+    "PARTIAL_PAYMENT_SUCCESS": "Your share is paid. Remaining balance stays on the table."
   },
   "NOTIFICATIONS": {
     "CALL_WAITER_YOURS": "يناديك!",
@@ -2968,7 +2986,11 @@
     "FEAT_OPEN_SOURCE_TITLE": "مفتوح المصدر",
     "FEAT_OPEN_SOURCE_DESC": "استضف بنفسك أو اشتغل على السحابة — افحص، طوّر، وتجنّب الارتباط بمزوّد واحد.",
     "FEAT_TSE_TITLE": "TSE الألمانية (تجهيز KassenSichV)",
-    "FEAT_TSE_DESC": "وضع tse_mode اختياري لكل مستأجر (تجريبي/حي) بمعاملات موقّعة تجريبية وحقول TSE في الإيصال وتصدير DSFinV-K تجريبي. الوضع الحي يستخدم مزوّد TSE سحابيًا عند التفعيل."
+    "FEAT_TSE_DESC": "وضع tse_mode اختياري لكل مستأجر (تجريبي/حي) بمعاملات موقّعة تجريبية وحقول TSE في الإيصال وتصدير DSFinV-K تجريبي. الوضع الحي يستخدم مزوّد TSE سحابيًا عند التفعيل.",
+    "FEAT_SPLIT_BILL_TITLE": "Split bill",
+    "FEAT_SPLIT_BILL_DESC": "Split one check by amount, by line, or by guest session — partial payments until the table is settled.",
+    "FEAT_JOIN_TABLES_TITLE": "Join tables",
+    "FEAT_JOIN_TABLES_DESC": "Merge neighboring tables into one party on the floor canvas — shared covers and one bill path."
   },
   "PRICING_PAGE": {
     "BADGE": "تسعير مُستضاف بسيط",
@@ -3374,6 +3396,26 @@
         "HOW_1": "استنسخ المستودع واتبع إعداد README.",
         "HOW_2": "شغّله بـ Docker Compose على بنيتك التحتية.",
         "HOW_3": "أو سجّل في Satisfecho المُستضافة بتحديثات مُدارة."
+      },
+      "split-bill": {
+        "HERO_TITLE": "Split bill",
+        "HERO_SUBTITLE": "Let each guest pay their share — by amount, by line, or by guest session — with a clear remaining balance until the check is settled.",
+        "BENEFIT_1": "Record cash, card terminal, or online legs against one order without confusing the kitchen ticket.",
+        "BENEFIT_2": "Pay selected dishes or a guest session in one tap so large parties leave faster.",
+        "BENEFIT_3": "One fiscal Factura when the order is fully paid (optional per-payer Factura when enabled).",
+        "HOW_1": "Open the order and choose Mark as paid / Finish.",
+        "HOW_2": "Enter a partial amount, select lines, or pick a guest session, then record the payment.",
+        "HOW_3": "Repeat until remaining is zero — the order marks paid and loyalty earns once."
+      },
+      "join-tables": {
+        "HERO_TITLE": "Join tables",
+        "HERO_SUBTITLE": "Combine tables into one party on the floor canvas so hosts seat large groups and staff share one bill path.",
+        "BENEFIT_1": "Drag-overlap or multi-select tables on the same floor, then join them.",
+        "BENEFIT_2": "Joined parties show a group label on orders so waiters see the merged table.",
+        "BENEFIT_3": "Split the bill on the joined order without unjoining first.",
+        "HOW_1": "Open Tables → canvas and select the tables to merge.",
+        "HOW_2": "Join tables (drag-overlap or Ctrl/⌘+click then Join).",
+        "HOW_3": "Seat the party and take orders as usual; unjoin when the group leaves."
       }
     }
   },
