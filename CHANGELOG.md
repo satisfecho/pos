@@ -14,6 +14,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.192] - 2026-11-12
+
+### Changed
+
+- **Public landing hero (#445):** Replaced the CSS/SVG phone mock with a restaurant POS terminal photograph (`hero-pos-restaurant.jpg`), including alt text in all locales and responsive layout (tilt on desktop, stacked on mobile).
+
 ## [2.1.191] - 2026-11-12
 
 ### Changed
