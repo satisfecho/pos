@@ -14,6 +14,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.191] - 2026-11-12
+
+### Changed
+
+- **Docs screenshots (#444):** Moved automatic and manual capture steps into `docs/screenshots/how-to-capture-screenshots-automatically.md`; left the inventory README as a visual index with a link to the how-to; updated docs index and promo-videos cross-links.
+
 ## [2.1.190] - 2026-11-10
 
 ### Added
