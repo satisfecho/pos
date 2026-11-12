@@ -69,37 +69,18 @@ const LANDING_DEMO_TABLE_NAME = 'Take Away';
             </div>
           </div>
 
-          <div class="landing-hero__visual" aria-hidden="true">
-            <div class="landing-phone">
-              <div class="landing-phone__screen">
-                <div class="landing-phone__header">
-                  <span class="landing-phone__dot"></span>
-                  <span class="landing-phone__dot"></span>
-                  <span class="landing-phone__dot"></span>
-                </div>
-                <div class="landing-phone__menu">
-                  <div class="landing-phone__line landing-phone__line--wide"></div>
-                  <div class="landing-phone__line"></div>
-                  <div class="landing-phone__line"></div>
-                  <div class="landing-phone__line landing-phone__line--short"></div>
-                </div>
-                <div class="landing-phone__qr">
-                  <svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true">
-                    <rect width="64" height="64" fill="#fff" rx="4" />
-                    <rect x="8" y="8" width="18" height="18" fill="#0a0a0b" />
-                    <rect x="38" y="8" width="18" height="18" fill="#0a0a0b" />
-                    <rect x="8" y="38" width="18" height="18" fill="#0a0a0b" />
-                    <rect x="12" y="12" width="10" height="10" fill="#fff" />
-                    <rect x="42" y="12" width="10" height="10" fill="#fff" />
-                    <rect x="12" y="42" width="10" height="10" fill="#fff" />
-                    <rect x="32" y="32" width="6" height="6" fill="#0a0a0b" />
-                    <rect x="42" y="42" width="8" height="8" fill="#0a0a0b" />
-                    <rect x="52" y="32" width="4" height="4" fill="#0a0a0b" />
-                    <rect x="32" y="48" width="4" height="4" fill="#0a0a0b" />
-                  </svg>
-                </div>
-              </div>
-            </div>
+          <div class="landing-hero__visual">
+            <figure class="landing-hero__photo">
+              <img
+                class="landing-hero__photo-img"
+                src="/landing/hero-pos-restaurant.jpg"
+                width="1152"
+                height="864"
+                alt="{{ 'LANDING.HERO_POS_PHOTO_ALT' | translate }}"
+                loading="eager"
+                decoding="async"
+              />
+            </figure>
           </div>
         </div>
       </header>
@@ -566,77 +547,38 @@ const LANDING_DEMO_TABLE_NAME = 'Take Away';
       perspective: 1200px;
     }
 
-    .landing-phone {
-      width: min(100%, 280px);
-      padding: 12px;
-      border-radius: 36px;
-      background: linear-gradient(160deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04));
+    .landing-hero__photo {
+      margin: 0;
+      width: min(100%, 520px);
+      border-radius: 20px;
+      overflow: hidden;
       border: 1px solid rgba(255, 255, 255, 0.14);
       box-shadow:
         0 30px 80px rgba(0, 0, 0, 0.45),
-        inset 0 1px 0 rgba(255, 255, 255, 0.18);
-      transform: rotateY(-12deg) rotateX(8deg);
-      animation: landing-phone-tilt 8s ease-in-out infinite;
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      transform: rotateY(-8deg) rotateX(4deg);
+      animation: landing-hero-photo-tilt 8s ease-in-out infinite;
     }
 
-    @keyframes landing-phone-tilt {
-      0%, 100% { transform: rotateY(-12deg) rotateX(8deg) translateY(0); }
-      50% { transform: rotateY(-8deg) rotateX(4deg) translateY(-8px); }
+    @keyframes landing-hero-photo-tilt {
+      0%, 100% { transform: rotateY(-8deg) rotateX(4deg) translateY(0); }
+      50% { transform: rotateY(-4deg) rotateX(2deg) translateY(-8px); }
     }
 
-    .landing-phone__screen {
-      border-radius: 28px;
-      overflow: hidden;
-      background: linear-gradient(180deg, #141416 0%, #0a0a0b 100%);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      min-height: 360px;
-      display: flex;
-      flex-direction: column;
+    .landing-hero__photo-img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
     }
 
-    .landing-phone__header {
-      display: flex;
-      gap: 6px;
-      padding: 14px 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .landing-phone__dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.18);
-    }
-
-    .landing-phone__menu {
-      padding: 20px 18px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .landing-phone__line {
-      height: 10px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      width: 88%;
-    }
-
-    .landing-phone__line--wide {
-      width: 56%;
-      height: 14px;
-      background: rgba(255, 107, 71, 0.35);
-    }
-
-    .landing-phone__line--short {
-      width: 42%;
-    }
-
-    .landing-phone__qr {
-      margin: auto;
-      padding: 18px;
-      display: flex;
-      justify-content: center;
+    @media (max-width: 959px) {
+      .landing-hero__photo {
+        width: min(100%, 420px);
+        transform: none;
+        animation: none;
+      }
     }
 
     .landing-features {

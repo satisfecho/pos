@@ -24,7 +24,8 @@ This folder contains deployment guides, feature documentation, implementation pl
 | Platform operator oversight (`/platform`) | [0059-platform-operator-portal.md](0059-platform-operator-portal.md) |
 | Manage multi-location restaurant groups | [0054-restaurant-groups.md](0054-restaurant-groups.md) |
 | Rate limits (production) | [0020-rate-limiting-production.md](0020-rate-limiting-production.md) |
-| Capture screenshots | [screenshots/README.md](screenshots/README.md) |
+| Capture screenshots | [screenshots/how-to-capture-screenshots-automatically.md](screenshots/how-to-capture-screenshots-automatically.md) |
+| Screenshot inventory | [screenshots/README.md](screenshots/README.md) |
 | Record short promo videos (Puppeteer + copyleft bed) | [0075-promo-videos.md](0075-promo-videos.md) |
 | Security review notes (structured pass, not a pentest) | [SECURITY-REVIEW.md](SECURITY-REVIEW.md) |
 | Agent loop vs untrusted GitHub input | [0077-agent-untrusted-github-input.md](0077-agent-untrusted-github-input.md) |
@@ -153,7 +154,8 @@ This folder contains deployment guides, feature documentation, implementation pl
 
 | Doc | Description |
 |-----|-------------|
-| [screenshots/README.md](screenshots/README.md) | How to capture screenshots (Puppeteer script, manual), file list and where each is used (README, feature docs). |
+| [screenshots/README.md](screenshots/README.md) | Screenshot inventory: file list and where each is used (README, feature docs). |
+| [screenshots/how-to-capture-screenshots-automatically.md](screenshots/how-to-capture-screenshots-automatically.md) | How to capture screenshots (Puppeteer script and manual steps). |
 | [0075-promo-videos.md](0075-promo-videos.md) | Short promo MP4s: Puppeteer screencast walkthrough + **CC BY-SA** music bed (mac-stats-style); `npm run record-promo-video --prefix front`. |
 
 ---

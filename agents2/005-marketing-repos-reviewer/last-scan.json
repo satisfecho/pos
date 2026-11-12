@@ -57,7 +57,7 @@
       "pushed_at": "2026-09-17T13:49:15Z"
     },
     "satisfecho/091_frenchkebab": {
-      "last_artifact": "french-kebab-satisfecho-deploy",
+      "last_artifact": "{\"message\": \"We couldn't respond to your request in time. Sorry about that. Please try resubmitting your request and contact us if the problem persists.\"}\r",
       "pushed_at": "2026-06-25T12:15:36Z"
     },
     "satisfecho/092_kebabexpress": {

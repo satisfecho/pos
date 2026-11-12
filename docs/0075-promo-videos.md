@@ -239,6 +239,6 @@ Attribution: Homage by Kjartan Abel. https://kjartan-abel.com/library - CC BY-SA
 
 ## Related
 
-- Still screenshots: [screenshots/README.md](screenshots/README.md), `front/scripts/capture-screenshots.mjs`
+- Still screenshots: [screenshots/README.md](screenshots/README.md), [screenshots/how-to-capture-screenshots-automatically.md](screenshots/how-to-capture-screenshots-automatically.md), `front/scripts/capture-screenshots.mjs`
 - Puppeteer suite overview: [testing.md](testing.md)
 - Public routes: root [README.md](../README.md) (features, about, book, delivery)

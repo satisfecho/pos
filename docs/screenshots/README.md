@@ -2,31 +2,6 @@
 
 This folder holds screenshots used in the main [README.md](../../README.md) and in feature docs to give a visual overview of POS2.
 
-## Capturing screenshots automatically
-
-With the app running at `http://127.0.0.1:4202` (or set `BASE_URL`), run:
-
-```bash
-# From repo root; uses LOGIN_EMAIL and LOGIN_PASSWORD from .env or environment
-LOGIN_EMAIL=owner@amvara.de LOGIN_PASSWORD=secret node front/scripts/capture-screenshots.mjs
-# Or: npm run capture-screenshots --prefix front
-```
-
-Optional captures (skipped with a clear log line when unset or login fails):
-
-- `PROVIDER_TEST_EMAIL` / `PROVIDER_TEST_PASSWORD` - provider dashboard
-- `COURIER_EMAIL` / `COURIER_PASSWORD` (or `COURIER_TEST_*`) - courier portal home
-- `PLATFORM_OPERATOR_EMAIL` / `PLATFORM_OPERATOR_PASSWORD` - platform operator dashboard
-
-Public **delivery** and **waitlist** use `TENANT_ID` (default `1`) and need no extra credentials. Runs headless by default; set `HEADLESS=0` to open a visible browser.
-
-## Adding screenshots manually
-
-1. Run the app locally or use a staging instance.
-2. Capture the screen (e.g. PNG or WebP, ~1200-1600px wide for readability).
-3. Save the file here with the name listed below.
-4. Optionally strip or blur sensitive data (tenant name, real emails) if needed.
-
 ## Screenshots
 
 ### Orders
@@ -112,3 +87,9 @@ Operator dashboard at `/platform`. See [docs/0059-platform-operator-portal.md](.
 | `waitlist.png` | docs/0011-table-reservation-user-guide.md (optional) |
 | `courier.png` | docs/0053-satisfecho-delivery-order-channel.md (optional) |
 | `platform.png` | docs/0059-platform-operator-portal.md (optional) |
+
+---
+
+## Capturing screenshots
+
+For automatic (Puppeteer) and manual capture steps, see [how-to-capture-screenshots-automatically.md](how-to-capture-screenshots-automatically.md).
