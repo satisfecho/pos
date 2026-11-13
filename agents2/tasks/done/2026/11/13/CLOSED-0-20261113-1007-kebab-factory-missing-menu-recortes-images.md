@@ -1,3 +1,13 @@
+---
+## Closing summary (TOP)
+
+- **What happened:** Production nginx returned 404 for Kebab Factory `menu-recortes` PNGs that were never present on disk or in the marketing deploy artifact.
+- **What was done:** Removed hardcoded `menu-recortes` / `imageUrl` fallbacks from marketing `app.js`, synced the fixed bundle into `front/sites/kebab-factory/es/`, and documented the future PNG sync path via `092_kebabfactory`.
+- **What was tested:** Local and production: served `app.js` has zero `menu-recortes` refs; favicon/logo/hero and `/kebab-factory/es/` return 200; no client-driven menu-recortes open() errors on page load - overall PASS.
+- **Why closed:** All pass/fail criteria met; tester overall PASS.
+- **Closed at (UTC):** 2026-11-13 10:38
+---
+
 # Kebab Factory menu images 404 (menu-recortes)
 
 ## GitHub Issues
@@ -17,7 +27,8 @@ This is a standing broken-asset incident for the marketing microsite, not scanne
 - Verify: request sample paths under `/kebab-factory/es/assets/menu-recortes/` return 200 (local HAProxy or prod); check `docker logs pos-front` for no new open() failures on those paths.
 
 ## Status
-- **UNTESTED** - implementation complete; waiting for tester.
+- **CLOSED** - tester overall PASS 2026-11-13T10:37:27Z (UTC).
+- **TESTING** started 2026-11-13T10:36:38Z (UTC).
 - **Implemented** 2026-11-13 (UTC).
 
 ## Implementation notes
@@ -71,3 +82,36 @@ No dedicated Puppeteer script; static marketing site. Optional browser: open `ht
 ### Pass/fail criteria
 - **PASS:** `grep -c menu-recortes` on served `app.js` is **0**; favicon/logo/hero **200**; `/kebab-factory/es/` **200**; no new client-driven `menu-recortes` open() errors in `pos-front` logs when loading the page.
 - **FAIL:** `app.js` still contains `menu-recortes`, or page/assets broken, or loading the carta still requests `/assets/menu-recortes/...`.
+
+## Test report
+
+1. **Date/time (UTC):** 2026-11-13T10:36:38Z start - 2026-11-13T10:37:27Z end. Log window: `docker logs --since 2m` / `--since 5m` pos-front around that interval.
+2. **Environment:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml` (containers `pos-front`, `pos-haproxy` up). Local checks via `docker exec pos-front wget` to nginx on `127.0.0.1`. Production: `https://satisfecho.de`. Branch: `development`.
+3. **What was tested:** Served `app.js` free of `menu-recortes`; static assets favicon/logo/hero 200; page `/kebab-factory/es/` 200; no client-driven nginx `open() ... menu-recortes` on page/app load; `MENU_FALLBACK` has no `imageUrl` / local PNG paths; production parity for `app.js` and assets.
+4. **Results:**
+   - Served `app.js` has zero `menu-recortes` refs: **PASS** - local `grep -c` = 0; prod file 34473 bytes, `grep -c` = 0.
+   - Real assets under `/kebab-factory/es/assets/` return 200: **PASS** - favicon.png, logo-pizza.png, hero-durum.jpg all `HTTP/1.1 200` locally and `HTTP/2 200` on satisfecho.de.
+   - Loading carta does not generate new client-driven `menu-recortes` open() failures: **PASS** - after fetching page + `app.js`, `docker logs --since 2m | grep -c menu-recortes` was 0 before intentional probe; HTML/app contain no `menu-recortes` paths; only later probe to a fake PNG produced one expected 404.
+   - Page `/kebab-factory/es/` 200 and no broken local PNG `<img>` for missing files: **PASS** - page 200 (23758 bytes); `MENU_FALLBACK` has 0 `imageUrl` / `assets/` / `menu-recortes`; dish `<img>` only when POS supplies `image_url`.
+5. **Overall:** **PASS**
+6. **Product owner feedback:** The Kebab Factory microsite no longer points at a missing `menu-recortes` tree; carta text and prices still render from fallback, and photos only appear when the POS public menu provides URLs. Production already serves the fixed `app.js` and the known hero/logo assets. Future dish photos need PNGs landed in the marketing repo sync path documented in Implementation notes.
+7. **URLs tested:**
+   1. `http://127.0.0.1/kebab-factory/es/` (inside pos-front)
+   2. `http://127.0.0.1/kebab-factory/es/app.js`
+   3. `http://127.0.0.1/kebab-factory/es/assets/favicon.png`
+   4. `http://127.0.0.1/kebab-factory/es/assets/logo-pizza.png`
+   5. `http://127.0.0.1/kebab-factory/es/assets/hero-durum.jpg`
+   6. `http://127.0.0.1/kebab-factory/es/assets/menu-recortes/01-platos/x.png` (intentional 404 probe only)
+   7. `https://satisfecho.de/kebab-factory/es/`
+   8. `https://satisfecho.de/kebab-factory/es/app.js`
+   9. `https://satisfecho.de/kebab-factory/es/assets/favicon.png`
+   10. `https://satisfecho.de/kebab-factory/es/assets/logo-pizza.png`
+   11. `https://satisfecho.de/kebab-factory/es/assets/hero-durum.jpg`
+8. **Relevant log excerpts:**
+```
+127.0.0.1 - - [13/Nov/2026:10:36:46 +0000] "GET /kebab-factory/es/ HTTP/1.1" 200 23758 "-" "Wget" "-"
+# no menu-recortes open() during page/app load (count 0 for --since 2m before probe)
+# intentional probe only:
+2026/11/13 10:37:17 [error] 44#44: *97 open() ".../assets/menu-recortes/01-platos/x.png" failed (2: No such file or directory), ... request: "GET /kebab-factory/es/assets/menu-recortes/01-platos/x.png HTTP/1.1"
+```
+No GitHub issue (task uses issue **0**); skipped issue comment/labels.
