@@ -234,7 +234,7 @@
     "PROVIDER_LOGIN": "Provider login",
     "COURIER_LOGIN": "Courier login",
     "REGISTER_AS_PROVIDER": "Register as provider",
-    "CONTACT_US": "Contact us",
+    "CONTACT_US": "Discuss on GitHub",
     "FOOTER_ACCOUNT": "Account",
     "FOOTER_PARTNERS": "Partners",
     "FOOTER_SUPPORT": "Support",
@@ -365,8 +365,8 @@
     "SUPPORT_HEADLINE": "We support you!",
     "SUPPORT_LEDE": "Optional help from our team — setup, training, and troubleshooting.",
     "SUPPORT_PRICE": "€50/h + tax",
-    "SUPPORT_NOTE": "Billed by the hour. Contact us to discuss your needs.",
-    "CTA_SUPPORT": "Contact us",
+    "SUPPORT_NOTE": "Billed by the hour. Start a GitHub Discussion to talk through your needs.",
+    "CTA_SUPPORT": "Start a discussion",
     "LOAD_ERROR": "Could not load pricing. Please try again later."
   },
   "PUBLIC_MENU": {
@@ -3094,7 +3094,8 @@
     "OPEN_SOURCE_TITLE": "Open source",
     "OPEN_SOURCE_BODY": "The product is developed in the open. You can inspect the code, self-host under AGPLv3, or use the managed service at satisfecho.de.",
     "CONTACT_TITLE": "Contact",
-    "CONTACT_BODY": "Questions about the platform or hosted service:",
+    "CONTACT_BODY": "Feedback, questions, and ideas are welcome in public. Start a discussion so others can join in:",
+    "CONTACT_LINK": "Open GitHub Discussions",
     "MANUAL_TITLE": "User manual",
     "MANUAL_BODY": "Step-by-step guides for setup, daily operations, reservations, inventory, and more."
   },

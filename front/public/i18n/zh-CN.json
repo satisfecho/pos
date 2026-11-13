@@ -234,7 +234,7 @@
     "PROVIDER_LOGIN": "供应商登录",
     "COURIER_LOGIN": "配送员登录",
     "REGISTER_AS_PROVIDER": "注册为供应商",
-    "CONTACT_US": "联系我们",
+    "CONTACT_US": "在 GitHub 讨论",
     "FOOTER_ACCOUNT": "账户",
     "FOOTER_PARTNERS": "合作伙伴",
     "FOOTER_SUPPORT": "支持",
@@ -365,8 +365,8 @@
     "SUPPORT_HEADLINE": "我们支持您！",
     "SUPPORT_LEDE": "团队可选帮助 — 设置、培训和故障排除。",
     "SUPPORT_PRICE": "€50/小时 + 税",
-    "SUPPORT_NOTE": "按小时计费。联系我们讨论您的需求。",
-    "CTA_SUPPORT": "联系我们",
+    "SUPPORT_NOTE": "按小时计费。请在 GitHub Discussions 发起讨论以说明您的需求。",
+    "CTA_SUPPORT": "发起讨论",
     "LOAD_ERROR": "无法加载定价。请稍后重试。"
   },
   "PUBLIC_MENU": {
@@ -3060,7 +3060,8 @@
     "OPEN_SOURCE_TITLE": "开源",
     "OPEN_SOURCE_BODY": "产品以开源方式开发。您可以查看代码、按 AGPLv3 自托管，或使用 satisfecho.de 上的托管服务。",
     "CONTACT_TITLE": "联系",
-    "CONTACT_BODY": "有关平台或托管服务的问题：",
+    "CONTACT_BODY": "欢迎公开反馈、提问和建议。发起讨论，让更多人一起参与：",
+    "CONTACT_LINK": "打开 GitHub Discussions",
     "MANUAL_TITLE": "用户手册",
     "MANUAL_BODY": "涵盖设置、日常运营、预订、库存等内容的逐步指南。"
   },

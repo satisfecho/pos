@@ -234,7 +234,7 @@
     "PROVIDER_LOGIN": "Inici de sessió de proveïdor",
     "COURIER_LOGIN": "Inici de sessió de repartidor",
     "REGISTER_AS_PROVIDER": "Registrar-se com a proveïdor",
-    "CONTACT_US": "Contacteu-nos",
+    "CONTACT_US": "Debat a GitHub",
     "FOOTER_ACCOUNT": "Compte",
     "FOOTER_PARTNERS": "Socis",
     "FOOTER_SUPPORT": "Suport",
@@ -365,8 +365,8 @@
     "SUPPORT_HEADLINE": "Et donem suport!",
     "SUPPORT_LEDE": "Ajuda opcional del nostre equip — configuració, formació i resolució de problemes.",
     "SUPPORT_PRICE": "50 €/h + IVA",
-    "SUPPORT_NOTE": "Facturació per hora. Contacta'ns per parlar de les teves necessitats.",
-    "CTA_SUPPORT": "Contacta'ns",
+    "SUPPORT_NOTE": "Facturació per hora. Obre un debat a GitHub Discussions per parlar de les teves necessitats.",
+    "CTA_SUPPORT": "Obrir un debat",
     "LOAD_ERROR": "No s'ha pogut carregar la tarifa. Torna-ho a provar més tard."
   },
   "PUBLIC_MENU": {
@@ -3060,7 +3060,8 @@
     "OPEN_SOURCE_TITLE": "Codi obert",
     "OPEN_SOURCE_BODY": "El producte es desenvolupa en obert. Podeu revisar el codi, autoallotjar-lo sota AGPLv3 o usar el servei gestionat a satisfecho.de.",
     "CONTACT_TITLE": "Contacte",
-    "CONTACT_BODY": "Preguntes sobre la plataforma o el servei allotjat:",
+    "CONTACT_BODY": "Comentaris, preguntes i idees són benvinguts en públic. Obre un debat perquè d'altres hi puguin participar:",
+    "CONTACT_LINK": "Obrir GitHub Discussions",
     "MANUAL_TITLE": "Manual d'usuari",
     "MANUAL_BODY": "Guies pas a pas per a la configuració, l'operació diària, reserves, inventari i més."
   },

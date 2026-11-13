@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Puppeteer test: landing page shows provider login, provider registration, contact (mailto), terms, and privacy links in the footer.
+ * Puppeteer test: landing page shows provider login, provider registration, contact (GitHub Discussions), terms, and privacy links in the footer.
  *
  * Usage (from repo root):
  *   node front/scripts/test-landing-provider-links.mjs
@@ -112,13 +112,13 @@ async function main() {
       const el = document.querySelector('[data-testid="landing-contact-us"]');
       return el ? el.getAttribute('href') || '' : '';
     });
-    const expectedMailto = 'mailto:hello@satisfecho.de';
-    if (contactHref !== expectedMailto) {
-      console.log('   FAIL: Contact link href expected', expectedMailto, 'got:', contactHref);
+    const expectedDiscussions = 'https://github.com/satisfecho/pos/discussions';
+    if (contactHref !== expectedDiscussions) {
+      console.log('   FAIL: Contact link href expected', expectedDiscussions, 'got:', contactHref);
       await browser.close();
       process.exit(1);
     }
-    console.log('   Contact us (mailto) link: OK');
+    console.log('   Contact us (GitHub Discussions) link: OK');
 
     const termsEl = await page.$('[data-testid="landing-terms"]');
     const privacyEl = await page.$('[data-testid="landing-privacy"]');

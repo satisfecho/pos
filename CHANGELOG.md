@@ -14,6 +14,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.193] - 2026-11-13
+
+### Changed
+
+- **Main contact via GitHub Discussions (#446):** About, Pricing, landing footer, and provider login/register contact CTAs now open public GitHub Discussions instead of mailto; i18n and landing Puppeteer expectations updated.
+
+### Fixed
+
+- **Kebab Factory menu images:** Removed hardcoded `menu-recortes` image paths from the marketing carta fallback so nginx no longer 404s on missing dish PNGs; photos still load when the POS public menu supplies them.
+
 ## [2.1.192] - 2026-11-12
 
 ### Changed
