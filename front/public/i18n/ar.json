@@ -2896,7 +2896,7 @@
     "PROVIDER_LOGIN": "تسجيل دخول المورد",
     "COURIER_LOGIN": "تسجيل دخول عامل التوصيل",
     "REGISTER_AS_PROVIDER": "التسجيل كمورد",
-    "CONTACT_US": "تواصل معنا",
+    "CONTACT_US": "ناقش على GitHub",
     "FOOTER_ACCOUNT": "الحساب",
     "FOOTER_PARTNERS": "الشركاء",
     "FOOTER_SUPPORT": "الدعم",
@@ -3014,6 +3014,12 @@
     "SELFHOST_PRICE": "0 يورو",
     "SELFHOST_LICENSE": "مفتوح المصدر AGPLv3 — بدون رسوم استضافة",
     "CTA_GITHUB": "عرض على GitHub",
+    "SUPPORT_NAME": "دعم احترافي",
+    "SUPPORT_HEADLINE": "ندعمك!",
+    "SUPPORT_LEDE": "مساعدة اختيارية من فريقنا — إعداد وتدريب واستكشاف أخطاء.",
+    "SUPPORT_PRICE": "50 يورو/ساعة + ضريبة",
+    "SUPPORT_NOTE": "الفوترة بالساعة. ابدأ نقاشًا على GitHub Discussions للتحدث عن احتياجاتك.",
+    "CTA_SUPPORT": "ابدأ نقاشًا",
     "LOAD_ERROR": "تعذر تحميل التسعير. يرجى المحاولة لاحقًا."
   },
   "ABOUT_PAGE": {
@@ -3027,7 +3033,8 @@
     "OPEN_SOURCE_TITLE": "مفتوح المصدر",
     "OPEN_SOURCE_BODY": "المنتج يُطوَّر بشكل مفتوح. تقدر تفحص الكود، تستضيفه بنفسك تحت AGPLv3، أو تستخدم الخدمة المُدارة على satisfecho.de.",
     "CONTACT_TITLE": "تواصل معنا",
-    "CONTACT_BODY": "أسئلة عن المنصة أو الخدمة المُستضافة:",
+    "CONTACT_BODY": "نرحب بالملاحظات والأسئلة والأفكار علنًا. ابدأ نقاشًا ليشارك الآخرون:",
+    "CONTACT_LINK": "افتح GitHub Discussions",
     "MANUAL_TITLE": "دليل المستخدم",
     "MANUAL_BODY": "أدلة خطوة بخطوة للإعداد والعمليات اليومية والحجوزات والمخزون وأكتر."
   },

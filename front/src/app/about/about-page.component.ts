@@ -65,11 +65,17 @@ import { LandingSiteFooterComponent } from '../shared/landing-site-footer.compon
           </p>
         </section>
 
-        <section class="about-section" aria-labelledby="about-contact-heading">
+        <section class="about-section" aria-labelledby="about-contact-heading" data-testid="about-contact">
           <h2 id="about-contact-heading" class="about-section__title">{{ 'ABOUT_PAGE.CONTACT_TITLE' | translate }}</h2>
           <p class="about-section__body">
             {{ 'ABOUT_PAGE.CONTACT_BODY' | translate }}
-            <a href="mailto:hello@satisfecho.de" class="about-section__link">hello@satisfecho.de</a>
+            <a
+              href="https://github.com/satisfecho/pos/discussions"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="about-section__link"
+              data-testid="about-contact-discussions"
+            >{{ 'ABOUT_PAGE.CONTACT_LINK' | translate }}</a>
           </p>
         </section>
       </main>

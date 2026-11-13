@@ -233,7 +233,7 @@
     "PROVIDER_LOGIN": "فراہم کنندہ لاگ ان",
     "COURIER_LOGIN": "کورئیر لاگ ان",
     "REGISTER_AS_PROVIDER": "رجسٹر بطور فراہم کنندہ",
-    "CONTACT_US": "رابطہ ہم",
+    "CONTACT_US": "GitHub پر بات کریں",
     "FOOTER_ACCOUNT": "Account",
     "FOOTER_PARTNERS": "Partners",
     "FOOTER_SUPPORT": "Support",
@@ -2935,8 +2935,8 @@
     "SUPPORT_HEADLINE": "ہم آپ کا ساتھ دیتے ہیں!",
     "SUPPORT_LEDE": "ہماری ٹیم سے اختیاری مدد — سیٹ اپ، تربیت اور مسائل حل۔",
     "SUPPORT_PRICE": "€50/گھنٹہ + ٹیکس",
-    "SUPPORT_NOTE": "فی گھنٹہ بلنگ۔ اپنی ضروریات پر بات کے لیے رابطہ کریں۔",
-    "CTA_SUPPORT": "رابطہ کریں",
+    "SUPPORT_NOTE": "فی گھنٹہ بلنگ۔ اپنی ضروریات پر بات کے لیے GitHub Discussion شروع کریں۔",
+    "CTA_SUPPORT": "بحث شروع کریں",
     "LOAD_ERROR": "قیمتیں لوڈ نہیں ہو سکیں۔ بعد میں دوبارہ کوشش کریں۔"
   },
   "WAITLIST": {
@@ -3060,7 +3060,8 @@
     "OPEN_SOURCE_TITLE": "اوپن سورس",
     "OPEN_SOURCE_BODY": "پروڈکٹ کھلے طور پر تیار ہوتا ہے۔ آپ کوڈ دیکھ سکتے ہیں، AGPLv3 کے تحت خود میزبانی کر سکتے ہیں، یا satisfecho.de پر منظم سروس استعمال کر سکتے ہیں۔",
     "CONTACT_TITLE": "رابطہ",
-    "CONTACT_BODY": "پلیٹ فارم یا میزبانی شدہ سروس کے بارے میں سوالات:",
+    "CONTACT_BODY": "رائے، سوالات اور خیالات عوامی طور پر خوش آمدید ہیں۔ بحث شروع کریں تاکہ دوسرے بھی شامل ہو سکیں:",
+    "CONTACT_LINK": "GitHub Discussions کھولیں",
     "MANUAL_TITLE": "صارف دستی کتاب",
     "MANUAL_BODY": "سیٹ اپ، روزانہ آپریشنز، ریزرویشنز، انوینٹری اور مزید کے لیے مرحلہ وار رہنمائیں۔"
   },

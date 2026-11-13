@@ -193,7 +193,11 @@ import { LegalLinksComponent } from '../shared/legal-links.component';
           <span class="auth-foot-sep" aria-hidden="true">·</span>
           <a routerLink="/login">{{ 'PROVIDER_AUTH.BACK_STAFF_LOGIN' | translate }}</a>
           <span class="auth-foot-sep" aria-hidden="true">·</span>
-          <a href="mailto:hello@satisfecho.de">{{ 'LANDING.CONTACT_US' | translate }}</a>
+          <a
+            href="https://github.com/satisfecho/pos/discussions"
+            target="_blank"
+            rel="noopener noreferrer"
+          >{{ 'LANDING.CONTACT_US' | translate }}</a>
           @if (legalTermsUrl() || legalPrivacyUrl()) {
             <span class="auth-foot-sep" aria-hidden="true">·</span>
             <app-legal-links [inline]="true" [termsUrl]="legalTermsUrl()" [privacyUrl]="legalPrivacyUrl()" />

@@ -410,7 +410,7 @@ npm run test:landing-provider-links --prefix front
 # Or: node front/scripts/test-landing-provider-links.mjs
 ```
 
-- Asserts footer has provider login and “Register as provider” links, a **Contact us** link with `mailto:hello@satisfecho.de`, and `data-testid="landing-contact-us"`; clicks register and checks navigation to `/provider/register` and presence of registration form.
+- Asserts footer has provider login and “Register as provider” links, a **Contact us** link to GitHub Discussions (`https://github.com/satisfecho/pos/discussions`), and `data-testid="landing-contact-us"`; clicks register and checks navigation to `/provider/register` and presence of registration form.
 
 **Public features page (`/features`):**
 
@@ -445,7 +445,7 @@ npm run test:about --prefix front
 
 Tests for the provider portal: landing links, registration, login, and dashboard (add product).
 
-**Landing → provider links** (see §4): `test-landing-provider-links` checks footer links to `/provider/login` and `/provider/register`, the **Contact us** `mailto:hello@satisfecho.de` link, and that the register link opens the provider registration form.
+**Landing → provider links** (see §4): `test-landing-provider-links` checks footer links to `/provider/login` and `/provider/register`, the **Contact us** GitHub Discussions link, and that the register link opens the provider registration form.
 
 **Provider registration** (creates a new provider account; no cleanup - leaves DB entry):
 

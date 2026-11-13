@@ -233,7 +233,7 @@
     "PROVIDER_LOGIN": "Anbieter-Login",
     "COURIER_LOGIN": "Kurier-Login",
     "REGISTER_AS_PROVIDER": "Als Anbieter registrieren",
-    "CONTACT_US": "Kontakt",
+    "CONTACT_US": "Diskussion auf GitHub",
     "FOOTER_ACCOUNT": "Konto",
     "FOOTER_PARTNERS": "Partner",
     "FOOTER_SUPPORT": "Support",
@@ -2935,8 +2935,8 @@
     "SUPPORT_HEADLINE": "Wir unterstützen Sie!",
     "SUPPORT_LEDE": "Optionale Hilfe unseres Teams — Einrichtung, Schulung und Fehlerbehebung.",
     "SUPPORT_PRICE": "50 €/h + MwSt.",
-    "SUPPORT_NOTE": "Abrechnung nach Stunde. Kontaktieren Sie uns für Ihre Anforderungen.",
-    "CTA_SUPPORT": "Kontakt",
+    "SUPPORT_NOTE": "Abrechnung nach Stunde. Starten Sie eine GitHub Discussion, um Ihre Anforderungen zu besprechen.",
+    "CTA_SUPPORT": "Diskussion starten",
     "LOAD_ERROR": "Preise konnten nicht geladen werden. Bitte später erneut versuchen."
   },
   "WAITLIST": {
@@ -3060,7 +3060,8 @@
     "OPEN_SOURCE_TITLE": "Open Source",
     "OPEN_SOURCE_BODY": "Das Produkt wird offen entwickelt. Sie können den Code einsehen, unter AGPLv3 selbst hosten oder den Managed Service auf satisfecho.de nutzen.",
     "CONTACT_TITLE": "Kontakt",
-    "CONTACT_BODY": "Fragen zur Plattform oder zum Hosted Service:",
+    "CONTACT_BODY": "Feedback, Fragen und Ideen sind öffentlich willkommen. Starten Sie eine Diskussion, damit andere mitmachen können:",
+    "CONTACT_LINK": "GitHub Discussions öffnen",
     "MANUAL_TITLE": "Benutzerhandbuch",
     "MANUAL_BODY": "Schritt-für-Schritt-Anleitungen für Einrichtung, Tagesgeschäft, Reservierungen, Inventar und mehr."
   },

@@ -233,7 +233,7 @@
     "PROVIDER_LOGIN": "Connexion fournisseur",
     "COURIER_LOGIN": "Connexion livreur",
     "REGISTER_AS_PROVIDER": "S'inscrire comme fournisseur",
-    "CONTACT_US": "Nous contacter",
+    "CONTACT_US": "Discuter sur GitHub",
     "FOOTER_ACCOUNT": "Compte",
     "FOOTER_PARTNERS": "Partenaires",
     "FOOTER_SUPPORT": "Assistance",
@@ -2935,8 +2935,8 @@
     "SUPPORT_HEADLINE": "Nous vous accompagnons !",
     "SUPPORT_LEDE": "Aide optionnelle de notre équipe — configuration, formation et dépannage.",
     "SUPPORT_PRICE": "50 €/h + taxes",
-    "SUPPORT_NOTE": "Facturation à l'heure. Contactez-nous pour discuter de vos besoins.",
-    "CTA_SUPPORT": "Nous contacter",
+    "SUPPORT_NOTE": "Facturation à l'heure. Ouvrez une GitHub Discussion pour parler de vos besoins.",
+    "CTA_SUPPORT": "Ouvrir une discussion",
     "LOAD_ERROR": "Impossible de charger les tarifs. Réessayez plus tard."
   },
   "WAITLIST": {
@@ -3060,7 +3060,8 @@
     "OPEN_SOURCE_TITLE": "Open source",
     "OPEN_SOURCE_BODY": "Le produit est développé en open source. Vous pouvez consulter le code, l’auto-héberger sous AGPLv3 ou utiliser le service géré sur satisfecho.de.",
     "CONTACT_TITLE": "Contact",
-    "CONTACT_BODY": "Questions sur la plateforme ou le service hébergé :",
+    "CONTACT_BODY": "Les retours, questions et idées sont les bienvenus en public. Lancez une discussion pour que d'autres puissent participer :",
+    "CONTACT_LINK": "Ouvrir GitHub Discussions",
     "MANUAL_TITLE": "Manuel utilisateur",
     "MANUAL_BODY": "Guides pas à pas pour la configuration, les opérations quotidiennes, les réservations, l'inventaire et plus."
   },
