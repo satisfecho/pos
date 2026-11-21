@@ -138,13 +138,19 @@ Same idea as **mac-stats-reviewer** `agents/run.sh`, but named for clarity: one 
 | **`./agents2/pos-cursor-loop.sh promote`** (or **`009`**, **`deploy`**) | Run **009** daily promote: merge **`development` → `master`** via **`scripts/promote-development-to-master.sh`** when cadence allows (default ≥24h since last master tip and development is ahead). No **`cursor-agent`**. Disable with **`AGENT_PROMOTE=0`**. |
 | **`./agents2/pos-cursor-loop.sh help`** | Usage. |
 
-**Keep the loop running (reboot-safe):** on the host (e.g. amvara9), install once as root:
+**Keep the loop running (reboot-safe):** on the host (e.g. amvara9 / amvara3), install once as root:
 
 ```bash
 ./scripts/install-pos-cursor-loop-systemd.sh
 ```
 
 That installs **`pos-cursor-loop.service`** (`Restart=always`, enabled on boot), writes optional overrides to **`/etc/default/pos-cursor-loop`**, and adds a **cron watchdog every 5 minutes** (`scripts/watchdog-pos-cursor-loop.sh`) so a stopped unit is started again. Log: **`tmp/pos-cursor-loop.log`**. Status: **`systemctl status pos-cursor-loop`** or **`./scripts/watchdog-pos-cursor-loop.sh --status`**. Uninstall: **`./scripts/install-pos-cursor-loop-systemd.sh --uninstall`**.
+
+**Git sync stuck (process alive, no FEAT intake):** stamp-only dirty reviewer files used to conflict under **`git pull --rebase --autostash`**, leave unmerged paths, and skip every agent step while the pid stayed healthy. Prevention:
+
+1. **`scripts/git-sync-development.sh`** discards allowlisted stamp dirt before pull; on unmerged paths it exits **2** and writes **`tmp/agent-git-sync-blocked.txt`**.
+2. **`scripts/watchdog-pos-cursor-loop.sh`** (same cron) alerts when that stamp is older than **`AGENT_GIT_SYNC_BLOCK_ALERT_MINUTES`** (default **30**) and opens at most one GitHub issue with body key **`agent-loop-blocker: git-sync`**.
+3. Operator: resolve conflicts on the agent host, re-run **`./scripts/git-sync-development.sh`** (clears the stamp on success). See **`docs/pos-dev-amvara3.md`**.
 
 **Legacy background loop (no systemd):** **`./scripts/start-pos-cursor-loop-background.sh`** (or **`--restart`**) runs the full cycle under **`nohup`**; pid **`tmp/pos-cursor-loop.pid`**, log **`tmp/pos-cursor-loop.log`**. The watchdog falls back to this path when the systemd unit is not enabled.
 

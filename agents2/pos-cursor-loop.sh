@@ -423,8 +423,16 @@ sync_repo() {
     return 0
   fi
   echo "-----> git sync development $(date "+%Y-%m-%d %H:%M:%S") <----"
-  if ! bash "${REPO_ROOT}/scripts/git-sync-development.sh"; then
-    echo "ERROR: git sync failed (conflicts, network, or missing origin/development). Resolve and retry." >&2
+  local sync_rc=0
+  set +e
+  bash "${REPO_ROOT}/scripts/git-sync-development.sh"
+  sync_rc=$?
+  set -e
+  if ((sync_rc != 0)); then
+    echo "ERROR: git sync failed exit=${sync_rc} (conflicts, network, or missing origin/development). Resolve and retry." >&2
+    if ((sync_rc == 2)); then
+      echo "ERROR: unmerged / conflict state — stamp tmp/agent-git-sync-blocked.txt; watchdog escalates after AGENT_GIT_SYNC_BLOCK_ALERT_MINUTES (default 30)." >&2
+    fi
     return 1
   fi
 }

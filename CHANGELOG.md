@@ -10,6 +10,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- **Agent git-sync stuck alert:** `git-sync-development.sh` discards stamp-only dirt before pull and writes `tmp/agent-git-sync-blocked.txt` on unmerged conflicts; the 5-minute watchdog escalates with a GitHub issue (`agent-loop-blocker: git-sync`) so a live loop pid cannot hide a blocked FEAT intake again.
+
 ### Changed
 
 ### Fixed
