@@ -70,6 +70,10 @@ Still parked on purpose: `FEAT-388-…` remains **waiting for human** (design ga
 | `scripts/watchdog-pos-cursor-loop.sh` | If the block stamp is older than `AGENT_GIT_SYNC_BLOCK_ALERT_MINUTES` (default 30), logs CRITICAL and opens one GitHub issue (`agent-loop-blocker: git-sync`) |
 | Cron / systemd install | Keep the 5-minute watchdog on the agent host so a live pid alone is not "healthy" |
 
+On amvara3 (2026-11-21): root crontab runs the watchdog every 5 minutes:
+
+`*/5 * * * * cd /home/amvara/projects/pos && ./scripts/watchdog-pos-cursor-loop.sh >>/home/amvara/projects/pos/tmp/pos-cursor-loop-watchdog.log 2>&1`
+
 Do not treat "loop pid exists" as proof that issues are being queued. Check `./scripts/watchdog-pos-cursor-loop.sh --status` for `git_sync_block=`.
 
 ## Leave these alone
