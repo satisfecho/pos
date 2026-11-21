@@ -60,7 +60,7 @@ Effect:
 
 Fix applied 2026-11-21: resolve conflicts (keep upstream hunks), drop conflicted/stale stashes, `git pull --rebase` to tip of `origin/development`. After that, sync succeeded again (008 ran). Next healthy **001** cycle (19:10 CET) created `agents2/tasks/FEAT-447-20261121-1811-trabaja-con-nosotros.md`.
 
-Still parked on purpose: `FEAT-388-…` remains **waiting for human** (design gate). That alone does not block 001 from filing new issues.
+`FEAT-388` was auto-**REJECTED** on 2026-11-21 after >30 days with no human reply (archived under `agents2/tasks/done/2026/11/21/`).
 
 ### Prevention (after 2026-11-21)
 
