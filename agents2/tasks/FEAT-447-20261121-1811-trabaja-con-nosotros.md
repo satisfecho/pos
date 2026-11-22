@@ -6,7 +6,8 @@
 
 ## Status
 - **Blocked - waiting for human** (proposal fit, CV/PII retention, encryption at rest)
-- **Waiting notice posted:** 2026-11-21T18:13:23Z
+- Issue body updated with numbered A/B/C decision questions (human asked for answerable questions).
+- **Waiting notice posted:** 2026-11-22T11:24:03Z
 
 ## Problem / goal
 Restaurants need a public **Work with us** / **Trabaja con nosotros** flow so candidates can learn why to join and leave a CV. When the owner enables the option, the venue can show template copy (why work here) and collect applications; later, when a position opens, staff can email candidates for an interview.
