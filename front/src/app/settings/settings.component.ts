@@ -2031,6 +2031,45 @@ const SETTINGS_SECTION_HASH: Record<SettingsSectionId, string> = {
                       <p class="hint">{{ 'SETTINGS.RESERVATION_REMINDER_2H_HINT' | translate }}</p>
                     </div>
                   </div>
+                  <h3 class="subsection-title">{{ 'SETTINGS.CAREERS' | translate }}</h3>
+                  <p class="subsection-desc">{{ 'SETTINGS.CAREERS_DESC' | translate }}</p>
+                  <div class="form-group check-row">
+                    <label class="check-label-wrap">
+                      <input type="checkbox" [(ngModel)]="formData.careers_enabled" name="careers_enabled" />
+                      <span class="check-label">{{ 'SETTINGS.CAREERS_ENABLED' | translate }}</span>
+                    </label>
+                    <p class="hint">{{ 'SETTINGS.CAREERS_ENABLED_HINT' | translate }}</p>
+                  </div>
+                  @if (formData.careers_enabled) {
+                    <div class="form-group">
+                      <label for="careers_why_text">{{ 'SETTINGS.CAREERS_WHY' | translate }}</label>
+                      <textarea
+                        id="careers_why_text"
+                        [(ngModel)]="formData.careers_why_text"
+                        name="careers_why_text"
+                        rows="4"
+                        maxlength="8000"
+                        [placeholder]="'SETTINGS.CAREERS_WHY_PLACEHOLDER' | translate"
+                      ></textarea>
+                    </div>
+                    <div class="form-group">
+                      <label for="careers_retention_days">{{ 'SETTINGS.CAREERS_RETENTION' | translate }}</label>
+                      <input
+                        id="careers_retention_days"
+                        type="number"
+                        min="30"
+                        max="730"
+                        [(ngModel)]="formData.careers_retention_days"
+                        name="careers_retention_days"
+                      />
+                      <small class="field-hint">{{ 'SETTINGS.CAREERS_RETENTION_HINT' | translate }}</small>
+                    </div>
+                    <p class="hint">
+                      {{ 'SETTINGS.CAREERS_PUBLIC_URL' | translate }}:
+                      <code>/careers/{{ formData.id || '…' }}</code>
+                    </p>
+                  }
+
                   <h3 class="subsection-title">{{ 'SETTINGS.GUEST_BIRTHDAY' | translate }}</h3>
                   <p class="subsection-desc">{{ 'SETTINGS.GUEST_BIRTHDAY_DESC' | translate }}</p>
                   <div class="form-group checkbox-row">
@@ -3733,6 +3772,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
     guest_birthday_capture_enabled: true,
     guest_birthday_marketing_enabled: false,
     guest_birthday_consent_text: null,
+    careers_enabled: false,
+    careers_why_text: null as string | null,
+    careers_retention_days: 180,
     delivery_fee_cents: 0,
     delivery_radius_meters: null,
     delivery_postal_codes: null,
@@ -3985,6 +4027,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
           guest_birthday_capture_enabled: settings.guest_birthday_capture_enabled ?? true,
           guest_birthday_marketing_enabled: settings.guest_birthday_marketing_enabled ?? false,
           guest_birthday_consent_text: settings.guest_birthday_consent_text ?? null,
+          careers_enabled: settings.careers_enabled ?? false,
+          careers_why_text: settings.careers_why_text ?? null,
+          careers_retention_days: settings.careers_retention_days ?? 180,
           delivery_fee_cents: settings.delivery_fee_cents ?? 0,
           delivery_radius_meters: settings.delivery_radius_meters ?? null,
           delivery_postal_codes: this.formatDeliveryPostalCodesForForm(settings.delivery_postal_codes),
@@ -5129,6 +5174,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
     updateData.guest_birthday_capture_enabled = this.formData.guest_birthday_capture_enabled ?? true;
     updateData.guest_birthday_marketing_enabled = this.formData.guest_birthday_marketing_enabled ?? false;
     updateData.guest_birthday_consent_text = (this.formData.guest_birthday_consent_text || '').trim() || null;
+    updateData.careers_enabled = !!this.formData.careers_enabled;
+    updateData.careers_why_text = (this.formData.careers_why_text || '').trim() || null;
+    updateData.careers_retention_days = Number(this.formData.careers_retention_days) || 180;
 
     const seen = new Set<number>();
     const tipPresets: number[] = [];

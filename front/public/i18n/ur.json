@@ -128,7 +128,8 @@
     "WAREHOUSES": "گودام",
     "TALK": "بات کریں",
     "GROUP_CATALOG_TOGGLE": "کیٹلاگ اور انوینٹری کھولیں یا بند کریں",
-    "CUSTOMER_DISPLAY": "کسٹمر ڈسپلے"
+    "CUSTOMER_DISPLAY": "کسٹمر ڈسپلے",
+    "CAREERS": "Careers"
   },
   "PUBLIC_GUEST_NAV": {
     "ARIA": "ریستوران کے صفحات",
@@ -137,7 +138,8 @@
     "WAITLIST": "انتظار فہرست",
     "DELIVERY": "ڈیلیوری",
     "LOYALTY": "لائلٹی",
-    "FEEDBACK": "رائے"
+    "FEEDBACK": "رائے",
+    "CAREERS": "Careers"
   },
   "STAFF_FLOW": {
     "TOOLBAR_ARIA": "عملہ نیویگیشن",
@@ -2359,7 +2361,16 @@
     "NEWSLETTER_SEND_FAIL": "مہم قطار میں نہیں لگی۔ سامعین، رضامندی اور SMTP چیک کریں۔",
     "NEWSLETTER_CANCEL_FAIL": "مہم منسوخ نہیں ہو سکی۔",
     "STRIPE_CRYPTO_ENABLED": "Stripe کے ذریعے کرپٹو (اسٹیبل کوائنز) قبول کریں",
-    "STRIPE_CRYPTO_ENABLED_HINT": "عوامی مینو اور ڈیلیوری چیک آؤٹ پر کرپٹو سے ادائیگی دکھاتا ہے۔ پہلے Stripe Dashboard میں Stablecoins and Crypto فعال کریں۔ تصفیہ آپ کے Stripe بیلنس میں ہوتا ہے؛ ریفنڈز مہمان کے والیٹ میں اسٹیبل کوائنز کے طور پر واپس آتے ہیں۔"
+    "STRIPE_CRYPTO_ENABLED_HINT": "عوامی مینو اور ڈیلیوری چیک آؤٹ پر کرپٹو سے ادائیگی دکھاتا ہے۔ پہلے Stripe Dashboard میں Stablecoins and Crypto فعال کریں۔ تصفیہ آپ کے Stripe بیلنس میں ہوتا ہے؛ ریفنڈز مہمان کے والیٹ میں اسٹیبل کوائنز کے طور پر واپس آتے ہیں۔",
+    "CAREERS": "Careers / Work with us",
+    "CAREERS_DESC": "Public page for candidates to leave a CV. Applications are encrypted and only visible to the owner.",
+    "CAREERS_ENABLED": "Enable public careers page",
+    "CAREERS_ENABLED_HINT": "When on, guests can open /careers/{id} and submit an application.",
+    "CAREERS_WHY": "Why work here (shown on public page)",
+    "CAREERS_WHY_PLACEHOLDER": "Tell candidates why they should join your team…",
+    "CAREERS_RETENTION": "Retention (days)",
+    "CAREERS_RETENTION_HINT": "Applications auto-delete after this many days (30–730). Default 180.",
+    "CAREERS_PUBLIC_URL": "Public URL path"
   },
   "PAYMENTS": {
     "PAYMENT": "ادائیگی",
@@ -3508,5 +3519,47 @@
     "EMAIL_ERROR": "براہ کرم درست ای میل درج کریں۔",
     "INVOICE_SAVED": "انوائس ای میل",
     "THANK_YOU": "شکریہ!"
+  },
+  "CAREERS": {
+    "TITLE": "Work with us",
+    "LOADING": "Loading…",
+    "DISABLED": "This restaurant is not accepting applications right now.",
+    "INVALID_TENANT": "Invalid restaurant link.",
+    "TENANT_NOT_FOUND": "Restaurant not found.",
+    "WHY_HEADING": "Why work here",
+    "RETENTION_NOTICE": "Your data is kept for {{days}} days, then deleted automatically. You can apply again later.",
+    "NAME": "Full name",
+    "EMAIL": "Email",
+    "PHONE": "Phone",
+    "MESSAGE": "Short message",
+    "CV": "CV (optional)",
+    "CV_HINT": "PDF or Word, max 5 MB. Stored encrypted.",
+    "SUBMIT": "Submit application",
+    "SUBMITTING": "Submitting…",
+    "SUBMIT_ERROR": "Could not submit. Check your details and try again.",
+    "THANK_YOU": "Thank you",
+    "THANK_YOU_BODY": "We received your application. Data is kept for {{days}} days, then removed. You may apply again after that.",
+    "STAFF_TITLE": "Careers applications",
+    "VIEW_PUBLIC": "Open public page",
+    "COPY_URL": "Copy public URL",
+    "URL_COPIED": "URL copied",
+    "EMPTY": "No applications yet.",
+    "LOAD_ERROR": "Could not load applications.",
+    "STATUS": "Status",
+    "STATUS_NEW": "New",
+    "STATUS_CONTACTED": "Contacted",
+    "STATUS_CLOSED": "Closed",
+    "CREATED": "Submitted",
+    "ACTIONS": "Actions",
+    "DOWNLOAD_CV": "Download CV",
+    "CONFIRM_DELETE": "Delete this application permanently?",
+    "NOTIFY_TITLE": "Open role — email all candidates",
+    "NOTIFY_HINT": "Sends every candidate an email asking them to update their CV if interested.",
+    "ROLE_TITLE": "Role title",
+    "NOTIFY_MESSAGE": "Extra message (optional)",
+    "NOTIFY_ALL": "Email all candidates",
+    "NOTIFYING": "Sending…",
+    "NOTIFY_RESULT": "Sent {sent} of {total} (failed: {failed}).",
+    "NOTIFY_ERROR": "Could not send emails. Check SMTP in Settings."
   }
 }

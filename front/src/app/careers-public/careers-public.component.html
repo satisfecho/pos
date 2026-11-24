@@ -1,0 +1,125 @@
+<div
+  class="book-page"
+  [style.--color-bg]="tenant()?.public_background_color ?? null"
+  [style.--hero-header-bg]="tenant()?.public_background_color ?? null"
+  [style.--color-primary]="resolvePublicPrimaryColor(tenant()?.public_primary_color)"
+>
+  <app-public-guest-header
+    [tenantId]="tenantId()"
+    [tenantName]="tenant()?.name ?? careers()?.tenant_name ?? null"
+    [logoUrl]="logoUrl()"
+    [headerBackgroundColor]="tenant()?.public_background_color ?? null"
+    [careersEnabled]="true"
+    activePage="careers"
+  />
+
+  @if (loading()) {
+    <div class="feedback-error-shell">
+      <div class="loading-screen">
+        <p class="feedback-loading-text">{{ 'CAREERS.LOADING' | translate }}</p>
+      </div>
+    </div>
+  } @else if (errorKind()) {
+    <main class="book-content">
+      <div class="book-card" style="margin-top: 2rem">
+        <h1>{{ 'CAREERS.TITLE' | translate }}</h1>
+        <p class="form-error">
+          @if (errorKind() === 'disabled') {
+            {{ 'CAREERS.DISABLED' | translate }}
+          } @else if (errorKind() === 'invalid_tenant') {
+            {{ 'CAREERS.INVALID_TENANT' | translate }}
+          } @else {
+            {{ 'CAREERS.TENANT_NOT_FOUND' | translate }}
+          }
+        </p>
+      </div>
+    </main>
+  } @else if (submitted()) {
+    <main class="book-content">
+      <div class="book-card" style="margin-top: 2rem" data-testid="careers-thank-you">
+        <h1>{{ 'CAREERS.THANK_YOU' | translate }}</h1>
+        <p>{{ 'CAREERS.THANK_YOU_BODY' | translate: { days: retentionDays() } }}</p>
+      </div>
+      <app-legal-links
+        [termsUrl]="termsOfServiceUrl()"
+        [privacyUrl]="privacyPolicyUrl()"
+      />
+    </main>
+  } @else {
+    <header
+      class="hero-header"
+      [class.has-bg-image]="tenant()?.header_background_filename"
+      [style.background-image]="headerBackgroundStyle()"
+    >
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="hero-info">
+          <h1 class="restaurant-name">{{ tenant()?.name || careers()?.tenant_name }}</h1>
+          <p class="hero-tagline">{{ 'CAREERS.TITLE' | translate }}</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="book-content">
+      <div class="book-card careers-card">
+        @if (whyText()) {
+          <section class="careers-why" data-testid="careers-why">
+            <h2>{{ 'CAREERS.WHY_HEADING' | translate }}</h2>
+            <p class="careers-why-text">{{ whyText() }}</p>
+          </section>
+        }
+
+        <p class="careers-retention-notice" data-testid="careers-retention">
+          {{ 'CAREERS.RETENTION_NOTICE' | translate: { days: retentionDays() } }}
+        </p>
+
+        <form class="careers-form" (ngSubmit)="submit()" data-testid="careers-form">
+          <label>
+            {{ 'CAREERS.NAME' | translate }}
+            <input type="text" name="name" [(ngModel)]="name" required autocomplete="name" />
+          </label>
+          <label>
+            {{ 'CAREERS.EMAIL' | translate }}
+            <input type="email" name="email" [(ngModel)]="email" required autocomplete="email" />
+          </label>
+          <label>
+            {{ 'CAREERS.PHONE' | translate }}
+            <input type="tel" name="phone" [(ngModel)]="phone" required autocomplete="tel" />
+          </label>
+          <label>
+            {{ 'CAREERS.MESSAGE' | translate }}
+            <textarea name="message" [(ngModel)]="message" rows="4" maxlength="2000"></textarea>
+          </label>
+          <label>
+            {{ 'CAREERS.CV' | translate }}
+            <input
+              type="file"
+              name="cv"
+              accept=".pdf,.doc,.docx,application/pdf"
+              (change)="onCvSelected($event)"
+              data-testid="careers-cv-input"
+            />
+            <small class="field-hint">{{ 'CAREERS.CV_HINT' | translate }}</small>
+          </label>
+
+          @if (submitError()) {
+            <p class="form-error" role="alert">{{ submitError() }}</p>
+          }
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="!canSubmit()"
+            data-testid="careers-submit"
+          >
+            {{ submitting() ? ('CAREERS.SUBMITTING' | translate) : ('CAREERS.SUBMIT' | translate) }}
+          </button>
+        </form>
+      </div>
+      <app-legal-links
+        [termsUrl]="termsOfServiceUrl()"
+        [privacyUrl]="privacyPolicyUrl()"
+      />
+    </main>
+  }
+</div>

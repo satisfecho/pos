@@ -9,7 +9,14 @@ import {
   pickContrastingForeground,
 } from './public-brand-colors';
 
-export type PublicGuestNavKey = 'menu' | 'book' | 'waitlist' | 'delivery' | 'loyalty' | 'feedback';
+export type PublicGuestNavKey =
+  | 'menu'
+  | 'book'
+  | 'waitlist'
+  | 'delivery'
+  | 'loyalty'
+  | 'feedback'
+  | 'careers';
 
 /**
  * Sticky tenant chrome for public guest pages (#376 / #364).
@@ -89,6 +96,16 @@ export type PublicGuestNavKey = 'menu' | 'book' | 'waitlist' | 'delivery' | 'loy
           >
             {{ 'PUBLIC_GUEST_NAV.FEEDBACK' | translate }}
           </a>
+          @if (showCareersNav()) {
+            <a
+              [routerLink]="['/careers', tenantId()]"
+              class="public-guest-header__link"
+              [class.is-active]="activePage() === 'careers'"
+              data-testid="public-guest-nav-careers"
+            >
+              {{ 'PUBLIC_GUEST_NAV.CAREERS' | translate }}
+            </a>
+          }
         </nav>
         <app-language-picker class="public-guest-header__lang"></app-language-picker>
       </header>
@@ -212,9 +229,12 @@ export class PublicGuestHeaderComponent implements OnInit {
   logoUrl = input<string | null>(null);
   /** Tenant public wash hex; when set, drives nav ink contrast (#411). */
   headerBackgroundColor = input<string | null>(null);
+  /** Show Trabaja con nosotros nav when owner enabled careers (#447). */
+  careersEnabled = input(false);
   activePage = input<PublicGuestNavKey>('book');
 
   private fetchedName = signal<string | null>(null);
+  private fetchedCareersEnabled = signal(false);
   private fetchedLogo = signal<string | null>(null);
   private fetchedBg = signal<string | null>(null);
   private fetchedMenuRef = signal<string | number | null>(null);
@@ -248,6 +268,9 @@ export class PublicGuestHeaderComponent implements OnInit {
     this.headerFg() === '#ffffff' ? 'light' : 'dark',
   );
 
+  /** Effective careers nav flag: explicit input or fetched from public tenant. */
+  showCareersNav = computed(() => this.careersEnabled() || this.fetchedCareersEnabled());
+
   ngOnInit(): void {
     const id = this.tenantId();
     if (!id) return;
@@ -257,7 +280,10 @@ export class PublicGuestHeaderComponent implements OnInit {
     const haveMenuRef =
       this.publicMenuRef() != null && String(this.publicMenuRef()).trim() !== '';
     const haveBookSlug = !!this.publicBookSlug()?.trim();
-    if (haveName && haveLogo && haveBg && haveMenuRef && haveBookSlug) return;
+    // Always refresh public tenant when we need careers flag (unless parent already set true)
+    if (haveName && haveLogo && haveBg && haveMenuRef && haveBookSlug && this.careersEnabled()) {
+      return;
+    }
     this.api.getPublicTenant(id).subscribe({
       next: (t) => {
         if (!haveName) this.fetchedName.set(t.name);
@@ -270,6 +296,7 @@ export class PublicGuestHeaderComponent implements OnInit {
         const slug = t.public_slug?.trim();
         this.fetchedMenuRef.set(slug || t.id);
         if (!haveBookSlug) this.fetchedBookSlug.set(slug || null);
+        this.fetchedCareersEnabled.set(!!t.careers_enabled);
       },
       error: () => {
         /* Parent pages already show load errors. */

@@ -111,6 +111,11 @@ def export_tenant_bundle(session: Session, tenant_id: int) -> dict[str, Any]:
     guest_feedback = list(
         session.exec(select(models.GuestFeedback).where(models.GuestFeedback.tenant_id == tenant_id)).all()
     )
+    career_applications = list(
+        session.exec(
+            select(models.CareerApplication).where(models.CareerApplication.tenant_id == tenant_id)
+        ).all()
+    )
     billing_customers = list(
         session.exec(
             select(models.BillingCustomer).where(models.BillingCustomer.tenant_id == tenant_id)
@@ -213,6 +218,7 @@ def export_tenant_bundle(session: Session, tenant_id: int) -> dict[str, Any]:
         "tables": [_model_dump_safe(t) for t in tables],
         "reservations": [_model_dump_safe(r) for r in reservations],
         "guest_feedback": [_model_dump_safe(g) for g in guest_feedback],
+        "career_applications": [_model_dump_safe(c) for c in career_applications],
         "billing_customers": [_model_dump_safe(b) for b in billing_customers],
         "orders": [_model_dump_safe(o) for o in orders],
         "order_items": [_model_dump_safe(i) for i in order_items],
@@ -314,6 +320,9 @@ def delete_tenant_cascade(session: Session, tenant_id: int) -> list[str]:
     )
 
     session.exec(delete(models.GuestFeedback).where(models.GuestFeedback.tenant_id == tenant_id))
+    session.exec(
+        delete(models.CareerApplication).where(models.CareerApplication.tenant_id == tenant_id)
+    )
     session.exec(
         delete(models.LoyaltyLedgerEntry).where(models.LoyaltyLedgerEntry.tenant_id == tenant_id)
     )

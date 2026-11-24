@@ -61,6 +61,7 @@ from .delivery_integration_routes import (
 )
 from .social_routes import router as social_router
 from .newsletter_routes import router as newsletter_router, public_router as newsletter_public_router
+from .careers_routes import router as careers_router, public_router as careers_public_router
 from .print_routes import staff_router as print_staff_router, agent_router as print_agent_router
 from .customer_routes import router as customer_router
 from .work_session_serialization import serialize_work_session, work_session_net_duration_minutes
@@ -616,6 +617,17 @@ def deny_public_staff_contract_uploads(tenant_id: int, filename: str):
     )
 
 
+@app.get("/uploads/{tenant_id}/careers/{filename}", include_in_schema=False)
+def deny_public_careers_uploads(tenant_id: int, filename: str):
+    """Encrypted CV blobs are owner-only via GET /tenant/careers/applications/{id}/cv (#447)."""
+    if "/" in filename or "\\" in filename or filename.startswith("."):
+        raise HTTPException(status_code=404, detail="Invalid filename")
+    raise HTTPException(
+        status_code=403,
+        detail="Career application files are not available at this URL",
+    )
+
+
 # Mount static files for serving images (fallback for any other uploads paths)
 app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
@@ -645,6 +657,8 @@ app.include_router(delivery_public_router, tags=["Delivery integrations"])
 app.include_router(social_router, prefix="/tenant", tags=["Marketing — social"])
 app.include_router(newsletter_router, prefix="/tenant", tags=["Marketing — newsletter"])
 app.include_router(newsletter_public_router, tags=["Marketing — newsletter"])
+app.include_router(careers_router, prefix="/tenant", tags=["Careers"])
+app.include_router(careers_public_router, tags=["Careers"])
 app.include_router(
     staff_contract_template_router,
     prefix="/staff-contract-templates",
@@ -920,6 +934,10 @@ class TenantSummary(_BaseModel):
     guest_birthday_capture_enabled: bool = True
     guest_birthday_marketing_enabled: bool = False
     guest_birthday_consent_text: str | None = None
+    # Public careers / Trabaja con nosotros (#447)
+    careers_enabled: bool = False
+    careers_why_text: str | None = None
+    careers_retention_days: int = 180
 
 
 TAKE_AWAY_TABLE_NAMES = ("take away", "home ordering", "takeaway", "take-away")
@@ -1215,6 +1233,13 @@ def _tenant_to_summary(t: models.Tenant, session: Session) -> TenantSummary:
             getattr(t, "guest_birthday_marketing_enabled", False)
         ),
         guest_birthday_consent_text=getattr(t, "guest_birthday_consent_text", None),
+        careers_enabled=bool(getattr(t, "careers_enabled", False)),
+        careers_why_text=(getattr(t, "careers_why_text", None) or None)
+        if bool(getattr(t, "careers_enabled", False))
+        else None,
+        careers_retention_days=int(getattr(t, "careers_retention_days", 180) or 180)
+        if bool(getattr(t, "careers_enabled", False))
+        else 180,
     )
 
 
@@ -1316,6 +1341,9 @@ def get_public_tenant(
         "guest_birthday_capture_enabled": summary.guest_birthday_capture_enabled,
         "guest_birthday_marketing_enabled": summary.guest_birthday_marketing_enabled,
         "guest_birthday_consent_text": summary.guest_birthday_consent_text,
+        "careers_enabled": summary.careers_enabled,
+        "careers_why_text": summary.careers_why_text,
+        "careers_retention_days": summary.careers_retention_days,
     }
     return JSONResponse(content=body)
 
@@ -4849,6 +4877,27 @@ def update_tenant_settings(
             tenant.guest_birthday_consent_text = stripped or None
         else:
             tenant.guest_birthday_consent_text = None
+
+    if tenant_update.careers_enabled is not None:
+        tenant.careers_enabled = bool(tenant_update.careers_enabled)
+    if tenant_update.careers_why_text is not None:
+        raw_why = tenant_update.careers_why_text
+        if isinstance(raw_why, str):
+            s = raw_why.replace("\x00", "").strip()
+            tenant.careers_why_text = s[:8000] if s else None
+        else:
+            tenant.careers_why_text = None
+    if tenant_update.careers_retention_days is not None:
+        try:
+            days = int(tenant_update.careers_retention_days)
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail="careers_retention_days must be an integer")
+        if days < 30 or days > 730:
+            raise HTTPException(
+                status_code=400,
+                detail="careers_retention_days must be between 30 and 730",
+            )
+        tenant.careers_retention_days = days
 
     # Satisfecho Delivery fee + coverage
     if tenant_update.delivery_fee_cents is not None:

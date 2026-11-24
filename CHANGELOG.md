@@ -10,12 +10,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- **Agent git-sync stuck alert:** `git-sync-development.sh` discards stamp-only dirt before pull and writes `tmp/agent-git-sync-blocked.txt` on unmerged conflicts; the 5-minute watchdog escalates with a GitHub issue (`agent-loop-blocker: git-sync`) so a live loop pid cannot hide a blocked FEAT intake again.
-- **Stale waiting FEAT → REJECTED:** After 30 days with no human reply on a parked waiting-for-human FEAT, the loop archives `REJECTED-…` under `agents2/tasks/done/` and closes the linked issue as not planned (`scripts/agent-feat-stale-waiting-reject.sh`).
-
 ### Changed
 
 ### Fixed
+
+## [2.1.194] - 2026-11-24
+
+### Added
+
+- **Careers / Trabaja con nosotros (#447):** Public apply page with optional CV upload, Fernet-encrypted PII and CV files at rest, configurable retention (default 180 days), and an owner-only staff inbox with status, CV download, and notify-all email when a role opens.
+- **Agent git-sync stuck alert:** `git-sync-development.sh` discards stamp-only dirt before pull and writes `tmp/agent-git-sync-blocked.txt` on unmerged conflicts; the 5-minute watchdog escalates with a GitHub issue (`agent-loop-blocker: git-sync`) so a live loop pid cannot hide a blocked FEAT intake again.
+- **Stale waiting FEAT → REJECTED:** After 30 days with no human reply on a parked waiting-for-human FEAT, the loop archives `REJECTED-…` under `agents2/tasks/done/` and closes the linked issue as not planned (`scripts/agent-feat-stale-waiting-reject.sh`).
 
 ## [2.1.193] - 2026-11-13
 

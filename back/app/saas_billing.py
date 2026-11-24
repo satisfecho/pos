@@ -50,6 +50,7 @@ SAAS_EXEMPT_PREFIXES = (
     "/book",
     "/waitlist",
     "/feedback",
+    "/careers",
     "/reservation",
     "/platform",
     "/provider",

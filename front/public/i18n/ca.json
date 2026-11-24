@@ -128,7 +128,8 @@
     "WAREHOUSES": "Magatzems",
     "TALK": "Parlar",
     "GROUP_CATALOG_TOGGLE": "Expandeix o contrau Catàleg i inventari",
-    "CUSTOMER_DISPLAY": "Pantalla del client"
+    "CUSTOMER_DISPLAY": "Pantalla del client",
+    "CAREERS": "Feina"
   },
   "PUBLIC_GUEST_NAV": {
     "ARIA": "Pàgines del restaurant",
@@ -137,7 +138,8 @@
     "WAITLIST": "Llista d'espera",
     "DELIVERY": "Entrega",
     "LOYALTY": "Fidelització",
-    "FEEDBACK": "Opinió"
+    "FEEDBACK": "Opinió",
+    "CAREERS": "Feina"
   },
   "STAFF_FLOW": {
     "TOOLBAR_ARIA": "Navegació de personal",
@@ -2500,7 +2502,16 @@
     "NEWSLETTER_SEND_FAIL": "No s’ha pogut posar la campanya a la cua. Reviseu audiència, consentiment i SMTP.",
     "NEWSLETTER_CANCEL_FAIL": "No s’ha pogut cancel·lar la campanya.",
     "STRIPE_CRYPTO_ENABLED": "Acceptar cripto (stablecoins) via Stripe",
-    "STRIPE_CRYPTO_ENABLED_HINT": "Mostra Pagar amb cripto al menú públic i al checkout de delivery. Activa Stablecoins and Crypto al Dashboard de Stripe primer. Es liquida al teu saldo Stripe; els reemborsaments tornen com a stablecoins a la cartera del client."
+    "STRIPE_CRYPTO_ENABLED_HINT": "Mostra Pagar amb cripto al menú públic i al checkout de delivery. Activa Stablecoins and Crypto al Dashboard de Stripe primer. Es liquida al teu saldo Stripe; els reemborsaments tornen com a stablecoins a la cartera del client.",
+    "CAREERS": "Feina / Treballa amb nosaltres",
+    "CAREERS_DESC": "Pàgina pública per deixar el CV. Les candidatures van xifrades i només les ve el propietari.",
+    "CAREERS_ENABLED": "Activar pàgina pública de feina",
+    "CAREERS_ENABLED_HINT": "Si està actiu, els candidats poden obrir /careers/{id} i enviar una candidatura.",
+    "CAREERS_WHY": "Per què treballar aquí (pàgina pública)",
+    "CAREERS_WHY_PLACEHOLDER": "Explica per què unir-se al teu equip…",
+    "CAREERS_RETENTION": "Retenció (dies)",
+    "CAREERS_RETENTION_HINT": "Les candidatures s'esborren soles després d'aquests dies (30–730). Per defecte 180.",
+    "CAREERS_PUBLIC_URL": "Ruta URL pública"
   },
   "PAYMENTS": {
     "PAYMENT": "Pagament",
@@ -3508,5 +3519,47 @@
     "EMAIL_ERROR": "Introduïu un correu vàlid.",
     "INVOICE_SAVED": "Correu de factura",
     "THANK_YOU": "Gràcies!"
+  },
+  "CAREERS": {
+    "TITLE": "Treballa amb nosaltres",
+    "LOADING": "Carregant…",
+    "DISABLED": "Aquest restaurant no accepta candidatures ara.",
+    "INVALID_TENANT": "Enllaç de restaurant no vàlid.",
+    "TENANT_NOT_FOUND": "Restaurant no trobat.",
+    "WHY_HEADING": "Per què treballar aquí",
+    "RETENTION_NOTICE": "Les teves dades es guarden {{days}} dies i després s'esborren automàticament. Pots tornar a presentar-te més tard.",
+    "NAME": "Nom complet",
+    "EMAIL": "Correu electrònic",
+    "PHONE": "Telèfon",
+    "MESSAGE": "Missatge breu",
+    "CV": "CV (opcional)",
+    "CV_HINT": "PDF o Word, màx. 5 MB. Es desa xifrat.",
+    "SUBMIT": "Enviar candidatura",
+    "SUBMITTING": "Enviant…",
+    "SUBMIT_ERROR": "No s'ha pogut enviar. Revisa les dades i torna-ho a provar.",
+    "THANK_YOU": "Gràcies",
+    "THANK_YOU_BODY": "Hem rebut la teva candidatura. Les dades es conserven {{days}} dies i després s'eliminen. Pots tornar a aplicar després.",
+    "STAFF_TITLE": "Candidatures",
+    "VIEW_PUBLIC": "Obrir pàgina pública",
+    "COPY_URL": "Copiar URL pública",
+    "URL_COPIED": "URL copiada",
+    "EMPTY": "Encara no hi ha candidatures.",
+    "LOAD_ERROR": "No s'han pogut carregar les candidatures.",
+    "STATUS": "Estat",
+    "STATUS_NEW": "Nova",
+    "STATUS_CONTACTED": "Contactada",
+    "STATUS_CLOSED": "Tancada",
+    "CREATED": "Enviada",
+    "ACTIONS": "Accions",
+    "DOWNLOAD_CV": "Descarregar CV",
+    "CONFIRM_DELETE": "Eliminar aquesta candidatura de forma permanent?",
+    "NOTIFY_TITLE": "Plaça oberta — enviar correu a tothom",
+    "NOTIFY_HINT": "Envia a tots els candidats un correu demanant actualitzar el CV si els interessa.",
+    "ROLE_TITLE": "Lloc de treball",
+    "NOTIFY_MESSAGE": "Missatge extra (opcional)",
+    "NOTIFY_ALL": "Correu a tots els candidats",
+    "NOTIFYING": "Enviant…",
+    "NOTIFY_RESULT": "Enviats {sent} de {total} (fallits: {failed}).",
+    "NOTIFY_ERROR": "No s'han pogut enviar correus. Revisa SMTP a Configuració."
   }
 }

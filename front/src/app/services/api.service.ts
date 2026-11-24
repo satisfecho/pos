@@ -696,6 +696,40 @@ export interface TenantSummary {
   guest_birthday_capture_enabled?: boolean;
   guest_birthday_marketing_enabled?: boolean;
   guest_birthday_consent_text?: string | null;
+  /** Public careers / Trabaja con nosotros (#447). */
+  careers_enabled?: boolean;
+  careers_why_text?: string | null;
+  careers_retention_days?: number;
+}
+
+export interface PublicCareersInfo {
+  tenant_id: number;
+  tenant_name: string;
+  enabled: boolean;
+  why_text: string | null;
+  retention_days: number;
+  public_background_color?: string | null;
+  public_primary_color?: string | null;
+  logo_filename?: string | null;
+  header_background_filename?: string | null;
+  address?: string | null;
+  public_google_maps_url?: string | null;
+  public_openstreetmap_url?: string | null;
+  public_slug?: string | null;
+}
+
+export interface CareerApplication {
+  id: number;
+  status: 'new' | 'contacted' | 'closed' | string;
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+  cv_original_name?: string | null;
+  has_cv: boolean;
+  expires_at?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 /** Planned opening-hours baselines and date overrides (issue #194). */
@@ -1886,6 +1920,10 @@ export interface TenantSettings {
   guest_birthday_marketing_enabled?: boolean | null;
   /** GDPR consent copy shown when marketing is enabled. */
   guest_birthday_consent_text?: string | null;
+  /** Public careers / Trabaja con nosotros (#447). */
+  careers_enabled?: boolean | null;
+  careers_why_text?: string | null;
+  careers_retention_days?: number | null;
   public_google_maps_url?: string | null;
   public_openstreetmap_url?: string | null;
   public_terms_of_service_url?: string | null;
@@ -4005,6 +4043,70 @@ export class ApiService {
   ): Observable<{ ok: boolean; id: number }> {
     return this.http.post<{ ok: boolean; id: number }>(
       `${this.apiUrl}/public/tenants/${tenantId}/guest-feedback`,
+      body,
+    );
+  }
+
+  getPublicCareers(tenantRef: number | string): Observable<PublicCareersInfo> {
+    return this.http.get<PublicCareersInfo>(
+      `${this.apiUrl}/public/tenants/${tenantRef}/careers`,
+    );
+  }
+
+  submitPublicCareerApplication(
+    tenantRef: number | string,
+    data: {
+      name: string;
+      email: string;
+      phone: string;
+      message?: string;
+      cv?: File | null;
+    },
+  ): Observable<{ ok: boolean; id: number; retention_days: number }> {
+    const form = new FormData();
+    form.append('name', data.name);
+    form.append('email', data.email);
+    form.append('phone', data.phone);
+    if (data.message) form.append('message', data.message);
+    if (data.cv) form.append('cv', data.cv, data.cv.name);
+    return this.http.post<{ ok: boolean; id: number; retention_days: number }>(
+      `${this.apiUrl}/public/tenants/${tenantRef}/careers/applications`,
+      form,
+    );
+  }
+
+  listCareerApplications(): Observable<CareerApplication[]> {
+    return this.http.get<CareerApplication[]>(`${this.apiUrl}/tenant/careers/applications`);
+  }
+
+  updateCareerApplicationStatus(
+    id: number,
+    status: 'new' | 'contacted' | 'closed',
+  ): Observable<CareerApplication> {
+    return this.http.patch<CareerApplication>(
+      `${this.apiUrl}/tenant/careers/applications/${id}`,
+      { status },
+    );
+  }
+
+  deleteCareerApplication(id: number): Observable<{ ok: boolean }> {
+    return this.http.delete<{ ok: boolean }>(
+      `${this.apiUrl}/tenant/careers/applications/${id}`,
+    );
+  }
+
+  downloadCareerCv(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/tenant/careers/applications/${id}/cv`, {
+      responseType: 'blob',
+    });
+  }
+
+  notifyAllCareerCandidates(body: {
+    role_title: string;
+    message?: string;
+  }): Observable<{ ok: boolean; sent: number; failed: number; total: number }> {
+    return this.http.post<{ ok: boolean; sent: number; failed: number; total: number }>(
+      `${this.apiUrl}/tenant/careers/notify-all`,
       body,
     );
   }

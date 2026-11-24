@@ -259,6 +259,17 @@ class Settings(BaseSettings):
         validation_alias="RATE_LIMIT_WAITING_LIST_PER_HOUR",
         description="Max waiting-list submissions per IP per hour (public form)",
     )
+    rate_limit_careers_per_hour: int = Field(
+        default=10,
+        validation_alias="RATE_LIMIT_CAREERS_PER_HOUR",
+        description="Max careers application submissions per IP per hour (public form)",
+    )
+    # Optional dedicated Fernet key for careers PII/CV (#447); else derived from SECRET_KEY
+    careers_encryption_key: str = Field(
+        default="",
+        validation_alias="CAREERS_ENCRYPTION_KEY",
+        description="Optional url-safe Fernet key (or any secret) for careers at-rest encryption",
+    )
     rate_limit_password_reset_per_hour: int = Field(
         default=5,
         validation_alias="RATE_LIMIT_PASSWORD_RESET_PER_HOUR",
@@ -425,6 +436,7 @@ class Settings(BaseSettings):
             self.rate_limit_guest_feedback_per_hour = 200
             self.rate_limit_loyalty_join_per_hour = 200
             self.rate_limit_waiting_list_per_hour = 200
+            self.rate_limit_careers_per_hour = 200
             self.rate_limit_password_reset_per_hour = 100
         return self
 

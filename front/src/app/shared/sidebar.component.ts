@@ -214,6 +214,11 @@ type NavGroupKey = 'operations' | 'planning' | 'catalog' | 'admin';
                       <span>{{ 'NAV.GUEST_FEEDBACK' | translate }}</span>
                     </a>
                   }
+                  @if (isOwner()) {
+                    <a routerLink="/staff/careers" routerLinkActive="active" class="nav-sublink" (click)="closeSidebar()">
+                      <span>{{ 'NAV.CAREERS' | translate }}</span>
+                    </a>
+                  }
                 </div>
               }
             </div>
@@ -429,6 +434,7 @@ export class SidebarComponent implements OnInit, AfterViewInit, OnDestroy {
     const u = this.user();
     return !!u && u.tenant_id != null && String(u.role).toLowerCase() !== 'provider';
   });
+  isOwner = computed(() => String(this.user()?.role || '').toLowerCase() === 'owner');
 
   showOperationsGroup = computed(
     () =>
@@ -439,7 +445,8 @@ export class SidebarComponent implements OnInit, AfterViewInit, OnDestroy {
   showPlanningGroup = computed(
     () =>
       (this.canViewWorkingPlan() && this.moduleEnabled('working_plan')) ||
-      (this.canViewReservations() && this.moduleEnabled('reservations'))
+      (this.canViewReservations() && this.moduleEnabled('reservations')) ||
+      this.isOwner()
   );
   /** Products link is always shown; group stays visible for all staff. */
   showCatalogGroup = computed(() => true);
@@ -553,7 +560,8 @@ export class SidebarComponent implements OnInit, AfterViewInit, OnDestroy {
     if (
       path.startsWith('/working-plan') ||
       path.startsWith('/reservations') ||
-      path.startsWith('/guest-feedback')
+      path.startsWith('/guest-feedback') ||
+      path.startsWith('/staff/careers')
     ) {
       this.planningOpen.set(true);
     }

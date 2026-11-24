@@ -128,7 +128,8 @@
     "WAREHOUSES": "Almacenes",
     "TALK": "Hablar",
     "GROUP_CATALOG_TOGGLE": "Expandir o contraer Catálogo e inventario",
-    "CUSTOMER_DISPLAY": "Pantalla del cliente"
+    "CUSTOMER_DISPLAY": "Pantalla del cliente",
+    "CAREERS": "Empleo"
   },
   "PUBLIC_GUEST_NAV": {
     "ARIA": "Páginas del restaurante",
@@ -137,7 +138,8 @@
     "WAITLIST": "Lista de espera",
     "DELIVERY": "Entrega",
     "LOYALTY": "Fidelización",
-    "FEEDBACK": "Opinión"
+    "FEEDBACK": "Opinión",
+    "CAREERS": "Empleo"
   },
   "STAFF_FLOW": {
     "TOOLBAR_ARIA": "Navegación de personal",
@@ -2359,7 +2361,16 @@
     "NEWSLETTER_SEND_FAIL": "No se pudo encolar la campaña. Revise audiencia, consentimiento y SMTP.",
     "NEWSLETTER_CANCEL_FAIL": "No se pudo cancelar la campaña.",
     "STRIPE_CRYPTO_ENABLED": "Aceptar cripto (stablecoins) vía Stripe",
-    "STRIPE_CRYPTO_ENABLED_HINT": "Muestra Pagar con cripto en el menú público y en el checkout de delivery. Activa Stablecoins and Crypto en el Dashboard de Stripe primero. Se liquida en tu saldo Stripe; los reembolsos vuelven como stablecoins al monedero del cliente."
+    "STRIPE_CRYPTO_ENABLED_HINT": "Muestra Pagar con cripto en el menú público y en el checkout de delivery. Activa Stablecoins and Crypto en el Dashboard de Stripe primero. Se liquida en tu saldo Stripe; los reembolsos vuelven como stablecoins al monedero del cliente.",
+    "CAREERS": "Empleo / Trabaja con nosotros",
+    "CAREERS_DESC": "Página pública para dejar el CV. Las candidaturas van cifradas y solo las ve el propietario.",
+    "CAREERS_ENABLED": "Activar página pública de empleo",
+    "CAREERS_ENABLED_HINT": "Si está activo, los candidatos pueden abrir /careers/{id} y enviar una candidatura.",
+    "CAREERS_WHY": "Por qué trabajar aquí (página pública)",
+    "CAREERS_WHY_PLACEHOLDER": "Explica por qué unirse a tu equipo…",
+    "CAREERS_RETENTION": "Retención (días)",
+    "CAREERS_RETENTION_HINT": "Las candidaturas se borran solos tras estos días (30–730). Por defecto 180.",
+    "CAREERS_PUBLIC_URL": "Ruta URL pública"
   },
   "PAYMENTS": {
     "PAYMENT": "Pago",
@@ -3508,5 +3519,47 @@
     "EMAIL_ERROR": "Introduzca un email válido.",
     "INVOICE_SAVED": "Email de factura",
     "THANK_YOU": "¡Gracias!"
+  },
+  "CAREERS": {
+    "TITLE": "Trabaja con nosotros",
+    "LOADING": "Cargando…",
+    "DISABLED": "Este restaurante no acepta candidaturas ahora.",
+    "INVALID_TENANT": "Enlace de restaurante no válido.",
+    "TENANT_NOT_FOUND": "Restaurante no encontrado.",
+    "WHY_HEADING": "Por qué trabajar aquí",
+    "RETENTION_NOTICE": "Tus datos se guardan {{days}} días y luego se eliminan automáticamente. Puedes volver a candidarte más tarde.",
+    "NAME": "Nombre completo",
+    "EMAIL": "Correo electrónico",
+    "PHONE": "Teléfono",
+    "MESSAGE": "Mensaje breve",
+    "CV": "CV (opcional)",
+    "CV_HINT": "PDF o Word, máx. 5 MB. Se guarda cifrado.",
+    "SUBMIT": "Enviar candidatura",
+    "SUBMITTING": "Enviando…",
+    "SUBMIT_ERROR": "No se pudo enviar. Revisa los datos e inténtalo de nuevo.",
+    "THANK_YOU": "Gracias",
+    "THANK_YOU_BODY": "Hemos recibido tu candidatura. Los datos se conservan {{days}} días y luego se eliminan. Puedes volver a aplicar después.",
+    "STAFF_TITLE": "Candidaturas",
+    "VIEW_PUBLIC": "Abrir página pública",
+    "COPY_URL": "Copiar URL pública",
+    "URL_COPIED": "URL copiada",
+    "EMPTY": "Aún no hay candidaturas.",
+    "LOAD_ERROR": "No se pudieron cargar las candidaturas.",
+    "STATUS": "Estado",
+    "STATUS_NEW": "Nueva",
+    "STATUS_CONTACTED": "Contactada",
+    "STATUS_CLOSED": "Cerrada",
+    "CREATED": "Enviada",
+    "ACTIONS": "Acciones",
+    "DOWNLOAD_CV": "Descargar CV",
+    "CONFIRM_DELETE": "¿Eliminar esta candidatura de forma permanente?",
+    "NOTIFY_TITLE": "Plaza abierta — enviar email a todos",
+    "NOTIFY_HINT": "Envía a todos los candidatos un email pidiendo actualizar el CV si les interesa.",
+    "ROLE_TITLE": "Puesto",
+    "NOTIFY_MESSAGE": "Mensaje extra (opcional)",
+    "NOTIFY_ALL": "Email a todos los candidatos",
+    "NOTIFYING": "Enviando…",
+    "NOTIFY_RESULT": "Enviados {sent} de {total} (fallidos: {failed}).",
+    "NOTIFY_ERROR": "No se pudieron enviar emails. Revisa SMTP en Ajustes."
   }
 }

@@ -206,6 +206,11 @@ class Tenant(SQLModel, table=True):
         default=None
     )  # JSON array of allowed postal codes, e.g. ["28001","28002"]
 
+    # Public careers / "Trabaja con nosotros" (#447); default off
+    careers_enabled: bool = Field(default=False)
+    careers_why_text: str | None = Field(default=None)  # Owner-editable "why work here"
+    careers_retention_days: int = Field(default=180)  # Auto-delete applications after N days
+
     # Public feedback page: optional "Write a review" link (Google Business Profile / Maps)
     public_google_review_url: str | None = Field(default=None, max_length=2048)
     # Public pages: optional Google Maps place or directions URL (Share link from Maps)
@@ -942,6 +947,34 @@ class GuestFeedback(TenantMixin, table=True):
     reservation_id: int | None = Field(default=None, foreign_key="reservation.id")
     client_ip: str | None = Field(default=None, max_length=45)
     client_user_agent: str | None = Field(default=None, max_length=512)
+
+
+class CareerApplicationStatus(str, Enum):
+    new = "new"
+    contacted = "contacted"
+    closed = "closed"
+
+
+class CareerApplication(TenantMixin, table=True):
+    """Encrypted careers / CV application from public Trabaja con nosotros (#447)."""
+
+    __tablename__ = "career_application"
+    id: int | None = Field(default=None, primary_key=True)
+    status: CareerApplicationStatus = Field(
+        default=CareerApplicationStatus.new, index=True
+    )
+    # Fernet ciphertext of JSON: name, email, phone, message, optional cv_original_name
+    pii_encrypted: str = Field(sa_column=Column(Text, nullable=False))
+    # Encrypted file on disk: uploads/{tenant_id}/careers/{cv_stored_filename}
+    cv_stored_filename: str | None = Field(default=None, max_length=255)
+    cv_content_type: str | None = Field(default=None, max_length=128)
+    expires_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), nullable=False, index=True)
+    )
+    client_ip: str | None = Field(default=None, max_length=45)
+    client_user_agent: str | None = Field(default=None, max_length=512)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class PricePromotion(TenantMixin, table=True):
@@ -1978,6 +2011,11 @@ class TenantUpdate(SQLModel):
     guest_birthday_capture_enabled: bool | None = None
     guest_birthday_marketing_enabled: bool | None = None
     guest_birthday_consent_text: str | None = None
+
+    # Public careers / Trabaja con nosotros (#447)
+    careers_enabled: bool | None = None
+    careers_why_text: str | None = None
+    careers_retention_days: int | None = None
 
     # Satisfecho Delivery fee + coverage
     delivery_fee_cents: int | None = None

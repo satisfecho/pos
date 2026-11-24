@@ -128,7 +128,8 @@
     "WAREHOUSES": "仓库",
     "TALK": "语音",
     "GROUP_CATALOG_TOGGLE": "展开或折叠目录与库存",
-    "CUSTOMER_DISPLAY": "顾客显示屏"
+    "CUSTOMER_DISPLAY": "顾客显示屏",
+    "CAREERS": "Careers"
   },
   "PUBLIC_GUEST_NAV": {
     "ARIA": "餐厅页面",
@@ -137,7 +138,8 @@
     "WAITLIST": "等位",
     "DELIVERY": "外卖",
     "LOYALTY": "会员",
-    "FEEDBACK": "反馈"
+    "FEEDBACK": "反馈",
+    "CAREERS": "Careers"
   },
   "STAFF_FLOW": {
     "TOOLBAR_ARIA": "员工导航",
@@ -2500,7 +2502,16 @@
     "NEWSLETTER_SEND_FAIL": "无法排队活动。请检查受众、同意与 SMTP。",
     "NEWSLETTER_CANCEL_FAIL": "无法取消活动。",
     "STRIPE_CRYPTO_ENABLED": "通过 Stripe 接受加密货币（稳定币）",
-    "STRIPE_CRYPTO_ENABLED_HINT": "在公开菜单和外卖结账中显示加密货币支付。请先在 Stripe 控制台启用 Stablecoins and Crypto。结算到您的 Stripe 余额；退款以稳定币退回客人钱包。"
+    "STRIPE_CRYPTO_ENABLED_HINT": "在公开菜单和外卖结账中显示加密货币支付。请先在 Stripe 控制台启用 Stablecoins and Crypto。结算到您的 Stripe 余额；退款以稳定币退回客人钱包。",
+    "CAREERS": "Careers / Work with us",
+    "CAREERS_DESC": "Public page for candidates to leave a CV. Applications are encrypted and only visible to the owner.",
+    "CAREERS_ENABLED": "Enable public careers page",
+    "CAREERS_ENABLED_HINT": "When on, guests can open /careers/{id} and submit an application.",
+    "CAREERS_WHY": "Why work here (shown on public page)",
+    "CAREERS_WHY_PLACEHOLDER": "Tell candidates why they should join your team…",
+    "CAREERS_RETENTION": "Retention (days)",
+    "CAREERS_RETENTION_HINT": "Applications auto-delete after this many days (30–730). Default 180.",
+    "CAREERS_PUBLIC_URL": "Public URL path"
   },
   "PAYMENTS": {
     "PAYMENT": "支付",
@@ -3508,5 +3519,47 @@
     "EMAIL_ERROR": "请输入有效邮箱。",
     "INVOICE_SAVED": "发票邮箱",
     "THANK_YOU": "谢谢！"
+  },
+  "CAREERS": {
+    "TITLE": "Work with us",
+    "LOADING": "Loading…",
+    "DISABLED": "This restaurant is not accepting applications right now.",
+    "INVALID_TENANT": "Invalid restaurant link.",
+    "TENANT_NOT_FOUND": "Restaurant not found.",
+    "WHY_HEADING": "Why work here",
+    "RETENTION_NOTICE": "Your data is kept for {{days}} days, then deleted automatically. You can apply again later.",
+    "NAME": "Full name",
+    "EMAIL": "Email",
+    "PHONE": "Phone",
+    "MESSAGE": "Short message",
+    "CV": "CV (optional)",
+    "CV_HINT": "PDF or Word, max 5 MB. Stored encrypted.",
+    "SUBMIT": "Submit application",
+    "SUBMITTING": "Submitting…",
+    "SUBMIT_ERROR": "Could not submit. Check your details and try again.",
+    "THANK_YOU": "Thank you",
+    "THANK_YOU_BODY": "We received your application. Data is kept for {{days}} days, then removed. You may apply again after that.",
+    "STAFF_TITLE": "Careers applications",
+    "VIEW_PUBLIC": "Open public page",
+    "COPY_URL": "Copy public URL",
+    "URL_COPIED": "URL copied",
+    "EMPTY": "No applications yet.",
+    "LOAD_ERROR": "Could not load applications.",
+    "STATUS": "Status",
+    "STATUS_NEW": "New",
+    "STATUS_CONTACTED": "Contacted",
+    "STATUS_CLOSED": "Closed",
+    "CREATED": "Submitted",
+    "ACTIONS": "Actions",
+    "DOWNLOAD_CV": "Download CV",
+    "CONFIRM_DELETE": "Delete this application permanently?",
+    "NOTIFY_TITLE": "Open role — email all candidates",
+    "NOTIFY_HINT": "Sends every candidate an email asking them to update their CV if interested.",
+    "ROLE_TITLE": "Role title",
+    "NOTIFY_MESSAGE": "Extra message (optional)",
+    "NOTIFY_ALL": "Email all candidates",
+    "NOTIFYING": "Sending…",
+    "NOTIFY_RESULT": "Sent {sent} of {total} (failed: {failed}).",
+    "NOTIFY_ERROR": "Could not send emails. Check SMTP in Settings."
   }
 }
