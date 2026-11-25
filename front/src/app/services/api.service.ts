@@ -4053,6 +4053,31 @@ export class ApiService {
     );
   }
 
+  requestCareersVerificationCode(
+    tenantRef: number | string,
+    email: string,
+  ): Observable<{ ok: boolean; email_sent: boolean; message?: string; dev_code?: string }> {
+    return this.http.post<{
+      ok: boolean;
+      email_sent: boolean;
+      message?: string;
+      dev_code?: string;
+    }>(`${this.apiUrl}/public/tenants/${tenantRef}/careers/applications/request-code`, {
+      email,
+    });
+  }
+
+  confirmCareersVerificationCode(
+    tenantRef: number | string,
+    email: string,
+    code: string,
+  ): Observable<{ ok: boolean; submit_token: string }> {
+    return this.http.post<{ ok: boolean; submit_token: string }>(
+      `${this.apiUrl}/public/tenants/${tenantRef}/careers/applications/confirm-code`,
+      { email, code },
+    );
+  }
+
   submitPublicCareerApplication(
     tenantRef: number | string,
     data: {
@@ -4061,12 +4086,14 @@ export class ApiService {
       phone: string;
       message?: string;
       cv?: File | null;
+      submit_token: string;
     },
   ): Observable<{ ok: boolean; id: number; retention_days: number }> {
     const form = new FormData();
     form.append('name', data.name);
     form.append('email', data.email);
     form.append('phone', data.phone);
+    form.append('submit_token', data.submit_token);
     if (data.message) form.append('message', data.message);
     if (data.cv) form.append('cv', data.cv, data.cv.name);
     return this.http.post<{ ok: boolean; id: number; retention_days: number }>(

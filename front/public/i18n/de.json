@@ -3560,6 +3560,18 @@
     "NOTIFY_ALL": "Alle Kandidaten anschreiben",
     "NOTIFYING": "Senden…",
     "NOTIFY_RESULT": "{sent} von {total} gesendet (fehlgeschlagen: {failed}).",
-    "NOTIFY_ERROR": "E-Mails konnten nicht gesendet werden. SMTP in Einstellungen prüfen."
+    "NOTIFY_ERROR": "E-Mails konnten nicht gesendet werden. SMTP in Einstellungen prüfen.",
+    "SEND_CODE": "Bestätigungscode senden",
+    "SENDING_CODE": "Code wird gesendet…",
+    "VERIFY_HINT": "Wir senden einen sechsstelligen Code an Ihre E-Mail, bevor die Bewerbung gespeichert wird.",
+    "VERIFY_TITLE": "E-Mail bestätigen",
+    "VERIFY_SENT": "Geben Sie den sechsstelligen Code ein, den wir an {{email}} gesendet haben.",
+    "VERIFY_CODE": "Bestätigungscode",
+    "VERIFY_CODE_PLACEHOLDER": "6-stelliger Code",
+    "RESEND_CODE": "Code erneut senden",
+    "CODE_RESENT": "Code gesendet",
+    "CODE_SEND_ERROR": "Code konnte nicht gesendet werden. Bitte erneut versuchen.",
+    "CODE_INVALID": "Ungültiger oder abgelaufener Code. Neuen Code anfordern.",
+    "DEV_CODE_HINT": "Dev-Code (SMTP nicht konfiguriert): {{code}}"
   }
 }

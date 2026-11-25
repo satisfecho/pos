@@ -19,6 +19,8 @@ import { LegalLinksComponent } from '../shared/legal-links.component';
 import { resolvePublicPrimaryColor } from '../shared/public-brand-colors';
 import { contactEmailValid, contactPhoneValid } from '../shared/contact-validators';
 
+type ApplyStep = 'form' | 'code' | 'done';
+
 @Component({
   selector: 'app-careers-public',
   standalone: true,
@@ -42,15 +44,20 @@ export class CareersPublicComponent implements OnInit {
   logoUrl = signal<string | null>(null);
   loading = signal(true);
   errorKind = signal<'invalid_tenant' | 'tenant_not_found' | 'disabled' | null>(null);
+  applyStep = signal<ApplyStep>('form');
   submitting = signal(false);
-  submitted = signal(false);
   submitError = signal<string | null>(null);
+  resendCooldown = signal(false);
+  /** Dev-only code when SMTP is missing (never shown in production API). */
+  devCodeHint = signal<string | null>(null);
 
   name = '';
   email = '';
   phone = '';
   message = '';
   cvFile: File | null = null;
+  verificationCode = '';
+  private submitToken: string | null = null;
 
   retentionDays = computed(() => this.careers()?.retention_days ?? 180);
   whyText = computed(() => this.careers()?.why_text?.trim() || null);
@@ -139,7 +146,7 @@ export class CareersPublicComponent implements OnInit {
     this.cvFile = file;
   }
 
-  canSubmit(): boolean {
+  canRequestCode(): boolean {
     return (
       this.name.trim().length >= 2 &&
       contactEmailValid(this.email) &&
@@ -148,10 +155,98 @@ export class CareersPublicComponent implements OnInit {
     );
   }
 
-  submit() {
-    if (!this.canSubmit()) return;
+  canConfirmCode(): boolean {
+    return /^\d{6}$/.test(this.verificationCode.trim()) && !this.submitting();
+  }
+
+  requestCode() {
+    if (!this.canRequestCode()) return;
     this.submitting.set(true);
     this.submitError.set(null);
+    this.devCodeHint.set(null);
+    this.submitToken = null;
+    this.api.requestCareersVerificationCode(this.tenantRef(), this.email.trim()).subscribe({
+      next: (res) => {
+        this.submitting.set(false);
+        this.applyStep.set('code');
+        if (res.dev_code) {
+          this.devCodeHint.set(res.dev_code);
+        }
+        this.updateDocumentTitle();
+      },
+      error: (err) => {
+        this.submitting.set(false);
+        this.submitError.set(
+          err?.error?.detail?.message ||
+            err?.error?.message ||
+            this.translate.instant('CAREERS.CODE_SEND_ERROR'),
+        );
+      },
+    });
+  }
+
+  resendCode() {
+    if (this.submitting() || this.resendCooldown()) return;
+    this.submitting.set(true);
+    this.submitError.set(null);
+    this.devCodeHint.set(null);
+    this.api.requestCareersVerificationCode(this.tenantRef(), this.email.trim()).subscribe({
+      next: (res) => {
+        this.submitting.set(false);
+        this.resendCooldown.set(true);
+        if (res.dev_code) {
+          this.devCodeHint.set(res.dev_code);
+        }
+        setTimeout(() => this.resendCooldown.set(false), 8000);
+      },
+      error: (err) => {
+        this.submitting.set(false);
+        this.submitError.set(
+          err?.error?.detail?.message ||
+            err?.error?.message ||
+            this.translate.instant('CAREERS.CODE_SEND_ERROR'),
+        );
+      },
+    });
+  }
+
+  confirmAndSubmit() {
+    if (!this.canConfirmCode()) return;
+    this.submitting.set(true);
+    this.submitError.set(null);
+    const code = this.verificationCode.trim();
+    this.api.confirmCareersVerificationCode(this.tenantRef(), this.email.trim(), code).subscribe({
+      next: (res) => {
+        this.submitToken = res.submit_token;
+        this.finishSubmit();
+      },
+      error: (err) => {
+        this.submitting.set(false);
+        this.submitError.set(
+          err?.error?.detail?.message ||
+            err?.error?.message ||
+            this.translate.instant('CAREERS.CODE_INVALID'),
+        );
+      },
+    });
+  }
+
+  backToForm() {
+    this.applyStep.set('form');
+    this.verificationCode = '';
+    this.submitToken = null;
+    this.submitError.set(null);
+    this.devCodeHint.set(null);
+    this.updateDocumentTitle();
+  }
+
+  private finishSubmit() {
+    const token = this.submitToken;
+    if (!token) {
+      this.submitting.set(false);
+      this.submitError.set(this.translate.instant('CAREERS.CODE_INVALID'));
+      return;
+    }
     this.api
       .submitPublicCareerApplication(this.tenantRef(), {
         name: this.name.trim(),
@@ -159,20 +254,23 @@ export class CareersPublicComponent implements OnInit {
         phone: this.phone.trim(),
         message: this.message.trim() || undefined,
         cv: this.cvFile,
+        submit_token: token,
       })
       .subscribe({
         next: () => {
           this.submitting.set(false);
-          this.submitted.set(true);
+          this.applyStep.set('done');
+          this.submitToken = null;
           this.updateDocumentTitle();
         },
         error: (err) => {
           this.submitting.set(false);
-          const msg =
+          this.submitToken = null;
+          this.submitError.set(
             err?.error?.detail?.message ||
-            err?.error?.message ||
-            this.translate.instant('CAREERS.SUBMIT_ERROR');
-          this.submitError.set(msg);
+              err?.error?.message ||
+              this.translate.instant('CAREERS.SUBMIT_ERROR'),
+          );
         },
       });
   }
@@ -195,7 +293,8 @@ export class CareersPublicComponent implements OnInit {
     const err = this.errorKind();
     let key = 'CAREERS.TITLE';
     if (this.loading() && !err) key = 'CAREERS.LOADING';
-    else if (this.submitted()) key = 'CAREERS.THANK_YOU';
+    else if (this.applyStep() === 'done') key = 'CAREERS.THANK_YOU';
+    else if (this.applyStep() === 'code') key = 'CAREERS.VERIFY_TITLE';
     else if (err === 'disabled') key = 'CAREERS.DISABLED';
     else if (err) key = 'CAREERS.TITLE';
     const page = this.translate.instant(key);

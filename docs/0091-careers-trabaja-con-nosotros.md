@@ -1,6 +1,8 @@
-# Careers / Trabaja con nosotros (#447)
+# Careers / Trabaja con nosotros (#447, #448)
 
 Owner-togglable public careers page so candidates can leave contact details and an optional CV. Applications are **encrypted at rest** (Fernet) and visible to the **tenant owner only**.
+
+Spam protection (#448): candidates must confirm a **six-digit email code** before any application row or CV file is stored.
 
 ## Owner settings
 
@@ -16,11 +18,15 @@ In **Settings** (tenant):
 |-----|------|
 | By tenant id | `/careers/{tenantId}` |
 | API config | `GET /public/tenants/{id\|slug}/careers` |
-| Submit (multipart) | `POST /public/tenants/{id\|slug}/careers/applications` |
+| Request code | `POST /public/tenants/{id\|slug}/careers/applications/request-code` JSON `{email}` |
+| Confirm code | `POST /public/tenants/{id\|slug}/careers/applications/confirm-code` JSON `{email, code}` → `{submit_token}` |
+| Submit (multipart) | `POST /public/tenants/{id\|slug}/careers/applications` (requires `submit_token` form field) |
 
 Nav link **Careers** appears on public guest chrome when the feature is enabled.
 
-Form fields: name, email, phone, short message, optional CV (PDF/Word, max 5 MB).
+Form flow: name, email, phone, short message, optional CV → **send code** → enter 6-digit code → submit. CV stays in the browser until submit; challenges expire (~30 min for the code, ~15 min for `submit_token`). Rate limits: code requests and submissions per IP (`RATE_LIMIT_CAREERS_CODE_PER_HOUR`, `RATE_LIMIT_CAREERS_PER_HOUR`).
+
+Local/dev: when SMTP is not configured and `PRODUCTION` is false, `request-code` may include `dev_code` for smoke tests. Optional `CAREERS_FIXED_CODE` (or `OWNER_SIGNUP_FIXED_CODE`) forces a known code in non-production.
 
 ## Owner staff UI
 

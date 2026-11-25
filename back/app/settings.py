@@ -264,11 +264,30 @@ class Settings(BaseSettings):
         validation_alias="RATE_LIMIT_CAREERS_PER_HOUR",
         description="Max careers application submissions per IP per hour (public form)",
     )
+    rate_limit_careers_code_per_hour: int = Field(
+        default=5,
+        validation_alias="RATE_LIMIT_CAREERS_CODE_PER_HOUR",
+        description="Max careers verification code requests per IP per hour",
+    )
     # Optional dedicated Fernet key for careers PII/CV (#447); else derived from SECRET_KEY
     careers_encryption_key: str = Field(
         default="",
         validation_alias="CAREERS_ENCRYPTION_KEY",
         description="Optional url-safe Fernet key (or any secret) for careers at-rest encryption",
+    )
+    # Careers public apply: 6-digit email confirmation before storing application (#448)
+    careers_verification_expire_minutes: int = Field(
+        default=30,
+        validation_alias="CAREERS_VERIFICATION_EXPIRE_MINUTES",
+    )
+    careers_submit_token_expire_minutes: int = Field(
+        default=15,
+        validation_alias="CAREERS_SUBMIT_TOKEN_EXPIRE_MINUTES",
+    )
+    # Non-production only: force a known 6-digit code for local/smoke tests
+    careers_fixed_code: str = Field(
+        default="",
+        validation_alias="CAREERS_FIXED_CODE",
     )
     rate_limit_password_reset_per_hour: int = Field(
         default=5,
@@ -437,6 +456,7 @@ class Settings(BaseSettings):
             self.rate_limit_loyalty_join_per_hour = 200
             self.rate_limit_waiting_list_per_hour = 200
             self.rate_limit_careers_per_hour = 200
+            self.rate_limit_careers_code_per_hour = 100
             self.rate_limit_password_reset_per_hour = 100
         return self
 

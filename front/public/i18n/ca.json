@@ -3560,6 +3560,18 @@
     "NOTIFY_ALL": "Correu a tots els candidats",
     "NOTIFYING": "Enviant…",
     "NOTIFY_RESULT": "Enviats {sent} de {total} (fallits: {failed}).",
-    "NOTIFY_ERROR": "No s'han pogut enviar correus. Revisa SMTP a Configuració."
+    "NOTIFY_ERROR": "No s'han pogut enviar correus. Revisa SMTP a Configuració.",
+    "SEND_CODE": "Enviar codi de verificació",
+    "SENDING_CODE": "Enviant codi…",
+    "VERIFY_HINT": "T'enviarem un codi de sis dígits per confirmar el correu abans de desar la sol·licitud.",
+    "VERIFY_TITLE": "Confirma el correu",
+    "VERIFY_SENT": "Introdueix el codi de sis dígits que hem enviat a {{email}}.",
+    "VERIFY_CODE": "Codi de verificació",
+    "VERIFY_CODE_PLACEHOLDER": "Codi de 6 dígits",
+    "RESEND_CODE": "Reenviar codi",
+    "CODE_RESENT": "Codi enviat",
+    "CODE_SEND_ERROR": "No s'ha pogut enviar el codi. Torna-ho a provar.",
+    "CODE_INVALID": "Codi invàlid o caducat. Demana'n un de nou.",
+    "DEV_CODE_HINT": "Codi de desenvolupament (SMTP no configurat): {{code}}"
   }
 }

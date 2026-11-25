@@ -26,12 +26,14 @@ from sqlmodel import Session, select
 
 from app import models
 from app.api_errors import api_error_payload
+from app.messages import get_message
 from app.careers_crypto import (
     decrypt_careers_file_bytes,
     decrypt_careers_pii,
     encrypt_careers_file_bytes,
     encrypt_careers_pii,
 )
+from app import careers_verify
 from app.contact_validation import normalize_email_address, normalize_phone_e164
 from app.db import get_session
 from app.email_service import send_email, smtp_credentials_configured
@@ -161,6 +163,15 @@ class CareerNotifyAllBody(BaseModel):
     message: str | None = Field(default=None, max_length=4000)
 
 
+class CareerRequestCodeBody(BaseModel):
+    email: str = Field(min_length=3, max_length=320)
+
+
+class CareerConfirmCodeBody(BaseModel):
+    email: str = Field(min_length=3, max_length=320)
+    code: str = Field(min_length=6, max_length=6)
+
+
 @public_router.get("/public/tenants/{tenant_ref}/careers")
 @limiter.limit(
     f"{getattr(settings, 'rate_limit_public_menu_per_minute', 60)}/minute",
@@ -200,6 +211,96 @@ def get_public_careers_info(
     }
 
 
+@public_router.post("/public/tenants/{tenant_ref}/careers/applications/request-code")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_careers_code_per_hour', 5)}/hour",
+    key_func=rate_limit_key,
+)
+async def request_careers_verification_code(
+    request: Request,
+    response: Response,
+    tenant_ref: str,
+    body: CareerRequestCodeBody,
+    session: Session = Depends(get_session),
+    lang: str = Query(default="en"),
+) -> dict:
+    """Email a 6-digit code; no application or CV is stored yet (#448)."""
+    from app.tenant_public_slug import resolve_tenant_by_ref
+
+    tenant = resolve_tenant_by_ref(session, tenant_ref)
+    if not tenant:
+        raise HTTPException(status_code=404, detail=api_error_payload("tenant_not_found", lang))
+    if not bool(getattr(tenant, "careers_enabled", False)):
+        raise HTTPException(status_code=404, detail=api_error_payload("careers_disabled", lang))
+    try:
+        cemail = normalize_email_address(body.email)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=api_error_payload("invalid_email", lang))
+
+    _challenge, raw_code, email_sent = await careers_verify.issue_and_send_code(
+        tenant=tenant,
+        email=cemail,
+        session=session,
+        lang=lang,
+        client_ip=_client_ip(request),
+    )
+    out: dict = {
+        "ok": True,
+        "email_sent": bool(email_sent),
+        "message": get_message("careers_verification_sent", lang),
+    }
+    # Local/smoke only: expose code when email could not be sent and not production
+    if (
+        not settings.is_production
+        and not email_sent
+        and raw_code
+        and len(raw_code) == careers_verify.CODE_DIGITS
+    ):
+        out["dev_code"] = raw_code
+    return out
+
+
+@public_router.post("/public/tenants/{tenant_ref}/careers/applications/confirm-code")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_careers_code_per_hour', 5)}/hour",
+    key_func=rate_limit_key,
+)
+def confirm_careers_verification_code(
+    request: Request,
+    response: Response,
+    tenant_ref: str,
+    body: CareerConfirmCodeBody,
+    session: Session = Depends(get_session),
+    lang: str = Query(default="en"),
+) -> dict:
+    """Confirm 6-digit code; returns a short-lived submit_token for the final POST (#448)."""
+    from app.tenant_public_slug import resolve_tenant_by_ref
+
+    tenant = resolve_tenant_by_ref(session, tenant_ref)
+    if not tenant:
+        raise HTTPException(status_code=404, detail=api_error_payload("tenant_not_found", lang))
+    if not bool(getattr(tenant, "careers_enabled", False)):
+        raise HTTPException(status_code=404, detail=api_error_payload("careers_disabled", lang))
+    try:
+        cemail = normalize_email_address(body.email)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=api_error_payload("invalid_email", lang))
+    code = (body.code or "").strip()
+    if len(code) != 6 or not code.isdigit():
+        raise HTTPException(
+            status_code=400, detail=api_error_payload("careers_verification_invalid", lang)
+        )
+    result = careers_verify.confirm_code(
+        session=session, tenant_id=int(tenant.id), email=cemail, code=code
+    )
+    if not result:
+        raise HTTPException(
+            status_code=400, detail=api_error_payload("careers_verification_invalid", lang)
+        )
+    _challenge, submit_token = result
+    return {"ok": True, "submit_token": submit_token}
+
+
 @public_router.post("/public/tenants/{tenant_ref}/careers/applications")
 @limiter.limit(
     f"{getattr(settings, 'rate_limit_careers_per_hour', 10)}/hour",
@@ -212,12 +313,13 @@ async def submit_public_career_application(
     name: Annotated[str, Form()],
     email: Annotated[str, Form()],
     phone: Annotated[str, Form()],
+    submit_token: Annotated[str, Form()],
     message: Annotated[str | None, Form()] = None,
     cv: Annotated[UploadFile | None, File()] = None,
     session: Session = Depends(get_session),
     lang: str = Query(default="en"),
 ) -> dict:
-    """Submit a careers application (multipart). PII and CV encrypted at rest."""
+    """Submit a careers application (multipart) after email code confirmation (#448)."""
     from app.tenant_public_slug import resolve_tenant_by_ref
 
     tenant = resolve_tenant_by_ref(session, tenant_ref)
@@ -239,6 +341,18 @@ async def submit_public_career_application(
         cphone = normalize_phone_e164(phone, settings.default_phone_country)
     except ValueError:
         raise HTTPException(status_code=400, detail=api_error_payload("invalid_phone", lang))
+
+    token = (submit_token or "").strip()
+    if not token:
+        raise HTTPException(
+            status_code=400, detail=api_error_payload("careers_verification_required", lang)
+        )
+    if not careers_verify.consume_submit_token(
+        session=session, tenant_id=int(tenant.id), email=cemail, submit_token=token
+    ):
+        raise HTTPException(
+            status_code=400, detail=api_error_payload("careers_submit_token_invalid", lang)
+        )
 
     msg = None
     if message is not None and str(message).strip():

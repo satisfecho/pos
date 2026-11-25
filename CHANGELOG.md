@@ -14,6 +14,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.195] - 2026-11-25
+
+### Added
+
+- **Careers email confirmation (#448):** Public apply requires a six-digit email code before any application or CV is stored (`request-code` / `confirm-code` / submit with `submit_token`); short-lived challenge table, rate limits, i18n, docs, and API/smoke coverage.
+
+### Changed
+
+- **Repo cleanup (#449):** Removed unused empty root `Contact` file (no product or docs references).
+
 ## [2.1.194] - 2026-11-24
 
 ### Added

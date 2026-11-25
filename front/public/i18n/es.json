@@ -3560,6 +3560,18 @@
     "NOTIFY_ALL": "Email a todos los candidatos",
     "NOTIFYING": "Enviando…",
     "NOTIFY_RESULT": "Enviados {sent} de {total} (fallidos: {failed}).",
-    "NOTIFY_ERROR": "No se pudieron enviar emails. Revisa SMTP en Ajustes."
+    "NOTIFY_ERROR": "No se pudieron enviar emails. Revisa SMTP en Ajustes.",
+    "SEND_CODE": "Enviar código de verificación",
+    "SENDING_CODE": "Enviando código…",
+    "VERIFY_HINT": "Te enviaremos un código de seis dígitos para confirmar tu correo antes de guardar la solicitud.",
+    "VERIFY_TITLE": "Confirma tu correo",
+    "VERIFY_SENT": "Introduce el código de seis dígitos que enviamos a {{email}}.",
+    "VERIFY_CODE": "Código de verificación",
+    "VERIFY_CODE_PLACEHOLDER": "Código de 6 dígitos",
+    "RESEND_CODE": "Reenviar código",
+    "CODE_RESENT": "Código enviado",
+    "CODE_SEND_ERROR": "No se pudo enviar el código. Inténtalo de nuevo.",
+    "CODE_INVALID": "Código inválido o caducado. Solicita uno nuevo.",
+    "DEV_CODE_HINT": "Código de desarrollo (SMTP no configurado): {{code}}"
   }
 }

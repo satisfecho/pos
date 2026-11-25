@@ -3522,7 +3522,19 @@
     "NOTIFY_ALL": "Email all candidates",
     "NOTIFYING": "Sending…",
     "NOTIFY_RESULT": "Sent {sent} of {total} (failed: {failed}).",
-    "NOTIFY_ERROR": "Could not send emails. Check SMTP in Settings."
+    "NOTIFY_ERROR": "Could not send emails. Check SMTP in Settings.",
+    "SEND_CODE": "Send verification code",
+    "SENDING_CODE": "Sending code…",
+    "VERIFY_HINT": "We will email a six-digit code to confirm your address before storing your application.",
+    "VERIFY_TITLE": "Confirm your email",
+    "VERIFY_SENT": "Enter the six-digit code we sent to {{email}}.",
+    "VERIFY_CODE": "Verification code",
+    "VERIFY_CODE_PLACEHOLDER": "6-digit code",
+    "RESEND_CODE": "Resend code",
+    "CODE_RESENT": "Code sent",
+    "CODE_SEND_ERROR": "Could not send the verification code. Try again.",
+    "CODE_INVALID": "Invalid or expired code. Request a new one.",
+    "DEV_CODE_HINT": "Dev code (SMTP not configured): {{code}}"
   },
   "PUBLIC_GUEST_NAV": {
     "CAREERS": "Careers"

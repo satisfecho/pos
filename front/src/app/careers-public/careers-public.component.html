@@ -34,7 +34,7 @@
         </p>
       </div>
     </main>
-  } @else if (submitted()) {
+  } @else if (applyStep() === 'done') {
     <main class="book-content">
       <div class="book-card" style="margin-top: 2rem" data-testid="careers-thank-you">
         <h1>{{ 'CAREERS.THANK_YOU' | translate }}</h1>
@@ -73,48 +73,129 @@
           {{ 'CAREERS.RETENTION_NOTICE' | translate: { days: retentionDays() } }}
         </p>
 
-        <form class="careers-form" (ngSubmit)="submit()" data-testid="careers-form">
-          <label>
-            {{ 'CAREERS.NAME' | translate }}
-            <input type="text" name="name" [(ngModel)]="name" required autocomplete="name" />
-          </label>
-          <label>
-            {{ 'CAREERS.EMAIL' | translate }}
-            <input type="email" name="email" [(ngModel)]="email" required autocomplete="email" />
-          </label>
-          <label>
-            {{ 'CAREERS.PHONE' | translate }}
-            <input type="tel" name="phone" [(ngModel)]="phone" required autocomplete="tel" />
-          </label>
-          <label>
-            {{ 'CAREERS.MESSAGE' | translate }}
-            <textarea name="message" [(ngModel)]="message" rows="4" maxlength="2000"></textarea>
-          </label>
-          <label>
-            {{ 'CAREERS.CV' | translate }}
-            <input
-              type="file"
-              name="cv"
-              accept=".pdf,.doc,.docx,application/pdf"
-              (change)="onCvSelected($event)"
-              data-testid="careers-cv-input"
-            />
-            <small class="field-hint">{{ 'CAREERS.CV_HINT' | translate }}</small>
-          </label>
+        @if (applyStep() === 'form') {
+          <form class="careers-form" (ngSubmit)="requestCode()" data-testid="careers-form">
+            <label>
+              {{ 'CAREERS.NAME' | translate }}
+              <input type="text" name="name" [(ngModel)]="name" required autocomplete="name" />
+            </label>
+            <label>
+              {{ 'CAREERS.EMAIL' | translate }}
+              <input type="email" name="email" [(ngModel)]="email" required autocomplete="email" />
+            </label>
+            <label>
+              {{ 'CAREERS.PHONE' | translate }}
+              <input type="tel" name="phone" [(ngModel)]="phone" required autocomplete="tel" />
+            </label>
+            <label>
+              {{ 'CAREERS.MESSAGE' | translate }}
+              <textarea name="message" [(ngModel)]="message" rows="4" maxlength="2000"></textarea>
+            </label>
+            <label>
+              {{ 'CAREERS.CV' | translate }}
+              <input
+                type="file"
+                name="cv"
+                accept=".pdf,.doc,.docx,application/pdf"
+                (change)="onCvSelected($event)"
+                data-testid="careers-cv-input"
+              />
+              <small class="field-hint">{{ 'CAREERS.CV_HINT' | translate }}</small>
+            </label>
 
-          @if (submitError()) {
-            <p class="form-error" role="alert">{{ submitError() }}</p>
-          }
+            <p class="field-hint">{{ 'CAREERS.VERIFY_HINT' | translate }}</p>
 
-          <button
-            type="submit"
-            class="btn btn-primary"
-            [disabled]="!canSubmit()"
-            data-testid="careers-submit"
+            @if (submitError()) {
+              <p class="form-error" role="alert">{{ submitError() }}</p>
+            }
+
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="!canRequestCode()"
+              data-testid="careers-request-code"
+            >
+              {{
+                submitting()
+                  ? ('CAREERS.SENDING_CODE' | translate)
+                  : ('CAREERS.SEND_CODE' | translate)
+              }}
+            </button>
+          </form>
+        } @else {
+          <form
+            class="careers-form"
+            (ngSubmit)="confirmAndSubmit()"
+            data-testid="careers-verify-form"
           >
-            {{ submitting() ? ('CAREERS.SUBMITTING' | translate) : ('CAREERS.SUBMIT' | translate) }}
-          </button>
-        </form>
+            <h2>{{ 'CAREERS.VERIFY_TITLE' | translate }}</h2>
+            <p class="field-hint">
+              {{ 'CAREERS.VERIFY_SENT' | translate: { email: email } }}
+            </p>
+            <label>
+              {{ 'CAREERS.VERIFY_CODE' | translate }}
+              <input
+                type="text"
+                name="verificationCode"
+                [(ngModel)]="verificationCode"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="6"
+                autocomplete="one-time-code"
+                required
+                data-testid="careers-verify-code"
+                [placeholder]="'CAREERS.VERIFY_CODE_PLACEHOLDER' | translate"
+              />
+            </label>
+
+            @if (devCodeHint()) {
+              <p class="field-hint" data-testid="careers-dev-code">
+                {{ 'CAREERS.DEV_CODE_HINT' | translate: { code: devCodeHint() } }}
+              </p>
+            }
+
+            @if (submitError()) {
+              <p class="form-error" role="alert">{{ submitError() }}</p>
+            }
+
+            <div class="careers-verify-actions">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                (click)="backToForm()"
+                [disabled]="submitting()"
+                data-testid="careers-back-form"
+              >
+                {{ 'COMMON.BACK' | translate }}
+              </button>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                (click)="resendCode()"
+                [disabled]="submitting() || resendCooldown()"
+                data-testid="careers-resend-code"
+              >
+                {{
+                  resendCooldown()
+                    ? ('CAREERS.CODE_RESENT' | translate)
+                    : ('CAREERS.RESEND_CODE' | translate)
+                }}
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="!canConfirmCode()"
+                data-testid="careers-submit"
+              >
+                {{
+                  submitting()
+                    ? ('CAREERS.SUBMITTING' | translate)
+                    : ('CAREERS.SUBMIT' | translate)
+                }}
+              </button>
+            </div>
+          </form>
+        }
       </div>
       <app-legal-links
         [termsUrl]="termsOfServiceUrl()"

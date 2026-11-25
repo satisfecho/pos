@@ -50,6 +50,14 @@
   opacity: 0.75;
 }
 
+.careers-verify-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+  margin-top: 0.35rem;
+}
+
 .hero-tagline {
   margin: 0.35rem 0 0;
   font-size: 1.05rem;

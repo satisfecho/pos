@@ -977,6 +977,30 @@ class CareerApplication(TenantMixin, table=True):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+class CareerEmailChallenge(TenantMixin, table=True):
+    """Short-lived email verification before careers application persist (#448)."""
+
+    __tablename__ = "career_email_challenge"
+    id: int | None = Field(default=None, primary_key=True)
+    email: str = Field(max_length=320, index=True)
+    code_hash: str = Field(max_length=64)
+    sent_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
+    expires_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), nullable=False, index=True)
+    )
+    verified_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    submit_token_hash: str | None = Field(default=None, max_length=64, index=True)
+    submit_token_expires_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    client_ip: str | None = Field(default=None, max_length=45)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 class PricePromotion(TenantMixin, table=True):
     """Tenant-scoped pricing promo (#322). MVP: percent_off_category."""
 
