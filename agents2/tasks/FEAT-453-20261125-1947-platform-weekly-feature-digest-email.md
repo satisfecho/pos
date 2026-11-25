@@ -8,6 +8,7 @@
 - **Blocked - waiting for human:** Audience, consent/unsubscribe, content source, platform SMTP sender, and locale are not decided on #453. Do not invent those unilaterally.
 - **Waiting notice posted:** 2026-11-25T19:43:49Z
 - **Restored:** Previous FEAT for #453 was missing from `agents2/tasks/` (orphaned `agent:planned` + waiting comment). Recreated so waiting-human preflight and feature coders stay consistent.
+- **010 recheck 2026-11-25T20:33:00Z:** Issue #453 still has no product decisions (Agent 001 restore / committer comments are not human answers). Left FEAT; did not re-comment; no code.
 
 ## Problem / goal
 Send restaurant owners (recent sign-ups and/or opted-in tenants) a once-per-week email with new Satisfecho features to improve activation after signup. Out of scope for v1: per-tenant guest marketing (Settings → Newsletter).

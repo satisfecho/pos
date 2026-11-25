@@ -118,10 +118,10 @@ except json.JSONDecodeError:
     sys.exit(1)
 
 agent_pat = re.compile(
-    r"(🤖\s*Agent|Blocked\s*[—\-]\s*no implementation|blocked on (human )?decision|"
+    r"(🤖\s*Agent|Agent\s+\d{3}:|Blocked\s*[—\-]\s*no implementation|blocked on (human )?decision|"
     r"Questions\s+1[–-]5\s+still|waiting for (a )?human|Re-checked questions|"
     r"Committed to `development`|Task planned|Added feature task for review|"
-    r"stale waiting|auto-rejected|REJECTED)",
+    r"Restored missing feature task|stale waiting|auto-rejected|REJECTED)",
     re.I,
 )
 

@@ -12,6 +12,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- **Agent waiting-human filters:** Preflight and stale-reject scripts treat `Agent NNN:` and “Restored missing feature task” issue comments as agent noise, so restore/recheck traffic does not unblock parked FEATs (#453).
+
 ### Fixed
 
 ## [2.1.203] - 2026-11-25
