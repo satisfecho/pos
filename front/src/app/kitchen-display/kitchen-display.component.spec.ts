@@ -159,6 +159,65 @@ describe('KitchenDisplayComponent', () => {
     expect(fixture.componentInstance.activeOrders()[0].id).toBe(1);
   });
 
+  it('should hide ready-made skip_kitchen lines from kitchen display (#454)', () => {
+    const orders = [
+      {
+        id: 10,
+        status: 'pending',
+        table_name: 'T1',
+        created_at: new Date().toISOString(),
+        items: [
+          {
+            id: 1,
+            product_name: 'Bottled water',
+            quantity: 1,
+            status: 'ready',
+            price_cents: 150,
+            category: 'Beverages',
+            skip_kitchen: true,
+            kitchen_station_route: 'none',
+          },
+          {
+            id: 2,
+            product_name: 'Burger',
+            quantity: 1,
+            status: 'pending',
+            price_cents: 900,
+            category: 'Main Course',
+            kitchen_station_route: 'kitchen',
+          },
+        ],
+        total_cents: 1050,
+      },
+      {
+        id: 11,
+        status: 'pending',
+        table_name: 'T2',
+        created_at: new Date().toISOString(),
+        items: [
+          {
+            id: 3,
+            product_name: 'Chips',
+            quantity: 1,
+            status: 'ready',
+            price_cents: 200,
+            category: 'Sides',
+            skip_kitchen: true,
+            kitchen_station_route: 'none',
+          },
+        ],
+        total_cents: 200,
+      },
+    ];
+    mockApi.getOrders.and.returnValue(of(orders));
+    const fixture = TestBed.createComponent(KitchenDisplayComponent);
+    fixture.detectChanges();
+    const active = fixture.componentInstance.activeOrders();
+    expect(active.length).toBe(1);
+    expect(active[0].id).toBe(10);
+    expect(active[0].items?.map((i) => i.product_name)).toEqual(['Burger']);
+  });
+
   it('should toggle sound and persist to localStorage', () => {
     const fixture = TestBed.createComponent(KitchenDisplayComponent);
     fixture.detectChanges();

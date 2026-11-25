@@ -3,7 +3,13 @@
 import unittest
 
 from app import models
-from app.kitchen_stations_util import normalize_display_route, resolve_order_item_kds
+from app.kitchen_stations_util import (
+    KDS_ROUTE_NONE,
+    initial_order_item_status,
+    normalize_display_route,
+    product_skips_kitchen,
+    resolve_order_item_kds,
+)
 
 
 class TestKitchenStationResolve(unittest.TestCase):
@@ -53,6 +59,29 @@ class TestKitchenStationResolve(unittest.TestCase):
         self.assertEqual(
             resolve_order_item_kds(p, self.tenant, self.by_id),
             (None, None, "bar"),
+        )
+
+    def test_skip_kitchen_ready_made(self) -> None:
+        p = models.Product(
+            id=1,
+            tenant_id=1,
+            name="Bottled water",
+            price_cents=100,
+            kitchen_station_id=10,
+            skip_kitchen=True,
+            category="Beverages",
+        )
+        self.assertTrue(product_skips_kitchen(p))
+        self.assertEqual(
+            resolve_order_item_kds(p, self.tenant, self.by_id),
+            (None, None, KDS_ROUTE_NONE),
+        )
+        self.assertEqual(initial_order_item_status(p), models.OrderItemStatus.ready)
+        self.assertEqual(
+            initial_order_item_status(
+                models.Product(id=2, tenant_id=1, name="Soup", price_cents=100)
+            ),
+            models.OrderItemStatus.pending,
         )
 
     def test_normalize_display_route(self) -> None:

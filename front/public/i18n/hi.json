@@ -533,7 +533,7 @@
     "LOGINS_7D": "लॉगिन (7 दिन)",
     "RECENT_TENANTS": "हाल के टेनants",
     "ALL_TENANTS": "सभी टेनants",
-    "ALL_TENANTS_HINT": "सॉर्ट करने के लिए कॉलम हेडर पर क्लिक करें। संपर्क, आँकड़े और सार्वजनिक लिंक के लिए किरायेदार खोलें।",
+    "ALL_TENANTS_HINT": "AG Grid: सॉर्ट, फ़िल्टर और पेज (डिफ़ॉल्ट 500 पंक्तियाँ)। संपर्क और लिंक के लिए किरायेदार खोलें।",
     "RECENT_LOGINS": "हाल के लॉगिन",
     "NO_TENANTS": "अभी तक कोई टेनant नहीं।",
     "NO_LOGINS": "अभी तक कोई लॉगिन इवेंट नहीं।",
@@ -592,7 +592,11 @@
     "TOP_ACTIVE": "शीर्ष 10 सबसे सक्रिय क्लाइंट",
     "TOP_ACTIVE_HINT": "चयनित अवधि ({{days}} दिन) में स्टाफ लॉगिन के आधार पर रैंक।",
     "TOP_ACTIVE_EMPTY": "इस अवधि में कोई किरायेदार लॉगिन नहीं।",
-    "COL_TENANT_LOGINS": "क्लाइंट लॉगिन"
+    "COL_TENANT_LOGINS": "क्लाइंट लॉगिन",
+    "USAGE_DAYS_365": "1 वर्ष",
+    "USAGE_DAYS_1095": "3 वर्ष",
+    "USAGE_DAILY_HINT": "चयनित छोटी अवधि के लिए दैनिक लॉगिन और साइन-अप।",
+    "USAGE_MONTHLY_HINT": "वर्ष-स्तर की विंडो के लिए मासिक योग (दैनिक बिंदुओं से साफ़)।"
   },
   "COURIER_HOME": {
     "TITLE": "डिलीवरी",
@@ -1019,7 +1023,9 @@
     "QUESTION_OPTIONS_PRICE_HINT": "प्रति पंक्ति एक विकल्प। वैकल्पिक मूल्य पाइप के बाद: लेबल|1.00 (मुख्य मुद्रा इकाइयाँ; छूट के लिए ऋणात्मक)।",
     "EXPECTED_PREP_MINUTES": "Expected prep (minutes)",
     "EXPECTED_PREP_PLACEHOLDER": "Category default",
-    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings."
+    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings.",
+    "SKIP_KITCHEN": "तैयार उत्पाद (किचन / बार छोड़ें)",
+    "SKIP_KITCHEN_HINT": "इस उत्पाद की पंक्तियाँ किचन/बार डिस्प्ले पर नहीं आतीं। बोतलबंद पेय, पैक्ड स्नैक्स आदि के लिए।"
   },
   "CATALOG": {
     "TITLE": "उत्पाद कैटलॉग",

@@ -27,8 +27,16 @@ class PlatformUsageDayKeyTests(TestCase):
         self.assertEqual(_resolve_usage_days(7), 7)
         self.assertEqual(_resolve_usage_days(30), 30)
         self.assertEqual(_resolve_usage_days(90), 90)
+        self.assertEqual(_resolve_usage_days(365), 365)
+        self.assertEqual(_resolve_usage_days(1095), 1095)
 
     def test_resolve_usage_days_rejects_other_values(self):
         with self.assertRaises(HTTPException) as ctx:
             _resolve_usage_days(14)
         self.assertEqual(ctx.exception.status_code, 422)
+
+    def test_usage_month_key(self):
+        from app.platform_routes import _usage_month_key
+
+        value = datetime(2026, 11, 25, 12, 0, tzinfo=timezone.utc)
+        self.assertEqual(_usage_month_key(value), "2026-11-01")

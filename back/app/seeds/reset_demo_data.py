@@ -8,8 +8,9 @@ table orders plus Satisfecho Delivery samples (see seed_demo_orders), a small
 waiting-list queue (see seed_demo_waiting_list), and demo delivery fee/zone
 coverage when unset (see seed_demo_delivery_settings).
 
-Does NOT remove tables, products, or users—only orders, order items, fiscal invoices,
-inventory rows tied to those orders, reservations, and waiting_list_entry for tenant 1.
+Does NOT remove tables, products, or users—only orders, order items, order payments /
+payment line allocations, fiscal invoices, inventory rows tied to those orders,
+reservations, and waiting_list_entry for tenant 1.
 
 Usage (on server, from repo root):
   docker compose --env-file config.env exec -T back python -m app.seeds.reset_demo_data
@@ -48,6 +49,17 @@ def run() -> None:
             ),
             {"tid": DEMO_TENANT_ID},
         ).rowcount
+        # Split-bill payment lines reference orderitem; payment legs reference order.
+        # Live FKs may lack ON DELETE CASCADE (CREATE TABLE IF NOT EXISTS), so delete
+        # explicitly before orderitem / order (tenant 1 only).
+        deleted_payment_items = session.execute(
+            text("DELETE FROM order_payment_item WHERE tenant_id = :tid"),
+            {"tid": DEMO_TENANT_ID},
+        ).rowcount
+        deleted_payments = session.execute(
+            text("DELETE FROM order_payment WHERE tenant_id = :tid"),
+            {"tid": DEMO_TENANT_ID},
+        ).rowcount
         deleted_items = session.execute(
             text(
                 """
@@ -73,7 +85,8 @@ def run() -> None:
 
         print(
             f"Tenant {DEMO_TENANT_ID}: removed {deleted_orders} orders, "
-            f"{deleted_items} order items, {deleted_invoices} fiscal invoices, "
+            f"{deleted_items} order items, {deleted_payment_items} payment items, "
+            f"{deleted_payments} payments, {deleted_invoices} fiscal invoices, "
             f"{deleted_inv_tx} inventory transactions, "
             f"{deleted_reservations} reservations, "
             f"{deleted_waiting} waiting-list entries."

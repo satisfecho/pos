@@ -795,7 +795,9 @@
     "QUESTION_OPTIONS_PRICE_HINT": "خيار واحد في كل سطر. فرق سعر اختياري بعد |: التسمية|1.00 (وحدات العملة؛ سالب للخصم).",
     "EXPECTED_PREP_MINUTES": "Expected prep (minutes)",
     "EXPECTED_PREP_PLACEHOLDER": "Category default",
-    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings."
+    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings.",
+    "SKIP_KITCHEN": "جاهز للتقديم (تخطي المطبخ / البار)",
+    "SKIP_KITCHEN_HINT": "لا تظهر بنود هذا المنتج على شاشات المطبخ أو البار. للمشروبات المعبأة والوجبات الخفيفة الجاهزة وغيرها مما لا يحتاج تحضيرًا."
   },
   "TABLES": {
     "TITLE": "الطاولات",
@@ -2826,7 +2828,7 @@
     "LOGINS_7D": "تسجيلات الدخول (7 أيام)",
     "RECENT_TENANTS": "المستأجرون الأخيرون",
     "ALL_TENANTS": "كل المستأجرين",
-    "ALL_TENANTS_HINT": "انقر على رأس العمود للفرز. افتح مستأجرا لرؤية جهات الاتصال والإحصاءات والروابط العامة.",
+    "ALL_TENANTS_HINT": "AG Grid: فرز وتصفية وترقيم صفحات (500 صف افتراضيا). افتح مستأجرا لجهات الاتصال والروابط.",
     "RECENT_LOGINS": "تسجيلات الدخول الأخيرة",
     "NO_TENANTS": "لا يوجد مستأجرون بعد.",
     "NO_LOGINS": "لا توجد أحداث تسجيل دخول مُسجَّلة بعد.",
@@ -2885,7 +2887,11 @@
     "TOP_ACTIVE": "أعلى 10 عملاء نشاطا",
     "TOP_ACTIVE_HINT": "مرتبة حسب عمليات دخول الموظفين في الفترة المحددة ({{days}} يوما).",
     "TOP_ACTIVE_EMPTY": "لا توجد عمليات دخول للمستأجرين في هذه الفترة.",
-    "COL_TENANT_LOGINS": "دخول العميل"
+    "COL_TENANT_LOGINS": "دخول العميل",
+    "USAGE_DAYS_365": "سنة واحدة",
+    "USAGE_DAYS_1095": "3 سنوات",
+    "USAGE_DAILY_HINT": "عمليات الدخول والتسجيل اليومية للفترة القصيرة المحددة.",
+    "USAGE_MONTHLY_HINT": "إجماليات شهرية لنوافذ السنوات (أوضح من النقاط اليومية)."
   },
   "TALK": {
     "TITLE": "تحدث لنقطة البيع",

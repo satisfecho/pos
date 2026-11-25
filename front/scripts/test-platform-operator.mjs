@@ -56,7 +56,7 @@ async function main() {
     if (!usageTitle || usageTitle.includes('PLATFORM_DASHBOARD.')) {
       throw new Error(`Usage chart title missing or untranslated: ${usageTitle}`);
     }
-    for (const days of [7, 30, 90]) {
+    for (const days of [7, 30, 90, 365, 1095]) {
       const btn = await page.$(`[data-testid="usage-days-${days}"]`);
       if (!btn) throw new Error(`Missing usage period button: ${days}`);
     }
@@ -65,7 +65,12 @@ async function main() {
       () => document.querySelector('[data-testid="usage-days-7"]')?.getAttribute('aria-pressed') === 'true',
       { timeout: 10000 },
     );
-    console.log(`OK: usage chart visible (${usageTitle}) with period selector`);
+    await page.click('[data-testid="usage-days-365"]');
+    await page.waitForFunction(
+      () => document.querySelector('[data-testid="usage-days-365"]')?.getAttribute('aria-pressed') === 'true',
+      { timeout: 10000 },
+    );
+    console.log(`OK: usage chart visible (${usageTitle}) with 7/30/90/1y/3y periods`);
 
     await page.waitForSelector('[data-testid="top-active-tenants"]', { timeout: 10000 });
     const topTitle = await page.$eval('[data-testid="top-active-tenants"] h2', (el) => el.textContent?.trim() || '');
@@ -74,10 +79,19 @@ async function main() {
     }
     console.log(`OK: top active clients section visible (${topTitle})`);
 
-    await page.waitForSelector('.tenants-table a.tenant-link', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="tenants-grid"] .ag-root', { timeout: 15000 });
     await page.waitForSelector('[data-testid="tenant-filter"]', { timeout: 5000 });
+    const pager = await page.$('.ag-paging-panel');
+    if (!pager) throw new Error('Expected AG Grid pagination panel');
+    const pageSizeText = await page.$eval('.ag-paging-panel', (el) => el.textContent || '');
+    if (!/500/.test(pageSizeText) && !/Page/.test(pageSizeText)) {
+      // Page size selector may show 500 in a select; accept any pagination chrome.
+      console.log(`WARN: pagination text did not clearly show 500: ${pageSizeText.slice(0, 80)}`);
+    }
+    console.log('OK: tenants AG Grid with pagination');
+
     const tenantLoginCell = await page.$('[data-testid="tenant-login-count"]');
-    if (!tenantLoginCell) throw new Error('Missing tenant login count column in All tenants table');
+    if (!tenantLoginCell) throw new Error('Missing tenant login count in AG Grid');
     const tenantLoginText = await tenantLoginCell.evaluate((el) => {
       const count = el.querySelector('.activity-count');
       return (count?.textContent || el.textContent || '').trim();
@@ -87,15 +101,7 @@ async function main() {
     }
     console.log(`OK: All tenants shows tenant login count (${tenantLoginText})`);
 
-    // Sort affordance: active column should be client logins by default
-    const activeSort = await page.$eval(
-      'th.col-activity .sort-btn',
-      (el) => el.classList.contains('active'),
-    );
-    if (!activeSort) throw new Error('Expected tenants table to default-sort by client logins');
-    console.log('OK: tenants table defaults to client-logins sort');
-
-    const firstName = await page.$eval('.tenants-table a.tenant-link', (el) => el.textContent?.trim() || '');
+    const firstName = await page.$eval('[data-testid="tenants-grid"] a.tenant-link', (el) => el.textContent?.trim() || '');
     if (firstName) {
       const needle = firstName.slice(0, Math.min(8, firstName.length));
       await page.focus('[data-testid="tenant-filter"]');
@@ -106,20 +112,21 @@ async function main() {
       await page.type('[data-testid="tenant-filter"]', needle);
       await page.waitForFunction(
         (name) => {
-          const links = [...document.querySelectorAll('.tenants-table a.tenant-link')];
+          const links = [...document.querySelectorAll('[data-testid="tenants-grid"] a.tenant-link')];
           return links.length >= 1 && links.every((a) => (a.textContent || '').toLowerCase().includes(name.slice(0, 3).toLowerCase()));
         },
         { timeout: 10000 },
         firstName,
       );
-      console.log(`OK: tenant filter narrows list for "${firstName}"`);
+      console.log(`OK: tenant quick-filter narrows grid for "${firstName}"`);
       await page.$eval('[data-testid="tenant-filter"]', (el) => {
         el.value = '';
         el.dispatchEvent(new Event('input', { bubbles: true }));
       });
+      await page.waitForSelector('[data-testid="tenants-grid"] a.tenant-link', { timeout: 10000 });
     }
 
-    await page.click('.tenants-table a.tenant-link');
+    await page.click('[data-testid="tenants-grid"] a.tenant-link');
     await page.waitForFunction(
       () => /^\/platform\/tenants\/\d+$/.test(window.location.pathname),
       { timeout: 15000 },

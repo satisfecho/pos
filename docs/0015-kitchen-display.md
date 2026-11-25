@@ -70,7 +70,17 @@ Examples:
 
 When a guest or a waiter places an order, each station sees its own products. The rest of the order stays on the other displays.
 
-Set this up under **Settings → Kitchen stations**. Map each product to a station, or use the tenant defaults for unmapped items (food vs beverages). Each order line then includes `kitchen_station_id`, `kitchen_station_name`, and `kitchen_station_route` (`kitchen` | `bar`).
+Set this up under **Settings → Kitchen stations**. Map each product to a station, or use the tenant defaults for unmapped items (food vs beverages). Each order line then includes `kitchen_station_id`, `kitchen_station_name`, and `kitchen_station_route` (`kitchen` | `bar` | `none`).
+
+### Ready-made / skip kitchen (#454)
+
+Mark a product as **Ready-made (skip kitchen / bar)** on **Products**. Those lines:
+
+- Resolve `kitchen_station_route` to **`none`** (never shown on `/kitchen` or `/bar`).
+- Start as item status **`ready`** (no prep step).
+- Are omitted from **kitchen** print jobs; they still appear on receipts and staff Orders.
+
+Use for bottled drinks, packaged snacks, and other items that need no prep. Hybrid dine-in vs takeaway continues to use existing table / take-away / delivery channels (`order_channel`); this flag only controls KDS routing.
 
 - **Kitchen display** (`/kitchen`) and **Bar display** (`/bar`) show a **Station** filter when at least one station exists for that route. **All stations** shows every line for that display. One station shows only the lines for that station.
 - **Bookmark:** open `?station=<id>` for one station. Omit the parameter, or use `all`, to show every station on that display.

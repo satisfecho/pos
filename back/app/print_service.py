@@ -191,8 +191,22 @@ def _build_order_payload(session: Session, order: models.Order, job_type: str) -
         ).all()
     )
     items = [i for i in items if not getattr(i, "removed_by_customer", False)]
+    # Ready-made products (#454): omit from kitchen tickets; keep on receipts.
+    skip_product_ids: set[int] = set()
+    if job_type == "kitchen":
+        from app.kitchen_stations_util import product_skips_kitchen
+
+        product_ids = [i.product_id for i in items if i.product_id]
+        if product_ids:
+            for p in session.exec(
+                select(models.Product).where(models.Product.id.in_(product_ids))
+            ).all():
+                if product_skips_kitchen(p) and p.id is not None:
+                    skip_product_ids.add(p.id)
     lines = []
     for i in items:
+        if job_type == "kitchen" and i.product_id in skip_product_ids:
+            continue
         name = i.product_name or f"Item {i.id}"
         qty = i.quantity or 1
         note_bits = []
