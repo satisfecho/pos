@@ -414,6 +414,8 @@ export interface PlatformTenantSummary {
   owner_name?: string | null;
   owner_login_count?: number;
   owner_last_login_at?: string | null;
+  tenant_login_count?: number;
+  tenant_last_login_at?: string | null;
   tenant_email?: string | null;
   tenant_phone?: string | null;
   public_slug?: string | null;
@@ -423,6 +425,15 @@ export interface PlatformTenantSummary {
   user_count: number;
   order_count: number;
   reservation_count: number;
+}
+
+export interface PlatformActiveTenant {
+  id: number;
+  name: string;
+  login_count: number;
+  last_login_at?: string | null;
+  owner_email?: string | null;
+  owner_name?: string | null;
 }
 
 export interface PlatformStaffContact {
@@ -469,11 +480,13 @@ export interface PlatformMetrics {
   usage_series?: PlatformUsageDay[];
   /** @deprecated Prefer usage_series */
   usage_last_30_days?: PlatformUsageDay[];
+  top_active_tenants?: PlatformActiveTenant[];
 }
 
 export interface PlatformUsageSeries {
   usage_days: number;
   usage_series: PlatformUsageDay[];
+  top_active_tenants?: PlatformActiveTenant[];
 }
 
 export interface CourierOrderSummary {

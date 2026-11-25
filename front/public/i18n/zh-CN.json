@@ -533,7 +533,7 @@
     "LOGINS_7D": "登录（7 天）",
     "RECENT_TENANTS": "最近租户",
     "ALL_TENANTS": "全部租户",
-    "ALL_TENANTS_HINT": "打开租户可查看联系人、统计及公开菜单和预订链接。",
+    "ALL_TENANTS_HINT": "点击列头排序。打开租户可查看联系人、统计和公开链接。",
     "RECENT_LOGINS": "最近登录",
     "NO_TENANTS": "尚无租户。",
     "NO_LOGINS": "尚无登录记录。",
@@ -588,7 +588,11 @@
     "USAGE_PERIOD": "使用周期",
     "USAGE_DAYS_7": "7 天",
     "USAGE_DAYS_30": "30 天",
-    "USAGE_DAYS_90": "90 天"
+    "USAGE_DAYS_90": "90 天",
+    "TOP_ACTIVE": "最活跃客户 Top 10",
+    "TOP_ACTIVE_HINT": "按所选周期（{{days}} 天）内员工登录次数排序。",
+    "TOP_ACTIVE_EMPTY": "该周期没有租户登录。",
+    "COL_TENANT_LOGINS": "客户登录"
   },
   "COURIER_HOME": {
     "TITLE": "配送",

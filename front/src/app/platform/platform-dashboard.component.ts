@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import {
   ApiService,
+  PlatformActiveTenant,
   PlatformInfo,
   PlatformMetrics,
   PlatformTenantSummary,
@@ -14,6 +15,7 @@ type TenantSortKey =
   | 'name'
   | 'owner'
   | 'owner_logins'
+  | 'tenant_logins'
   | 'owner_last_login'
   | 'products'
   | 'created';
@@ -143,6 +145,40 @@ type UsageDays = 7 | 30 | 90;
           }
         </section>
 
+        <section class="platform-section" data-testid="top-active-tenants">
+          <h2>{{ 'PLATFORM_DASHBOARD.TOP_ACTIVE' | translate }}</h2>
+          <p class="platform-muted section-hint">
+            {{ 'PLATFORM_DASHBOARD.TOP_ACTIVE_HINT' | translate:{ days: usageDays() } }}
+          </p>
+          @if (topActive().length === 0) {
+            <p class="platform-muted">{{ 'PLATFORM_DASHBOARD.TOP_ACTIVE_EMPTY' | translate }}</p>
+          } @else {
+            <ol class="top-active-list">
+              @for (row of topActive(); track row.id; let i = $index) {
+                <li class="top-active-item">
+                  <span class="top-rank">{{ i + 1 }}</span>
+                  <div class="top-main">
+                    <a [routerLink]="['/platform/tenants', row.id]" class="tenant-link">{{ row.name }}</a>
+                    @if (row.owner_email) {
+                      <a class="top-owner" [href]="'mailto:' + row.owner_email">{{ row.owner_name || row.owner_email }}</a>
+                    }
+                  </div>
+                  <div class="top-stats">
+                    <span class="activity-count" data-testid="top-login-count">{{ row.login_count }}</span>
+                    <span class="activity-last">
+                      @if (row.last_login_at) {
+                        {{ formatShortDate(row.last_login_at) }}
+                      } @else {
+                        —
+                      }
+                    </span>
+                  </div>
+                </li>
+              }
+            </ol>
+          }
+        </section>
+
         <section class="platform-section">
           <div class="section-head">
             <div>
@@ -170,33 +206,33 @@ type UsageDays = 7 | 30 | 90;
                 <thead>
                   <tr>
                     <th class="col-id">
-                      <button type="button" class="sort-btn" (click)="toggleSort('id')">
-                        {{ 'PLATFORM_DASHBOARD.COL_ID' | translate }}{{ sortMark('id') }}
+                      <button type="button" class="sort-btn" [class.active]="sortKey() === 'id'" (click)="toggleSort('id')">
+                        {{ 'PLATFORM_DASHBOARD.COL_ID' | translate }} <span class="sort-ind" aria-hidden="true">{{ sortMark('id') }}</span>
                       </button>
                     </th>
                     <th class="col-name">
-                      <button type="button" class="sort-btn" (click)="toggleSort('name')">
-                        {{ 'PLATFORM_DASHBOARD.COL_NAME' | translate }}{{ sortMark('name') }}
+                      <button type="button" class="sort-btn" [class.active]="sortKey() === 'name'" (click)="toggleSort('name')">
+                        {{ 'PLATFORM_DASHBOARD.COL_NAME' | translate }} <span class="sort-ind" aria-hidden="true">{{ sortMark('name') }}</span>
                       </button>
                     </th>
                     <th class="col-owner">
-                      <button type="button" class="sort-btn" (click)="toggleSort('owner')">
-                        {{ 'PLATFORM_DASHBOARD.OWNER_CONTACT' | translate }}{{ sortMark('owner') }}
+                      <button type="button" class="sort-btn" [class.active]="sortKey() === 'owner'" (click)="toggleSort('owner')">
+                        {{ 'PLATFORM_DASHBOARD.OWNER_CONTACT' | translate }} <span class="sort-ind" aria-hidden="true">{{ sortMark('owner') }}</span>
                       </button>
                     </th>
                     <th class="col-activity">
-                      <button type="button" class="sort-btn" (click)="toggleSort('owner_logins')">
-                        {{ 'PLATFORM_DASHBOARD.COL_OWNER_ACTIVITY' | translate }}{{ sortMark('owner_logins') }}
+                      <button type="button" class="sort-btn" [class.active]="sortKey() === 'tenant_logins'" (click)="toggleSort('tenant_logins')">
+                        {{ 'PLATFORM_DASHBOARD.COL_TENANT_LOGINS' | translate }} <span class="sort-ind" aria-hidden="true">{{ sortMark('tenant_logins') }}</span>
                       </button>
                     </th>
                     <th class="col-products">
-                      <button type="button" class="sort-btn" (click)="toggleSort('products')">
-                        {{ 'PLATFORM_DASHBOARD.COL_PRODUCTS' | translate }}{{ sortMark('products') }}
+                      <button type="button" class="sort-btn" [class.active]="sortKey() === 'products'" (click)="toggleSort('products')">
+                        {{ 'PLATFORM_DASHBOARD.COL_PRODUCTS' | translate }} <span class="sort-ind" aria-hidden="true">{{ sortMark('products') }}</span>
                       </button>
                     </th>
                     <th class="col-created">
-                      <button type="button" class="sort-btn" (click)="toggleSort('created')">
-                        {{ 'PLATFORM_DASHBOARD.COL_CREATED' | translate }}{{ sortMark('created') }}
+                      <button type="button" class="sort-btn" [class.active]="sortKey() === 'created'" (click)="toggleSort('created')">
+                        {{ 'PLATFORM_DASHBOARD.COL_CREATED' | translate }} <span class="sort-ind" aria-hidden="true">{{ sortMark('created') }}</span>
                       </button>
                     </th>
                   </tr>
@@ -230,11 +266,11 @@ type UsageDays = 7 | 30 | 90;
                           <span class="platform-muted">{{ 'PLATFORM_DASHBOARD.NO_CONTACT' | translate }}</span>
                         }
                       </td>
-                      <td class="col-activity" data-testid="owner-login-count">
-                        <span class="activity-count">{{ t.owner_login_count ?? 0 }}</span>
+                      <td class="col-activity" data-testid="tenant-login-count">
+                        <span class="activity-count">{{ t.tenant_login_count ?? 0 }}</span>
                         <span class="activity-last" data-testid="owner-last-login">
-                          @if (t.owner_last_login_at) {
-                            {{ formatShortDate(t.owner_last_login_at) }}
+                          @if (t.tenant_last_login_at) {
+                            {{ formatShortDate(t.tenant_last_login_at) }}
                           } @else {
                             <span class="platform-muted">—</span>
                           }
@@ -462,8 +498,45 @@ type UsageDays = 7 | 30 | 90;
       padding: 0;
       cursor: pointer;
       text-align: left;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
     }
     .sort-btn:hover { text-decoration: underline; }
+    .sort-btn.active { color: var(--color-primary, #0d9488); }
+    .sort-ind { font-size: 0.75rem; opacity: 0.7; }
+    .top-active-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .top-active-item {
+      display: grid;
+      grid-template-columns: 2rem 1fr auto;
+      gap: var(--space-3);
+      align-items: center;
+      padding: 0.65rem 0.9rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .top-active-item:last-child { border-bottom: 0; }
+    .top-rank {
+      font-weight: 700;
+      color: var(--color-text-muted);
+      text-align: center;
+    }
+    .top-main { min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; }
+    .top-owner {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .top-stats { text-align: right; }
     .tenants-table .col-id { width: 3.25rem; }
     .tenants-table .col-name { width: 28%; }
     .tenants-table .col-owner { width: 24%; }
@@ -513,10 +586,11 @@ export class PlatformDashboardComponent implements OnInit {
   loading = signal(true);
   error = signal('');
   tenantFilter = signal('');
-  sortKey = signal<TenantSortKey>('created');
+  sortKey = signal<TenantSortKey>('tenant_logins');
   sortDir = signal<'asc' | 'desc'>('desc');
   usageDays = signal<UsageDays>(30);
   usageSeries = signal<PlatformUsageDay[]>([]);
+  topActive = signal<PlatformActiveTenant[]>([]);
   usageLoading = signal(false);
 
   readonly usagePeriods: UsageDays[] = [7, 30, 90];
@@ -585,6 +659,7 @@ export class PlatformDashboardComponent implements OnInit {
     this.api.getPlatformUsage(days).subscribe({
       next: (res) => {
         this.usageSeries.set(res.usage_series ?? []);
+        this.topActive.set(res.top_active_tenants ?? []);
         this.usageDays.set((res.usage_days as UsageDays) || days);
         this.usageLoading.set(false);
       },
@@ -598,6 +673,7 @@ export class PlatformDashboardComponent implements OnInit {
   private applyUsageFromMetrics(m: PlatformMetrics): void {
     const series = m.usage_series ?? m.usage_last_30_days ?? [];
     this.usageSeries.set(series);
+    this.topActive.set(m.top_active_tenants ?? []);
     if (m.usage_days === 7 || m.usage_days === 30 || m.usage_days === 90) {
       this.usageDays.set(m.usage_days);
     }
@@ -618,8 +694,8 @@ export class PlatformDashboardComponent implements OnInit {
   }
 
   sortMark(key: TenantSortKey): string {
-    if (this.sortKey() !== key) return '';
-    return this.sortDir() === 'asc' ? ' ↑' : ' ↓';
+    if (this.sortKey() !== key) return '↕';
+    return this.sortDir() === 'asc' ? '↑' : '↓';
   }
 
   private compareTenants(a: PlatformTenantSummary, b: PlatformTenantSummary, key: TenantSortKey): number {
@@ -632,6 +708,8 @@ export class PlatformDashboardComponent implements OnInit {
         return (a.owner_name || a.owner_email || '').localeCompare(b.owner_name || b.owner_email || '');
       case 'owner_logins':
         return (a.owner_login_count ?? 0) - (b.owner_login_count ?? 0);
+      case 'tenant_logins':
+        return (a.tenant_login_count ?? 0) - (b.tenant_login_count ?? 0);
       case 'owner_last_login':
         return this.ts(a.owner_last_login_at) - this.ts(b.owner_last_login_at);
       case 'products':

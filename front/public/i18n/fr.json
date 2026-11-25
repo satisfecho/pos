@@ -404,7 +404,7 @@
     "LOGINS_7D": "Connexions (7 jours)",
     "RECENT_TENANTS": "Locataires récents",
     "ALL_TENANTS": "Tous les locataires",
-    "ALL_TENANTS_HINT": "Ouvrez un locataire pour voir les contacts, statistiques et liens vers carte et réservation.",
+    "ALL_TENANTS_HINT": "Cliquez sur un en-tête pour trier. Ouvrez un client pour contacts, stats et liens publics.",
     "RECENT_LOGINS": "Connexions récentes",
     "NO_TENANTS": "Aucun locataire pour l'instant.",
     "NO_LOGINS": "Aucun événement de connexion enregistré.",
@@ -459,7 +459,11 @@
     "USAGE_PERIOD": "Période d'utilisation",
     "USAGE_DAYS_7": "7 jours",
     "USAGE_DAYS_30": "30 jours",
-    "USAGE_DAYS_90": "90 jours"
+    "USAGE_DAYS_90": "90 jours",
+    "TOP_ACTIVE": "Top 10 clients les plus actifs",
+    "TOP_ACTIVE_HINT": "Classés par connexions du personnel sur la période sélectionnée ({{days}} jours).",
+    "TOP_ACTIVE_EMPTY": "Aucune connexion client sur cette période.",
+    "COL_TENANT_LOGINS": "Connexions client"
   },
   "COURIER_HOME": {
     "TITLE": "Livraisons",

@@ -85,12 +85,85 @@ def _login_stats_by_user_ids(
     return out
 
 
+def _login_stats_by_tenant_ids(
+    session: Session,
+    tenant_ids: list[int],
+    *,
+    since: datetime | None = None,
+) -> dict[int, tuple[int, datetime | None]]:
+    """Return {tenant_id: (login_count, last_login_at)} for login_event.tenant_id."""
+    ids = [tid for tid in tenant_ids if tid is not None]
+    if not ids:
+        return {}
+    stmt = (
+        select(
+            models.LoginEvent.tenant_id,
+            func.count(),
+            func.max(models.LoginEvent.logged_in_at),
+        )
+        .where(models.LoginEvent.tenant_id.in_(ids))  # type: ignore[union-attr]
+        .group_by(models.LoginEvent.tenant_id)
+    )
+    if since is not None:
+        stmt = stmt.where(models.LoginEvent.logged_in_at >= since)
+    rows = session.exec(stmt).all()
+    out: dict[int, tuple[int, datetime | None]] = {}
+    for tenant_id, count, last_at in rows:
+        if tenant_id is None:
+            continue
+        out[int(tenant_id)] = (int(count or 0), last_at)
+    return out
+
+
+def _top_active_tenants(
+    session: Session, *, days: int = 30, limit: int = 10
+) -> list[models.PlatformActiveTenant]:
+    """Rank tenants by login volume in the last N UTC days."""
+    now = datetime.now(timezone.utc)
+    start_day = (now - timedelta(days=days - 1)).date()
+    since = datetime(start_day.year, start_day.month, start_day.day, tzinfo=timezone.utc)
+    rows = session.exec(
+        select(
+            models.LoginEvent.tenant_id,
+            func.count(),
+            func.max(models.LoginEvent.logged_in_at),
+        )
+        .where(
+            models.LoginEvent.tenant_id.is_not(None),  # type: ignore[union-attr]
+            models.LoginEvent.logged_in_at >= since,
+        )
+        .group_by(models.LoginEvent.tenant_id)
+        .order_by(func.count().desc())
+        .limit(limit)
+    ).all()
+    out: list[models.PlatformActiveTenant] = []
+    for tenant_id, count, last_at in rows:
+        if tenant_id is None:
+            continue
+        tenant = session.get(models.Tenant, int(tenant_id))
+        if tenant is None:
+            continue
+        owner = _owner_for_tenant(session, int(tenant_id))
+        out.append(
+            models.PlatformActiveTenant(
+                id=int(tenant_id),
+                name=tenant.name,
+                login_count=int(count or 0),
+                last_login_at=last_at,
+                owner_email=owner.email if owner else None,
+                owner_name=owner.full_name if owner else None,
+            )
+        )
+    return out
+
+
 def _tenant_summary(
     session: Session,
     tenant: models.Tenant,
     *,
     owner: models.User | None = None,
     login_stats: dict[int, tuple[int, datetime | None]] | None = None,
+    tenant_login_stats: dict[int, tuple[int, datetime | None]] | None = None,
 ) -> models.PlatformTenantSummary:
     tenant_id = tenant.id
     if tenant_id is None:
@@ -107,6 +180,11 @@ def _tenant_summary(
             stats = _login_stats_by_user_ids(session, [owner.id])
         owner_login_count, owner_last_login_at = stats.get(owner.id, (0, None))
 
+    t_stats = tenant_login_stats
+    if t_stats is None:
+        t_stats = _login_stats_by_tenant_ids(session, [tenant_id])
+    tenant_login_count, tenant_last_login_at = t_stats.get(tenant_id, (0, None))
+
     return models.PlatformTenantSummary(
         id=tenant_id,
         name=tenant.name,
@@ -115,6 +193,8 @@ def _tenant_summary(
         owner_name=owner.full_name if owner else None,
         owner_login_count=owner_login_count,
         owner_last_login_at=owner_last_login_at,
+        tenant_login_count=tenant_login_count,
+        tenant_last_login_at=tenant_last_login_at,
         tenant_email=tenant.email,
         tenant_phone=tenant.phone,
         public_slug=getattr(tenant, "public_slug", None),
@@ -289,12 +369,14 @@ def platform_tenants(
     login_stats = _login_stats_by_user_ids(
         session, [u.id for u in owner_by_tenant.values() if u.id is not None]
     )
+    tenant_login_stats = _login_stats_by_tenant_ids(session, tenant_ids)
     return [
         _tenant_summary(
             session,
             t,
             owner=owner_by_tenant.get(t.id) if t.id is not None else None,
             login_stats=login_stats,
+            tenant_login_stats=tenant_login_stats,
         )
         for t in tenants
         if t.id is not None
@@ -321,7 +403,11 @@ def platform_usage(
 ) -> models.PlatformUsageSeriesResponse:
     usage_days = _resolve_usage_days(days)
     series = _usage_last_n_days(session, days=usage_days)
-    return models.PlatformUsageSeriesResponse(usage_days=usage_days, usage_series=series)
+    return models.PlatformUsageSeriesResponse(
+        usage_days=usage_days,
+        usage_series=series,
+        top_active_tenants=_top_active_tenants(session, days=usage_days, limit=10),
+    )
 
 
 @router.get("/metrics", response_model=models.PlatformMetricsResponse)
@@ -385,4 +471,7 @@ def platform_metrics(
         usage_days=resolved_usage_days,
         usage_series=usage_series,
         usage_last_30_days=usage_series,
+        top_active_tenants=_top_active_tenants(
+            session, days=resolved_usage_days, limit=10
+        ),
     )

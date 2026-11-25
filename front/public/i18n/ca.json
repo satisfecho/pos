@@ -533,7 +533,7 @@
     "LOGINS_7D": "Inicis de sessió (7 dies)",
     "RECENT_TENANTS": "Inquilins recents",
     "ALL_TENANTS": "Tots els inquilins",
-    "ALL_TENANTS_HINT": "Obriu un inquilí per veure contactes, estadístiques i enllaços a la carta i reserves públiques.",
+    "ALL_TENANTS_HINT": "Fes clic a una capçalera per ordenar. Obre un inquilí per a contactes, estadístiques i enllaços públics.",
     "RECENT_LOGINS": "Inicis de sessió recents",
     "NO_TENANTS": "Encara no hi ha inquilins.",
     "NO_LOGINS": "Encara no hi ha esdeveniments d'inici de sessió.",
@@ -588,7 +588,11 @@
     "USAGE_PERIOD": "Període d'ús",
     "USAGE_DAYS_7": "7 dies",
     "USAGE_DAYS_30": "30 dies",
-    "USAGE_DAYS_90": "90 dies"
+    "USAGE_DAYS_90": "90 dies",
+    "TOP_ACTIVE": "Top 10 clients mes actius",
+    "TOP_ACTIVE_HINT": "Ordenats per inicis de sessió del personal en el període seleccionat ({{days}} dies).",
+    "TOP_ACTIVE_EMPTY": "No hi ha inicis de sessió d'inquilins en aquest període.",
+    "COL_TENANT_LOGINS": "Logins del client"
   },
   "COURIER_HOME": {
     "TITLE": "Entregues",

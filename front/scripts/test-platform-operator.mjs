@@ -67,18 +67,33 @@ async function main() {
     );
     console.log(`OK: usage chart visible (${usageTitle}) with period selector`);
 
+    await page.waitForSelector('[data-testid="top-active-tenants"]', { timeout: 10000 });
+    const topTitle = await page.$eval('[data-testid="top-active-tenants"] h2', (el) => el.textContent?.trim() || '');
+    if (!topTitle || topTitle.includes('PLATFORM_DASHBOARD.')) {
+      throw new Error(`Top active title missing or untranslated: ${topTitle}`);
+    }
+    console.log(`OK: top active clients section visible (${topTitle})`);
+
     await page.waitForSelector('a.tenant-link', { timeout: 10000 });
     await page.waitForSelector('[data-testid="tenant-filter"]', { timeout: 5000 });
-    const ownerLoginCell = await page.$('[data-testid="owner-login-count"]');
-    if (!ownerLoginCell) throw new Error('Missing owner login count column in All tenants table');
-    const ownerLoginText = await ownerLoginCell.evaluate((el) => {
+    const tenantLoginCell = await page.$('[data-testid="tenant-login-count"]');
+    if (!tenantLoginCell) throw new Error('Missing tenant login count column in All tenants table');
+    const tenantLoginText = await tenantLoginCell.evaluate((el) => {
       const count = el.querySelector('.activity-count');
       return (count?.textContent || el.textContent || '').trim();
     });
-    if (!/^\d+$/.test(ownerLoginText)) {
-      throw new Error(`Owner login count should be a number, got: ${ownerLoginText}`);
+    if (!/^\d+$/.test(tenantLoginText)) {
+      throw new Error(`Tenant login count should be a number, got: ${tenantLoginText}`);
     }
-    console.log(`OK: All tenants shows owner login count (${ownerLoginText})`);
+    console.log(`OK: All tenants shows tenant login count (${tenantLoginText})`);
+
+    // Sort affordance: active column should be client logins by default
+    const activeSort = await page.$eval(
+      'th.col-activity .sort-btn',
+      (el) => el.classList.contains('active'),
+    );
+    if (!activeSort) throw new Error('Expected tenants table to default-sort by client logins');
+    console.log('OK: tenants table defaults to client-logins sort');
 
     const firstName = await page.$eval('a.tenant-link', (el) => el.textContent?.trim() || '');
     if (firstName) {
