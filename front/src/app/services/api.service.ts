@@ -450,6 +450,12 @@ export interface PlatformLoginSummary {
   user_email?: string | null;
 }
 
+export interface PlatformUsageDay {
+  date: string;
+  logins: number;
+  signups: number;
+}
+
 export interface PlatformMetrics {
   tenant_count: number;
   signups_last_30_days: number;
@@ -459,6 +465,7 @@ export interface PlatformMetrics {
   last_login_at?: string | null;
   recent_tenants: PlatformTenantSummary[];
   recent_logins: PlatformLoginSummary[];
+  usage_last_30_days?: PlatformUsageDay[];
 }
 
 export interface CourierOrderSummary {
@@ -696,6 +703,40 @@ export interface TenantSummary {
   guest_birthday_capture_enabled?: boolean;
   guest_birthday_marketing_enabled?: boolean;
   guest_birthday_consent_text?: string | null;
+  /** Public careers / Trabaja con nosotros (#447). */
+  careers_enabled?: boolean;
+  careers_why_text?: string | null;
+  careers_retention_days?: number;
+}
+
+export interface PublicCareersInfo {
+  tenant_id: number;
+  tenant_name: string;
+  enabled: boolean;
+  why_text: string | null;
+  retention_days: number;
+  public_background_color?: string | null;
+  public_primary_color?: string | null;
+  logo_filename?: string | null;
+  header_background_filename?: string | null;
+  address?: string | null;
+  public_google_maps_url?: string | null;
+  public_openstreetmap_url?: string | null;
+  public_slug?: string | null;
+}
+
+export interface CareerApplication {
+  id: number;
+  status: 'new' | 'contacted' | 'closed' | string;
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+  cv_original_name?: string | null;
+  has_cv: boolean;
+  expires_at?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 /** Planned opening-hours baselines and date overrides (issue #194). */
@@ -1007,6 +1048,8 @@ export interface Product {
   questions?: ProductQuestion[];
   /** Prep station for KDS (/kitchen vs /bar); null = use tenant default by category */
   kitchen_station_id?: number | null;
+  /** Optional expected prep minutes for kitchen SLA; null = use category default */
+  expected_prep_minutes?: number | null;
   /** Sellable-unit stock alert (Products UI) */
   stock_alert_enabled?: boolean;
   stock_qty?: number;
@@ -1035,6 +1078,19 @@ export interface KitchenStationCreate {
 export interface KitchenStationDefaults {
   default_kitchen_station_id: number | null;
   default_bar_station_id: number | null;
+}
+
+/** Kitchen/bar wait-time SLA settings (#450): absolute or % of expected prep. */
+export interface KitchenDisplaySettings {
+  yellow_minutes: number;
+  orange_minutes: number;
+  red_minutes: number;
+  sla_threshold_mode?: 'absolute' | 'percent_of_expected';
+  sla_ticket_aggregation?: 'max_line' | 'sum' | 'primary_category';
+  yellow_percent?: number;
+  orange_percent?: number;
+  red_percent?: number;
+  expected_prep_by_category?: Record<string, number>;
 }
 
 /** Delivery marketplace (Uber Eats / Glovo / Deliveroo-style) admin integration */
@@ -1180,11 +1236,20 @@ export interface ProductBulkImportConfirmResult {
   product_ids: number[];
 }
 
+/** Choice option: plain label, or label + per-option price delta in cents (#451). */
+export type ProductChoiceOption =
+  | string
+  | { label: string; price_delta_cents?: number };
+
 export interface ProductQuestion {
   id: number;
   type: 'choice' | 'scale' | 'text';
   label: string;
-  options?: string[] | { min: number; max: number } | { choices: string[]; multi?: boolean } | null;
+  options?:
+    | ProductChoiceOption[]
+    | { min: number; max: number }
+    | { choices: ProductChoiceOption[]; multi?: boolean }
+    | null;
   /** True when choice options use multi-select ({ choices, multi: true }) */
   multi?: boolean;
   required?: boolean;
@@ -1201,7 +1266,11 @@ export type ProductQuestionStaff = Omit<ProductQuestion, 'sort_order' | 'require
 export interface ProductQuestionCreatePayload {
   type: 'choice' | 'scale' | 'text';
   label: string;
-  options?: string[] | { min: number; max: number } | { choices: string[]; multi?: boolean } | null;
+  options?:
+    | ProductChoiceOption[]
+    | { min: number; max: number }
+    | { choices: ProductChoiceOption[]; multi?: boolean }
+    | null;
   sort_order?: number;
   required?: boolean;
 }
@@ -1209,7 +1278,11 @@ export interface ProductQuestionCreatePayload {
 export interface ProductQuestionUpdatePayload {
   type?: 'choice' | 'scale' | 'text';
   label?: string;
-  options?: string[] | { min: number; max: number } | { choices: string[]; multi?: boolean } | null;
+  options?:
+    | ProductChoiceOption[]
+    | { min: number; max: number }
+    | { choices: ProductChoiceOption[]; multi?: boolean }
+    | null;
   sort_order?: number;
   required?: boolean;
 }
@@ -1466,6 +1539,8 @@ export interface OrderItem {
   tax_amount_cents?: number | null;
   /** Product category for kitchen/bar display filtering: "Beverages", "Main Course", etc. */
   category?: string | null;
+  /** Resolved expected prep minutes (product override or category default) for kitchen SLA */
+  expected_prep_minutes?: number | null;
   /** Resolved prep station for KDS (after product mapping and tenant defaults) */
   kitchen_station_id?: number | null;
   kitchen_station_name?: string | null;
@@ -1886,6 +1961,10 @@ export interface TenantSettings {
   guest_birthday_marketing_enabled?: boolean | null;
   /** GDPR consent copy shown when marketing is enabled. */
   guest_birthday_consent_text?: string | null;
+  /** Public careers / Trabaja con nosotros (#447). */
+  careers_enabled?: boolean | null;
+  careers_why_text?: string | null;
+  careers_retention_days?: number | null;
   public_google_maps_url?: string | null;
   public_openstreetmap_url?: string | null;
   public_terms_of_service_url?: string | null;
@@ -2219,8 +2298,19 @@ export class ApiService {
     });
   }
 
-  /** Login: sends username/password as application/x-www-form-urlencoded (required by backend OAuth2PasswordRequestForm). May return 403 with require_otp + temp_token when OTP is enabled. */
-  login(username: string, password: string, tenantId?: number, scope?: 'tenant' | 'provider' | 'courier' | 'platform'): Observable<any> {
+  /** Self-hosted login CAPTCHA challenge (#452). */
+  getLoginCaptchaChallenge(): Observable<{ id: string; svg: string }> {
+    return this.http.get<{ id: string; svg: string }>(`${this.apiUrl}/captcha/challenge`);
+  }
+
+  /** Login: sends username/password as application/x-www-form-urlencoded (required by backend OAuth2PasswordRequestForm). May return 403 with require_otp + temp_token when OTP is enabled. After failed attempts may return require_captcha + captcha challenge. */
+  login(
+    username: string,
+    password: string,
+    tenantId?: number,
+    scope?: 'tenant' | 'provider' | 'courier' | 'platform',
+    captcha?: { id: string; answer: string } | null,
+  ): Observable<any> {
     let queryParams = new HttpParams();
     if (scope === 'provider') {
       queryParams = queryParams.set('scope', 'provider');
@@ -2231,7 +2321,11 @@ export class ApiService {
     } else if (tenantId != null) {
       queryParams = queryParams.set('tenant_id', tenantId.toString());
     }
-    const body = new HttpParams().set('username', username).set('password', password).toString();
+    let bodyParams = new HttpParams().set('username', username).set('password', password);
+    if (captcha?.id && captcha?.answer) {
+      bodyParams = bodyParams.set('captcha_id', captcha.id).set('captcha_answer', captcha.answer);
+    }
+    const body = bodyParams.toString();
     return this.http.post<any>(`${this.apiUrl}/token`, body, {
       params: queryParams,
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -3882,18 +3976,12 @@ export class ApiService {
     );
   }
 
-  getKitchenDisplaySettings(): Observable<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }> {
-    return this.http.get<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }>(
-      `${this.apiUrl}/tenant/kitchen-display-settings`
-    );
+  getKitchenDisplaySettings(): Observable<KitchenDisplaySettings> {
+    return this.http.get<KitchenDisplaySettings>(`${this.apiUrl}/tenant/kitchen-display-settings`);
   }
 
-  updateKitchenDisplaySettings(settings: {
-    yellow_minutes: number;
-    orange_minutes: number;
-    red_minutes: number;
-  }): Observable<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }> {
-    return this.http.put<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }>(
+  updateKitchenDisplaySettings(settings: Partial<KitchenDisplaySettings>): Observable<KitchenDisplaySettings> {
+    return this.http.put<KitchenDisplaySettings>(
       `${this.apiUrl}/tenant/kitchen-display-settings`,
       settings
     );
@@ -4005,6 +4093,97 @@ export class ApiService {
   ): Observable<{ ok: boolean; id: number }> {
     return this.http.post<{ ok: boolean; id: number }>(
       `${this.apiUrl}/public/tenants/${tenantId}/guest-feedback`,
+      body,
+    );
+  }
+
+  getPublicCareers(tenantRef: number | string): Observable<PublicCareersInfo> {
+    return this.http.get<PublicCareersInfo>(
+      `${this.apiUrl}/public/tenants/${tenantRef}/careers`,
+    );
+  }
+
+  requestCareersVerificationCode(
+    tenantRef: number | string,
+    email: string,
+  ): Observable<{ ok: boolean; email_sent: boolean; message?: string; dev_code?: string }> {
+    return this.http.post<{
+      ok: boolean;
+      email_sent: boolean;
+      message?: string;
+      dev_code?: string;
+    }>(`${this.apiUrl}/public/tenants/${tenantRef}/careers/applications/request-code`, {
+      email,
+    });
+  }
+
+  confirmCareersVerificationCode(
+    tenantRef: number | string,
+    email: string,
+    code: string,
+  ): Observable<{ ok: boolean; submit_token: string }> {
+    return this.http.post<{ ok: boolean; submit_token: string }>(
+      `${this.apiUrl}/public/tenants/${tenantRef}/careers/applications/confirm-code`,
+      { email, code },
+    );
+  }
+
+  submitPublicCareerApplication(
+    tenantRef: number | string,
+    data: {
+      name: string;
+      email: string;
+      phone: string;
+      message?: string;
+      cv?: File | null;
+      submit_token: string;
+    },
+  ): Observable<{ ok: boolean; id: number; retention_days: number }> {
+    const form = new FormData();
+    form.append('name', data.name);
+    form.append('email', data.email);
+    form.append('phone', data.phone);
+    form.append('submit_token', data.submit_token);
+    if (data.message) form.append('message', data.message);
+    if (data.cv) form.append('cv', data.cv, data.cv.name);
+    return this.http.post<{ ok: boolean; id: number; retention_days: number }>(
+      `${this.apiUrl}/public/tenants/${tenantRef}/careers/applications`,
+      form,
+    );
+  }
+
+  listCareerApplications(): Observable<CareerApplication[]> {
+    return this.http.get<CareerApplication[]>(`${this.apiUrl}/tenant/careers/applications`);
+  }
+
+  updateCareerApplicationStatus(
+    id: number,
+    status: 'new' | 'contacted' | 'closed',
+  ): Observable<CareerApplication> {
+    return this.http.patch<CareerApplication>(
+      `${this.apiUrl}/tenant/careers/applications/${id}`,
+      { status },
+    );
+  }
+
+  deleteCareerApplication(id: number): Observable<{ ok: boolean }> {
+    return this.http.delete<{ ok: boolean }>(
+      `${this.apiUrl}/tenant/careers/applications/${id}`,
+    );
+  }
+
+  downloadCareerCv(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/tenant/careers/applications/${id}/cv`, {
+      responseType: 'blob',
+    });
+  }
+
+  notifyAllCareerCandidates(body: {
+    role_title: string;
+    message?: string;
+  }): Observable<{ ok: boolean; sent: number; failed: number; total: number }> {
+    return this.http.post<{ ok: boolean; sent: number; failed: number; total: number }>(
+      `${this.apiUrl}/tenant/careers/notify-all`,
       body,
     );
   }

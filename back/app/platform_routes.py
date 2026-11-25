@@ -159,6 +159,60 @@ def _tenant_detail(session: Session, tenant: models.Tenant) -> models.PlatformTe
     )
 
 
+def _usage_day_key(value: datetime) -> str:
+    """Normalize DB timestamps to a UTC YYYY-MM-DD bucket key."""
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    else:
+        value = value.astimezone(timezone.utc)
+    return value.date().isoformat()
+
+
+def _usage_last_n_days(session: Session, *, days: int = 30) -> list[models.PlatformUsageDay]:
+    """Daily login + tenant sign-up counts for the last N UTC days (inclusive)."""
+    now = datetime.now(timezone.utc)
+    start_day = (now - timedelta(days=days - 1)).date()
+    start = datetime(start_day.year, start_day.month, start_day.day, tzinfo=timezone.utc)
+
+    login_day = func.date_trunc("day", models.LoginEvent.logged_in_at)
+    login_rows = session.exec(
+        select(login_day, func.count())
+        .where(models.LoginEvent.logged_in_at >= start)
+        .group_by(login_day)
+    ).all()
+    signup_day = func.date_trunc("day", models.Tenant.created_at)
+    signup_rows = session.exec(
+        select(signup_day, func.count())
+        .where(models.Tenant.created_at >= start)
+        .group_by(signup_day)
+    ).all()
+
+    login_counts: dict[str, int] = {}
+    for bucket, count in login_rows:
+        if bucket is None:
+            continue
+        login_counts[_usage_day_key(bucket)] = int(count or 0)
+
+    signup_counts: dict[str, int] = {}
+    for bucket, count in signup_rows:
+        if bucket is None:
+            continue
+        signup_counts[_usage_day_key(bucket)] = int(count or 0)
+
+    out: list[models.PlatformUsageDay] = []
+    for offset in range(days):
+        day = start_day + timedelta(days=offset)
+        key = day.isoformat()
+        out.append(
+            models.PlatformUsageDay(
+                date=key,
+                logins=login_counts.get(key, 0),
+                signups=signup_counts.get(key, 0),
+            )
+        )
+    return out
+
+
 def _login_summary(
     session: Session, row: models.LoginEvent
 ) -> models.PlatformLoginSummary:
@@ -304,4 +358,5 @@ def platform_metrics(
             _tenant_summary(session, t) for t in recent_tenants if t.id is not None
         ],
         recent_logins=[_login_summary(session, row) for row in recent_login_rows],
+        usage_last_30_days=_usage_last_n_days(session, days=30),
     )

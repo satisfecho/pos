@@ -94,7 +94,9 @@
     "UNMAPPED_CSV_COLUMNS": "La IA no pudo mapear estas columnas CSV: {{columns}}. Renómbrelas o elimínelas e inténtelo de nuevo.",
     "CUSTOMER_PASSWORD_TOO_SHORT": "La contraseña debe tener al menos {{min_length}} caracteres.",
     "CUSTOMER_VERIFICATION_INVALID": "Enlace de verificación de correo no válido o desconocido.",
-    "CUSTOMER_VERIFICATION_EXPIRED": "Este enlace de verificación ha caducado. Solicite uno nuevo."
+    "CUSTOMER_VERIFICATION_EXPIRED": "Este enlace de verificación ha caducado. Solicite uno nuevo.",
+    "CAPTCHA_REQUIRED": "Complete la comprobación de seguridad antes de iniciar sesión.",
+    "CAPTCHA_INVALID": "La comprobación de seguridad falló. Pruebe un código nuevo."
   },
   "NAV": {
     "HOME": "Inicio",
@@ -128,7 +130,8 @@
     "WAREHOUSES": "Almacenes",
     "TALK": "Hablar",
     "GROUP_CATALOG_TOGGLE": "Expandir o contraer Catálogo e inventario",
-    "CUSTOMER_DISPLAY": "Pantalla del cliente"
+    "CUSTOMER_DISPLAY": "Pantalla del cliente",
+    "CAREERS": "Empleo"
   },
   "PUBLIC_GUEST_NAV": {
     "ARIA": "Páginas del restaurante",
@@ -137,7 +140,8 @@
     "WAITLIST": "Lista de espera",
     "DELIVERY": "Entrega",
     "LOYALTY": "Fidelización",
-    "FEEDBACK": "Opinión"
+    "FEEDBACK": "Opinión",
+    "CAREERS": "Empleo"
   },
   "STAFF_FLOW": {
     "TOOLBAR_ARIA": "Navegación de personal",
@@ -443,7 +447,15 @@
     "COL_OWNER_LOGINS": "Inicios del propietario",
     "COL_OWNER_LAST_LOGIN": "Último inicio del propietario",
     "COL_LOGIN_COUNT": "Inicios de sesión",
-    "COL_LAST_LOGIN": "Último inicio"
+    "COL_LAST_LOGIN": "Último inicio",
+    "USAGE_OVER_TIME": "Uso en el tiempo (30 días)",
+    "USAGE_LOGINS": "Inicios de sesión",
+    "USAGE_SIGNUPS": "Altas",
+    "USAGE_EMPTY": "No hay datos de uso en los últimos 30 días.",
+    "FILTER_TENANTS": "Filtrar inquilinos",
+    "FILTER_PLACEHOLDER": "Buscar por nombre, propietario o correo",
+    "COL_OWNER_ACTIVITY": "Actividad del propietario",
+    "NO_FILTER_MATCH": "Ningún inquilino coincide con este filtro."
   },
   "COURIER_HOME": {
     "TITLE": "Entregas",
@@ -588,7 +600,11 @@
     "SIGNUP_VERIFY_SUBMIT": "Verificar correo",
     "SIGNUP_VERIFY_RESEND": "Reenviar código",
     "SIGNUP_VERIFY_RESENT": "Código enviado",
-    "SIGNUP_VERIFY_FAILED": "No se pudo verificar el código. Compruébalo e inténtalo de nuevo."
+    "SIGNUP_VERIFY_FAILED": "No se pudo verificar el código. Compruébalo e inténtalo de nuevo.",
+    "CAPTCHA_LABEL": "Comprobación de seguridad",
+    "CAPTCHA_PLACEHOLDER": "Introduzca los caracteres mostrados",
+    "CAPTCHA_REFRESH": "Nuevo código",
+    "CAPTCHA_REQUIRED": "Complete la comprobación de seguridad para continuar."
   },
   "MENU": {
     "TITLE": "Menú",
@@ -788,10 +804,10 @@
     "QUESTION_TYPE_TEXT": "Texto libre",
     "QUESTION_FIELD_LABEL": "Pregunta (visible al cliente)",
     "QUESTION_LABEL_PLACEHOLDER": "ej. ¿Cómo quieres el punto de la carne?",
-    "QUESTION_FIELD_OPTIONS": "Opciones (una por línea)",
+    "QUESTION_FIELD_OPTIONS": "Opciones (una por línea; |precio opcional)",
     "QUESTION_CHOICE_MULTI": "Permitir varias selecciones (p. ej., varios ingredientes)",
     "QUESTION_BADGE_MULTI": "Múltiple",
-    "QUESTION_OPTIONS_PLACEHOLDER": "Poco hecho\nAl punto\nMuy hecho",
+    "QUESTION_OPTIONS_PLACEHOLDER": "Poco hecho\nAl punto\nQueso extra|1.00",
     "QUESTION_SCALE_MIN": "Mínimo",
     "QUESTION_SCALE_MAX": "Máximo",
     "QUESTION_FIELD_REQUIRED": "Obligatoria antes de añadir al carrito",
@@ -850,7 +866,11 @@
     "STOCK_HEADER": "Stock",
     "STOCK_LOW": "Bajo",
     "STOCK_OK": "OK",
-    "STOCK_BADGE_TITLE": "Stock {{qty}} (alerta en {{level}})"
+    "STOCK_BADGE_TITLE": "Stock {{qty}} (alerta en {{level}})",
+    "QUESTION_OPTIONS_PRICE_HINT": "Una opción por línea. Precio opcional tras una barra: Etiqueta|1.00 (unidades mayores; negativo para descuentos).",
+    "EXPECTED_PREP_MINUTES": "Preparación esperada (minutos)",
+    "EXPECTED_PREP_PLACEHOLDER": "Valor de categoría",
+    "EXPECTED_PREP_HINT": "Opcional para relojes SLA de cocina. Vacío usa el valor de categoría en Ajustes del temporizador."
   },
   "CATALOG": {
     "TITLE": "Catálogo de productos",
@@ -1133,7 +1153,22 @@
     "TIMER_BAR_HINT": "Progreso del tiempo de espera hasta el umbral rojo",
     "STATION": "Estación",
     "ALL_STATIONS": "Todas las estaciones",
-    "ITEM_COMMENT": "Comentario"
+    "ITEM_COMMENT": "Comentario",
+    "PLACED": "Pedido",
+    "SLA_FRESH": "Fresco",
+    "SLA_WARNING": "En riesgo",
+    "SLA_OVERDUE": "Atrasado",
+    "TIMER_YELLOW_PERCENT": "Amarillo a (% del esperado)",
+    "TIMER_ORANGE_PERCENT": "Naranja a (% del esperado)",
+    "TIMER_RED_PERCENT": "Rojo a (% del esperado)",
+    "SLA_THRESHOLD_MODE": "Modo de umbral SLA",
+    "SLA_MODE_ABSOLUTE": "Absoluto (vencido al tiempo esperado)",
+    "SLA_MODE_PERCENT": "Porcentaje del tiempo esperado",
+    "SLA_TICKET_AGGREGATION": "Tiempo esperado con varios ítems",
+    "SLA_AGG_MAX_LINE": "Línea más larga (máx)",
+    "SLA_AGG_SUM": "Suma de líneas",
+    "SLA_AGG_PRIMARY_CATEGORY": "Categoría principal (mayor)",
+    "EXPECTED_PREP_BY_CATEGORY": "Preparación esperada por categoría (minutos)"
   },
   "BAR_DISPLAY": {
     "TITLE": "Pantalla bar"
@@ -2359,7 +2394,16 @@
     "NEWSLETTER_SEND_FAIL": "No se pudo encolar la campaña. Revise audiencia, consentimiento y SMTP.",
     "NEWSLETTER_CANCEL_FAIL": "No se pudo cancelar la campaña.",
     "STRIPE_CRYPTO_ENABLED": "Aceptar cripto (stablecoins) vía Stripe",
-    "STRIPE_CRYPTO_ENABLED_HINT": "Muestra Pagar con cripto en el menú público y en el checkout de delivery. Activa Stablecoins and Crypto en el Dashboard de Stripe primero. Se liquida en tu saldo Stripe; los reembolsos vuelven como stablecoins al monedero del cliente."
+    "STRIPE_CRYPTO_ENABLED_HINT": "Muestra Pagar con cripto en el menú público y en el checkout de delivery. Activa Stablecoins and Crypto en el Dashboard de Stripe primero. Se liquida en tu saldo Stripe; los reembolsos vuelven como stablecoins al monedero del cliente.",
+    "CAREERS": "Empleo / Trabaja con nosotros",
+    "CAREERS_DESC": "Página pública para dejar el CV. Las candidaturas van cifradas y solo las ve el propietario.",
+    "CAREERS_ENABLED": "Activar página pública de empleo",
+    "CAREERS_ENABLED_HINT": "Si está activo, los candidatos pueden abrir /careers/{id} y enviar una candidatura.",
+    "CAREERS_WHY": "Por qué trabajar aquí (página pública)",
+    "CAREERS_WHY_PLACEHOLDER": "Explica por qué unirse a tu equipo…",
+    "CAREERS_RETENTION": "Retención (días)",
+    "CAREERS_RETENTION_HINT": "Las candidaturas se borran solos tras estos días (30–730). Por defecto 180.",
+    "CAREERS_PUBLIC_URL": "Ruta URL pública"
   },
   "PAYMENTS": {
     "PAYMENT": "Pago",
@@ -3508,5 +3552,59 @@
     "EMAIL_ERROR": "Introduzca un email válido.",
     "INVOICE_SAVED": "Email de factura",
     "THANK_YOU": "¡Gracias!"
+  },
+  "CAREERS": {
+    "TITLE": "Trabaja con nosotros",
+    "LOADING": "Cargando…",
+    "DISABLED": "Este restaurante no acepta candidaturas ahora.",
+    "INVALID_TENANT": "Enlace de restaurante no válido.",
+    "TENANT_NOT_FOUND": "Restaurante no encontrado.",
+    "WHY_HEADING": "Por qué trabajar aquí",
+    "RETENTION_NOTICE": "Tus datos se guardan {{days}} días y luego se eliminan automáticamente. Puedes volver a candidarte más tarde.",
+    "NAME": "Nombre completo",
+    "EMAIL": "Correo electrónico",
+    "PHONE": "Teléfono",
+    "MESSAGE": "Mensaje breve",
+    "CV": "CV (opcional)",
+    "CV_HINT": "PDF o Word, máx. 5 MB. Se guarda cifrado.",
+    "SUBMIT": "Enviar candidatura",
+    "SUBMITTING": "Enviando…",
+    "SUBMIT_ERROR": "No se pudo enviar. Revisa los datos e inténtalo de nuevo.",
+    "THANK_YOU": "Gracias",
+    "THANK_YOU_BODY": "Hemos recibido tu candidatura. Los datos se conservan {{days}} días y luego se eliminan. Puedes volver a aplicar después.",
+    "STAFF_TITLE": "Candidaturas",
+    "VIEW_PUBLIC": "Abrir página pública",
+    "COPY_URL": "Copiar URL pública",
+    "URL_COPIED": "URL copiada",
+    "EMPTY": "Aún no hay candidaturas.",
+    "LOAD_ERROR": "No se pudieron cargar las candidaturas.",
+    "STATUS": "Estado",
+    "STATUS_NEW": "Nueva",
+    "STATUS_CONTACTED": "Contactada",
+    "STATUS_CLOSED": "Cerrada",
+    "CREATED": "Enviada",
+    "ACTIONS": "Acciones",
+    "DOWNLOAD_CV": "Descargar CV",
+    "CONFIRM_DELETE": "¿Eliminar esta candidatura de forma permanente?",
+    "NOTIFY_TITLE": "Plaza abierta — enviar email a todos",
+    "NOTIFY_HINT": "Envía a todos los candidatos un email pidiendo actualizar el CV si les interesa.",
+    "ROLE_TITLE": "Puesto",
+    "NOTIFY_MESSAGE": "Mensaje extra (opcional)",
+    "NOTIFY_ALL": "Email a todos los candidatos",
+    "NOTIFYING": "Enviando…",
+    "NOTIFY_RESULT": "Enviados {sent} de {total} (fallidos: {failed}).",
+    "NOTIFY_ERROR": "No se pudieron enviar emails. Revisa SMTP en Ajustes.",
+    "SEND_CODE": "Enviar código de verificación",
+    "SENDING_CODE": "Enviando código…",
+    "VERIFY_HINT": "Te enviaremos un código de seis dígitos para confirmar tu correo antes de guardar la solicitud.",
+    "VERIFY_TITLE": "Confirma tu correo",
+    "VERIFY_SENT": "Introduce el código de seis dígitos que enviamos a {{email}}.",
+    "VERIFY_CODE": "Código de verificación",
+    "VERIFY_CODE_PLACEHOLDER": "Código de 6 dígitos",
+    "RESEND_CODE": "Reenviar código",
+    "CODE_RESENT": "Código enviado",
+    "CODE_SEND_ERROR": "No se pudo enviar el código. Inténtalo de nuevo.",
+    "CODE_INVALID": "Código inválido o caducado. Solicita uno nuevo.",
+    "DEV_CODE_HINT": "Código de desarrollo (SMTP no configurado): {{code}}"
   }
 }

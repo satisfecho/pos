@@ -94,7 +94,9 @@
     "UNMAPPED_CSV_COLUMNS": "AI could not map these CSV columns: {{columns}}. Rename or remove them and try again.",
     "CUSTOMER_PASSWORD_TOO_SHORT": "پاس ورڈ کم از کم {{min_length}} حروف کا ہونا چاہیے۔",
     "CUSTOMER_VERIFICATION_INVALID": "غلط یا نامعلوم ای میل تصدیقی لنک۔",
-    "CUSTOMER_VERIFICATION_EXPIRED": "یہ ای میل تصدیقی لنک ختم ہو چکا ہے۔ نیا درخواست کریں۔"
+    "CUSTOMER_VERIFICATION_EXPIRED": "یہ ای میل تصدیقی لنک ختم ہو چکا ہے۔ نیا درخواست کریں۔",
+    "CAPTCHA_REQUIRED": "سائن ان سے پہلے سیکیورٹی چیک مکمل کریں۔",
+    "CAPTCHA_INVALID": "سیکیورٹی چیک ناکام۔ نیا کوڈ آزمائیں۔"
   },
   "NAV": {
     "HOME": "ہوم",
@@ -128,7 +130,8 @@
     "WAREHOUSES": "گودام",
     "TALK": "بات کریں",
     "GROUP_CATALOG_TOGGLE": "کیٹلاگ اور انوینٹری کھولیں یا بند کریں",
-    "CUSTOMER_DISPLAY": "کسٹمر ڈسپلے"
+    "CUSTOMER_DISPLAY": "کسٹمر ڈسپلے",
+    "CAREERS": "Careers"
   },
   "PUBLIC_GUEST_NAV": {
     "ARIA": "ریستوران کے صفحات",
@@ -137,7 +140,8 @@
     "WAITLIST": "انتظار فہرست",
     "DELIVERY": "ڈیلیوری",
     "LOYALTY": "لائلٹی",
-    "FEEDBACK": "رائے"
+    "FEEDBACK": "رائے",
+    "CAREERS": "Careers"
   },
   "STAFF_FLOW": {
     "TOOLBAR_ARIA": "عملہ نیویگیشن",
@@ -443,7 +447,15 @@
     "COL_OWNER_LOGINS": "مالک لاگ اِن",
     "COL_OWNER_LAST_LOGIN": "مالک آخری لاگ اِن",
     "COL_LOGIN_COUNT": "لاگ اِنز",
-    "COL_LAST_LOGIN": "آخری لاگ اِن"
+    "COL_LAST_LOGIN": "آخری لاگ اِن",
+    "USAGE_OVER_TIME": "وقت کے ساتھ استعمال (30 دن)",
+    "USAGE_LOGINS": "لاگ ان",
+    "USAGE_SIGNUPS": "سائن اپ",
+    "USAGE_EMPTY": "آخری 30 دنوں میں استعمال کا کوئی ڈیٹا نہیں۔",
+    "FILTER_TENANTS": "کرایہ دار فلٹر کریں",
+    "FILTER_PLACEHOLDER": "نام، مالک یا ای میل سے تلاش کریں",
+    "COL_OWNER_ACTIVITY": "مالک کی سرگرمی",
+    "NO_FILTER_MATCH": "اس فلٹر سے کوئی کرایہ دار نہیں ملتا۔"
   },
   "COURIER_HOME": {
     "TITLE": "ڈیلیوریز",
@@ -588,7 +600,11 @@
     "SIGNUP_VERIFY_SUBMIT": "ای میل تصدیق کریں",
     "SIGNUP_VERIFY_RESEND": "کوڈ دوبارہ بھیجیں",
     "SIGNUP_VERIFY_RESENT": "کوڈ بھیج دیا گیا",
-    "SIGNUP_VERIFY_FAILED": "کوڈ کی تصدیق نہیں ہو سکی۔ چیک کر کے دوبارہ کوشش کریں۔"
+    "SIGNUP_VERIFY_FAILED": "کوڈ کی تصدیق نہیں ہو سکی۔ چیک کر کے دوبارہ کوشش کریں۔",
+    "CAPTCHA_LABEL": "سیکیورٹی چیک",
+    "CAPTCHA_PLACEHOLDER": "دکھائے گئے حروف درج کریں",
+    "CAPTCHA_REFRESH": "نیا کوڈ",
+    "CAPTCHA_REQUIRED": "جاری رکھنے کے لیے سیکیورٹی چیک مکمل کریں۔"
   },
   "MENU": {
     "TITLE": "مینو",
@@ -788,10 +804,10 @@
     "QUESTION_TYPE_TEXT": "مفت متن",
     "QUESTION_FIELD_LABEL": "سوال (دکھایا گیا کو گیسٹ)",
     "QUESTION_LABEL_PLACEHOLDER": "مثلاً کیسے گا آپ جیسے آپ کا steak پکا?",
-    "QUESTION_FIELD_OPTIONS": "آپشنز (ایک فی لائن)",
+    "QUESTION_FIELD_OPTIONS": "آپشنز (ہر لائن پر ایک؛ اختیاری |قیمت)",
     "QUESTION_CHOICE_MULTI": "اجازت دیں متعدد انتخاب (مثلاً several ٹاپنگز یا removals)",
     "QUESTION_BADGE_MULTI": "متعدد",
-    "QUESTION_OPTIONS_PLACEHOLDER": "نادر\nدرمیانہ\nاچھی طرح ہو گیا",
+    "QUESTION_OPTIONS_PLACEHOLDER": "Rare\nMedium\nExtra cheese|1.00",
     "QUESTION_SCALE_MIN": "کم از کم",
     "QUESTION_SCALE_MAX": "زیادہ سے زیادہ",
     "QUESTION_FIELD_REQUIRED": "کارٹ میں شامل کرنے سے پہلے لازمی",
@@ -850,7 +866,11 @@
     "STOCK_HEADER": "اسٹاک",
     "STOCK_LOW": "کم",
     "STOCK_OK": "ٹھیک",
-    "STOCK_BADGE_TITLE": "اسٹاک {{qty}} (الرٹ {{level}} پر)"
+    "STOCK_BADGE_TITLE": "اسٹاک {{qty}} (الرٹ {{level}} پر)",
+    "QUESTION_OPTIONS_PRICE_HINT": "ہر لائن پر ایک آپشن۔ اختیاری قیمت پائپ کے بعد: لیبل|1.00 (بڑی کرنسی اکائیاں؛ رعایت کے لیے منفی)۔",
+    "EXPECTED_PREP_MINUTES": "Expected prep (minutes)",
+    "EXPECTED_PREP_PLACEHOLDER": "Category default",
+    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings."
   },
   "CATALOG": {
     "TITLE": "پروڈکٹ کیٹلاگ",
@@ -1133,7 +1153,22 @@
     "TIMER_BAR_HINT": "انتظار وقت progress toward red threshold",
     "STATION": "اسٹیشن",
     "ALL_STATIONS": "تمام اسٹیشن",
-    "ITEM_COMMENT": "تبصرہ"
+    "ITEM_COMMENT": "تبصرہ",
+    "PLACED": "آرڈر وقت",
+    "SLA_FRESH": "تازہ",
+    "SLA_WARNING": "خطرے میں",
+    "SLA_OVERDUE": "تاخیر",
+    "TIMER_YELLOW_PERCENT": "Yellow at (% of expected)",
+    "TIMER_ORANGE_PERCENT": "Orange at (% of expected)",
+    "TIMER_RED_PERCENT": "Red at (% of expected)",
+    "SLA_THRESHOLD_MODE": "SLA threshold mode",
+    "SLA_MODE_ABSOLUTE": "Absolute (overdue at expected prep)",
+    "SLA_MODE_PERCENT": "Percent of expected prep",
+    "SLA_TICKET_AGGREGATION": "Multi-item ticket expected prep",
+    "SLA_AGG_MAX_LINE": "Longest line (max)",
+    "SLA_AGG_SUM": "Sum of lines",
+    "SLA_AGG_PRIMARY_CATEGORY": "Primary category (highest)",
+    "EXPECTED_PREP_BY_CATEGORY": "Expected prep by category (minutes)"
   },
   "BAR_DISPLAY": {
     "TITLE": "بار ڈسپلے"
@@ -2359,7 +2394,16 @@
     "NEWSLETTER_SEND_FAIL": "مہم قطار میں نہیں لگی۔ سامعین، رضامندی اور SMTP چیک کریں۔",
     "NEWSLETTER_CANCEL_FAIL": "مہم منسوخ نہیں ہو سکی۔",
     "STRIPE_CRYPTO_ENABLED": "Stripe کے ذریعے کرپٹو (اسٹیبل کوائنز) قبول کریں",
-    "STRIPE_CRYPTO_ENABLED_HINT": "عوامی مینو اور ڈیلیوری چیک آؤٹ پر کرپٹو سے ادائیگی دکھاتا ہے۔ پہلے Stripe Dashboard میں Stablecoins and Crypto فعال کریں۔ تصفیہ آپ کے Stripe بیلنس میں ہوتا ہے؛ ریفنڈز مہمان کے والیٹ میں اسٹیبل کوائنز کے طور پر واپس آتے ہیں۔"
+    "STRIPE_CRYPTO_ENABLED_HINT": "عوامی مینو اور ڈیلیوری چیک آؤٹ پر کرپٹو سے ادائیگی دکھاتا ہے۔ پہلے Stripe Dashboard میں Stablecoins and Crypto فعال کریں۔ تصفیہ آپ کے Stripe بیلنس میں ہوتا ہے؛ ریفنڈز مہمان کے والیٹ میں اسٹیبل کوائنز کے طور پر واپس آتے ہیں۔",
+    "CAREERS": "Careers / Work with us",
+    "CAREERS_DESC": "Public page for candidates to leave a CV. Applications are encrypted and only visible to the owner.",
+    "CAREERS_ENABLED": "Enable public careers page",
+    "CAREERS_ENABLED_HINT": "When on, guests can open /careers/{id} and submit an application.",
+    "CAREERS_WHY": "Why work here (shown on public page)",
+    "CAREERS_WHY_PLACEHOLDER": "Tell candidates why they should join your team…",
+    "CAREERS_RETENTION": "Retention (days)",
+    "CAREERS_RETENTION_HINT": "Applications auto-delete after this many days (30–730). Default 180.",
+    "CAREERS_PUBLIC_URL": "Public URL path"
   },
   "PAYMENTS": {
     "PAYMENT": "ادائیگی",
@@ -3508,5 +3552,59 @@
     "EMAIL_ERROR": "براہ کرم درست ای میل درج کریں۔",
     "INVOICE_SAVED": "انوائس ای میل",
     "THANK_YOU": "شکریہ!"
+  },
+  "CAREERS": {
+    "TITLE": "Work with us",
+    "LOADING": "Loading…",
+    "DISABLED": "This restaurant is not accepting applications right now.",
+    "INVALID_TENANT": "Invalid restaurant link.",
+    "TENANT_NOT_FOUND": "Restaurant not found.",
+    "WHY_HEADING": "Why work here",
+    "RETENTION_NOTICE": "Your data is kept for {{days}} days, then deleted automatically. You can apply again later.",
+    "NAME": "Full name",
+    "EMAIL": "Email",
+    "PHONE": "Phone",
+    "MESSAGE": "Short message",
+    "CV": "CV (optional)",
+    "CV_HINT": "PDF or Word, max 5 MB. Stored encrypted.",
+    "SUBMIT": "Submit application",
+    "SUBMITTING": "Submitting…",
+    "SUBMIT_ERROR": "Could not submit. Check your details and try again.",
+    "THANK_YOU": "Thank you",
+    "THANK_YOU_BODY": "We received your application. Data is kept for {{days}} days, then removed. You may apply again after that.",
+    "STAFF_TITLE": "Careers applications",
+    "VIEW_PUBLIC": "Open public page",
+    "COPY_URL": "Copy public URL",
+    "URL_COPIED": "URL copied",
+    "EMPTY": "No applications yet.",
+    "LOAD_ERROR": "Could not load applications.",
+    "STATUS": "Status",
+    "STATUS_NEW": "New",
+    "STATUS_CONTACTED": "Contacted",
+    "STATUS_CLOSED": "Closed",
+    "CREATED": "Submitted",
+    "ACTIONS": "Actions",
+    "DOWNLOAD_CV": "Download CV",
+    "CONFIRM_DELETE": "Delete this application permanently?",
+    "NOTIFY_TITLE": "Open role — email all candidates",
+    "NOTIFY_HINT": "Sends every candidate an email asking them to update their CV if interested.",
+    "ROLE_TITLE": "Role title",
+    "NOTIFY_MESSAGE": "Extra message (optional)",
+    "NOTIFY_ALL": "Email all candidates",
+    "NOTIFYING": "Sending…",
+    "NOTIFY_RESULT": "Sent {sent} of {total} (failed: {failed}).",
+    "NOTIFY_ERROR": "Could not send emails. Check SMTP in Settings.",
+    "SEND_CODE": "Send verification code",
+    "SENDING_CODE": "Sending code…",
+    "VERIFY_HINT": "We will email a six-digit code to confirm your address before storing your application.",
+    "VERIFY_TITLE": "Confirm your email",
+    "VERIFY_SENT": "Enter the six-digit code we sent to {{email}}.",
+    "VERIFY_CODE": "Verification code",
+    "VERIFY_CODE_PLACEHOLDER": "6-digit code",
+    "RESEND_CODE": "Resend code",
+    "CODE_RESENT": "Code sent",
+    "CODE_SEND_ERROR": "Could not send the verification code. Try again.",
+    "CODE_INVALID": "Invalid or expired code. Request a new one.",
+    "DEV_CODE_HINT": "Dev code (SMTP not configured): {{code}}"
   }
 }

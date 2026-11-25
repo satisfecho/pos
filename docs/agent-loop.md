@@ -138,13 +138,19 @@ Same idea as **mac-stats-reviewer** `agents/run.sh`, but named for clarity: one 
 | **`./agents2/pos-cursor-loop.sh promote`** (or **`009`**, **`deploy`**) | Run **009** daily promote: merge **`development` → `master`** via **`scripts/promote-development-to-master.sh`** when cadence allows (default ≥24h since last master tip and development is ahead). No **`cursor-agent`**. Disable with **`AGENT_PROMOTE=0`**. |
 | **`./agents2/pos-cursor-loop.sh help`** | Usage. |
 
-**Keep the loop running (reboot-safe):** on the host (e.g. amvara9), install once as root:
+**Keep the loop running (reboot-safe):** on the host (e.g. amvara9 / amvara3), install once as root:
 
 ```bash
 ./scripts/install-pos-cursor-loop-systemd.sh
 ```
 
 That installs **`pos-cursor-loop.service`** (`Restart=always`, enabled on boot), writes optional overrides to **`/etc/default/pos-cursor-loop`**, and adds a **cron watchdog every 5 minutes** (`scripts/watchdog-pos-cursor-loop.sh`) so a stopped unit is started again. Log: **`tmp/pos-cursor-loop.log`**. Status: **`systemctl status pos-cursor-loop`** or **`./scripts/watchdog-pos-cursor-loop.sh --status`**. Uninstall: **`./scripts/install-pos-cursor-loop-systemd.sh --uninstall`**.
+
+**Git sync stuck (process alive, no FEAT intake):** stamp-only dirty reviewer files used to conflict under **`git pull --rebase --autostash`**, leave unmerged paths, and skip every agent step while the pid stayed healthy. Prevention:
+
+1. **`scripts/git-sync-development.sh`** discards allowlisted stamp dirt before pull; on unmerged paths it exits **2** and writes **`tmp/agent-git-sync-blocked.txt`**.
+2. **`scripts/watchdog-pos-cursor-loop.sh`** (same cron) alerts when that stamp is older than **`AGENT_GIT_SYNC_BLOCK_ALERT_MINUTES`** (default **30**) and opens at most one GitHub issue with body key **`agent-loop-blocker: git-sync`**.
+3. Operator: resolve conflicts on the agent host, re-run **`./scripts/git-sync-development.sh`** (clears the stamp on success). See **`docs/pos-dev-amvara3.md`**.
 
 **Legacy background loop (no systemd):** **`./scripts/start-pos-cursor-loop-background.sh`** (or **`--restart`**) runs the full cycle under **`nohup`**; pid **`tmp/pos-cursor-loop.pid`**, log **`tmp/pos-cursor-loop.log`**. The watchdog falls back to this path when the systemd unit is not enabled.
 
@@ -153,6 +159,8 @@ That installs **`pos-cursor-loop.service`** (`Restart=always`, enabled on boot),
 **001 - GitHub not authenticated:** If **`gh`** stderr indicates **401** / bad credentials, **`pos-cursor-loop.sh`** prints a **stderr banner** on the console and sets **`G001_GH_AUTH_FAILED=1`** in the digest summary; **`gh` stderr** is appended under **`=== gh issue list stderr ===`** / **`gh api`** sections.
 
 **Git:** **`scripts/git-sync-development.sh`** runs only when a step actually has work (unless **`AGENT_GIT_SYNC=0`**): **001** syncs only when its preflight gate opens; **002-004 / 006-007** sync only when their queue (or, for **007**, uncommitted changes) is non-empty. See **Sync before edits (multi-agent)** above.
+
+**Stale waiting FEAT → REJECTED:** Each cycle, before the **006** batch, **`scripts/agent-feat-stale-waiting-reject.sh`** archives **FEAT** tasks that are **waiting for human** with a **`Waiting notice posted:`** stamp older than **`AGENT_FEAT_WAITING_REJECT_DAYS`** (default **30**) and no non-agent issue reply. Files become **`REJECTED-…`** under **`agents2/tasks/done/YYYY/MM/DD/`**; the script comments on the linked issue and closes it as **not planned** unless **`AGENT_FEAT_STALE_CLOSE_ISSUE=0`**. Disable with **`AGENT_FEAT_STALE_REJECT=0`**.
 
 **Token-saving gates:** **002 / 003 / 004 / 006 / 007** skip **`cursor-agent`** and **skip git sync** when there is no matching task file at **`agents2/tasks/`** root or (committer) no unstaged/staged diff. For **003**, “matching” means **`UNTESTED-*.md`** or **`TESTING-*.md`** (unfinished test runs stay in the queue). **006** runs at most five times per cycle and **stops the FEAT batch early** when no **`FEAT-*.md`** remains **or** when every **FEAT** task is parked **waiting for human** (one waiting GitHub comment + **`Waiting notice posted:`** stamp in the task file; no further **010** runs or issue comments until a human replies - **`scripts/agent-feat-waiting-human-preflight.sh`**). **001** adds a **preflight digest** (issues + security advisories + log heuristics). **Committer** in **`agents2/pos-cursor-loop.sh`** runs **`040-committer.md`** via **`cursor-agent`** by default when there are non-stamp changes (**`AGENT_COMMITTER_USE_CURSOR`** default **1**). **Stamp-only** dirty trees (allowlisted `time-of-last-review.txt` / `last-scan.json` under **001/005/008/011**) are **not** committed (**`AGENT_COMMITTER_LOCAL`**, default on): leave stamps local until a later commit that includes real code/docs/task work (#313). After a new commit, **`scripts/link-commit-to-github-issues.sh`** posts on linked GitHub issues.
 

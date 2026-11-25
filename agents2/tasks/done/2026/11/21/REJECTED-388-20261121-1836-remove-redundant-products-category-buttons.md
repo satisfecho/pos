@@ -5,8 +5,9 @@
 - **388**
 
 ## Status
-- **Blocked - waiting for human** (design: only one Products ↔ Categories switcher exists; filter ribbon is not the same nav)
-- **Waiting notice posted:** 2026-09-14T14:21:28Z
+- **REJECTED** - no human reply within 30 days after waiting notice (auto, 2026-11-21T18:36:57Z).
+- **Rejected at:** 2026-11-21T18:36:57Z
+- **Note:** GitHub #388 was already a discussion/closed; comment/close skipped.
 
 ## Problem / goal
 On the **Products** area, a **Product Categories** button (and effectively the **Products** button) duplicates the existing **tabs** that already switch Products vs Product Categories. Screenshots in the issue show both a tab strip and redundant action buttons - clutter and two ways to do the same nav.

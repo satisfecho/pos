@@ -94,7 +94,9 @@
     "UNMAPPED_CSV_COLUMNS": "AI 无法映射这些 CSV 列：{{columns}}。请重命名或删除后重试。",
     "CUSTOMER_PASSWORD_TOO_SHORT": "密码至少需要 {{min_length}} 个字符。",
     "CUSTOMER_VERIFICATION_INVALID": "无效或未知的邮箱验证链接。",
-    "CUSTOMER_VERIFICATION_EXPIRED": "此邮箱验证链接已过期。请重新申请。"
+    "CUSTOMER_VERIFICATION_EXPIRED": "此邮箱验证链接已过期。请重新申请。",
+    "CAPTCHA_REQUIRED": "登录前请完成安全验证。",
+    "CAPTCHA_INVALID": "安全验证失败。请尝试新的验证码。"
   },
   "NAV": {
     "HOME": "首页",
@@ -128,7 +130,8 @@
     "WAREHOUSES": "仓库",
     "TALK": "语音",
     "GROUP_CATALOG_TOGGLE": "展开或折叠目录与库存",
-    "CUSTOMER_DISPLAY": "顾客显示屏"
+    "CUSTOMER_DISPLAY": "顾客显示屏",
+    "CAREERS": "Careers"
   },
   "PUBLIC_GUEST_NAV": {
     "ARIA": "餐厅页面",
@@ -137,7 +140,8 @@
     "WAITLIST": "等位",
     "DELIVERY": "外卖",
     "LOYALTY": "会员",
-    "FEEDBACK": "反馈"
+    "FEEDBACK": "反馈",
+    "CAREERS": "Careers"
   },
   "STAFF_FLOW": {
     "TOOLBAR_ARIA": "员工导航",
@@ -572,7 +576,15 @@
     "COL_OWNER_LOGINS": "所有者登录次数",
     "COL_OWNER_LAST_LOGIN": "所有者上次登录",
     "COL_LOGIN_COUNT": "登录次数",
-    "COL_LAST_LOGIN": "上次登录"
+    "COL_LAST_LOGIN": "上次登录",
+    "USAGE_OVER_TIME": "使用趋势（30 天）",
+    "USAGE_LOGINS": "登录",
+    "USAGE_SIGNUPS": "注册",
+    "USAGE_EMPTY": "近 30 天没有使用数据。",
+    "FILTER_TENANTS": "筛选租户",
+    "FILTER_PLACEHOLDER": "按名称、所有者或邮箱搜索",
+    "COL_OWNER_ACTIVITY": "所有者动态",
+    "NO_FILTER_MATCH": "没有符合此筛选的租户。"
   },
   "COURIER_HOME": {
     "TITLE": "配送",
@@ -717,7 +729,11 @@
     "SIGNUP_VERIFY_SUBMIT": "验证邮箱",
     "SIGNUP_VERIFY_RESEND": "重新发送验证码",
     "SIGNUP_VERIFY_RESENT": "验证码已发送",
-    "SIGNUP_VERIFY_FAILED": "无法验证该验证码。请检查后重试。"
+    "SIGNUP_VERIFY_FAILED": "无法验证该验证码。请检查后重试。",
+    "CAPTCHA_LABEL": "安全验证",
+    "CAPTCHA_PLACEHOLDER": "请输入显示的字符",
+    "CAPTCHA_REFRESH": "换一个",
+    "CAPTCHA_REQUIRED": "请完成安全验证后继续。"
   },
   "PAYWALL": {
     "TITLE": "选择套餐以继续",
@@ -929,10 +945,10 @@
     "QUESTION_TYPE_TEXT": "自由文本",
     "QUESTION_FIELD_LABEL": "问题（顾客可见）",
     "QUESTION_LABEL_PLACEHOLDER": "例如：牛排要几成熟？",
-    "QUESTION_FIELD_OPTIONS": "选项（每行一个）",
+    "QUESTION_FIELD_OPTIONS": "选项（每行一个；可选 |价格）",
     "QUESTION_CHOICE_MULTI": "允许多选（例如多种配料）",
     "QUESTION_BADGE_MULTI": "多选",
-    "QUESTION_OPTIONS_PLACEHOLDER": "一分熟\n五分熟\n全熟",
+    "QUESTION_OPTIONS_PLACEHOLDER": "三分熟\n五分熟\n加芝士|1.00",
     "QUESTION_SCALE_MIN": "最小值",
     "QUESTION_SCALE_MAX": "最大值",
     "QUESTION_FIELD_REQUIRED": "加入购物车前必填",
@@ -991,7 +1007,11 @@
     "STOCK_HEADER": "库存",
     "STOCK_LOW": "偏低",
     "STOCK_OK": "正常",
-    "STOCK_BADGE_TITLE": "库存 {{qty}}（阈值 {{level}}）"
+    "STOCK_BADGE_TITLE": "库存 {{qty}}（阈值 {{level}}）",
+    "QUESTION_OPTIONS_PRICE_HINT": "每行一个选项。可选加价用竖线：标签|1.00（主货币单位；负数表示减价）。",
+    "EXPECTED_PREP_MINUTES": "Expected prep (minutes)",
+    "EXPECTED_PREP_PLACEHOLDER": "Category default",
+    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings."
   },
   "CATALOG": {
     "TITLE": "产品目录",
@@ -1274,7 +1294,22 @@
     "TIMER_BAR_HINT": "等待时间相对红色阈值的进度",
     "STATION": "工位",
     "ALL_STATIONS": "全部工位",
-    "ITEM_COMMENT": "备注"
+    "ITEM_COMMENT": "备注",
+    "PLACED": "下单时间",
+    "SLA_FRESH": "新鲜",
+    "SLA_WARNING": "即将超时",
+    "SLA_OVERDUE": "超时",
+    "TIMER_YELLOW_PERCENT": "Yellow at (% of expected)",
+    "TIMER_ORANGE_PERCENT": "Orange at (% of expected)",
+    "TIMER_RED_PERCENT": "Red at (% of expected)",
+    "SLA_THRESHOLD_MODE": "SLA threshold mode",
+    "SLA_MODE_ABSOLUTE": "Absolute (overdue at expected prep)",
+    "SLA_MODE_PERCENT": "Percent of expected prep",
+    "SLA_TICKET_AGGREGATION": "Multi-item ticket expected prep",
+    "SLA_AGG_MAX_LINE": "Longest line (max)",
+    "SLA_AGG_SUM": "Sum of lines",
+    "SLA_AGG_PRIMARY_CATEGORY": "Primary category (highest)",
+    "EXPECTED_PREP_BY_CATEGORY": "Expected prep by category (minutes)"
   },
   "BAR_DISPLAY": {
     "TITLE": "酒吧显示屏"
@@ -2500,7 +2535,16 @@
     "NEWSLETTER_SEND_FAIL": "无法排队活动。请检查受众、同意与 SMTP。",
     "NEWSLETTER_CANCEL_FAIL": "无法取消活动。",
     "STRIPE_CRYPTO_ENABLED": "通过 Stripe 接受加密货币（稳定币）",
-    "STRIPE_CRYPTO_ENABLED_HINT": "在公开菜单和外卖结账中显示加密货币支付。请先在 Stripe 控制台启用 Stablecoins and Crypto。结算到您的 Stripe 余额；退款以稳定币退回客人钱包。"
+    "STRIPE_CRYPTO_ENABLED_HINT": "在公开菜单和外卖结账中显示加密货币支付。请先在 Stripe 控制台启用 Stablecoins and Crypto。结算到您的 Stripe 余额；退款以稳定币退回客人钱包。",
+    "CAREERS": "Careers / Work with us",
+    "CAREERS_DESC": "Public page for candidates to leave a CV. Applications are encrypted and only visible to the owner.",
+    "CAREERS_ENABLED": "Enable public careers page",
+    "CAREERS_ENABLED_HINT": "When on, guests can open /careers/{id} and submit an application.",
+    "CAREERS_WHY": "Why work here (shown on public page)",
+    "CAREERS_WHY_PLACEHOLDER": "Tell candidates why they should join your team…",
+    "CAREERS_RETENTION": "Retention (days)",
+    "CAREERS_RETENTION_HINT": "Applications auto-delete after this many days (30–730). Default 180.",
+    "CAREERS_PUBLIC_URL": "Public URL path"
   },
   "PAYMENTS": {
     "PAYMENT": "支付",
@@ -3508,5 +3552,59 @@
     "EMAIL_ERROR": "请输入有效邮箱。",
     "INVOICE_SAVED": "发票邮箱",
     "THANK_YOU": "谢谢！"
+  },
+  "CAREERS": {
+    "TITLE": "Work with us",
+    "LOADING": "Loading…",
+    "DISABLED": "This restaurant is not accepting applications right now.",
+    "INVALID_TENANT": "Invalid restaurant link.",
+    "TENANT_NOT_FOUND": "Restaurant not found.",
+    "WHY_HEADING": "Why work here",
+    "RETENTION_NOTICE": "Your data is kept for {{days}} days, then deleted automatically. You can apply again later.",
+    "NAME": "Full name",
+    "EMAIL": "Email",
+    "PHONE": "Phone",
+    "MESSAGE": "Short message",
+    "CV": "CV (optional)",
+    "CV_HINT": "PDF or Word, max 5 MB. Stored encrypted.",
+    "SUBMIT": "Submit application",
+    "SUBMITTING": "Submitting…",
+    "SUBMIT_ERROR": "Could not submit. Check your details and try again.",
+    "THANK_YOU": "Thank you",
+    "THANK_YOU_BODY": "We received your application. Data is kept for {{days}} days, then removed. You may apply again after that.",
+    "STAFF_TITLE": "Careers applications",
+    "VIEW_PUBLIC": "Open public page",
+    "COPY_URL": "Copy public URL",
+    "URL_COPIED": "URL copied",
+    "EMPTY": "No applications yet.",
+    "LOAD_ERROR": "Could not load applications.",
+    "STATUS": "Status",
+    "STATUS_NEW": "New",
+    "STATUS_CONTACTED": "Contacted",
+    "STATUS_CLOSED": "Closed",
+    "CREATED": "Submitted",
+    "ACTIONS": "Actions",
+    "DOWNLOAD_CV": "Download CV",
+    "CONFIRM_DELETE": "Delete this application permanently?",
+    "NOTIFY_TITLE": "Open role — email all candidates",
+    "NOTIFY_HINT": "Sends every candidate an email asking them to update their CV if interested.",
+    "ROLE_TITLE": "Role title",
+    "NOTIFY_MESSAGE": "Extra message (optional)",
+    "NOTIFY_ALL": "Email all candidates",
+    "NOTIFYING": "Sending…",
+    "NOTIFY_RESULT": "Sent {sent} of {total} (failed: {failed}).",
+    "NOTIFY_ERROR": "Could not send emails. Check SMTP in Settings.",
+    "SEND_CODE": "Send verification code",
+    "SENDING_CODE": "Sending code…",
+    "VERIFY_HINT": "We will email a six-digit code to confirm your address before storing your application.",
+    "VERIFY_TITLE": "Confirm your email",
+    "VERIFY_SENT": "Enter the six-digit code we sent to {{email}}.",
+    "VERIFY_CODE": "Verification code",
+    "VERIFY_CODE_PLACEHOLDER": "6-digit code",
+    "RESEND_CODE": "Resend code",
+    "CODE_RESENT": "Code sent",
+    "CODE_SEND_ERROR": "Could not send the verification code. Try again.",
+    "CODE_INVALID": "Invalid or expired code. Request a new one.",
+    "DEV_CODE_HINT": "Dev code (SMTP not configured): {{code}}"
   }
 }

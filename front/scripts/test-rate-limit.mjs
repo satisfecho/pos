@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Rate limiting test: verifies login and register endpoints return 429 after limit.
- * Hits POST /token (login) 6 times with wrong credentials; expects 401 for first 5, 429 on 6th.
+ * Hits POST /token (login) 6 times with wrong credentials; expects non-429 for first 5
+ * (401, or 400 once self-hosted CAPTCHA is required after failed attempts), 429 on 6th.
  * Optionally hits POST /register 4 times; expects 429 on 4th (limit 3/hour).
  *
  * Note: Running this script will temporarily rate-limit the current IP (login: 15 min, register: 1 hour).
@@ -60,8 +61,9 @@ async function main() {
       failed = true;
     } else if (firstFive.every((s) => s === 429)) {
       console.log('   WARN: already rate limited (1–5 were 429). Run test in isolation to verify boundary.');
-    } else if (!firstFive.every((s) => s === 401)) {
-      console.log('   WARN: expected 401 for attempts 1–5, got', firstFive.join(', '));
+    } else if (!firstFive.every((s) => s === 401 || s === 400)) {
+      // 401 = wrong password; 400 = CAPTCHA required after LOGIN_CAPTCHA_AFTER_FAILURES (#452)
+      console.log('   WARN: expected 401/400 for attempts 1–5, got', firstFive.join(', '));
     }
     console.log('');
   }

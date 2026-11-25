@@ -17,6 +17,7 @@ describe('KitchenDisplayComponent', () => {
     getCurrentUser: jasmine.Spy;
     getKitchenStations: jasmine.Spy;
     getKitchenDisplaySettings: jasmine.Spy;
+    setOrderStaffUrgent: jasmine.Spy;
   };
   let mockAudio: { setEnabled: jasmine.Spy; playRestaurantOrderChange: jasmine.Spy };
 
@@ -31,6 +32,9 @@ describe('KitchenDisplayComponent', () => {
       getKitchenDisplaySettings: jasmine
         .createSpy('getKitchenDisplaySettings')
         .and.returnValue(of({ yellow_minutes: 5, orange_minutes: 10, red_minutes: 15 })),
+      setOrderStaffUrgent: jasmine
+        .createSpy('setOrderStaffUrgent')
+        .and.callFake((id: number, urgent: boolean) => of({ order_id: id, staff_urgent: urgent })),
     };
     mockAudio = {
       setEnabled: jasmine.createSpy('setEnabled'),
@@ -208,5 +212,102 @@ describe('KitchenDisplayComponent', () => {
     el.requestFullscreen = req;
     fixture.componentInstance.toggleFullscreen();
     expect(req).toHaveBeenCalled();
+  });
+
+  it('should map elapsed time to SLA levels using timer thresholds', () => {
+    const fixture = TestBed.createComponent(KitchenDisplayComponent);
+    fixture.detectChanges();
+    const c = fixture.componentInstance;
+    c.timerSettings.set({
+      yellow_minutes: 5,
+      orange_minutes: 10,
+      red_minutes: 15,
+      sla_threshold_mode: 'absolute',
+      sla_ticket_aggregation: 'max_line',
+      yellow_percent: 70,
+      orange_percent: 90,
+      red_percent: 100,
+      expected_prep_by_category: {},
+    });
+    const base = Date.now();
+    c.now.set(base);
+    const mk = (minutesAgo: number, items: any[] = []) =>
+      ({
+        id: 1,
+        status: 'pending',
+        table_name: 'T1',
+        created_at: new Date(base - minutesAgo * 60_000).toISOString(),
+        items,
+        total_cents: 0,
+      }) as any;
+    expect(c.getSlaLevel(mk(1))).toBe('fresh');
+    expect(c.getTimerColorClass(mk(1))).toBe('timer-green');
+    expect(c.getSlaLevel(mk(6))).toBe('warning');
+    expect(c.getSlaLevel(mk(12))).toBe('warning');
+    expect(c.getSlaLevel(mk(20))).toBe('overdue');
+    expect(c.formatPlacedClock(mk(0).created_at)).toMatch(/\d/);
+
+    // Absolute mode with expected: overdue at ticket expected (max line)
+    const withExpected = [
+      { product_name: 'Starter', quantity: 1, price_cents: 100, expected_prep_minutes: 8, category: 'Starters' },
+      { product_name: 'Main', quantity: 1, price_cents: 100, expected_prep_minutes: 12, category: 'Main Course' },
+    ];
+    expect(c.getTicketExpectedMinutes(mk(0, withExpected))).toBe(12);
+    expect(c.getSlaLevel(mk(13, withExpected))).toBe('overdue');
+    expect(c.getSlaLevel(mk(6, withExpected))).toBe('warning');
+
+    c.timerSettings.update((s) => ({
+      ...s,
+      sla_threshold_mode: 'percent_of_expected',
+      yellow_percent: 50,
+      orange_percent: 75,
+      red_percent: 100,
+    }));
+    // expected 12 → yellow 6, orange 9, red 12
+    expect(c.getSlaLevel(mk(7, withExpected))).toBe('warning');
+    expect(c.getSlaLevel(mk(13, withExpected))).toBe('overdue');
+  });
+
+  it('should toggle staff urgent via API when permitted', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [
+        KitchenDisplayComponent,
+        TranslateModule.forRoot(),
+        RouterTestingModule.withRoutes([{ path: 'orders', children: [] }]),
+      ],
+      providers: [
+        { provide: ApiService, useValue: mockApi },
+        { provide: AudioService, useValue: mockAudio },
+        {
+          provide: PermissionService,
+          useValue: {
+            getCurrentUser: () => ({ id: 1, role: 'admin' }),
+            hasPermission: (_u: unknown, perm: string) => perm === 'order:update_status',
+          },
+        },
+      ],
+    }).compileComponents();
+    const translate = TestBed.inject(TranslateService);
+    translate.setDefaultLang('en');
+    translate.use('en');
+
+    const fixture = TestBed.createComponent(KitchenDisplayComponent);
+    fixture.detectChanges();
+    const c = fixture.componentInstance;
+    expect(c.canMarkUrgent()).toBe(true);
+    const order = {
+      id: 42,
+      status: 'pending',
+      table_name: 'T1',
+      created_at: new Date().toISOString(),
+      items: [],
+      total_cents: 0,
+      staff_urgent: false,
+    } as any;
+    c.orders.set([order]);
+    c.toggleStaffUrgent(order);
+    expect(mockApi.setOrderStaffUrgent).toHaveBeenCalledWith(42, true);
+    expect(c.orders()[0].staff_urgent).toBe(true);
   });
 });

@@ -52,6 +52,7 @@ When the task **Status** or body says the work is **blocked** until humans decid
 3. **Record in the task file** under **## Status**: `**Waiting notice posted:** <UTC ISO>` (e.g. `2026-08-20T15:08:00Z`).
 4. **Stay quiet:** If **Waiting notice posted** is already set, **do not** comment on GitHub again and **do not** re-check the issue in a loop. The orchestrator preflight (`scripts/agent-feat-waiting-human-preflight.sh`) skips **010** until a **non-agent** human reply appears on the issue after that timestamp.
 5. When a human replies with decisions, clear or update the blocked status, then implement the agreed slice.
+6. **Stale auto-reject:** If no human reply arrives within **`AGENT_FEAT_WAITING_REJECT_DAYS`** (default **30**), the loop runs **`scripts/agent-feat-stale-waiting-reject.sh`** (status **REJECTED**, archive under **`done/`**). Do not keep re-posting waiting notices on those issues.
 
 ### Instructions
 

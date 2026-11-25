@@ -1,7 +1,15 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ApiService, KitchenStation, Product, ProductBulkImportConfirmResult, ProductQuestionStaff, Tax } from '../services/api.service';
+import {
+  ApiService,
+  KitchenStation,
+  Product,
+  ProductBulkImportConfirmResult,
+  ProductChoiceOption,
+  ProductQuestionStaff,
+  Tax,
+} from '../services/api.service';
 import { PermissionService } from '../services/permission.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { CommonModule } from '@angular/common';
@@ -189,6 +197,20 @@ import { ProductBulkImportComponent } from './product-bulk-import.component';
                      <small class="field-hint">{{ 'PRODUCTS.KITCHEN_STATION_HINT' | translate }}</small>
                    </div>
                    <div class="form-group">
+                     <label for="expected_prep_minutes">{{ 'PRODUCTS.EXPECTED_PREP_MINUTES' | translate }}</label>
+                     <input
+                       id="expected_prep_minutes"
+                       type="number"
+                       min="0"
+                       step="1"
+                       [(ngModel)]="formData.expected_prep_minutes"
+                       name="expected_prep_minutes"
+                       [readonly]="!canEditProducts()"
+                       [attr.placeholder]="'PRODUCTS.EXPECTED_PREP_PLACEHOLDER' | translate"
+                     />
+                     <small class="field-hint">{{ 'PRODUCTS.EXPECTED_PREP_HINT' | translate }}</small>
+                   </div>
+                   <div class="form-group">
                      <label for="product_tax_id">{{ 'PRODUCTS.TAX_OVERRIDE' | translate }}</label>
                      <select id="product_tax_id" [(ngModel)]="formData.tax_id" name="tax_id" [disabled]="!canEditProducts()">
                        <option [ngValue]="null">{{ 'PRODUCTS.USE_DEFAULT_TAX' | translate }}</option>
@@ -336,6 +358,7 @@ import { ProductBulkImportComponent } from './product-bulk-import.component';
                              <div class="form-group">
                                <label for="q-options">{{ 'PRODUCTS.QUESTION_FIELD_OPTIONS' | translate }}</label>
                                <textarea id="q-options" name="q-options" rows="4" [(ngModel)]="questionDraft.choiceLines" [disabled]="questionSaving()" [placeholder]="'PRODUCTS.QUESTION_OPTIONS_PLACEHOLDER' | translate"></textarea>
+                               <small class="field-hint">{{ 'PRODUCTS.QUESTION_OPTIONS_PRICE_HINT' | translate }}</small>
                              </div>
                              <div class="form-group checkbox-row">
                                <label>
@@ -694,6 +717,7 @@ export class ProductsComponent implements OnInit {
     available_from?: string;
     available_until?: string;
     kitchen_station_id?: number | null;
+    expected_prep_minutes?: number | null;
     stock_alert_enabled: boolean;
     stock_qty: number;
     stock_alert_level: number;
@@ -706,6 +730,7 @@ export class ProductsComponent implements OnInit {
     category: '',
     subcategory: '',
     kitchen_station_id: null,
+    expected_prep_minutes: null,
     stock_alert_enabled: false,
     stock_qty: 0,
     stock_alert_level: 5,
@@ -1049,6 +1074,7 @@ export class ProductsComponent implements OnInit {
       available_from: product.available_from || '',
       available_until: product.available_until || '',
       kitchen_station_id: product.kitchen_station_id ?? null,
+      expected_prep_minutes: product.expected_prep_minutes ?? null,
       stock_alert_enabled: !!product.stock_alert_enabled,
       stock_qty: product.stock_qty ?? 0,
       stock_alert_level: product.stock_alert_level ?? 0,
@@ -1076,6 +1102,7 @@ export class ProductsComponent implements OnInit {
       available_from: '',
       available_until: '',
       kitchen_station_id: null,
+      expected_prep_minutes: null,
       stock_alert_enabled: false,
       stock_qty: 0,
       stock_alert_level: 5,
@@ -1099,6 +1126,7 @@ export class ProductsComponent implements OnInit {
       available_from: '',
       available_until: '',
       kitchen_station_id: null,
+      expected_prep_minutes: null,
       stock_alert_enabled: false,
       stock_qty: 0,
       stock_alert_level: 5,
@@ -1163,6 +1191,54 @@ export class ProductsComponent implements OnInit {
     };
   }
 
+  /** Staff lines: "Extra cheese|1.00" → priced option; plain label → delta 0 (#451). */
+  private parseChoiceOptionLines(raw: string): ProductChoiceOption[] {
+    const out: ProductChoiceOption[] = [];
+    for (const line of raw.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      const pipe = trimmed.lastIndexOf('|');
+      if (pipe <= 0) {
+        out.push(trimmed);
+        continue;
+      }
+      const label = trimmed.slice(0, pipe).trim();
+      const amountRaw = trimmed.slice(pipe + 1).trim().replace(',', '.');
+      if (!label) continue;
+      if (!amountRaw) {
+        out.push(label);
+        continue;
+      }
+      const major = Number(amountRaw);
+      if (!Number.isFinite(major)) {
+        out.push(trimmed);
+        continue;
+      }
+      const cents = Math.round(major * 100);
+      if (cents === 0) {
+        out.push(label);
+      } else {
+        out.push({ label, price_delta_cents: cents });
+      }
+    }
+    return out;
+  }
+
+  private choiceOptionsToLines(opts: ProductChoiceOption[]): string {
+    return opts
+      .map((o) => {
+        if (typeof o === 'string') return o;
+        const label = (o.label || '').trim();
+        const cents = Number(o.price_delta_cents || 0);
+        if (!label) return '';
+        if (!cents) return label;
+        const major = (cents / 100).toFixed(2);
+        return `${label}|${major}`;
+      })
+      .filter(Boolean)
+      .join('\n');
+  }
+
   loadProductQuestions(productId: number) {
     this.questionsLoading.set(true);
     this.questionEditorMode.set(null);
@@ -1194,7 +1270,7 @@ export class ProductsComponent implements OnInit {
     this.questionDraft.label = q.label;
     this.questionDraft.required = q.required;
     if (q.type === 'choice' && Array.isArray(q.options)) {
-      this.questionDraft.choiceLines = q.options.join('\n');
+      this.questionDraft.choiceLines = this.choiceOptionsToLines(q.options);
       this.questionDraft.choiceMulti = false;
     } else if (
       q.type === 'choice' &&
@@ -1203,8 +1279,8 @@ export class ProductsComponent implements OnInit {
       !Array.isArray(q.options) &&
       'choices' in q.options
     ) {
-      const o = q.options as { choices: string[]; multi?: boolean };
-      this.questionDraft.choiceLines = (o.choices || []).join('\n');
+      const o = q.options as { choices: ProductChoiceOption[]; multi?: boolean };
+      this.questionDraft.choiceLines = this.choiceOptionsToLines(o.choices || []);
       this.questionDraft.choiceMulti = !!o.multi;
     } else {
       this.questionDraft.choiceLines = '';
@@ -1234,12 +1310,14 @@ export class ProductsComponent implements OnInit {
       this.error.set(this.translate.instant('PRODUCTS.QUESTION_LABEL_REQUIRED'));
       return;
     }
-    let options: string[] | { min: number; max: number } | { choices: string[]; multi: boolean } | null | undefined;
+    let options:
+      | ProductChoiceOption[]
+      | { min: number; max: number }
+      | { choices: ProductChoiceOption[]; multi: boolean }
+      | null
+      | undefined;
     if (this.questionDraft.type === 'choice') {
-      const opts = this.questionDraft.choiceLines
-        .split('\n')
-        .map((s) => s.trim())
-        .filter(Boolean);
+      const opts = this.parseChoiceOptionLines(this.questionDraft.choiceLines);
       if (opts.length === 0) {
         this.error.set(this.translate.instant('PRODUCTS.QUESTION_OPTIONS_REQUIRED'));
         return;
@@ -1391,6 +1469,10 @@ export class ProductsComponent implements OnInit {
       available_from: this.formData.available_from?.trim() || null,
       available_until: this.formData.available_until?.trim() || null,
       kitchen_station_id: this.formData.kitchen_station_id ?? null,
+      expected_prep_minutes:
+        this.formData.expected_prep_minutes == null || `${this.formData.expected_prep_minutes}`.trim() === ''
+          ? null
+          : Math.max(0, Math.floor(Number(this.formData.expected_prep_minutes))),
       stock_alert_enabled: !!this.formData.stock_alert_enabled,
       stock_qty: Math.max(0, Math.floor(Number(this.formData.stock_qty) || 0)),
       stock_alert_level: Math.max(0, Math.floor(Number(this.formData.stock_alert_level) || 0)),

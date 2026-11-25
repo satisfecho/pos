@@ -1,6 +1,14 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './auth/auth.guard';
-import { roleGuard, adminGuard, tableAccessGuard, orderAccessGuard, scheduleGuard, workingPlanViewRedirectGuard } from './auth/role.guard';
+import {
+  roleGuard,
+  adminGuard,
+  ownerGuard,
+  tableAccessGuard,
+  orderAccessGuard,
+  scheduleGuard,
+  workingPlanViewRedirectGuard,
+} from './auth/role.guard';
 import { uiModuleGuard } from './auth/ui-module.guard';
 import { reservationAccessGuard } from './auth/reservation-access.guard';
 import { providerGuard } from './auth/provider.guard';
@@ -91,6 +99,11 @@ export const routes: Routes = [
   { path: 'book/:tenantId', loadComponent: () => import('./book/book.component').then(m => m.BookComponent) },
   { path: 'waitlist/:tenantId', loadComponent: () => import('./waitlist-public/waitlist-public.component').then(m => m.WaitlistPublicComponent) },
   { path: 'feedback/:tenantId', loadComponent: () => import('./feedback-public/feedback-public.component').then(m => m.FeedbackPublicComponent) },
+  {
+    path: 'careers/:tenantId',
+    loadComponent: () =>
+      import('./careers-public/careers-public.component').then((m) => m.CareersPublicComponent),
+  },
   { path: 'loyalty/card/:memberToken', loadComponent: () => import('./loyalty-public/loyalty-card-public.component').then(m => m.LoyaltyCardPublicComponent) },
   // Bare /loyalty and /loyalty/ must not fall through to landing (Satisfecho marketing) — #373
   { path: 'loyalty', pathMatch: 'full', loadComponent: () => import('./loyalty-public/loyalty-public.component').then(m => m.LoyaltyPublicComponent) },
@@ -100,6 +113,11 @@ export const routes: Routes = [
   // Staff reservations (must be before 'reservation' so /reservations matches here, not the public route)
   { path: 'reservations', canActivate: [authGuard, uiModuleGuard('reservations'), reservationAccessGuard], loadComponent: () => import('./reservations/reservations.component').then(m => m.ReservationsComponent) },
   { path: 'guest-feedback', canActivate: [authGuard, uiModuleGuard('reservations'), reservationAccessGuard], loadComponent: () => import('./guest-feedback/guest-feedback.component').then(m => m.GuestFeedbackComponent) },
+  {
+    path: 'staff/careers',
+    canActivate: [authGuard, ownerGuard],
+    loadComponent: () => import('./careers/careers.component').then((m) => m.CareersComponent),
+  },
   { path: 'reservation', loadComponent: () => import('./reservation-view/reservation-view.component').then(m => m.ReservationViewComponent) },
 
   // Protected routes - accessible by all authenticated users

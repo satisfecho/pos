@@ -94,7 +94,9 @@
     "UNMAPPED_CSV_COLUMNS": "AI could not map these CSV columns: {{columns}}. Rename or remove them and try again.",
     "CUSTOMER_PASSWORD_TOO_SHORT": "Password must be at least {{min_length}} characters.",
     "CUSTOMER_VERIFICATION_INVALID": "Invalid or unknown email verification link.",
-    "CUSTOMER_VERIFICATION_EXPIRED": "This email verification link has expired. Request a new one."
+    "CUSTOMER_VERIFICATION_EXPIRED": "This email verification link has expired. Request a new one.",
+    "CAPTCHA_REQUIRED": "Complete the security check before signing in.",
+    "CAPTCHA_INVALID": "Security check failed. Try a new code."
   },
   "NAV": {
     "HOME": "Home",
@@ -128,7 +130,8 @@
     "WAREHOUSES": "Warehouses",
     "TALK": "Talk",
     "GROUP_CATALOG_TOGGLE": "Expand or collapse Catalog & Inventory",
-    "CUSTOMER_DISPLAY": "Customer display"
+    "CUSTOMER_DISPLAY": "Customer display",
+    "CAREERS": "Careers"
   },
   "PUBLIC_GUEST_NAV": {
     "ARIA": "Restaurant pages",
@@ -137,7 +140,8 @@
     "WAITLIST": "Waitlist",
     "DELIVERY": "Delivery",
     "LOYALTY": "Loyalty",
-    "FEEDBACK": "Feedback"
+    "FEEDBACK": "Feedback",
+    "CAREERS": "Careers"
   },
   "STAFF_FLOW": {
     "TOOLBAR_ARIA": "Staff navigation",
@@ -606,7 +610,15 @@
     "COL_OWNER_LOGINS": "Owner logins",
     "COL_OWNER_LAST_LOGIN": "Owner last login",
     "COL_LOGIN_COUNT": "Logins",
-    "COL_LAST_LOGIN": "Last login"
+    "COL_LAST_LOGIN": "Last login",
+    "USAGE_OVER_TIME": "Usage over time (30 days)",
+    "USAGE_LOGINS": "Logins",
+    "USAGE_SIGNUPS": "Sign-ups",
+    "USAGE_EMPTY": "No usage data in the last 30 days.",
+    "FILTER_TENANTS": "Filter tenants",
+    "FILTER_PLACEHOLDER": "Search by name, owner, or email",
+    "COL_OWNER_ACTIVITY": "Owner activity",
+    "NO_FILTER_MATCH": "No tenants match this filter."
   },
   "COURIER_HOME": {
     "TITLE": "Deliveries",
@@ -751,7 +763,11 @@
     "SIGNUP_VERIFY_SUBMIT": "Verify email",
     "SIGNUP_VERIFY_RESEND": "Resend code",
     "SIGNUP_VERIFY_RESENT": "Code sent",
-    "SIGNUP_VERIFY_FAILED": "Could not verify that code. Check it and try again."
+    "SIGNUP_VERIFY_FAILED": "Could not verify that code. Check it and try again.",
+    "CAPTCHA_LABEL": "Security check",
+    "CAPTCHA_PLACEHOLDER": "Enter the characters shown",
+    "CAPTCHA_REFRESH": "New code",
+    "CAPTCHA_REQUIRED": "Complete the security check to continue."
   },
   "PAYWALL": {
     "TITLE": "Choose a plan to continue",
@@ -847,6 +863,9 @@
     "KITCHEN_STATION_LABEL": "Prep station (KDS)",
     "KITCHEN_STATION_NONE": "Use tenant default by category",
     "KITCHEN_STATION_HINT": "Shown on kitchen or bar display by station when your restaurant uses prep stations in Settings.",
+    "EXPECTED_PREP_MINUTES": "Expected prep (minutes)",
+    "EXPECTED_PREP_PLACEHOLDER": "Category default",
+    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings.",
     "AVAILABLE_FROM": "Available from (date)",
     "AVAILABLE_FROM_HINT": "Customer menu shows this product only from this date. Leave empty for no start limit.",
     "AVAILABLE_UNTIL": "Available until (date)",
@@ -963,10 +982,10 @@
     "QUESTION_TYPE_TEXT": "Free text",
     "QUESTION_FIELD_LABEL": "Question (shown to guest)",
     "QUESTION_LABEL_PLACEHOLDER": "e.g. How would you like your steak cooked?",
-    "QUESTION_FIELD_OPTIONS": "Options (one per line)",
+    "QUESTION_FIELD_OPTIONS": "Options (one per line; optional |price)",
     "QUESTION_CHOICE_MULTI": "Allow multiple selections (e.g. several toppings or removals)",
     "QUESTION_BADGE_MULTI": "Multi",
-    "QUESTION_OPTIONS_PLACEHOLDER": "Rare\nMedium\nWell done",
+    "QUESTION_OPTIONS_PLACEHOLDER": "Rare\nMedium\nExtra cheese|1.00",
     "QUESTION_SCALE_MIN": "Minimum",
     "QUESTION_SCALE_MAX": "Maximum",
     "QUESTION_FIELD_REQUIRED": "Required before adding to cart",
@@ -1025,7 +1044,8 @@
     "STOCK_HEADER": "Stock",
     "STOCK_LOW": "Low",
     "STOCK_OK": "OK",
-    "STOCK_BADGE_TITLE": "Stock {{qty}} (alert at {{level}})"
+    "STOCK_BADGE_TITLE": "Stock {{qty}} (alert at {{level}})",
+    "QUESTION_OPTIONS_PRICE_HINT": "One option per line. Optional price delta after a pipe: Label|1.00 (major currency units; use negative for discounts)."
   },
   "CATALOG": {
     "TITLE": "Product Catalog",
@@ -1300,15 +1320,30 @@
     "WAITING": "Waiting",
     "TIMER_SETTINGS": "Timer settings",
     "TIMER_SETTINGS_TITLE": "Wait-time timer",
-    "TIMER_SETTINGS_DESC": "Order card color changes after these minutes (green → yellow → orange → red).",
+    "TIMER_SETTINGS_DESC": "Card colors follow wait time. Choose absolute minutes or % of expected prep; set category expected times below. Without expected prep, absolute 5/10/15 defaults apply.",
     "TIMER_YELLOW_MINUTES": "Yellow after (min)",
     "TIMER_ORANGE_MINUTES": "Orange after (min)",
     "TIMER_RED_MINUTES": "Red after (min)",
+    "TIMER_YELLOW_PERCENT": "Yellow at (% of expected)",
+    "TIMER_ORANGE_PERCENT": "Orange at (% of expected)",
+    "TIMER_RED_PERCENT": "Red at (% of expected)",
+    "SLA_THRESHOLD_MODE": "SLA threshold mode",
+    "SLA_MODE_ABSOLUTE": "Absolute (overdue at expected prep)",
+    "SLA_MODE_PERCENT": "Percent of expected prep",
+    "SLA_TICKET_AGGREGATION": "Multi-item ticket expected prep",
+    "SLA_AGG_MAX_LINE": "Longest line (max)",
+    "SLA_AGG_SUM": "Sum of lines",
+    "SLA_AGG_PRIMARY_CATEGORY": "Primary category (highest)",
+    "EXPECTED_PREP_BY_CATEGORY": "Expected prep by category (minutes)",
     "URGENT": "Urgent",
     "TIMER_BAR_HINT": "Wait time progress toward red threshold",
     "STATION": "Station",
     "ALL_STATIONS": "All stations",
-    "ITEM_COMMENT": "Comment"
+    "ITEM_COMMENT": "Comment",
+    "PLACED": "Placed",
+    "SLA_FRESH": "Fresh",
+    "SLA_WARNING": "At risk",
+    "SLA_OVERDUE": "Overdue"
   },
   "BAR_DISPLAY": {
     "TITLE": "Bar display"
@@ -2534,7 +2569,16 @@
     "NEWSLETTER_SEND_FAIL": "Could not queue the campaign. Check audience, consent, and SMTP.",
     "NEWSLETTER_CANCEL_FAIL": "Could not cancel the campaign.",
     "STRIPE_CRYPTO_ENABLED": "Accept crypto (stablecoins) via Stripe",
-    "STRIPE_CRYPTO_ENABLED_HINT": "Shows Pay with crypto on the public menu and delivery checkout. Enable Stablecoins and Crypto in your Stripe Dashboard first. Settles to your Stripe balance; refunds return stablecoins to the guest wallet."
+    "STRIPE_CRYPTO_ENABLED_HINT": "Shows Pay with crypto on the public menu and delivery checkout. Enable Stablecoins and Crypto in your Stripe Dashboard first. Settles to your Stripe balance; refunds return stablecoins to the guest wallet.",
+    "CAREERS": "Careers / Work with us",
+    "CAREERS_DESC": "Public page for candidates to leave a CV. Applications are encrypted and only visible to the owner.",
+    "CAREERS_ENABLED": "Enable public careers page",
+    "CAREERS_ENABLED_HINT": "When on, guests can open /careers/{id} and submit an application.",
+    "CAREERS_WHY": "Why work here (shown on public page)",
+    "CAREERS_WHY_PLACEHOLDER": "Tell candidates why they should join your team…",
+    "CAREERS_RETENTION": "Retention (days)",
+    "CAREERS_RETENTION_HINT": "Applications auto-delete after this many days (30–730). Default 180.",
+    "CAREERS_PUBLIC_URL": "Public URL path"
   },
   "PAYMENTS": {
     "PAYMENT": "Payment",
@@ -3508,5 +3552,59 @@
     "EMAIL_ERROR": "Please enter a valid email.",
     "INVOICE_SAVED": "Invoice email",
     "THANK_YOU": "Thank you!"
+  },
+  "CAREERS": {
+    "TITLE": "Work with us",
+    "LOADING": "Loading…",
+    "DISABLED": "This restaurant is not accepting applications right now.",
+    "INVALID_TENANT": "Invalid restaurant link.",
+    "TENANT_NOT_FOUND": "Restaurant not found.",
+    "WHY_HEADING": "Why work here",
+    "RETENTION_NOTICE": "Your data is kept for {{days}} days, then deleted automatically. You can apply again later.",
+    "NAME": "Full name",
+    "EMAIL": "Email",
+    "PHONE": "Phone",
+    "MESSAGE": "Short message",
+    "CV": "CV (optional)",
+    "CV_HINT": "PDF or Word, max 5 MB. Stored encrypted.",
+    "SUBMIT": "Submit application",
+    "SUBMITTING": "Submitting…",
+    "SUBMIT_ERROR": "Could not submit. Check your details and try again.",
+    "THANK_YOU": "Thank you",
+    "THANK_YOU_BODY": "We received your application. Data is kept for {{days}} days, then removed. You may apply again after that.",
+    "STAFF_TITLE": "Careers applications",
+    "VIEW_PUBLIC": "Open public page",
+    "COPY_URL": "Copy public URL",
+    "URL_COPIED": "URL copied",
+    "EMPTY": "No applications yet.",
+    "LOAD_ERROR": "Could not load applications.",
+    "STATUS": "Status",
+    "STATUS_NEW": "New",
+    "STATUS_CONTACTED": "Contacted",
+    "STATUS_CLOSED": "Closed",
+    "CREATED": "Submitted",
+    "ACTIONS": "Actions",
+    "DOWNLOAD_CV": "Download CV",
+    "CONFIRM_DELETE": "Delete this application permanently?",
+    "NOTIFY_TITLE": "Open role — email all candidates",
+    "NOTIFY_HINT": "Sends every candidate an email asking them to update their CV if interested.",
+    "ROLE_TITLE": "Role title",
+    "NOTIFY_MESSAGE": "Extra message (optional)",
+    "NOTIFY_ALL": "Email all candidates",
+    "NOTIFYING": "Sending…",
+    "NOTIFY_RESULT": "Sent {sent} of {total} (failed: {failed}).",
+    "NOTIFY_ERROR": "Could not send emails. Check SMTP in Settings.",
+    "SEND_CODE": "Send verification code",
+    "SENDING_CODE": "Sending code…",
+    "VERIFY_HINT": "We will email a six-digit code to confirm your address before storing your application.",
+    "VERIFY_TITLE": "Confirm your email",
+    "VERIFY_SENT": "Enter the six-digit code we sent to {{email}}.",
+    "VERIFY_CODE": "Verification code",
+    "VERIFY_CODE_PLACEHOLDER": "6-digit code",
+    "RESEND_CODE": "Resend code",
+    "CODE_RESENT": "Code sent",
+    "CODE_SEND_ERROR": "Could not send the verification code. Try again.",
+    "CODE_INVALID": "Invalid or expired code. Request a new one.",
+    "DEV_CODE_HINT": "Dev code (SMTP not configured): {{code}}"
   }
 }

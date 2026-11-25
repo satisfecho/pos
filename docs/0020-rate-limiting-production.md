@@ -6,6 +6,7 @@ Rate limiting is implemented per the [ROADMAP](../../ROADMAP.md) (satisfecho/pos
 
 - **Global:** 100 requests/minute per client IP (configurable).
 - **Login** `POST /token`: 5 requests per 15 minutes per IP.
+- **Login CAPTCHA** (self-hosted, #452): after **`LOGIN_CAPTCHA_AFTER_FAILURES`** failed logins for the same client IP (default **3**), further `POST /token` attempts must include a valid `captcha_id` + `captcha_answer` from `GET /captcha/challenge` (SVG text challenge stored in Redis/memory). Additive to rate limits; no third-party provider. Disable with `LOGIN_CAPTCHA_ENABLED=false`.
 - **Register** `POST /register`, `POST /register/provider`: 3 per hour per IP.
 - **Payment** `create-payment-intent`, `confirm-payment`: 10/minute per IP; plus **3 per order per hour** per IP (per-order limit). These sync handlers return **`JSONResponse`** (not a bare `dict`) so SlowAPI can inject rate-limit headers when `headers_enabled` is on (#425). `confirm-payment` reads Stripe metadata via `_stripe_metadata_get` so live `StripeObject` metadata does not 500 (#427).
 - **Public menu & discovery** (unauthenticated): `GET/POST /menu/{table_token}`, `GET /menu/{table_token}/order`, `GET /menu/{table_token}/order-history`, and related public menu endpoints (call-waiter, request-payment, order item update/remove, cancel order); **`GET /public/tenants`**, **`GET /public/legal-urls`**, **`GET /public/tenants/{tenant_id}`**, **`GET /public/tenants/{tenant_id}/reservation-book-zones`**, **`GET /public/table-lookup`**, **`GET /internal/validate-table/{table_token}`** (ws-bridge); **`GET /public/tenants/{tenant_id}/satisfecho-delivery-config`** (public delivery fee/coverage); **`POST /public/tenants/{tenant_id}/satisfecho-delivery`** (public delivery checkout create); **`GET /public/orders/{order_id}/delivery-status`** (token-gated track status; customer `/delivery/{tenantId}/track` may poll this); **`POST /public/webhooks/delivery/{webhook_token}`** (marketplace webhook ingest): **30 requests/minute per IP** (same bucket as `RATE_LIMIT_PUBLIC_MENU_PER_MINUTE`). Aggressive track-page polling shares that IP budget with menu/discovery.
@@ -28,6 +29,9 @@ Rate limiting is implemented per the [ROADMAP](../../ROADMAP.md) (satisfecho/pos
   - `RATE_LIMIT_ENABLED=true` (default)
   - `RATE_LIMIT_GLOBAL_PER_MINUTE=100`
   - `RATE_LIMIT_LOGIN_PER_15MIN=5`
+  - `LOGIN_CAPTCHA_ENABLED=true`
+  - `LOGIN_CAPTCHA_AFTER_FAILURES=3`
+  - `LOGIN_CAPTCHA_TTL_SECONDS=300`
   - `RATE_LIMIT_REGISTER_PER_HOUR=3`
   - `RATE_LIMIT_PAYMENT_PER_MINUTE=10`
   - `RATE_LIMIT_PAYMENT_PER_ORDER_PER_HOUR=3`
@@ -47,5 +51,4 @@ Rate limiting is implemented per the [ROADMAP](../../ROADMAP.md) (satisfecho/pos
 
 ## Not implemented (future)
 
-- CAPTCHA after failed logins.
 - Per-tenant or stricter per-user limits for other authenticated endpoints (e.g. catalog 60/min); global and endpoint-specific limits above cover the roadmap priorities.

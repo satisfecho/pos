@@ -221,6 +221,23 @@ class Settings(BaseSettings):
     rate_limit_login_per_15min: int = Field(
         default=5, validation_alias="RATE_LIMIT_LOGIN_PER_15MIN"
     )
+    # Self-hosted login CAPTCHA after N failed attempts (#452); additive to rate limits
+    login_captcha_enabled: bool = Field(default=True, validation_alias="LOGIN_CAPTCHA_ENABLED")
+    login_captcha_after_failures: int = Field(
+        default=3,
+        validation_alias="LOGIN_CAPTCHA_AFTER_FAILURES",
+        description="Failed POST /token attempts per IP before CAPTCHA is required",
+    )
+    login_captcha_ttl_seconds: int = Field(
+        default=300,
+        validation_alias="LOGIN_CAPTCHA_TTL_SECONDS",
+        description="Challenge lifetime in seconds",
+    )
+    login_captcha_fixed_code: str = Field(
+        default="",
+        validation_alias="LOGIN_CAPTCHA_FIXED_CODE",
+        description="Non-production only: fixed CAPTCHA answer for smoke/pytest",
+    )
     rate_limit_register_per_hour: int = Field(
         default=3, validation_alias="RATE_LIMIT_REGISTER_PER_HOUR"
     )
@@ -258,6 +275,36 @@ class Settings(BaseSettings):
         default=10,
         validation_alias="RATE_LIMIT_WAITING_LIST_PER_HOUR",
         description="Max waiting-list submissions per IP per hour (public form)",
+    )
+    rate_limit_careers_per_hour: int = Field(
+        default=10,
+        validation_alias="RATE_LIMIT_CAREERS_PER_HOUR",
+        description="Max careers application submissions per IP per hour (public form)",
+    )
+    rate_limit_careers_code_per_hour: int = Field(
+        default=5,
+        validation_alias="RATE_LIMIT_CAREERS_CODE_PER_HOUR",
+        description="Max careers verification code requests per IP per hour",
+    )
+    # Optional dedicated Fernet key for careers PII/CV (#447); else derived from SECRET_KEY
+    careers_encryption_key: str = Field(
+        default="",
+        validation_alias="CAREERS_ENCRYPTION_KEY",
+        description="Optional url-safe Fernet key (or any secret) for careers at-rest encryption",
+    )
+    # Careers public apply: 6-digit email confirmation before storing application (#448)
+    careers_verification_expire_minutes: int = Field(
+        default=30,
+        validation_alias="CAREERS_VERIFICATION_EXPIRE_MINUTES",
+    )
+    careers_submit_token_expire_minutes: int = Field(
+        default=15,
+        validation_alias="CAREERS_SUBMIT_TOKEN_EXPIRE_MINUTES",
+    )
+    # Non-production only: force a known 6-digit code for local/smoke tests
+    careers_fixed_code: str = Field(
+        default="",
+        validation_alias="CAREERS_FIXED_CODE",
     )
     rate_limit_password_reset_per_hour: int = Field(
         default=5,
@@ -425,6 +472,8 @@ class Settings(BaseSettings):
             self.rate_limit_guest_feedback_per_hour = 200
             self.rate_limit_loyalty_join_per_hour = 200
             self.rate_limit_waiting_list_per_hour = 200
+            self.rate_limit_careers_per_hour = 200
+            self.rate_limit_careers_code_per_hour = 100
             self.rate_limit_password_reset_per_hour = 100
         return self
 

@@ -1,7 +1,22 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { ApiService, PlatformInfo, PlatformMetrics, PlatformTenantSummary } from '../services/api.service';
+import {
+  ApiService,
+  PlatformInfo,
+  PlatformMetrics,
+  PlatformTenantSummary,
+  PlatformUsageDay,
+} from '../services/api.service';
+
+type TenantSortKey =
+  | 'id'
+  | 'name'
+  | 'owner'
+  | 'owner_logins'
+  | 'owner_last_login'
+  | 'products'
+  | 'created';
 
 @Component({
   selector: 'app-platform-dashboard',
@@ -59,58 +74,153 @@ import { ApiService, PlatformInfo, PlatformMetrics, PlatformTenantSummary } from
           </article>
         </section>
 
+        <section class="platform-section usage-section" data-testid="usage-chart">
+          <h2>{{ 'PLATFORM_DASHBOARD.USAGE_OVER_TIME' | translate }}</h2>
+          @if (usageSeries().length === 0) {
+            <p class="platform-muted">{{ 'PLATFORM_DASHBOARD.USAGE_EMPTY' | translate }}</p>
+          } @else {
+            <div class="usage-legend">
+              <span class="legend-item legend-logins">{{ 'PLATFORM_DASHBOARD.USAGE_LOGINS' | translate }}</span>
+              <span class="legend-item legend-signups">{{ 'PLATFORM_DASHBOARD.USAGE_SIGNUPS' | translate }}</span>
+            </div>
+            <div class="usage-graph-wrap">
+              <svg
+                class="usage-graph"
+                [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+                preserveAspectRatio="xMidYMid meet"
+                role="img"
+                [attr.aria-label]="'PLATFORM_DASHBOARD.USAGE_OVER_TIME' | translate"
+              >
+                <defs>
+                  <linearGradient id="usageLoginsGrad" x1="0" y1="1" x2="0" y2="0">
+                    <stop offset="0%" stop-color="var(--color-primary, #0d9488)" stop-opacity="0.18"/>
+                    <stop offset="100%" stop-color="var(--color-primary, #0d9488)" stop-opacity="0.02"/>
+                  </linearGradient>
+                </defs>
+                @for (tick of usageYLabels(); track tick.y) {
+                  <line
+                    class="usage-grid"
+                    [attr.x1]="chartPad.left"
+                    [attr.x2]="chartWidth - chartPad.right"
+                    [attr.y1]="tick.y"
+                    [attr.y2]="tick.y"
+                  />
+                  <text class="usage-y-label" [attr.x]="chartPad.left - 6" [attr.y]="tick.y + 4" text-anchor="end">
+                    {{ tick.value }}
+                  </text>
+                }
+                @for (tick of usageXLabels(); track tick.date) {
+                  <text class="usage-x-label" [attr.x]="tick.x" [attr.y]="chartHeight - 6" text-anchor="middle">
+                    {{ tick.label }}
+                  </text>
+                }
+                <path [attr.d]="loginsAreaPath()" fill="url(#usageLoginsGrad)" />
+                <polyline [attr.points]="loginsLinePoints()" class="usage-line usage-line-logins" fill="none" />
+                <polyline [attr.points]="signupsLinePoints()" class="usage-line usage-line-signups" fill="none" />
+              </svg>
+            </div>
+          }
+        </section>
+
         <section class="platform-section">
-          <h2>{{ 'PLATFORM_DASHBOARD.ALL_TENANTS' | translate }}</h2>
-          <p class="platform-muted section-hint">{{ 'PLATFORM_DASHBOARD.ALL_TENANTS_HINT' | translate }}</p>
+          <div class="section-head">
+            <div>
+              <h2>{{ 'PLATFORM_DASHBOARD.ALL_TENANTS' | translate }}</h2>
+              <p class="platform-muted section-hint">{{ 'PLATFORM_DASHBOARD.ALL_TENANTS_HINT' | translate }}</p>
+            </div>
+            <label class="tenant-filter">
+              <span class="sr-only">{{ 'PLATFORM_DASHBOARD.FILTER_TENANTS' | translate }}</span>
+              <input
+                type="search"
+                data-testid="tenant-filter"
+                [placeholder]="'PLATFORM_DASHBOARD.FILTER_PLACEHOLDER' | translate"
+                [value]="tenantFilter()"
+                (input)="onFilterInput($event)"
+              />
+            </label>
+          </div>
           @if (tenants().length === 0) {
             <p class="platform-muted">{{ 'PLATFORM_DASHBOARD.NO_TENANTS' | translate }}</p>
+          } @else if (filteredTenants().length === 0) {
+            <p class="platform-muted">{{ 'PLATFORM_DASHBOARD.NO_FILTER_MATCH' | translate }}</p>
           } @else {
             <div class="table-wrap">
-              <table class="platform-table">
+              <table class="platform-table tenants-table">
                 <thead>
                   <tr>
-                    <th>{{ 'PLATFORM_DASHBOARD.COL_ID' | translate }}</th>
-                    <th>{{ 'PLATFORM_DASHBOARD.COL_NAME' | translate }}</th>
-                    <th>{{ 'PLATFORM_DASHBOARD.OWNER_CONTACT' | translate }}</th>
-                    <th>{{ 'PLATFORM_DASHBOARD.COL_OWNER_LOGINS' | translate }}</th>
-                    <th>{{ 'PLATFORM_DASHBOARD.COL_OWNER_LAST_LOGIN' | translate }}</th>
-                    <th>{{ 'PLATFORM_DASHBOARD.COL_PRODUCTS' | translate }}</th>
-                    <th>{{ 'PLATFORM_DASHBOARD.COL_CREATED' | translate }}</th>
-                    <th>{{ 'PLATFORM_DASHBOARD.COL_ACTIONS' | translate }}</th>
+                    <th class="col-id">
+                      <button type="button" class="sort-btn" (click)="toggleSort('id')">
+                        {{ 'PLATFORM_DASHBOARD.COL_ID' | translate }}{{ sortMark('id') }}
+                      </button>
+                    </th>
+                    <th class="col-name">
+                      <button type="button" class="sort-btn" (click)="toggleSort('name')">
+                        {{ 'PLATFORM_DASHBOARD.COL_NAME' | translate }}{{ sortMark('name') }}
+                      </button>
+                    </th>
+                    <th class="col-owner">
+                      <button type="button" class="sort-btn" (click)="toggleSort('owner')">
+                        {{ 'PLATFORM_DASHBOARD.OWNER_CONTACT' | translate }}{{ sortMark('owner') }}
+                      </button>
+                    </th>
+                    <th class="col-activity">
+                      <button type="button" class="sort-btn" (click)="toggleSort('owner_logins')">
+                        {{ 'PLATFORM_DASHBOARD.COL_OWNER_ACTIVITY' | translate }}{{ sortMark('owner_logins') }}
+                      </button>
+                    </th>
+                    <th class="col-products">
+                      <button type="button" class="sort-btn" (click)="toggleSort('products')">
+                        {{ 'PLATFORM_DASHBOARD.COL_PRODUCTS' | translate }}{{ sortMark('products') }}
+                      </button>
+                    </th>
+                    <th class="col-created">
+                      <button type="button" class="sort-btn" (click)="toggleSort('created')">
+                        {{ 'PLATFORM_DASHBOARD.COL_CREATED' | translate }}{{ sortMark('created') }}
+                      </button>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  @for (t of tenants(); track t.id) {
+                  @for (t of filteredTenants(); track t.id) {
                     <tr>
-                      <td>{{ t.id }}</td>
-                      <td>
+                      <td class="col-id">{{ t.id }}</td>
+                      <td class="col-name">
                         <a [routerLink]="['/platform/tenants', t.id]" class="tenant-link">{{ t.name }}</a>
+                        <div class="row-links">
+                          <a
+                            [href]="publicUrl('public-menu', t)"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="action-link"
+                          >
+                            {{ 'PLATFORM_DASHBOARD.LINK_MENU' | translate }}
+                          </a>
+                          <a [routerLink]="['/platform/tenants', t.id]" class="action-link">
+                            {{ 'PLATFORM_DASHBOARD.VIEW_TENANT' | translate }}
+                          </a>
+                        </div>
                       </td>
-                      <td>
+                      <td class="col-owner">
                         @if (t.owner_email) {
-                          <a [href]="'mailto:' + t.owner_email">{{ t.owner_name || t.owner_email }}</a>
+                          <a class="owner-link" [href]="'mailto:' + t.owner_email" [title]="t.owner_email">
+                            {{ t.owner_name || t.owner_email }}
+                          </a>
                         } @else {
                           <span class="platform-muted">{{ 'PLATFORM_DASHBOARD.NO_CONTACT' | translate }}</span>
                         }
                       </td>
-                      <td data-testid="owner-login-count">{{ t.owner_login_count ?? 0 }}</td>
-                      <td data-testid="owner-last-login">
-                        @if (t.owner_last_login_at) {
-                          {{ formatDate(t.owner_last_login_at) }}
-                        } @else {
-                          <span class="platform-muted">—</span>
-                        }
+                      <td class="col-activity" data-testid="owner-login-count">
+                        <span class="activity-count">{{ t.owner_login_count ?? 0 }}</span>
+                        <span class="activity-last" data-testid="owner-last-login">
+                          @if (t.owner_last_login_at) {
+                            {{ formatShortDate(t.owner_last_login_at) }}
+                          } @else {
+                            <span class="platform-muted">—</span>
+                          }
+                        </span>
                       </td>
-                      <td>{{ t.product_count }}</td>
-                      <td>{{ formatDate(t.created_at) }}</td>
-                      <td class="actions-cell">
-                        <a [href]="publicUrl('public-menu', t)" target="_blank" rel="noopener noreferrer" class="action-link">
-                          {{ 'PLATFORM_DASHBOARD.LINK_MENU' | translate }}
-                        </a>
-                        <a [routerLink]="['/platform/tenants', t.id]" class="action-link">
-                          {{ 'PLATFORM_DASHBOARD.VIEW_TENANT' | translate }}
-                        </a>
-                      </td>
+                      <td class="col-products">{{ t.product_count }}</td>
+                      <td class="col-created">{{ formatShortDate(t.created_at) }}</td>
                     </tr>
                   }
                 </tbody>
@@ -125,7 +235,7 @@ import { ApiService, PlatformInfo, PlatformMetrics, PlatformTenantSummary } from
             <p class="platform-muted">{{ 'PLATFORM_DASHBOARD.NO_LOGINS' | translate }}</p>
           } @else {
             <div class="table-wrap">
-              <table class="platform-table">
+              <table class="platform-table recent-logins-table">
                 <thead>
                   <tr>
                     <th>{{ 'PLATFORM_DASHBOARD.COL_TIME' | translate }}</th>
@@ -139,7 +249,7 @@ import { ApiService, PlatformInfo, PlatformMetrics, PlatformTenantSummary } from
                   @for (row of metrics()!.recent_logins; track row.logged_in_at) {
                     <tr>
                       <td>{{ formatDate(row.logged_in_at) }}</td>
-                      <td>{{ row.user_email ?? '—' }}</td>
+                      <td class="cell-ellipsis" [title]="row.user_email || ''">{{ row.user_email ?? '—' }}</td>
                       <td>{{ row.role ?? '—' }}</td>
                       <td>
                         @if (row.tenant_id) {
@@ -167,8 +277,9 @@ import { ApiService, PlatformInfo, PlatformMetrics, PlatformTenantSummary } from
       padding: var(--space-6);
       background: var(--color-bg);
       color: var(--color-text);
-      max-width: 1200px;
+      max-width: 1120px;
       margin: 0 auto;
+      box-sizing: border-box;
     }
     .platform-header {
       display: flex;
@@ -188,7 +299,7 @@ import { ApiService, PlatformInfo, PlatformMetrics, PlatformTenantSummary } from
     }
     .metrics-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: var(--space-4);
       margin-bottom: var(--space-8);
     }
@@ -207,8 +318,69 @@ import { ApiService, PlatformInfo, PlatformMetrics, PlatformTenantSummary } from
     .metric-value { font-size: 2rem; font-weight: 600; margin: 0; }
     .metric-value-sm { font-size: 1.125rem; line-height: 1.35; word-break: break-word; }
     .platform-section { margin-bottom: var(--space-8); }
-    .platform-section h2 { font-size: 1.125rem; margin-bottom: var(--space-2); }
-    .section-hint { margin: 0 0 var(--space-3); font-size: 0.875rem; }
+    .platform-section h2 { font-size: 1.125rem; margin: 0 0 var(--space-2); }
+    .section-hint { margin: 0; font-size: 0.875rem; }
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+    .tenant-filter input {
+      min-width: min(100%, 260px);
+      padding: 0.45rem 0.7rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-surface);
+      color: var(--color-text);
+      font-size: 0.875rem;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+    .usage-legend {
+      display: flex;
+      gap: var(--space-4);
+      margin-bottom: var(--space-2);
+      font-size: 0.8125rem;
+      color: var(--color-text-muted);
+    }
+    .legend-item::before {
+      content: '';
+      display: inline-block;
+      width: 0.75rem;
+      height: 0.2rem;
+      margin-right: 0.4rem;
+      vertical-align: middle;
+      border-radius: 999px;
+    }
+    .legend-logins::before { background: var(--color-primary, #0d9488); }
+    .legend-signups::before { background: var(--color-warning, #d97706); }
+    .usage-graph-wrap {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3) var(--space-2) var(--space-2);
+      box-shadow: var(--shadow-sm);
+    }
+    .usage-graph { width: 100%; height: auto; display: block; }
+    .usage-grid { stroke: var(--color-border); stroke-width: 1; }
+    .usage-y-label,
+    .usage-x-label {
+      fill: var(--color-text-muted);
+      font-size: 10px;
+    }
+    .usage-line { stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+    .usage-line-logins { stroke: var(--color-primary, #0d9488); }
+    .usage-line-signups { stroke: var(--color-warning, #d97706); stroke-dasharray: 4 3; }
     .table-wrap { overflow-x: auto; }
     .platform-table {
       width: 100%;
@@ -216,22 +388,62 @@ import { ApiService, PlatformInfo, PlatformMetrics, PlatformTenantSummary } from
       background: var(--color-surface);
       border-radius: var(--radius-md);
       overflow: hidden;
+      table-layout: fixed;
     }
     .platform-table th,
     .platform-table td {
-      padding: var(--space-3) var(--space-4);
+      padding: 0.55rem 0.65rem;
       text-align: left;
       border-bottom: 1px solid var(--color-border);
-      font-size: 0.875rem;
+      font-size: 0.8125rem;
       vertical-align: top;
     }
-    .platform-table th { background: var(--color-bg); font-weight: 500; white-space: nowrap; }
-    .tenant-link { font-weight: 500; }
-    .actions-cell { white-space: nowrap; }
-    .action-link {
+    .platform-table th { background: var(--color-bg); font-weight: 500; }
+    .sort-btn {
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      font-weight: 500;
+      padding: 0;
+      cursor: pointer;
+      text-align: left;
+    }
+    .sort-btn:hover { text-decoration: underline; }
+    .tenants-table .col-id { width: 3.25rem; }
+    .tenants-table .col-name { width: 28%; }
+    .tenants-table .col-owner { width: 24%; }
+    .tenants-table .col-activity { width: 7.5rem; }
+    .tenants-table .col-products { width: 5.5rem; }
+    .tenants-table .col-created { width: 6.25rem; }
+    .tenant-link {
+      font-weight: 500;
       display: inline-block;
-      margin-right: var(--space-3);
-      font-size: 0.8125rem;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 0.75rem;
+      margin-top: 0.2rem;
+    }
+    .action-link { font-size: 0.75rem; }
+    .owner-link {
+      display: inline-block;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .activity-count { display: block; font-weight: 600; }
+    .activity-last { display: block; color: var(--color-text-muted); font-size: 0.75rem; }
+    .cell-ellipsis {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .platform-muted { color: var(--color-text-muted); }
     .platform-error { color: var(--color-error); }
@@ -246,6 +458,33 @@ export class PlatformDashboardComponent implements OnInit {
   tenants = signal<PlatformTenantSummary[]>([]);
   loading = signal(true);
   error = signal('');
+  tenantFilter = signal('');
+  sortKey = signal<TenantSortKey>('created');
+  sortDir = signal<'asc' | 'desc'>('desc');
+
+  readonly chartPad = { left: 36, right: 10, top: 12, bottom: 28 };
+  readonly chartWidth = 640;
+  readonly chartHeight = 200;
+
+  usageSeries = computed<PlatformUsageDay[]>(() => this.metrics()?.usage_last_30_days ?? []);
+
+  filteredTenants = computed(() => {
+    const q = this.tenantFilter().trim().toLowerCase();
+    let rows = [...this.tenants()];
+    if (q) {
+      rows = rows.filter((t) => {
+        const hay = [String(t.id), t.name, t.owner_name, t.owner_email, t.city]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+        return hay.includes(q);
+      });
+    }
+    const key = this.sortKey();
+    const dir = this.sortDir() === 'asc' ? 1 : -1;
+    rows.sort((a, b) => dir * this.compareTenants(a, b, key));
+    return rows;
+  });
 
   ngOnInit(): void {
     let metricsDone = false;
@@ -282,11 +521,142 @@ export class PlatformDashboardComponent implements OnInit {
     });
   }
 
+  onFilterInput(event: Event): void {
+    const value = (event.target as HTMLInputElement | null)?.value ?? '';
+    this.tenantFilter.set(value);
+  }
+
+  toggleSort(key: TenantSortKey): void {
+    if (this.sortKey() === key) {
+      this.sortDir.set(this.sortDir() === 'asc' ? 'desc' : 'asc');
+      return;
+    }
+    this.sortKey.set(key);
+    this.sortDir.set(key === 'name' || key === 'owner' ? 'asc' : 'desc');
+  }
+
+  sortMark(key: TenantSortKey): string {
+    if (this.sortKey() !== key) return '';
+    return this.sortDir() === 'asc' ? ' ↑' : ' ↓';
+  }
+
+  private compareTenants(a: PlatformTenantSummary, b: PlatformTenantSummary, key: TenantSortKey): number {
+    switch (key) {
+      case 'id':
+        return a.id - b.id;
+      case 'name':
+        return a.name.localeCompare(b.name);
+      case 'owner':
+        return (a.owner_name || a.owner_email || '').localeCompare(b.owner_name || b.owner_email || '');
+      case 'owner_logins':
+        return (a.owner_login_count ?? 0) - (b.owner_login_count ?? 0);
+      case 'owner_last_login':
+        return this.ts(a.owner_last_login_at) - this.ts(b.owner_last_login_at);
+      case 'products':
+        return a.product_count - b.product_count;
+      case 'created':
+      default:
+        return this.ts(a.created_at) - this.ts(b.created_at);
+    }
+  }
+
+  private ts(value?: string | null): number {
+    if (!value) return 0;
+    const n = Date.parse(value);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  private usageMax(): number {
+    const series = this.usageSeries();
+    return Math.max(1, ...series.map((d) => Math.max(d.logins, d.signups)));
+  }
+
+  private seriesPoints(getter: (d: PlatformUsageDay) => number): string {
+    const series = this.usageSeries();
+    if (!series.length) return '';
+    const max = this.usageMax();
+    const w = this.chartWidth - this.chartPad.left - this.chartPad.right;
+    const h = this.chartHeight - this.chartPad.top - this.chartPad.bottom;
+    return series
+      .map((d, i) => {
+        const x = this.chartPad.left + (i / (series.length - 1 || 1)) * w;
+        const y = this.chartPad.top + h - (getter(d) / max) * h;
+        return `${x},${y}`;
+      })
+      .join(' ');
+  }
+
+  loginsLinePoints(): string {
+    return this.seriesPoints((d) => d.logins);
+  }
+
+  signupsLinePoints(): string {
+    return this.seriesPoints((d) => d.signups);
+  }
+
+  loginsAreaPath(): string {
+    const series = this.usageSeries();
+    if (!series.length) return '';
+    const points = this.loginsLinePoints().split(' ');
+    const w = this.chartWidth - this.chartPad.left - this.chartPad.right;
+    const h = this.chartHeight - this.chartPad.top - this.chartPad.bottom;
+    const baseY = this.chartPad.top + h;
+    const firstX = this.chartPad.left;
+    const lastX = this.chartPad.left + w;
+    return `M ${firstX},${baseY} L ${points.join(' L ')} L ${lastX},${baseY} Z`;
+  }
+
+  usageYLabels(): { value: number; y: number }[] {
+    const max = this.usageMax();
+    const h = this.chartHeight - this.chartPad.top - this.chartPad.bottom;
+    return [
+      { value: max, y: this.chartPad.top },
+      { value: Math.round(max / 2), y: this.chartPad.top + h / 2 },
+      { value: 0, y: this.chartPad.top + h },
+    ];
+  }
+
+  usageXLabels(): { date: string; label: string; x: number }[] {
+    const series = this.usageSeries();
+    if (!series.length) return [];
+    const w = this.chartWidth - this.chartPad.left - this.chartPad.right;
+    const indices =
+      series.length === 1 ? [0] : [0, Math.floor((series.length - 1) / 2), series.length - 1];
+    return indices.map((i) => ({
+      date: series[i].date,
+      label: this.formatAxisDate(series[i].date),
+      x: this.chartPad.left + (i / (series.length - 1 || 1)) * w,
+    }));
+  }
+
   formatDate(iso: string): string {
     try {
       return new Date(iso).toLocaleString();
     } catch {
       return iso;
+    }
+  }
+
+  formatShortDate(iso: string): string {
+    try {
+      return new Date(iso).toLocaleDateString(undefined, {
+        year: '2-digit',
+        month: 'short',
+        day: 'numeric',
+      });
+    } catch {
+      return iso;
+    }
+  }
+
+  formatAxisDate(isoDate: string): string {
+    try {
+      return new Date(`${isoDate}T00:00:00Z`).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+      });
+    } catch {
+      return isoDate;
     }
   }
 

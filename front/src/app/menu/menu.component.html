@@ -207,7 +207,7 @@
                 <span class="item-comment">{{ item.notes }}</span>
                 }
               </div>
-              <span class="item-price">{{ formatPrice(item.product.price_cents * item.quantity) }}</span>
+              <span class="item-price">{{ formatPrice(getCartLineUnitPriceCents(item) * item.quantity) }}</span>
               @if (item.status) {
               <span class="item-status-label" [class]="'status-' + item.status">
                 {{ getItemStatusLabel(item.status) }}
@@ -542,7 +542,7 @@
             @if (item.notes?.trim()) {
             <span class="cart-item-comment">{{ item.notes }}</span>
             }
-            <span class="cart-item-price">{{ formatPrice(item.product.price_cents * item.quantity) }}</span>
+            <span class="cart-item-price">{{ formatPrice(getCartLineUnitPriceCents(item) * item.quantity) }}</span>
           </div>
           <div class="cart-item-controls">
             @if (isMyCartItem(item)) {
@@ -815,20 +815,20 @@
           <label class="question-label">{{ q.label }}{{ q.required ? ' *' : '' }}</label>
           @if (isMultiChoiceQuestion(q)) {
           <div class="question-multi-choices">
-            @for (opt of getChoiceOptions(q); track opt) {
+            @for (opt of getChoiceOptionEntries(q); track opt.label) {
             <label class="question-check-row">
-              <input type="checkbox" [checked]="isMultiOptionChecked(q.id, opt)"
-                (change)="toggleMultiChoiceAnswer(q.id, opt, $any($event.target).checked)" />
-              <span>{{ opt }}</span>
+              <input type="checkbox" [checked]="isMultiOptionChecked(q.id, opt.label)"
+                (change)="toggleMultiChoiceAnswer(q.id, opt.label, $any($event.target).checked)" />
+              <span>{{ formatChoiceOptionLabel(opt) }}</span>
             </label>
             }
           </div>
-          } @else if (isChoiceSingleSelect(q) && isChoiceOptionsArray(q)) {
+          } @else if (isChoiceSingleSelect(q)) {
           <select class="question-select" [value]="customizationAnswersForm()[q.id]"
             (change)="setCustomizationAnswer(q.id, $any($event.target).value)">
             <option value="">{{ 'COMMON.SELECT' | translate }}</option>
-            @for (opt of getChoiceOptions(q); track opt) {
-            <option [value]="opt">{{ opt }}</option>
+            @for (opt of getChoiceOptionEntries(q); track opt.label) {
+            <option [value]="opt.label">{{ formatChoiceOptionLabel(opt) }}</option>
             }
           </select>
           } @else if (q.type === 'scale' && q.options && typeof q.options === 'object' && 'min' in q.options && 'max' in q.options) {

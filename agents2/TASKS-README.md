@@ -24,6 +24,7 @@ The **`<YYYYMMDD>`** segment (8 digits after the issue number) is used to place 
 | **untested** | Implementation done; **Testing instructions** appended; waiting for tester. |
 | **testing**  | Tester is running verification. |
 | **closed**   | Verified; ready for closing reviewer to archive. |
+| **rejected** | Parked **FEAT** waiting for human with no reply for **N** days (default **30**); archived under **`done/`**. |
 
 ## Flow
 
@@ -31,9 +32,10 @@ The **`<YYYYMMDD>`** segment (8 digits after the issue number) is used to place 
   new   ─┐
          ├─→  wip  →  untested  →  testing  →  closed  →  done/YYYY/MM/DD/
   feat  ─┘
+           └─→ (waiting for human, no reply ≥30d) → rejected → done/YYYY/MM/DD/
 ```
 
-Do not skip statuses. On test failure: **testing → wip** (coder fixes), then **wip → untested** again when ready.
+Do not skip statuses on the happy path. On test failure: **testing → wip** (coder fixes), then **wip → untested** again when ready.
 
 ## Archiving closed tasks (`done/` layout)
 
@@ -54,7 +56,7 @@ agents2/tasks/done/<YYYY>/<MM>/<DD>/<same-filename>.md
 ./scripts/move-agent-task-to-done.sh agents2/tasks/CLOSED-1234-20260323-1200-example-slug.md
 ```
 
-The script creates **`done/YYYY/MM/DD`** if needed and moves the file. It only accepts **`CLOSED-`** filenames.
+The script creates **`done/YYYY/MM/DD`** if needed and moves the file. It accepts **`CLOSED-`** and **`REJECTED-`** filenames.
 
 See **`agents2/tasks/done/README.md`** for a short index of the archive tree.
 
@@ -75,5 +77,6 @@ Some **FEAT-** tasks are **parked** until product or design decisions land on Gi
 | First blocked pass | Feature coder **010** | Post **one** waiting comment on the linked issue; add `**Waiting notice posted:** <UTC ISO>` under **## Status** in the task file. Leave task as **FEAT** (no **WIP**). |
 | Later loop cycles | Orchestrator **006** preflight | **`scripts/agent-feat-waiting-human-preflight.sh`** skips **010** when the waiting notice is set and no non-agent reply appeared on the issue after that time. |
 | Human decides | Human on GitHub | Reply on the issue with decisions. Preflight unblocks **010** on the next cycle. |
+| No reply ≥ **30** days | Orchestrator **006b** | **`scripts/agent-feat-stale-waiting-reject.sh`** renames to **`REJECTED-…`**, archives under **`done/YYYY/MM/DD/`**, comments on the issue, and closes it as **not planned** (override: **`AGENT_FEAT_STALE_CLOSE_ISSUE=0`**). Days: **`AGENT_FEAT_WAITING_REJECT_DAYS`** (default **30**). Disable: **`AGENT_FEAT_STALE_REJECT=0`**. |
 
 Override preflight (debug only): **`AGENT_FEAT_REVIEWER_ALWAYS=1`** or **`AGENT_006_SKIP_PREFLIGHT=1`** in **`agents2/pos-cursor-loop.sh`**.

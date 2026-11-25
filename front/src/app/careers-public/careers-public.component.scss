@@ -1,0 +1,65 @@
+.careers-card {
+  margin-top: 1.5rem;
+}
+
+.careers-why {
+  margin-bottom: 1.25rem;
+
+  h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.15rem;
+  }
+}
+
+.careers-why-text {
+  white-space: pre-wrap;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.careers-retention-notice {
+  margin: 0 0 1.25rem;
+  font-size: 0.92rem;
+  opacity: 0.9;
+}
+
+.careers-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-weight: 600;
+  }
+
+  input,
+  textarea {
+    font: inherit;
+    font-weight: 400;
+    padding: 0.55rem 0.65rem;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    border-radius: 6px;
+  }
+}
+
+.field-hint {
+  font-weight: 400;
+  opacity: 0.75;
+}
+
+.careers-verify-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+  margin-top: 0.35rem;
+}
+
+.hero-tagline {
+  margin: 0.35rem 0 0;
+  font-size: 1.05rem;
+  opacity: 0.95;
+}

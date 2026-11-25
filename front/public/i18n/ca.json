@@ -94,7 +94,9 @@
     "UNMAPPED_CSV_COLUMNS": "La IA no ha pogut mapar aquestes columnes CSV: {{columns}}. Canvieu-ne el nom o elimineu-les i torneu-ho a provar.",
     "CUSTOMER_PASSWORD_TOO_SHORT": "La contrasenya ha de tenir com a mínim {{min_length}} caràcters.",
     "CUSTOMER_VERIFICATION_INVALID": "Enllaç de verificació de correu no vàlid o desconegut.",
-    "CUSTOMER_VERIFICATION_EXPIRED": "Aquest enllaç de verificació ha caducat. Sol·liciteu-ne un de nou."
+    "CUSTOMER_VERIFICATION_EXPIRED": "Aquest enllaç de verificació ha caducat. Sol·liciteu-ne un de nou.",
+    "CAPTCHA_REQUIRED": "Completeu la comprovació de seguretat abans d'iniciar la sessió.",
+    "CAPTCHA_INVALID": "La comprovació de seguretat ha fallat. Proveu un codi nou."
   },
   "NAV": {
     "HOME": "Inici",
@@ -128,7 +130,8 @@
     "WAREHOUSES": "Magatzems",
     "TALK": "Parlar",
     "GROUP_CATALOG_TOGGLE": "Expandeix o contrau Catàleg i inventari",
-    "CUSTOMER_DISPLAY": "Pantalla del client"
+    "CUSTOMER_DISPLAY": "Pantalla del client",
+    "CAREERS": "Feina"
   },
   "PUBLIC_GUEST_NAV": {
     "ARIA": "Pàgines del restaurant",
@@ -137,7 +140,8 @@
     "WAITLIST": "Llista d'espera",
     "DELIVERY": "Entrega",
     "LOYALTY": "Fidelització",
-    "FEEDBACK": "Opinió"
+    "FEEDBACK": "Opinió",
+    "CAREERS": "Feina"
   },
   "STAFF_FLOW": {
     "TOOLBAR_ARIA": "Navegació de personal",
@@ -572,7 +576,15 @@
     "COL_OWNER_LOGINS": "Inicis del propietari",
     "COL_OWNER_LAST_LOGIN": "Darrer inici del propietari",
     "COL_LOGIN_COUNT": "Inicis de sessió",
-    "COL_LAST_LOGIN": "Darrer inici"
+    "COL_LAST_LOGIN": "Darrer inici",
+    "USAGE_OVER_TIME": "Us al llarg del temps (30 dies)",
+    "USAGE_LOGINS": "Inicis de sessió",
+    "USAGE_SIGNUPS": "Altes",
+    "USAGE_EMPTY": "No hi ha dades d'ús en els darrers 30 dies.",
+    "FILTER_TENANTS": "Filtrar inquilins",
+    "FILTER_PLACEHOLDER": "Cerca per nom, propietari o correu",
+    "COL_OWNER_ACTIVITY": "Activitat del propietari",
+    "NO_FILTER_MATCH": "Cap inquilí no coincideix amb aquest filtre."
   },
   "COURIER_HOME": {
     "TITLE": "Entregues",
@@ -717,7 +729,11 @@
     "SIGNUP_VERIFY_SUBMIT": "Verifica el correu",
     "SIGNUP_VERIFY_RESEND": "Reenvia el codi",
     "SIGNUP_VERIFY_RESENT": "Codi enviat",
-    "SIGNUP_VERIFY_FAILED": "No s'ha pogut verificar el codi. Comprova'l i torna-ho a provar."
+    "SIGNUP_VERIFY_FAILED": "No s'ha pogut verificar el codi. Comprova'l i torna-ho a provar.",
+    "CAPTCHA_LABEL": "Comprovació de seguretat",
+    "CAPTCHA_PLACEHOLDER": "Introduïu els caràcters mostrats",
+    "CAPTCHA_REFRESH": "Codi nou",
+    "CAPTCHA_REQUIRED": "Completeu la comprovació de seguretat per continuar."
   },
   "PAYWALL": {
     "TITLE": "Tria un pla per continuar",
@@ -929,10 +945,10 @@
     "QUESTION_TYPE_TEXT": "Text lliure",
     "QUESTION_FIELD_LABEL": "Pregunta (visible al client)",
     "QUESTION_LABEL_PLACEHOLDER": "p. ex. Punt de la carn?",
-    "QUESTION_FIELD_OPTIONS": "Opcions (una per línia)",
+    "QUESTION_FIELD_OPTIONS": "Opcions (una per línia; |preu opcional)",
     "QUESTION_CHOICE_MULTI": "Permet diverses seleccions (p. ex. diversos ingredients)",
     "QUESTION_BADGE_MULTI": "Múltiple",
-    "QUESTION_OPTIONS_PLACEHOLDER": "Poc fet\nAl punt\nMolt fet",
+    "QUESTION_OPTIONS_PLACEHOLDER": "Poc fet\nAl punt\nFormatge extra|1.00",
     "QUESTION_SCALE_MIN": "Mínim",
     "QUESTION_SCALE_MAX": "Màxim",
     "QUESTION_FIELD_REQUIRED": "Obligatoria abans d’afegir a la cistella",
@@ -991,7 +1007,11 @@
     "STOCK_HEADER": "Estoc",
     "STOCK_LOW": "Baix",
     "STOCK_OK": "OK",
-    "STOCK_BADGE_TITLE": "Estoc {{qty}} (alerta a {{level}})"
+    "STOCK_BADGE_TITLE": "Estoc {{qty}} (alerta a {{level}})",
+    "QUESTION_OPTIONS_PRICE_HINT": "Una opció per línia. Preu opcional després d'una barra: Etiqueta|1.00 (unitats majors; negatiu per descomptes).",
+    "EXPECTED_PREP_MINUTES": "Preparació esperada (minuts)",
+    "EXPECTED_PREP_PLACEHOLDER": "Valor de categoria",
+    "EXPECTED_PREP_HINT": "Opcional per als rellotges SLA de cuina. Buit usa el valor de categoria als ajustos del temporitzador."
   },
   "CATALOG": {
     "TITLE": "Catàleg de productes",
@@ -1274,7 +1294,22 @@
     "TIMER_BAR_HINT": "Progrés del temps d'espera fins al llindar vermell",
     "STATION": "Estació",
     "ALL_STATIONS": "Totes les estacions",
-    "ITEM_COMMENT": "Comentari"
+    "ITEM_COMMENT": "Comentari",
+    "PLACED": "Comanda",
+    "SLA_FRESH": "Fresc",
+    "SLA_WARNING": "En risc",
+    "SLA_OVERDUE": "Endarrerit",
+    "TIMER_YELLOW_PERCENT": "Groc a (% de l’esperat)",
+    "TIMER_ORANGE_PERCENT": "Taronja a (% de l’esperat)",
+    "TIMER_RED_PERCENT": "Vermell a (% de l’esperat)",
+    "SLA_THRESHOLD_MODE": "Mode de llindar SLA",
+    "SLA_MODE_ABSOLUTE": "Absolut (vencut al temps esperat)",
+    "SLA_MODE_PERCENT": "Percentatge del temps esperat",
+    "SLA_TICKET_AGGREGATION": "Temps esperat amb diversos ítems",
+    "SLA_AGG_MAX_LINE": "Línia més llarga (màx)",
+    "SLA_AGG_SUM": "Suma de línies",
+    "SLA_AGG_PRIMARY_CATEGORY": "Categoria principal (més alta)",
+    "EXPECTED_PREP_BY_CATEGORY": "Preparació esperada per categoria (minuts)"
   },
   "BAR_DISPLAY": {
     "TITLE": "Pantalla bar"
@@ -2500,7 +2535,16 @@
     "NEWSLETTER_SEND_FAIL": "No s’ha pogut posar la campanya a la cua. Reviseu audiència, consentiment i SMTP.",
     "NEWSLETTER_CANCEL_FAIL": "No s’ha pogut cancel·lar la campanya.",
     "STRIPE_CRYPTO_ENABLED": "Acceptar cripto (stablecoins) via Stripe",
-    "STRIPE_CRYPTO_ENABLED_HINT": "Mostra Pagar amb cripto al menú públic i al checkout de delivery. Activa Stablecoins and Crypto al Dashboard de Stripe primer. Es liquida al teu saldo Stripe; els reemborsaments tornen com a stablecoins a la cartera del client."
+    "STRIPE_CRYPTO_ENABLED_HINT": "Mostra Pagar amb cripto al menú públic i al checkout de delivery. Activa Stablecoins and Crypto al Dashboard de Stripe primer. Es liquida al teu saldo Stripe; els reemborsaments tornen com a stablecoins a la cartera del client.",
+    "CAREERS": "Feina / Treballa amb nosaltres",
+    "CAREERS_DESC": "Pàgina pública per deixar el CV. Les candidatures van xifrades i només les ve el propietari.",
+    "CAREERS_ENABLED": "Activar pàgina pública de feina",
+    "CAREERS_ENABLED_HINT": "Si està actiu, els candidats poden obrir /careers/{id} i enviar una candidatura.",
+    "CAREERS_WHY": "Per què treballar aquí (pàgina pública)",
+    "CAREERS_WHY_PLACEHOLDER": "Explica per què unir-se al teu equip…",
+    "CAREERS_RETENTION": "Retenció (dies)",
+    "CAREERS_RETENTION_HINT": "Les candidatures s'esborren soles després d'aquests dies (30–730). Per defecte 180.",
+    "CAREERS_PUBLIC_URL": "Ruta URL pública"
   },
   "PAYMENTS": {
     "PAYMENT": "Pagament",
@@ -3508,5 +3552,59 @@
     "EMAIL_ERROR": "Introduïu un correu vàlid.",
     "INVOICE_SAVED": "Correu de factura",
     "THANK_YOU": "Gràcies!"
+  },
+  "CAREERS": {
+    "TITLE": "Treballa amb nosaltres",
+    "LOADING": "Carregant…",
+    "DISABLED": "Aquest restaurant no accepta candidatures ara.",
+    "INVALID_TENANT": "Enllaç de restaurant no vàlid.",
+    "TENANT_NOT_FOUND": "Restaurant no trobat.",
+    "WHY_HEADING": "Per què treballar aquí",
+    "RETENTION_NOTICE": "Les teves dades es guarden {{days}} dies i després s'esborren automàticament. Pots tornar a presentar-te més tard.",
+    "NAME": "Nom complet",
+    "EMAIL": "Correu electrònic",
+    "PHONE": "Telèfon",
+    "MESSAGE": "Missatge breu",
+    "CV": "CV (opcional)",
+    "CV_HINT": "PDF o Word, màx. 5 MB. Es desa xifrat.",
+    "SUBMIT": "Enviar candidatura",
+    "SUBMITTING": "Enviant…",
+    "SUBMIT_ERROR": "No s'ha pogut enviar. Revisa les dades i torna-ho a provar.",
+    "THANK_YOU": "Gràcies",
+    "THANK_YOU_BODY": "Hem rebut la teva candidatura. Les dades es conserven {{days}} dies i després s'eliminen. Pots tornar a aplicar després.",
+    "STAFF_TITLE": "Candidatures",
+    "VIEW_PUBLIC": "Obrir pàgina pública",
+    "COPY_URL": "Copiar URL pública",
+    "URL_COPIED": "URL copiada",
+    "EMPTY": "Encara no hi ha candidatures.",
+    "LOAD_ERROR": "No s'han pogut carregar les candidatures.",
+    "STATUS": "Estat",
+    "STATUS_NEW": "Nova",
+    "STATUS_CONTACTED": "Contactada",
+    "STATUS_CLOSED": "Tancada",
+    "CREATED": "Enviada",
+    "ACTIONS": "Accions",
+    "DOWNLOAD_CV": "Descarregar CV",
+    "CONFIRM_DELETE": "Eliminar aquesta candidatura de forma permanent?",
+    "NOTIFY_TITLE": "Plaça oberta — enviar correu a tothom",
+    "NOTIFY_HINT": "Envia a tots els candidats un correu demanant actualitzar el CV si els interessa.",
+    "ROLE_TITLE": "Lloc de treball",
+    "NOTIFY_MESSAGE": "Missatge extra (opcional)",
+    "NOTIFY_ALL": "Correu a tots els candidats",
+    "NOTIFYING": "Enviant…",
+    "NOTIFY_RESULT": "Enviats {sent} de {total} (fallits: {failed}).",
+    "NOTIFY_ERROR": "No s'han pogut enviar correus. Revisa SMTP a Configuració.",
+    "SEND_CODE": "Enviar codi de verificació",
+    "SENDING_CODE": "Enviant codi…",
+    "VERIFY_HINT": "T'enviarem un codi de sis dígits per confirmar el correu abans de desar la sol·licitud.",
+    "VERIFY_TITLE": "Confirma el correu",
+    "VERIFY_SENT": "Introdueix el codi de sis dígits que hem enviat a {{email}}.",
+    "VERIFY_CODE": "Codi de verificació",
+    "VERIFY_CODE_PLACEHOLDER": "Codi de 6 dígits",
+    "RESEND_CODE": "Reenviar codi",
+    "CODE_RESENT": "Codi enviat",
+    "CODE_SEND_ERROR": "No s'ha pogut enviar el codi. Torna-ho a provar.",
+    "CODE_INVALID": "Codi invàlid o caducat. Demana'n un de nou.",
+    "DEV_CODE_HINT": "Codi de desenvolupament (SMTP no configurat): {{code}}"
   }
 }

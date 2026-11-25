@@ -59,7 +59,10 @@ async function main() {
 
   try {
     console.log('1. Logging in...');
-    await page.goto(new URL('/login', baseUrl).href, { waitUntil: 'networkidle2', timeout: 15000 });
+    const loginPath = process.env.LOGIN_TENANT_ID
+      ? `/login?tenant=${encodeURIComponent(process.env.LOGIN_TENANT_ID)}`
+      : '/login?tenant=1';
+    await page.goto(new URL(loginPath, baseUrl).href, { waitUntil: 'networkidle2', timeout: 15000 });
     await page.type('input[type="email"]', loginEmail);
     await page.type('input[type="password"]', loginPassword);
     await page.click('button[type="submit"]');
@@ -92,7 +95,27 @@ async function main() {
     }
     console.log('   Timer settings button found:', btnText.trim());
 
-    console.log('4. Checking for order cards and Waiting timer...');
+    console.log('3b. Opening Timer settings modal (SLA mode / aggregation / category prep)...');
+    await timerSettingsBtn.click();
+    await sleep(800);
+    const modeSelect = await page.$('[data-testid="kitchen-sla-mode"]');
+    const aggSelect = await page.$('[data-testid="kitchen-sla-aggregation"]');
+    if (!modeSelect || !aggSelect) {
+      console.error('FAIL: SLA mode/aggregation controls missing in timer settings modal.');
+      process.exit(1);
+    }
+    const prepStarter = await page.$('[data-testid="kitchen-prep-Starters"]');
+    if (!prepStarter) {
+      console.error('FAIL: Category expected-prep input for Starters missing.');
+      process.exit(1);
+    }
+    console.log('   SLA mode, aggregation, and category prep fields present.');
+    // Close modal via Cancel if present
+    const cancelBtn = await page.$('.timer-settings-modal .btn-secondary');
+    if (cancelBtn) await cancelBtn.click();
+    await sleep(300);
+
+    console.log('4. Checking for order cards, Waiting timer, placed clock, SLA badge...');
     const orderCards = await page.$$('.order-card');
     if (orderCards.length > 0) {
       const waitingCount = await page.$$eval('.order-waiting', (els) => els.length);
@@ -106,6 +129,17 @@ async function main() {
         process.exit(1);
       }
       console.log('   Found', waitingCount, 'Waiting timer(s) on order cards.');
+      const placedCount = await page.$$eval('[data-testid="kitchen-order-placed"]', (els) => els.length);
+      if (placedCount === 0) {
+        console.error('FAIL: No placed-clock element ([data-testid=kitchen-order-placed]).');
+        process.exit(1);
+      }
+      const slaCount = await page.$$eval('[data-testid="kitchen-sla-badge"]', (els) => els.length);
+      if (slaCount === 0) {
+        console.error('FAIL: No SLA badge ([data-testid=kitchen-sla-badge]).');
+        process.exit(1);
+      }
+      console.log('   Found', placedCount, 'placed clock(s) and', slaCount, 'SLA badge(s).');
     } else {
       console.log('   No order cards (empty state) – timer only appears on cards. OK.');
     }

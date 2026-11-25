@@ -1,0 +1,114 @@
+<app-sidebar>
+  <div class="page-header">
+    <h1>{{ 'CAREERS.STAFF_TITLE' | translate }}</h1>
+    <div class="page-header-actions">
+      @if (tenantId != null) {
+        <a
+          [routerLink]="['/careers', tenantId]"
+          target="_blank"
+          rel="noopener"
+          class="btn btn-ghost btn-sm"
+          data-testid="careers-view-public"
+        >
+          {{ 'CAREERS.VIEW_PUBLIC' | translate }}
+        </a>
+        <button type="button" class="btn btn-secondary btn-sm" (click)="copyPublicUrl()">
+          {{ 'CAREERS.COPY_URL' | translate }}
+        </button>
+      }
+      <button type="button" class="btn btn-ghost btn-sm" (click)="load()">
+        {{ 'ORDERS.REFRESH' | translate }}
+      </button>
+    </div>
+  </div>
+
+  @if (urlCopied()) {
+    <p class="careers-copied" role="status">{{ 'CAREERS.URL_COPIED' | translate }}</p>
+  }
+
+  <section class="careers-notify card-block" data-testid="careers-notify">
+    <h2>{{ 'CAREERS.NOTIFY_TITLE' | translate }}</h2>
+    <p class="hint">{{ 'CAREERS.NOTIFY_HINT' | translate }}</p>
+    <label>
+      {{ 'CAREERS.ROLE_TITLE' | translate }}
+      <input type="text" [(ngModel)]="notifyRole" name="notifyRole" maxlength="200" />
+    </label>
+    <label>
+      {{ 'CAREERS.NOTIFY_MESSAGE' | translate }}
+      <textarea [(ngModel)]="notifyMessage" name="notifyMessage" rows="3" maxlength="4000"></textarea>
+    </label>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="notifyAll()"
+      [disabled]="!notifyRole.trim() || notifying()"
+      data-testid="careers-notify-all"
+    >
+      {{ notifying() ? ('CAREERS.NOTIFYING' | translate) : ('CAREERS.NOTIFY_ALL' | translate) }}
+    </button>
+    @if (notifyResult()) {
+      <p class="notify-result" role="status">{{ notifyResult() }}</p>
+    }
+  </section>
+
+  @if (loading()) {
+    <p>{{ 'CAREERS.LOADING' | translate }}</p>
+  } @else if (error()) {
+    <p class="form-error">{{ error() }}</p>
+  } @else if (!items().length) {
+    <p data-testid="careers-empty">{{ 'CAREERS.EMPTY' | translate }}</p>
+  } @else {
+    <div class="careers-table-wrap" data-testid="careers-list">
+      <table class="careers-table">
+        <thead>
+          <tr>
+            <th>{{ 'CAREERS.NAME' | translate }}</th>
+            <th>{{ 'CAREERS.EMAIL' | translate }}</th>
+            <th>{{ 'CAREERS.PHONE' | translate }}</th>
+            <th>{{ 'CAREERS.STATUS' | translate }}</th>
+            <th>{{ 'CAREERS.CREATED' | translate }}</th>
+            <th>{{ 'CAREERS.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of items(); track row.id) {
+            <tr>
+              <td>
+                <strong>{{ row.name }}</strong>
+                @if (row.message) {
+                  <div class="msg">{{ row.message }}</div>
+                }
+              </td>
+              <td>
+                <a [href]="'mailto:' + row.email">{{ row.email }}</a>
+              </td>
+              <td>{{ row.phone }}</td>
+              <td>
+                <select
+                  [ngModel]="row.status"
+                  (ngModelChange)="setStatus(row, $event)"
+                  [name]="'status-' + row.id"
+                >
+                  <option value="new">{{ 'CAREERS.STATUS_NEW' | translate }}</option>
+                  <option value="contacted">{{ 'CAREERS.STATUS_CONTACTED' | translate }}</option>
+                  <option value="closed">{{ 'CAREERS.STATUS_CLOSED' | translate }}</option>
+                </select>
+              </td>
+              <td>{{ row.created_at | date: 'short' }}</td>
+              <td class="actions">
+                @if (row.has_cv) {
+                  <button type="button" class="btn btn-ghost btn-sm" (click)="downloadCv(row)">
+                    {{ 'CAREERS.DOWNLOAD_CV' | translate }}
+                  </button>
+                }
+                <button type="button" class="btn btn-ghost btn-sm" (click)="deleteRow(row)">
+                  {{ 'COMMON.DELETE' | translate }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</app-sidebar>

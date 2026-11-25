@@ -51,14 +51,49 @@ async function main() {
     console.log('OK: platform operator login and dashboard');
     console.log('OK: login metrics visible (total, last, 24h, 7d)');
 
+    await page.waitForSelector('[data-testid="usage-chart"]', { timeout: 10000 });
+    const usageTitle = await page.$eval('[data-testid="usage-chart"] h2', (el) => el.textContent?.trim() || '');
+    if (!usageTitle || usageTitle.includes('PLATFORM_DASHBOARD.')) {
+      throw new Error(`Usage chart title missing or untranslated: ${usageTitle}`);
+    }
+    console.log(`OK: usage chart visible (${usageTitle})`);
+
     await page.waitForSelector('a.tenant-link', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="tenant-filter"]', { timeout: 5000 });
     const ownerLoginCell = await page.$('[data-testid="owner-login-count"]');
     if (!ownerLoginCell) throw new Error('Missing owner login count column in All tenants table');
-    const ownerLoginText = await ownerLoginCell.evaluate((el) => el.textContent?.trim() || '');
+    const ownerLoginText = await ownerLoginCell.evaluate((el) => {
+      const count = el.querySelector('.activity-count');
+      return (count?.textContent || el.textContent || '').trim();
+    });
     if (!/^\d+$/.test(ownerLoginText)) {
       throw new Error(`Owner login count should be a number, got: ${ownerLoginText}`);
     }
     console.log(`OK: All tenants shows owner login count (${ownerLoginText})`);
+
+    const firstName = await page.$eval('a.tenant-link', (el) => el.textContent?.trim() || '');
+    if (firstName) {
+      const needle = firstName.slice(0, Math.min(8, firstName.length));
+      await page.focus('[data-testid="tenant-filter"]');
+      await page.$eval('[data-testid="tenant-filter"]', (el) => {
+        el.value = '';
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      await page.type('[data-testid="tenant-filter"]', needle);
+      await page.waitForFunction(
+        (name) => {
+          const links = [...document.querySelectorAll('a.tenant-link')];
+          return links.length >= 1 && links.every((a) => (a.textContent || '').toLowerCase().includes(name.slice(0, 3).toLowerCase()));
+        },
+        { timeout: 5000 },
+        firstName,
+      );
+      console.log(`OK: tenant filter narrows list for "${firstName}"`);
+      await page.$eval('[data-testid="tenant-filter"]', (el) => {
+        el.value = '';
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    }
 
     await page.click('a.tenant-link');
     await page.waitForFunction(

@@ -13,12 +13,22 @@ The **kitchen display** is a dedicated full-screen view for the kitchen: large, 
 
 ## Features
 
-- **Full-screen layout** - No sidebar; header with title, “Back to orders” link, sound toggle, and last-refresh time.
-- **Large order cards** - Order #, table name, customer (if any), relative order time; list of items with quantity, name, notes, and item status (pending / preparing / ready / delivered).
-- **Read-only (order-level)** - No order-status change controls on the card header; order-level updates stay on the main Orders page (`/orders`). Item status can still be advanced on kitchen/bar when the user has `order:item_status`.
+- **Full-screen layout** - No sidebar; header with title, “Back to orders” link, sound toggle, fullscreen, timer settings, and last-refresh time.
+- **Large order cards** - Order #, table name, customer (if any), **clear placed clock** (HH:MM plus relative age), live **Waiting** timer (mm:ss), list of items with quantity, name, notes, and item status (pending / preparing / ready / delivered).
+- **Age / SLA visuals (#450 / #53)** - Each card uses a left-border color and progress bar from elapsed wait time: green → yellow → orange → red. An **SLA badge** shows Fresh / At risk / Overdue. Tenant thresholds default to 5 / 10 / 15 minutes and are editable via **Timer settings** (`GET`/`PUT /tenant/kitchen-display-settings`). Safe defaults apply when unset.
+- **Category / product expected prep (#450 slice 3)** - Owners set expected prep minutes per category (and optional per-product override on Products). Timer settings choose:
+  - **SLA mode:** `absolute` (overdue at ticket expected prep; yellow/orange from absolute minutes) or `percent_of_expected` (bands as % of expected).
+  - **Multi-item aggregation** (default **max line**): also `sum` or `primary_category`.
+  - When no expected prep is configured for a ticket’s lines, flat 5/10/15 absolute minutes still apply.
+- **Priority / urgent** - Cards with `staff_urgent` sort first and show an Urgent badge. Users with `order:update_status` can mark or clear urgent on the kitchen/bar card (same API as `/orders`).
+- **Read-only (order-level status)** - Order-level status still changes on `/orders`. Item status can be advanced on kitchen/bar when the user has `order:item_status`.
 - **Active orders only** - Shows orders whose status is one of: `pending`, `preparing`, `ready`, `partially_delivered`, `paid` - and that still have at least one visible line in `pending` / `preparing` / `ready`. Not shown: `out_for_delivery`, `completed`, `cancelled` (and any other terminal statuses).
-- **Auto-refresh** - Polling every 15 seconds plus live updates via WebSocket when order data changes.
+- **Auto-refresh** - Polling every 15 seconds plus live updates via WebSocket when order data changes. Waiting timer ticks every second.
 - **Optional sound** - Toggle “Sound on” / “Sound off”. When on, a short double beep plays on WebSocket events `new_order` and `items_added`. Preference is stored in `localStorage` (`kitchen-display-sound`).
+
+### Still open (follow-up)
+
+- Finer station tags beyond current kitchen/bar routes are already partly covered by Settings → Kitchen stations; more station types remain optional.
 
 ## Satisfecho Delivery on kitchen / bar
 

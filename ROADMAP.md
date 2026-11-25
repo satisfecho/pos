@@ -27,7 +27,7 @@ Core POS plus Jul-Oct 2026 product slices (through **2026-10-22**). Evidence: `C
 
 | Area | Notes |
 |------|--------|
-| Orders & kitchen | Lifecycle, soft-delete, comments, customizations ([#50](https://github.com/satisfecho/pos/issues/50)), kitchen display - `docs/0008`, `docs/0015`, `docs/0031` |
+| Orders & kitchen | Lifecycle, soft-delete, comments, customizations + price deltas ([#50](https://github.com/satisfecho/pos/issues/50), [#451](https://github.com/satisfecho/pos/issues/451)), kitchen display - `docs/0008`, `docs/0015`, `docs/0031` |
 | Dine-in QR cart & history | Shared live draft cart for the same table QR ([#349](https://github.com/satisfecho/pos/issues/349)); session- or customer-scoped order history ([#350](https://github.com/satisfecho/pos/issues/350)) - `docs/0008`, `docs/0009` |
 | Customer-facing counter display | Public `/display/{table_token}` live order summary (items, discounts, totals, payment labels, optional invoice email); staff opens from Orders ([#434](https://github.com/satisfecho/pos/issues/434)) - `docs/0078` |
 | Payments | Stripe; immediate-payment setting; split bill by amount + by line ([#318](https://github.com/satisfecho/pos/issues/318), [#331](https://github.com/satisfecho/pos/issues/331)) - `docs/0071` |
@@ -47,7 +47,7 @@ Core POS plus Jul-Oct 2026 product slices (through **2026-10-22**). Evidence: `C
 | SaaS / platform | Signup paywall; `/pricing` with **QR Menu - free forever** + optional support tier ([#358](https://github.com/satisfecho/pos/issues/358)); `/about`; platform portal owner/staff login counts ([#315](https://github.com/satisfecho/pos/issues/315)) - `docs/0052`, `docs/0059` |
 | Staff UX | Tenant ID in sidebar header ([#357](https://github.com/satisfecho/pos/issues/357)) |
 | Docs onboarding | README "Start with one feature" (QR menu or reservations only) ([#355](https://github.com/satisfecho/pos/issues/355)) |
-| Security | Rate limiting (Redis/slowapi) - `docs/0020`; CAPTCHA still deferred |
+| Security | Rate limiting (Redis/slowapi) + self-hosted login CAPTCHA after failed attempts (#452) - `docs/0020` |
 | Talk to POS | Staff voice/text **navigation** demo at `/talk` ([#344](https://github.com/satisfecho/pos/issues/344)) - no LLM / no mutations - `docs/0076` |
 | Other | Provider portal, reports, i18n, table PIN, deploy - `docs/0014`, `docs/0016`, `docs/0012`, `docs/0009`, `docs/0004` |
 
@@ -58,12 +58,10 @@ Core POS plus Jul-Oct 2026 product slices (through **2026-10-22**). Evidence: `C
 | Item | Status | Tracking |
 |------|--------|----------|
 | **#52 remaining slices** | Partial - see table in `docs/0032` | Transfers/WMS, deeper offline (SW write queue), more migration entities, Uber Eats |
-| **#53 Kitchen SLAs / stations** | Not started | Age gradients, category SLAs, station views - `docs/0015`, issue [#53](https://github.com/satisfecho/pos/issues/53) |
+| **#53 Kitchen SLAs / stations** | Shipped (#450) | Placed clock, SLA badge, age colors, urgent toggle, stations, category/product expected prep (absolute vs %, aggregation) - `docs/0015`, issue [#53](https://github.com/satisfecho/pos/issues/53) / [#450](https://github.com/satisfecho/pos/issues/450) |
 | **#54 Post-visit campaigns** | Partial: guest feedback + Google review link shipped; newsletter compose/send MVP shipped (#435); trigger-based SMS/email automation still open | [#54](https://github.com/satisfecho/pos/issues/54); `docs/0079` |
 | **TSE live / VeriFactu live** | Adapters wired (Fiskaly SIGN ES / SIGN DE + mock/generic); staff anulación UI + multi-rate IVA shipped (#431); live gated on unlock + credentials - prod certs still ops. Gap list: `docs/0065` | `docs/0074`, `docs/0072`, `docs/0065`; [#342](https://github.com/satisfecho/pos/issues/342), [#431](https://github.com/satisfecho/pos/issues/431) |
 | **Wallet pass issuance (Loyalty Club)** | Issuance + push wired (#343); needs live Apple/Google certs in env for production | `docs/0066`; [#343](https://github.com/satisfecho/pos/issues/343) |
-| **Order customizations price deltas** | Core customizations shipped; priced modifiers optional | [#50](https://github.com/satisfecho/pos/issues/50), `docs/0031` |
-
 Open issues: [github.com/satisfecho/pos/issues](https://github.com/satisfecho/pos/issues).
 
 ---
@@ -75,7 +73,6 @@ Open issues: [github.com/satisfecho/pos/issues](https://github.com/satisfecho/po
 | **Customer MFA / self-serve invoices** | After #340 account slice | MFA, tax invoices, auto-link public menu/delivery orders to logged-in customer - `docs/0002` |
 | **Order management Phase 4** | Advanced ops | Batch status, audit history, post-payment mods - `docs/0007` |
 | **Strict immediate payment** | Product choice | Modal can still be dismissed today |
-| **CAPTCHA after failed login** | Nice-to-have on top of rate limits | Listed in `docs/0020` |
 | **Aggregator delivery (Uber Eats, etc.)** | Distinct from Satisfecho Delivery | Under #52 |
 | **Warehouse transfers / full WMS** | Beyond multi-warehouse MVP | Under #52 |
 | **True offline card capture / offline fiscal** | Hardware & compliance | Intent-only deferred card (#333) shipped; PAN/CVV and offline fiscal numbering remain blocked - `docs/0063` |

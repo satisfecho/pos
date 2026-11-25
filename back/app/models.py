@@ -206,6 +206,11 @@ class Tenant(SQLModel, table=True):
         default=None
     )  # JSON array of allowed postal codes, e.g. ["28001","28002"]
 
+    # Public careers / "Trabaja con nosotros" (#447); default off
+    careers_enabled: bool = Field(default=False)
+    careers_why_text: str | None = Field(default=None)  # Owner-editable "why work here"
+    careers_retention_days: int = Field(default=180)  # Auto-delete applications after N days
+
     # Public feedback page: optional "Write a review" link (Google Business Profile / Maps)
     public_google_review_url: str | None = Field(default=None, max_length=2048)
     # Public pages: optional Google Maps place or directions URL (Share link from Maps)
@@ -220,6 +225,15 @@ class Tenant(SQLModel, table=True):
     kitchen_display_timer_yellow_minutes: int | None = Field(default=5)
     kitchen_display_timer_orange_minutes: int | None = Field(default=10)
     kitchen_display_timer_red_minutes: int | None = Field(default=15)
+    # Kitchen SLA (#450): absolute vs % of expected; multi-item ticket aggregation
+    kitchen_sla_threshold_mode: str = Field(default="absolute", max_length=32)
+    kitchen_sla_ticket_aggregation: str = Field(default="max_line", max_length=32)
+    kitchen_display_timer_yellow_percent: int = Field(default=70)
+    kitchen_display_timer_orange_percent: int = Field(default=90)
+    kitchen_display_timer_red_percent: int = Field(default=100)
+    kitchen_expected_prep_by_category: dict | None = Field(
+        default=None, sa_column=Column(PgJSON, nullable=True)
+    )
 
     # POS checkout: up to 4 tip percentages (e.g. 5,10,15,20); empty list disables tips; null = legacy default in API
     tip_preset_percents: list | None = Field(default=None, sa_column=Column(PgJSON, nullable=True))
@@ -507,6 +521,14 @@ class PlatformLoginSummary(SQLModel):
     user_email: str | None = None
 
 
+class PlatformUsageDay(SQLModel):
+    """One UTC calendar day of platform usage (logins + tenant sign-ups)."""
+
+    date: str  # YYYY-MM-DD
+    logins: int = 0
+    signups: int = 0
+
+
 class PlatformMetricsResponse(SQLModel):
     tenant_count: int
     signups_last_30_days: int
@@ -516,6 +538,7 @@ class PlatformMetricsResponse(SQLModel):
     last_login_at: datetime | None = None
     recent_tenants: list[PlatformTenantSummary]
     recent_logins: list[PlatformLoginSummary]
+    usage_last_30_days: list[PlatformUsageDay] = []
 
 
 class TenantMixin(SQLModel):
@@ -572,6 +595,8 @@ class Product(TenantMixin, table=True):
     kitchen_station_id: int | None = Field(
         default=None, foreign_key="kitchen_station.id", index=True
     )
+    # Optional expected prep minutes for kitchen SLA (#450); null = use category default
+    expected_prep_minutes: int | None = Field(default=None)
     # Sellable-unit stock alert (Products UI; separate from inventory ingredient reorder)
     stock_alert_enabled: bool = Field(default=False)
     stock_qty: int = Field(default=0)
@@ -942,6 +967,58 @@ class GuestFeedback(TenantMixin, table=True):
     reservation_id: int | None = Field(default=None, foreign_key="reservation.id")
     client_ip: str | None = Field(default=None, max_length=45)
     client_user_agent: str | None = Field(default=None, max_length=512)
+
+
+class CareerApplicationStatus(str, Enum):
+    new = "new"
+    contacted = "contacted"
+    closed = "closed"
+
+
+class CareerApplication(TenantMixin, table=True):
+    """Encrypted careers / CV application from public Trabaja con nosotros (#447)."""
+
+    __tablename__ = "career_application"
+    id: int | None = Field(default=None, primary_key=True)
+    status: CareerApplicationStatus = Field(
+        default=CareerApplicationStatus.new, index=True
+    )
+    # Fernet ciphertext of JSON: name, email, phone, message, optional cv_original_name
+    pii_encrypted: str = Field(sa_column=Column(Text, nullable=False))
+    # Encrypted file on disk: uploads/{tenant_id}/careers/{cv_stored_filename}
+    cv_stored_filename: str | None = Field(default=None, max_length=255)
+    cv_content_type: str | None = Field(default=None, max_length=128)
+    expires_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), nullable=False, index=True)
+    )
+    client_ip: str | None = Field(default=None, max_length=45)
+    client_user_agent: str | None = Field(default=None, max_length=512)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class CareerEmailChallenge(TenantMixin, table=True):
+    """Short-lived email verification before careers application persist (#448)."""
+
+    __tablename__ = "career_email_challenge"
+    id: int | None = Field(default=None, primary_key=True)
+    email: str = Field(max_length=320, index=True)
+    code_hash: str = Field(max_length=64)
+    sent_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
+    expires_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), nullable=False, index=True)
+    )
+    verified_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    submit_token_hash: str | None = Field(default=None, max_length=64, index=True)
+    submit_token_expires_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    client_ip: str | None = Field(default=None, max_length=45)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class PricePromotion(TenantMixin, table=True):
@@ -1445,6 +1522,7 @@ class ProductUpdate(SQLModel):
     available_from: date | None = None
     available_until: date | None = None
     kitchen_station_id: int | None = None  # null = clear mapping
+    expected_prep_minutes: int | None = None  # null = clear override (use category)
     stock_alert_enabled: bool | None = None
     stock_qty: int | None = None
     stock_alert_level: int | None = None
@@ -1979,6 +2057,11 @@ class TenantUpdate(SQLModel):
     guest_birthday_marketing_enabled: bool | None = None
     guest_birthday_consent_text: str | None = None
 
+    # Public careers / Trabaja con nosotros (#447)
+    careers_enabled: bool | None = None
+    careers_why_text: str | None = None
+    careers_retention_days: int | None = None
+
     # Satisfecho Delivery fee + coverage
     delivery_fee_cents: int | None = None
     delivery_radius_meters: int | None = None
@@ -1996,6 +2079,12 @@ class TenantUpdate(SQLModel):
     kitchen_display_timer_yellow_minutes: int | None = None
     kitchen_display_timer_orange_minutes: int | None = None
     kitchen_display_timer_red_minutes: int | None = None
+    kitchen_sla_threshold_mode: str | None = None
+    kitchen_sla_ticket_aggregation: str | None = None
+    kitchen_display_timer_yellow_percent: int | None = None
+    kitchen_display_timer_orange_percent: int | None = None
+    kitchen_display_timer_red_percent: int | None = None
+    kitchen_expected_prep_by_category: dict | None = None
 
     # Staff UI: show/hide sidebar, dashboard tiles, and routes per module
     ui_modules: dict[str, bool] | None = None

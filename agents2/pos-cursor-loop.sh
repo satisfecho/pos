@@ -29,6 +29,7 @@ ENH_REVIEW_FILE="${SCRIPTDIR}/008-enhancement-reviewer/time-of-last-review.txt"
 ENH_PREFLIGHT="${REPO_ROOT}/scripts/enhancement-reviewer-preflight.sh"
 UPSTREAM_PREFLIGHT="${REPO_ROOT}/scripts/upstream-repos-preflight.sh"
 FEAT_PREFLIGHT="${REPO_ROOT}/scripts/agent-feat-waiting-human-preflight.sh"
+FEAT_STALE_REJECT="${REPO_ROOT}/scripts/agent-feat-stale-waiting-reject.sh"
 
 cd "$SCRIPTDIR" || exit 1
 
@@ -423,8 +424,16 @@ sync_repo() {
     return 0
   fi
   echo "-----> git sync development $(date "+%Y-%m-%d %H:%M:%S") <----"
-  if ! bash "${REPO_ROOT}/scripts/git-sync-development.sh"; then
-    echo "ERROR: git sync failed (conflicts, network, or missing origin/development). Resolve and retry." >&2
+  local sync_rc=0
+  set +e
+  bash "${REPO_ROOT}/scripts/git-sync-development.sh"
+  sync_rc=$?
+  set -e
+  if ((sync_rc != 0)); then
+    echo "ERROR: git sync failed exit=${sync_rc} (conflicts, network, or missing origin/development). Resolve and retry." >&2
+    if ((sync_rc == 2)); then
+      echo "ERROR: unmerged / conflict state — stamp tmp/agent-git-sync-blocked.txt; watchdog escalates after AGENT_GIT_SYNC_BLOCK_ALERT_MINUTES (default 30)." >&2
+    fi
     return 1
   fi
 }
@@ -1049,12 +1058,40 @@ run_step() {
   return 0
 }
 
+# Archive FEAT tasks waiting for human with no reply for AGENT_FEAT_WAITING_REJECT_DAYS (default 30).
+step_feat_stale_reject() {
+  if [[ "${AGENT_FEAT_STALE_REJECT:-1}" == "0" ]]; then
+    echo "----- feat stale-reject (skip: AGENT_FEAT_STALE_REJECT=0)"
+    return 0
+  fi
+  if [[ ! -x "$FEAT_STALE_REJECT" ]]; then
+    echo "----- feat stale-reject (skip: missing $FEAT_STALE_REJECT)" >&2
+    return 0
+  fi
+  # Only sync when a waiting FEAT exists (cheap glob); reject script is a no-op otherwise.
+  shopt -s nullglob
+  local waiting=()
+  waiting=("$TASKDIR"/FEAT-*.md)
+  shopt -u nullglob
+  if ((${#waiting[@]} == 0)); then
+    echo "----- feat stale-reject (skip: no FEAT-*.md)"
+    return 0
+  fi
+  if ! sync_repo; then
+    echo "----- feat stale-reject (skip: git sync failed)" >&2
+    return 1
+  fi
+  echo "-----> feat stale-reject $(date "+%Y-%m-%d %H:%M:%S") <----"
+  POS_REPO_ROOT="$REPO_ROOT" AGENT_GH_REPO="$GH_REPO" bash "$FEAT_STALE_REJECT" || true
+}
+
 run_full_cycle() {
   echo "$(date)"
   run_step "001 log reviewer" step_log_reviewer
   run_step "005 marketing repos" step_marketing_repos
   run_step "008 enhancement reviewer" step_enhancement_reviewer
   run_step "011 upstream monitor" step_upstream_monitor
+  run_step "006b feat stale-reject" step_feat_stale_reject
   local i=0
   local has_feat has_actionable_feat
   while (( i < 5 )); do
@@ -1102,6 +1139,7 @@ Usage: $(basename "$0") [COMMAND]
     enhancement, enhance, 008  Enhancement reviewer (weekly docs/demo/queue sweep → FEAT-0 / NEW-0)
     upstream, 011            Upstream monitor (URY, FloCafe, OrderRestro, TastyIgniter → POS issues)
     feat, feature   Feature coder (FEAT-*.md in agents2/tasks/)
+    feat-stale-reject, stale-reject, 006b  Reject waiting FEATs with no human reply ≥ AGENT_FEAT_WAITING_REJECT_DAYS
     coder           Coder (NEW-*.md or WIP-*.md; prompt agents2/002-coder/CODER.md)
     handoff, 012    Feature-coder handoff (WIP-*.md → verify complete → UNTESTED-*.md)
     tester          Tester (UNTESTED-*.md or in-progress TESTING-*.md)
@@ -1143,6 +1181,9 @@ Environment:
   AGENT_008_SKIP_PREFLIGHT         If 1, always invoke 008 (legacy always-run).
   AGENT_FEAT_REVIEWER_ALWAYS       If 1, always invoke 006 feature coder (skip waiting-human preflight).
   AGENT_006_SKIP_PREFLIGHT         If 1, same as AGENT_FEAT_REVIEWER_ALWAYS for 006 (legacy always-run).
+  AGENT_FEAT_STALE_REJECT          If 0, skip auto-reject of waiting FEATs (default: 1).
+  AGENT_FEAT_WAITING_REJECT_DAYS   Days after Waiting notice with no human reply before REJECTED (default: 30).
+  AGENT_FEAT_STALE_CLOSE_ISSUE     If 0, leave GitHub issue open when auto-rejecting (default: 1 closes as not planned).
   On timeout the loop continues (exit 124); TESTING-/WIP- tasks are retried on the next cycle.
 
 Docker / app stack: start separately from repo root with ./run.sh -dev
@@ -1164,6 +1205,7 @@ if [[ -n "${1:-}" ]]; then
     enhancement | enhance | 008) step_enhancement_reviewer ;;
     upstream | 011) step_upstream_monitor ;;
     feat | feature) step_feat ;;
+    feat-stale-reject | stale-reject | 006b) step_feat_stale_reject ;;
     coder) step_coder ;;
     handoff | 012 | feature-handoff) step_feature_coder_handoff ;;
     tester) step_tester ;;

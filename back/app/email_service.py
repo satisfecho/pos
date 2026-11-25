@@ -345,6 +345,57 @@ async def send_customer_verification_email(
     return await send_email(to_email, subject, html_content, text_content)
 
 
+async def send_careers_verification_email(
+    to_email: str,
+    code: str,
+    *,
+    tenant: Optional["Tenant"] = None,
+    lang: str = "en",
+) -> bool:
+    """Send careers apply 6-digit confirmation code (tenant SMTP when configured)."""
+    subject = get_message("email_careers_verify_subject", lang)
+    heading = get_message("email_careers_verify_heading", lang)
+    venue = (tenant.name if tenant else "") or "Restaurant"
+    intro = get_message("email_careers_verify_intro", lang, restaurant_name=venue)
+    code_label = get_message("email_careers_verify_code_label", lang)
+    disclaimer = get_message("email_careers_verify_disclaimer", lang)
+    automated = get_message("email_careers_verify_automated_footer", lang)
+    safe_code = html.escape(code)
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .code {{ font-size: 32px; letter-spacing: 0.35em; font-weight: bold; text-align: center; margin: 24px 0; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>{html.escape(heading)}</h1>
+            <p>{html.escape(intro)}</p>
+            <p>{html.escape(code_label)}</p>
+            <p class="code">{safe_code}</p>
+            <p>{html.escape(disclaimer)}</p>
+            <hr>
+            <p style="color: #666; font-size: 12px;">{html.escape(automated)}</p>
+        </div>
+    </body>
+    </html>
+    """
+    text_content = f"""{heading}
+
+{intro}
+
+{code_label}: {code}
+
+{disclaimer}
+"""
+    return await send_email(to_email, subject, html_content, text_content, tenant=tenant)
+
+
 async def send_owner_signup_verification_email(
     to_email: str,
     code: str,

@@ -25,7 +25,7 @@ from uuid import uuid4
 from PIL import Image
 import redis
 import stripe
-from fastapi import BackgroundTasks, Body, Depends, FastAPI, HTTPException, UploadFile, File, status, Query, Request
+from fastapi import BackgroundTasks, Body, Depends, FastAPI, Form, HTTPException, UploadFile, File, status, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response, StreamingResponse
 from fastapi.security import OAuth2PasswordRequestForm
@@ -61,6 +61,7 @@ from .delivery_integration_routes import (
 )
 from .social_routes import router as social_router
 from .newsletter_routes import router as newsletter_router, public_router as newsletter_public_router
+from .careers_routes import router as careers_router, public_router as careers_public_router
 from .print_routes import staff_router as print_staff_router, agent_router as print_agent_router
 from .customer_routes import router as customer_router
 from .work_session_serialization import serialize_work_session, work_session_net_duration_minutes
@@ -131,8 +132,10 @@ from .line_modifiers import (
     validate_and_normalize_line_modifiers,
 )
 from .product_customization import (
+    MAX_ABS_PRICE_DELTA_CENTS,
     choice_options_is_multi,
     customization_dicts_equal,
+    parse_choice_option_entry,
     validate_and_normalize_customization_answers,
 )
 from .order_notes import normalize_order_note, order_notes_equal
@@ -156,6 +159,7 @@ from .rate_limits import (
     rate_limit_redis_url,
     register_rate_limit_exception_handler,
 )
+from . import login_captcha
 
 # Configure logging
 logging.basicConfig(
@@ -616,6 +620,17 @@ def deny_public_staff_contract_uploads(tenant_id: int, filename: str):
     )
 
 
+@app.get("/uploads/{tenant_id}/careers/{filename}", include_in_schema=False)
+def deny_public_careers_uploads(tenant_id: int, filename: str):
+    """Encrypted CV blobs are owner-only via GET /tenant/careers/applications/{id}/cv (#447)."""
+    if "/" in filename or "\\" in filename or filename.startswith("."):
+        raise HTTPException(status_code=404, detail="Invalid filename")
+    raise HTTPException(
+        status_code=403,
+        detail="Career application files are not available at this URL",
+    )
+
+
 # Mount static files for serving images (fallback for any other uploads paths)
 app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
@@ -645,6 +660,8 @@ app.include_router(delivery_public_router, tags=["Delivery integrations"])
 app.include_router(social_router, prefix="/tenant", tags=["Marketing — social"])
 app.include_router(newsletter_router, prefix="/tenant", tags=["Marketing — newsletter"])
 app.include_router(newsletter_public_router, tags=["Marketing — newsletter"])
+app.include_router(careers_router, prefix="/tenant", tags=["Careers"])
+app.include_router(careers_public_router, tags=["Careers"])
 app.include_router(
     staff_contract_template_router,
     prefix="/staff-contract-templates",
@@ -920,6 +937,10 @@ class TenantSummary(_BaseModel):
     guest_birthday_capture_enabled: bool = True
     guest_birthday_marketing_enabled: bool = False
     guest_birthday_consent_text: str | None = None
+    # Public careers / Trabaja con nosotros (#447)
+    careers_enabled: bool = False
+    careers_why_text: str | None = None
+    careers_retention_days: int = 180
 
 
 TAKE_AWAY_TABLE_NAMES = ("take away", "home ordering", "takeaway", "take-away")
@@ -1215,6 +1236,13 @@ def _tenant_to_summary(t: models.Tenant, session: Session) -> TenantSummary:
             getattr(t, "guest_birthday_marketing_enabled", False)
         ),
         guest_birthday_consent_text=getattr(t, "guest_birthday_consent_text", None),
+        careers_enabled=bool(getattr(t, "careers_enabled", False)),
+        careers_why_text=(getattr(t, "careers_why_text", None) or None)
+        if bool(getattr(t, "careers_enabled", False))
+        else None,
+        careers_retention_days=int(getattr(t, "careers_retention_days", 180) or 180)
+        if bool(getattr(t, "careers_enabled", False))
+        else 180,
     )
 
 
@@ -1316,6 +1344,9 @@ def get_public_tenant(
         "guest_birthday_capture_enabled": summary.guest_birthday_capture_enabled,
         "guest_birthday_marketing_enabled": summary.guest_birthday_marketing_enabled,
         "guest_birthday_consent_text": summary.guest_birthday_consent_text,
+        "careers_enabled": summary.careers_enabled,
+        "careers_why_text": summary.careers_why_text,
+        "careers_retention_days": summary.careers_retention_days,
     }
     return JSONResponse(content=body)
 
@@ -3074,16 +3105,40 @@ def _record_login_event(session: Session, user: models.User, scope: str | None) 
     inactive_tenant_svc.clear_inactivity_warning_on_login(session, user)
 
 
+@app.get("/captcha/challenge")
+@limiter.limit("30/minute")
+def get_login_captcha_challenge(request: Request, response: Response) -> dict:
+    """Self-hosted SVG CAPTCHA challenge for login (#452). No third-party provider."""
+    if not login_captcha.is_enabled():
+        raise HTTPException(status_code=404, detail="CAPTCHA disabled")
+    return login_captcha.create_challenge()
+
+
 @app.post("/token")
 @limiter.limit(f"{getattr(settings, 'rate_limit_login_per_15min', 5)}/15 minutes")
 def login_for_access_token(
     request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    captcha_id: Annotated[str | None, Form()] = None,
+    captcha_answer: Annotated[str | None, Form()] = None,
     tenant_id: int | None = Query(None, description="Optional tenant id from tenant picker"),
     scope: str | None = Query(None, description="Login scope: 'provider' for provider portal, 'courier' for courier portal, 'platform' for platform operator"),
     lang: str = Depends(_get_requested_language),
     session: Session = Depends(get_session),
 ) -> dict:
+    client_key = login_captcha.client_key_from_request(request)
+    if login_captcha.requires_captcha(client_key):
+        if not login_captcha.verify_and_consume(captcha_id, captcha_answer):
+            code = "captcha_invalid" if (captcha_id or captcha_answer) else "captcha_required"
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={
+                    "detail": api_error_payload(code, lang),
+                    "require_captcha": True,
+                    "captcha": login_captcha.create_challenge(),
+                },
+            )
+
     statement = select(models.User).where(models.User.email == form_data.username)
     if scope == "provider":
         statement = statement.where(
@@ -3108,9 +3163,16 @@ def login_for_access_token(
     if not user or not security.verify_password(
         form_data.password, user.hashed_password
     ):
-        raise HTTPException(
+        login_captcha.record_failure(client_key)
+        content: dict[str, Any] = {
+            "detail": api_error_payload("incorrect_username_or_password", lang),
+        }
+        if login_captcha.requires_captcha(client_key):
+            content["require_captcha"] = True
+            content["captcha"] = login_captcha.create_challenge()
+        return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=api_error_payload("incorrect_username_or_password", lang),
+            content=content,
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -3120,6 +3182,8 @@ def login_for_access_token(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=api_error_payload(gate, lang),
         )
+
+    login_captcha.clear_failures(client_key)
 
     # If OTP is enabled, require second factor; do not issue tokens yet
     if getattr(user, "otp_enabled", False) and getattr(user, "otp_secret", None):
@@ -4850,6 +4914,27 @@ def update_tenant_settings(
         else:
             tenant.guest_birthday_consent_text = None
 
+    if tenant_update.careers_enabled is not None:
+        tenant.careers_enabled = bool(tenant_update.careers_enabled)
+    if tenant_update.careers_why_text is not None:
+        raw_why = tenant_update.careers_why_text
+        if isinstance(raw_why, str):
+            s = raw_why.replace("\x00", "").strip()
+            tenant.careers_why_text = s[:8000] if s else None
+        else:
+            tenant.careers_why_text = None
+    if tenant_update.careers_retention_days is not None:
+        try:
+            days = int(tenant_update.careers_retention_days)
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail="careers_retention_days must be an integer")
+        if days < 30 or days > 730:
+            raise HTTPException(
+                status_code=400,
+                detail="careers_retention_days must be between 30 and 730",
+            )
+        tenant.careers_retention_days = days
+
     # Satisfecho Delivery fee + coverage
     if tenant_update.delivery_fee_cents is not None:
         fee = int(tenant_update.delivery_fee_cents)
@@ -5293,17 +5378,15 @@ def get_kitchen_display_settings(
     current_user: Annotated[models.User, Depends(require_permission(Permission.ORDER_READ))],
     session: Session = Depends(get_session),
 ) -> dict:
-    """Get kitchen/bar display timer thresholds (minutes). Used for wait-time card colors."""
+    """Get kitchen/bar display timer thresholds and SLA expected-prep config (#450)."""
+    from .kitchen_sla import settings_dict_from_tenant
+
     tenant = session.exec(
         select(models.Tenant).where(models.Tenant.id == current_user.tenant_id)
     ).first()
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
-    return {
-        "yellow_minutes": tenant.kitchen_display_timer_yellow_minutes if tenant.kitchen_display_timer_yellow_minutes is not None else 5,
-        "orange_minutes": tenant.kitchen_display_timer_orange_minutes if tenant.kitchen_display_timer_orange_minutes is not None else 10,
-        "red_minutes": tenant.kitchen_display_timer_red_minutes if tenant.kitchen_display_timer_red_minutes is not None else 15,
-    }
+    return settings_dict_from_tenant(tenant)
 
 
 @app.put("/tenant/kitchen-display-settings")
@@ -5312,29 +5395,19 @@ def update_kitchen_display_settings(
     current_user: Annotated[models.User, Depends(require_permission(Permission.ORDER_READ))],
     session: Session = Depends(get_session),
 ) -> dict:
-    """Update kitchen/bar display timer thresholds (minutes)."""
+    """Update kitchen/bar display timer thresholds and SLA expected-prep config (#450)."""
+    from .kitchen_sla import apply_settings_body, settings_dict_from_tenant
+
     tenant = session.exec(
         select(models.Tenant).where(models.Tenant.id == current_user.tenant_id)
     ).first()
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
-    yellow = body.get("yellow_minutes")
-    orange = body.get("orange_minutes")
-    red = body.get("red_minutes")
-    if yellow is not None:
-        tenant.kitchen_display_timer_yellow_minutes = max(0, int(yellow))
-    if orange is not None:
-        tenant.kitchen_display_timer_orange_minutes = max(0, int(orange))
-    if red is not None:
-        tenant.kitchen_display_timer_red_minutes = max(0, int(red))
+    apply_settings_body(tenant, body if isinstance(body, dict) else {})
     session.add(tenant)
     session.commit()
     session.refresh(tenant)
-    return {
-        "yellow_minutes": tenant.kitchen_display_timer_yellow_minutes or 5,
-        "orange_minutes": tenant.kitchen_display_timer_orange_minutes or 10,
-        "red_minutes": tenant.kitchen_display_timer_red_minutes or 15,
-    }
+    return settings_dict_from_tenant(tenant)
 
 
 # Kitchen / bar prep stations (KDS filtering, product mapping)
@@ -6133,6 +6206,14 @@ def create_product(
         raise HTTPException(status_code=400, detail="stock_qty must be >= 0")
     if getattr(product, "stock_alert_level", 0) is not None and int(product.stock_alert_level) < 0:
         raise HTTPException(status_code=400, detail="stock_alert_level must be >= 0")
+    if getattr(product, "expected_prep_minutes", None) is not None:
+        try:
+            epm = int(product.expected_prep_minutes)
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail="expected_prep_minutes must be an integer")
+        if epm < 0:
+            raise HTTPException(status_code=400, detail="expected_prep_minutes must be >= 0")
+        product.expected_prep_minutes = epm
     product.stock_alert_enabled = bool(getattr(product, "stock_alert_enabled", False))
     product.stock_qty = int(getattr(product, "stock_qty", 0) or 0)
     product.stock_alert_level = int(getattr(product, "stock_alert_level", 0) or 0)
@@ -6207,6 +6288,18 @@ def update_product(
         if level < 0:
             raise HTTPException(status_code=400, detail="stock_alert_level must be >= 0")
         product.stock_alert_level = level
+    if "expected_prep_minutes" in pu:
+        val = pu["expected_prep_minutes"]
+        if val is None or val == "":
+            product.expected_prep_minutes = None
+        else:
+            try:
+                epm = int(val)
+            except (TypeError, ValueError):
+                raise HTTPException(status_code=400, detail="expected_prep_minutes must be an integer")
+            if epm < 0:
+                raise HTTPException(status_code=400, detail="expected_prep_minutes must be >= 0")
+            product.expected_prep_minutes = epm
 
     session.add(product)
     # Sync availability dates to linked TenantProduct(s) so customer menu stays consistent
@@ -6418,6 +6511,27 @@ def list_product_questions(
     ]
 
 
+def _normalize_choice_option_entry(entry: Any) -> str | dict:
+    """
+    Normalize one choice option: plain string (delta 0) or
+    {"label": str, "price_delta_cents": int} when priced (#451).
+    """
+    label, delta = parse_choice_option_entry(entry)
+    if not label:
+        raise HTTPException(
+            status_code=422,
+            detail="choice option label cannot be empty",
+        )
+    if abs(delta) > MAX_ABS_PRICE_DELTA_CENTS:
+        raise HTTPException(
+            status_code=422,
+            detail=f"price_delta_cents must be between -{MAX_ABS_PRICE_DELTA_CENTS} and {MAX_ABS_PRICE_DELTA_CENTS}",
+        )
+    if delta == 0:
+        return label
+    return {"label": label, "price_delta_cents": delta}
+
+
 def _validate_product_question_options(
     qtype: models.ProductQuestionType, options: dict | list | None
 ) -> dict | list | None:
@@ -6431,7 +6545,8 @@ def _validate_product_question_options(
                 detail="choice questions require options as a non-empty list of strings or {choices, multi}",
             )
         if isinstance(options, list):
-            opts = [str(x).strip() for x in options if str(x).strip()]
+            opts = [_normalize_choice_option_entry(x) for x in options]
+            opts = [o for o in opts if o]
             if not opts:
                 raise HTTPException(
                     status_code=422,
@@ -6444,9 +6559,13 @@ def _validate_product_question_options(
             if not isinstance(raw_choices, list):
                 raise HTTPException(
                     status_code=422,
-                    detail="choice options must be a list of strings or {choices: string[], multi?: boolean}",
+                    detail=(
+                        "choice options must be a list of strings/{label, price_delta_cents} "
+                        "or {choices: [...], multi?: boolean}"
+                    ),
                 )
-            opts = [str(x).strip() for x in raw_choices if str(x).strip()]
+            opts = [_normalize_choice_option_entry(x) for x in raw_choices]
+            opts = [o for o in opts if o]
             if not opts:
                 raise HTTPException(
                     status_code=422,
@@ -6455,7 +6574,10 @@ def _validate_product_question_options(
             return {"choices": opts, "multi": multi}
         raise HTTPException(
             status_code=422,
-            detail="choice options must be a JSON array of strings or {choices: string[], multi?: boolean}",
+            detail=(
+                "choice options must be a JSON array of strings/{label, price_delta_cents} "
+                "or {choices: [...], multi?: boolean}"
+            ),
         )
     if qtype == models.ProductQuestionType.scale:
         if options is None or not isinstance(options, dict):
@@ -13942,6 +14064,14 @@ def create_order(
             product_name=product_name,
         )
 
+        # Validate customizations early so per-option price deltas adjust list price before promo (#451)
+        raw_answers = item.customization_answers if hasattr(item, "customization_answers") else None
+        item_answers, cust_summary, cust_delta_cents = validate_and_normalize_customization_answers(
+            session, table.tenant_id, effective_product_id, raw_answers
+        )
+        if cust_delta_cents:
+            price_cents = max(0, int(price_cents) + int(cust_delta_cents))
+
         # Apply eligible line promo (#322) — discount tax-inclusive list price, recompute tax
         product_category = None
         eff_product = session.get(models.Product, effective_product_id)
@@ -13972,10 +14102,6 @@ def create_order(
 
         # Check if this product already exists in the order with same customization (only active, non-removed items)
         # Match by effective_product_id and same customization_answers so we merge only when preferences match
-        raw_answers = item.customization_answers if hasattr(item, "customization_answers") else None
-        item_answers, cust_summary = validate_and_normalize_customization_answers(
-            session, table.tenant_id, effective_product_id, raw_answers
-        )
         raw_lm = getattr(item, "line_modifiers", None)
         norm_modifiers, lm_summary = validate_and_normalize_line_modifiers(raw_lm)
         existing_items = session.exec(
@@ -14757,6 +14883,11 @@ def list_orders(
                     "birth_date": bc.birth_date.isoformat() if bc.birth_date else None,
                 }
 
+        from .kitchen_sla import parse_category_prep_map, resolve_line_expected_minutes
+
+        category_prep_map = parse_category_prep_map(
+            getattr(tenant_row, "kitchen_expected_prep_by_category", None) if tenant_row else None
+        )
         order_items_json: list[dict] = []
         for oi in items:
             prod = product_map.get(oi.product_id) if product_map else None
@@ -14764,6 +14895,12 @@ def list_orders(
                 kid, knm, krt = resolve_order_item_kds(prod, tenant_row, station_by_id)
             else:
                 kid, knm, krt = None, None, "kitchen"
+            prod_category = getattr(prod, "category", None) if prod else None
+            expected_prep = resolve_line_expected_minutes(
+                product_expected=getattr(prod, "expected_prep_minutes", None) if prod else None,
+                category=prod_category,
+                category_map=category_prep_map,
+            )
             order_items_json.append(
                 {
                     "id": oi.id,
@@ -14782,7 +14919,8 @@ def list_orders(
                     "tax_id": getattr(oi, "tax_id", None),
                     "tax_rate_percent": getattr(oi, "tax_rate_percent", None),
                     "tax_amount_cents": getattr(oi, "tax_amount_cents", None),
-                    "category": getattr(product_map.get(oi.product_id), "category", None),
+                    "category": prod_category,
+                    "expected_prep_minutes": expected_prep,
                     "kitchen_station_id": kid,
                     "kitchen_station_name": knm,
                     "kitchen_station_route": krt,

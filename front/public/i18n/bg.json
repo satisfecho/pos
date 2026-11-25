@@ -94,7 +94,9 @@
     "UNMAPPED_CSV_COLUMNS": "AI не можа да съпостави тези CSV колони: {{columns}}. Преименувайте или премахнете ги и опитайте отново.",
     "CUSTOMER_PASSWORD_TOO_SHORT": "Паролата трябва да е поне {{min_length}} знака.",
     "CUSTOMER_VERIFICATION_INVALID": "Невалидна или неизвестна връзка за потвърждение на имейл.",
-    "CUSTOMER_VERIFICATION_EXPIRED": "Тази връзка за потвърждение е изтекла. Заявете нова."
+    "CUSTOMER_VERIFICATION_EXPIRED": "Тази връзка за потвърждение е изтекла. Заявете нова.",
+    "CAPTCHA_REQUIRED": "Завършете проверката за сигурност преди вход.",
+    "CAPTCHA_INVALID": "Проверката за сигурност не бе успешна. Опитайте нов код."
   },
   "NAV": {
     "HOME": "Начало",
@@ -128,7 +130,8 @@
     "WAREHOUSES": "Складове",
     "TALK": "Говор",
     "GROUP_CATALOG_TOGGLE": "Разгъване или свиване на Каталог и инвентар",
-    "CUSTOMER_DISPLAY": "Клиентски дисплей"
+    "CUSTOMER_DISPLAY": "Клиентски дисплей",
+    "CAREERS": "Careers"
   },
   "PUBLIC_GUEST_NAV": {
     "ARIA": "Страници на ресторанта",
@@ -137,7 +140,8 @@
     "WAITLIST": "Чакащи",
     "DELIVERY": "Доставка",
     "LOYALTY": "Лоялност",
-    "FEEDBACK": "Отзив"
+    "FEEDBACK": "Отзив",
+    "CAREERS": "Careers"
   },
   "STAFF_FLOW": {
     "TOOLBAR_ARIA": "Навигация за персонал",
@@ -443,7 +447,15 @@
     "COL_OWNER_LOGINS": "Влизания на собственика",
     "COL_OWNER_LAST_LOGIN": "Последно влизане на собственика",
     "COL_LOGIN_COUNT": "Влизания",
-    "COL_LAST_LOGIN": "Последно влизане"
+    "COL_LAST_LOGIN": "Последно влизане",
+    "USAGE_OVER_TIME": "Използване във времето (30 дни)",
+    "USAGE_LOGINS": "Влизания",
+    "USAGE_SIGNUPS": "Регистрации",
+    "USAGE_EMPTY": "Няма данни за ползване през последните 30 дни.",
+    "FILTER_TENANTS": "Филтрирай наематели",
+    "FILTER_PLACEHOLDER": "Търсене по име, собственик или имейл",
+    "COL_OWNER_ACTIVITY": "Активност на собственика",
+    "NO_FILTER_MATCH": "Няма наематели за този филтър."
   },
   "COURIER_HOME": {
     "TITLE": "Доставки",
@@ -588,7 +600,11 @@
     "SIGNUP_VERIFY_SUBMIT": "Потвърди имейл",
     "SIGNUP_VERIFY_RESEND": "Изпрати кода отново",
     "SIGNUP_VERIFY_RESENT": "Кодът е изпратен",
-    "SIGNUP_VERIFY_FAILED": "Кодът не можа да бъде потвърден. Проверете и опитайте отново."
+    "SIGNUP_VERIFY_FAILED": "Кодът не можа да бъде потвърден. Проверете и опитайте отново.",
+    "CAPTCHA_LABEL": "Проверка за сигурност",
+    "CAPTCHA_PLACEHOLDER": "Въведете показаните символи",
+    "CAPTCHA_REFRESH": "Нов код",
+    "CAPTCHA_REQUIRED": "Завършете проверката за сигурност, за да продължите."
   },
   "MENU": {
     "TITLE": "Меню",
@@ -788,10 +804,10 @@
     "QUESTION_TYPE_TEXT": "Свободен текст",
     "QUESTION_FIELD_LABEL": "Въпрос (показан на госта)",
     "QUESTION_LABEL_PLACEHOLDER": "напр. Как да е изпечен стекът?",
-    "QUESTION_FIELD_OPTIONS": "Опции (по една на ред)",
+    "QUESTION_FIELD_OPTIONS": "Опции (по една на ред; опционална |цена)",
     "QUESTION_CHOICE_MULTI": "Позволете множествен избор (напр. няколко добавки или премахвания)",
     "QUESTION_BADGE_MULTI": "Мулти",
-    "QUESTION_OPTIONS_PLACEHOLDER": "Редки\nСреден\nДобра работа",
+    "QUESTION_OPTIONS_PLACEHOLDER": "Rare\nMedium\nExtra cheese|1.00",
     "QUESTION_SCALE_MIN": "Минимум",
     "QUESTION_SCALE_MAX": "Максимум ",
     "QUESTION_FIELD_REQUIRED": "Задължително преди добавяне в количката",
@@ -850,7 +866,11 @@
     "STOCK_HEADER": "Наличност",
     "STOCK_LOW": "Ниско",
     "STOCK_OK": "OK",
-    "STOCK_BADGE_TITLE": "Наличност {{qty}} (предупреждение при {{level}})"
+    "STOCK_BADGE_TITLE": "Наличност {{qty}} (предупреждение при {{level}})",
+    "QUESTION_OPTIONS_PRICE_HINT": "По една опция на ред. Опционална цена след |: Етикет|1.00 (основни единици; отрицателна за отстъпки).",
+    "EXPECTED_PREP_MINUTES": "Expected prep (minutes)",
+    "EXPECTED_PREP_PLACEHOLDER": "Category default",
+    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings."
   },
   "CATALOG": {
     "TITLE": "ПРОДУКТОВ КАТАЛОГ",
@@ -1133,7 +1153,22 @@
     "TIMER_BAR_HINT": "Wait time progress toward red threshold",
     "STATION": "Станция",
     "ALL_STATIONS": "Всички репери",
-    "ITEM_COMMENT": "Коментар"
+    "ITEM_COMMENT": "Коментар",
+    "PLACED": "Поръчана",
+    "SLA_FRESH": "Свежа",
+    "SLA_WARNING": "В риск",
+    "SLA_OVERDUE": "Просрочена",
+    "TIMER_YELLOW_PERCENT": "Yellow at (% of expected)",
+    "TIMER_ORANGE_PERCENT": "Orange at (% of expected)",
+    "TIMER_RED_PERCENT": "Red at (% of expected)",
+    "SLA_THRESHOLD_MODE": "SLA threshold mode",
+    "SLA_MODE_ABSOLUTE": "Absolute (overdue at expected prep)",
+    "SLA_MODE_PERCENT": "Percent of expected prep",
+    "SLA_TICKET_AGGREGATION": "Multi-item ticket expected prep",
+    "SLA_AGG_MAX_LINE": "Longest line (max)",
+    "SLA_AGG_SUM": "Sum of lines",
+    "SLA_AGG_PRIMARY_CATEGORY": "Primary category (highest)",
+    "EXPECTED_PREP_BY_CATEGORY": "Expected prep by category (minutes)"
   },
   "BAR_DISPLAY": {
     "TITLE": "Бар дисплей"
@@ -2359,7 +2394,16 @@
     "NEWSLETTER_SEND_FAIL": "Кампанията не може да се добави в опашката. Проверете аудитория, съгласие и SMTP.",
     "NEWSLETTER_CANCEL_FAIL": "Кампанията не може да бъде отменена.",
     "STRIPE_CRYPTO_ENABLED": "Приемане на крипто (стейбълкойни) чрез Stripe",
-    "STRIPE_CRYPTO_ENABLED_HINT": "Показва Плащане с крипто в публичното меню и delivery checkout. Първо активирайте Stablecoins and Crypto в Stripe Dashboard. Средствата влизат в Stripe баланса; възстановяванията връщат стейбълкойни към портфейла на госта."
+    "STRIPE_CRYPTO_ENABLED_HINT": "Показва Плащане с крипто в публичното меню и delivery checkout. Първо активирайте Stablecoins and Crypto в Stripe Dashboard. Средствата влизат в Stripe баланса; възстановяванията връщат стейбълкойни към портфейла на госта.",
+    "CAREERS": "Careers / Work with us",
+    "CAREERS_DESC": "Public page for candidates to leave a CV. Applications are encrypted and only visible to the owner.",
+    "CAREERS_ENABLED": "Enable public careers page",
+    "CAREERS_ENABLED_HINT": "When on, guests can open /careers/{id} and submit an application.",
+    "CAREERS_WHY": "Why work here (shown on public page)",
+    "CAREERS_WHY_PLACEHOLDER": "Tell candidates why they should join your team…",
+    "CAREERS_RETENTION": "Retention (days)",
+    "CAREERS_RETENTION_HINT": "Applications auto-delete after this many days (30–730). Default 180.",
+    "CAREERS_PUBLIC_URL": "Public URL path"
   },
   "PAYMENTS": {
     "PAYMENT": "Плащане:",
@@ -3508,5 +3552,59 @@
     "EMAIL_ERROR": "Моля, въведете валиден имейл.",
     "INVOICE_SAVED": "Имейл за фактура",
     "THANK_YOU": "Благодарим!"
+  },
+  "CAREERS": {
+    "TITLE": "Work with us",
+    "LOADING": "Loading…",
+    "DISABLED": "This restaurant is not accepting applications right now.",
+    "INVALID_TENANT": "Invalid restaurant link.",
+    "TENANT_NOT_FOUND": "Restaurant not found.",
+    "WHY_HEADING": "Why work here",
+    "RETENTION_NOTICE": "Your data is kept for {{days}} days, then deleted automatically. You can apply again later.",
+    "NAME": "Full name",
+    "EMAIL": "Email",
+    "PHONE": "Phone",
+    "MESSAGE": "Short message",
+    "CV": "CV (optional)",
+    "CV_HINT": "PDF or Word, max 5 MB. Stored encrypted.",
+    "SUBMIT": "Submit application",
+    "SUBMITTING": "Submitting…",
+    "SUBMIT_ERROR": "Could not submit. Check your details and try again.",
+    "THANK_YOU": "Thank you",
+    "THANK_YOU_BODY": "We received your application. Data is kept for {{days}} days, then removed. You may apply again after that.",
+    "STAFF_TITLE": "Careers applications",
+    "VIEW_PUBLIC": "Open public page",
+    "COPY_URL": "Copy public URL",
+    "URL_COPIED": "URL copied",
+    "EMPTY": "No applications yet.",
+    "LOAD_ERROR": "Could not load applications.",
+    "STATUS": "Status",
+    "STATUS_NEW": "New",
+    "STATUS_CONTACTED": "Contacted",
+    "STATUS_CLOSED": "Closed",
+    "CREATED": "Submitted",
+    "ACTIONS": "Actions",
+    "DOWNLOAD_CV": "Download CV",
+    "CONFIRM_DELETE": "Delete this application permanently?",
+    "NOTIFY_TITLE": "Open role — email all candidates",
+    "NOTIFY_HINT": "Sends every candidate an email asking them to update their CV if interested.",
+    "ROLE_TITLE": "Role title",
+    "NOTIFY_MESSAGE": "Extra message (optional)",
+    "NOTIFY_ALL": "Email all candidates",
+    "NOTIFYING": "Sending…",
+    "NOTIFY_RESULT": "Sent {sent} of {total} (failed: {failed}).",
+    "NOTIFY_ERROR": "Could not send emails. Check SMTP in Settings.",
+    "SEND_CODE": "Send verification code",
+    "SENDING_CODE": "Sending code…",
+    "VERIFY_HINT": "We will email a six-digit code to confirm your address before storing your application.",
+    "VERIFY_TITLE": "Confirm your email",
+    "VERIFY_SENT": "Enter the six-digit code we sent to {{email}}.",
+    "VERIFY_CODE": "Verification code",
+    "VERIFY_CODE_PLACEHOLDER": "6-digit code",
+    "RESEND_CODE": "Resend code",
+    "CODE_RESENT": "Code sent",
+    "CODE_SEND_ERROR": "Could not send the verification code. Try again.",
+    "CODE_INVALID": "Invalid or expired code. Request a new one.",
+    "DEV_CODE_HINT": "Dev code (SMTP not configured): {{code}}"
   }
 }

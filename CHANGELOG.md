@@ -14,6 +14,48 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.198] - 2026-11-25
+
+### Added
+
+- **Kitchen expected prep times (#450):** Owners can set category and product expected prep minutes, choose absolute or percent-of-expected SLA bands, and how multi-item tickets aggregate (max line default). Kitchen badges use those clocks with fallback to the existing 5/10/15 thresholds.
+- **Login CAPTCHA after failed attempts (#452):** Self-hosted SVG challenge on staff, provider, courier, and platform login after N failed attempts per IP (default 3); env knobs, docs, pytest, and smoke coverage.
+
+## [2.1.197] - 2026-11-25
+
+### Added
+
+- **Platform usage chart:** Operator overview shows daily logins and tenant sign-ups for the last 30 days (`usage_last_30_days` on `/platform/metrics`).
+
+### Changed
+
+- **Platform tenants table:** Sortable columns, search filter, and a compact layout (merged owner activity, shorter dates, links under the name) to reduce horizontal scrolling.
+
+## [2.1.196] - 2026-11-25
+
+### Added
+
+- **Kitchen SLA badges and placed clock (#450):** Kitchen/bar tickets show Placed HH:MM, a Fresh / At risk / Overdue badge from timer thresholds, and an urgent toggle; i18n, unit, and Puppeteer coverage updated. Category expected-prep config remains open.
+- **Order customization price deltas (#451):** Choice options may carry `price_delta_cents` (staff: `Label|1.00` lines). Public menu shows priced modifiers; cart and menu order lines use `base + sum(deltas)` (floored at 0) before promos; kitchen/invoice summary includes signed deltas. Backward compatible with plain string options.
+
+## [2.1.195] - 2026-11-25
+
+### Added
+
+- **Careers email confirmation (#448):** Public apply requires a six-digit email code before any application or CV is stored (`request-code` / `confirm-code` / submit with `submit_token`); short-lived challenge table, rate limits, i18n, docs, and API/smoke coverage.
+
+### Changed
+
+- **Repo cleanup (#449):** Removed unused empty root `Contact` file (no product or docs references).
+
+## [2.1.194] - 2026-11-24
+
+### Added
+
+- **Careers / Trabaja con nosotros (#447):** Public apply page with optional CV upload, Fernet-encrypted PII and CV files at rest, configurable retention (default 180 days), and an owner-only staff inbox with status, CV download, and notify-all email when a role opens.
+- **Agent git-sync stuck alert:** `git-sync-development.sh` discards stamp-only dirt before pull and writes `tmp/agent-git-sync-blocked.txt` on unmerged conflicts; the 5-minute watchdog escalates with a GitHub issue (`agent-loop-blocker: git-sync`) so a live loop pid cannot hide a blocked FEAT intake again.
+- **Stale waiting FEAT → REJECTED:** After 30 days with no human reply on a parked waiting-for-human FEAT, the loop archives `REJECTED-…` under `agents2/tasks/done/` and closes the linked issue as not planned (`scripts/agent-feat-stale-waiting-reject.sh`).
+
 ## [2.1.193] - 2026-11-13
 
 ### Changed
