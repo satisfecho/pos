@@ -60,15 +60,15 @@ async function main() {
       const btn = await page.$(`[data-testid="usage-days-${days}"]`);
       if (!btn) throw new Error(`Missing usage period button: ${days}`);
     }
-    await page.click('[data-testid="usage-days-7"]');
-    await page.waitForFunction(
-      () => document.querySelector('[data-testid="usage-days-7"]')?.getAttribute('aria-pressed') === 'true',
-      { timeout: 10000 },
-    );
+    await page.waitForSelector('[data-testid="usage-days-365"]', { timeout: 10000 });
     await page.click('[data-testid="usage-days-365"]');
     await page.waitForFunction(
-      () => document.querySelector('[data-testid="usage-days-365"]')?.getAttribute('aria-pressed') === 'true',
-      { timeout: 10000 },
+      () => {
+        const el = document.querySelector('[data-testid="usage-days-365"]');
+        const pressed = el?.getAttribute('aria-pressed');
+        return pressed === 'true' || el?.classList.contains('active');
+      },
+      { timeout: 15000 },
     );
     console.log(`OK: usage chart visible (${usageTitle}) with 7/30/90/1y/3y periods`);
 

@@ -9,6 +9,7 @@ import {
   NumberFilterModule,
   DateFilterModule,
   PaginationModule,
+  QuickFilterModule,
   themeQuartz,
   ICellRendererParams,
 } from 'ag-grid-community';
@@ -30,6 +31,7 @@ ModuleRegistry.registerModules([
   NumberFilterModule,
   DateFilterModule,
   PaginationModule,
+  QuickFilterModule,
 ]);
 
 @Component({
