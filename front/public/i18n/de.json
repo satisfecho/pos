@@ -445,7 +445,15 @@
     "COL_OWNER_LOGINS": "Owner-Logins",
     "COL_OWNER_LAST_LOGIN": "Owner letzter Login",
     "COL_LOGIN_COUNT": "Logins",
-    "COL_LAST_LOGIN": "Letzter Login"
+    "COL_LAST_LOGIN": "Letzter Login",
+    "USAGE_OVER_TIME": "Nutzung im Zeitverlauf (30 Tage)",
+    "USAGE_LOGINS": "Anmeldungen",
+    "USAGE_SIGNUPS": "Neuregistrierungen",
+    "USAGE_EMPTY": "Keine Nutzungsdaten in den letzten 30 Tagen.",
+    "FILTER_TENANTS": "Mandanten filtern",
+    "FILTER_PLACEHOLDER": "Nach Name, Inhaber oder E-Mail suchen",
+    "COL_OWNER_ACTIVITY": "Inhaber-Aktivität",
+    "NO_FILTER_MATCH": "Keine Mandanten passen zu diesem Filter."
   },
   "COURIER_HOME": {
     "TITLE": "Lieferungen",

@@ -574,7 +574,15 @@
     "COL_OWNER_LOGINS": "所有者登录次数",
     "COL_OWNER_LAST_LOGIN": "所有者上次登录",
     "COL_LOGIN_COUNT": "登录次数",
-    "COL_LAST_LOGIN": "上次登录"
+    "COL_LAST_LOGIN": "上次登录",
+    "USAGE_OVER_TIME": "使用趋势（30 天）",
+    "USAGE_LOGINS": "登录",
+    "USAGE_SIGNUPS": "注册",
+    "USAGE_EMPTY": "近 30 天没有使用数据。",
+    "FILTER_TENANTS": "筛选租户",
+    "FILTER_PLACEHOLDER": "按名称、所有者或邮箱搜索",
+    "COL_OWNER_ACTIVITY": "所有者动态",
+    "NO_FILTER_MATCH": "没有符合此筛选的租户。"
   },
   "COURIER_HOME": {
     "TITLE": "配送",

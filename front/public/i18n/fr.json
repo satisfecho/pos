@@ -445,7 +445,15 @@
     "COL_OWNER_LOGINS": "Connexions propriétaire",
     "COL_OWNER_LAST_LOGIN": "Dernière connexion propriétaire",
     "COL_LOGIN_COUNT": "Connexions",
-    "COL_LAST_LOGIN": "Dernière connexion"
+    "COL_LAST_LOGIN": "Dernière connexion",
+    "USAGE_OVER_TIME": "Utilisation dans le temps (30 jours)",
+    "USAGE_LOGINS": "Connexions",
+    "USAGE_SIGNUPS": "Inscriptions",
+    "USAGE_EMPTY": "Aucune donnée d'utilisation sur les 30 derniers jours.",
+    "FILTER_TENANTS": "Filtrer les clients",
+    "FILTER_PLACEHOLDER": "Rechercher par nom, propriétaire ou e-mail",
+    "COL_OWNER_ACTIVITY": "Activité du propriétaire",
+    "NO_FILTER_MATCH": "Aucun client ne correspond à ce filtre."
   },
   "COURIER_HOME": {
     "TITLE": "Livraisons",

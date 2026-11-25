@@ -512,6 +512,14 @@ class PlatformLoginSummary(SQLModel):
     user_email: str | None = None
 
 
+class PlatformUsageDay(SQLModel):
+    """One UTC calendar day of platform usage (logins + tenant sign-ups)."""
+
+    date: str  # YYYY-MM-DD
+    logins: int = 0
+    signups: int = 0
+
+
 class PlatformMetricsResponse(SQLModel):
     tenant_count: int
     signups_last_30_days: int
@@ -521,6 +529,7 @@ class PlatformMetricsResponse(SQLModel):
     last_login_at: datetime | None = None
     recent_tenants: list[PlatformTenantSummary]
     recent_logins: list[PlatformLoginSummary]
+    usage_last_30_days: list[PlatformUsageDay] = []
 
 
 class TenantMixin(SQLModel):

@@ -14,6 +14,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.197] - 2026-11-25
+
+### Added
+
+- **Platform usage chart:** Operator overview shows daily logins and tenant sign-ups for the last 30 days (`usage_last_30_days` on `/platform/metrics`).
+
+### Changed
+
+- **Platform tenants table:** Sortable columns, search filter, and a compact layout (merged owner activity, shorter dates, links under the name) to reduce horizontal scrolling.
+
 ## [2.1.196] - 2026-11-25
 
 ### Added

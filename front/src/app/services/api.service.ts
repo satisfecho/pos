@@ -450,6 +450,12 @@ export interface PlatformLoginSummary {
   user_email?: string | null;
 }
 
+export interface PlatformUsageDay {
+  date: string;
+  logins: number;
+  signups: number;
+}
+
 export interface PlatformMetrics {
   tenant_count: number;
   signups_last_30_days: number;
@@ -459,6 +465,7 @@ export interface PlatformMetrics {
   last_login_at?: string | null;
   recent_tenants: PlatformTenantSummary[];
   recent_logins: PlatformLoginSummary[];
+  usage_last_30_days?: PlatformUsageDay[];
 }
 
 export interface CourierOrderSummary {
