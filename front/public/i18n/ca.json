@@ -931,10 +931,10 @@
     "QUESTION_TYPE_TEXT": "Text lliure",
     "QUESTION_FIELD_LABEL": "Pregunta (visible al client)",
     "QUESTION_LABEL_PLACEHOLDER": "p. ex. Punt de la carn?",
-    "QUESTION_FIELD_OPTIONS": "Opcions (una per línia)",
+    "QUESTION_FIELD_OPTIONS": "Opcions (una per línia; |preu opcional)",
     "QUESTION_CHOICE_MULTI": "Permet diverses seleccions (p. ex. diversos ingredients)",
     "QUESTION_BADGE_MULTI": "Múltiple",
-    "QUESTION_OPTIONS_PLACEHOLDER": "Poc fet\nAl punt\nMolt fet",
+    "QUESTION_OPTIONS_PLACEHOLDER": "Poc fet\nAl punt\nFormatge extra|1.00",
     "QUESTION_SCALE_MIN": "Mínim",
     "QUESTION_SCALE_MAX": "Màxim",
     "QUESTION_FIELD_REQUIRED": "Obligatoria abans d’afegir a la cistella",
@@ -993,7 +993,8 @@
     "STOCK_HEADER": "Estoc",
     "STOCK_LOW": "Baix",
     "STOCK_OK": "OK",
-    "STOCK_BADGE_TITLE": "Estoc {{qty}} (alerta a {{level}})"
+    "STOCK_BADGE_TITLE": "Estoc {{qty}} (alerta a {{level}})",
+    "QUESTION_OPTIONS_PRICE_HINT": "Una opció per línia. Preu opcional després d'una barra: Etiqueta|1.00 (unitats majors; negatiu per descomptes)."
   },
   "CATALOG": {
     "TITLE": "Catàleg de productes",
@@ -1276,7 +1277,11 @@
     "TIMER_BAR_HINT": "Progrés del temps d'espera fins al llindar vermell",
     "STATION": "Estació",
     "ALL_STATIONS": "Totes les estacions",
-    "ITEM_COMMENT": "Comentari"
+    "ITEM_COMMENT": "Comentari",
+    "PLACED": "Comanda",
+    "SLA_FRESH": "Fresc",
+    "SLA_WARNING": "En risc",
+    "SLA_OVERDUE": "Endarrerit"
   },
   "BAR_DISPLAY": {
     "TITLE": "Pantalla bar"

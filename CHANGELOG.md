@@ -14,6 +14,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.196] - 2026-11-25
+
+### Added
+
+- **Kitchen SLA badges and placed clock (#450):** Kitchen/bar tickets show Placed HH:MM, a Fresh / At risk / Overdue badge from timer thresholds, and an urgent toggle; i18n, unit, and Puppeteer coverage updated. Category expected-prep config remains open.
+- **Order customization price deltas (#451):** Choice options may carry `price_delta_cents` (staff: `Label|1.00` lines). Public menu shows priced modifiers; cart and menu order lines use `base + sum(deltas)` (floored at 0) before promos; kitchen/invoice summary includes signed deltas. Backward compatible with plain string options.
+
 ## [2.1.195] - 2026-11-25
 
 ### Added

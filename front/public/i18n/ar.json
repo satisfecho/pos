@@ -565,7 +565,11 @@
     "TIMER_BAR_HINT": "تقدّم وقت الانتظار نحو حد اللون الأحمر",
     "STATION": "المحطة",
     "ALL_STATIONS": "كل المحطات",
-    "ITEM_COMMENT": "ملاحظة"
+    "ITEM_COMMENT": "ملاحظة",
+    "PLACED": "وقت الطلب",
+    "SLA_FRESH": "جديد",
+    "SLA_WARNING": "متأخر قليلاً",
+    "SLA_OVERDUE": "متأخر"
   },
   "BAR_DISPLAY": {
     "TITLE": "شاشة البار"
@@ -716,10 +720,10 @@
     "QUESTION_TYPE_TEXT": "نص حر",
     "QUESTION_FIELD_LABEL": "السؤال (يظهر للعميل)",
     "QUESTION_LABEL_PLACEHOLDER": "مثال: كيف تفضل درجة استواء اللحم؟",
-    "QUESTION_FIELD_OPTIONS": "الخيارات (واحد لكل سطر)",
+    "QUESTION_FIELD_OPTIONS": "الخيارات (سطر لكل خيار؛ |سعر اختياري)",
     "QUESTION_CHOICE_MULTI": "السماح باختيارات متعددة (مثل عدة إضافات أو حذوفات)",
     "QUESTION_BADGE_MULTI": "متعدد",
-    "QUESTION_OPTIONS_PLACEHOLDER": "نيء\nمتوسط\nمستوي تمامًا",
+    "QUESTION_OPTIONS_PLACEHOLDER": "Rare\nMedium\nExtra cheese|1.00",
     "QUESTION_SCALE_MIN": "الحد الأدنى",
     "QUESTION_SCALE_MAX": "الحد الأقصى",
     "QUESTION_FIELD_REQUIRED": "مطلوب قبل الإضافة إلى السلة",
@@ -770,7 +774,8 @@
     "BULK_IMPORT_CSV_PLACEHOLDER": "name,price,category\nمارغريتا,12.5,الأطباق الرئيسية",
     "BULK_IMPORT_CSV_HINT": "مطلوب: الاسم. السعر عبر price أو price_cents. اختياري: التكلفة، الفئة، الفئة الفرعية، الوصف، المكونات. الأسماء البديلة الشائعة (producto، precio، …) مقبولة. الأعمدة غير المعروفة تُرفض ما لم تُفعّل مطابقة الذكاء الاصطناعي.",
     "BULK_IMPORT_CSV_AI_MAPPING": "استخدام الذكاء الاصطناعي لمطابقة عناوين الأعمدة غير المعروفة (يرسل العناوين وبعض الصفوف النموذجية إلى واجهة التعرف البصري المُهيَّأة؛ راجع المعاينة قبل الحفظ)",
-    "BULK_IMPORT_CSV_EMPTY": "الصق أو ارفع CSV أولًا."
+    "BULK_IMPORT_CSV_EMPTY": "الصق أو ارفع CSV أولًا.",
+    "QUESTION_OPTIONS_PRICE_HINT": "خيار واحد في كل سطر. فرق سعر اختياري بعد |: التسمية|1.00 (وحدات العملة؛ سالب للخصم)."
   },
   "TABLES": {
     "TITLE": "الطاولات",

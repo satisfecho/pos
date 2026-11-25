@@ -3,7 +3,15 @@ import { DomSanitizer, SafeResourceUrl, SafeStyle } from '@angular/platform-brow
 import { FormsModule } from '@angular/forms';
 import { CommonModule, SlicePipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { ApiService, Product, ProductQuestion, OrderItemCreate, OrderHistoryItem, TableCartResponse } from '../services/api.service';
+import {
+  ApiService,
+  Product,
+  ProductChoiceOption,
+  ProductQuestion,
+  OrderItemCreate,
+  OrderHistoryItem,
+  TableCartResponse,
+} from '../services/api.service';
 import { AudioService } from '../services/audio.service';
 import { environment } from '../../environments/environment';
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
@@ -977,13 +985,66 @@ export class MenuComponent implements OnInit, OnDestroy {
     return q.type === 'choice' && Array.isArray(q.options);
   }
 
-  getChoiceOptions(q: ProductQuestion): string[] {
-    if (Array.isArray(q.options)) return q.options as string[];
-    if (q.options && typeof q.options === 'object' && 'choices' in q.options) {
-      const c = (q.options as { choices?: string[] }).choices;
-      return Array.isArray(c) ? c : [];
+  private normalizeChoiceOption(entry: ProductChoiceOption): { label: string; price_delta_cents: number } {
+    if (typeof entry === 'string') {
+      return { label: entry, price_delta_cents: 0 };
     }
-    return [];
+    return {
+      label: String(entry?.label || '').trim(),
+      price_delta_cents: Number(entry?.price_delta_cents || 0) || 0,
+    };
+  }
+
+  getChoiceOptionEntries(q: ProductQuestion): { label: string; price_delta_cents: number }[] {
+    let raw: ProductChoiceOption[] = [];
+    if (Array.isArray(q.options)) {
+      raw = q.options as ProductChoiceOption[];
+    } else if (q.options && typeof q.options === 'object' && 'choices' in q.options) {
+      const c = (q.options as { choices?: ProductChoiceOption[] }).choices;
+      raw = Array.isArray(c) ? c : [];
+    }
+    return raw.map((e) => this.normalizeChoiceOption(e)).filter((e) => !!e.label);
+  }
+
+  /** Labels only (answers still store strings / string[]). */
+  getChoiceOptions(q: ProductQuestion): string[] {
+    return this.getChoiceOptionEntries(q).map((e) => e.label);
+  }
+
+  formatChoiceOptionLabel(opt: { label: string; price_delta_cents: number }): string {
+    if (!opt.price_delta_cents) return opt.label;
+    const formatted = this.formatPrice(Math.abs(opt.price_delta_cents));
+    const prefix = opt.price_delta_cents > 0 ? '+' : '-';
+    return `${opt.label} (${prefix}${formatted})`;
+  }
+
+  /** Unit price including selected customization deltas (#451). */
+  getCartLineUnitPriceCents(item: Pick<CartItem, 'product' | 'customization_answers'>): number {
+    const base = item.product.price_cents ?? 0;
+    const delta = this.getCustomizationDeltaCents(item.product, item.customization_answers);
+    return Math.max(0, base + delta);
+  }
+
+  getCustomizationDeltaCents(
+    product: Product,
+    answers?: Record<string, string | number | string[]> | null
+  ): number {
+    if (!answers || !product.questions?.length) return 0;
+    let total = 0;
+    for (const q of product.questions) {
+      if (q.type !== 'choice') continue;
+      const val = answers[q.id];
+      if (val === undefined || val === null || val === '') continue;
+      const byLabel = new Map(this.getChoiceOptionEntries(q).map((e) => [e.label, e.price_delta_cents]));
+      if (Array.isArray(val)) {
+        for (const label of val) {
+          total += byLabel.get(String(label)) || 0;
+        }
+      } else if (typeof val !== 'number') {
+        total += byLabel.get(String(val)) || 0;
+      }
+    }
+    return total;
   }
 
   isMultiOptionChecked(questionId: number, option: string): boolean {
@@ -1125,7 +1186,10 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   getTotal(): number {
-    return this.cart().reduce((sum, item) => sum + item.product.price_cents * item.quantity, 0);
+    return this.cart().reduce(
+      (sum, item) => sum + this.getCartLineUnitPriceCents(item) * item.quantity,
+      0
+    );
   }
 
   formatPrice(priceCents: number): string {

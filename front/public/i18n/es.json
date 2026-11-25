@@ -790,10 +790,10 @@
     "QUESTION_TYPE_TEXT": "Texto libre",
     "QUESTION_FIELD_LABEL": "Pregunta (visible al cliente)",
     "QUESTION_LABEL_PLACEHOLDER": "ej. ¿Cómo quieres el punto de la carne?",
-    "QUESTION_FIELD_OPTIONS": "Opciones (una por línea)",
+    "QUESTION_FIELD_OPTIONS": "Opciones (una por línea; |precio opcional)",
     "QUESTION_CHOICE_MULTI": "Permitir varias selecciones (p. ej., varios ingredientes)",
     "QUESTION_BADGE_MULTI": "Múltiple",
-    "QUESTION_OPTIONS_PLACEHOLDER": "Poco hecho\nAl punto\nMuy hecho",
+    "QUESTION_OPTIONS_PLACEHOLDER": "Poco hecho\nAl punto\nQueso extra|1.00",
     "QUESTION_SCALE_MIN": "Mínimo",
     "QUESTION_SCALE_MAX": "Máximo",
     "QUESTION_FIELD_REQUIRED": "Obligatoria antes de añadir al carrito",
@@ -852,7 +852,8 @@
     "STOCK_HEADER": "Stock",
     "STOCK_LOW": "Bajo",
     "STOCK_OK": "OK",
-    "STOCK_BADGE_TITLE": "Stock {{qty}} (alerta en {{level}})"
+    "STOCK_BADGE_TITLE": "Stock {{qty}} (alerta en {{level}})",
+    "QUESTION_OPTIONS_PRICE_HINT": "Una opción por línea. Precio opcional tras una barra: Etiqueta|1.00 (unidades mayores; negativo para descuentos)."
   },
   "CATALOG": {
     "TITLE": "Catálogo de productos",
@@ -1135,7 +1136,11 @@
     "TIMER_BAR_HINT": "Progreso del tiempo de espera hasta el umbral rojo",
     "STATION": "Estación",
     "ALL_STATIONS": "Todas las estaciones",
-    "ITEM_COMMENT": "Comentario"
+    "ITEM_COMMENT": "Comentario",
+    "PLACED": "Pedido",
+    "SLA_FRESH": "Fresco",
+    "SLA_WARNING": "En riesgo",
+    "SLA_OVERDUE": "Atrasado"
   },
   "BAR_DISPLAY": {
     "TITLE": "Pantalla bar"

@@ -1,7 +1,15 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ApiService, KitchenStation, Product, ProductBulkImportConfirmResult, ProductQuestionStaff, Tax } from '../services/api.service';
+import {
+  ApiService,
+  KitchenStation,
+  Product,
+  ProductBulkImportConfirmResult,
+  ProductChoiceOption,
+  ProductQuestionStaff,
+  Tax,
+} from '../services/api.service';
 import { PermissionService } from '../services/permission.service';
 import { SidebarComponent } from '../shared/sidebar.component';
 import { CommonModule } from '@angular/common';
@@ -336,6 +344,7 @@ import { ProductBulkImportComponent } from './product-bulk-import.component';
                              <div class="form-group">
                                <label for="q-options">{{ 'PRODUCTS.QUESTION_FIELD_OPTIONS' | translate }}</label>
                                <textarea id="q-options" name="q-options" rows="4" [(ngModel)]="questionDraft.choiceLines" [disabled]="questionSaving()" [placeholder]="'PRODUCTS.QUESTION_OPTIONS_PLACEHOLDER' | translate"></textarea>
+                               <small class="field-hint">{{ 'PRODUCTS.QUESTION_OPTIONS_PRICE_HINT' | translate }}</small>
                              </div>
                              <div class="form-group checkbox-row">
                                <label>
@@ -1163,6 +1172,54 @@ export class ProductsComponent implements OnInit {
     };
   }
 
+  /** Staff lines: "Extra cheese|1.00" → priced option; plain label → delta 0 (#451). */
+  private parseChoiceOptionLines(raw: string): ProductChoiceOption[] {
+    const out: ProductChoiceOption[] = [];
+    for (const line of raw.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      const pipe = trimmed.lastIndexOf('|');
+      if (pipe <= 0) {
+        out.push(trimmed);
+        continue;
+      }
+      const label = trimmed.slice(0, pipe).trim();
+      const amountRaw = trimmed.slice(pipe + 1).trim().replace(',', '.');
+      if (!label) continue;
+      if (!amountRaw) {
+        out.push(label);
+        continue;
+      }
+      const major = Number(amountRaw);
+      if (!Number.isFinite(major)) {
+        out.push(trimmed);
+        continue;
+      }
+      const cents = Math.round(major * 100);
+      if (cents === 0) {
+        out.push(label);
+      } else {
+        out.push({ label, price_delta_cents: cents });
+      }
+    }
+    return out;
+  }
+
+  private choiceOptionsToLines(opts: ProductChoiceOption[]): string {
+    return opts
+      .map((o) => {
+        if (typeof o === 'string') return o;
+        const label = (o.label || '').trim();
+        const cents = Number(o.price_delta_cents || 0);
+        if (!label) return '';
+        if (!cents) return label;
+        const major = (cents / 100).toFixed(2);
+        return `${label}|${major}`;
+      })
+      .filter(Boolean)
+      .join('\n');
+  }
+
   loadProductQuestions(productId: number) {
     this.questionsLoading.set(true);
     this.questionEditorMode.set(null);
@@ -1194,7 +1251,7 @@ export class ProductsComponent implements OnInit {
     this.questionDraft.label = q.label;
     this.questionDraft.required = q.required;
     if (q.type === 'choice' && Array.isArray(q.options)) {
-      this.questionDraft.choiceLines = q.options.join('\n');
+      this.questionDraft.choiceLines = this.choiceOptionsToLines(q.options);
       this.questionDraft.choiceMulti = false;
     } else if (
       q.type === 'choice' &&
@@ -1203,8 +1260,8 @@ export class ProductsComponent implements OnInit {
       !Array.isArray(q.options) &&
       'choices' in q.options
     ) {
-      const o = q.options as { choices: string[]; multi?: boolean };
-      this.questionDraft.choiceLines = (o.choices || []).join('\n');
+      const o = q.options as { choices: ProductChoiceOption[]; multi?: boolean };
+      this.questionDraft.choiceLines = this.choiceOptionsToLines(o.choices || []);
       this.questionDraft.choiceMulti = !!o.multi;
     } else {
       this.questionDraft.choiceLines = '';
@@ -1234,12 +1291,14 @@ export class ProductsComponent implements OnInit {
       this.error.set(this.translate.instant('PRODUCTS.QUESTION_LABEL_REQUIRED'));
       return;
     }
-    let options: string[] | { min: number; max: number } | { choices: string[]; multi: boolean } | null | undefined;
+    let options:
+      | ProductChoiceOption[]
+      | { min: number; max: number }
+      | { choices: ProductChoiceOption[]; multi: boolean }
+      | null
+      | undefined;
     if (this.questionDraft.type === 'choice') {
-      const opts = this.questionDraft.choiceLines
-        .split('\n')
-        .map((s) => s.trim())
-        .filter(Boolean);
+      const opts = this.parseChoiceOptionLines(this.questionDraft.choiceLines);
       if (opts.length === 0) {
         this.error.set(this.translate.instant('PRODUCTS.QUESTION_OPTIONS_REQUIRED'));
         return;

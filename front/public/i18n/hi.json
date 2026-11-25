@@ -931,10 +931,10 @@
     "QUESTION_TYPE_TEXT": "मुक्त पाठ",
     "QUESTION_FIELD_LABEL": "प्रश्न (मेहमान को दिखे)",
     "QUESTION_LABEL_PLACEHOLDER": "उदा. स्टेक कितना पका हुआ?",
-    "QUESTION_FIELD_OPTIONS": "विकल्प (प्रति पंक्ति एक)",
+    "QUESTION_FIELD_OPTIONS": "विकल्प (प्रति पंक्ति एक; वैकल्पिक |मूल्य)",
     "QUESTION_CHOICE_MULTI": "एक से अधिक चुनने दें (जैसे कई टॉपिंग)",
     "QUESTION_BADGE_MULTI": "मल्टी",
-    "QUESTION_OPTIONS_PLACEHOLDER": "कच्चा\nमध्यम\nअच्छी तरह पका",
+    "QUESTION_OPTIONS_PLACEHOLDER": "Rare\nMedium\nExtra cheese|1.00",
     "QUESTION_SCALE_MIN": "न्यूनतम",
     "QUESTION_SCALE_MAX": "अधिकतम",
     "QUESTION_FIELD_REQUIRED": "कार्ट में जोड़ने से पहले आवश्यक",
@@ -993,7 +993,8 @@
     "STOCK_HEADER": "स्टॉक",
     "STOCK_LOW": "कम",
     "STOCK_OK": "ठीक",
-    "STOCK_BADGE_TITLE": "स्टॉक {{qty}} (अलर्ट {{level}} पर)"
+    "STOCK_BADGE_TITLE": "स्टॉक {{qty}} (अलर्ट {{level}} पर)",
+    "QUESTION_OPTIONS_PRICE_HINT": "प्रति पंक्ति एक विकल्प। वैकल्पिक मूल्य पाइप के बाद: लेबल|1.00 (मुख्य मुद्रा इकाइयाँ; छूट के लिए ऋणात्मक)।"
   },
   "CATALOG": {
     "TITLE": "उत्पाद कैटलॉग",
@@ -1276,7 +1277,11 @@
     "TIMER_BAR_HINT": "लाल सीमा की ओर प्रतीक्षा समय की प्रगति",
     "STATION": "स्टेशन",
     "ALL_STATIONS": "सभी स्टेशन",
-    "ITEM_COMMENT": "टिप्पणी"
+    "ITEM_COMMENT": "टिप्पणी",
+    "PLACED": "ऑर्डर समय",
+    "SLA_FRESH": "ताज़ा",
+    "SLA_WARNING": "जोखिम में",
+    "SLA_OVERDUE": "देरी"
   },
   "BAR_DISPLAY": {
     "TITLE": "बार डिस्प्ले"

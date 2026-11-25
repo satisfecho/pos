@@ -965,10 +965,10 @@
     "QUESTION_TYPE_TEXT": "Free text",
     "QUESTION_FIELD_LABEL": "Question (shown to guest)",
     "QUESTION_LABEL_PLACEHOLDER": "e.g. How would you like your steak cooked?",
-    "QUESTION_FIELD_OPTIONS": "Options (one per line)",
+    "QUESTION_FIELD_OPTIONS": "Options (one per line; optional |price)",
     "QUESTION_CHOICE_MULTI": "Allow multiple selections (e.g. several toppings or removals)",
     "QUESTION_BADGE_MULTI": "Multi",
-    "QUESTION_OPTIONS_PLACEHOLDER": "Rare\nMedium\nWell done",
+    "QUESTION_OPTIONS_PLACEHOLDER": "Rare\nMedium\nExtra cheese|1.00",
     "QUESTION_SCALE_MIN": "Minimum",
     "QUESTION_SCALE_MAX": "Maximum",
     "QUESTION_FIELD_REQUIRED": "Required before adding to cart",
@@ -1027,7 +1027,8 @@
     "STOCK_HEADER": "Stock",
     "STOCK_LOW": "Low",
     "STOCK_OK": "OK",
-    "STOCK_BADGE_TITLE": "Stock {{qty}} (alert at {{level}})"
+    "STOCK_BADGE_TITLE": "Stock {{qty}} (alert at {{level}})",
+    "QUESTION_OPTIONS_PRICE_HINT": "One option per line. Optional price delta after a pipe: Label|1.00 (major currency units; use negative for discounts)."
   },
   "CATALOG": {
     "TITLE": "Product Catalog",
@@ -1310,7 +1311,11 @@
     "TIMER_BAR_HINT": "Wait time progress toward red threshold",
     "STATION": "Station",
     "ALL_STATIONS": "All stations",
-    "ITEM_COMMENT": "Comment"
+    "ITEM_COMMENT": "Comment",
+    "PLACED": "Placed",
+    "SLA_FRESH": "Fresh",
+    "SLA_WARNING": "At risk",
+    "SLA_OVERDUE": "Overdue"
   },
   "BAR_DISPLAY": {
     "TITLE": "Bar display"

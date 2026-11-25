@@ -931,10 +931,10 @@
     "QUESTION_TYPE_TEXT": "自由文本",
     "QUESTION_FIELD_LABEL": "问题（顾客可见）",
     "QUESTION_LABEL_PLACEHOLDER": "例如：牛排要几成熟？",
-    "QUESTION_FIELD_OPTIONS": "选项（每行一个）",
+    "QUESTION_FIELD_OPTIONS": "选项（每行一个；可选 |价格）",
     "QUESTION_CHOICE_MULTI": "允许多选（例如多种配料）",
     "QUESTION_BADGE_MULTI": "多选",
-    "QUESTION_OPTIONS_PLACEHOLDER": "一分熟\n五分熟\n全熟",
+    "QUESTION_OPTIONS_PLACEHOLDER": "三分熟\n五分熟\n加芝士|1.00",
     "QUESTION_SCALE_MIN": "最小值",
     "QUESTION_SCALE_MAX": "最大值",
     "QUESTION_FIELD_REQUIRED": "加入购物车前必填",
@@ -993,7 +993,8 @@
     "STOCK_HEADER": "库存",
     "STOCK_LOW": "偏低",
     "STOCK_OK": "正常",
-    "STOCK_BADGE_TITLE": "库存 {{qty}}（阈值 {{level}}）"
+    "STOCK_BADGE_TITLE": "库存 {{qty}}（阈值 {{level}}）",
+    "QUESTION_OPTIONS_PRICE_HINT": "每行一个选项。可选加价用竖线：标签|1.00（主货币单位；负数表示减价）。"
   },
   "CATALOG": {
     "TITLE": "产品目录",
@@ -1276,7 +1277,11 @@
     "TIMER_BAR_HINT": "等待时间相对红色阈值的进度",
     "STATION": "工位",
     "ALL_STATIONS": "全部工位",
-    "ITEM_COMMENT": "备注"
+    "ITEM_COMMENT": "备注",
+    "PLACED": "下单时间",
+    "SLA_FRESH": "新鲜",
+    "SLA_WARNING": "即将超时",
+    "SLA_OVERDUE": "超时"
   },
   "BAR_DISPLAY": {
     "TITLE": "酒吧显示屏"

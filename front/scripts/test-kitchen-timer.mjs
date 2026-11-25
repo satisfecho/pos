@@ -92,7 +92,7 @@ async function main() {
     }
     console.log('   Timer settings button found:', btnText.trim());
 
-    console.log('4. Checking for order cards and Waiting timer...');
+    console.log('4. Checking for order cards, Waiting timer, placed clock, SLA badge...');
     const orderCards = await page.$$('.order-card');
     if (orderCards.length > 0) {
       const waitingCount = await page.$$eval('.order-waiting', (els) => els.length);
@@ -106,6 +106,17 @@ async function main() {
         process.exit(1);
       }
       console.log('   Found', waitingCount, 'Waiting timer(s) on order cards.');
+      const placedCount = await page.$$eval('[data-testid="kitchen-order-placed"]', (els) => els.length);
+      if (placedCount === 0) {
+        console.error('FAIL: No placed-clock element ([data-testid=kitchen-order-placed]).');
+        process.exit(1);
+      }
+      const slaCount = await page.$$eval('[data-testid="kitchen-sla-badge"]', (els) => els.length);
+      if (slaCount === 0) {
+        console.error('FAIL: No SLA badge ([data-testid=kitchen-sla-badge]).');
+        process.exit(1);
+      }
+      console.log('   Found', placedCount, 'placed clock(s) and', slaCount, 'SLA badge(s).');
     } else {
       console.log('   No order cards (empty state) – timer only appears on cards. OK.');
     }

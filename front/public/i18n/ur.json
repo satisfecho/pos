@@ -790,10 +790,10 @@
     "QUESTION_TYPE_TEXT": "مفت متن",
     "QUESTION_FIELD_LABEL": "سوال (دکھایا گیا کو گیسٹ)",
     "QUESTION_LABEL_PLACEHOLDER": "مثلاً کیسے گا آپ جیسے آپ کا steak پکا?",
-    "QUESTION_FIELD_OPTIONS": "آپشنز (ایک فی لائن)",
+    "QUESTION_FIELD_OPTIONS": "آپشنز (ہر لائن پر ایک؛ اختیاری |قیمت)",
     "QUESTION_CHOICE_MULTI": "اجازت دیں متعدد انتخاب (مثلاً several ٹاپنگز یا removals)",
     "QUESTION_BADGE_MULTI": "متعدد",
-    "QUESTION_OPTIONS_PLACEHOLDER": "نادر\nدرمیانہ\nاچھی طرح ہو گیا",
+    "QUESTION_OPTIONS_PLACEHOLDER": "Rare\nMedium\nExtra cheese|1.00",
     "QUESTION_SCALE_MIN": "کم از کم",
     "QUESTION_SCALE_MAX": "زیادہ سے زیادہ",
     "QUESTION_FIELD_REQUIRED": "کارٹ میں شامل کرنے سے پہلے لازمی",
@@ -852,7 +852,8 @@
     "STOCK_HEADER": "اسٹاک",
     "STOCK_LOW": "کم",
     "STOCK_OK": "ٹھیک",
-    "STOCK_BADGE_TITLE": "اسٹاک {{qty}} (الرٹ {{level}} پر)"
+    "STOCK_BADGE_TITLE": "اسٹاک {{qty}} (الرٹ {{level}} پر)",
+    "QUESTION_OPTIONS_PRICE_HINT": "ہر لائن پر ایک آپشن۔ اختیاری قیمت پائپ کے بعد: لیبل|1.00 (بڑی کرنسی اکائیاں؛ رعایت کے لیے منفی)۔"
   },
   "CATALOG": {
     "TITLE": "پروڈکٹ کیٹلاگ",
@@ -1135,7 +1136,11 @@
     "TIMER_BAR_HINT": "انتظار وقت progress toward red threshold",
     "STATION": "اسٹیشن",
     "ALL_STATIONS": "تمام اسٹیشن",
-    "ITEM_COMMENT": "تبصرہ"
+    "ITEM_COMMENT": "تبصرہ",
+    "PLACED": "آرڈر وقت",
+    "SLA_FRESH": "تازہ",
+    "SLA_WARNING": "خطرے میں",
+    "SLA_OVERDUE": "تاخیر"
   },
   "BAR_DISPLAY": {
     "TITLE": "بار ڈسپلے"

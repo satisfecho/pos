@@ -790,10 +790,10 @@
     "QUESTION_TYPE_TEXT": "Texte libre",
     "QUESTION_FIELD_LABEL": "Question (visible au client)",
     "QUESTION_LABEL_PLACEHOLDER": "ex. Cuisson de la viande ?",
-    "QUESTION_FIELD_OPTIONS": "Options (une par ligne)",
+    "QUESTION_FIELD_OPTIONS": "Options (une par ligne ; |prix optionnel)",
     "QUESTION_CHOICE_MULTI": "Autoriser plusieurs choix (ex. plusieurs garnitures)",
     "QUESTION_BADGE_MULTI": "Multiple",
-    "QUESTION_OPTIONS_PLACEHOLDER": "Saignant\nÀ point\nBien cuit",
+    "QUESTION_OPTIONS_PLACEHOLDER": "Saignant\nÀ point\nFromage extra|1.00",
     "QUESTION_SCALE_MIN": "Minimum",
     "QUESTION_SCALE_MAX": "Maximum",
     "QUESTION_FIELD_REQUIRED": "Obligatoire avant d’ajouter au panier",
@@ -852,7 +852,8 @@
     "STOCK_HEADER": "Stock",
     "STOCK_LOW": "Bas",
     "STOCK_OK": "OK",
-    "STOCK_BADGE_TITLE": "Stock {{qty}} (alerte à {{level}})"
+    "STOCK_BADGE_TITLE": "Stock {{qty}} (alerte à {{level}})",
+    "QUESTION_OPTIONS_PRICE_HINT": "Une option par ligne. Prix optionnel après un pipe : Libellé|1.00 (unités majeures ; négatif pour remises)."
   },
   "CATALOG": {
     "TITLE": "Catalogue produits",
@@ -1135,7 +1136,11 @@
     "TIMER_BAR_HINT": "Progression du temps d'attente vers le seuil rouge",
     "STATION": "Station",
     "ALL_STATIONS": "Toutes les stations",
-    "ITEM_COMMENT": "Commentaire"
+    "ITEM_COMMENT": "Commentaire",
+    "PLACED": "Passée",
+    "SLA_FRESH": "Frais",
+    "SLA_WARNING": "À risque",
+    "SLA_OVERDUE": "En retard"
   },
   "BAR_DISPLAY": {
     "TITLE": "Écran bar"

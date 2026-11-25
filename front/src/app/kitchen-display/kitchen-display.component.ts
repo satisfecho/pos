@@ -167,7 +167,12 @@ const VIEW_CATEGORY: Record<string, string> = {
         } @else {
           <div class="order-grid">
             @for (order of activeOrders(); track order.id) {
-              <article class="order-card status-{{ order.status }} {{ getTimerColorClass(order) }}" [class.order-card-urgent]="order.staff_urgent">
+              <article
+                class="order-card status-{{ order.status }} {{ getTimerColorClass(order) }}"
+                [class.order-card-urgent]="order.staff_urgent"
+                [attr.data-sla]="getSlaLevel(order)"
+                data-testid="kitchen-order-card"
+              >
                 <div class="order-header">
                   <div class="order-meta">
                     <span class="order-id">#{{ order.id }}</span>
@@ -178,10 +183,38 @@ const VIEW_CATEGORY: Record<string, string> = {
                     @if (order.customer_name) {
                       <span class="order-customer">{{ 'ORDERS.CUSTOMER' | translate }}: {{ order.customer_name }}</span>
                     }
-                    <span class="order-time" [title]="formatExactTime(order.created_at)">{{ formatOrderTime(order.created_at) }}</span>
-                    <span class="order-waiting" [title]="formatExactTime(order.created_at)">{{ 'KITCHEN_DISPLAY.WAITING' | translate }}: {{ formatWaitingTime(order.created_at) }}</span>
+                    <span
+                      class="order-placed"
+                      data-testid="kitchen-order-placed"
+                      [title]="formatExactTime(order.created_at)"
+                    >
+                      {{ 'KITCHEN_DISPLAY.PLACED' | translate }}: {{ formatPlacedClock(order.created_at) }}
+                      <span class="order-placed-relative">({{ formatOrderTime(order.created_at) }})</span>
+                    </span>
+                    <span class="order-waiting" [title]="formatExactTime(order.created_at)">
+                      {{ 'KITCHEN_DISPLAY.WAITING' | translate }}: {{ formatWaitingTime(order.created_at) }}
+                    </span>
+                    <span
+                      class="sla-badge sla-{{ getSlaLevel(order) }}"
+                      data-testid="kitchen-sla-badge"
+                      [attr.aria-label]="getSlaLabel(order)"
+                    >{{ getSlaLabel(order) }}</span>
                   </div>
-                  <span class="status-badge status-{{ order.status }}">{{ getStatusLabel(order.status) }}</span>
+                  <div class="order-header-actions">
+                    @if (canMarkUrgent()) {
+                      <button
+                        type="button"
+                        class="urgent-toggle-btn"
+                        data-testid="kitchen-urgent-toggle"
+                        (click)="toggleStaffUrgent(order)"
+                        [disabled]="urgentUpdatingId() === order.id"
+                        [title]="(order.staff_urgent ? 'ORDERS.CLEAR_URGENT' : 'ORDERS.MARK_URGENT') | translate"
+                      >
+                        {{ (order.staff_urgent ? 'ORDERS.CLEAR_URGENT' : 'ORDERS.MARK_URGENT') | translate }}
+                      </button>
+                    }
+                    <span class="status-badge status-{{ order.status }}">{{ getStatusLabel(order.status) }}</span>
+                  </div>
                 </div>
                 <div class="order-timer-bar-wrap" [attr.aria-label]="'KITCHEN_DISPLAY.TIMER_BAR_HINT' | translate">
                   <div class="order-timer-bar-track">
@@ -413,6 +446,65 @@ const VIEW_CATEGORY: Record<string, string> = {
       border-radius: var(--radius-sm);
       background: rgba(220, 38, 38, 0.15);
       color: #b91c1c;
+      width: fit-content;
+    }
+    .order-placed {
+      font-size: 1.0625rem;
+      font-weight: 700;
+      color: var(--color-text);
+    }
+    .order-placed-relative {
+      font-weight: 500;
+      color: var(--color-text-muted);
+      font-size: 0.9375rem;
+    }
+    .sla-badge {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      margin-top: var(--space-1);
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .sla-badge.sla-fresh {
+      background: rgba(34, 197, 94, 0.18);
+      color: #15803d;
+    }
+    .sla-badge.sla-warning {
+      background: rgba(234, 179, 8, 0.22);
+      color: #a16207;
+    }
+    .sla-badge.sla-overdue {
+      background: rgba(239, 68, 68, 0.18);
+      color: #b91c1c;
+    }
+    .order-header-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--space-2);
+    }
+    .urgent-toggle-btn {
+      padding: var(--space-1) var(--space-3);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #b91c1c;
+      background: rgba(220, 38, 38, 0.08);
+      border: 1px solid rgba(220, 38, 38, 0.35);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .urgent-toggle-btn:hover:not(:disabled) {
+      background: rgba(220, 38, 38, 0.15);
+    }
+    .urgent-toggle-btn:disabled {
+      opacity: 0.6;
+      cursor: wait;
     }
     .order-timer-bar-wrap {
       padding: 0 var(--space-5) var(--space-3);
@@ -461,7 +553,6 @@ const VIEW_CATEGORY: Record<string, string> = {
       color: var(--color-primary);
     }
     .order-customer { font-size: 1rem; color: var(--color-text-muted); }
-    .order-time { font-size: 1rem; color: var(--color-text-muted); }
     .order-waiting { font-size: 1.125rem; font-weight: 700; color: var(--color-text); }
     .status-badge {
       padding: var(--space-2) var(--space-4);
@@ -726,6 +817,8 @@ export class KitchenDisplayComponent implements OnInit, AfterViewInit, OnDestroy
     orange_minutes: 10,
     red_minutes: 15,
   });
+  /** Order id currently saving staff_urgent; null when idle. */
+  urgentUpdatingId = signal<number | null>(null);
   private tickIntervalId: ReturnType<typeof setInterval> | null = null;
 
   /** True when this view’s root element is the browser fullscreen element. */
@@ -733,6 +826,10 @@ export class KitchenDisplayComponent implements OnInit, AfterViewInit, OnDestroy
 
   canUpdateItemStatus = computed(() =>
     this.permissions.hasPermission(this.permissions.getCurrentUser(), 'order:item_status')
+  );
+
+  canMarkUrgent = computed(() =>
+    this.permissions.hasPermission(this.permissions.getCurrentUser(), 'order:update_status')
   );
 
   pageTitle = computed(() =>
@@ -921,6 +1018,55 @@ export class KitchenDisplayComponent implements OnInit, AfterViewInit, OnDestroy
     if (min >= (s.orange_minutes ?? 10)) return 'timer-orange';
     if (min >= (s.yellow_minutes ?? 5)) return 'timer-yellow';
     return 'timer-green';
+  }
+
+  /**
+   * SLA level for badge: fresh (green), warning (yellow/orange), overdue (red).
+   * Uses the same tenant timer thresholds as the card border / progress bar.
+   */
+  getSlaLevel(order: Order): 'fresh' | 'warning' | 'overdue' {
+    const color = this.getTimerColorClass(order);
+    if (color === 'timer-red') return 'overdue';
+    if (color === 'timer-yellow' || color === 'timer-orange') return 'warning';
+    return 'fresh';
+  }
+
+  getSlaLabel(order: Order): string {
+    const level = this.getSlaLevel(order);
+    const key =
+      level === 'overdue'
+        ? 'KITCHEN_DISPLAY.SLA_OVERDUE'
+        : level === 'warning'
+          ? 'KITCHEN_DISPLAY.SLA_WARNING'
+          : 'KITCHEN_DISPLAY.SLA_FRESH';
+    return this.translate.instant(key);
+  }
+
+  /** Absolute clock time (HH:MM) for clear placed-at display on every ticket. */
+  formatPlacedClock(dateString: string): string {
+    if (!dateString) return '—';
+    const created = this.parseOrderDate(dateString);
+    if (created == null) return '—';
+    const date = new Date(created);
+    return date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  }
+
+  toggleStaffUrgent(order: Order): void {
+    if (!this.canMarkUrgent() || this.urgentUpdatingId() != null) return;
+    const next = !order.staff_urgent;
+    this.urgentUpdatingId.set(order.id);
+    this.api.setOrderStaffUrgent(order.id, next).subscribe({
+      next: (res) => {
+        this.orders.update((list) =>
+          list.map((o) => (o.id === order.id ? { ...o, staff_urgent: res.staff_urgent } : o))
+        );
+        this.urgentUpdatingId.set(null);
+      },
+      error: () => {
+        this.urgentUpdatingId.set(null);
+        this.loadOrders({ background: true });
+      },
+    });
   }
 
   /** Fill width 0–100% toward red threshold (visual progress of wait time). */

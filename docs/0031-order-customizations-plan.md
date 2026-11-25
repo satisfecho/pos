@@ -1,6 +1,6 @@
 # Order customizations (pizza-style modifiers) - GitHub [#50](https://github.com/satisfecho/pos/issues/50)
 
-> **Status: core #50 shipped; optional price deltas not shipped.** Staff product-question config, public menu answers (including multi-select choice), and kitchen/invoice `customization_summary` are live. **Remaining (optional):** per-option **price deltas**. Do not treat Phase 1-3 as open backlog.
+> **Status: core #50 shipped; per-option price deltas shipped (#451).** Staff product-question config, public menu answers (including multi-select choice), kitchen/invoice `customization_summary`, and optional per-option **price deltas** are live. Do not treat Phase 1-3 or price deltas as open backlog.
 
 **Goal:** Let guests change a dish when ordering (e.g. remove pepperoni, add another cheese), not only fixed “one answer per question” flows.
 
@@ -14,7 +14,7 @@
 | **Customer menu** | `menu.component.ts`: modal collects answers before add-to-cart; cart merge keys include `customization_answers`. |
 | **Staff UI** | **`/products`**: when editing an existing product, section **Customer menu customizations** - list, add, edit, delete, reorder (↑↓). New products: hint to save first. |
 
-**Remaining for #50:** Optional **price deltas** per modifier (Phase 2C-style) if product needs “+€1 per extra”; otherwise multi-select + snapshot covers the pizza use case.
+**Price deltas (#451):** Choice options may be plain strings (delta 0) or `{"label": "...", "price_delta_cents": N}`. Multi-select **sums** selected deltas; unit price is `max(0, base + deltas)` before promos; tax uses the adjusted inclusive unit price. Answers stay label strings/`string[]`; `OrderItem.price_cents` and `customization_summary` snapshot priced modifiers at order create. Staff UI: one option per line, optional `|1.00` major-unit delta.
 
 ## Suggested phases
 
@@ -33,7 +33,7 @@
 - **Staff / API:** Choice options may be a **plain list** (single `<select>`) or **`{"choices": [...], "multi": true}`** (checkboxes on the customer menu). Validated in `_validate_product_question_options` and in `product_customization.py`.
 - **Storage:** `OrderItem.customization_answers` uses **string keys**; multi answers are **`string[]`** (sorted when normalizing for merge and validation).
 - **Customer menu:** `multi` flag on each question in the public menu payload; modal renders checkboxes vs single select.
-- **Not implemented:** Per-option **price deltas** - use **C - Modifier catalog** (or manual price products) if needed later.
+- **Price deltas:** Supported on choice options (string or `{label, price_delta_cents}`); see Status / Price deltas above.
 - **A - Multiple questions** remains a valid pattern for yes/no groups without multi-select.
 
 ### Phase 3 - Staff orders & kitchen

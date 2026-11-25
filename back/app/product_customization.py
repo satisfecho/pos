@@ -1,5 +1,8 @@
 """
 Product question options parsing, answer validation, and human-readable summaries (issue #50).
+Per-option price deltas (#451): choice entries may be strings (delta 0) or
+{"label": str, "price_delta_cents": int}. Multi-select stacks (sums) deltas;
+unit price is floored at 0; tax uses the adjusted inclusive unit price.
 """
 
 from __future__ import annotations
@@ -13,6 +16,8 @@ from . import models
 
 # Max text answer length (public menu); aligns with light hardening in docs/0031.
 MAX_TEXT_CUSTOMIZATION_LEN = 500
+# Absolute max |price_delta_cents| per option (sanity; 10_000.00 in major units).
+MAX_ABS_PRICE_DELTA_CENTS = 1_000_000
 
 
 def choice_options_is_multi(options: dict | list | None) -> bool:
@@ -21,18 +26,89 @@ def choice_options_is_multi(options: dict | list | None) -> bool:
     return False
 
 
-def choice_options_allowed_list(options: dict | list | None) -> list[str]:
-    """Return allowed choice strings (single-select list or multi dict)."""
+def parse_choice_option_entry(entry: Any) -> tuple[str, int]:
+    """Return (label, price_delta_cents) for a choice option entry."""
+    if isinstance(entry, dict):
+        label = str(entry.get("label") or entry.get("name") or "").strip()
+        raw = entry.get("price_delta_cents", 0)
+        try:
+            delta = int(raw) if raw is not None else 0
+        except (TypeError, ValueError):
+            delta = 0
+        return label, delta
+    label = str(entry).strip() if entry is not None else ""
+    return label, 0
+
+
+def choice_options_entries(options: dict | list | None) -> list[tuple[str, int]]:
+    """Return (label, price_delta_cents) pairs for choice options."""
     if options is None:
         return []
+    raw: list[Any]
     if isinstance(options, list):
-        return [str(x).strip() for x in options if str(x).strip()]
-    if isinstance(options, dict):
-        raw = options.get("choices")
-        if not isinstance(raw, list):
+        raw = options
+    elif isinstance(options, dict):
+        choices = options.get("choices")
+        if not isinstance(choices, list):
             return []
-        return [str(x).strip() for x in raw if str(x).strip()]
-    return []
+        raw = choices
+    else:
+        return []
+    out: list[tuple[str, int]] = []
+    for entry in raw:
+        label, delta = parse_choice_option_entry(entry)
+        if label:
+            out.append((label, delta))
+    return out
+
+
+def choice_options_allowed_list(options: dict | list | None) -> list[str]:
+    """Return allowed choice labels (single-select list or multi dict)."""
+    return [label for label, _ in choice_options_entries(options)]
+
+
+def choice_options_delta_map(options: dict | list | None) -> dict[str, int]:
+    """Map choice label -> price_delta_cents (last wins on duplicate labels)."""
+    return {label: delta for label, delta in choice_options_entries(options)}
+
+
+def format_delta_for_summary(delta_cents: int) -> str:
+    """Human-readable signed major-unit amount, e.g. +1.00 or -0.50."""
+    sign = "+" if delta_cents >= 0 else "-"
+    major = abs(delta_cents) / 100
+    if major == int(major):
+        return f"{sign}{int(major)}.00"
+    return f"{sign}{major:.2f}"
+
+
+def format_choice_label_for_summary(label: str, delta_cents: int) -> str:
+    if not delta_cents:
+        return label
+    return f"{label} ({format_delta_for_summary(delta_cents)})"
+
+
+def compute_customization_price_delta_cents(
+    questions: list[models.ProductQuestion],
+    normalized_answers: dict[str, Any] | None,
+) -> int:
+    """Sum per-option deltas for normalized answers (multi-select stacks)."""
+    if not normalized_answers:
+        return 0
+    total = 0
+    for q in questions:
+        if q.id is None or q.type != models.ProductQuestionType.choice:
+            continue
+        qid = str(q.id)
+        val = normalized_answers.get(qid)
+        if val is None or val == "" or val == []:
+            continue
+        deltas = choice_options_delta_map(q.options)
+        if isinstance(val, list):
+            for label in val:
+                total += int(deltas.get(str(label), 0))
+        else:
+            total += int(deltas.get(str(val), 0))
+    return total
 
 
 def validate_and_normalize_customization_answers(
@@ -40,9 +116,11 @@ def validate_and_normalize_customization_answers(
     tenant_id: int,
     product_id: int,
     raw_answers: dict[str, Any] | None,
-) -> tuple[dict[str, Any] | None, str | None]:
+) -> tuple[dict[str, Any] | None, str | None, int]:
     """
-    Validate answers against ProductQuestion rows; return normalized JSON and a snapshot summary.
+    Validate answers against ProductQuestion rows.
+
+    Returns (normalized JSON, snapshot summary, price_delta_cents).
     Raises HTTPException(422) on invalid input.
     """
     questions = session.exec(
@@ -58,7 +136,7 @@ def validate_and_normalize_customization_answers(
                 status_code=422,
                 detail="This product has no customization questions",
             )
-        return None, None
+        return None, None, 0
 
     q_by_id = {q.id: q for q in questions if q.id is not None}
     if not raw_answers:
@@ -154,6 +232,7 @@ def validate_and_normalize_customization_answers(
             if not allowed:
                 continue
             allowed_set = set(allowed)
+            delta_by_label = choice_options_delta_map(q.options)
             multi = choice_options_is_multi(q.options)
 
             if val is None or val == "" or val == []:
@@ -193,7 +272,10 @@ def validate_and_normalize_customization_answers(
                     continue
                 unique.sort()
                 normalized[qid] = unique
-                summary_parts.append(f"{q.label}: {', '.join(unique)}")
+                pretty = ", ".join(
+                    format_choice_label_for_summary(u, delta_by_label.get(u, 0)) for u in unique
+                )
+                summary_parts.append(f"{q.label}: {pretty}")
             else:
                 if isinstance(val, list):
                     raise HTTPException(
@@ -207,14 +289,17 @@ def validate_and_normalize_customization_answers(
                         detail=f'Invalid choice for "{q.label}"',
                     )
                 normalized[qid] = s
-                summary_parts.append(f"{q.label}: {s}")
+                summary_parts.append(
+                    f"{q.label}: {format_choice_label_for_summary(s, delta_by_label.get(s, 0))}"
+                )
 
     if not normalized:
-        return None, None
+        return None, None, 0
     summary = " · ".join(summary_parts)
     if len(summary) > 1024:
         summary = summary[:1021] + "..."
-    return normalized, summary
+    delta_cents = compute_customization_price_delta_cents(list(questions), normalized)
+    return normalized, summary, delta_cents
 
 
 def customization_dicts_equal(a: dict[str, Any] | None, b: dict[str, Any] | None) -> bool:

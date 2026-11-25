@@ -790,10 +790,10 @@
     "QUESTION_TYPE_TEXT": "Freitext",
     "QUESTION_FIELD_LABEL": "Frage (für Gäste)",
     "QUESTION_LABEL_PLACEHOLDER": "z. B. Wie möchten Sie das Steak?",
-    "QUESTION_FIELD_OPTIONS": "Optionen (eine pro Zeile)",
+    "QUESTION_FIELD_OPTIONS": "Optionen (eine pro Zeile; optional |Preis)",
     "QUESTION_CHOICE_MULTI": "Mehrfachauswahl erlauben (z. B. mehrere Beläge)",
     "QUESTION_BADGE_MULTI": "Mehrfach",
-    "QUESTION_OPTIONS_PLACEHOLDER": "Rosa\nMedium\nDurch",
+    "QUESTION_OPTIONS_PLACEHOLDER": "Rare\nMedium\nExtra Käse|1.00",
     "QUESTION_SCALE_MIN": "Minimum",
     "QUESTION_SCALE_MAX": "Maximum",
     "QUESTION_FIELD_REQUIRED": "Pflicht vor dem Hinzufügen",
@@ -852,7 +852,8 @@
     "STOCK_HEADER": "Bestand",
     "STOCK_LOW": "Niedrig",
     "STOCK_OK": "OK",
-    "STOCK_BADGE_TITLE": "Bestand {{qty}} (Warnung bei {{level}})"
+    "STOCK_BADGE_TITLE": "Bestand {{qty}} (Warnung bei {{level}})",
+    "QUESTION_OPTIONS_PRICE_HINT": "Eine Option pro Zeile. Optionaler Preis nach Pipe: Bezeichnung|1.00 (Währungseinheiten; negativ für Abzüge)."
   },
   "CATALOG": {
     "TITLE": "Produktkatalog",
@@ -2667,7 +2668,11 @@
     "TIMER_BAR_HINT": "Wartezeit-Fortschritt bis zur roten Schwelle",
     "STATION": "Station",
     "ALL_STATIONS": "Alle Stationen",
-    "ITEM_COMMENT": "Kommentar"
+    "ITEM_COMMENT": "Kommentar",
+    "PLACED": "Aufgegeben",
+    "SLA_FRESH": "Frisch",
+    "SLA_WARNING": "Gefährdet",
+    "SLA_OVERDUE": "Überfällig"
   },
   "BAR_DISPLAY": {
     "TITLE": "Bar-Anzeige"

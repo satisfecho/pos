@@ -790,10 +790,10 @@
     "QUESTION_TYPE_TEXT": "Свободен текст",
     "QUESTION_FIELD_LABEL": "Въпрос (показан на госта)",
     "QUESTION_LABEL_PLACEHOLDER": "напр. Как да е изпечен стекът?",
-    "QUESTION_FIELD_OPTIONS": "Опции (по една на ред)",
+    "QUESTION_FIELD_OPTIONS": "Опции (по една на ред; опционална |цена)",
     "QUESTION_CHOICE_MULTI": "Позволете множествен избор (напр. няколко добавки или премахвания)",
     "QUESTION_BADGE_MULTI": "Мулти",
-    "QUESTION_OPTIONS_PLACEHOLDER": "Редки\nСреден\nДобра работа",
+    "QUESTION_OPTIONS_PLACEHOLDER": "Rare\nMedium\nExtra cheese|1.00",
     "QUESTION_SCALE_MIN": "Минимум",
     "QUESTION_SCALE_MAX": "Максимум ",
     "QUESTION_FIELD_REQUIRED": "Задължително преди добавяне в количката",
@@ -852,7 +852,8 @@
     "STOCK_HEADER": "Наличност",
     "STOCK_LOW": "Ниско",
     "STOCK_OK": "OK",
-    "STOCK_BADGE_TITLE": "Наличност {{qty}} (предупреждение при {{level}})"
+    "STOCK_BADGE_TITLE": "Наличност {{qty}} (предупреждение при {{level}})",
+    "QUESTION_OPTIONS_PRICE_HINT": "По една опция на ред. Опционална цена след |: Етикет|1.00 (основни единици; отрицателна за отстъпки)."
   },
   "CATALOG": {
     "TITLE": "ПРОДУКТОВ КАТАЛОГ",
@@ -1135,7 +1136,11 @@
     "TIMER_BAR_HINT": "Wait time progress toward red threshold",
     "STATION": "Станция",
     "ALL_STATIONS": "Всички репери",
-    "ITEM_COMMENT": "Коментар"
+    "ITEM_COMMENT": "Коментар",
+    "PLACED": "Поръчана",
+    "SLA_FRESH": "Свежа",
+    "SLA_WARNING": "В риск",
+    "SLA_OVERDUE": "Просрочена"
   },
   "BAR_DISPLAY": {
     "TITLE": "Бар дисплей"

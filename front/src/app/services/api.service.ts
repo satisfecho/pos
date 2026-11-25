@@ -1214,11 +1214,20 @@ export interface ProductBulkImportConfirmResult {
   product_ids: number[];
 }
 
+/** Choice option: plain label, or label + per-option price delta in cents (#451). */
+export type ProductChoiceOption =
+  | string
+  | { label: string; price_delta_cents?: number };
+
 export interface ProductQuestion {
   id: number;
   type: 'choice' | 'scale' | 'text';
   label: string;
-  options?: string[] | { min: number; max: number } | { choices: string[]; multi?: boolean } | null;
+  options?:
+    | ProductChoiceOption[]
+    | { min: number; max: number }
+    | { choices: ProductChoiceOption[]; multi?: boolean }
+    | null;
   /** True when choice options use multi-select ({ choices, multi: true }) */
   multi?: boolean;
   required?: boolean;
@@ -1235,7 +1244,11 @@ export type ProductQuestionStaff = Omit<ProductQuestion, 'sort_order' | 'require
 export interface ProductQuestionCreatePayload {
   type: 'choice' | 'scale' | 'text';
   label: string;
-  options?: string[] | { min: number; max: number } | { choices: string[]; multi?: boolean } | null;
+  options?:
+    | ProductChoiceOption[]
+    | { min: number; max: number }
+    | { choices: ProductChoiceOption[]; multi?: boolean }
+    | null;
   sort_order?: number;
   required?: boolean;
 }
@@ -1243,7 +1256,11 @@ export interface ProductQuestionCreatePayload {
 export interface ProductQuestionUpdatePayload {
   type?: 'choice' | 'scale' | 'text';
   label?: string;
-  options?: string[] | { min: number; max: number } | { choices: string[]; multi?: boolean } | null;
+  options?:
+    | ProductChoiceOption[]
+    | { min: number; max: number }
+    | { choices: ProductChoiceOption[]; multi?: boolean }
+    | null;
   sort_order?: number;
   required?: boolean;
 }

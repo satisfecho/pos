@@ -132,8 +132,10 @@ from .line_modifiers import (
     validate_and_normalize_line_modifiers,
 )
 from .product_customization import (
+    MAX_ABS_PRICE_DELTA_CENTS,
     choice_options_is_multi,
     customization_dicts_equal,
+    parse_choice_option_entry,
     validate_and_normalize_customization_answers,
 )
 from .order_notes import normalize_order_note, order_notes_equal
@@ -6467,6 +6469,27 @@ def list_product_questions(
     ]
 
 
+def _normalize_choice_option_entry(entry: Any) -> str | dict:
+    """
+    Normalize one choice option: plain string (delta 0) or
+    {"label": str, "price_delta_cents": int} when priced (#451).
+    """
+    label, delta = parse_choice_option_entry(entry)
+    if not label:
+        raise HTTPException(
+            status_code=422,
+            detail="choice option label cannot be empty",
+        )
+    if abs(delta) > MAX_ABS_PRICE_DELTA_CENTS:
+        raise HTTPException(
+            status_code=422,
+            detail=f"price_delta_cents must be between -{MAX_ABS_PRICE_DELTA_CENTS} and {MAX_ABS_PRICE_DELTA_CENTS}",
+        )
+    if delta == 0:
+        return label
+    return {"label": label, "price_delta_cents": delta}
+
+
 def _validate_product_question_options(
     qtype: models.ProductQuestionType, options: dict | list | None
 ) -> dict | list | None:
@@ -6480,7 +6503,8 @@ def _validate_product_question_options(
                 detail="choice questions require options as a non-empty list of strings or {choices, multi}",
             )
         if isinstance(options, list):
-            opts = [str(x).strip() for x in options if str(x).strip()]
+            opts = [_normalize_choice_option_entry(x) for x in options]
+            opts = [o for o in opts if o]
             if not opts:
                 raise HTTPException(
                     status_code=422,
@@ -6493,9 +6517,13 @@ def _validate_product_question_options(
             if not isinstance(raw_choices, list):
                 raise HTTPException(
                     status_code=422,
-                    detail="choice options must be a list of strings or {choices: string[], multi?: boolean}",
+                    detail=(
+                        "choice options must be a list of strings/{label, price_delta_cents} "
+                        "or {choices: [...], multi?: boolean}"
+                    ),
                 )
-            opts = [str(x).strip() for x in raw_choices if str(x).strip()]
+            opts = [_normalize_choice_option_entry(x) for x in raw_choices]
+            opts = [o for o in opts if o]
             if not opts:
                 raise HTTPException(
                     status_code=422,
@@ -6504,7 +6532,10 @@ def _validate_product_question_options(
             return {"choices": opts, "multi": multi}
         raise HTTPException(
             status_code=422,
-            detail="choice options must be a JSON array of strings or {choices: string[], multi?: boolean}",
+            detail=(
+                "choice options must be a JSON array of strings/{label, price_delta_cents} "
+                "or {choices: [...], multi?: boolean}"
+            ),
         )
     if qtype == models.ProductQuestionType.scale:
         if options is None or not isinstance(options, dict):
@@ -13991,6 +14022,14 @@ def create_order(
             product_name=product_name,
         )
 
+        # Validate customizations early so per-option price deltas adjust list price before promo (#451)
+        raw_answers = item.customization_answers if hasattr(item, "customization_answers") else None
+        item_answers, cust_summary, cust_delta_cents = validate_and_normalize_customization_answers(
+            session, table.tenant_id, effective_product_id, raw_answers
+        )
+        if cust_delta_cents:
+            price_cents = max(0, int(price_cents) + int(cust_delta_cents))
+
         # Apply eligible line promo (#322) — discount tax-inclusive list price, recompute tax
         product_category = None
         eff_product = session.get(models.Product, effective_product_id)
@@ -14021,10 +14060,6 @@ def create_order(
 
         # Check if this product already exists in the order with same customization (only active, non-removed items)
         # Match by effective_product_id and same customization_answers so we merge only when preferences match
-        raw_answers = item.customization_answers if hasattr(item, "customization_answers") else None
-        item_answers, cust_summary = validate_and_normalize_customization_answers(
-            session, table.tenant_id, effective_product_id, raw_answers
-        )
         raw_lm = getattr(item, "line_modifiers", None)
         norm_modifiers, lm_summary = validate_and_normalize_line_modifiers(raw_lm)
         existing_items = session.exec(
