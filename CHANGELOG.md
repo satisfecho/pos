@@ -14,6 +14,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.203] - 2026-11-25
+
+### Fixed
+
+- **Platform AG Grid quick filter:** Register `QuickFilterModule` so tenant search works without AG Grid error #200.
+
 ## [2.1.202] - 2026-11-25
 
 ### Added
