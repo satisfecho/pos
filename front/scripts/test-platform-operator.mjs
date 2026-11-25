@@ -56,7 +56,16 @@ async function main() {
     if (!usageTitle || usageTitle.includes('PLATFORM_DASHBOARD.')) {
       throw new Error(`Usage chart title missing or untranslated: ${usageTitle}`);
     }
-    console.log(`OK: usage chart visible (${usageTitle})`);
+    for (const days of [7, 30, 90]) {
+      const btn = await page.$(`[data-testid="usage-days-${days}"]`);
+      if (!btn) throw new Error(`Missing usage period button: ${days}`);
+    }
+    await page.click('[data-testid="usage-days-7"]');
+    await page.waitForFunction(
+      () => document.querySelector('[data-testid="usage-days-7"]')?.getAttribute('aria-pressed') === 'true',
+      { timeout: 10000 },
+    );
+    console.log(`OK: usage chart visible (${usageTitle}) with period selector`);
 
     await page.waitForSelector('a.tenant-link', { timeout: 10000 });
     await page.waitForSelector('[data-testid="tenant-filter"]', { timeout: 5000 });

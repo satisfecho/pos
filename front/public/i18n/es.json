@@ -448,14 +448,18 @@
     "COL_OWNER_LAST_LOGIN": "Último inicio del propietario",
     "COL_LOGIN_COUNT": "Inicios de sesión",
     "COL_LAST_LOGIN": "Último inicio",
-    "USAGE_OVER_TIME": "Uso en el tiempo (30 días)",
+    "USAGE_OVER_TIME": "Uso en el tiempo",
     "USAGE_LOGINS": "Inicios de sesión",
     "USAGE_SIGNUPS": "Altas",
-    "USAGE_EMPTY": "No hay datos de uso en los últimos 30 días.",
+    "USAGE_EMPTY": "No hay datos de uso en este período.",
     "FILTER_TENANTS": "Filtrar inquilinos",
     "FILTER_PLACEHOLDER": "Buscar por nombre, propietario o correo",
     "COL_OWNER_ACTIVITY": "Actividad del propietario",
-    "NO_FILTER_MATCH": "Ningún inquilino coincide con este filtro."
+    "NO_FILTER_MATCH": "Ningún inquilino coincide con este filtro.",
+    "USAGE_PERIOD": "Periodo de uso",
+    "USAGE_DAYS_7": "7 días",
+    "USAGE_DAYS_30": "30 días",
+    "USAGE_DAYS_90": "90 días"
   },
   "COURIER_HOME": {
     "TITLE": "Entregas",

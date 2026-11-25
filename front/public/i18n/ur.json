@@ -448,14 +448,18 @@
     "COL_OWNER_LAST_LOGIN": "مالک آخری لاگ اِن",
     "COL_LOGIN_COUNT": "لاگ اِنز",
     "COL_LAST_LOGIN": "آخری لاگ اِن",
-    "USAGE_OVER_TIME": "وقت کے ساتھ استعمال (30 دن)",
+    "USAGE_OVER_TIME": "وقت کے ساتھ استعمال",
     "USAGE_LOGINS": "لاگ ان",
     "USAGE_SIGNUPS": "سائن اپ",
-    "USAGE_EMPTY": "آخری 30 دنوں میں استعمال کا کوئی ڈیٹا نہیں۔",
+    "USAGE_EMPTY": "اس مدت میں استعمال کا کوئی ڈیٹا نہیں۔",
     "FILTER_TENANTS": "کرایہ دار فلٹر کریں",
     "FILTER_PLACEHOLDER": "نام، مالک یا ای میل سے تلاش کریں",
     "COL_OWNER_ACTIVITY": "مالک کی سرگرمی",
-    "NO_FILTER_MATCH": "اس فلٹر سے کوئی کرایہ دار نہیں ملتا۔"
+    "NO_FILTER_MATCH": "اس فلٹر سے کوئی کرایہ دار نہیں ملتا۔",
+    "USAGE_PERIOD": "استعمال کی مدت",
+    "USAGE_DAYS_7": "7 دن",
+    "USAGE_DAYS_30": "30 دن",
+    "USAGE_DAYS_90": "90 دن"
   },
   "COURIER_HOME": {
     "TITLE": "ڈیلیوریز",

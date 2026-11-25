@@ -18,6 +18,8 @@ type TenantSortKey =
   | 'products'
   | 'created';
 
+type UsageDays = 7 | 30 | 90;
+
 @Component({
   selector: 'app-platform-dashboard',
   standalone: true,
@@ -75,15 +77,34 @@ type TenantSortKey =
         </section>
 
         <section class="platform-section usage-section" data-testid="usage-chart">
-          <h2>{{ 'PLATFORM_DASHBOARD.USAGE_OVER_TIME' | translate }}</h2>
-          @if (usageSeries().length === 0) {
+          <div class="usage-head">
+            <h2>{{ 'PLATFORM_DASHBOARD.USAGE_OVER_TIME' | translate }}</h2>
+            <div class="usage-period" role="group" [attr.aria-label]="'PLATFORM_DASHBOARD.USAGE_PERIOD' | translate">
+              @for (d of usagePeriods; track d) {
+                <button
+                  type="button"
+                  class="period-btn"
+                  [class.active]="usageDays() === d"
+                  [attr.data-testid]="'usage-days-' + d"
+                  [attr.aria-pressed]="usageDays() === d"
+                  (click)="setUsageDays(d)"
+                  [disabled]="usageLoading()"
+                >
+                  {{ ('PLATFORM_DASHBOARD.USAGE_DAYS_' + d) | translate }}
+                </button>
+              }
+            </div>
+          </div>
+          @if (usageLoading() && usageSeries().length === 0) {
+            <p class="platform-muted">{{ 'COMMON.LOADING' | translate }}</p>
+          } @else if (usageSeries().length === 0) {
             <p class="platform-muted">{{ 'PLATFORM_DASHBOARD.USAGE_EMPTY' | translate }}</p>
           } @else {
             <div class="usage-legend">
               <span class="legend-item legend-logins">{{ 'PLATFORM_DASHBOARD.USAGE_LOGINS' | translate }}</span>
               <span class="legend-item legend-signups">{{ 'PLATFORM_DASHBOARD.USAGE_SIGNUPS' | translate }}</span>
             </div>
-            <div class="usage-graph-wrap">
+            <div class="usage-graph-wrap" [class.usage-loading]="usageLoading()">
               <svg
                 class="usage-graph"
                 [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
@@ -328,6 +349,39 @@ type TenantSortKey =
       gap: var(--space-3);
       margin-bottom: var(--space-3);
     }
+    .usage-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+    .usage-head h2 { margin-bottom: 0; }
+    .usage-period {
+      display: inline-flex;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--color-surface);
+    }
+    .period-btn {
+      border: 0;
+      background: transparent;
+      color: var(--color-text-muted);
+      font: inherit;
+      font-size: 0.8125rem;
+      padding: 0.4rem 0.75rem;
+      cursor: pointer;
+      border-right: 1px solid var(--color-border);
+    }
+    .period-btn:last-child { border-right: 0; }
+    .period-btn.active {
+      background: var(--color-primary, #0d9488);
+      color: var(--color-on-primary, #fff);
+    }
+    .period-btn:disabled { opacity: 0.6; cursor: wait; }
+    .usage-graph-wrap.usage-loading { opacity: 0.55; }
     .tenant-filter input {
       min-width: min(100%, 260px);
       padding: 0.45rem 0.7rem;
@@ -461,12 +515,14 @@ export class PlatformDashboardComponent implements OnInit {
   tenantFilter = signal('');
   sortKey = signal<TenantSortKey>('created');
   sortDir = signal<'asc' | 'desc'>('desc');
+  usageDays = signal<UsageDays>(30);
+  usageSeries = signal<PlatformUsageDay[]>([]);
+  usageLoading = signal(false);
 
+  readonly usagePeriods: UsageDays[] = [7, 30, 90];
   readonly chartPad = { left: 36, right: 10, top: 12, bottom: 28 };
   readonly chartWidth = 640;
   readonly chartHeight = 200;
-
-  usageSeries = computed<PlatformUsageDay[]>(() => this.metrics()?.usage_last_30_days ?? []);
 
   filteredTenants = computed(() => {
     const q = this.tenantFilter().trim().toLowerCase();
@@ -497,9 +553,10 @@ export class PlatformDashboardComponent implements OnInit {
       next: (p) => this.profile.set(p),
       error: () => this.error.set('PLATFORM_DASHBOARD.LOAD_FAILED'),
     });
-    this.api.getPlatformMetrics().subscribe({
+    this.api.getPlatformMetrics(this.usageDays()).subscribe({
       next: (m) => {
         this.metrics.set(m);
+        this.applyUsageFromMetrics(m);
         metricsDone = true;
         maybeDone();
       },
@@ -519,6 +576,31 @@ export class PlatformDashboardComponent implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  setUsageDays(days: UsageDays): void {
+    if (this.usageDays() === days || this.usageLoading()) return;
+    this.usageDays.set(days);
+    this.usageLoading.set(true);
+    this.api.getPlatformUsage(days).subscribe({
+      next: (res) => {
+        this.usageSeries.set(res.usage_series ?? []);
+        this.usageDays.set((res.usage_days as UsageDays) || days);
+        this.usageLoading.set(false);
+      },
+      error: () => {
+        this.usageLoading.set(false);
+        this.error.set('PLATFORM_DASHBOARD.LOAD_FAILED');
+      },
+    });
+  }
+
+  private applyUsageFromMetrics(m: PlatformMetrics): void {
+    const series = m.usage_series ?? m.usage_last_30_days ?? [];
+    this.usageSeries.set(series);
+    if (m.usage_days === 7 || m.usage_days === 30 || m.usage_days === 90) {
+      this.usageDays.set(m.usage_days);
+    }
   }
 
   onFilterInput(event: Event): void {

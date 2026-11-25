@@ -3,7 +3,9 @@
 from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 
-from app.platform_routes import _usage_day_key
+from fastapi import HTTPException
+
+from app.platform_routes import _resolve_usage_days, _usage_day_key
 
 
 class PlatformUsageDayKeyTests(TestCase):
@@ -20,3 +22,13 @@ class PlatformUsageDayKeyTests(TestCase):
         cet = timezone(timedelta(hours=1))
         value = datetime(2026, 11, 26, 0, 30, tzinfo=cet)
         self.assertEqual(_usage_day_key(value), "2026-11-25")
+
+    def test_resolve_usage_days_allows_presets(self):
+        self.assertEqual(_resolve_usage_days(7), 7)
+        self.assertEqual(_resolve_usage_days(30), 30)
+        self.assertEqual(_resolve_usage_days(90), 90)
+
+    def test_resolve_usage_days_rejects_other_values(self):
+        with self.assertRaises(HTTPException) as ctx:
+            _resolve_usage_days(14)
+        self.assertEqual(ctx.exception.status_code, 422)

@@ -577,14 +577,18 @@
     "COL_OWNER_LAST_LOGIN": "Darrer inici del propietari",
     "COL_LOGIN_COUNT": "Inicis de sessió",
     "COL_LAST_LOGIN": "Darrer inici",
-    "USAGE_OVER_TIME": "Us al llarg del temps (30 dies)",
+    "USAGE_OVER_TIME": "Us al llarg del temps",
     "USAGE_LOGINS": "Inicis de sessió",
     "USAGE_SIGNUPS": "Altes",
-    "USAGE_EMPTY": "No hi ha dades d'ús en els darrers 30 dies.",
+    "USAGE_EMPTY": "No hi ha dades d'ús en aquest període.",
     "FILTER_TENANTS": "Filtrar inquilins",
     "FILTER_PLACEHOLDER": "Cerca per nom, propietari o correu",
     "COL_OWNER_ACTIVITY": "Activitat del propietari",
-    "NO_FILTER_MATCH": "Cap inquilí no coincideix amb aquest filtre."
+    "NO_FILTER_MATCH": "Cap inquilí no coincideix amb aquest filtre.",
+    "USAGE_PERIOD": "Període d'ús",
+    "USAGE_DAYS_7": "7 dies",
+    "USAGE_DAYS_30": "30 dies",
+    "USAGE_DAYS_90": "90 dies"
   },
   "COURIER_HOME": {
     "TITLE": "Entregues",
