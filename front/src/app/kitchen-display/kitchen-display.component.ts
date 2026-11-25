@@ -12,7 +12,14 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ApiService, KitchenStation, Order, OrderItem, OrderLineModifiers } from '../services/api.service';
+import {
+  ApiService,
+  KitchenDisplaySettings,
+  KitchenStation,
+  Order,
+  OrderItem,
+  OrderLineModifiers,
+} from '../services/api.service';
 import { AudioService } from '../services/audio.service';
 import { PermissionService } from '../services/permission.service';
 import { Subscription } from 'rxjs';
@@ -21,6 +28,20 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 const REFRESH_INTERVAL_MS = 15000;
 const SOUND_STORAGE_KEY = 'kitchen-display-sound';
+
+function defaultKitchenDisplaySettings(): KitchenDisplaySettings {
+  return {
+    yellow_minutes: 5,
+    orange_minutes: 10,
+    red_minutes: 15,
+    sla_threshold_mode: 'absolute',
+    sla_ticket_aggregation: 'max_line',
+    yellow_percent: 70,
+    orange_percent: 90,
+    red_percent: 100,
+    expected_prep_by_category: {},
+  };
+}
 
 type FullscreenCapableElement = HTMLElement & {
   webkitRequestFullscreen?: () => Promise<void> | void;
@@ -295,17 +316,69 @@ const VIEW_CATEGORY: Record<string, string> = {
           <p class="modal-desc">{{ 'KITCHEN_DISPLAY.TIMER_SETTINGS_DESC' | translate }}</p>
           <div class="timer-settings-form">
             <label>
-              <span>{{ 'KITCHEN_DISPLAY.TIMER_YELLOW_MINUTES' | translate }}</span>
-              <input type="number" min="0" step="1" [ngModel]="timerSettingsForm().yellow_minutes" (ngModelChange)="updateTimerFormYellow($event)" />
+              <span>{{ 'KITCHEN_DISPLAY.SLA_THRESHOLD_MODE' | translate }}</span>
+              <select
+                [ngModel]="timerSettingsForm().sla_threshold_mode"
+                (ngModelChange)="updateTimerFormMode($event)"
+                data-testid="kitchen-sla-mode"
+              >
+                <option value="absolute">{{ 'KITCHEN_DISPLAY.SLA_MODE_ABSOLUTE' | translate }}</option>
+                <option value="percent_of_expected">{{ 'KITCHEN_DISPLAY.SLA_MODE_PERCENT' | translate }}</option>
+              </select>
             </label>
             <label>
-              <span>{{ 'KITCHEN_DISPLAY.TIMER_ORANGE_MINUTES' | translate }}</span>
-              <input type="number" min="0" step="1" [ngModel]="timerSettingsForm().orange_minutes" (ngModelChange)="updateTimerFormOrange($event)" />
+              <span>{{ 'KITCHEN_DISPLAY.SLA_TICKET_AGGREGATION' | translate }}</span>
+              <select
+                [ngModel]="timerSettingsForm().sla_ticket_aggregation"
+                (ngModelChange)="updateTimerFormAggregation($event)"
+                data-testid="kitchen-sla-aggregation"
+              >
+                <option value="max_line">{{ 'KITCHEN_DISPLAY.SLA_AGG_MAX_LINE' | translate }}</option>
+                <option value="sum">{{ 'KITCHEN_DISPLAY.SLA_AGG_SUM' | translate }}</option>
+                <option value="primary_category">{{ 'KITCHEN_DISPLAY.SLA_AGG_PRIMARY_CATEGORY' | translate }}</option>
+              </select>
             </label>
-            <label>
-              <span>{{ 'KITCHEN_DISPLAY.TIMER_RED_MINUTES' | translate }}</span>
-              <input type="number" min="0" step="1" [ngModel]="timerSettingsForm().red_minutes" (ngModelChange)="updateTimerFormRed($event)" />
-            </label>
+            @if (timerSettingsForm().sla_threshold_mode === 'percent_of_expected') {
+              <label>
+                <span>{{ 'KITCHEN_DISPLAY.TIMER_YELLOW_PERCENT' | translate }}</span>
+                <input type="number" min="0" step="1" [ngModel]="timerSettingsForm().yellow_percent" (ngModelChange)="updateTimerFormYellowPercent($event)" />
+              </label>
+              <label>
+                <span>{{ 'KITCHEN_DISPLAY.TIMER_ORANGE_PERCENT' | translate }}</span>
+                <input type="number" min="0" step="1" [ngModel]="timerSettingsForm().orange_percent" (ngModelChange)="updateTimerFormOrangePercent($event)" />
+              </label>
+              <label>
+                <span>{{ 'KITCHEN_DISPLAY.TIMER_RED_PERCENT' | translate }}</span>
+                <input type="number" min="0" step="1" [ngModel]="timerSettingsForm().red_percent" (ngModelChange)="updateTimerFormRedPercent($event)" />
+              </label>
+            } @else {
+              <label>
+                <span>{{ 'KITCHEN_DISPLAY.TIMER_YELLOW_MINUTES' | translate }}</span>
+                <input type="number" min="0" step="1" [ngModel]="timerSettingsForm().yellow_minutes" (ngModelChange)="updateTimerFormYellow($event)" />
+              </label>
+              <label>
+                <span>{{ 'KITCHEN_DISPLAY.TIMER_ORANGE_MINUTES' | translate }}</span>
+                <input type="number" min="0" step="1" [ngModel]="timerSettingsForm().orange_minutes" (ngModelChange)="updateTimerFormOrange($event)" />
+              </label>
+              <label>
+                <span>{{ 'KITCHEN_DISPLAY.TIMER_RED_MINUTES' | translate }}</span>
+                <input type="number" min="0" step="1" [ngModel]="timerSettingsForm().red_minutes" (ngModelChange)="updateTimerFormRed($event)" />
+              </label>
+            }
+            <p class="modal-desc category-prep-heading">{{ 'KITCHEN_DISPLAY.EXPECTED_PREP_BY_CATEGORY' | translate }}</p>
+            @for (cat of canonicalCategories; track cat) {
+              <label>
+                <span>{{ cat }}</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  [attr.data-testid]="'kitchen-prep-' + cat"
+                  [ngModel]="categoryPrepFormValue(cat)"
+                  (ngModelChange)="updateCategoryPrep(cat, $event)"
+                />
+              </label>
+            }
           </div>
           <div class="modal-actions">
             <button type="button" class="btn-secondary" (click)="closeTimerSettingsModal()">{{ 'COMMON.CANCEL' | translate }}</button>
@@ -744,13 +817,16 @@ const VIEW_CATEGORY: Record<string, string> = {
       gap: var(--space-3);
     }
     .timer-settings-form label span { min-width: 140px; font-weight: 500; }
-    .timer-settings-form input {
-      width: 80px;
+    .timer-settings-form input,
+    .timer-settings-form select {
+      width: 140px;
       padding: var(--space-2) var(--space-3);
       font-size: 1rem;
       border: 1px solid var(--color-border);
       border-radius: var(--radius-md);
     }
+    .timer-settings-form input { width: 80px; }
+    .category-prep-heading { margin: var(--space-2) 0 0; font-weight: 600; }
     .modal-actions {
       display: flex;
       justify-content: flex-end;
@@ -805,18 +881,18 @@ export class KitchenDisplayComponent implements OnInit, AfterViewInit, OnDestroy
   stationSelection = signal<number | 'all'>('all');
   /** Current time for live timer (updates every second). */
   now = signal(Date.now());
-  /** Timer thresholds (minutes) for card color. Defaults 5, 10, 15. */
-  timerSettings = signal<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }>({
-    yellow_minutes: 5,
-    orange_minutes: 10,
-    red_minutes: 15,
-  });
+  readonly canonicalCategories = [
+    'Starters',
+    'Main Course',
+    'Desserts',
+    'Beverages',
+    'Sides',
+  ] as const;
+
+  /** Timer / SLA settings. Defaults preserve 5/10/15 absolute minutes. */
+  timerSettings = signal<KitchenDisplaySettings>(defaultKitchenDisplaySettings());
   timerSettingsModalOpen = signal(false);
-  timerSettingsForm = signal<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }>({
-    yellow_minutes: 5,
-    orange_minutes: 10,
-    red_minutes: 15,
-  });
+  timerSettingsForm = signal<KitchenDisplaySettings>(defaultKitchenDisplaySettings());
   /** Order id currently saving staff_urgent; null when idle. */
   urgentUpdatingId = signal<number | null>(null);
   private tickIntervalId: ReturnType<typeof setInterval> | null = null;
@@ -998,9 +1074,23 @@ export class KitchenDisplayComponent implements OnInit, AfterViewInit, OnDestroy
 
   loadTimerSettings(): void {
     this.api.getKitchenDisplaySettings().subscribe({
-      next: (s) => this.timerSettings.set(s),
+      next: (s) => this.timerSettings.set(this.normalizeSettings(s)),
       error: () => {},
     });
+  }
+
+  private normalizeSettings(s: KitchenDisplaySettings): KitchenDisplaySettings {
+    const base = defaultKitchenDisplaySettings();
+    return {
+      ...base,
+      ...s,
+      sla_threshold_mode: s.sla_threshold_mode === 'percent_of_expected' ? 'percent_of_expected' : 'absolute',
+      sla_ticket_aggregation:
+        s.sla_ticket_aggregation === 'sum' || s.sla_ticket_aggregation === 'primary_category'
+          ? s.sla_ticket_aggregation
+          : 'max_line',
+      expected_prep_by_category: { ...(s.expected_prep_by_category || {}) },
+    };
   }
 
   /** Elapsed minutes since order created_at (uses live now() for updates). */
@@ -1010,13 +1100,78 @@ export class KitchenDisplayComponent implements OnInit, AfterViewInit, OnDestroy
     return (this.now() - created) / 60000;
   }
 
+  /** Ticket expected prep from visible lines + tenant aggregation mode. */
+  getTicketExpectedMinutes(order: Order): number | null {
+    const agg = this.timerSettings().sla_ticket_aggregation || 'max_line';
+    const lines = (order.items ?? [])
+      .filter((i) => !i.removed_by_customer)
+      .map((i) => ({
+        expected_prep_minutes: i.expected_prep_minutes,
+        category: i.category ?? null,
+      }))
+      .filter((l) => l.expected_prep_minutes != null && Number(l.expected_prep_minutes) >= 0) as {
+      expected_prep_minutes: number;
+      category: string | null;
+    }[];
+    if (!lines.length) return null;
+
+    if (agg === 'sum') {
+      return lines.reduce((sum, l) => sum + Number(l.expected_prep_minutes), 0);
+    }
+    if (agg === 'primary_category') {
+      const byCat = new Map<string, number>();
+      let uncategorized = 0;
+      for (const l of lines) {
+        const m = Number(l.expected_prep_minutes);
+        if (!l.category) {
+          uncategorized = Math.max(uncategorized, m);
+          continue;
+        }
+        byCat.set(l.category, Math.max(byCat.get(l.category) ?? 0, m));
+      }
+      if (byCat.size > 0) {
+        return Math.max(...byCat.values());
+      }
+      return uncategorized > 0 ? uncategorized : null;
+    }
+    return Math.max(...lines.map((l) => Number(l.expected_prep_minutes)));
+  }
+
+  /** Resolved yellow/orange/red minute thresholds for this ticket. */
+  getOrderThresholds(order: Order): { yellow: number; orange: number; red: number } {
+    const s = this.timerSettings();
+    const y0 = s.yellow_minutes ?? 5;
+    const o0 = s.orange_minutes ?? 10;
+    const r0 = s.red_minutes ?? 15;
+    const expected = this.getTicketExpectedMinutes(order);
+    if (expected == null || expected <= 0) {
+      return this.orderedThresholds(y0, o0, r0);
+    }
+    if (s.sla_threshold_mode === 'percent_of_expected') {
+      const y = Math.max(0, Math.floor((expected * (s.yellow_percent ?? 70)) / 100));
+      const o = Math.max(0, Math.floor((expected * (s.orange_percent ?? 90)) / 100));
+      let r = Math.max(0, Math.floor((expected * (s.red_percent ?? 100)) / 100));
+      if (r <= 0) r = expected;
+      return this.orderedThresholds(y, o, r);
+    }
+    // absolute + expected: overdue at expected; yellow/orange from absolute settings
+    return this.orderedThresholds(Math.min(y0, expected), Math.min(o0, expected), expected);
+  }
+
+  private orderedThresholds(y: number, o: number, r: number): { yellow: number; orange: number; red: number } {
+    const yellow = Math.max(0, y);
+    const orange = Math.max(yellow, o);
+    const red = Math.max(orange, r);
+    return { yellow, orange, red };
+  }
+
   /** CSS class for timer-based card color: timer-green, timer-yellow, timer-orange, timer-red. */
   getTimerColorClass(order: Order): string {
     const min = this.getElapsedMinutes(order.created_at);
-    const s = this.timerSettings();
-    if (min >= (s.red_minutes ?? 15)) return 'timer-red';
-    if (min >= (s.orange_minutes ?? 10)) return 'timer-orange';
-    if (min >= (s.yellow_minutes ?? 5)) return 'timer-yellow';
+    const t = this.getOrderThresholds(order);
+    if (min >= t.red) return 'timer-red';
+    if (min >= t.orange) return 'timer-orange';
+    if (min >= t.yellow) return 'timer-yellow';
     return 'timer-green';
   }
 
@@ -1072,7 +1227,7 @@ export class KitchenDisplayComponent implements OnInit, AfterViewInit, OnDestroy
   /** Fill width 0–100% toward red threshold (visual progress of wait time). */
   getTimerBarPercent(order: Order): number {
     const min = this.getElapsedMinutes(order.created_at);
-    const cap = this.timerSettings().red_minutes ?? 15;
+    const cap = this.getOrderThresholds(order).red;
     if (cap <= 0) return 0;
     return Math.min(100, (min / cap) * 100);
   }
@@ -1106,7 +1261,11 @@ export class KitchenDisplayComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   openTimerSettingsModal(): void {
-    this.timerSettingsForm.set({ ...this.timerSettings() });
+    const cur = this.normalizeSettings(this.timerSettings());
+    this.timerSettingsForm.set({
+      ...cur,
+      expected_prep_by_category: { ...(cur.expected_prep_by_category || {}) },
+    });
     this.timerSettingsModalOpen.set(true);
   }
 
@@ -1123,12 +1282,46 @@ export class KitchenDisplayComponent implements OnInit, AfterViewInit, OnDestroy
   updateTimerFormRed(v: number): void {
     this.timerSettingsForm.update((f) => ({ ...f, red_minutes: Math.max(0, Number(v) || 0) }));
   }
+  updateTimerFormYellowPercent(v: number): void {
+    this.timerSettingsForm.update((f) => ({ ...f, yellow_percent: Math.max(0, Number(v) || 0) }));
+  }
+  updateTimerFormOrangePercent(v: number): void {
+    this.timerSettingsForm.update((f) => ({ ...f, orange_percent: Math.max(0, Number(v) || 0) }));
+  }
+  updateTimerFormRedPercent(v: number): void {
+    this.timerSettingsForm.update((f) => ({ ...f, red_percent: Math.max(0, Number(v) || 0) }));
+  }
+  updateTimerFormMode(v: string): void {
+    const mode = v === 'percent_of_expected' ? 'percent_of_expected' : 'absolute';
+    this.timerSettingsForm.update((f) => ({ ...f, sla_threshold_mode: mode }));
+  }
+  updateTimerFormAggregation(v: string): void {
+    const agg =
+      v === 'sum' || v === 'primary_category' ? v : 'max_line';
+    this.timerSettingsForm.update((f) => ({ ...f, sla_ticket_aggregation: agg }));
+  }
+  categoryPrepFormValue(cat: string): number | null {
+    const map = this.timerSettingsForm().expected_prep_by_category || {};
+    const v = map[cat];
+    return v == null ? null : Number(v);
+  }
+  updateCategoryPrep(cat: string, v: number | string | null): void {
+    this.timerSettingsForm.update((f) => {
+      const map = { ...(f.expected_prep_by_category || {}) };
+      if (v === null || v === '' || Number.isNaN(Number(v))) {
+        delete map[cat];
+      } else {
+        map[cat] = Math.max(0, Math.floor(Number(v)));
+      }
+      return { ...f, expected_prep_by_category: map };
+    });
+  }
 
   saveTimerSettings(): void {
     const form = this.timerSettingsForm();
     this.api.updateKitchenDisplaySettings(form).subscribe({
       next: (s) => {
-        this.timerSettings.set(s);
+        this.timerSettings.set(this.normalizeSettings(s));
         this.closeTimerSettingsModal();
       },
       error: () => {},

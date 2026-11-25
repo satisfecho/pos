@@ -94,7 +94,9 @@
     "UNMAPPED_CSV_COLUMNS": "L'IA n'a pas pu mapper ces colonnes CSV : {{columns}}. Renommez ou supprimez-les puis réessayez.",
     "CUSTOMER_PASSWORD_TOO_SHORT": "Le mot de passe doit contenir au moins {{min_length}} caractères.",
     "CUSTOMER_VERIFICATION_INVALID": "Lien de vérification d'e-mail invalide ou inconnu.",
-    "CUSTOMER_VERIFICATION_EXPIRED": "Ce lien de vérification a expiré. Demandez-en un nouveau."
+    "CUSTOMER_VERIFICATION_EXPIRED": "Ce lien de vérification a expiré. Demandez-en un nouveau.",
+    "CAPTCHA_REQUIRED": "Complétez la vérification de sécurité avant de vous connecter.",
+    "CAPTCHA_INVALID": "Échec de la vérification de sécurité. Essayez un nouveau code."
   },
   "NAV": {
     "HOME": "Accueil",
@@ -598,7 +600,11 @@
     "SIGNUP_VERIFY_SUBMIT": "Vérifier l'e-mail",
     "SIGNUP_VERIFY_RESEND": "Renvoyer le code",
     "SIGNUP_VERIFY_RESENT": "Code envoyé",
-    "SIGNUP_VERIFY_FAILED": "Impossible de vérifier ce code. Vérifiez-le et réessayez."
+    "SIGNUP_VERIFY_FAILED": "Impossible de vérifier ce code. Vérifiez-le et réessayez.",
+    "CAPTCHA_LABEL": "Vérification de sécurité",
+    "CAPTCHA_PLACEHOLDER": "Saisissez les caractères affichés",
+    "CAPTCHA_REFRESH": "Nouveau code",
+    "CAPTCHA_REQUIRED": "Complétez la vérification de sécurité pour continuer."
   },
   "MENU": {
     "TITLE": "Menu",
@@ -861,7 +867,10 @@
     "STOCK_LOW": "Bas",
     "STOCK_OK": "OK",
     "STOCK_BADGE_TITLE": "Stock {{qty}} (alerte à {{level}})",
-    "QUESTION_OPTIONS_PRICE_HINT": "Une option par ligne. Prix optionnel après un pipe : Libellé|1.00 (unités majeures ; négatif pour remises)."
+    "QUESTION_OPTIONS_PRICE_HINT": "Une option par ligne. Prix optionnel après un pipe : Libellé|1.00 (unités majeures ; négatif pour remises).",
+    "EXPECTED_PREP_MINUTES": "Préparation prévue (minutes)",
+    "EXPECTED_PREP_PLACEHOLDER": "Valeur de catégorie",
+    "EXPECTED_PREP_HINT": "Optionnel pour les horloges SLA cuisine. Vide = défaut de catégorie dans les réglages timer."
   },
   "CATALOG": {
     "TITLE": "Catalogue produits",
@@ -1148,7 +1157,18 @@
     "PLACED": "Passée",
     "SLA_FRESH": "Frais",
     "SLA_WARNING": "À risque",
-    "SLA_OVERDUE": "En retard"
+    "SLA_OVERDUE": "En retard",
+    "TIMER_YELLOW_PERCENT": "Jaune à (% du prévu)",
+    "TIMER_ORANGE_PERCENT": "Orange à (% du prévu)",
+    "TIMER_RED_PERCENT": "Rouge à (% du prévu)",
+    "SLA_THRESHOLD_MODE": "Mode de seuil SLA",
+    "SLA_MODE_ABSOLUTE": "Absolu (en retard au temps prévu)",
+    "SLA_MODE_PERCENT": "Pourcentage du temps prévu",
+    "SLA_TICKET_AGGREGATION": "Temps prévu multi-articles",
+    "SLA_AGG_MAX_LINE": "Ligne la plus longue (max)",
+    "SLA_AGG_SUM": "Somme des lignes",
+    "SLA_AGG_PRIMARY_CATEGORY": "Catégorie principale (plus haute)",
+    "EXPECTED_PREP_BY_CATEGORY": "Préparation prévue par catégorie (minutes)"
   },
   "BAR_DISPLAY": {
     "TITLE": "Écran bar"

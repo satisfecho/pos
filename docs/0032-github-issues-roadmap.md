@@ -34,15 +34,15 @@ Umbrella list. **This table is the source of truth** for “is it done?” until
 
 **Intent:** Tickets **change appearance by age** (fresh → orange → red), with **category-aware** expected times (starters vs mains), **priority/claim** by staff, **clear order time** on every ticket, and eventually **station-specific** views (kitchen / bar / grill / cold / desserts).
 
-**Status in product (partial):** Slices (1) placed clock + SLA badge, (2) age color / timer bar, (4) staff urgent flag + API (kitchen toggle), and (5) kitchen/bar station filter are shipped (#450 / `docs/0015-kitchen-display.md`). Tenant timer thresholds via `/tenant/kitchen-display-settings`. **Still open:** (3) category/product expected prep duration.
+**Status in product:** Slices (1) placed clock + SLA badge, (2) age color / timer bar, (3) category/product expected prep (absolute vs % mode, max/sum/primary aggregation), (4) staff urgent flag + API (kitchen toggle), and (5) kitchen/bar station filter are shipped (#450 / `docs/0015-kitchen-display.md`). Tenant timer + expected-prep config via `/tenant/kitchen-display-settings`.
 
 **Dependencies / design:**
 
-- Per-order-item or per-ticket **timestamps** exist; **expected prep duration** by category or product is the remaining design slice.
+- Per-order-item or per-ticket **timestamps** and **expected prep** (category map + product override) are in place.
 - Kitchen UI: `docs/0015-kitchen-display.md`, `front` kitchen component + WebSocket.
 - **Printing** routes may need separate layouts per station (future).
 
-**Suggested slices:** (1) display placed time + SLA badge - shipped, (2) CSS gradients from elapsed time - shipped, (3) product/category SLA config - open, (4) priority flag + API - shipped, (5) filter tickets by station/tag - shipped (kitchen/bar stations).
+**Suggested slices:** (1) display placed time + SLA badge - shipped, (2) CSS gradients from elapsed time - shipped, (3) product/category SLA config - shipped, (4) priority flag + API - shipped, (5) filter tickets by station/tag - shipped (kitchen/bar stations).
 
 ---
 

@@ -94,7 +94,9 @@
     "UNMAPPED_CSV_COLUMNS": "AI could not map these CSV columns: {{columns}}. Rename or remove them and try again.",
     "CUSTOMER_PASSWORD_TOO_SHORT": "پاس ورڈ کم از کم {{min_length}} حروف کا ہونا چاہیے۔",
     "CUSTOMER_VERIFICATION_INVALID": "غلط یا نامعلوم ای میل تصدیقی لنک۔",
-    "CUSTOMER_VERIFICATION_EXPIRED": "یہ ای میل تصدیقی لنک ختم ہو چکا ہے۔ نیا درخواست کریں۔"
+    "CUSTOMER_VERIFICATION_EXPIRED": "یہ ای میل تصدیقی لنک ختم ہو چکا ہے۔ نیا درخواست کریں۔",
+    "CAPTCHA_REQUIRED": "سائن ان سے پہلے سیکیورٹی چیک مکمل کریں۔",
+    "CAPTCHA_INVALID": "سیکیورٹی چیک ناکام۔ نیا کوڈ آزمائیں۔"
   },
   "NAV": {
     "HOME": "ہوم",
@@ -598,7 +600,11 @@
     "SIGNUP_VERIFY_SUBMIT": "ای میل تصدیق کریں",
     "SIGNUP_VERIFY_RESEND": "کوڈ دوبارہ بھیجیں",
     "SIGNUP_VERIFY_RESENT": "کوڈ بھیج دیا گیا",
-    "SIGNUP_VERIFY_FAILED": "کوڈ کی تصدیق نہیں ہو سکی۔ چیک کر کے دوبارہ کوشش کریں۔"
+    "SIGNUP_VERIFY_FAILED": "کوڈ کی تصدیق نہیں ہو سکی۔ چیک کر کے دوبارہ کوشش کریں۔",
+    "CAPTCHA_LABEL": "سیکیورٹی چیک",
+    "CAPTCHA_PLACEHOLDER": "دکھائے گئے حروف درج کریں",
+    "CAPTCHA_REFRESH": "نیا کوڈ",
+    "CAPTCHA_REQUIRED": "جاری رکھنے کے لیے سیکیورٹی چیک مکمل کریں۔"
   },
   "MENU": {
     "TITLE": "مینو",
@@ -861,7 +867,10 @@
     "STOCK_LOW": "کم",
     "STOCK_OK": "ٹھیک",
     "STOCK_BADGE_TITLE": "اسٹاک {{qty}} (الرٹ {{level}} پر)",
-    "QUESTION_OPTIONS_PRICE_HINT": "ہر لائن پر ایک آپشن۔ اختیاری قیمت پائپ کے بعد: لیبل|1.00 (بڑی کرنسی اکائیاں؛ رعایت کے لیے منفی)۔"
+    "QUESTION_OPTIONS_PRICE_HINT": "ہر لائن پر ایک آپشن۔ اختیاری قیمت پائپ کے بعد: لیبل|1.00 (بڑی کرنسی اکائیاں؛ رعایت کے لیے منفی)۔",
+    "EXPECTED_PREP_MINUTES": "Expected prep (minutes)",
+    "EXPECTED_PREP_PLACEHOLDER": "Category default",
+    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings."
   },
   "CATALOG": {
     "TITLE": "پروڈکٹ کیٹلاگ",
@@ -1148,7 +1157,18 @@
     "PLACED": "آرڈر وقت",
     "SLA_FRESH": "تازہ",
     "SLA_WARNING": "خطرے میں",
-    "SLA_OVERDUE": "تاخیر"
+    "SLA_OVERDUE": "تاخیر",
+    "TIMER_YELLOW_PERCENT": "Yellow at (% of expected)",
+    "TIMER_ORANGE_PERCENT": "Orange at (% of expected)",
+    "TIMER_RED_PERCENT": "Red at (% of expected)",
+    "SLA_THRESHOLD_MODE": "SLA threshold mode",
+    "SLA_MODE_ABSOLUTE": "Absolute (overdue at expected prep)",
+    "SLA_MODE_PERCENT": "Percent of expected prep",
+    "SLA_TICKET_AGGREGATION": "Multi-item ticket expected prep",
+    "SLA_AGG_MAX_LINE": "Longest line (max)",
+    "SLA_AGG_SUM": "Sum of lines",
+    "SLA_AGG_PRIMARY_CATEGORY": "Primary category (highest)",
+    "EXPECTED_PREP_BY_CATEGORY": "Expected prep by category (minutes)"
   },
   "BAR_DISPLAY": {
     "TITLE": "بار ڈسپلے"

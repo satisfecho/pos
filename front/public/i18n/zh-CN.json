@@ -94,7 +94,9 @@
     "UNMAPPED_CSV_COLUMNS": "AI 无法映射这些 CSV 列：{{columns}}。请重命名或删除后重试。",
     "CUSTOMER_PASSWORD_TOO_SHORT": "密码至少需要 {{min_length}} 个字符。",
     "CUSTOMER_VERIFICATION_INVALID": "无效或未知的邮箱验证链接。",
-    "CUSTOMER_VERIFICATION_EXPIRED": "此邮箱验证链接已过期。请重新申请。"
+    "CUSTOMER_VERIFICATION_EXPIRED": "此邮箱验证链接已过期。请重新申请。",
+    "CAPTCHA_REQUIRED": "登录前请完成安全验证。",
+    "CAPTCHA_INVALID": "安全验证失败。请尝试新的验证码。"
   },
   "NAV": {
     "HOME": "首页",
@@ -727,7 +729,11 @@
     "SIGNUP_VERIFY_SUBMIT": "验证邮箱",
     "SIGNUP_VERIFY_RESEND": "重新发送验证码",
     "SIGNUP_VERIFY_RESENT": "验证码已发送",
-    "SIGNUP_VERIFY_FAILED": "无法验证该验证码。请检查后重试。"
+    "SIGNUP_VERIFY_FAILED": "无法验证该验证码。请检查后重试。",
+    "CAPTCHA_LABEL": "安全验证",
+    "CAPTCHA_PLACEHOLDER": "请输入显示的字符",
+    "CAPTCHA_REFRESH": "换一个",
+    "CAPTCHA_REQUIRED": "请完成安全验证后继续。"
   },
   "PAYWALL": {
     "TITLE": "选择套餐以继续",
@@ -1002,7 +1008,10 @@
     "STOCK_LOW": "偏低",
     "STOCK_OK": "正常",
     "STOCK_BADGE_TITLE": "库存 {{qty}}（阈值 {{level}}）",
-    "QUESTION_OPTIONS_PRICE_HINT": "每行一个选项。可选加价用竖线：标签|1.00（主货币单位；负数表示减价）。"
+    "QUESTION_OPTIONS_PRICE_HINT": "每行一个选项。可选加价用竖线：标签|1.00（主货币单位；负数表示减价）。",
+    "EXPECTED_PREP_MINUTES": "Expected prep (minutes)",
+    "EXPECTED_PREP_PLACEHOLDER": "Category default",
+    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings."
   },
   "CATALOG": {
     "TITLE": "产品目录",
@@ -1289,7 +1298,18 @@
     "PLACED": "下单时间",
     "SLA_FRESH": "新鲜",
     "SLA_WARNING": "即将超时",
-    "SLA_OVERDUE": "超时"
+    "SLA_OVERDUE": "超时",
+    "TIMER_YELLOW_PERCENT": "Yellow at (% of expected)",
+    "TIMER_ORANGE_PERCENT": "Orange at (% of expected)",
+    "TIMER_RED_PERCENT": "Red at (% of expected)",
+    "SLA_THRESHOLD_MODE": "SLA threshold mode",
+    "SLA_MODE_ABSOLUTE": "Absolute (overdue at expected prep)",
+    "SLA_MODE_PERCENT": "Percent of expected prep",
+    "SLA_TICKET_AGGREGATION": "Multi-item ticket expected prep",
+    "SLA_AGG_MAX_LINE": "Longest line (max)",
+    "SLA_AGG_SUM": "Sum of lines",
+    "SLA_AGG_PRIMARY_CATEGORY": "Primary category (highest)",
+    "EXPECTED_PREP_BY_CATEGORY": "Expected prep by category (minutes)"
   },
   "BAR_DISPLAY": {
     "TITLE": "酒吧显示屏"

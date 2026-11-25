@@ -94,7 +94,9 @@
     "UNMAPPED_CSV_COLUMNS": "La IA no pudo mapear estas columnas CSV: {{columns}}. Renómbrelas o elimínelas e inténtelo de nuevo.",
     "CUSTOMER_PASSWORD_TOO_SHORT": "La contraseña debe tener al menos {{min_length}} caracteres.",
     "CUSTOMER_VERIFICATION_INVALID": "Enlace de verificación de correo no válido o desconocido.",
-    "CUSTOMER_VERIFICATION_EXPIRED": "Este enlace de verificación ha caducado. Solicite uno nuevo."
+    "CUSTOMER_VERIFICATION_EXPIRED": "Este enlace de verificación ha caducado. Solicite uno nuevo.",
+    "CAPTCHA_REQUIRED": "Complete la comprobación de seguridad antes de iniciar sesión.",
+    "CAPTCHA_INVALID": "La comprobación de seguridad falló. Pruebe un código nuevo."
   },
   "NAV": {
     "HOME": "Inicio",
@@ -598,7 +600,11 @@
     "SIGNUP_VERIFY_SUBMIT": "Verificar correo",
     "SIGNUP_VERIFY_RESEND": "Reenviar código",
     "SIGNUP_VERIFY_RESENT": "Código enviado",
-    "SIGNUP_VERIFY_FAILED": "No se pudo verificar el código. Compruébalo e inténtalo de nuevo."
+    "SIGNUP_VERIFY_FAILED": "No se pudo verificar el código. Compruébalo e inténtalo de nuevo.",
+    "CAPTCHA_LABEL": "Comprobación de seguridad",
+    "CAPTCHA_PLACEHOLDER": "Introduzca los caracteres mostrados",
+    "CAPTCHA_REFRESH": "Nuevo código",
+    "CAPTCHA_REQUIRED": "Complete la comprobación de seguridad para continuar."
   },
   "MENU": {
     "TITLE": "Menú",
@@ -861,7 +867,10 @@
     "STOCK_LOW": "Bajo",
     "STOCK_OK": "OK",
     "STOCK_BADGE_TITLE": "Stock {{qty}} (alerta en {{level}})",
-    "QUESTION_OPTIONS_PRICE_HINT": "Una opción por línea. Precio opcional tras una barra: Etiqueta|1.00 (unidades mayores; negativo para descuentos)."
+    "QUESTION_OPTIONS_PRICE_HINT": "Una opción por línea. Precio opcional tras una barra: Etiqueta|1.00 (unidades mayores; negativo para descuentos).",
+    "EXPECTED_PREP_MINUTES": "Preparación esperada (minutos)",
+    "EXPECTED_PREP_PLACEHOLDER": "Valor de categoría",
+    "EXPECTED_PREP_HINT": "Opcional para relojes SLA de cocina. Vacío usa el valor de categoría en Ajustes del temporizador."
   },
   "CATALOG": {
     "TITLE": "Catálogo de productos",
@@ -1148,7 +1157,18 @@
     "PLACED": "Pedido",
     "SLA_FRESH": "Fresco",
     "SLA_WARNING": "En riesgo",
-    "SLA_OVERDUE": "Atrasado"
+    "SLA_OVERDUE": "Atrasado",
+    "TIMER_YELLOW_PERCENT": "Amarillo a (% del esperado)",
+    "TIMER_ORANGE_PERCENT": "Naranja a (% del esperado)",
+    "TIMER_RED_PERCENT": "Rojo a (% del esperado)",
+    "SLA_THRESHOLD_MODE": "Modo de umbral SLA",
+    "SLA_MODE_ABSOLUTE": "Absoluto (vencido al tiempo esperado)",
+    "SLA_MODE_PERCENT": "Porcentaje del tiempo esperado",
+    "SLA_TICKET_AGGREGATION": "Tiempo esperado con varios ítems",
+    "SLA_AGG_MAX_LINE": "Línea más larga (máx)",
+    "SLA_AGG_SUM": "Suma de líneas",
+    "SLA_AGG_PRIMARY_CATEGORY": "Categoría principal (mayor)",
+    "EXPECTED_PREP_BY_CATEGORY": "Preparación esperada por categoría (minutos)"
   },
   "BAR_DISPLAY": {
     "TITLE": "Pantalla bar"

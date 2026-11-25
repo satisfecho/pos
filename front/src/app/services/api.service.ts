@@ -1048,6 +1048,8 @@ export interface Product {
   questions?: ProductQuestion[];
   /** Prep station for KDS (/kitchen vs /bar); null = use tenant default by category */
   kitchen_station_id?: number | null;
+  /** Optional expected prep minutes for kitchen SLA; null = use category default */
+  expected_prep_minutes?: number | null;
   /** Sellable-unit stock alert (Products UI) */
   stock_alert_enabled?: boolean;
   stock_qty?: number;
@@ -1076,6 +1078,19 @@ export interface KitchenStationCreate {
 export interface KitchenStationDefaults {
   default_kitchen_station_id: number | null;
   default_bar_station_id: number | null;
+}
+
+/** Kitchen/bar wait-time SLA settings (#450): absolute or % of expected prep. */
+export interface KitchenDisplaySettings {
+  yellow_minutes: number;
+  orange_minutes: number;
+  red_minutes: number;
+  sla_threshold_mode?: 'absolute' | 'percent_of_expected';
+  sla_ticket_aggregation?: 'max_line' | 'sum' | 'primary_category';
+  yellow_percent?: number;
+  orange_percent?: number;
+  red_percent?: number;
+  expected_prep_by_category?: Record<string, number>;
 }
 
 /** Delivery marketplace (Uber Eats / Glovo / Deliveroo-style) admin integration */
@@ -1524,6 +1539,8 @@ export interface OrderItem {
   tax_amount_cents?: number | null;
   /** Product category for kitchen/bar display filtering: "Beverages", "Main Course", etc. */
   category?: string | null;
+  /** Resolved expected prep minutes (product override or category default) for kitchen SLA */
+  expected_prep_minutes?: number | null;
   /** Resolved prep station for KDS (after product mapping and tenant defaults) */
   kitchen_station_id?: number | null;
   kitchen_station_name?: string | null;
@@ -2281,8 +2298,19 @@ export class ApiService {
     });
   }
 
-  /** Login: sends username/password as application/x-www-form-urlencoded (required by backend OAuth2PasswordRequestForm). May return 403 with require_otp + temp_token when OTP is enabled. */
-  login(username: string, password: string, tenantId?: number, scope?: 'tenant' | 'provider' | 'courier' | 'platform'): Observable<any> {
+  /** Self-hosted login CAPTCHA challenge (#452). */
+  getLoginCaptchaChallenge(): Observable<{ id: string; svg: string }> {
+    return this.http.get<{ id: string; svg: string }>(`${this.apiUrl}/captcha/challenge`);
+  }
+
+  /** Login: sends username/password as application/x-www-form-urlencoded (required by backend OAuth2PasswordRequestForm). May return 403 with require_otp + temp_token when OTP is enabled. After failed attempts may return require_captcha + captcha challenge. */
+  login(
+    username: string,
+    password: string,
+    tenantId?: number,
+    scope?: 'tenant' | 'provider' | 'courier' | 'platform',
+    captcha?: { id: string; answer: string } | null,
+  ): Observable<any> {
     let queryParams = new HttpParams();
     if (scope === 'provider') {
       queryParams = queryParams.set('scope', 'provider');
@@ -2293,7 +2321,11 @@ export class ApiService {
     } else if (tenantId != null) {
       queryParams = queryParams.set('tenant_id', tenantId.toString());
     }
-    const body = new HttpParams().set('username', username).set('password', password).toString();
+    let bodyParams = new HttpParams().set('username', username).set('password', password);
+    if (captcha?.id && captcha?.answer) {
+      bodyParams = bodyParams.set('captcha_id', captcha.id).set('captcha_answer', captcha.answer);
+    }
+    const body = bodyParams.toString();
     return this.http.post<any>(`${this.apiUrl}/token`, body, {
       params: queryParams,
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -3944,18 +3976,12 @@ export class ApiService {
     );
   }
 
-  getKitchenDisplaySettings(): Observable<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }> {
-    return this.http.get<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }>(
-      `${this.apiUrl}/tenant/kitchen-display-settings`
-    );
+  getKitchenDisplaySettings(): Observable<KitchenDisplaySettings> {
+    return this.http.get<KitchenDisplaySettings>(`${this.apiUrl}/tenant/kitchen-display-settings`);
   }
 
-  updateKitchenDisplaySettings(settings: {
-    yellow_minutes: number;
-    orange_minutes: number;
-    red_minutes: number;
-  }): Observable<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }> {
-    return this.http.put<{ yellow_minutes: number; orange_minutes: number; red_minutes: number }>(
+  updateKitchenDisplaySettings(settings: Partial<KitchenDisplaySettings>): Observable<KitchenDisplaySettings> {
+    return this.http.put<KitchenDisplaySettings>(
       `${this.apiUrl}/tenant/kitchen-display-settings`,
       settings
     );

@@ -7,11 +7,12 @@ import { ApiService, type TenantSummary } from '../services/api.service';
 import { ApiErrorMessageService } from '../services/api-error-message.service';
 import { LanguagePickerComponent } from '../shared/language-picker.component';
 import { LegalLinksComponent } from '../shared/legal-links.component';
+import { LoginCaptchaFieldsComponent } from './login-captcha-fields.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, RouterLink, TranslateModule, LanguagePickerComponent, LegalLinksComponent],
+  imports: [ReactiveFormsModule, FormsModule, RouterLink, TranslateModule, LanguagePickerComponent, LegalLinksComponent, LoginCaptchaFieldsComponent],
   template: `
     <div class="auth-page">
       <div class="auth-card">
@@ -104,6 +105,15 @@ import { LegalLinksComponent } from '../shared/legal-links.component';
               <a routerLink="/forgot-password" [queryParams]="forgotPasswordQueryParams">{{ 'AUTH.FORGOT_PASSWORD' | translate }}</a>
             </div>
           </div>
+
+          @if (showCaptcha()) {
+            <app-login-captcha-fields
+              [svgUrl]="captchaSvgUrl()"
+              [disabled]="loading()"
+              [(answer)]="captchaAnswer"
+              (refresh)="refreshCaptcha()"
+            />
+          }
 
           @if (error()) {
             <div class="error-banner">{{ error() }}</div>
@@ -359,6 +369,7 @@ import { LegalLinksComponent } from '../shared/legal-links.component';
       color: var(--color-error);
       font-size: 0.8125rem;
     }
+
   `]
 })
 export class LoginComponent implements OnInit {
@@ -390,6 +401,10 @@ export class LoginComponent implements OnInit {
   showOtpStep = signal(false);
   otpTempToken = signal<string | null>(null);
   otpCode = '';
+  showCaptcha = signal(false);
+  captchaId = signal<string | null>(null);
+  captchaSvgUrl = signal<string | null>(null);
+  captchaAnswer = '';
 
   form = this.fb.group({
     username: ['', [Validators.required, Validators.email]],
@@ -448,8 +463,13 @@ export class LoginComponent implements OnInit {
     const password = this.form.get('password')?.value ?? '';
     const tenantId = this.route.snapshot.queryParams['tenant'];
     const id = tenantId != null ? parseInt(tenantId, 10) : undefined;
-    this.api.login(username, password, isNaN(id as number) ? undefined : id).subscribe({
+    const captcha =
+      this.showCaptcha() && this.captchaId()
+        ? { id: this.captchaId()!, answer: (this.captchaAnswer || '').trim() }
+        : null;
+    this.api.login(username, password, isNaN(id as number) ? undefined : id, undefined, captcha).subscribe({
       next: () => {
+        this.clearCaptcha();
         this.api.checkAuth().subscribe(user => {
           if (user?.role === 'courier') {
             void this.router.navigate(['/courier']);
@@ -478,17 +498,47 @@ export class LoginComponent implements OnInit {
       },
       error: (err) => {
         this.loading.set(false);
+        this.applyCaptchaFromError(err);
         if (err.status === 403 && err.error?.require_otp && err.error?.temp_token) {
           this.otpTempToken.set(err.error.temp_token);
           this.showOtpStep.set(true);
           this.error.set('');
         } else if (err.status === 429) {
           this.error.set(this.apiErr.fromHttpError(err, 'AUTH.LOGIN_RATE_LIMITED'));
+        } else if (err.error?.require_captcha) {
+          this.error.set(this.apiErr.fromHttpError(err, 'AUTH.CAPTCHA_REQUIRED'));
         } else {
           this.error.set(this.apiErr.fromHttpError(err, 'AUTH.LOGIN_FAILED'));
         }
       },
     });
+  }
+
+  refreshCaptcha(): void {
+    this.api.getLoginCaptchaChallenge().subscribe({
+      next: (c) => this.setCaptcha(c),
+      error: () => {},
+    });
+  }
+
+  private applyCaptchaFromError(err: { error?: { require_captcha?: boolean; captcha?: { id: string; svg: string } } }): void {
+    if (err?.error?.require_captcha && err.error.captcha?.id && err.error.captcha?.svg) {
+      this.setCaptcha(err.error.captcha);
+    }
+  }
+
+  private setCaptcha(c: { id: string; svg: string }): void {
+    this.showCaptcha.set(true);
+    this.captchaId.set(c.id);
+    this.captchaSvgUrl.set('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(c.svg));
+    this.captchaAnswer = '';
+  }
+
+  private clearCaptcha(): void {
+    this.showCaptcha.set(false);
+    this.captchaId.set(null);
+    this.captchaSvgUrl.set(null);
+    this.captchaAnswer = '';
   }
 
   onSubmitOtp() {

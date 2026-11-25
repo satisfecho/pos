@@ -94,7 +94,9 @@
     "UNMAPPED_CSV_COLUMNS": "KI konnte diese CSV-Spalten nicht zuordnen: {{columns}}. Umbenennen oder entfernen und erneut versuchen.",
     "CUSTOMER_PASSWORD_TOO_SHORT": "Das Passwort muss mindestens {{min_length}} Zeichen haben.",
     "CUSTOMER_VERIFICATION_INVALID": "Ungültiger oder unbekannter E-Mail-Bestätigungslink.",
-    "CUSTOMER_VERIFICATION_EXPIRED": "Dieser Bestätigungslink ist abgelaufen. Fordern Sie einen neuen an."
+    "CUSTOMER_VERIFICATION_EXPIRED": "Dieser Bestätigungslink ist abgelaufen. Fordern Sie einen neuen an.",
+    "CAPTCHA_REQUIRED": "Schließen Sie die Sicherheitsprüfung vor dem Anmelden ab.",
+    "CAPTCHA_INVALID": "Sicherheitsprüfung fehlgeschlagen. Bitte neuen Code versuchen."
   },
   "NAV": {
     "HOME": "Startseite",
@@ -598,7 +600,11 @@
     "SIGNUP_VERIFY_SUBMIT": "E-Mail bestätigen",
     "SIGNUP_VERIFY_RESEND": "Code erneut senden",
     "SIGNUP_VERIFY_RESENT": "Code gesendet",
-    "SIGNUP_VERIFY_FAILED": "Code konnte nicht bestätigt werden. Prüfen und erneut versuchen."
+    "SIGNUP_VERIFY_FAILED": "Code konnte nicht bestätigt werden. Prüfen und erneut versuchen.",
+    "CAPTCHA_LABEL": "Sicherheitsprüfung",
+    "CAPTCHA_PLACEHOLDER": "Angezeigte Zeichen eingeben",
+    "CAPTCHA_REFRESH": "Neuer Code",
+    "CAPTCHA_REQUIRED": "Schließen Sie die Sicherheitsprüfung ab, um fortzufahren."
   },
   "MENU": {
     "TITLE": "Speisekarte",
@@ -861,7 +867,10 @@
     "STOCK_LOW": "Niedrig",
     "STOCK_OK": "OK",
     "STOCK_BADGE_TITLE": "Bestand {{qty}} (Warnung bei {{level}})",
-    "QUESTION_OPTIONS_PRICE_HINT": "Eine Option pro Zeile. Optionaler Preis nach Pipe: Bezeichnung|1.00 (Währungseinheiten; negativ für Abzüge)."
+    "QUESTION_OPTIONS_PRICE_HINT": "Eine Option pro Zeile. Optionaler Preis nach Pipe: Bezeichnung|1.00 (Währungseinheiten; negativ für Abzüge).",
+    "EXPECTED_PREP_MINUTES": "Soll-Vorbereitung (Minuten)",
+    "EXPECTED_PREP_PLACEHOLDER": "Kategorie-Standard",
+    "EXPECTED_PREP_HINT": "Optionaler Override für Küchen-SLA. Leer lassen für Kategorie-Standard aus Timer-Einstellungen."
   },
   "CATALOG": {
     "TITLE": "Produktkatalog",
@@ -2680,7 +2689,18 @@
     "PLACED": "Aufgegeben",
     "SLA_FRESH": "Frisch",
     "SLA_WARNING": "Gefährdet",
-    "SLA_OVERDUE": "Überfällig"
+    "SLA_OVERDUE": "Überfällig",
+    "TIMER_YELLOW_PERCENT": "Gelb ab (% der Sollzeit)",
+    "TIMER_ORANGE_PERCENT": "Orange ab (% der Sollzeit)",
+    "TIMER_RED_PERCENT": "Rot ab (% der Sollzeit)",
+    "SLA_THRESHOLD_MODE": "SLA-Schwellenmodus",
+    "SLA_MODE_ABSOLUTE": "Absolut (überfällig bei Soll-Vorbereitungszeit)",
+    "SLA_MODE_PERCENT": "Prozent der Soll-Vorbereitungszeit",
+    "SLA_TICKET_AGGREGATION": "Sollzeit bei mehreren Positionen",
+    "SLA_AGG_MAX_LINE": "Längste Position (Max)",
+    "SLA_AGG_SUM": "Summe der Positionen",
+    "SLA_AGG_PRIMARY_CATEGORY": "Hauptkategorie (höchste)",
+    "EXPECTED_PREP_BY_CATEGORY": "Soll-Vorbereitungszeit nach Kategorie (Minuten)"
   },
   "BAR_DISPLAY": {
     "TITLE": "Bar-Anzeige"

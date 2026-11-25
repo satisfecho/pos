@@ -14,6 +14,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.198] - 2026-11-25
+
+### Added
+
+- **Kitchen expected prep times (#450):** Owners can set category and product expected prep minutes, choose absolute or percent-of-expected SLA bands, and how multi-item tickets aggregate (max line default). Kitchen badges use those clocks with fallback to the existing 5/10/15 thresholds.
+- **Login CAPTCHA after failed attempts (#452):** Self-hosted SVG challenge on staff, provider, courier, and platform login after N failed attempts per IP (default 3); env knobs, docs, pytest, and smoke coverage.
+
 ## [2.1.197] - 2026-11-25
 
 ### Added

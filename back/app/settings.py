@@ -221,6 +221,23 @@ class Settings(BaseSettings):
     rate_limit_login_per_15min: int = Field(
         default=5, validation_alias="RATE_LIMIT_LOGIN_PER_15MIN"
     )
+    # Self-hosted login CAPTCHA after N failed attempts (#452); additive to rate limits
+    login_captcha_enabled: bool = Field(default=True, validation_alias="LOGIN_CAPTCHA_ENABLED")
+    login_captcha_after_failures: int = Field(
+        default=3,
+        validation_alias="LOGIN_CAPTCHA_AFTER_FAILURES",
+        description="Failed POST /token attempts per IP before CAPTCHA is required",
+    )
+    login_captcha_ttl_seconds: int = Field(
+        default=300,
+        validation_alias="LOGIN_CAPTCHA_TTL_SECONDS",
+        description="Challenge lifetime in seconds",
+    )
+    login_captcha_fixed_code: str = Field(
+        default="",
+        validation_alias="LOGIN_CAPTCHA_FIXED_CODE",
+        description="Non-production only: fixed CAPTCHA answer for smoke/pytest",
+    )
     rate_limit_register_per_hour: int = Field(
         default=3, validation_alias="RATE_LIMIT_REGISTER_PER_HOUR"
     )

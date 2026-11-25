@@ -25,7 +25,7 @@ from uuid import uuid4
 from PIL import Image
 import redis
 import stripe
-from fastapi import BackgroundTasks, Body, Depends, FastAPI, HTTPException, UploadFile, File, status, Query, Request
+from fastapi import BackgroundTasks, Body, Depends, FastAPI, Form, HTTPException, UploadFile, File, status, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response, StreamingResponse
 from fastapi.security import OAuth2PasswordRequestForm
@@ -159,6 +159,7 @@ from .rate_limits import (
     rate_limit_redis_url,
     register_rate_limit_exception_handler,
 )
+from . import login_captcha
 
 # Configure logging
 logging.basicConfig(
@@ -3104,16 +3105,40 @@ def _record_login_event(session: Session, user: models.User, scope: str | None) 
     inactive_tenant_svc.clear_inactivity_warning_on_login(session, user)
 
 
+@app.get("/captcha/challenge")
+@limiter.limit("30/minute")
+def get_login_captcha_challenge(request: Request, response: Response) -> dict:
+    """Self-hosted SVG CAPTCHA challenge for login (#452). No third-party provider."""
+    if not login_captcha.is_enabled():
+        raise HTTPException(status_code=404, detail="CAPTCHA disabled")
+    return login_captcha.create_challenge()
+
+
 @app.post("/token")
 @limiter.limit(f"{getattr(settings, 'rate_limit_login_per_15min', 5)}/15 minutes")
 def login_for_access_token(
     request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    captcha_id: Annotated[str | None, Form()] = None,
+    captcha_answer: Annotated[str | None, Form()] = None,
     tenant_id: int | None = Query(None, description="Optional tenant id from tenant picker"),
     scope: str | None = Query(None, description="Login scope: 'provider' for provider portal, 'courier' for courier portal, 'platform' for platform operator"),
     lang: str = Depends(_get_requested_language),
     session: Session = Depends(get_session),
 ) -> dict:
+    client_key = login_captcha.client_key_from_request(request)
+    if login_captcha.requires_captcha(client_key):
+        if not login_captcha.verify_and_consume(captcha_id, captcha_answer):
+            code = "captcha_invalid" if (captcha_id or captcha_answer) else "captcha_required"
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={
+                    "detail": api_error_payload(code, lang),
+                    "require_captcha": True,
+                    "captcha": login_captcha.create_challenge(),
+                },
+            )
+
     statement = select(models.User).where(models.User.email == form_data.username)
     if scope == "provider":
         statement = statement.where(
@@ -3138,9 +3163,16 @@ def login_for_access_token(
     if not user or not security.verify_password(
         form_data.password, user.hashed_password
     ):
-        raise HTTPException(
+        login_captcha.record_failure(client_key)
+        content: dict[str, Any] = {
+            "detail": api_error_payload("incorrect_username_or_password", lang),
+        }
+        if login_captcha.requires_captcha(client_key):
+            content["require_captcha"] = True
+            content["captcha"] = login_captcha.create_challenge()
+        return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=api_error_payload("incorrect_username_or_password", lang),
+            content=content,
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -3150,6 +3182,8 @@ def login_for_access_token(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=api_error_payload(gate, lang),
         )
+
+    login_captcha.clear_failures(client_key)
 
     # If OTP is enabled, require second factor; do not issue tokens yet
     if getattr(user, "otp_enabled", False) and getattr(user, "otp_secret", None):
@@ -5344,17 +5378,15 @@ def get_kitchen_display_settings(
     current_user: Annotated[models.User, Depends(require_permission(Permission.ORDER_READ))],
     session: Session = Depends(get_session),
 ) -> dict:
-    """Get kitchen/bar display timer thresholds (minutes). Used for wait-time card colors."""
+    """Get kitchen/bar display timer thresholds and SLA expected-prep config (#450)."""
+    from .kitchen_sla import settings_dict_from_tenant
+
     tenant = session.exec(
         select(models.Tenant).where(models.Tenant.id == current_user.tenant_id)
     ).first()
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
-    return {
-        "yellow_minutes": tenant.kitchen_display_timer_yellow_minutes if tenant.kitchen_display_timer_yellow_minutes is not None else 5,
-        "orange_minutes": tenant.kitchen_display_timer_orange_minutes if tenant.kitchen_display_timer_orange_minutes is not None else 10,
-        "red_minutes": tenant.kitchen_display_timer_red_minutes if tenant.kitchen_display_timer_red_minutes is not None else 15,
-    }
+    return settings_dict_from_tenant(tenant)
 
 
 @app.put("/tenant/kitchen-display-settings")
@@ -5363,29 +5395,19 @@ def update_kitchen_display_settings(
     current_user: Annotated[models.User, Depends(require_permission(Permission.ORDER_READ))],
     session: Session = Depends(get_session),
 ) -> dict:
-    """Update kitchen/bar display timer thresholds (minutes)."""
+    """Update kitchen/bar display timer thresholds and SLA expected-prep config (#450)."""
+    from .kitchen_sla import apply_settings_body, settings_dict_from_tenant
+
     tenant = session.exec(
         select(models.Tenant).where(models.Tenant.id == current_user.tenant_id)
     ).first()
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
-    yellow = body.get("yellow_minutes")
-    orange = body.get("orange_minutes")
-    red = body.get("red_minutes")
-    if yellow is not None:
-        tenant.kitchen_display_timer_yellow_minutes = max(0, int(yellow))
-    if orange is not None:
-        tenant.kitchen_display_timer_orange_minutes = max(0, int(orange))
-    if red is not None:
-        tenant.kitchen_display_timer_red_minutes = max(0, int(red))
+    apply_settings_body(tenant, body if isinstance(body, dict) else {})
     session.add(tenant)
     session.commit()
     session.refresh(tenant)
-    return {
-        "yellow_minutes": tenant.kitchen_display_timer_yellow_minutes or 5,
-        "orange_minutes": tenant.kitchen_display_timer_orange_minutes or 10,
-        "red_minutes": tenant.kitchen_display_timer_red_minutes or 15,
-    }
+    return settings_dict_from_tenant(tenant)
 
 
 # Kitchen / bar prep stations (KDS filtering, product mapping)
@@ -6184,6 +6206,14 @@ def create_product(
         raise HTTPException(status_code=400, detail="stock_qty must be >= 0")
     if getattr(product, "stock_alert_level", 0) is not None and int(product.stock_alert_level) < 0:
         raise HTTPException(status_code=400, detail="stock_alert_level must be >= 0")
+    if getattr(product, "expected_prep_minutes", None) is not None:
+        try:
+            epm = int(product.expected_prep_minutes)
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail="expected_prep_minutes must be an integer")
+        if epm < 0:
+            raise HTTPException(status_code=400, detail="expected_prep_minutes must be >= 0")
+        product.expected_prep_minutes = epm
     product.stock_alert_enabled = bool(getattr(product, "stock_alert_enabled", False))
     product.stock_qty = int(getattr(product, "stock_qty", 0) or 0)
     product.stock_alert_level = int(getattr(product, "stock_alert_level", 0) or 0)
@@ -6258,6 +6288,18 @@ def update_product(
         if level < 0:
             raise HTTPException(status_code=400, detail="stock_alert_level must be >= 0")
         product.stock_alert_level = level
+    if "expected_prep_minutes" in pu:
+        val = pu["expected_prep_minutes"]
+        if val is None or val == "":
+            product.expected_prep_minutes = None
+        else:
+            try:
+                epm = int(val)
+            except (TypeError, ValueError):
+                raise HTTPException(status_code=400, detail="expected_prep_minutes must be an integer")
+            if epm < 0:
+                raise HTTPException(status_code=400, detail="expected_prep_minutes must be >= 0")
+            product.expected_prep_minutes = epm
 
     session.add(product)
     # Sync availability dates to linked TenantProduct(s) so customer menu stays consistent
@@ -14841,6 +14883,11 @@ def list_orders(
                     "birth_date": bc.birth_date.isoformat() if bc.birth_date else None,
                 }
 
+        from .kitchen_sla import parse_category_prep_map, resolve_line_expected_minutes
+
+        category_prep_map = parse_category_prep_map(
+            getattr(tenant_row, "kitchen_expected_prep_by_category", None) if tenant_row else None
+        )
         order_items_json: list[dict] = []
         for oi in items:
             prod = product_map.get(oi.product_id) if product_map else None
@@ -14848,6 +14895,12 @@ def list_orders(
                 kid, knm, krt = resolve_order_item_kds(prod, tenant_row, station_by_id)
             else:
                 kid, knm, krt = None, None, "kitchen"
+            prod_category = getattr(prod, "category", None) if prod else None
+            expected_prep = resolve_line_expected_minutes(
+                product_expected=getattr(prod, "expected_prep_minutes", None) if prod else None,
+                category=prod_category,
+                category_map=category_prep_map,
+            )
             order_items_json.append(
                 {
                     "id": oi.id,
@@ -14866,7 +14919,8 @@ def list_orders(
                     "tax_id": getattr(oi, "tax_id", None),
                     "tax_rate_percent": getattr(oi, "tax_rate_percent", None),
                     "tax_amount_cents": getattr(oi, "tax_amount_cents", None),
-                    "category": getattr(product_map.get(oi.product_id), "category", None),
+                    "category": prod_category,
+                    "expected_prep_minutes": expected_prep,
                     "kitchen_station_id": kid,
                     "kitchen_station_name": knm,
                     "kitchen_station_route": krt,

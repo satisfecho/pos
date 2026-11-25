@@ -218,16 +218,26 @@ describe('KitchenDisplayComponent', () => {
     const fixture = TestBed.createComponent(KitchenDisplayComponent);
     fixture.detectChanges();
     const c = fixture.componentInstance;
-    c.timerSettings.set({ yellow_minutes: 5, orange_minutes: 10, red_minutes: 15 });
+    c.timerSettings.set({
+      yellow_minutes: 5,
+      orange_minutes: 10,
+      red_minutes: 15,
+      sla_threshold_mode: 'absolute',
+      sla_ticket_aggregation: 'max_line',
+      yellow_percent: 70,
+      orange_percent: 90,
+      red_percent: 100,
+      expected_prep_by_category: {},
+    });
     const base = Date.now();
     c.now.set(base);
-    const mk = (minutesAgo: number) =>
+    const mk = (minutesAgo: number, items: any[] = []) =>
       ({
         id: 1,
         status: 'pending',
         table_name: 'T1',
         created_at: new Date(base - minutesAgo * 60_000).toISOString(),
-        items: [],
+        items,
         total_cents: 0,
       }) as any;
     expect(c.getSlaLevel(mk(1))).toBe('fresh');
@@ -236,6 +246,26 @@ describe('KitchenDisplayComponent', () => {
     expect(c.getSlaLevel(mk(12))).toBe('warning');
     expect(c.getSlaLevel(mk(20))).toBe('overdue');
     expect(c.formatPlacedClock(mk(0).created_at)).toMatch(/\d/);
+
+    // Absolute mode with expected: overdue at ticket expected (max line)
+    const withExpected = [
+      { product_name: 'Starter', quantity: 1, price_cents: 100, expected_prep_minutes: 8, category: 'Starters' },
+      { product_name: 'Main', quantity: 1, price_cents: 100, expected_prep_minutes: 12, category: 'Main Course' },
+    ];
+    expect(c.getTicketExpectedMinutes(mk(0, withExpected))).toBe(12);
+    expect(c.getSlaLevel(mk(13, withExpected))).toBe('overdue');
+    expect(c.getSlaLevel(mk(6, withExpected))).toBe('warning');
+
+    c.timerSettings.update((s) => ({
+      ...s,
+      sla_threshold_mode: 'percent_of_expected',
+      yellow_percent: 50,
+      orange_percent: 75,
+      red_percent: 100,
+    }));
+    // expected 12 → yellow 6, orange 9, red 12
+    expect(c.getSlaLevel(mk(7, withExpected))).toBe('warning');
+    expect(c.getSlaLevel(mk(13, withExpected))).toBe('overdue');
   });
 
   it('should toggle staff urgent via API when permitted', async () => {

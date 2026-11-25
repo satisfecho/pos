@@ -225,6 +225,15 @@ class Tenant(SQLModel, table=True):
     kitchen_display_timer_yellow_minutes: int | None = Field(default=5)
     kitchen_display_timer_orange_minutes: int | None = Field(default=10)
     kitchen_display_timer_red_minutes: int | None = Field(default=15)
+    # Kitchen SLA (#450): absolute vs % of expected; multi-item ticket aggregation
+    kitchen_sla_threshold_mode: str = Field(default="absolute", max_length=32)
+    kitchen_sla_ticket_aggregation: str = Field(default="max_line", max_length=32)
+    kitchen_display_timer_yellow_percent: int = Field(default=70)
+    kitchen_display_timer_orange_percent: int = Field(default=90)
+    kitchen_display_timer_red_percent: int = Field(default=100)
+    kitchen_expected_prep_by_category: dict | None = Field(
+        default=None, sa_column=Column(PgJSON, nullable=True)
+    )
 
     # POS checkout: up to 4 tip percentages (e.g. 5,10,15,20); empty list disables tips; null = legacy default in API
     tip_preset_percents: list | None = Field(default=None, sa_column=Column(PgJSON, nullable=True))
@@ -586,6 +595,8 @@ class Product(TenantMixin, table=True):
     kitchen_station_id: int | None = Field(
         default=None, foreign_key="kitchen_station.id", index=True
     )
+    # Optional expected prep minutes for kitchen SLA (#450); null = use category default
+    expected_prep_minutes: int | None = Field(default=None)
     # Sellable-unit stock alert (Products UI; separate from inventory ingredient reorder)
     stock_alert_enabled: bool = Field(default=False)
     stock_qty: int = Field(default=0)
@@ -1511,6 +1522,7 @@ class ProductUpdate(SQLModel):
     available_from: date | None = None
     available_until: date | None = None
     kitchen_station_id: int | None = None  # null = clear mapping
+    expected_prep_minutes: int | None = None  # null = clear override (use category)
     stock_alert_enabled: bool | None = None
     stock_qty: int | None = None
     stock_alert_level: int | None = None
@@ -2067,6 +2079,12 @@ class TenantUpdate(SQLModel):
     kitchen_display_timer_yellow_minutes: int | None = None
     kitchen_display_timer_orange_minutes: int | None = None
     kitchen_display_timer_red_minutes: int | None = None
+    kitchen_sla_threshold_mode: str | None = None
+    kitchen_sla_ticket_aggregation: str | None = None
+    kitchen_display_timer_yellow_percent: int | None = None
+    kitchen_display_timer_orange_percent: int | None = None
+    kitchen_display_timer_red_percent: int | None = None
+    kitchen_expected_prep_by_category: dict | None = None
 
     # Staff UI: show/hide sidebar, dashboard tiles, and routes per module
     ui_modules: dict[str, bool] | None = None

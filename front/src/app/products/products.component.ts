@@ -197,6 +197,20 @@ import { ProductBulkImportComponent } from './product-bulk-import.component';
                      <small class="field-hint">{{ 'PRODUCTS.KITCHEN_STATION_HINT' | translate }}</small>
                    </div>
                    <div class="form-group">
+                     <label for="expected_prep_minutes">{{ 'PRODUCTS.EXPECTED_PREP_MINUTES' | translate }}</label>
+                     <input
+                       id="expected_prep_minutes"
+                       type="number"
+                       min="0"
+                       step="1"
+                       [(ngModel)]="formData.expected_prep_minutes"
+                       name="expected_prep_minutes"
+                       [readonly]="!canEditProducts()"
+                       [attr.placeholder]="'PRODUCTS.EXPECTED_PREP_PLACEHOLDER' | translate"
+                     />
+                     <small class="field-hint">{{ 'PRODUCTS.EXPECTED_PREP_HINT' | translate }}</small>
+                   </div>
+                   <div class="form-group">
                      <label for="product_tax_id">{{ 'PRODUCTS.TAX_OVERRIDE' | translate }}</label>
                      <select id="product_tax_id" [(ngModel)]="formData.tax_id" name="tax_id" [disabled]="!canEditProducts()">
                        <option [ngValue]="null">{{ 'PRODUCTS.USE_DEFAULT_TAX' | translate }}</option>
@@ -703,6 +717,7 @@ export class ProductsComponent implements OnInit {
     available_from?: string;
     available_until?: string;
     kitchen_station_id?: number | null;
+    expected_prep_minutes?: number | null;
     stock_alert_enabled: boolean;
     stock_qty: number;
     stock_alert_level: number;
@@ -715,6 +730,7 @@ export class ProductsComponent implements OnInit {
     category: '',
     subcategory: '',
     kitchen_station_id: null,
+    expected_prep_minutes: null,
     stock_alert_enabled: false,
     stock_qty: 0,
     stock_alert_level: 5,
@@ -1058,6 +1074,7 @@ export class ProductsComponent implements OnInit {
       available_from: product.available_from || '',
       available_until: product.available_until || '',
       kitchen_station_id: product.kitchen_station_id ?? null,
+      expected_prep_minutes: product.expected_prep_minutes ?? null,
       stock_alert_enabled: !!product.stock_alert_enabled,
       stock_qty: product.stock_qty ?? 0,
       stock_alert_level: product.stock_alert_level ?? 0,
@@ -1085,6 +1102,7 @@ export class ProductsComponent implements OnInit {
       available_from: '',
       available_until: '',
       kitchen_station_id: null,
+      expected_prep_minutes: null,
       stock_alert_enabled: false,
       stock_qty: 0,
       stock_alert_level: 5,
@@ -1108,6 +1126,7 @@ export class ProductsComponent implements OnInit {
       available_from: '',
       available_until: '',
       kitchen_station_id: null,
+      expected_prep_minutes: null,
       stock_alert_enabled: false,
       stock_qty: 0,
       stock_alert_level: 5,
@@ -1450,6 +1469,10 @@ export class ProductsComponent implements OnInit {
       available_from: this.formData.available_from?.trim() || null,
       available_until: this.formData.available_until?.trim() || null,
       kitchen_station_id: this.formData.kitchen_station_id ?? null,
+      expected_prep_minutes:
+        this.formData.expected_prep_minutes == null || `${this.formData.expected_prep_minutes}`.trim() === ''
+          ? null
+          : Math.max(0, Math.floor(Number(this.formData.expected_prep_minutes))),
       stock_alert_enabled: !!this.formData.stock_alert_enabled,
       stock_qty: Math.max(0, Math.floor(Number(this.formData.stock_qty) || 0)),
       stock_alert_level: Math.max(0, Math.floor(Number(this.formData.stock_alert_level) || 0)),

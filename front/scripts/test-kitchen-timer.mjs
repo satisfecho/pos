@@ -59,7 +59,10 @@ async function main() {
 
   try {
     console.log('1. Logging in...');
-    await page.goto(new URL('/login', baseUrl).href, { waitUntil: 'networkidle2', timeout: 15000 });
+    const loginPath = process.env.LOGIN_TENANT_ID
+      ? `/login?tenant=${encodeURIComponent(process.env.LOGIN_TENANT_ID)}`
+      : '/login?tenant=1';
+    await page.goto(new URL(loginPath, baseUrl).href, { waitUntil: 'networkidle2', timeout: 15000 });
     await page.type('input[type="email"]', loginEmail);
     await page.type('input[type="password"]', loginPassword);
     await page.click('button[type="submit"]');
@@ -91,6 +94,26 @@ async function main() {
       process.exit(1);
     }
     console.log('   Timer settings button found:', btnText.trim());
+
+    console.log('3b. Opening Timer settings modal (SLA mode / aggregation / category prep)...');
+    await timerSettingsBtn.click();
+    await sleep(800);
+    const modeSelect = await page.$('[data-testid="kitchen-sla-mode"]');
+    const aggSelect = await page.$('[data-testid="kitchen-sla-aggregation"]');
+    if (!modeSelect || !aggSelect) {
+      console.error('FAIL: SLA mode/aggregation controls missing in timer settings modal.');
+      process.exit(1);
+    }
+    const prepStarter = await page.$('[data-testid="kitchen-prep-Starters"]');
+    if (!prepStarter) {
+      console.error('FAIL: Category expected-prep input for Starters missing.');
+      process.exit(1);
+    }
+    console.log('   SLA mode, aggregation, and category prep fields present.');
+    // Close modal via Cancel if present
+    const cancelBtn = await page.$('.timer-settings-modal .btn-secondary');
+    if (cancelBtn) await cancelBtn.click();
+    await sleep(300);
 
     console.log('4. Checking for order cards, Waiting timer, placed clock, SLA badge...');
     const orderCards = await page.$$('.order-card');

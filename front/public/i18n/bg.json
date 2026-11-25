@@ -94,7 +94,9 @@
     "UNMAPPED_CSV_COLUMNS": "AI не можа да съпостави тези CSV колони: {{columns}}. Преименувайте или премахнете ги и опитайте отново.",
     "CUSTOMER_PASSWORD_TOO_SHORT": "Паролата трябва да е поне {{min_length}} знака.",
     "CUSTOMER_VERIFICATION_INVALID": "Невалидна или неизвестна връзка за потвърждение на имейл.",
-    "CUSTOMER_VERIFICATION_EXPIRED": "Тази връзка за потвърждение е изтекла. Заявете нова."
+    "CUSTOMER_VERIFICATION_EXPIRED": "Тази връзка за потвърждение е изтекла. Заявете нова.",
+    "CAPTCHA_REQUIRED": "Завършете проверката за сигурност преди вход.",
+    "CAPTCHA_INVALID": "Проверката за сигурност не бе успешна. Опитайте нов код."
   },
   "NAV": {
     "HOME": "Начало",
@@ -598,7 +600,11 @@
     "SIGNUP_VERIFY_SUBMIT": "Потвърди имейл",
     "SIGNUP_VERIFY_RESEND": "Изпрати кода отново",
     "SIGNUP_VERIFY_RESENT": "Кодът е изпратен",
-    "SIGNUP_VERIFY_FAILED": "Кодът не можа да бъде потвърден. Проверете и опитайте отново."
+    "SIGNUP_VERIFY_FAILED": "Кодът не можа да бъде потвърден. Проверете и опитайте отново.",
+    "CAPTCHA_LABEL": "Проверка за сигурност",
+    "CAPTCHA_PLACEHOLDER": "Въведете показаните символи",
+    "CAPTCHA_REFRESH": "Нов код",
+    "CAPTCHA_REQUIRED": "Завършете проверката за сигурност, за да продължите."
   },
   "MENU": {
     "TITLE": "Меню",
@@ -861,7 +867,10 @@
     "STOCK_LOW": "Ниско",
     "STOCK_OK": "OK",
     "STOCK_BADGE_TITLE": "Наличност {{qty}} (предупреждение при {{level}})",
-    "QUESTION_OPTIONS_PRICE_HINT": "По една опция на ред. Опционална цена след |: Етикет|1.00 (основни единици; отрицателна за отстъпки)."
+    "QUESTION_OPTIONS_PRICE_HINT": "По една опция на ред. Опционална цена след |: Етикет|1.00 (основни единици; отрицателна за отстъпки).",
+    "EXPECTED_PREP_MINUTES": "Expected prep (minutes)",
+    "EXPECTED_PREP_PLACEHOLDER": "Category default",
+    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings."
   },
   "CATALOG": {
     "TITLE": "ПРОДУКТОВ КАТАЛОГ",
@@ -1148,7 +1157,18 @@
     "PLACED": "Поръчана",
     "SLA_FRESH": "Свежа",
     "SLA_WARNING": "В риск",
-    "SLA_OVERDUE": "Просрочена"
+    "SLA_OVERDUE": "Просрочена",
+    "TIMER_YELLOW_PERCENT": "Yellow at (% of expected)",
+    "TIMER_ORANGE_PERCENT": "Orange at (% of expected)",
+    "TIMER_RED_PERCENT": "Red at (% of expected)",
+    "SLA_THRESHOLD_MODE": "SLA threshold mode",
+    "SLA_MODE_ABSOLUTE": "Absolute (overdue at expected prep)",
+    "SLA_MODE_PERCENT": "Percent of expected prep",
+    "SLA_TICKET_AGGREGATION": "Multi-item ticket expected prep",
+    "SLA_AGG_MAX_LINE": "Longest line (max)",
+    "SLA_AGG_SUM": "Sum of lines",
+    "SLA_AGG_PRIMARY_CATEGORY": "Primary category (highest)",
+    "EXPECTED_PREP_BY_CATEGORY": "Expected prep by category (minutes)"
   },
   "BAR_DISPLAY": {
     "TITLE": "Бар дисплей"

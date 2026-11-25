@@ -94,7 +94,9 @@
     "UNMAPPED_CSV_COLUMNS": "تعذّر على الذكاء الاصطناعي مطابقة أعمدة CSV التالية: {{columns}}. أعد تسميتها أو احذفها وحاول مرة أخرى.",
     "CUSTOMER_PASSWORD_TOO_SHORT": "يجب أن تتكون كلمة المرور من {{min_length}} حرفًا على الأقل.",
     "CUSTOMER_VERIFICATION_INVALID": "رابط تأكيد البريد الإلكتروني غير صالح أو غير معروف.",
-    "CUSTOMER_VERIFICATION_EXPIRED": "انتهت صلاحية رابط تأكيد البريد الإلكتروني هذا. اطلب رابطًا جديدًا."
+    "CUSTOMER_VERIFICATION_EXPIRED": "انتهت صلاحية رابط تأكيد البريد الإلكتروني هذا. اطلب رابطًا جديدًا.",
+    "CAPTCHA_REQUIRED": "أكمل التحقق الأمني قبل تسجيل الدخول.",
+    "CAPTCHA_INVALID": "فشل التحقق الأمني. جرّب رمزاً جديداً."
   },
   "NAV": {
     "HOME": "الرئيسية",
@@ -299,7 +301,11 @@
     "SIGNUP_VERIFY_SUBMIT": "تأكيد البريد",
     "SIGNUP_VERIFY_RESEND": "إعادة إرسال الرمز",
     "SIGNUP_VERIFY_RESENT": "تم إرسال الرمز",
-    "SIGNUP_VERIFY_FAILED": "تعذر التحقق من الرمز. تحقق منه وحاول مرة أخرى."
+    "SIGNUP_VERIFY_FAILED": "تعذر التحقق من الرمز. تحقق منه وحاول مرة أخرى.",
+    "CAPTCHA_LABEL": "تحقق أمني",
+    "CAPTCHA_PLACEHOLDER": "أدخل الأحرف المعروضة",
+    "CAPTCHA_REFRESH": "رمز جديد",
+    "CAPTCHA_REQUIRED": "أكمل التحقق الأمني للمتابعة."
   },
   "DASHBOARD": {
     "TITLE": "لوحة التحكم",
@@ -569,7 +575,18 @@
     "PLACED": "وقت الطلب",
     "SLA_FRESH": "جديد",
     "SLA_WARNING": "متأخر قليلاً",
-    "SLA_OVERDUE": "متأخر"
+    "SLA_OVERDUE": "متأخر",
+    "TIMER_YELLOW_PERCENT": "Yellow at (% of expected)",
+    "TIMER_ORANGE_PERCENT": "Orange at (% of expected)",
+    "TIMER_RED_PERCENT": "Red at (% of expected)",
+    "SLA_THRESHOLD_MODE": "SLA threshold mode",
+    "SLA_MODE_ABSOLUTE": "Absolute (overdue at expected prep)",
+    "SLA_MODE_PERCENT": "Percent of expected prep",
+    "SLA_TICKET_AGGREGATION": "Multi-item ticket expected prep",
+    "SLA_AGG_MAX_LINE": "Longest line (max)",
+    "SLA_AGG_SUM": "Sum of lines",
+    "SLA_AGG_PRIMARY_CATEGORY": "Primary category (highest)",
+    "EXPECTED_PREP_BY_CATEGORY": "Expected prep by category (minutes)"
   },
   "BAR_DISPLAY": {
     "TITLE": "شاشة البار"
@@ -775,7 +792,10 @@
     "BULK_IMPORT_CSV_HINT": "مطلوب: الاسم. السعر عبر price أو price_cents. اختياري: التكلفة، الفئة، الفئة الفرعية، الوصف، المكونات. الأسماء البديلة الشائعة (producto، precio، …) مقبولة. الأعمدة غير المعروفة تُرفض ما لم تُفعّل مطابقة الذكاء الاصطناعي.",
     "BULK_IMPORT_CSV_AI_MAPPING": "استخدام الذكاء الاصطناعي لمطابقة عناوين الأعمدة غير المعروفة (يرسل العناوين وبعض الصفوف النموذجية إلى واجهة التعرف البصري المُهيَّأة؛ راجع المعاينة قبل الحفظ)",
     "BULK_IMPORT_CSV_EMPTY": "الصق أو ارفع CSV أولًا.",
-    "QUESTION_OPTIONS_PRICE_HINT": "خيار واحد في كل سطر. فرق سعر اختياري بعد |: التسمية|1.00 (وحدات العملة؛ سالب للخصم)."
+    "QUESTION_OPTIONS_PRICE_HINT": "خيار واحد في كل سطر. فرق سعر اختياري بعد |: التسمية|1.00 (وحدات العملة؛ سالب للخصم).",
+    "EXPECTED_PREP_MINUTES": "Expected prep (minutes)",
+    "EXPECTED_PREP_PLACEHOLDER": "Category default",
+    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings."
   },
   "TABLES": {
     "TITLE": "الطاولات",

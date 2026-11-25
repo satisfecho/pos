@@ -94,7 +94,9 @@
     "UNMAPPED_CSV_COLUMNS": "AI could not map these CSV columns: {{columns}}. Rename or remove them and try again.",
     "CUSTOMER_PASSWORD_TOO_SHORT": "पासवर्ड कम से कम {{min_length}} अक्षर का होना चाहिए।",
     "CUSTOMER_VERIFICATION_INVALID": "अमान्य या अज्ञात ईमेल सत्यापन लिंक।",
-    "CUSTOMER_VERIFICATION_EXPIRED": "यह ईमेल सत्यापन लिंक समाप्त हो गया है। नया अनुरोध करें।"
+    "CUSTOMER_VERIFICATION_EXPIRED": "यह ईमेल सत्यापन लिंक समाप्त हो गया है। नया अनुरोध करें।",
+    "CAPTCHA_REQUIRED": "साइन इन करने से पहले सुरक्षा जांच पूरी करें।",
+    "CAPTCHA_INVALID": "सुरक्षा जांच विफल। नया कोड आज़माएँ।"
   },
   "NAV": {
     "HOME": "होम",
@@ -727,7 +729,11 @@
     "SIGNUP_VERIFY_SUBMIT": "ईमेल सत्यापित करें",
     "SIGNUP_VERIFY_RESEND": "कोड फिर भेजें",
     "SIGNUP_VERIFY_RESENT": "कोड भेजा गया",
-    "SIGNUP_VERIFY_FAILED": "कोड सत्यापित नहीं हो सका। जाँचकर फिर कोशिश करें।"
+    "SIGNUP_VERIFY_FAILED": "कोड सत्यापित नहीं हो सका। जाँचकर फिर कोशिश करें।",
+    "CAPTCHA_LABEL": "सुरक्षा जांच",
+    "CAPTCHA_PLACEHOLDER": "दिखाए गए अक्षर दर्ज करें",
+    "CAPTCHA_REFRESH": "नया कोड",
+    "CAPTCHA_REQUIRED": "जारी रखने के लिए सुरक्षा जांच पूरी करें।"
   },
   "PAYWALL": {
     "TITLE": "जारी रखने के लिए एक प्लान चुनें",
@@ -1002,7 +1008,10 @@
     "STOCK_LOW": "कम",
     "STOCK_OK": "ठीक",
     "STOCK_BADGE_TITLE": "स्टॉक {{qty}} (अलर्ट {{level}} पर)",
-    "QUESTION_OPTIONS_PRICE_HINT": "प्रति पंक्ति एक विकल्प। वैकल्पिक मूल्य पाइप के बाद: लेबल|1.00 (मुख्य मुद्रा इकाइयाँ; छूट के लिए ऋणात्मक)।"
+    "QUESTION_OPTIONS_PRICE_HINT": "प्रति पंक्ति एक विकल्प। वैकल्पिक मूल्य पाइप के बाद: लेबल|1.00 (मुख्य मुद्रा इकाइयाँ; छूट के लिए ऋणात्मक)।",
+    "EXPECTED_PREP_MINUTES": "Expected prep (minutes)",
+    "EXPECTED_PREP_PLACEHOLDER": "Category default",
+    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings."
   },
   "CATALOG": {
     "TITLE": "उत्पाद कैटलॉग",
@@ -1289,7 +1298,18 @@
     "PLACED": "ऑर्डर समय",
     "SLA_FRESH": "ताज़ा",
     "SLA_WARNING": "जोखिम में",
-    "SLA_OVERDUE": "देरी"
+    "SLA_OVERDUE": "देरी",
+    "TIMER_YELLOW_PERCENT": "Yellow at (% of expected)",
+    "TIMER_ORANGE_PERCENT": "Orange at (% of expected)",
+    "TIMER_RED_PERCENT": "Red at (% of expected)",
+    "SLA_THRESHOLD_MODE": "SLA threshold mode",
+    "SLA_MODE_ABSOLUTE": "Absolute (overdue at expected prep)",
+    "SLA_MODE_PERCENT": "Percent of expected prep",
+    "SLA_TICKET_AGGREGATION": "Multi-item ticket expected prep",
+    "SLA_AGG_MAX_LINE": "Longest line (max)",
+    "SLA_AGG_SUM": "Sum of lines",
+    "SLA_AGG_PRIMARY_CATEGORY": "Primary category (highest)",
+    "EXPECTED_PREP_BY_CATEGORY": "Expected prep by category (minutes)"
   },
   "BAR_DISPLAY": {
     "TITLE": "बार डिस्प्ले"

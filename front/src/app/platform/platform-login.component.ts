@@ -4,11 +4,12 @@ import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ApiService } from '../services/api.service';
 import { ApiErrorMessageService } from '../services/api-error-message.service';
+import { LoginCaptchaFieldsComponent } from '../auth/login-captcha-fields.component';
 
 @Component({
   selector: 'app-platform-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, TranslateModule],
+  imports: [ReactiveFormsModule, RouterLink, TranslateModule, LoginCaptchaFieldsComponent],
   template: `
     <div class="auth-page">
       <div class="auth-card">
@@ -49,6 +50,14 @@ import { ApiErrorMessageService } from '../services/api-error-message.service';
               </button>
             </div>
           </div>
+          @if (showCaptcha()) {
+            <app-login-captcha-fields
+              [svgUrl]="captchaSvgUrl()"
+              [disabled]="loading()"
+              [(answer)]="captchaAnswer"
+              (refresh)="refreshCaptcha()"
+            />
+          }
           @if (error()) {
             <div class="error-banner">{{ error() }}</div>
           }
@@ -144,6 +153,10 @@ export class PlatformLoginComponent {
   error = signal<string>('');
   loading = signal(false);
   showPassword = signal(false);
+  showCaptcha = signal(false);
+  captchaId = signal<string | null>(null);
+  captchaSvgUrl = signal<string | null>(null);
+  captchaAnswer = '';
 
   form = this.fb.group({
     username: ['', [Validators.required, Validators.email]],
@@ -156,12 +169,52 @@ export class PlatformLoginComponent {
     this.loading.set(true);
     const username = this.form.get('username')?.value ?? '';
     const password = this.form.get('password')?.value ?? '';
-    this.api.login(username, password, undefined, 'platform').subscribe({
-      next: () => this.router.navigate(['/platform']),
+    const captcha =
+      this.showCaptcha() && this.captchaId()
+        ? { id: this.captchaId()!, answer: (this.captchaAnswer || '').trim() }
+        : null;
+    this.api.login(username, password, undefined, 'platform', captcha).subscribe({
+      next: () => {
+        this.clearCaptcha();
+        void this.router.navigate(['/platform']);
+      },
       error: (err) => {
         this.loading.set(false);
-        this.error.set(this.apiErr.fromHttpError(err, 'AUTH.LOGIN_FAILED'));
+        this.applyCaptchaFromError(err);
+        this.error.set(
+          this.apiErr.fromHttpError(
+            err,
+            err?.error?.require_captcha ? 'AUTH.CAPTCHA_REQUIRED' : 'AUTH.LOGIN_FAILED',
+          ),
+        );
       }
     });
+  }
+
+  refreshCaptcha(): void {
+    this.api.getLoginCaptchaChallenge().subscribe({
+      next: (c) => this.setCaptcha(c),
+      error: () => {},
+    });
+  }
+
+  private applyCaptchaFromError(err: { error?: { require_captcha?: boolean; captcha?: { id: string; svg: string } } }): void {
+    if (err?.error?.require_captcha && err.error.captcha?.id && err.error.captcha?.svg) {
+      this.setCaptcha(err.error.captcha);
+    }
+  }
+
+  private setCaptcha(c: { id: string; svg: string }): void {
+    this.showCaptcha.set(true);
+    this.captchaId.set(c.id);
+    this.captchaSvgUrl.set('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(c.svg));
+    this.captchaAnswer = '';
+  }
+
+  private clearCaptcha(): void {
+    this.showCaptcha.set(false);
+    this.captchaId.set(null);
+    this.captchaSvgUrl.set(null);
+    this.captchaAnswer = '';
   }
 }
