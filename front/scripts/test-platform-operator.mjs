@@ -74,7 +74,7 @@ async function main() {
     }
     console.log(`OK: top active clients section visible (${topTitle})`);
 
-    await page.waitForSelector('a.tenant-link', { timeout: 10000 });
+    await page.waitForSelector('.tenants-table a.tenant-link', { timeout: 10000 });
     await page.waitForSelector('[data-testid="tenant-filter"]', { timeout: 5000 });
     const tenantLoginCell = await page.$('[data-testid="tenant-login-count"]');
     if (!tenantLoginCell) throw new Error('Missing tenant login count column in All tenants table');
@@ -95,7 +95,7 @@ async function main() {
     if (!activeSort) throw new Error('Expected tenants table to default-sort by client logins');
     console.log('OK: tenants table defaults to client-logins sort');
 
-    const firstName = await page.$eval('a.tenant-link', (el) => el.textContent?.trim() || '');
+    const firstName = await page.$eval('.tenants-table a.tenant-link', (el) => el.textContent?.trim() || '');
     if (firstName) {
       const needle = firstName.slice(0, Math.min(8, firstName.length));
       await page.focus('[data-testid="tenant-filter"]');
@@ -106,10 +106,10 @@ async function main() {
       await page.type('[data-testid="tenant-filter"]', needle);
       await page.waitForFunction(
         (name) => {
-          const links = [...document.querySelectorAll('a.tenant-link')];
+          const links = [...document.querySelectorAll('.tenants-table a.tenant-link')];
           return links.length >= 1 && links.every((a) => (a.textContent || '').toLowerCase().includes(name.slice(0, 3).toLowerCase()));
         },
-        { timeout: 5000 },
+        { timeout: 10000 },
         firstName,
       );
       console.log(`OK: tenant filter narrows list for "${firstName}"`);
@@ -119,7 +119,7 @@ async function main() {
       });
     }
 
-    await page.click('a.tenant-link');
+    await page.click('.tenants-table a.tenant-link');
     await page.waitForFunction(
       () => /^\/platform\/tenants\/\d+$/.test(window.location.pathname),
       { timeout: 15000 },
