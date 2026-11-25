@@ -878,7 +878,9 @@
     "QUESTION_OPTIONS_PRICE_HINT": "ہر لائن پر ایک آپشن۔ اختیاری قیمت پائپ کے بعد: لیبل|1.00 (بڑی کرنسی اکائیاں؛ رعایت کے لیے منفی)۔",
     "EXPECTED_PREP_MINUTES": "Expected prep (minutes)",
     "EXPECTED_PREP_PLACEHOLDER": "Category default",
-    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings."
+    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings.",
+    "SKIP_KITCHEN": "تیار مصنوعہ (کچن / بار چھوڑیں)",
+    "SKIP_KITCHEN_HINT": "اس مصنوعہ کی لائنیں کچن/بار ڈسپلے پر نہیں آتیں۔ بوتل والے مشروبات اور پیکڈ اشیاء کے لیے۔"
   },
   "CATALOG": {
     "TITLE": "پروڈکٹ کیٹلاگ",

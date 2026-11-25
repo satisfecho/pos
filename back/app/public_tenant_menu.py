@@ -26,6 +26,7 @@ _SENSITIVE_PRODUCT_KEYS = frozenset(
         "ingredients",
         "tax_id",
         "kitchen_station_id",
+        "skip_kitchen",
         "tenant_id",
         "_source",
         "questions",

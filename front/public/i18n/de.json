@@ -878,7 +878,9 @@
     "QUESTION_OPTIONS_PRICE_HINT": "Eine Option pro Zeile. Optionaler Preis nach Pipe: Bezeichnung|1.00 (Währungseinheiten; negativ für Abzüge).",
     "EXPECTED_PREP_MINUTES": "Soll-Vorbereitung (Minuten)",
     "EXPECTED_PREP_PLACEHOLDER": "Kategorie-Standard",
-    "EXPECTED_PREP_HINT": "Optionaler Override für Küchen-SLA. Leer lassen für Kategorie-Standard aus Timer-Einstellungen."
+    "EXPECTED_PREP_HINT": "Optionaler Override für Küchen-SLA. Leer lassen für Kategorie-Standard aus Timer-Einstellungen.",
+    "SKIP_KITCHEN": "Fertigware (Küche / Bar überspringen)",
+    "SKIP_KITCHEN_HINT": "Positionen dieses Produkts erscheinen nicht auf Küchen- und Bar-Displays. Für Flaschengetränke, verpackte Snacks und andere Artikel ohne Zubereitung."
   },
   "CATALOG": {
     "TITLE": "Produktkatalog",

@@ -14,6 +14,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.201] - 2026-11-25
+
+### Added
+
+- **Ready-made products skip kitchen (#454):** Products can be marked ready-made so order lines start as ready, stay off kitchen/bar displays, and are omitted from kitchen print tickets (receipts unchanged).
+
+### Fixed
+
+- **Demo data reset:** Tenant 1 daily reset now deletes split-payment lines (`order_payment_item` / `order_payment`) before order items, so the FK no longer blocks the cron.
+
 ## [2.1.200] - 2026-11-25
 
 ### Added

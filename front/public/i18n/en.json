@@ -1053,7 +1053,9 @@
     "STOCK_LOW": "Low",
     "STOCK_OK": "OK",
     "STOCK_BADGE_TITLE": "Stock {{qty}} (alert at {{level}})",
-    "QUESTION_OPTIONS_PRICE_HINT": "One option per line. Optional price delta after a pipe: Label|1.00 (major currency units; use negative for discounts)."
+    "QUESTION_OPTIONS_PRICE_HINT": "One option per line. Optional price delta after a pipe: Label|1.00 (major currency units; use negative for discounts).",
+    "SKIP_KITCHEN": "Ready-made (skip kitchen / bar)",
+    "SKIP_KITCHEN_HINT": "Order lines for this product stay off kitchen and bar displays. Use for bottled drinks, packaged snacks, and other items that need no prep."
   },
   "CATALOG": {
     "TITLE": "Product Catalog",

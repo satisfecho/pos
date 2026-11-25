@@ -1019,7 +1019,9 @@
     "QUESTION_OPTIONS_PRICE_HINT": "प्रति पंक्ति एक विकल्प। वैकल्पिक मूल्य पाइप के बाद: लेबल|1.00 (मुख्य मुद्रा इकाइयाँ; छूट के लिए ऋणात्मक)।",
     "EXPECTED_PREP_MINUTES": "Expected prep (minutes)",
     "EXPECTED_PREP_PLACEHOLDER": "Category default",
-    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings."
+    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings.",
+    "SKIP_KITCHEN": "तैयार उत्पाद (किचन / बार छोड़ें)",
+    "SKIP_KITCHEN_HINT": "इस उत्पाद की पंक्तियाँ किचन/बार डिस्प्ले पर नहीं आतीं। बोतलबंद पेय, पैक्ड स्नैक्स आदि के लिए।"
   },
   "CATALOG": {
     "TITLE": "उत्पाद कैटलॉग",

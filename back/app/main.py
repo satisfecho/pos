@@ -140,7 +140,9 @@ from .product_customization import (
 )
 from .order_notes import normalize_order_note, order_notes_equal
 from .kitchen_stations_util import (
+    initial_order_item_status,
     normalize_display_route,
+    product_skips_kitchen,
     resolve_order_item_kds,
     validate_kitchen_station_belongs,
 )
@@ -6217,6 +6219,7 @@ def create_product(
     product.stock_alert_enabled = bool(getattr(product, "stock_alert_enabled", False))
     product.stock_qty = int(getattr(product, "stock_qty", 0) or 0)
     product.stock_alert_level = int(getattr(product, "stock_alert_level", 0) or 0)
+    product.skip_kitchen = bool(getattr(product, "skip_kitchen", False))
     session.add(product)
     session.commit()
     session.refresh(product)
@@ -6288,6 +6291,8 @@ def update_product(
         if level < 0:
             raise HTTPException(status_code=400, detail="stock_alert_level must be >= 0")
         product.stock_alert_level = level
+    if "skip_kitchen" in pu:
+        product.skip_kitchen = bool(pu["skip_kitchen"])
     if "expected_prep_minutes" in pu:
         val = pu["expected_prep_minutes"]
         if val is None or val == "":
@@ -14138,6 +14143,7 @@ def create_order(
             ) if effective_tax else None
             session.add(existing_item)
         else:
+            status_product = session.get(models.Product, effective_product_id)
             order_item = models.OrderItem(
                 order_id=order.id,
                 product_id=effective_product_id,
@@ -14150,7 +14156,7 @@ def create_order(
                 customization_summary=cust_summary,
                 line_modifiers=norm_modifiers,
                 line_modifiers_summary=lm_summary,
-                status=models.OrderItemStatus.pending,
+                status=initial_order_item_status(status_product),
                 added_by_session=order_data.session_id,
                 location_flagged=location_flagged,
                 tax_id=tax_id,
@@ -14924,6 +14930,7 @@ def list_orders(
                     "kitchen_station_id": kid,
                     "kitchen_station_name": knm,
                     "kitchen_station_route": krt,
+                    "skip_kitchen": product_skips_kitchen(prod),
                 }
             )
 

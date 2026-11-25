@@ -1019,7 +1019,9 @@
     "QUESTION_OPTIONS_PRICE_HINT": "Una opció per línia. Preu opcional després d'una barra: Etiqueta|1.00 (unitats majors; negatiu per descomptes).",
     "EXPECTED_PREP_MINUTES": "Preparació esperada (minuts)",
     "EXPECTED_PREP_PLACEHOLDER": "Valor de categoria",
-    "EXPECTED_PREP_HINT": "Opcional per als rellotges SLA de cuina. Buit usa el valor de categoria als ajustos del temporitzador."
+    "EXPECTED_PREP_HINT": "Opcional per als rellotges SLA de cuina. Buit usa el valor de categoria als ajustos del temporitzador.",
+    "SKIP_KITCHEN": "Preparat (ometre cuina / barra)",
+    "SKIP_KITCHEN_HINT": "Les línies d'aquest producte no es mostren a cuina ni barra. Per a begudes embotellades, snacks envasats i altres sense preparació."
   },
   "CATALOG": {
     "TITLE": "Catàleg de productes",

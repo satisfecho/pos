@@ -184,7 +184,7 @@ import { ProductBulkImportComponent } from './product-bulk-import.component';
                        id="kitchen_station_id"
                        [(ngModel)]="formData.kitchen_station_id"
                        name="kitchen_station_id"
-                       [disabled]="!canEditProducts()"
+                       [disabled]="!canEditProducts() || formData.skip_kitchen"
                      >
                        <option [ngValue]="null">{{ 'PRODUCTS.KITCHEN_STATION_NONE' | translate }}</option>
                        @for (s of kitchenStations(); track s.id) {
@@ -195,6 +195,18 @@ import { ProductBulkImportComponent } from './product-bulk-import.component';
                        }
                      </select>
                      <small class="field-hint">{{ 'PRODUCTS.KITCHEN_STATION_HINT' | translate }}</small>
+                   </div>
+                   <div class="form-group" data-testid="product-skip-kitchen">
+                     <label class="checkbox-label">
+                       <input
+                         type="checkbox"
+                         [(ngModel)]="formData.skip_kitchen"
+                         name="skip_kitchen"
+                         [disabled]="!canEditProducts()"
+                       />
+                       {{ 'PRODUCTS.SKIP_KITCHEN' | translate }}
+                     </label>
+                     <small class="field-hint">{{ 'PRODUCTS.SKIP_KITCHEN_HINT' | translate }}</small>
                    </div>
                    <div class="form-group">
                      <label for="expected_prep_minutes">{{ 'PRODUCTS.EXPECTED_PREP_MINUTES' | translate }}</label>
@@ -717,6 +729,7 @@ export class ProductsComponent implements OnInit {
     available_from?: string;
     available_until?: string;
     kitchen_station_id?: number | null;
+    skip_kitchen: boolean;
     expected_prep_minutes?: number | null;
     stock_alert_enabled: boolean;
     stock_qty: number;
@@ -730,6 +743,7 @@ export class ProductsComponent implements OnInit {
     category: '',
     subcategory: '',
     kitchen_station_id: null,
+    skip_kitchen: false,
     expected_prep_minutes: null,
     stock_alert_enabled: false,
     stock_qty: 0,
@@ -1074,6 +1088,7 @@ export class ProductsComponent implements OnInit {
       available_from: product.available_from || '',
       available_until: product.available_until || '',
       kitchen_station_id: product.kitchen_station_id ?? null,
+      skip_kitchen: !!product.skip_kitchen,
       expected_prep_minutes: product.expected_prep_minutes ?? null,
       stock_alert_enabled: !!product.stock_alert_enabled,
       stock_qty: product.stock_qty ?? 0,
@@ -1102,6 +1117,7 @@ export class ProductsComponent implements OnInit {
       available_from: '',
       available_until: '',
       kitchen_station_id: null,
+      skip_kitchen: false,
       expected_prep_minutes: null,
       stock_alert_enabled: false,
       stock_qty: 0,
@@ -1126,6 +1142,7 @@ export class ProductsComponent implements OnInit {
       available_from: '',
       available_until: '',
       kitchen_station_id: null,
+      skip_kitchen: false,
       expected_prep_minutes: null,
       stock_alert_enabled: false,
       stock_qty: 0,
@@ -1468,7 +1485,8 @@ export class ProductsComponent implements OnInit {
       tax_id: this.formData.tax_id,
       available_from: this.formData.available_from?.trim() || null,
       available_until: this.formData.available_until?.trim() || null,
-      kitchen_station_id: this.formData.kitchen_station_id ?? null,
+      kitchen_station_id: this.formData.skip_kitchen ? null : (this.formData.kitchen_station_id ?? null),
+      skip_kitchen: !!this.formData.skip_kitchen,
       expected_prep_minutes:
         this.formData.expected_prep_minutes == null || `${this.formData.expected_prep_minutes}`.trim() === ''
           ? null

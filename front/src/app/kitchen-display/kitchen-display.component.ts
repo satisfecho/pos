@@ -932,6 +932,8 @@ export class KitchenDisplayComponent implements OnInit, AfterViewInit, OnDestroy
     const itemVisible = (i: OrderItem): boolean => {
       if (i.removed_by_customer) return false;
       if (!(i.status === 'pending' || i.status === 'preparing' || i.status === 'ready')) return false;
+      // Ready-made / skip-kitchen lines never appear on KDS (#454)
+      if (i.skip_kitchen || i.kitchen_station_route === 'none') return false;
       if (!useStations) {
         return i.category === category;
       }

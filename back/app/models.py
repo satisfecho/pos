@@ -620,6 +620,8 @@ class Product(TenantMixin, table=True):
     kitchen_station_id: int | None = Field(
         default=None, foreign_key="kitchen_station.id", index=True
     )
+    # Ready-made / packaged: order lines skip kitchen/bar KDS (#454)
+    skip_kitchen: bool = Field(default=False)
     # Optional expected prep minutes for kitchen SLA (#450); null = use category default
     expected_prep_minutes: int | None = Field(default=None)
     # Sellable-unit stock alert (Products UI; separate from inventory ingredient reorder)
@@ -1547,6 +1549,7 @@ class ProductUpdate(SQLModel):
     available_from: date | None = None
     available_until: date | None = None
     kitchen_station_id: int | None = None  # null = clear mapping
+    skip_kitchen: bool | None = None  # ready-made: skip KDS (#454)
     expected_prep_minutes: int | None = None  # null = clear override (use category)
     stock_alert_enabled: bool | None = None
     stock_qty: int | None = None

@@ -12,6 +12,7 @@ from sqlmodel import Session
 
 from app import models
 from app import promo_service as promo_svc
+from app.kitchen_stations_util import initial_order_item_status
 from app.order_notes import normalize_order_note
 
 # Marks guest checkout creates (notify_kitchen=False) for TTL unpaid cleanup.
@@ -311,7 +312,7 @@ def _add_order_items(
             price_cents=price_cents,
             cost_cents=getattr(product, "cost_cents", None),
             notes=notes,
-            status=models.OrderItemStatus.pending,
+            status=initial_order_item_status(product),
             tax_id=tax_id,
             tax_rate_percent=tax_rate if effective_tax else None,
             tax_amount_cents=line_tax_cents if effective_tax else None,

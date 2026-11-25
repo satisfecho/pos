@@ -878,7 +878,9 @@
     "QUESTION_OPTIONS_PRICE_HINT": "Une option par ligne. Prix optionnel après un pipe : Libellé|1.00 (unités majeures ; négatif pour remises).",
     "EXPECTED_PREP_MINUTES": "Préparation prévue (minutes)",
     "EXPECTED_PREP_PLACEHOLDER": "Valeur de catégorie",
-    "EXPECTED_PREP_HINT": "Optionnel pour les horloges SLA cuisine. Vide = défaut de catégorie dans les réglages timer."
+    "EXPECTED_PREP_HINT": "Optionnel pour les horloges SLA cuisine. Vide = défaut de catégorie dans les réglages timer.",
+    "SKIP_KITCHEN": "Prêt à servir (ignorer cuisine / bar)",
+    "SKIP_KITCHEN_HINT": "Les lignes de ce produit n'apparaissent pas sur cuisine ni bar. Pour boissons en bouteille, snacks emballés et autres sans préparation."
   },
   "CATALOG": {
     "TITLE": "Catalogue produits",

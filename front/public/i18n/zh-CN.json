@@ -1019,7 +1019,9 @@
     "QUESTION_OPTIONS_PRICE_HINT": "每行一个选项。可选加价用竖线：标签|1.00（主货币单位；负数表示减价）。",
     "EXPECTED_PREP_MINUTES": "Expected prep (minutes)",
     "EXPECTED_PREP_PLACEHOLDER": "Category default",
-    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings."
+    "EXPECTED_PREP_HINT": "Optional override for kitchen SLA clocks. Leave empty to use the category default from Timer settings.",
+    "SKIP_KITCHEN": "即食/包装（跳过厨显）",
+    "SKIP_KITCHEN_HINT": "该产品不会出现在厨显或吧台屏。适用于瓶装饮料、包装零食等无需备餐的商品。"
   },
   "CATALOG": {
     "TITLE": "产品目录",

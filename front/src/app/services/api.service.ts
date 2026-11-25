@@ -1069,6 +1069,8 @@ export interface Product {
   questions?: ProductQuestion[];
   /** Prep station for KDS (/kitchen vs /bar); null = use tenant default by category */
   kitchen_station_id?: number | null;
+  /** Ready-made / packaged: order lines skip kitchen/bar KDS (#454) */
+  skip_kitchen?: boolean;
   /** Optional expected prep minutes for kitchen SLA; null = use category default */
   expected_prep_minutes?: number | null;
   /** Sellable-unit stock alert (Products UI) */
@@ -1565,8 +1567,10 @@ export interface OrderItem {
   /** Resolved prep station for KDS (after product mapping and tenant defaults) */
   kitchen_station_id?: number | null;
   kitchen_station_name?: string | null;
-  /** Which display route this line belongs to: kitchen (/kitchen) or bar (/bar) */
+  /** Which display route this line belongs to: kitchen (/kitchen), bar (/bar), or none (skip KDS) */
   kitchen_station_route?: string | null;
+  /** Ready-made line: hidden from kitchen/bar displays (#454) */
+  skip_kitchen?: boolean;
 }
 
 /** Server-issued fiscal invoice metadata (VeriFactu preparation). */

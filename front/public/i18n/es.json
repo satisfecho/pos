@@ -878,7 +878,9 @@
     "QUESTION_OPTIONS_PRICE_HINT": "Una opción por línea. Precio opcional tras una barra: Etiqueta|1.00 (unidades mayores; negativo para descuentos).",
     "EXPECTED_PREP_MINUTES": "Preparación esperada (minutos)",
     "EXPECTED_PREP_PLACEHOLDER": "Valor de categoría",
-    "EXPECTED_PREP_HINT": "Opcional para relojes SLA de cocina. Vacío usa el valor de categoría en Ajustes del temporizador."
+    "EXPECTED_PREP_HINT": "Opcional para relojes SLA de cocina. Vacío usa el valor de categoría en Ajustes del temporizador.",
+    "SKIP_KITCHEN": "Listo para servir (omitir cocina / barra)",
+    "SKIP_KITCHEN_HINT": "Las líneas de este producto no aparecen en cocina ni barra. Úsalo para bebidas embotelladas, snacks envasados y otros sin preparación."
   },
   "CATALOG": {
     "TITLE": "Catálogo de productos",
