@@ -611,14 +611,18 @@
     "COL_OWNER_LAST_LOGIN": "Owner last login",
     "COL_LOGIN_COUNT": "Logins",
     "COL_LAST_LOGIN": "Last login",
-    "USAGE_OVER_TIME": "Usage over time (30 days)",
+    "USAGE_OVER_TIME": "Usage over time",
     "USAGE_LOGINS": "Logins",
     "USAGE_SIGNUPS": "Sign-ups",
-    "USAGE_EMPTY": "No usage data in the last 30 days.",
+    "USAGE_EMPTY": "No usage data in this period.",
     "FILTER_TENANTS": "Filter tenants",
     "FILTER_PLACEHOLDER": "Search by name, owner, or email",
     "COL_OWNER_ACTIVITY": "Owner activity",
-    "NO_FILTER_MATCH": "No tenants match this filter."
+    "NO_FILTER_MATCH": "No tenants match this filter.",
+    "USAGE_PERIOD": "Usage period",
+    "USAGE_DAYS_7": "7 days",
+    "USAGE_DAYS_30": "30 days",
+    "USAGE_DAYS_90": "90 days"
   },
   "COURIER_HOME": {
     "TITLE": "Deliveries",

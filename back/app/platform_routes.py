@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func
 from sqlmodel import Session, select
 
@@ -14,6 +14,16 @@ from .security import get_current_user
 router = APIRouter()
 
 _TENANT_LIST_LIMIT = 100
+_ALLOWED_USAGE_DAYS = frozenset({7, 30, 90})
+
+
+def _resolve_usage_days(days: int) -> int:
+    if days not in _ALLOWED_USAGE_DAYS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="usage_days must be one of: 7, 30, 90",
+        )
+    return days
 
 
 def _require_platform_operator(
@@ -303,15 +313,28 @@ def platform_tenant_detail(
     return _tenant_detail(session, tenant)
 
 
+@router.get("/usage", response_model=models.PlatformUsageSeriesResponse)
+def platform_usage(
+    current_user: Annotated[models.User, Depends(_require_platform_operator)],
+    session: Session = Depends(get_session),
+    days: int = Query(30, description="Usage window in days: 7, 30, or 90"),
+) -> models.PlatformUsageSeriesResponse:
+    usage_days = _resolve_usage_days(days)
+    series = _usage_last_n_days(session, days=usage_days)
+    return models.PlatformUsageSeriesResponse(usage_days=usage_days, usage_series=series)
+
+
 @router.get("/metrics", response_model=models.PlatformMetricsResponse)
 def platform_metrics(
     current_user: Annotated[models.User, Depends(_require_platform_operator)],
     session: Session = Depends(get_session),
+    usage_days: int = Query(30, description="Usage window in days: 7, 30, or 90"),
 ) -> models.PlatformMetricsResponse:
     now = datetime.now(timezone.utc)
     since_30d = now - timedelta(days=30)
     since_24h = now - timedelta(hours=24)
     since_7d = now - timedelta(days=7)
+    resolved_usage_days = _resolve_usage_days(usage_days)
 
     tenant_count = session.exec(select(func.count()).select_from(models.Tenant)).one()
     signups_last_30_days = session.exec(
@@ -346,6 +369,7 @@ def platform_metrics(
         .limit(20)
     ).all()
     last_login_at = recent_login_rows[0].logged_in_at if recent_login_rows else None
+    usage_series = _usage_last_n_days(session, days=resolved_usage_days)
 
     return models.PlatformMetricsResponse(
         tenant_count=int(tenant_count or 0),
@@ -358,5 +382,7 @@ def platform_metrics(
             _tenant_summary(session, t) for t in recent_tenants if t.id is not None
         ],
         recent_logins=[_login_summary(session, row) for row in recent_login_rows],
-        usage_last_30_days=_usage_last_n_days(session, days=30),
+        usage_days=resolved_usage_days,
+        usage_series=usage_series,
+        usage_last_30_days=usage_series,
     )

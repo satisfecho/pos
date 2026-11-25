@@ -577,14 +577,18 @@
     "COL_OWNER_LAST_LOGIN": "मालिक अंतिम लॉगिन",
     "COL_LOGIN_COUNT": "लॉगिन",
     "COL_LAST_LOGIN": "अंतिम लॉगिन",
-    "USAGE_OVER_TIME": "समय के साथ उपयोग (30 दिन)",
+    "USAGE_OVER_TIME": "समय के साथ उपयोग",
     "USAGE_LOGINS": "लॉगिन",
     "USAGE_SIGNUPS": "साइन-अप",
-    "USAGE_EMPTY": "पिछले 30 दिनों में कोई उपयोग डेटा नहीं।",
+    "USAGE_EMPTY": "इस अवधि में कोई उपयोग डेटा नहीं।",
     "FILTER_TENANTS": "किरायेदार फ़िल्टर करें",
     "FILTER_PLACEHOLDER": "नाम, मालिक या ईमेल से खोजें",
     "COL_OWNER_ACTIVITY": "मालिक गतिविधि",
-    "NO_FILTER_MATCH": "इस फ़िल्टर से कोई किरायेदार मेल नहीं खाता।"
+    "NO_FILTER_MATCH": "इस फ़िल्टर से कोई किरायेदार मेल नहीं खाता।",
+    "USAGE_PERIOD": "उपयोग अवधि",
+    "USAGE_DAYS_7": "7 दिन",
+    "USAGE_DAYS_30": "30 दिन",
+    "USAGE_DAYS_90": "90 दिन"
   },
   "COURIER_HOME": {
     "TITLE": "डिलीवरी",

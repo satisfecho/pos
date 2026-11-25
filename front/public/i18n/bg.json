@@ -448,14 +448,18 @@
     "COL_OWNER_LAST_LOGIN": "Последно влизане на собственика",
     "COL_LOGIN_COUNT": "Влизания",
     "COL_LAST_LOGIN": "Последно влизане",
-    "USAGE_OVER_TIME": "Използване във времето (30 дни)",
+    "USAGE_OVER_TIME": "Използване във времето",
     "USAGE_LOGINS": "Влизания",
     "USAGE_SIGNUPS": "Регистрации",
-    "USAGE_EMPTY": "Няма данни за ползване през последните 30 дни.",
+    "USAGE_EMPTY": "Няма данни за ползване за този период.",
     "FILTER_TENANTS": "Филтрирай наематели",
     "FILTER_PLACEHOLDER": "Търсене по име, собственик или имейл",
     "COL_OWNER_ACTIVITY": "Активност на собственика",
-    "NO_FILTER_MATCH": "Няма наематели за този филтър."
+    "NO_FILTER_MATCH": "Няма наематели за този филтър.",
+    "USAGE_PERIOD": "Период на ползване",
+    "USAGE_DAYS_7": "7 дни",
+    "USAGE_DAYS_30": "30 дни",
+    "USAGE_DAYS_90": "90 дни"
   },
   "COURIER_HOME": {
     "TITLE": "Доставки",

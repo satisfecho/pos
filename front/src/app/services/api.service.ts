@@ -465,7 +465,15 @@ export interface PlatformMetrics {
   last_login_at?: string | null;
   recent_tenants: PlatformTenantSummary[];
   recent_logins: PlatformLoginSummary[];
+  usage_days?: number;
+  usage_series?: PlatformUsageDay[];
+  /** @deprecated Prefer usage_series */
   usage_last_30_days?: PlatformUsageDay[];
+}
+
+export interface PlatformUsageSeries {
+  usage_days: number;
+  usage_series: PlatformUsageDay[];
 }
 
 export interface CourierOrderSummary {
@@ -2527,8 +2535,14 @@ export class ApiService {
     return this.http.get<PlatformInfo>(`${this.apiUrl}/platform/me`);
   }
 
-  getPlatformMetrics(): Observable<PlatformMetrics> {
-    return this.http.get<PlatformMetrics>(`${this.apiUrl}/platform/metrics`);
+  getPlatformMetrics(usageDays: 7 | 30 | 90 = 30): Observable<PlatformMetrics> {
+    const params = new HttpParams().set('usage_days', String(usageDays));
+    return this.http.get<PlatformMetrics>(`${this.apiUrl}/platform/metrics`, { params });
+  }
+
+  getPlatformUsage(days: 7 | 30 | 90 = 30): Observable<PlatformUsageSeries> {
+    const params = new HttpParams().set('days', String(days));
+    return this.http.get<PlatformUsageSeries>(`${this.apiUrl}/platform/usage`, { params });
   }
 
   getPlatformTenants(): Observable<PlatformTenantSummary[]> {

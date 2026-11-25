@@ -2866,10 +2866,10 @@
     "WEBSITE": "الموقع الإلكتروني",
     "TENANT_NOT_FOUND": "المستأجر غير موجود.",
     "LOAD_FAILED": "تعذر تحميل بيانات المنصة. يرجى تسجيل الدخول مرة أخرى.",
-    "USAGE_OVER_TIME": "الاستخدام عبر الزمن (30 يوما)",
+    "USAGE_OVER_TIME": "الاستخدام عبر الزمن",
     "USAGE_LOGINS": "عمليات الدخول",
     "USAGE_SIGNUPS": "التسجيلات",
-    "USAGE_EMPTY": "لا توجد بيانات استخدام خلال آخر 30 يوما.",
+    "USAGE_EMPTY": "لا توجد بيانات استخدام في هذه الفترة.",
     "FILTER_TENANTS": "تصفية المستأجرين",
     "FILTER_PLACEHOLDER": "ابحث بالاسم أو المالك أو البريد",
     "COL_OWNER_ACTIVITY": "نشاط المالك",
@@ -2877,7 +2877,11 @@
     "COL_OWNER_LOGINS": "تسجيلات دخول المالك",
     "COL_OWNER_LAST_LOGIN": "آخر دخول للمالك",
     "COL_LOGIN_COUNT": "تسجيلات الدخول",
-    "COL_LAST_LOGIN": "آخر دخول"
+    "COL_LAST_LOGIN": "آخر دخول",
+    "USAGE_PERIOD": "فترة الاستخدام",
+    "USAGE_DAYS_7": "7 أيام",
+    "USAGE_DAYS_30": "30 يوما",
+    "USAGE_DAYS_90": "90 يوما"
   },
   "TALK": {
     "TITLE": "تحدث لنقطة البيع",

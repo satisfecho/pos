@@ -13,7 +13,7 @@ Platform operators can:
   - Total tenant (client) count
   - New tenant sign-ups in the last 30 days
   - Login activity (total count, last login time, last 24 hours / 7 days)
-  - **Usage over time** chart (daily logins and sign-ups for the last 30 UTC days)
+  - **Usage over time** chart (daily logins and sign-ups; selectable **7 / 30 / 90** UTC day windows)
   - **All tenants** table: filter by name/owner/email, sortable columns, compact owner activity, product count, and public menu / detail links
   - Recent login events (who logged in, which tenant, scope)
 - Open a **tenant detail** page at `/platform/tenants/{id}` with:
@@ -52,7 +52,8 @@ All endpoints require a JWT from login with `?scope=platform`.
 |--------|------|-------------|
 | `POST` | `/token?scope=platform` | Operator login (email + password). |
 | `GET` | `/platform/me` | Current operator profile. |
-| `GET` | `/platform/metrics` | Aggregated metrics + recent tenants/logins + `usage_last_30_days` series. |
+| `GET` | `/platform/metrics` | Aggregated metrics + recent tenants/logins + `usage_series` (`usage_days` query: 7, 30, or 90). |
+| `GET` | `/platform/usage` | Usage series only (`days` query: 7, 30, or 90) for period switches without a full metrics reload. |
 | `GET` | `/platform/tenants` | All tenants (up to 100) with owner contact, owner login count/last login, and counts. |
 | `GET` | `/platform/tenants/{id}` | Tenant detail + staff contacts (each with login count / last login). |
 

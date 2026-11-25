@@ -14,6 +14,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.199] - 2026-11-25
+
+### Added
+
+- **Platform usage period selector:** Operator overview usage chart supports 7 / 30 / 90 day windows (`/platform/metrics?usage_days=` and `/platform/usage?days=`).
+
 ## [2.1.198] - 2026-11-25
 
 ### Added

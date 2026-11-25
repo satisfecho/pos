@@ -538,7 +538,15 @@ class PlatformMetricsResponse(SQLModel):
     last_login_at: datetime | None = None
     recent_tenants: list[PlatformTenantSummary]
     recent_logins: list[PlatformLoginSummary]
+    usage_days: int = 30
+    usage_series: list[PlatformUsageDay] = []
+    # Kept for older clients; same payload as usage_series.
     usage_last_30_days: list[PlatformUsageDay] = []
+
+
+class PlatformUsageSeriesResponse(SQLModel):
+    usage_days: int
+    usage_series: list[PlatformUsageDay] = []
 
 
 class TenantMixin(SQLModel):
