@@ -485,6 +485,9 @@ class PlatformTenantSummary(SQLModel):
     owner_name: str | None = None
     owner_login_count: int = 0
     owner_last_login_at: datetime | None = None
+    # All staff/scope logins attributed to this tenant (login_event.tenant_id).
+    tenant_login_count: int = 0
+    tenant_last_login_at: datetime | None = None
     tenant_email: str | None = None
     tenant_phone: str | None = None
     public_slug: str | None = None
@@ -494,6 +497,17 @@ class PlatformTenantSummary(SQLModel):
     user_count: int = 0
     order_count: int = 0
     reservation_count: int = 0
+
+
+class PlatformActiveTenant(SQLModel):
+    """Compact row for top-active tenant rankings."""
+
+    id: int
+    name: str
+    login_count: int = 0
+    last_login_at: datetime | None = None
+    owner_email: str | None = None
+    owner_name: str | None = None
 
 
 class PlatformStaffContact(SQLModel):
@@ -542,11 +556,14 @@ class PlatformMetricsResponse(SQLModel):
     usage_series: list[PlatformUsageDay] = []
     # Kept for older clients; same payload as usage_series.
     usage_last_30_days: list[PlatformUsageDay] = []
+    # Top tenants by login_event count in the selected usage window (default 30d).
+    top_active_tenants: list[PlatformActiveTenant] = []
 
 
 class PlatformUsageSeriesResponse(SQLModel):
     usage_days: int
     usage_series: list[PlatformUsageDay] = []
+    top_active_tenants: list[PlatformActiveTenant] = []
 
 
 class TenantMixin(SQLModel):

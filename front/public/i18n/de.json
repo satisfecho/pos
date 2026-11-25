@@ -404,7 +404,7 @@
     "LOGINS_7D": "Anmeldungen (7 Tage)",
     "RECENT_TENANTS": "Neueste Mandanten",
     "ALL_TENANTS": "Alle Mandanten",
-    "ALL_TENANTS_HINT": "Mandant öffnen für Kontakte, Kennzahlen und Links zu öffentlicher Karte und Buchung.",
+    "ALL_TENANTS_HINT": "Klicke auf eine Spaltenüberschrift zum Sortieren. Öffne einen Mandanten für Kontakte, Stats und öffentliche Links.",
     "RECENT_LOGINS": "Letzte Anmeldungen",
     "NO_TENANTS": "Noch keine Mandanten.",
     "NO_LOGINS": "Noch keine Anmeldeereignisse erfasst.",
@@ -459,7 +459,11 @@
     "USAGE_PERIOD": "Nutzungszeitraum",
     "USAGE_DAYS_7": "7 Tage",
     "USAGE_DAYS_30": "30 Tage",
-    "USAGE_DAYS_90": "90 Tage"
+    "USAGE_DAYS_90": "90 Tage",
+    "TOP_ACTIVE": "Top 10 aktivste Mandanten",
+    "TOP_ACTIVE_HINT": "Sortiert nach Mitarbeiter-Anmeldungen im gewählten Zeitraum ({{days}} Tage).",
+    "TOP_ACTIVE_EMPTY": "Keine Mandanten-Anmeldungen in diesem Zeitraum.",
+    "COL_TENANT_LOGINS": "Mandanten-Logins"
   },
   "COURIER_HOME": {
     "TITLE": "Lieferungen",

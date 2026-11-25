@@ -14,6 +14,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.200] - 2026-11-25
+
+### Added
+
+- **Platform top active clients:** Operator overview shows Top 10 tenants by staff logins for the selected 7 / 30 / 90 day window, with clearer sortable tenants table (default: client logins desc). Weekly feature-digest email stays a product proposal ([#453](https://github.com/satisfecho/pos/issues/453)).
+
 ## [2.1.199] - 2026-11-25
 
 ### Added

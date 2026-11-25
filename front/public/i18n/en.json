@@ -567,7 +567,7 @@
     "LOGINS_7D": "Logins (7 days)",
     "RECENT_TENANTS": "Recent tenants",
     "ALL_TENANTS": "All tenants",
-    "ALL_TENANTS_HINT": "Open a tenant to see contacts, stats, and links to their public menu and booking pages.",
+    "ALL_TENANTS_HINT": "Click a column header to sort. Open a tenant for contacts, stats, and public links.",
     "RECENT_LOGINS": "Recent logins",
     "NO_TENANTS": "No tenants yet.",
     "NO_LOGINS": "No login events recorded yet.",
@@ -622,7 +622,11 @@
     "USAGE_PERIOD": "Usage period",
     "USAGE_DAYS_7": "7 days",
     "USAGE_DAYS_30": "30 days",
-    "USAGE_DAYS_90": "90 days"
+    "USAGE_DAYS_90": "90 days",
+    "TOP_ACTIVE": "Top 10 most active clients",
+    "TOP_ACTIVE_HINT": "Ranked by staff logins in the selected period ({{days}} days).",
+    "TOP_ACTIVE_EMPTY": "No tenant logins in this period.",
+    "COL_TENANT_LOGINS": "Client logins"
   },
   "COURIER_HOME": {
     "TITLE": "Deliveries",

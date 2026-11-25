@@ -404,7 +404,7 @@
     "LOGINS_7D": "Inicios de sesión (7 días)",
     "RECENT_TENANTS": "Inquilinos recientes",
     "ALL_TENANTS": "Todos los inquilinos",
-    "ALL_TENANTS_HINT": "Abre un inquilino para ver contactos, estadísticas y enlaces a su carta y reservas públicas.",
+    "ALL_TENANTS_HINT": "Haz clic en un encabezado para ordenar. Abre un inquilino para contactos, estadísticas y enlaces públicos.",
     "RECENT_LOGINS": "Inicios de sesión recientes",
     "NO_TENANTS": "Aún no hay inquilinos.",
     "NO_LOGINS": "Aún no hay eventos de inicio de sesión.",
@@ -459,7 +459,11 @@
     "USAGE_PERIOD": "Periodo de uso",
     "USAGE_DAYS_7": "7 días",
     "USAGE_DAYS_30": "30 días",
-    "USAGE_DAYS_90": "90 días"
+    "USAGE_DAYS_90": "90 días",
+    "TOP_ACTIVE": "Top 10 clientes más activos",
+    "TOP_ACTIVE_HINT": "Ordenados por inicios de sesión del personal en el periodo seleccionado ({{days}} días).",
+    "TOP_ACTIVE_EMPTY": "No hay inicios de sesión de inquilinos en este período.",
+    "COL_TENANT_LOGINS": "Logins del cliente"
   },
   "COURIER_HOME": {
     "TITLE": "Entregas",
