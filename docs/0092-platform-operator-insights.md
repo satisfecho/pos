@@ -4,13 +4,13 @@ Date: 2026-11-25
 
 ## Shipped
 
-- Usage chart with selectable **7 / 30 / 90** day windows
-- Sortable / filterable tenants table (default sort: client logins desc)
+- Usage chart: **7 / 30 / 90** days (daily) and **1 year / 3 years** (monthly buckets)
+- Tenants **AG Grid** (same stack as Orders): sort, filter, quick filter, pagination default **500**
 - **Top 10 most active clients** for the selected window (login events with `tenant_id`)
 
-## Not using Angular Material
+## Table stack
 
-The front app has no `@angular/material` dependency. Adding Material only for table sort would pull CDK, theming, and a second UI language into the platform portal. Keep the existing CSS token design and native sort headers instead.
+Use **AG Grid** (already in the repo) for platform data tables. Do not add Angular Material only for sorting.
 
 ## Further insight ideas (not built)
 

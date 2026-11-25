@@ -404,7 +404,7 @@
     "LOGINS_7D": "Inicios de sesión (7 días)",
     "RECENT_TENANTS": "Inquilinos recientes",
     "ALL_TENANTS": "Todos los inquilinos",
-    "ALL_TENANTS_HINT": "Haz clic en un encabezado para ordenar. Abre un inquilino para contactos, estadísticas y enlaces públicos.",
+    "ALL_TENANTS_HINT": "AG Grid: ordena, filtra y pagina (500 filas por defecto). Abre un inquilino para contactos y enlaces.",
     "RECENT_LOGINS": "Inicios de sesión recientes",
     "NO_TENANTS": "Aún no hay inquilinos.",
     "NO_LOGINS": "Aún no hay eventos de inicio de sesión.",
@@ -463,7 +463,11 @@
     "TOP_ACTIVE": "Top 10 clientes más activos",
     "TOP_ACTIVE_HINT": "Ordenados por inicios de sesión del personal en el periodo seleccionado ({{days}} días).",
     "TOP_ACTIVE_EMPTY": "No hay inicios de sesión de inquilinos en este período.",
-    "COL_TENANT_LOGINS": "Logins del cliente"
+    "COL_TENANT_LOGINS": "Logins del cliente",
+    "USAGE_DAYS_365": "1 año",
+    "USAGE_DAYS_1095": "3 años",
+    "USAGE_DAILY_HINT": "Inicios de sesión y altas diarios en la ventana corta seleccionada.",
+    "USAGE_MONTHLY_HINT": "Totales mensuales para ventanas de años (más claros que puntos diarios)."
   },
   "COURIER_HOME": {
     "TITLE": "Entregas",

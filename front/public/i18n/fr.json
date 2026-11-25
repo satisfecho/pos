@@ -404,7 +404,7 @@
     "LOGINS_7D": "Connexions (7 jours)",
     "RECENT_TENANTS": "Locataires récents",
     "ALL_TENANTS": "Tous les locataires",
-    "ALL_TENANTS_HINT": "Cliquez sur un en-tête pour trier. Ouvrez un client pour contacts, stats et liens publics.",
+    "ALL_TENANTS_HINT": "AG Grid: tri, filtre et pagination (500 lignes par défaut). Ouvrez un client pour contacts et liens.",
     "RECENT_LOGINS": "Connexions récentes",
     "NO_TENANTS": "Aucun locataire pour l'instant.",
     "NO_LOGINS": "Aucun événement de connexion enregistré.",
@@ -463,7 +463,11 @@
     "TOP_ACTIVE": "Top 10 clients les plus actifs",
     "TOP_ACTIVE_HINT": "Classés par connexions du personnel sur la période sélectionnée ({{days}} jours).",
     "TOP_ACTIVE_EMPTY": "Aucune connexion client sur cette période.",
-    "COL_TENANT_LOGINS": "Connexions client"
+    "COL_TENANT_LOGINS": "Connexions client",
+    "USAGE_DAYS_365": "1 an",
+    "USAGE_DAYS_1095": "3 ans",
+    "USAGE_DAILY_HINT": "Connexions et inscriptions quotidiennes sur la fenêtre courte sélectionnée.",
+    "USAGE_MONTHLY_HINT": "Totaux mensuels pour les fenêtres annuelles (plus lisibles que le quotidien)."
   },
   "COURIER_HOME": {
     "TITLE": "Livraisons",

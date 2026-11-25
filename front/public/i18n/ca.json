@@ -533,7 +533,7 @@
     "LOGINS_7D": "Inicis de sessió (7 dies)",
     "RECENT_TENANTS": "Inquilins recents",
     "ALL_TENANTS": "Tots els inquilins",
-    "ALL_TENANTS_HINT": "Fes clic a una capçalera per ordenar. Obre un inquilí per a contactes, estadístiques i enllaços públics.",
+    "ALL_TENANTS_HINT": "AG Grid: ordena, filtra i pagina (500 files per defecte). Obre un inquilí per a contactes i enllaços.",
     "RECENT_LOGINS": "Inicis de sessió recents",
     "NO_TENANTS": "Encara no hi ha inquilins.",
     "NO_LOGINS": "Encara no hi ha esdeveniments d'inici de sessió.",
@@ -592,7 +592,11 @@
     "TOP_ACTIVE": "Top 10 clients mes actius",
     "TOP_ACTIVE_HINT": "Ordenats per inicis de sessió del personal en el període seleccionat ({{days}} dies).",
     "TOP_ACTIVE_EMPTY": "No hi ha inicis de sessió d'inquilins en aquest període.",
-    "COL_TENANT_LOGINS": "Logins del client"
+    "COL_TENANT_LOGINS": "Logins del client",
+    "USAGE_DAYS_365": "1 any",
+    "USAGE_DAYS_1095": "3 anys",
+    "USAGE_DAILY_HINT": "Inicis de sessió i altes diaris en la finestra curta seleccionada.",
+    "USAGE_MONTHLY_HINT": "Totals mensuals per a finestres d'anys (més clars que punts diaris)."
   },
   "COURIER_HOME": {
     "TITLE": "Entregues",

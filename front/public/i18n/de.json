@@ -404,7 +404,7 @@
     "LOGINS_7D": "Anmeldungen (7 Tage)",
     "RECENT_TENANTS": "Neueste Mandanten",
     "ALL_TENANTS": "Alle Mandanten",
-    "ALL_TENANTS_HINT": "Klicke auf eine Spaltenüberschrift zum Sortieren. Öffne einen Mandanten für Kontakte, Stats und öffentliche Links.",
+    "ALL_TENANTS_HINT": "AG Grid: sortieren, filtern und blättern (Standard 500 Zeilen). Mandant öffnen für Kontakte und Links.",
     "RECENT_LOGINS": "Letzte Anmeldungen",
     "NO_TENANTS": "Noch keine Mandanten.",
     "NO_LOGINS": "Noch keine Anmeldeereignisse erfasst.",
@@ -463,7 +463,11 @@
     "TOP_ACTIVE": "Top 10 aktivste Mandanten",
     "TOP_ACTIVE_HINT": "Sortiert nach Mitarbeiter-Anmeldungen im gewählten Zeitraum ({{days}} Tage).",
     "TOP_ACTIVE_EMPTY": "Keine Mandanten-Anmeldungen in diesem Zeitraum.",
-    "COL_TENANT_LOGINS": "Mandanten-Logins"
+    "COL_TENANT_LOGINS": "Mandanten-Logins",
+    "USAGE_DAYS_365": "1 Jahr",
+    "USAGE_DAYS_1095": "3 Jahre",
+    "USAGE_DAILY_HINT": "Tägliche Anmeldungen und Registrierungen im gewählten Kurzzeitraum.",
+    "USAGE_MONTHLY_HINT": "Monatssummen für Jahresfenster (klarer als Tagespunkte)."
   },
   "COURIER_HOME": {
     "TITLE": "Lieferungen",

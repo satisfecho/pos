@@ -14,6 +14,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.202] - 2026-11-25
+
+### Added
+
+- **Platform tenants AG Grid:** Operator tenants list uses AG Grid with sort, filters, quick search, and pagination (default 500 rows). Usage chart adds **1 year** and **3 years** (monthly buckets) beside 7 / 30 / 90 days.
+
 ## [2.1.201] - 2026-11-25
 
 ### Added

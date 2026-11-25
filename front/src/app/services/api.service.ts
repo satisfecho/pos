@@ -2552,12 +2552,12 @@ export class ApiService {
     return this.http.get<PlatformInfo>(`${this.apiUrl}/platform/me`);
   }
 
-  getPlatformMetrics(usageDays: 7 | 30 | 90 = 30): Observable<PlatformMetrics> {
+  getPlatformMetrics(usageDays: 7 | 30 | 90 | 365 | 1095 = 30): Observable<PlatformMetrics> {
     const params = new HttpParams().set('usage_days', String(usageDays));
     return this.http.get<PlatformMetrics>(`${this.apiUrl}/platform/metrics`, { params });
   }
 
-  getPlatformUsage(days: 7 | 30 | 90 = 30): Observable<PlatformUsageSeries> {
+  getPlatformUsage(days: 7 | 30 | 90 | 365 | 1095 = 30): Observable<PlatformUsageSeries> {
     const params = new HttpParams().set('days', String(days));
     return this.http.get<PlatformUsageSeries>(`${this.apiUrl}/platform/usage`, { params });
   }

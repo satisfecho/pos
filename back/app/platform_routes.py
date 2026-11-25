@@ -13,15 +13,17 @@ from .security import get_current_user
 
 router = APIRouter()
 
-_TENANT_LIST_LIMIT = 100
-_ALLOWED_USAGE_DAYS = frozenset({7, 30, 90})
+# High enough for AG Grid paging (default page size 500) as the client base grows.
+_TENANT_LIST_LIMIT = 5000
+# 7/30/90 = daily buckets; 365/1095 = monthly buckets (1y / 3y).
+_ALLOWED_USAGE_DAYS = frozenset({7, 30, 90, 365, 1095})
 
 
 def _resolve_usage_days(days: int) -> int:
     if days not in _ALLOWED_USAGE_DAYS:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="usage_days must be one of: 7, 30, 90",
+            detail="usage_days must be one of: 7, 30, 90, 365, 1095",
         )
     return days
 
@@ -258,38 +260,83 @@ def _usage_day_key(value: datetime) -> str:
     return value.date().isoformat()
 
 
+def _usage_month_key(value: datetime) -> str:
+    """UTC calendar month as YYYY-MM-01."""
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    else:
+        value = value.astimezone(timezone.utc)
+    return f"{value.year:04d}-{value.month:02d}-01"
+
+
+def _iter_month_starts(start_day, end_day):
+    """Yield first-of-month dates from start_day's month through end_day's month."""
+    cur = start_day.replace(day=1)
+    end = end_day.replace(day=1)
+    while cur <= end:
+        yield cur
+        if cur.month == 12:
+            cur = cur.replace(year=cur.year + 1, month=1)
+        else:
+            cur = cur.replace(month=cur.month + 1)
+
+
 def _usage_last_n_days(session: Session, *, days: int = 30) -> list[models.PlatformUsageDay]:
-    """Daily login + tenant sign-up counts for the last N UTC days (inclusive)."""
+    """Login + sign-up series for the last N UTC days.
+
+    Windows ≤90 days use daily buckets. Longer windows (1y / 3y) use monthly buckets.
+    """
     now = datetime.now(timezone.utc)
     start_day = (now - timedelta(days=days - 1)).date()
+    end_day = now.date()
     start = datetime(start_day.year, start_day.month, start_day.day, tzinfo=timezone.utc)
+    use_months = days > 90
 
-    login_day = func.date_trunc("day", models.LoginEvent.logged_in_at)
+    if use_months:
+        login_bucket = func.date_trunc("month", models.LoginEvent.logged_in_at)
+        signup_bucket = func.date_trunc("month", models.Tenant.created_at)
+        key_fn = _usage_month_key
+    else:
+        login_bucket = func.date_trunc("day", models.LoginEvent.logged_in_at)
+        signup_bucket = func.date_trunc("day", models.Tenant.created_at)
+        key_fn = _usage_day_key
+
     login_rows = session.exec(
-        select(login_day, func.count())
+        select(login_bucket, func.count())
         .where(models.LoginEvent.logged_in_at >= start)
-        .group_by(login_day)
+        .group_by(login_bucket)
     ).all()
-    signup_day = func.date_trunc("day", models.Tenant.created_at)
     signup_rows = session.exec(
-        select(signup_day, func.count())
+        select(signup_bucket, func.count())
         .where(models.Tenant.created_at >= start)
-        .group_by(signup_day)
+        .group_by(signup_bucket)
     ).all()
 
     login_counts: dict[str, int] = {}
     for bucket, count in login_rows:
         if bucket is None:
             continue
-        login_counts[_usage_day_key(bucket)] = int(count or 0)
+        login_counts[key_fn(bucket)] = int(count or 0)
 
     signup_counts: dict[str, int] = {}
     for bucket, count in signup_rows:
         if bucket is None:
             continue
-        signup_counts[_usage_day_key(bucket)] = int(count or 0)
+        signup_counts[key_fn(bucket)] = int(count or 0)
 
     out: list[models.PlatformUsageDay] = []
+    if use_months:
+        for month_start in _iter_month_starts(start_day, end_day):
+            key = month_start.isoformat()
+            out.append(
+                models.PlatformUsageDay(
+                    date=key,
+                    logins=login_counts.get(key, 0),
+                    signups=signup_counts.get(key, 0),
+                )
+            )
+        return out
+
     for offset in range(days):
         day = start_day + timedelta(days=offset)
         key = day.isoformat()
@@ -399,7 +446,7 @@ def platform_tenant_detail(
 def platform_usage(
     current_user: Annotated[models.User, Depends(_require_platform_operator)],
     session: Session = Depends(get_session),
-    days: int = Query(30, description="Usage window in days: 7, 30, or 90"),
+    days: int = Query(30, description="Usage window in days: 7, 30, 90, 365, or 1095"),
 ) -> models.PlatformUsageSeriesResponse:
     usage_days = _resolve_usage_days(days)
     series = _usage_last_n_days(session, days=usage_days)
@@ -414,7 +461,7 @@ def platform_usage(
 def platform_metrics(
     current_user: Annotated[models.User, Depends(_require_platform_operator)],
     session: Session = Depends(get_session),
-    usage_days: int = Query(30, description="Usage window in days: 7, 30, or 90"),
+    usage_days: int = Query(30, description="Usage window in days: 7, 30, 90, 365, or 1095"),
 ) -> models.PlatformMetricsResponse:
     now = datetime.now(timezone.utc)
     since_30d = now - timedelta(days=30)

@@ -567,7 +567,7 @@
     "LOGINS_7D": "Logins (7 days)",
     "RECENT_TENANTS": "Recent tenants",
     "ALL_TENANTS": "All tenants",
-    "ALL_TENANTS_HINT": "Click a column header to sort. Open a tenant for contacts, stats, and public links.",
+    "ALL_TENANTS_HINT": "AG Grid: sort, filter, and page (default 500 rows). Open a tenant for contacts and public links.",
     "RECENT_LOGINS": "Recent logins",
     "NO_TENANTS": "No tenants yet.",
     "NO_LOGINS": "No login events recorded yet.",
@@ -626,7 +626,11 @@
     "TOP_ACTIVE": "Top 10 most active clients",
     "TOP_ACTIVE_HINT": "Ranked by staff logins in the selected period ({{days}} days).",
     "TOP_ACTIVE_EMPTY": "No tenant logins in this period.",
-    "COL_TENANT_LOGINS": "Client logins"
+    "COL_TENANT_LOGINS": "Client logins",
+    "USAGE_DAYS_365": "1 year",
+    "USAGE_DAYS_1095": "3 years",
+    "USAGE_DAILY_HINT": "Daily logins and sign-ups for the selected short window.",
+    "USAGE_MONTHLY_HINT": "Monthly totals for year-scale windows (clearer than daily points)."
   },
   "COURIER_HOME": {
     "TITLE": "Deliveries",
