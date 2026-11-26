@@ -47,9 +47,14 @@ ModuleRegistry.registerModules([
             <p class="platform-subtitle">{{ 'PLATFORM_DASHBOARD.SIGNED_IN_AS' | translate }} {{ profile()!.email }}</p>
           }
         </div>
-        <button type="button" class="btn-logout" (click)="logout()">
-          {{ 'PLATFORM_DASHBOARD.LOGOUT' | translate }}
-        </button>
+        <div class="header-actions">
+          <a routerLink="/platform/feature-digest" class="btn-link">
+            {{ 'PLATFORM_DIGEST.NAV' | translate }}
+          </a>
+          <button type="button" class="btn-logout" (click)="logout()">
+            {{ 'PLATFORM_DASHBOARD.LOGOUT' | translate }}
+          </button>
+        </div>
       </header>
 
       @if (loading()) {
@@ -297,6 +302,18 @@ ModuleRegistry.registerModules([
     }
     .platform-header h1 { font-size: 1.5rem; font-weight: 600; margin: 0; }
     .platform-subtitle { color: var(--color-text-muted); font-size: 0.9375rem; margin: var(--space-1) 0 0; }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+    }
+    .btn-link {
+      padding: var(--space-2) var(--space-3);
+      color: var(--color-primary, #0b5fff);
+      text-decoration: none;
+      font-size: 0.9375rem;
+    }
     .btn-logout {
       padding: var(--space-2) var(--space-4);
       border: 1px solid var(--color-border);

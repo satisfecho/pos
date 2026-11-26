@@ -12,9 +12,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **Parked product explorations:** Weekly feature-digest email (#453) stays parked; 010 recheck still finds no human product decisions.
-
 ### Fixed
+
+## [2.1.205] - 2026-11-26
+
+### Added
+
+- **Platform monthly feature digest (#453):** Operators compose and queue a monthly email to verified subscribed owners from `/platform/feature-digest` (SMTP/locale settings, audience count, public unsubscribe). Owner signup verification mail notes the subscription. See `docs/0093-platform-feature-digest.md`.
 
 ## [2.1.204] - 2026-11-26
 

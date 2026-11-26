@@ -406,6 +406,37 @@ export interface PlatformInfo {
   role: string;
 }
 
+export interface PlatformMailSettings {
+  smtp_host?: string | null;
+  smtp_port?: number | null;
+  smtp_use_tls?: boolean | null;
+  smtp_user?: string | null;
+  smtp_password_set?: boolean;
+  email_from?: string | null;
+  email_from_name?: string | null;
+  locale: string;
+  smtp_configured?: boolean;
+  updated_at?: string | null;
+}
+
+export interface PlatformFeatureDigestAudience {
+  subscribed_owners: number;
+  sample_emails: string[];
+}
+
+export interface PlatformFeatureDigestCampaign {
+  id: number;
+  subject: string;
+  status: string;
+  schedule_at: string;
+  recipient_count: number;
+  sent_count: number;
+  failed_count: number;
+  error_message?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PlatformTenantSummary {
   id: number;
   name: string;
@@ -2582,6 +2613,43 @@ export class ApiService {
 
   getPlatformTenant(tenantId: number): Observable<PlatformTenantDetail> {
     return this.http.get<PlatformTenantDetail>(`${this.apiUrl}/platform/tenants/${tenantId}`);
+  }
+
+  getPlatformFeatureDigestSettings(): Observable<PlatformMailSettings> {
+    return this.http.get<PlatformMailSettings>(`${this.apiUrl}/platform/feature-digest/settings`);
+  }
+
+  updatePlatformFeatureDigestSettings(
+    body: Record<string, unknown>
+  ): Observable<PlatformMailSettings> {
+    return this.http.put<PlatformMailSettings>(
+      `${this.apiUrl}/platform/feature-digest/settings`,
+      body
+    );
+  }
+
+  getPlatformFeatureDigestAudience(): Observable<PlatformFeatureDigestAudience> {
+    return this.http.get<PlatformFeatureDigestAudience>(
+      `${this.apiUrl}/platform/feature-digest/audience`
+    );
+  }
+
+  getPlatformFeatureDigestCampaigns(): Observable<PlatformFeatureDigestCampaign[]> {
+    return this.http.get<PlatformFeatureDigestCampaign[]>(
+      `${this.apiUrl}/platform/feature-digest/campaigns`
+    );
+  }
+
+  createPlatformFeatureDigestCampaign(body: {
+    subject: string;
+    body_html: string;
+    body_text?: string;
+    send_now?: boolean;
+  }): Observable<PlatformFeatureDigestCampaign> {
+    return this.http.post<PlatformFeatureDigestCampaign>(
+      `${this.apiUrl}/platform/feature-digest/campaigns`,
+      body
+    );
   }
 
   getCourierOrders(): Observable<CourierOrderSummary[]> {

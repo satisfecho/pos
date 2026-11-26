@@ -61,6 +61,11 @@ from .delivery_integration_routes import (
 )
 from .social_routes import router as social_router
 from .newsletter_routes import router as newsletter_router, public_router as newsletter_public_router
+from . import feature_digest as feature_digest_svc
+from .feature_digest_routes import (
+    router as feature_digest_router,
+    public_router as feature_digest_public_router,
+)
 from .careers_routes import router as careers_router, public_router as careers_public_router
 from .print_routes import staff_router as print_staff_router, agent_router as print_agent_router
 from .customer_routes import router as customer_router
@@ -354,7 +359,29 @@ async def _app_lifespan(app: FastAPI):
     app.state.newsletter_task = newsletter_task
     logger.info("Newsletter worker started (~30/min)")
 
+    from .feature_digest_worker import feature_digest_worker_loop
+
+    stop_feature_digest = asyncio.Event()
+    feature_digest_task = asyncio.create_task(
+        feature_digest_worker_loop(stop=stop_feature_digest)
+    )
+    app.state.feature_digest_stop = stop_feature_digest
+    app.state.feature_digest_task = feature_digest_task
+    logger.info("Platform feature digest worker started (~30/min)")
+
     yield
+
+    stop_fd = getattr(app.state, "feature_digest_stop", None)
+    task_fd = getattr(app.state, "feature_digest_task", None)
+    if stop_fd:
+        stop_fd.set()
+    if task_fd and not task_fd.done():
+        task_fd.cancel()
+        try:
+            await task_fd
+        except asyncio.CancelledError:
+            pass
+    logger.info("Platform feature digest worker stopped")
 
     stop_nl = getattr(app.state, "newsletter_stop", None)
     task_nl = getattr(app.state, "newsletter_task", None)
@@ -653,6 +680,10 @@ app.include_router(
 app.include_router(reports_router, prefix="/reports", tags=["Reports"])
 app.include_router(attendance_router, prefix="/reports", tags=["Reports"])
 app.include_router(platform_router, prefix="/platform", tags=["Platform"])
+app.include_router(
+    feature_digest_router, prefix="/platform", tags=["Platform - feature digest"]
+)
+app.include_router(feature_digest_public_router, tags=["Platform - feature digest"])
 app.include_router(saas_router, prefix="/saas", tags=["SaaS billing"])
 # Owner-only data export & tenant purge (GitHub #96)
 app.include_router(tenant_lifecycle_router, prefix="/tenant", tags=["Tenant lifecycle"])
@@ -2993,6 +3024,10 @@ async def register_verify_email(
     user.email_verified = True
     user.email_verification_code_hash = None
     user.email_verification_sent_at = None
+    # Monthly feature digest (#453): subscribed by default; opaque unsub token for later mail.
+    user.feature_digest_subscribed = True
+    if not (getattr(user, "feature_digest_unsub_token", None) or "").strip():
+        feature_digest_svc.ensure_unsub_token(user, session, commit=False)
     session.add(user)
     session.commit()
     session.refresh(user)

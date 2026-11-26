@@ -23,7 +23,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | Guest / staff Satisfecho Delivery (checkout, courier, track) | [0053-satisfecho-delivery-order-channel.md](0053-satisfecho-delivery-order-channel.md) |
 | Enable or understand SaaS signup paywall (keep off until runbook) | [0052-saas-signup-paywall.md](0052-saas-signup-paywall.md) |
 | Owner signup email verify + inactive tenant cleanup (#442) | [0088-owner-signup-email-verify-inactive-tenants.md](0088-owner-signup-email-verify-inactive-tenants.md) |
-| Platform operator oversight (`/platform`) | [0059-platform-operator-portal.md](0059-platform-operator-portal.md), insights [0092](0092-platform-operator-insights.md) |
+| Platform operator oversight (`/platform`) | [0059-platform-operator-portal.md](0059-platform-operator-portal.md), insights [0092](0092-platform-operator-insights.md), feature digest [0093](0093-platform-feature-digest.md) |
 | Manage multi-location restaurant groups | [0054-restaurant-groups.md](0054-restaurant-groups.md) |
 | Rate limits (production) | [0020-rate-limiting-production.md](0020-rate-limiting-production.md) |
 | Capture screenshots | [screenshots/how-to-capture-screenshots-automatically.md](screenshots/how-to-capture-screenshots-automatically.md) |
@@ -81,7 +81,8 @@ This folder contains deployment guides, feature documentation, implementation pl
 | [0018-verifactu-fiscal-invoicing.md](0018-verifactu-fiscal-invoicing.md) | VeriFactu-oriented fiscal invoicing: tenant `fiscal_mode` (off/test/live), hash chain, ValidarQR URL, sandbox submit, immutability + anulación; **no invented production AEAT SOAP**. See also [0065](0065-verifactu-production.md). |
 | [0028-tenant-public-branding.md](0028-tenant-public-branding.md) | Tenant public branding (shipped): background colour and header image for book, menu, reservation-view, waitlist, and guest feedback. |
 | [0059-platform-operator-portal.md](0059-platform-operator-portal.md) | Platform operator portal: SaaS metrics and tenant oversight. |
-| [0092-platform-operator-insights.md](0092-platform-operator-insights.md) | Platform operator insights: Top 10 active clients, sort notes, no Angular Material, weekly digest proposal. |
+| [0092-platform-operator-insights.md](0092-platform-operator-insights.md) | Platform operator insights: Top 10 active clients, sort notes, no Angular Material. |
+| [0093-platform-feature-digest.md](0093-platform-feature-digest.md) | Platform monthly feature digest to verified owners (#453): SMTP settings, consent, unsubscribe. |
 | [0051-table-groups-mvp.md](0051-table-groups-mvp.md) | Floor-plan table join/unjoin (**shipped** reference): combined seats and reservation pool for joined tables - not restaurant multi-location groups ([0054](0054-restaurant-groups.md)). |
 | [0052-saas-signup-paywall.md](0052-saas-signup-paywall.md) | Hard paywall for restaurant signups: trial/subscribe before staff app (issue #296). Includes guided `/register`/`/signup` wizard steps and 402-exempt priming paths. Keep off until ready; production enablement checklist in the doc (see also amvara9 § SaaS paywall in 0001). |
 | [0088-owner-signup-email-verify-inactive-tenants.md](0088-owner-signup-email-verify-inactive-tenants.md) | Owner signup 6-digit email verify, platform notify, and inactive tenant soft/hard delete (#442). |

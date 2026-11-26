@@ -114,10 +114,12 @@ async def send_email(
     from_email: Optional[str] = None,
     from_name: Optional[str] = None,
     tenant: Optional["Tenant"] = None,
+    smtp_cfg: Optional[dict[str, Any]] = None,
 ) -> bool:
     """
     Send an email via SMTP.
     Uses tenant SMTP config when tenant has smtp_user/smtp_password set; else global config.
+    Pass smtp_cfg for platform-owned mail (feature digest) to bypass tenant SMTP.
 
     Args:
         to_email: Recipient email address
@@ -127,11 +129,12 @@ async def send_email(
         from_email: Sender email (overrides config when set)
         from_name: Sender name (overrides config when set)
         tenant: Optional tenant for per-restaurant SMTP (fallback to global when unset)
+        smtp_cfg: Optional explicit SMTP dict (platform digest); wins over tenant/global
 
     Returns:
         True if email sent successfully, False otherwise
     """
-    cfg = _effective_smtp_config(tenant)
+    cfg = smtp_cfg if smtp_cfg is not None else _effective_smtp_config(tenant)
     if not cfg["user"] or not cfg["password"]:
         logger.error("SMTP credentials not configured (tenant or global)")
         return False
@@ -406,6 +409,7 @@ async def send_owner_signup_verification_email(
     heading = get_message("email_owner_signup_verify_heading", lang)
     intro = get_message("email_owner_signup_verify_intro", lang)
     code_label = get_message("email_owner_signup_verify_code_label", lang)
+    digest_notice = get_message("email_owner_signup_verify_digest_notice", lang)
     disclaimer = get_message("email_owner_signup_verify_disclaimer", lang)
     automated = get_message("email_owner_signup_verify_automated_footer", lang)
     safe_code = html.escape(code)
@@ -426,6 +430,7 @@ async def send_owner_signup_verification_email(
             <p>{html.escape(intro)}</p>
             <p>{html.escape(code_label)}</p>
             <p class="code">{safe_code}</p>
+            <p>{html.escape(digest_notice)}</p>
             <p>{html.escape(disclaimer)}</p>
             <hr>
             <p style="color: #666; font-size: 12px;">{html.escape(automated)}</p>
@@ -438,6 +443,8 @@ async def send_owner_signup_verification_email(
 {intro}
 
 {code_label}: {code}
+
+{digest_notice}
 
 {disclaimer}
 """

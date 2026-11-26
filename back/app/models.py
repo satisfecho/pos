@@ -349,6 +349,10 @@ class User(SQLModel, table=True):
         default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
     )
 
+    # Platform monthly feature digest (#453). Default subscribed; honor unsubscribe token.
+    feature_digest_subscribed: bool = Field(default=True)
+    feature_digest_unsub_token: str | None = Field(default=None, max_length=64, index=True)
+
 
 class OwnerSignupVerifyBody(SQLModel):
     email: str
@@ -2838,6 +2842,63 @@ class NewsletterRecipient(SQLModel, table=True):
         default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
     )
     click_count: int = Field(default=0)
+    sent_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class PlatformMailSettings(SQLModel, table=True):
+    """Singleton (id=1) platform SMTP + digest locale for operator-owned mail (#453)."""
+
+    __tablename__ = "platform_mail_settings"
+
+    id: int = Field(default=1, primary_key=True)
+    smtp_host: str | None = Field(default=None, max_length=255)
+    smtp_port: int | None = Field(default=None)
+    smtp_use_tls: bool | None = Field(default=None)
+    smtp_user: str | None = Field(default=None, max_length=255)
+    smtp_password: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    email_from: str | None = Field(default=None, max_length=320)
+    email_from_name: str | None = Field(default=None, max_length=255)
+    locale: str = Field(default="en", max_length=16)
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class PlatformFeatureDigestCampaign(SQLModel, table=True):
+    """Platform operator monthly feature digest campaign (#453)."""
+
+    __tablename__ = "platform_feature_digest_campaign"
+
+    id: int | None = Field(default=None, primary_key=True)
+    subject: str = Field(max_length=200)
+    body_html: str = Field(sa_column=Column(Text, nullable=False))
+    body_text: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    status: str = Field(default="queued", max_length=32)
+    schedule_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+    recipient_count: int = Field(default=0)
+    sent_count: int = Field(default=0)
+    failed_count: int = Field(default=0)
+    error_message: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    created_by_user_id: int | None = Field(default=None, foreign_key="user.id")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class PlatformFeatureDigestRecipient(SQLModel, table=True):
+    """One outbound platform feature-digest message (#453)."""
+
+    __tablename__ = "platform_feature_digest_recipient"
+
+    id: int | None = Field(default=None, primary_key=True)
+    campaign_id: int = Field(foreign_key="platform_feature_digest_campaign.id", index=True)
+    user_id: int | None = Field(default=None, foreign_key="user.id")
+    email: str = Field(max_length=320)
+    status: str = Field(default="pending", max_length=32)
+    error_message: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
     sent_at: datetime | None = Field(
         default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
     )

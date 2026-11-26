@@ -4,8 +4,8 @@ Anti-spam and hygiene for restaurant (tenant owner) signup.
 
 ## Email verification at signup
 
-1. `POST /register` creates the tenant + owner with `email_verified=false`, stores a **SHA-256** hash of a random **six-digit** code, and emails the code (global SMTP).
-2. Wizard step **2** on `/register` / `/signup` collects the code → `POST /register/verify-email` `{ email, code }`.
+1. `POST /register` creates the tenant + owner with `email_verified=false`, stores a **SHA-256** hash of a random **six-digit** code, and emails the code (global SMTP). The verification email also states that verifying subscribes the owner to Satisfecho's **monthly feature digest** (unsubscribe anytime).
+2. Wizard step **2** on `/register` / `/signup` collects the code → `POST /register/verify-email` `{ email, code }` (also issues an opaque digest unsubscribe token).
 3. `POST /register/resend-verification` `{ email }` re-issues a code (no email enumeration). Returns `JSONResponse` so SlowAPI can inject rate-limit headers (`RATE_LIMIT_ENABLED=true`); a bare `dict` would 500 under uvicorn.
 4. Staff `POST /token` (and OTP completion) returns **403** `email_verification_required` until the owner is verified. Soft-deleted tenants return **403** `tenant_soft_deleted`.
 5. On successful verify, Satisfecho notifies **`PLATFORM_OPERATOR_EMAIL`** (same mailbox as `/platform` login).
