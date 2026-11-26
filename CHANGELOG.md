@@ -12,6 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- **Agent prefer config over parking:** Feature coder **010** must not park FEATs for multi-option product choices; ship a setting with a sensible default. Park only for hard gates (secrets, irreversible ops, legal, paid third-party, or issue says wait). Unblocked #455 on that rule.
 - **Agent waiting-human filters:** Preflight and stale-reject scripts treat `Agent NNN:` and “Restored missing feature task” issue comments as agent noise, so restore/recheck traffic does not unblock parked FEATs (#453).
 - **Parked product explorations:** Track LiveKit Agents for reservations as blocked FEAT-456 until voice/chat, actions, and pilot tenants are decided (#456). Weekly feature-digest email (#453) stays parked; 010 recheck still finds no human product decisions.
 

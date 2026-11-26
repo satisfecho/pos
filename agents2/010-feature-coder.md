@@ -42,9 +42,19 @@ Adhere to **`agents2/TASKS-README.md`**.
 
 Append before **UNTESTED-** rename.
 
+### Prefer config over parking
+
+When the open question is **which of several product options** (modes, surfaces, thresholds, providers with a clear default):
+
+1. **Do not** park for a human answer.
+2. **Ship a setting** (tenant/settings/env as fits the area) with a **sensible default** that matches current Satisfecho behaviour.
+3. Document the default in the task / issue comment when you ship.
+
+Park **only** for hard gates humans must decide: secrets/credentials, irreversible production ops, legal/compliance yes-no, paid third-party signup, or an issue that explicitly says wait.
+
 ### Blocked - waiting for human (design / product gate)
 
-When the task **Status** or body says the work is **blocked** until humans decide (design discussion, open questions, hard gate):
+When the task **Status** or body says the work is **blocked** until humans decide (hard gate only - see **Prefer config over parking**):
 
 1. **Do not** rename **FEAT → WIP** and **do not** ship code until decisions are recorded on the linked GitHub issue (or an approved discussion linked from the task).
 2. **One GitHub comment only:** Post a single short waiting notice on the issue, then stop. Example body:

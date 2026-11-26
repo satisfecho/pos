@@ -5,8 +5,7 @@
 - **455**
 
 ## Status
-- **Blocked - waiting for human:** Which surfaces (menu/cart/checkout/receipts/payments), inclusive-only vs tenant toggle, and whether #455 still applies (upstream `b7a7d1c` / v1.45.0 is backup scheduling; Satisfecho already uses server-authoritative tax-inclusive payable totals) are not decided on #455. Do not invent those unilaterally.
-- **Waiting notice posted:** 2026-11-25T19:56:10Z
+- **Unblocked (2026-11-26):** Do not park on product options. If inclusive vs exclusive (or which surfaces) need a choice, ship a **setting** with default = current Satisfecho behaviour (tax-inclusive, server-authoritative payable totals on guest/staff surfaces). Align UI to billed totals; no exclusive-only invent unless the setting exists.
 - **Restored:** Previous FEAT for #455 was missing from `agents2/tasks/` (orphaned `agent:planned` label / Agent 001 comment). Recreated so feature coders can pick it up.
 
 ## Problem / goal
@@ -18,7 +17,8 @@ Adaptation goal only - do not copy upstream code. Align with Satisfecho tax / pr
 - Read issue #455 and existing tax / price display paths (menu, cart, checkout, receipts, payments). See also `docs/0068-price-promotions.md` for tax-inclusive discount behaviour.
 - Find places where UI shows a guest-facing price that can diverge from billed totals (inclusive vs exclusive, promotions, tips, delivery fees).
 - Prefer one server-authoritative total path; UI should display the same figures the backend bills.
+- If more than one display mode is useful, add a tenant/settings toggle with default inclusive / current behaviour. Do not wait for a human to pick the mode.
 - Keep multi-tenant and currency handling intact; no hard-coded secrets.
 - Work on **`development`**. Add or extend smoke / unit coverage for the chosen slice.
-- If product decisions (which surfaces, inclusive-only vs toggle) are unclear, post **one** waiting-for-human comment on #455 and park the FEAT per `agents2/TASKS-README.md`.
+- Park waiting-for-human only for hard gates (secrets, irreversible ops, legal, paid third-party, or issue says wait) - see `agents2/010-feature-coder.md`.
 - Do not paste upstream diffs, secrets, or PII into the task file or commits.
