@@ -1405,6 +1405,7 @@ def get_public_satisfecho_delivery_config(
         parse_delivery_postal_codes,
         tenant_delivery_fee_cents,
     )
+    from app.price_display import tenant_price_display_mode
 
     postal = parse_delivery_postal_codes(getattr(tenant, "delivery_postal_codes", None))
     radius = getattr(tenant, "delivery_radius_meters", None)
@@ -1421,6 +1422,7 @@ def get_public_satisfecho_delivery_config(
         "restaurant_longitude": float(tenant.longitude) if radius_active else None,
         "currency_code": tenant.currency_code,
         "currency": tenant.currency,
+        "price_display_mode": tenant_price_display_mode(tenant),
     }
 
 
@@ -1606,6 +1608,81 @@ def create_public_satisfecho_delivery_order(
         "revolut_configured": revolut_configured,
         "stripe_crypto_configured": _tenant_stripe_crypto_configured(tenant),
         "created_at": order.created_at.isoformat() if order.created_at else None,
+    }
+
+
+@app.get("/public/tenants/{tenant_id}/reservation-agent")
+@public_menu_ip_limit()
+def get_public_reservation_agent_status(
+    request: Request,
+    response: Response,
+    tenant_id: int,
+    session: Session = Depends(get_session),
+    lang: str = Depends(_get_requested_language),
+) -> dict:
+    """Public: whether LiveKit reservation agent (voice + chat) is enabled for this tenant."""
+    from . import livekit_reservation as lk_res
+
+    tenant = session.get(models.Tenant, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail=api_error_payload("tenant_not_found", lang))
+    enabled = lk_res.livekit_reservation_agent_enabled_for_tenant(tenant_id)
+    return {
+        "enabled": enabled,
+        "channels": ["voice", "chat"] if enabled else [],
+        "actions": ["availability", "create", "cancel_by_token"] if enabled else [],
+    }
+
+
+@app.post("/public/tenants/{tenant_id}/reservation-agent/session")
+@public_menu_ip_limit()
+def create_public_reservation_agent_session(
+    request: Request,
+    response: Response,
+    tenant_id: int,
+    session: Session = Depends(get_session),
+    lang: str = Depends(_get_requested_language),
+) -> dict:
+    """Public: mint a LiveKit guest token for the reservation agent room (pilot tenants only).
+
+    The optional LiveKit Agents worker joins the same room and calls existing public
+    reservation APIs (availability / create / cancel-by-token). No second booking store.
+    """
+    from . import livekit_reservation as lk_res
+
+    tenant = session.get(models.Tenant, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail=api_error_payload("tenant_not_found", lang))
+    if not lk_res.livekit_reservation_agent_enabled_for_tenant(tenant_id):
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error": "reservation_agent_unavailable",
+                "message": "Reservation agent is not enabled for this tenant",
+            },
+        )
+    room_name = lk_res.new_reservation_agent_room_name(tenant_id)
+    identity = lk_res.guest_identity_for_room(room_name)
+    try:
+        token = lk_res.mint_livekit_guest_token(
+            room_name=room_name,
+            identity=identity,
+            name="Guest",
+            ttl_seconds=settings.livekit_reservation_agent_token_ttl_seconds,
+        )
+    except ValueError:
+        raise HTTPException(
+            status_code=503,
+            detail={"error": "livekit_not_configured", "message": "LiveKit is not configured"},
+        )
+    return {
+        "url": (settings.livekit_url or "").strip(),
+        "token": token,
+        "room_name": room_name,
+        "identity": identity,
+        "tenant_id": tenant_id,
+        "channels": ["voice", "chat"],
+        "actions": ["availability", "create", "cancel_by_token"],
     }
 
 
@@ -4989,6 +5066,21 @@ def update_tenant_settings(
             )
         tenant.tip_entry_mode = m
 
+    if tenant_update.price_display_mode is not None:
+        from .price_display import (
+            PRICE_DISPLAY_EXCLUSIVE,
+            PRICE_DISPLAY_INCLUSIVE,
+            normalize_price_display_mode,
+        )
+
+        raw_mode = (tenant_update.price_display_mode or "").strip().lower()
+        if raw_mode not in (PRICE_DISPLAY_INCLUSIVE, PRICE_DISPLAY_EXCLUSIVE):
+            raise HTTPException(
+                status_code=400,
+                detail="price_display_mode must be inclusive or exclusive",
+            )
+        tenant.price_display_mode = normalize_price_display_mode(raw_mode)
+
     # Kitchen/Bar display timer thresholds (minutes)
     if tenant_update.kitchen_display_timer_yellow_minutes is not None:
         tenant.kitchen_display_timer_yellow_minutes = max(0, tenant_update.kitchen_display_timer_yellow_minutes)
@@ -7581,7 +7673,7 @@ def _serialize_courier_order_summary(
     if not active_items:
         return {}
     status = _courier_effective_order_status(order, all_items)
-    total_cents = sum(item.price_cents * item.quantity for item in active_items)
+    total_cents = order_pay_svc.order_due_cents(session, order, include_tip=True)
     row = {
         "id": order.id,
         "status": status.value,
@@ -7618,7 +7710,7 @@ def _serialize_courier_order_detail(
     if not active_items:
         return {}
     status = _courier_effective_order_status(order, all_items)
-    total_cents = sum(item.price_cents * item.quantity for item in active_items)
+    total_cents = order_pay_svc.order_due_cents(session, order, include_tip=True)
     items_json = [
         {
             "product_name": item.product_name,
@@ -12699,6 +12791,7 @@ def get_menu(
             "image_filename": image_filename,
             "tenant_id": tp.tenant_id,
             "ingredients": tp.ingredients,
+            "tax_id": getattr(tp, "tax_id", None),
             "_source": "tenant_product",  # Indicate this is from TenantProduct table
         }
 
@@ -12935,6 +13028,7 @@ def get_menu(
             "ingredients": lp.ingredients,
             "category": lp.category,
             "subcategory": lp.subcategory,
+            "tax_id": getattr(lp, "tax_id", None),
             "_source": "product",
             **product_stock_alert_payload(lp),
         }
@@ -12986,6 +13080,13 @@ def get_menu(
         tenant_id=table.tenant_id,
         channel=models.OrderChannel.table.value,
     )
+    from .price_display import (
+        decorate_menu_product_display,
+        effective_tax_rate_percent,
+        tenant_price_display_mode,
+    )
+
+    price_mode = tenant_price_display_mode(tenant)
     for product_data in products_list:
         promo_svc.decorate_menu_product(
             session,
@@ -12993,6 +13094,12 @@ def get_menu(
             product=product_data,
             channel=models.OrderChannel.table.value,
             eligible=eligible_promos,
+        )
+        rate = effective_tax_rate_percent(
+            session, tenant, product_data.get("tax_id")
+        )
+        decorate_menu_product_display(
+            product_data, mode=price_mode, tax_rate_percent=rate
         )
 
     # Build tenant response data
@@ -13031,6 +13138,7 @@ def get_menu(
         else False,
         "tenant_public_background_color": tenant.public_background_color if tenant else None,
         "tenant_public_primary_color": getattr(tenant, "public_primary_color", None) if tenant else None,
+        "price_display_mode": price_mode,
         # Table session status (take-away/home ordering tables do not require PIN; staff_access also skips PIN)
         "table_is_active": table.is_active,
         "table_requires_pin": False
@@ -14862,7 +14970,9 @@ def list_orders(
         subtotal_cents = sum(item.price_cents * item.quantity for item in active_items)
         tip_amt = int(order.tip_amount_cents or 0)
         loyalty_discount = order_level_discount_cents(order)
-        total_cents = max(0, subtotal_cents - loyalty_discount) + tip_amt
+        # Server-authoritative payable (#455): include delivery fee + loyalty + tip
+        total_cents = order_pay_svc.order_due_cents(session, order, include_tip=True)
+        delivery_fee_cents = order_pay_svc.order_delivery_fee_for_display(order)
 
         # Product categories for kitchen/bar display filtering (one query per order)
         product_ids = list({i.product_id for i in items})
@@ -14971,6 +15081,7 @@ def list_orders(
             "external_order_ref": getattr(order, "external_order_ref", None),
             "items": order_items_json,
             "subtotal_cents": subtotal_cents,
+            "delivery_fee_cents": delivery_fee_cents,
             "loyalty_membership_id": getattr(order, "loyalty_membership_id", None),
             "loyalty_discount_cents": loyalty_discount,
             "loyalty_units_redeemed": int(getattr(order, "loyalty_units_redeemed", 0) or 0),

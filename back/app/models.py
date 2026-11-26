@@ -244,6 +244,9 @@ class Tenant(SQLModel, table=True):
 
     # Default tax (IVA) applied system-wide when product has no tax override
     default_tax_id: int | None = Field(default=None, foreign_key="tax.id", index=True)
+    # How guest/staff surfaces show unit prices (#455): inclusive (default) | exclusive.
+    # Stored/billed amounts remain tax-inclusive; payable totals stay server-authoritative.
+    price_display_mode: str = Field(default="inclusive", max_length=16)
 
     # KDS: unmapped products fall back to these prep stations (by category route)
     default_kitchen_station_id: int | None = Field(
@@ -2036,6 +2039,8 @@ class TenantUpdate(SQLModel):
     country_code: str | None = Field(default=None, max_length=2)
 
     default_tax_id: int | None = None  # FK to tax.id; system-wide default IVA
+    # inclusive (default) | exclusive — display only; billing stays tax-inclusive (#455)
+    price_display_mode: str | None = None
 
     stripe_secret_key: str | None = None
     stripe_publishable_key: str | None = None

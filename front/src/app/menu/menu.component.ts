@@ -20,6 +20,12 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { getSubcategoryLabel as resolveSubcategoryLabel } from '../shared/product-subcategory-label.util';
 import { productStockLeft } from '../shared/product-stock.util';
 import { resolvePublicPrimaryColor } from '../shared/public-brand-colors';
+import {
+  menuDisplayListUnitCents,
+  menuDisplayUnitCents,
+  normalizePriceDisplayMode,
+  PriceDisplayMode,
+} from '../shared/price-display';
 
 interface CartItem {
   product: Product;
@@ -92,6 +98,8 @@ export class MenuComponent implements OnInit, OnDestroy {
   tenantRevolutConfigured = signal(false);
   tenantStripeCryptoConfigured = signal(false);
   tenantHeaderBackgroundFilename = signal<string | null>(null);
+  /** How unit prices are labeled; cart/pay still use tax-inclusive price_cents (#455). */
+  priceDisplayMode = signal<PriceDisplayMode>('inclusive');
 
   // Cart & Orders
   cart = signal<CartItem[]>([]);
@@ -320,6 +328,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         this.tenantPublicBackgroundColor.set(data.tenant_public_background_color ?? null);
         this.tenantPublicPrimaryColor.set(data.tenant_public_primary_color ?? null);
         this.tenantHeaderBackgroundFilename.set(data.tenant_header_background_filename ?? null);
+        this.priceDisplayMode.set(normalizePriceDisplayMode(data.price_display_mode));
 
         if (data.tenant_stripe_publishable_key) {
           this.api.setTenantStripeKey(data.tenant_stripe_publishable_key);
@@ -1200,6 +1209,21 @@ export class MenuComponent implements OnInit, OnDestroy {
       currency: currencyCode,
       currencyDisplay: 'symbol',
     }).format(priceCents / 100);
+  }
+
+  /** Unit price for menu cards (may be net when exclusive); billing uses price_cents. */
+  displayProductPriceCents(product: Product): number {
+    return menuDisplayUnitCents(product);
+  }
+
+  displayProductListPriceCents(product: Product): number | null {
+    return menuDisplayListUnitCents(product);
+  }
+
+  priceTaxHintKey(): string {
+    return this.priceDisplayMode() === 'exclusive'
+      ? 'MENU.PRICE_EXCL_TAX'
+      : 'MENU.PRICE_INCL_TAX';
   }
 
   stockLeft(product: Product): number | null {

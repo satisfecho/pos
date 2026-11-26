@@ -462,6 +462,19 @@ const SETTINGS_SECTION_HASH: Record<SettingsSectionId, string> = {
                   </select>
                   <small class="field-hint">{{ 'SETTINGS.DEFAULT_TAX_HINT' | translate }}</small>
                 </div>
+                <div class="form-group" style="margin-top: 1rem;">
+                  <label for="price_display_mode">{{ 'SETTINGS.PRICE_DISPLAY_MODE' | translate }}</label>
+                  <select
+                    id="price_display_mode"
+                    data-testid="settings-price-display-mode"
+                    [(ngModel)]="formData.price_display_mode"
+                    name="price_display_mode"
+                  >
+                    <option value="inclusive">{{ 'SETTINGS.PRICE_DISPLAY_INCLUSIVE' | translate }}</option>
+                    <option value="exclusive">{{ 'SETTINGS.PRICE_DISPLAY_EXCLUSIVE' | translate }}</option>
+                  </select>
+                  <small class="field-hint">{{ 'SETTINGS.PRICE_DISPLAY_HINT' | translate }}</small>
+                </div>
                 <div class="form-actions" style="margin-top: 0.75rem;">
                   <button
                     type="submit"
@@ -3738,6 +3751,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     cif: null,
     ccc: null,
     default_tax_id: null,
+    price_display_mode: 'inclusive' as 'inclusive' | 'exclusive',
     opening_hours: null,
     currency_code: 'EUR',
     stripe_secret_key: null,
@@ -3993,6 +4007,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
           cif: settings.cif || null,
           ccc: settings.ccc || null,
           default_tax_id: settings.default_tax_id ?? null,
+          price_display_mode:
+            settings.price_display_mode === 'exclusive' ? 'exclusive' : 'inclusive',
           opening_hours: settings.opening_hours || null,
           currency_code: settings.currency_code || 'EUR',
           stripe_secret_key: null,
@@ -5245,16 +5261,25 @@ export class SettingsComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** Persist default tax (IVA) from the Taxes section without a full settings save. */
+  /** Persist default tax (IVA) and price display mode from the Taxes section. */
   saveDefaultTax(): void {
     this.saving.set(true);
     this.error.set(null);
     this.clearSuccessDismissTimer();
     this.success.set(null);
-    this.api.updateTenantSettings({ default_tax_id: this.formData.default_tax_id ?? null }).subscribe({
+    const mode =
+      this.formData.price_display_mode === 'exclusive' ? 'exclusive' : 'inclusive';
+    this.api
+      .updateTenantSettings({
+        default_tax_id: this.formData.default_tax_id ?? null,
+        price_display_mode: mode,
+      })
+      .subscribe({
       next: (updatedSettings) => {
         this.settings.set(updatedSettings);
         this.formData.default_tax_id = updatedSettings.default_tax_id ?? null;
+        this.formData.price_display_mode =
+          updatedSettings.price_display_mode === 'exclusive' ? 'exclusive' : 'inclusive';
         this.success.set(this.translate.instant('SETTINGS.SAVE_CHANGES'));
         this.scheduleSuccessDismiss();
         this.saving.set(false);

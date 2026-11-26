@@ -668,7 +668,9 @@
     "ADDED_BY": "Добавено от {{name}}",
     "ADDED_BY_GUEST": "Добавено от друг гост",
     "PLACE_OWN_ITEMS_ONLY": "Добавете свои артикули преди поръчка. Артикулите на другите остават в споделената количка, докато поръчат.",
-    "STOCK_ONLY_LEFT": "Остават само {{count}}"
+    "STOCK_ONLY_LEFT": "Остават само {{count}}",
+    "PRICE_INCL_TAX": "с ДДС",
+    "PRICE_EXCL_TAX": "без ДДС"
   },
   "PRODUCTS": {
     "TITLE": "Продукта",
@@ -1102,7 +1104,8 @@
     "GUEST_SESSION_LABEL": "Guest {{shortId}}",
     "GUEST_SESSION_UNKNOWN": "Unassigned items",
     "ISSUE_PAYER_FACTURA": "Issue Factura for payer",
-    "PAYER_FACTURA_ISSUED": "Payer Factura issued."
+    "PAYER_FACTURA_ISSUED": "Payer Factura issued.",
+    "DELIVERY_FEE": "Такса доставка"
   },
   "CUSTOMERS": {
     "TITLE": "Клиенти (фактура)",
@@ -1864,7 +1867,7 @@
     "NO_DEFAULT_TAX": "Няма (няма по подразбиране)",
     "DEFAULT_TAX_HINT": "Прилага се за продуктите, освен ако не е презаписано за продукт.",
     "TAXES": "Данъци (IVA)",
-    "TAXES_SUBTITLE": "Управление на данъчни ставки и периоди на валидност. Цените са с включен данък.",
+    "TAXES_SUBTITLE": "Управлявайте данъчни ставки и периоди. Цените в менюто са с ДДС по подразбиране; дължимите суми винаги съвпадат със сървърното таксуване.",
     "TAX_NAME": "Име",
     "TAX_RATE": "Оценка %",
     "TAX_VALID_FROM": "Валиден от",
@@ -2417,7 +2420,11 @@
     "CAREERS_WHY_PLACEHOLDER": "Tell candidates why they should join your team…",
     "CAREERS_RETENTION": "Retention (days)",
     "CAREERS_RETENTION_HINT": "Applications auto-delete after this many days (30–730). Default 180.",
-    "CAREERS_PUBLIC_URL": "Public URL path"
+    "CAREERS_PUBLIC_URL": "Public URL path",
+    "PRICE_DISPLAY_MODE": "Показване на цени",
+    "PRICE_DISPLAY_INCLUSIVE": "С ДДС (по подразбиране)",
+    "PRICE_DISPLAY_EXCLUSIVE": "Без ДДС (нето + етикет)",
+    "PRICE_DISPLAY_HINT": "Контролира как се показват единичните цени. Плащането и касовите бележки винаги ползват брутния фактуриран тотал."
   },
   "PAYMENTS": {
     "PAYMENT": "Плащане:",

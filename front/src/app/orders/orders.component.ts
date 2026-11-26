@@ -1258,6 +1258,12 @@ ModuleRegistry.registerModules([
                 <p class="payment-amount-line">
                   {{ 'ORDERS.SUBTOTAL' | translate }}: {{ formatPrice(orderPaymentSubtotal(orderToMarkPaid()!)) }}
                 </p>
+                @if ((orderToMarkPaid()!.delivery_fee_cents || 0) > 0) {
+                  <p class="payment-amount-line" data-testid="delivery-fee-line">
+                    {{ 'ORDERS.DELIVERY_FEE' | translate }}:
+                    {{ formatPrice(orderToMarkPaid()!.delivery_fee_cents || 0) }}
+                  </p>
+                }
                 @if ((orderToMarkPaid()!.loyalty_discount_cents || 0) > 0) {
                   <p class="payment-amount-line" data-testid="loyalty-discount-line">
                     {{ 'ORDERS.LOYALTY_DISCOUNT' | translate }}:

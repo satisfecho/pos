@@ -189,7 +189,9 @@
     "SHARED_CART_HINT": "سلة الطاولة مشتركة — كل من على هذه الطاولة يرى هذه العناصر. إرسال الطلب يرسل عناصرك فقط.",
     "ADDED_BY": "أضافه {{name}}",
     "ADDED_BY_GUEST": "أضافه ضيف آخر",
-    "PLACE_OWN_ITEMS_ONLY": "أضف عناصرك الخاصة قبل إرسال الطلب. عناصر الضيوف الآخرين تبقى في السلة المشتركة حتى يرسلوا طلبهم."
+    "PLACE_OWN_ITEMS_ONLY": "أضف عناصرك الخاصة قبل إرسال الطلب. عناصر الضيوف الآخرين تبقى في السلة المشتركة حتى يرسلوا طلبهم.",
+    "PRICE_INCL_TAX": "شامل الضريبة",
+    "PRICE_EXCL_TAX": "بدون الضريبة"
   },
   "PAYWALL": {
     "TITLE": "اختر خطة للمتابعة",
@@ -530,7 +532,8 @@
     "GUEST_SESSION_LABEL": "Guest {{shortId}}",
     "GUEST_SESSION_UNKNOWN": "Unassigned items",
     "ISSUE_PAYER_FACTURA": "Issue Factura for payer",
-    "PAYER_FACTURA_ISSUED": "Payer Factura issued."
+    "PAYER_FACTURA_ISSUED": "Payer Factura issued.",
+    "DELIVERY_FEE": "رسوم التوصيل"
   },
   "ORDER_STATUS": {
     "pending": "قيد الانتظار",
@@ -2170,7 +2173,7 @@
     "NO_DEFAULT_TAX": "لا شيء (بدون افتراضي)",
     "DEFAULT_TAX_HINT": "تُطبَّق على المنتجات ما لم يتم تجاوزها لكل منتج.",
     "TAXES": "الضرائب (IVA)",
-    "TAXES_SUBTITLE": "أدر نسب الضرائب وفترات صلاحيتها. الأسعار شاملة الضريبة.",
+    "TAXES_SUBTITLE": "إدارة معدلات الضرائب وفترات الصلاحية. أسعار القائمة شاملة الضريبة افتراضياً؛ إجماليات الدفع تطابق دائماً فوترة الخادم.",
     "TAX_NAME": "الاسم",
     "TAX_RATE": "النسبة %",
     "TAX_VALID_FROM": "صالحة من",
@@ -2721,7 +2724,11 @@
     "CAREERS_WHY_PLACEHOLDER": "Tell candidates why they should join your team…",
     "CAREERS_RETENTION": "Retention (days)",
     "CAREERS_RETENTION_HINT": "Applications auto-delete after this many days (30–730). Default 180.",
-    "CAREERS_PUBLIC_URL": "Public URL path"
+    "CAREERS_PUBLIC_URL": "Public URL path",
+    "PRICE_DISPLAY_MODE": "عرض الأسعار",
+    "PRICE_DISPLAY_INCLUSIVE": "شامل الضريبة (افتراضي)",
+    "PRICE_DISPLAY_EXCLUSIVE": "بدون الضريبة (صافي + تسمية)",
+    "PRICE_DISPLAY_HINT": "يتحكم في كيفية ظهور أسعار الوحدات في قائمة الضيوف. الدفع والإيصالات دائماً بالسعر الشامل للضريبة."
   },
   "PROVIDER_AUTH": {
     "NO_ACCOUNT": "ليس لديك حساب مورد؟",

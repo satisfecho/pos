@@ -843,7 +843,9 @@
     "ADDED_BY": "Added by {{name}}",
     "ADDED_BY_GUEST": "Added by another guest",
     "PLACE_OWN_ITEMS_ONLY": "Add your own items before placing an order. Other guests’ items stay in the shared cart until they place their order.",
-    "STOCK_ONLY_LEFT": "Only {{count}} left"
+    "STOCK_ONLY_LEFT": "Only {{count}} left",
+    "PRICE_INCL_TAX": "incl. tax",
+    "PRICE_EXCL_TAX": "excl. tax"
   },
   "PRODUCTS": {
     "TITLE": "Products",
@@ -1167,6 +1169,7 @@
     "FAILED_TO_FINISH": "Could not finish order",
     "PAYMENT_METHOD": "Payment Method",
     "SUBTOTAL": "Subtotal",
+    "DELIVERY_FEE": "Delivery fee",
     "TIP": "Tip",
     "TIP_NONE": "No tip",
     "TIP_AMOUNT": "Tip amount",
@@ -2039,7 +2042,11 @@
     "NO_DEFAULT_TAX": "None (no default)",
     "DEFAULT_TAX_HINT": "Applied to products unless overridden per product.",
     "TAXES": "Taxes (IVA)",
-    "TAXES_SUBTITLE": "Manage tax rates and validity periods. Prices are tax-inclusive.",
+    "TAXES_SUBTITLE": "Manage tax rates and validity periods. Menu prices are tax-inclusive by default; payable totals always match server billing.",
+    "PRICE_DISPLAY_MODE": "Price display",
+    "PRICE_DISPLAY_INCLUSIVE": "Tax-inclusive (default)",
+    "PRICE_DISPLAY_EXCLUSIVE": "Tax-exclusive (net + tax label)",
+    "PRICE_DISPLAY_HINT": "Controls how unit prices appear on guest menus. Checkout and receipts always charge the tax-inclusive billed total.",
     "TAX_NAME": "Name",
     "TAX_RATE": "Rate %",
     "TAX_VALID_FROM": "Valid from",

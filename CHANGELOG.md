@@ -12,11 +12,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
-- **Agent prefer config over parking:** Feature coder **010** must not park FEATs for multi-option product choices; ship a setting with a sensible default. Park only for hard gates (secrets, irreversible ops, legal, paid third-party, or issue says wait). Unblocked #455 on that rule.
-- **Agent waiting-human filters:** Preflight and stale-reject scripts treat `Agent NNN:` and “Restored missing feature task” issue comments as agent noise, so restore/recheck traffic does not unblock parked FEATs (#453).
-- **Parked product explorations:** Track LiveKit Agents for reservations as blocked FEAT-456 until voice/chat, actions, and pilot tenants are decided (#456). Weekly feature-digest email (#453) stays parked; 010 recheck still finds no human product decisions.
+- **Parked product explorations:** Weekly feature-digest email (#453) stays parked; 010 recheck still finds no human product decisions.
 
 ### Fixed
+
+## [2.1.204] - 2026-11-26
+
+### Added
+
+- **Price display mode (#455):** Settings → Taxes can show guest menu unit prices as tax-inclusive (default) or tax-exclusive. Staff order totals, receipts, and courier amounts follow server `order_due_cents` so payable figures match the payment modal (including delivery fees). See `docs/0094-price-display-mode.md`.
+- **LiveKit reservation agents (#456):** Optional voice/chat pilot that books and cancels via existing public reservation APIs. Off until `LIVEKIT_*` and a tenant allowlist are set; optional worker under `back/livekit_reservation_agent/` (separate deps). See `docs/0093-livekit-reservation-agents.md`.
+
+### Changed
+
+- **Agent prefer config over parking:** Feature coder **010** must not park FEATs for multi-option product choices; ship a setting with a sensible default. Park only for hard gates (secrets, irreversible ops, legal, paid third-party, or issue says wait).
+- **Agent waiting-human filters:** Preflight and stale-reject scripts treat `Agent NNN:` and "Restored missing feature task" issue comments as agent noise, so restore/recheck traffic does not unblock parked FEATs (#453).
 
 ## [2.1.203] - 2026-11-25
 

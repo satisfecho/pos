@@ -328,10 +328,13 @@
             <span class="stock-left-badge">{{ 'MENU.STOCK_ONLY_LEFT' | translate:{ count: left } }}</span>
             }
             <span class="featured-price">
-              @if (product.list_price_cents != null && product.list_price_cents > product.price_cents) {
-                <span class="list-price">{{ formatPrice(product.list_price_cents) }}</span>
+              @if (displayProductListPriceCents(product); as listCents) {
+                @if (listCents > displayProductPriceCents(product)) {
+                  <span class="list-price">{{ formatPrice(listCents) }}</span>
+                }
               }
-              {{ formatPrice(product.price_cents) }}
+              {{ formatPrice(displayProductPriceCents(product)) }}
+              <span class="price-tax-hint">{{ priceTaxHintKey() | translate }}</span>
             </span>
           </div>
           <button class="quick-add-btn" (click)="addToCartWithQuestions(product); $event.stopPropagation()">
@@ -399,10 +402,13 @@
             <div class="product-header-row">
               <h3 class="product-name">{{ product.name }}</h3>
               <span class="product-price">
-                @if (product.list_price_cents != null && product.list_price_cents > product.price_cents) {
-                  <span class="list-price">{{ formatPrice(product.list_price_cents) }}</span>
+                @if (displayProductListPriceCents(product); as listCents) {
+                  @if (listCents > displayProductPriceCents(product)) {
+                    <span class="list-price">{{ formatPrice(listCents) }}</span>
+                  }
                 }
-                {{ formatPrice(product.price_cents) }}
+                {{ formatPrice(displayProductPriceCents(product)) }}
+                <span class="price-tax-hint">{{ priceTaxHintKey() | translate }}</span>
                 @if (product.promo_label) {
                   <span class="promo-badge">{{ product.promo_label }}</span>
                 }
@@ -500,7 +506,7 @@
         </div>
         <div class="cart-summary-text-block">
           <span class="cart-summary-text">{{ getTotalItems() }} {{ 'COMMON.ITEMS' | translate }}</span>
-          <span class="cart-summary-total">{{ formatPrice(getTotal()) }}</span>
+          <span class="cart-summary-total">{{ formatPrice(getTotal()) }} <span class="price-tax-hint">{{ 'MENU.PRICE_INCL_TAX' | translate }}</span></span>
         </div>
       </div>
       @if (!cartExpanded()) {

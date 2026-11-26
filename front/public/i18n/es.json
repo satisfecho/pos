@@ -668,7 +668,9 @@
     "ADDED_BY": "Añadido por {{name}}",
     "ADDED_BY_GUEST": "Añadido por otro comensal",
     "PLACE_OWN_ITEMS_ONLY": "Añade tus propios artículos antes de pedir. Los de otros comensales siguen en el carrito compartido hasta que ellos pidan.",
-    "STOCK_ONLY_LEFT": "Solo quedan {{count}}"
+    "STOCK_ONLY_LEFT": "Solo quedan {{count}}",
+    "PRICE_INCL_TAX": "IVA incl.",
+    "PRICE_EXCL_TAX": "IVA excl."
   },
   "PRODUCTS": {
     "TITLE": "Productos",
@@ -1102,7 +1104,8 @@
     "GUEST_SESSION_LABEL": "Comensal {{shortId}}",
     "GUEST_SESSION_UNKNOWN": "Ítems sin asignar",
     "ISSUE_PAYER_FACTURA": "Emitir Factura del pagador",
-    "PAYER_FACTURA_ISSUED": "Factura del pagador emitida."
+    "PAYER_FACTURA_ISSUED": "Factura del pagador emitida.",
+    "DELIVERY_FEE": "Gastos de envío"
   },
   "CUSTOMERS": {
     "TITLE": "Clientes (Factura)",
@@ -2121,7 +2124,7 @@
     "NO_DEFAULT_TAX": "Ninguno",
     "DEFAULT_TAX_HINT": "Se aplica a los productos salvo que se indique otro en el producto.",
     "TAXES": "Impuestos (IVA)",
-    "TAXES_SUBTITLE": "Gestiona tipos de IVA y periodos de validez. Los precios incluyen IVA.",
+    "TAXES_SUBTITLE": "Gestiona tipos de IVA y periodos de validez. Los precios del menú incluyen impuestos por defecto; los totales a pagar siempre coinciden con la facturación del servidor.",
     "TAX_NAME": "Nombre",
     "TAX_RATE": "Tipo %",
     "TAX_VALID_FROM": "Válido desde",
@@ -2417,7 +2420,11 @@
     "CAREERS_WHY_PLACEHOLDER": "Explica por qué unirse a tu equipo…",
     "CAREERS_RETENTION": "Retención (días)",
     "CAREERS_RETENTION_HINT": "Las candidaturas se borran solos tras estos días (30–730). Por defecto 180.",
-    "CAREERS_PUBLIC_URL": "Ruta URL pública"
+    "CAREERS_PUBLIC_URL": "Ruta URL pública",
+    "PRICE_DISPLAY_MODE": "Visualización de precios",
+    "PRICE_DISPLAY_INCLUSIVE": "Con impuestos (predeterminado)",
+    "PRICE_DISPLAY_EXCLUSIVE": "Sin impuestos (neto + etiqueta IVA)",
+    "PRICE_DISPLAY_HINT": "Controla cómo se muestran los precios unitarios en el menú. El cobro y los recibos siempre usan el total con impuestos facturado."
   },
   "PAYMENTS": {
     "PAYMENT": "Pago",

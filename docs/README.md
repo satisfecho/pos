@@ -18,6 +18,8 @@ This folder contains deployment guides, feature documentation, implementation pl
 | Configure Gmail for email | [0056-gmail-setup.md](0056-gmail-setup.md) |
 | Troubleshoot missing reservation confirmation email | [0030-reservation-confirmation-email-troubleshooting.md](0030-reservation-confirmation-email-troubleshooting.md) |
 | Understand reservations / waiting list (staff + public) | [0011-table-reservation-user-guide.md](0011-table-reservation-user-guide.md) |
+| LiveKit voice/chat reservation agent pilot | [0093-livekit-reservation-agents.md](0093-livekit-reservation-agents.md) |
+| Tax-inclusive vs exclusive menu price labels | [0094-price-display-mode.md](0094-price-display-mode.md) |
 | Guest / staff Satisfecho Delivery (checkout, courier, track) | [0053-satisfecho-delivery-order-channel.md](0053-satisfecho-delivery-order-channel.md) |
 | Enable or understand SaaS signup paywall (keep off until runbook) | [0052-saas-signup-paywall.md](0052-saas-signup-paywall.md) |
 | Owner signup email verify + inactive tenant cleanup (#442) | [0088-owner-signup-email-verify-inactive-tenants.md](0088-owner-signup-email-verify-inactive-tenants.md) |
@@ -68,6 +70,8 @@ This folder contains deployment guides, feature documentation, implementation pl
 | Doc | Description |
 |-----|-------------|
 | [0011-table-reservation-user-guide.md](0011-table-reservation-user-guide.md) | Table reservations: staff flows, public booking at `/book/:tenantId`, view/cancel at `/reservation?token=...`; public waiting list at `/waitlist/:tenantId` and staff Waiting list tab. Guest feedback trends/CSV: [0064](0064-guest-feedback-analytics.md). |
+| [0093-livekit-reservation-agents.md](0093-livekit-reservation-agents.md) | Optional LiveKit Agents voice/chat pilot for reservations (#456): allowlisted tenants, session mint, worker calling public book/cancel APIs. |
+| [0094-price-display-mode.md](0094-price-display-mode.md) | Tenant `price_display_mode` (#455): inclusive (default) vs exclusive menu unit labels; payable totals stay server-authoritative. |
 | [0014-provider-portal.md](0014-provider-portal.md) | Provider (supplier) portal at `/provider` - not the courier portal (`/courier`; see [0053](0053-satisfecho-delivery-order-channel.md)). |
 | [0015-kitchen-display.md](0015-kitchen-display.md) | Kitchen display: full-screen at `/kitchen` (and `/bar`); as many prep stations as needed, each product on one station so that display shows only what it must prepare; auto-refresh, WebSocket, optional sound; Satisfecho Delivery cards use table label “Satisfecho Delivery” (not shown once `out_for_delivery`); highlighted order/item comments (#284). |
 | [0078-customer-facing-display.md](0078-customer-facing-display.md) | Customer-facing order display (#434): public `/display/{table_token}` second screen for counter/coffee-shop; staff opens from `/staff/orders` (Customer display). Smoke: `npm run test:customer-display --prefix front` ([testing.md](testing.md)). |

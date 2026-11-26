@@ -254,6 +254,7 @@ def _load_flat_products(
                 "subcategory": subcategory,
                 "image_url": _resolve_tenant_product_image(session, tenant_id, tp),
                 "available": True,
+                "tax_id": getattr(tp, "tax_id", None),
                 **stock_fields,
             }
         )
@@ -280,10 +281,18 @@ def _load_flat_products(
                 "subcategory": lp.subcategory,
                 "image_url": resolve_product_image_url(tenant_id, lp.image_filename),
                 "available": True,
+                "tax_id": getattr(lp, "tax_id", None),
                 **product_stock_alert_payload(lp),
             }
         )
 
+    from .price_display import (
+        decorate_menu_product_display,
+        effective_tax_rate_percent,
+        tenant_price_display_mode,
+    )
+
+    price_mode = tenant_price_display_mode(tenant)
     eligible = promo_svc.eligible_promos(
         session,
         tenant_id=tenant_id,
@@ -297,11 +306,20 @@ def _load_flat_products(
             channel=models.OrderChannel.table.value,
             eligible=eligible,
         )
+        rate = effective_tax_rate_percent(session, tenant, product.get("tax_id"))
+        decorate_menu_product_display(
+            product, mode=price_mode, tax_rate_percent=rate
+        )
+        product.pop("tax_id", None)  # keep internal FK out of public menu
+        # Formatted strings follow display_price (exclusive net or inclusive billed)
+        product["price_formatted"] = format_public_price(
+            int(product.get("display_price_cents") or product["price_cents"]), lang
+        )
         if product.get("list_price_cents") is not None:
-            product["price_formatted"] = format_public_price(product["price_cents"], lang)
-            product["list_price_formatted"] = format_public_price(
-                product["list_price_cents"], lang
-            )
+            list_show = product.get("display_list_price_cents")
+            if list_show is None:
+                list_show = product["list_price_cents"]
+            product["list_price_formatted"] = format_public_price(int(list_show), lang)
 
     return products
 
@@ -410,6 +428,8 @@ def build_public_tenant_menu(
         if translated:
             tenant_name = translated
 
+    from .price_display import tenant_price_display_mode
+
     products = _load_flat_products(session, tenant_id, lang, currency_code)
     categories = group_products_into_categories(products, lang)
 
@@ -418,6 +438,7 @@ def build_public_tenant_menu(
         "tenant_name": tenant_name,
         "currency": currency_code,
         "lang": lang,
+        "price_display_mode": tenant_price_display_mode(tenant),
         "categories": categories,
     }
 

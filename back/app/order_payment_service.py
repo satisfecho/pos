@@ -69,7 +69,11 @@ def _channel_value(order: models.Order) -> str:
 
 
 def order_due_cents(session: Session, order: models.Order, *, include_tip: bool = True) -> int:
-    """Amount still owed before payments: lines − discounts (+ tip when include_tip)."""
+    """Amount still owed before payments: lines − discounts (+ tip when include_tip).
+
+    This is the single server-authoritative payable total for guest/staff surfaces
+    (#455): includes delivery fee on Satisfecho Delivery and loyalty discounts.
+    """
     subtotal = order_subtotal_cents(session, order)
     if _channel_value(order) == models.OrderChannel.satisfecho_delivery.value:
         from .delivery_order_service import order_delivery_fee_cents
@@ -78,6 +82,15 @@ def order_due_cents(session: Session, order: models.Order, *, include_tip: bool 
     discount = order_level_discount_cents(order)
     tip = int(order.tip_amount_cents or 0) if include_tip else 0
     return max(0, subtotal - discount) + tip
+
+
+def order_delivery_fee_for_display(order: models.Order) -> int:
+    """Delivery fee cents when channel is Satisfecho Delivery; else 0."""
+    if _channel_value(order) != models.OrderChannel.satisfecho_delivery.value:
+        return 0
+    from .delivery_order_service import order_delivery_fee_cents
+
+    return int(order_delivery_fee_cents(order) or 0)
 
 
 def list_active_payments(session: Session, order_id: int) -> list[models.OrderPayment]:
