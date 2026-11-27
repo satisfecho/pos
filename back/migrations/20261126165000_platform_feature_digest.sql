@@ -24,8 +24,15 @@ CREATE TABLE IF NOT EXISTS platform_mail_settings (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-INSERT INTO platform_mail_settings (id, locale)
-VALUES (1, 'en')
+-- Repair rows/tables created without DEFAULT (failed deploy / create_all).
+ALTER TABLE platform_mail_settings
+    ALTER COLUMN updated_at SET DEFAULT NOW();
+UPDATE platform_mail_settings
+SET updated_at = NOW()
+WHERE updated_at IS NULL;
+
+INSERT INTO platform_mail_settings (id, locale, updated_at)
+VALUES (1, 'en', NOW())
 ON CONFLICT (id) DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS platform_feature_digest_campaign (
