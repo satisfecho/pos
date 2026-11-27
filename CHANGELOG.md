@@ -14,6 +14,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.207] - 2026-11-27
+
+### Fixed
+
+- **Platform feature digest migration:** Seed `platform_mail_settings.updated_at` so deploy no longer fails NotNullViolation on amvara9.
+
 ## [2.1.206] - 2026-11-27
 
 ### Fixed
