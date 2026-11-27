@@ -813,12 +813,9 @@ export class PlatformDashboardComponent implements OnInit {
       if (typeof window === 'undefined') return path;
       return `${window.location.origin}${path}`;
     }
-    const ref =
-      segment === 'public-menu' && tenant.public_slug?.trim()
-        ? tenant.public_slug.trim()
-        : tenant.id;
-    if (typeof window === 'undefined') return `/${segment}/${ref}`;
-    return `${window.location.origin}/${segment}/${ref}`;
+    // public-menu / waitlist / delivery: numeric tenant id (stable operator links).
+    if (typeof window === 'undefined') return `/${segment}/${tenant.id}`;
+    return `${window.location.origin}/${segment}/${tenant.id}`;
   }
 
   private escapeHtml(value: string): string {

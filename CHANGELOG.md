@@ -14,6 +14,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.206] - 2026-11-27
+
+### Fixed
+
+- **Platform tenant website links:** Bare website values without `https://` (e.g. `SATISFECHO.DE/PUBLIC-MENU/141`) no longer resolve as relative paths under `/platform/tenants/…`. Public menu operator links always use `/public-menu/{id}`.
+
 ## [2.1.205] - 2026-11-26
 
 ### Added

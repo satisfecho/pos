@@ -147,6 +147,16 @@ async function main() {
     }
     console.log(`OK: tenant staff table shows login count (${staffLoginText})`);
 
+    await page.waitForSelector(`a.link-btn[href$="/public-menu/${tenantId}"]`, { timeout: 10000 });
+    const menuHref = await page.$eval(
+      `a.link-btn[href$="/public-menu/${tenantId}"]`,
+      (el) => el.getAttribute('href') || '',
+    );
+    if (!menuHref.endsWith(`/public-menu/${tenantId}`)) {
+      throw new Error(`Expected public-menu link ending with /public-menu/${tenantId}, got ${menuHref}`);
+    }
+    console.log(`OK: tenant detail public-menu link → ${menuHref}`);
+
     await page.waitForSelector(`a.link-btn[href$="/delivery/${tenantId}"]`, { timeout: 10000 });
     const deliveryHref = await page.$eval(
       `a.link-btn[href$="/delivery/${tenantId}"]`,
