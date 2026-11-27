@@ -189,7 +189,9 @@
     "SHARED_CART_HINT": "سلة الطاولة مشتركة — كل من على هذه الطاولة يرى هذه العناصر. إرسال الطلب يرسل عناصرك فقط.",
     "ADDED_BY": "أضافه {{name}}",
     "ADDED_BY_GUEST": "أضافه ضيف آخر",
-    "PLACE_OWN_ITEMS_ONLY": "أضف عناصرك الخاصة قبل إرسال الطلب. عناصر الضيوف الآخرين تبقى في السلة المشتركة حتى يرسلوا طلبهم."
+    "PLACE_OWN_ITEMS_ONLY": "أضف عناصرك الخاصة قبل إرسال الطلب. عناصر الضيوف الآخرين تبقى في السلة المشتركة حتى يرسلوا طلبهم.",
+    "PRICE_INCL_TAX": "شامل الضريبة",
+    "PRICE_EXCL_TAX": "بدون الضريبة"
   },
   "PAYWALL": {
     "TITLE": "اختر خطة للمتابعة",
@@ -530,7 +532,8 @@
     "GUEST_SESSION_LABEL": "Guest {{shortId}}",
     "GUEST_SESSION_UNKNOWN": "Unassigned items",
     "ISSUE_PAYER_FACTURA": "Issue Factura for payer",
-    "PAYER_FACTURA_ISSUED": "Payer Factura issued."
+    "PAYER_FACTURA_ISSUED": "Payer Factura issued.",
+    "DELIVERY_FEE": "رسوم التوصيل"
   },
   "ORDER_STATUS": {
     "pending": "قيد الانتظار",
@@ -2170,7 +2173,7 @@
     "NO_DEFAULT_TAX": "لا شيء (بدون افتراضي)",
     "DEFAULT_TAX_HINT": "تُطبَّق على المنتجات ما لم يتم تجاوزها لكل منتج.",
     "TAXES": "الضرائب (IVA)",
-    "TAXES_SUBTITLE": "أدر نسب الضرائب وفترات صلاحيتها. الأسعار شاملة الضريبة.",
+    "TAXES_SUBTITLE": "إدارة معدلات الضرائب وفترات الصلاحية. أسعار القائمة شاملة الضريبة افتراضياً؛ إجماليات الدفع تطابق دائماً فوترة الخادم.",
     "TAX_NAME": "الاسم",
     "TAX_RATE": "النسبة %",
     "TAX_VALID_FROM": "صالحة من",
@@ -2721,7 +2724,11 @@
     "CAREERS_WHY_PLACEHOLDER": "Tell candidates why they should join your team…",
     "CAREERS_RETENTION": "Retention (days)",
     "CAREERS_RETENTION_HINT": "Applications auto-delete after this many days (30–730). Default 180.",
-    "CAREERS_PUBLIC_URL": "Public URL path"
+    "CAREERS_PUBLIC_URL": "Public URL path",
+    "PRICE_DISPLAY_MODE": "عرض الأسعار",
+    "PRICE_DISPLAY_INCLUSIVE": "شامل الضريبة (افتراضي)",
+    "PRICE_DISPLAY_EXCLUSIVE": "بدون الضريبة (صافي + تسمية)",
+    "PRICE_DISPLAY_HINT": "يتحكم في كيفية ظهور أسعار الوحدات في قائمة الضيوف. الدفع والإيصالات دائماً بالسعر الشامل للضريبة."
   },
   "PROVIDER_AUTH": {
     "NO_ACCOUNT": "ليس لديك حساب مورد؟",
@@ -3589,5 +3596,45 @@
   },
   "PUBLIC_GUEST_NAV": {
     "CAREERS": "Careers"
+  },
+  "PLATFORM_DIGEST": {
+    "NAV": "Feature digest",
+    "BACK": "Back to overview",
+    "TITLE": "Monthly feature digest",
+    "SUBTITLE": "Email verified restaurant owners about new Satisfecho features. Uses platform SMTP (not tenant newsletter).",
+    "SETTINGS_TITLE": "Platform mail settings",
+    "SETTINGS_HINT": "Configure SMTP and digest locale for the platform owner. Leave SMTP blank to fall back to server SMTP_HOST / SMTP_USER.",
+    "LOCALE": "Digest locale",
+    "SMTP_HOST": "SMTP host",
+    "SMTP_PORT": "SMTP port",
+    "SMTP_TLS": "Use STARTTLS",
+    "SMTP_USER": "SMTP user",
+    "SMTP_PASSWORD": "SMTP password",
+    "SMTP_PASSWORD_SET": "Password saved (enter new to replace)",
+    "SMTP_PASSWORD_PLACEHOLDER": "SMTP password",
+    "EMAIL_FROM": "From email",
+    "EMAIL_FROM_NAME": "From name",
+    "SMTP_OK": "SMTP ready (platform settings or global fallback).",
+    "SMTP_MISSING": "SMTP not configured yet.",
+    "SAVED": "Settings saved.",
+    "SAVE_FAILED": "Could not save settings.",
+    "AUDIENCE_TITLE": "Audience",
+    "AUDIENCE_COUNT": "{{count}} subscribed verified owners",
+    "AUDIENCE_SAMPLE": "Sample",
+    "COMPOSE_TITLE": "Compose and send",
+    "COMPOSE_HINT": "Manual draft (paste CHANGELOG highlights as needed). Each send includes an unsubscribe link.",
+    "SUBJECT": "Subject",
+    "BODY_HTML": "Body (HTML)",
+    "SEND_NOW": "Queue send now",
+    "SUBJECT_BODY_REQUIRED": "Subject and body are required.",
+    "QUEUED": "Campaign queued.",
+    "SEND_FAILED": "Could not queue campaign.",
+    "CAMPAIGNS_TITLE": "Recent campaigns",
+    "CAMPAIGNS_EMPTY": "No campaigns yet.",
+    "COL_ID": "ID",
+    "COL_SUBJECT": "Subject",
+    "COL_STATUS": "Status",
+    "COL_SENT": "Sent",
+    "LOAD_FAILED": "Could not load feature digest data. Please sign in again."
   }
 }

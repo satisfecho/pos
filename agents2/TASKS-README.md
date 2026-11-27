@@ -70,7 +70,9 @@ See **`agents2/tasks/done/README.md`** for a short index of the archive tree.
 
 ## Waiting for human (FEAT blocked on design)
 
-Some **FEAT-** tasks are **parked** until product or design decisions land on GitHub (see issue #350 pattern).
+Park **FEAT-** only for **hard gates** (secrets, irreversible ops, legal yes-no, paid third-party signup, or the issue says wait). See issue #350 for the pattern.
+
+**Do not park** when the choice is among product options. Prefer a **tenant/settings/env setting** with a **sensible default** (see **Prefer config over parking** in `agents2/010-feature-coder.md`). Example: inclusive vs exclusive display → setting; default stays tax-inclusive / server-authoritative totals.
 
 | Step | Who | Action |
 |------|-----|--------|

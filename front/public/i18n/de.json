@@ -668,7 +668,9 @@
     "ADDED_BY": "Hinzugefügt von {{name}}",
     "ADDED_BY_GUEST": "Von einem anderen Gast hinzugefügt",
     "PLACE_OWN_ITEMS_ONLY": "Fügen Sie eigene Artikel hinzu, bevor Sie bestellen. Artikel anderer Gäste bleiben im gemeinsamen Warenkorb, bis sie bestellen.",
-    "STOCK_ONLY_LEFT": "Nur noch {{count}} übrig"
+    "STOCK_ONLY_LEFT": "Nur noch {{count}} übrig",
+    "PRICE_INCL_TAX": "inkl. MwSt.",
+    "PRICE_EXCL_TAX": "zzgl. MwSt."
   },
   "PRODUCTS": {
     "TITLE": "Produkte",
@@ -1102,7 +1104,8 @@
     "GUEST_SESSION_LABEL": "Gast {{shortId}}",
     "GUEST_SESSION_UNKNOWN": "Nicht zugewiesene Positionen",
     "ISSUE_PAYER_FACTURA": "Factura für Zahler ausstellen",
-    "PAYER_FACTURA_ISSUED": "Zahler-Factura ausgestellt."
+    "PAYER_FACTURA_ISSUED": "Zahler-Factura ausgestellt.",
+    "DELIVERY_FEE": "Liefergebühr"
   },
   "CUSTOMERS": {
     "TITLE": "Kunden (Rechnung)",
@@ -1815,7 +1818,7 @@
     "NO_DEFAULT_TAX": "Keine (kein Standard)",
     "DEFAULT_TAX_HINT": "Gilt für Produkte, sofern nicht pro Produkt überschrieben.",
     "TAXES": "Steuern (IVA)",
-    "TAXES_SUBTITLE": "Steuersätze und Gültigkeitszeiträume verwalten. Preise sind inkl. Steuer.",
+    "TAXES_SUBTITLE": "Steuersätze und Gültigkeitszeiträume verwalten. Menüpreise sind standardmäßig brutto; zahlbare Beträge entsprechen immer der Server-Abrechnung.",
     "TAX_NAME": "Name",
     "TAX_RATE": "Satz %",
     "TAX_VALID_FROM": "Gültig ab",
@@ -2368,7 +2371,11 @@
     "CAREERS_WHY_PLACEHOLDER": "Erklären Sie, warum Kandidaten Ihrem Team beitreten sollten…",
     "CAREERS_RETENTION": "Aufbewahrung (Tage)",
     "CAREERS_RETENTION_HINT": "Bewerbungen werden nach dieser Anzahl Tage gelöscht (30–730). Standard 180.",
-    "CAREERS_PUBLIC_URL": "Öffentlicher URL-Pfad"
+    "CAREERS_PUBLIC_URL": "Öffentlicher URL-Pfad",
+    "PRICE_DISPLAY_MODE": "Preisanzeige",
+    "PRICE_DISPLAY_INCLUSIVE": "Brutto / inkl. Steuer (Standard)",
+    "PRICE_DISPLAY_EXCLUSIVE": "Netto / zzgl. Steuer",
+    "PRICE_DISPLAY_HINT": "Steuert, wie Einzelpreise im Gastmenü erscheinen. Kasse und Belege belasten immer den brutto fakturierten Betrag."
   },
   "PAYMENTS": {
     "PAYMENT": "Zahlung",
@@ -3620,5 +3627,45 @@
     "CODE_SEND_ERROR": "Code konnte nicht gesendet werden. Bitte erneut versuchen.",
     "CODE_INVALID": "Ungültiger oder abgelaufener Code. Neuen Code anfordern.",
     "DEV_CODE_HINT": "Dev-Code (SMTP nicht konfiguriert): {{code}}"
+  },
+  "PLATFORM_DIGEST": {
+    "NAV": "Feature-Digest",
+    "BACK": "Zurück zur Übersicht",
+    "TITLE": "Monatlicher Feature-Digest",
+    "SUBTITLE": "Verifizierte Restaurant-Inhaber über neue Satisfecho-Funktionen informieren. Nutzt Plattform-SMTP (nicht Tenant-Newsletter).",
+    "SETTINGS_TITLE": "Plattform-E-Mail-Einstellungen",
+    "SETTINGS_HINT": "Configure SMTP and digest locale for the platform owner. Leave SMTP blank to fall back to server SMTP_HOST / SMTP_USER.",
+    "LOCALE": "Digest-Sprache",
+    "SMTP_HOST": "SMTP host",
+    "SMTP_PORT": "SMTP port",
+    "SMTP_TLS": "Use STARTTLS",
+    "SMTP_USER": "SMTP user",
+    "SMTP_PASSWORD": "SMTP password",
+    "SMTP_PASSWORD_SET": "Password saved (enter new to replace)",
+    "SMTP_PASSWORD_PLACEHOLDER": "SMTP password",
+    "EMAIL_FROM": "From email",
+    "EMAIL_FROM_NAME": "From name",
+    "SMTP_OK": "SMTP ready (platform settings or global fallback).",
+    "SMTP_MISSING": "SMTP not configured yet.",
+    "SAVED": "Einstellungen gespeichert.",
+    "SAVE_FAILED": "Einstellungen konnten nicht gespeichert werden.",
+    "AUDIENCE_TITLE": "Empfänger",
+    "AUDIENCE_COUNT": "{{count}} abonnierte verifizierte Inhaber",
+    "AUDIENCE_SAMPLE": "Sample",
+    "COMPOSE_TITLE": "Verfassen und senden",
+    "COMPOSE_HINT": "Manual draft (paste CHANGELOG highlights as needed). Each send includes an unsubscribe link.",
+    "SUBJECT": "Subject",
+    "BODY_HTML": "Body (HTML)",
+    "SEND_NOW": "Jetzt in Warteschlange",
+    "SUBJECT_BODY_REQUIRED": "Subject and body are required.",
+    "QUEUED": "Kampagne in Warteschlange.",
+    "SEND_FAILED": "Kampagne konnte nicht eingeplant werden.",
+    "CAMPAIGNS_TITLE": "Letzte Kampagnen",
+    "CAMPAIGNS_EMPTY": "Noch keine Kampagnen.",
+    "COL_ID": "ID",
+    "COL_SUBJECT": "Subject",
+    "COL_STATUS": "Status",
+    "COL_SENT": "Sent",
+    "LOAD_FAILED": "Daten konnten nicht geladen werden. Bitte erneut anmelden."
   }
 }

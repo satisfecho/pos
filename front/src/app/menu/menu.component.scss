@@ -1391,6 +1391,15 @@ $cart-expanded-max: 60vh;
   }
 }
 
+.price-tax-hint {
+  display: inline-block;
+  margin-left: 0.25rem;
+  font-size: 0.7em;
+  font-weight: 500;
+  opacity: 0.75;
+  color: var(--color-text, #333);
+}
+
 .stock-left-badge {
   display: inline-block;
   margin: 0.15rem 0 0.35rem;

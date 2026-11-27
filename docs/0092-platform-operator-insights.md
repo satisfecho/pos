@@ -19,17 +19,8 @@ Use **AG Grid** (already in the repo) for platform data tables. Do not add Angul
 | Inactive clients (no login 14/30 days) | Churn risk list with owner mailto |
 | Orders / reservations sparklines per tenant | Activity beyond logins |
 | Cohort retention (sign-up week vs still logging in) | Product-market signal |
-| Platform weekly feature digest email | See GitHub issue for product decision |
+| Platform monthly feature digest email | Shipped - see [0093-platform-feature-digest.md](0093-platform-feature-digest.md) |
 
-## Weekly feature digest (product)
+## Monthly feature digest (product)
 
-Proposal: once per week, email recent restaurant sign-ups (or opted-in owners) a short “what is new” digest from CHANGELOG / shipped FEATs.
-
-Needs before build:
-
-1. Explicit consent / unsubscribe (legal)
-2. Audience rules (all owners vs last-N-days sign-ups vs paid only)
-3. Content source (manual draft vs auto from CHANGELOG)
-4. Sender and rate limits (platform SMTP, not tenant newsletter)
-
-Tracked as GitHub issue [#453](https://github.com/satisfecho/pos/issues/453); do not ship until those are decided.
+Shipped under [#453](https://github.com/satisfecho/pos/issues/453): platform operators send a monthly digest to verified owners via configurable platform SMTP. Consent notice is in the signup verification email; each digest includes unsubscribe. Details: [0093-platform-feature-digest.md](0093-platform-feature-digest.md).

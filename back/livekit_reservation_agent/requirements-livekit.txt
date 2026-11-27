@@ -1,0 +1,9 @@
+# Optional deps for the LiveKit reservation agent worker only.
+# Do not merge into back/requirements.txt (keeps the API image lean).
+# Install inside a dedicated venv or container:
+#   pip install -r back/livekit_reservation_agent/requirements-livekit.txt
+# Also needs the main back deps for app.reservation_agent_client (requests).
+livekit-agents>=1.2.0
+livekit-plugins-silero>=1.2.0
+python-dotenv>=1.0.0
+requests>=2.32.5

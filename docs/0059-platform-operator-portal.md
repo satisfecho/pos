@@ -37,6 +37,7 @@ Operator users live in the same `User` table with `role=platform_operator`, `ten
 |--------|-----|
 | Operator login | `/platform/login` |
 | Operator dashboard | `/platform` |
+| Monthly feature digest | `/platform/feature-digest` |
 | Tenant detail | `/platform/tenants/{tenantId}` |
 | Guest menu (review) | `/public-menu/{tenantId}` |
 | Guest booking | `/{public_slug}/book` (preferred) or `/book/{tenantId}` |
@@ -58,8 +59,13 @@ All endpoints require a JWT from login with `?scope=platform`.
 | `GET` | `/platform/tenants` | Up to 5000 tenants with `tenant_login_count` / `tenant_last_login_at`. |
 | `GET` | `/platform/tenants` | All tenants (up to 100) with owner contact, owner login count/last login, and counts. |
 | `GET` | `/platform/tenants/{id}` | Tenant detail + staff contacts (each with login count / last login). |
+| `GET`/`PUT` | `/platform/feature-digest/settings` | Platform SMTP + digest locale (default `en`). |
+| `GET` | `/platform/feature-digest/audience` | Count of subscribed verified owners. |
+| `GET`/`POST` | `/platform/feature-digest/campaigns` | List / queue a monthly feature digest send. |
 
 Successful logins (all scopes) append a row to `login_event` for operator metrics.
+
+Monthly feature digest details: [0093-platform-feature-digest.md](0093-platform-feature-digest.md).
 
 ---
 

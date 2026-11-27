@@ -59,7 +59,11 @@ import { ApiService, PlatformTenantDetail } from '../services/api.service';
             }
             @if (tenant()!.website) {
               <dt>{{ 'PLATFORM_DASHBOARD.WEBSITE' | translate }}</dt>
-              <dd><a [href]="tenant()!.website!" target="_blank" rel="noopener noreferrer">{{ tenant()!.website }}</a></dd>
+              <dd>
+                <a [href]="externalHref(tenant()!.website!)" target="_blank" rel="noopener noreferrer">
+                  {{ tenant()!.website }}
+                </a>
+              </dd>
             }
           </dl>
         </section>
@@ -275,18 +279,25 @@ export class PlatformTenantDetailComponent implements OnInit {
     }
   }
 
+  /** Absolute http(s) href; bare domains like SATISFECHO.DE/... become https://... */
+  externalHref(raw: string): string {
+    const value = (raw || '').trim();
+    if (!value) return value;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(value)) return value;
+    if (value.startsWith('//')) return `https:${value}`;
+    return `https://${value}`;
+  }
+
   publicUrl(segment: string): string {
     const t = this.tenant();
     const id = t?.id;
     if (!id || typeof window === 'undefined') return `/${segment}/${id ?? ''}`;
+    // Prefer slug booking path; keep public-menu / waitlist / delivery on numeric id
+    // so operators get stable links like /public-menu/141.
     if (segment === 'book' && t?.public_slug?.trim()) {
       return `${window.location.origin}/${t.public_slug.trim()}/book`;
     }
-    const ref =
-      segment === 'public-menu' && t?.public_slug?.trim()
-        ? t.public_slug.trim()
-        : id;
-    return `${window.location.origin}/${segment}/${ref}`;
+    return `${window.location.origin}/${segment}/${id}`;
   }
 
   logout(): void {

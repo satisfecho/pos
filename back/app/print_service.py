@@ -177,11 +177,14 @@ def _order_table_name(session: Session, order: models.Order) -> str | None:
     return table.name if table else None
 
 
-def _order_total_cents(items: list[models.OrderItem], order: models.Order) -> int:
-    tip = int(order.tip_amount_cents or 0)
-    loyalty = int(getattr(order, "loyalty_discount_cents", 0) or 0)
-    sub = sum(int(i.price_cents or 0) * int(i.quantity or 1) for i in items)
-    return max(0, sub + tip - loyalty)
+def _order_total_cents(
+    session: Session, items: list[models.OrderItem], order: models.Order
+) -> int:
+    """Payable total for receipts: same path as POS billing (#455)."""
+    from app.order_payment_service import order_due_cents
+
+    _ = items  # lines already filtered for kitchen; due uses active DB lines
+    return order_due_cents(session, order, include_tip=True)
 
 
 def _build_order_payload(session: Session, order: models.Order, job_type: str) -> dict[str, Any]:
@@ -224,7 +227,7 @@ def _build_order_payload(session: Session, order: models.Order, job_type: str) -
             }
         )
     table_name = _order_table_name(session, order)
-    total_cents = _order_total_cents(items, order)
+    total_cents = _order_total_cents(session, items, order)
     title = "KITCHEN" if job_type == "kitchen" else "RECEIPT"
     plain_lines = [
         title,

@@ -18,10 +18,12 @@ This folder contains deployment guides, feature documentation, implementation pl
 | Configure Gmail for email | [0056-gmail-setup.md](0056-gmail-setup.md) |
 | Troubleshoot missing reservation confirmation email | [0030-reservation-confirmation-email-troubleshooting.md](0030-reservation-confirmation-email-troubleshooting.md) |
 | Understand reservations / waiting list (staff + public) | [0011-table-reservation-user-guide.md](0011-table-reservation-user-guide.md) |
+| LiveKit voice/chat reservation agent pilot | [0093-livekit-reservation-agents.md](0093-livekit-reservation-agents.md) |
+| Tax-inclusive vs exclusive menu price labels | [0094-price-display-mode.md](0094-price-display-mode.md) |
 | Guest / staff Satisfecho Delivery (checkout, courier, track) | [0053-satisfecho-delivery-order-channel.md](0053-satisfecho-delivery-order-channel.md) |
 | Enable or understand SaaS signup paywall (keep off until runbook) | [0052-saas-signup-paywall.md](0052-saas-signup-paywall.md) |
 | Owner signup email verify + inactive tenant cleanup (#442) | [0088-owner-signup-email-verify-inactive-tenants.md](0088-owner-signup-email-verify-inactive-tenants.md) |
-| Platform operator oversight (`/platform`) | [0059-platform-operator-portal.md](0059-platform-operator-portal.md), insights [0092](0092-platform-operator-insights.md) |
+| Platform operator oversight (`/platform`) | [0059-platform-operator-portal.md](0059-platform-operator-portal.md), insights [0092](0092-platform-operator-insights.md), feature digest [0093](0093-platform-feature-digest.md) |
 | Manage multi-location restaurant groups | [0054-restaurant-groups.md](0054-restaurant-groups.md) |
 | Rate limits (production) | [0020-rate-limiting-production.md](0020-rate-limiting-production.md) |
 | Capture screenshots | [screenshots/how-to-capture-screenshots-automatically.md](screenshots/how-to-capture-screenshots-automatically.md) |
@@ -68,6 +70,8 @@ This folder contains deployment guides, feature documentation, implementation pl
 | Doc | Description |
 |-----|-------------|
 | [0011-table-reservation-user-guide.md](0011-table-reservation-user-guide.md) | Table reservations: staff flows, public booking at `/book/:tenantId`, view/cancel at `/reservation?token=...`; public waiting list at `/waitlist/:tenantId` and staff Waiting list tab. Guest feedback trends/CSV: [0064](0064-guest-feedback-analytics.md). |
+| [0093-livekit-reservation-agents.md](0093-livekit-reservation-agents.md) | Optional LiveKit Agents voice/chat pilot for reservations (#456): allowlisted tenants, session mint, worker calling public book/cancel APIs. |
+| [0094-price-display-mode.md](0094-price-display-mode.md) | Tenant `price_display_mode` (#455): inclusive (default) vs exclusive menu unit labels; payable totals stay server-authoritative. |
 | [0014-provider-portal.md](0014-provider-portal.md) | Provider (supplier) portal at `/provider` - not the courier portal (`/courier`; see [0053](0053-satisfecho-delivery-order-channel.md)). |
 | [0015-kitchen-display.md](0015-kitchen-display.md) | Kitchen display: full-screen at `/kitchen` (and `/bar`); as many prep stations as needed, each product on one station so that display shows only what it must prepare; auto-refresh, WebSocket, optional sound; Satisfecho Delivery cards use table label “Satisfecho Delivery” (not shown once `out_for_delivery`); highlighted order/item comments (#284). |
 | [0078-customer-facing-display.md](0078-customer-facing-display.md) | Customer-facing order display (#434): public `/display/{table_token}` second screen for counter/coffee-shop; staff opens from `/staff/orders` (Customer display). Smoke: `npm run test:customer-display --prefix front` ([testing.md](testing.md)). |
@@ -77,7 +81,8 @@ This folder contains deployment guides, feature documentation, implementation pl
 | [0018-verifactu-fiscal-invoicing.md](0018-verifactu-fiscal-invoicing.md) | VeriFactu-oriented fiscal invoicing: tenant `fiscal_mode` (off/test/live), hash chain, ValidarQR URL, sandbox submit, immutability + anulación; **no invented production AEAT SOAP**. See also [0065](0065-verifactu-production.md). |
 | [0028-tenant-public-branding.md](0028-tenant-public-branding.md) | Tenant public branding (shipped): background colour and header image for book, menu, reservation-view, waitlist, and guest feedback. |
 | [0059-platform-operator-portal.md](0059-platform-operator-portal.md) | Platform operator portal: SaaS metrics and tenant oversight. |
-| [0092-platform-operator-insights.md](0092-platform-operator-insights.md) | Platform operator insights: Top 10 active clients, sort notes, no Angular Material, weekly digest proposal. |
+| [0092-platform-operator-insights.md](0092-platform-operator-insights.md) | Platform operator insights: Top 10 active clients, sort notes, no Angular Material. |
+| [0093-platform-feature-digest.md](0093-platform-feature-digest.md) | Platform monthly feature digest to verified owners (#453): SMTP settings, consent, unsubscribe. |
 | [0051-table-groups-mvp.md](0051-table-groups-mvp.md) | Floor-plan table join/unjoin (**shipped** reference): combined seats and reservation pool for joined tables - not restaurant multi-location groups ([0054](0054-restaurant-groups.md)). |
 | [0052-saas-signup-paywall.md](0052-saas-signup-paywall.md) | Hard paywall for restaurant signups: trial/subscribe before staff app (issue #296). Includes guided `/register`/`/signup` wizard steps and 402-exempt priming paths. Keep off until ready; production enablement checklist in the doc (see also amvara9 § SaaS paywall in 0001). |
 | [0088-owner-signup-email-verify-inactive-tenants.md](0088-owner-signup-email-verify-inactive-tenants.md) | Owner signup 6-digit email verify, platform notify, and inactive tenant soft/hard delete (#442). |

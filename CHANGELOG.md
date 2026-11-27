@@ -14,6 +14,30 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.206] - 2026-11-27
+
+### Fixed
+
+- **Platform tenant website links:** Bare website values without `https://` (e.g. `SATISFECHO.DE/PUBLIC-MENU/141`) no longer resolve as relative paths under `/platform/tenants/…`. Public menu operator links always use `/public-menu/{id}`.
+
+## [2.1.205] - 2026-11-26
+
+### Added
+
+- **Platform monthly feature digest (#453):** Operators compose and queue a monthly email to verified subscribed owners from `/platform/feature-digest` (SMTP/locale settings, audience count, public unsubscribe). Owner signup verification mail notes the subscription. See `docs/0093-platform-feature-digest.md`.
+
+## [2.1.204] - 2026-11-26
+
+### Added
+
+- **Price display mode (#455):** Settings → Taxes can show guest menu unit prices as tax-inclusive (default) or tax-exclusive. Staff order totals, receipts, and courier amounts follow server `order_due_cents` so payable figures match the payment modal (including delivery fees). See `docs/0094-price-display-mode.md`.
+- **LiveKit reservation agents (#456):** Optional voice/chat pilot that books and cancels via existing public reservation APIs. Off until `LIVEKIT_*` and a tenant allowlist are set; optional worker under `back/livekit_reservation_agent/` (separate deps). See `docs/0093-livekit-reservation-agents.md`.
+
+### Changed
+
+- **Agent prefer config over parking:** Feature coder **010** must not park FEATs for multi-option product choices; ship a setting with a sensible default. Park only for hard gates (secrets, irreversible ops, legal, paid third-party, or issue says wait).
+- **Agent waiting-human filters:** Preflight and stale-reject scripts treat `Agent NNN:` and "Restored missing feature task" issue comments as agent noise, so restore/recheck traffic does not unblock parked FEATs (#453).
+
 ## [2.1.203] - 2026-11-25
 
 ### Fixed

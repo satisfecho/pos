@@ -406,6 +406,37 @@ export interface PlatformInfo {
   role: string;
 }
 
+export interface PlatformMailSettings {
+  smtp_host?: string | null;
+  smtp_port?: number | null;
+  smtp_use_tls?: boolean | null;
+  smtp_user?: string | null;
+  smtp_password_set?: boolean;
+  email_from?: string | null;
+  email_from_name?: string | null;
+  locale: string;
+  smtp_configured?: boolean;
+  updated_at?: string | null;
+}
+
+export interface PlatformFeatureDigestAudience {
+  subscribed_owners: number;
+  sample_emails: string[];
+}
+
+export interface PlatformFeatureDigestCampaign {
+  id: number;
+  subject: string;
+  status: string;
+  schedule_at: string;
+  recipient_count: number;
+  sent_count: number;
+  failed_count: number;
+  error_message?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PlatformTenantSummary {
   id: number;
   name: string;
@@ -1081,6 +1112,12 @@ export interface Product {
   list_price_cents?: number | null;
   promo_label?: string | null;
   promo_percent_off?: number | null;
+  /** inclusive (default) | exclusive — display only; price_cents stays billed (#455) */
+  price_display_mode?: 'inclusive' | 'exclusive' | string | null;
+  tax_rate_percent?: number | null;
+  /** Unit cents for UI when exclusive mode; omit → use price_cents */
+  display_price_cents?: number | null;
+  display_list_price_cents?: number | null;
 }
 
 /** Kitchen / bar prep station (owner-defined; filters KDS by station). */
@@ -1712,6 +1749,8 @@ export interface Order {
   total_cents: number;
   /** Sum of active line items (excludes tip); same as total_cents when no tip */
   subtotal_cents?: number;
+  /** Satisfecho Delivery fee snapshot included in total_cents / amount_due (#455) */
+  delivery_fee_cents?: number | null;
   loyalty_membership_id?: number | null;
   loyalty_discount_cents?: number;
   loyalty_units_redeemed?: number;
@@ -1814,6 +1853,8 @@ export interface PublicSatisfechoDeliveryConfig {
   restaurant_longitude: number | null;
   currency_code?: string | null;
   currency?: string | null;
+  /** inclusive | exclusive — unit labels; cart stays tax-inclusive (#455) */
+  price_display_mode?: 'inclusive' | 'exclusive' | string | null;
 }
 
 export interface PublicDeliveryTrackStatus {
@@ -1858,6 +1899,8 @@ export interface MenuResponse {
   tenant_public_background_color?: string | null;
   tenant_public_primary_color?: string | null;
   tenant_header_background_filename?: string | null;
+  /** inclusive | exclusive — unit price labels; cart totals stay inclusive (#455) */
+  price_display_mode?: 'inclusive' | 'exclusive' | string | null;
   // Table session status
   table_is_active?: boolean;
   table_requires_pin?: boolean;
@@ -1915,6 +1958,8 @@ export interface TenantSettings {
   /** Spanish labour: Código Cuenta de Cotización (optional; registro horario export). */
   ccc?: string | null;
   default_tax_id?: number | null;
+  /** inclusive (default) | exclusive — how unit prices are shown; billing stays inclusive (#455) */
+  price_display_mode?: 'inclusive' | 'exclusive' | string | null;
   logo_filename?: string | null;
   header_background_filename?: string | null;
   opening_hours?: string | null;
@@ -2568,6 +2613,43 @@ export class ApiService {
 
   getPlatformTenant(tenantId: number): Observable<PlatformTenantDetail> {
     return this.http.get<PlatformTenantDetail>(`${this.apiUrl}/platform/tenants/${tenantId}`);
+  }
+
+  getPlatformFeatureDigestSettings(): Observable<PlatformMailSettings> {
+    return this.http.get<PlatformMailSettings>(`${this.apiUrl}/platform/feature-digest/settings`);
+  }
+
+  updatePlatformFeatureDigestSettings(
+    body: Record<string, unknown>
+  ): Observable<PlatformMailSettings> {
+    return this.http.put<PlatformMailSettings>(
+      `${this.apiUrl}/platform/feature-digest/settings`,
+      body
+    );
+  }
+
+  getPlatformFeatureDigestAudience(): Observable<PlatformFeatureDigestAudience> {
+    return this.http.get<PlatformFeatureDigestAudience>(
+      `${this.apiUrl}/platform/feature-digest/audience`
+    );
+  }
+
+  getPlatformFeatureDigestCampaigns(): Observable<PlatformFeatureDigestCampaign[]> {
+    return this.http.get<PlatformFeatureDigestCampaign[]>(
+      `${this.apiUrl}/platform/feature-digest/campaigns`
+    );
+  }
+
+  createPlatformFeatureDigestCampaign(body: {
+    subject: string;
+    body_html: string;
+    body_text?: string;
+    send_now?: boolean;
+  }): Observable<PlatformFeatureDigestCampaign> {
+    return this.http.post<PlatformFeatureDigestCampaign>(
+      `${this.apiUrl}/platform/feature-digest/campaigns`,
+      body
+    );
   }
 
   getCourierOrders(): Observable<CourierOrderSummary[]> {

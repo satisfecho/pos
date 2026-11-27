@@ -199,6 +199,26 @@ class Settings(BaseSettings):
     )
     product_vision_model: str = Field(default="gpt-4o-mini", validation_alias="PRODUCT_VISION_MODEL")
 
+    # LiveKit Agents for guest reservations (voice + chat). Off until URL/key/secret
+    # and pilot tenant allowlist are set. See docs/0093-livekit-reservation-agents.md.
+    livekit_url: str = Field(
+        default="",
+        validation_alias="LIVEKIT_URL",
+        description="wss://… LiveKit server URL (Cloud or self-hosted)",
+    )
+    livekit_api_key: str = Field(default="", validation_alias="LIVEKIT_API_KEY")
+    livekit_api_secret: str = Field(default="", validation_alias="LIVEKIT_API_SECRET")
+    livekit_reservation_agent_tenant_ids: str = Field(
+        default="",
+        validation_alias="LIVEKIT_RESERVATION_AGENT_TENANT_IDS",
+        description="Comma-separated pilot tenant ids; empty = public session mint disabled",
+    )
+    livekit_reservation_agent_token_ttl_seconds: int = Field(
+        default=3600,
+        validation_alias="LIVEKIT_RESERVATION_AGENT_TOKEN_TTL_SECONDS",
+        description="Guest LiveKit access token lifetime for reservation agent rooms",
+    )
+
     # Production mode (enables secure cookies, stricter CORS, etc.)
     is_production: bool = Field(default=False, validation_alias="PRODUCTION")
 
