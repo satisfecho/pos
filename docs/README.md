@@ -70,7 +70,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | Doc | Description |
 |-----|-------------|
 | [0011-table-reservation-user-guide.md](0011-table-reservation-user-guide.md) | Table reservations: staff flows, public booking at `/book/:tenantId`, view/cancel at `/reservation?token=...`; public waiting list at `/waitlist/:tenantId` and staff Waiting list tab. Guest feedback trends/CSV: [0064](0064-guest-feedback-analytics.md). |
-| [0093-livekit-reservation-agents.md](0093-livekit-reservation-agents.md) | Optional LiveKit Agents voice/chat pilot for reservations (#456): allowlisted tenants, session mint, worker calling public book/cancel APIs. |
+| [0093-livekit-reservation-agents.md](0093-livekit-reservation-agents.md) | Optional LiveKit Agents voice/chat pilot for reservations (#456/#457): allowlisted tenants, session mint, worker, guest join page `/reservation-agent-pilot.html`. |
 | [0094-price-display-mode.md](0094-price-display-mode.md) | Tenant `price_display_mode` (#455): inclusive (default) vs exclusive menu unit labels; payable totals stay server-authoritative. |
 | [0014-provider-portal.md](0014-provider-portal.md) | Provider (supplier) portal at `/provider` - not the courier portal (`/courier`; see [0053](0053-satisfecho-delivery-order-channel.md)). |
 | [0015-kitchen-display.md](0015-kitchen-display.md) | Kitchen display: full-screen at `/kitchen` (and `/bar`); as many prep stations as needed, each product on one station so that display shows only what it must prepare; auto-refresh, WebSocket, optional sound; Satisfecho Delivery cards use table label “Satisfecho Delivery” (not shown once `out_for_delivery`); highlighted order/item comments (#284). |

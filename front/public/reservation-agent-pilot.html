@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reservation agent pilot (LiveKit)</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --panel: #1a222c;
+      --text: #e8eef4;
+      --muted: #9aa7b5;
+      --ok: #3d9a6a;
+      --warn: #c9a227;
+      --err: #c45c5c;
+      --accent: #4a90c8;
+      --border: #2a3542;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      min-height: 100vh;
+    }
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 3rem;
+    }
+    h1 { font-size: 1.35rem; font-weight: 650; margin: 0 0 0.35rem; }
+    .lede { color: var(--muted); margin: 0 0 1.25rem; font-size: 0.95rem; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      margin-bottom: 1rem;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin-bottom: 0.75rem; }
+    label { font-size: 0.85rem; color: var(--muted); }
+    input[type="text"], input[type="number"] {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 0.4rem 0.55rem;
+      width: 7rem;
+    }
+    button {
+      background: var(--accent);
+      color: #fff;
+      border: 0;
+      border-radius: 6px;
+      padding: 0.5rem 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    button.secondary { background: #2f3d4d; }
+    button.danger { background: var(--err); }
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 650;
+    }
+    .badge.on { background: color-mix(in srgb, var(--ok) 35%, transparent); color: #b8f0d0; }
+    .badge.off { background: color-mix(in srgb, var(--warn) 30%, transparent); color: #f0e0a0; }
+    .meta { font-size: 0.85rem; color: var(--muted); }
+    .meta code { color: var(--text); font-size: 0.8rem; }
+    #log {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.75rem;
+      max-height: 220px;
+      overflow: auto;
+      white-space: pre-wrap;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.6rem;
+      margin: 0;
+    }
+    #chat-out {
+      min-height: 4rem;
+      max-height: 160px;
+      overflow: auto;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.55rem;
+      font-size: 0.9rem;
+      margin-bottom: 0.55rem;
+    }
+    #chat-in {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 0.5rem;
+      resize: vertical;
+      min-height: 2.5rem;
+    }
+    .hidden { display: none !important; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1 data-testid="pilot-title">Reservation agent pilot</h1>
+    <p class="lede">
+      Human-testable LiveKit join surface for allowlisted tenants.
+      Uses <code>GET/POST …/reservation-agent</code> then the LiveKit client SDK (CDN).
+      See <code>docs/0093-livekit-reservation-agents.md</code>.
+    </p>
+
+    <section class="panel" data-testid="pilot-config">
+      <div class="row">
+        <label for="tenantId">Tenant id</label>
+        <input id="tenantId" type="number" min="1" value="1" data-testid="pilot-tenant-id" />
+        <label for="apiBase">API base</label>
+        <input id="apiBase" type="text" value="/api" style="width: 8rem" data-testid="pilot-api-base" />
+        <button type="button" id="btnCheck" data-testid="pilot-check">Check status</button>
+      </div>
+      <div class="row">
+        <span id="statusBadge" class="badge off" data-testid="pilot-status-badge">unknown</span>
+        <span id="statusDetail" class="meta" data-testid="pilot-status-detail"></span>
+      </div>
+    </section>
+
+    <section class="panel" data-testid="pilot-session">
+      <div class="row">
+        <button type="button" id="btnJoin" disabled data-testid="pilot-join">Join room</button>
+        <button type="button" id="btnLeave" class="danger hidden" data-testid="pilot-leave">Leave</button>
+        <button type="button" id="btnMic" class="secondary hidden" data-testid="pilot-mic">Mic off</button>
+      </div>
+      <p id="sessionMeta" class="meta" data-testid="pilot-session-meta"></p>
+      <div id="chatWrap" class="hidden" data-testid="pilot-chat">
+        <div id="chat-out" data-testid="pilot-chat-out"></div>
+        <textarea id="chat-in" placeholder="Send a chat message to the room…" data-testid="pilot-chat-in"></textarea>
+        <div class="row" style="margin-top: 0.5rem">
+          <button type="button" id="btnSend" data-testid="pilot-chat-send">Send chat</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <p class="meta" style="margin-top: 0">Event log</p>
+      <pre id="log" data-testid="pilot-log"></pre>
+    </section>
+  </main>
+
+  <!-- Pinned UMD build; no npm dep in the Angular app for this pilot. -->
+  <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.9.9/dist/livekit-client.umd.min.js"></script>
+  <script>
+    (function () {
+      const params = new URLSearchParams(location.search);
+      const $ = (id) => document.getElementById(id);
+      const logEl = $('log');
+      const statusBadge = $('statusBadge');
+      const statusDetail = $('statusDetail');
+      const sessionMeta = $('sessionMeta');
+      const chatWrap = $('chatWrap');
+      const chatOut = $('chat-out');
+      const chatIn = $('chat-in');
+
+      let room = null;
+      let localAudio = null;
+      let micOn = false;
+      let lastStatus = null;
+
+      if (params.get('tenantId')) $('tenantId').value = params.get('tenantId');
+      if (params.get('apiBase')) $('apiBase').value = params.get('apiBase');
+
+      function log(msg, level) {
+        const line = '[' + new Date().toISOString().slice(11, 19) + '] ' + msg;
+        logEl.textContent = (logEl.textContent ? logEl.textContent + '\n' : '') + line;
+        logEl.scrollTop = logEl.scrollHeight;
+        if (level === 'error') console.error(msg);
+        else console.log(msg);
+      }
+
+      function apiUrl(path) {
+        const base = ($('apiBase').value || '/api').replace(/\/$/, '');
+        return base + path;
+      }
+
+      async function checkStatus() {
+        const tenantId = Number($('tenantId').value) || 1;
+        const url = apiUrl('/public/tenants/' + tenantId + '/reservation-agent');
+        log('GET ' + url);
+        statusBadge.textContent = 'checking…';
+        statusBadge.className = 'badge off';
+        $('btnJoin').disabled = true;
+        try {
+          const res = await fetch(url);
+          const body = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            statusBadge.textContent = 'error ' + res.status;
+            statusDetail.textContent = JSON.stringify(body);
+            log('status failed: ' + res.status + ' ' + JSON.stringify(body), 'error');
+            lastStatus = null;
+            return;
+          }
+          lastStatus = body;
+          const enabled = !!body.enabled;
+          statusBadge.textContent = enabled ? 'enabled' : 'disabled';
+          statusBadge.className = 'badge ' + (enabled ? 'on' : 'off');
+          statusDetail.textContent =
+            'channels=' + JSON.stringify(body.channels || []) +
+            ' actions=' + JSON.stringify(body.actions || []);
+          $('btnJoin').disabled = !enabled;
+          log(enabled
+            ? 'Agent enabled for tenant ' + tenantId + ' - you can Join room'
+            : 'Agent disabled (set LIVEKIT_* + LIVEKIT_RESERVATION_AGENT_TENANT_IDS, restart back)');
+        } catch (e) {
+          statusBadge.textContent = 'error';
+          statusDetail.textContent = String(e);
+          log(String(e), 'error');
+        }
+      }
+
+      function appendChat(who, text) {
+        const p = document.createElement('div');
+        p.textContent = who + ': ' + text;
+        chatOut.appendChild(p);
+        chatOut.scrollTop = chatOut.scrollHeight;
+      }
+
+      async function joinRoom() {
+        const tenantId = Number($('tenantId').value) || 1;
+        if (!lastStatus || !lastStatus.enabled) {
+          log('Join blocked: status not enabled', 'error');
+          return;
+        }
+        if (!window.LivekitClient) {
+          log('LivekitClient UMD not loaded (CDN blocked?)', 'error');
+          return;
+        }
+        const url = apiUrl('/public/tenants/' + tenantId + '/reservation-agent/session');
+        log('POST ' + url);
+        $('btnJoin').disabled = true;
+        try {
+          const res = await fetch(url, { method: 'POST' });
+          const body = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            log('session failed: ' + res.status + ' ' + JSON.stringify(body), 'error');
+            $('btnJoin').disabled = false;
+            return;
+          }
+          sessionMeta.innerHTML =
+            'room=<code data-testid="pilot-room-name">' + body.room_name + '</code> ' +
+            'identity=<code>' + body.identity + '</code>';
+          log('Session mint OK room=' + body.room_name);
+
+          const { Room, RoomEvent, createLocalAudioTrack, DataPacket_Kind } = window.LivekitClient;
+          room = new Room();
+          room.on(RoomEvent.Connected, () => log('LiveKit Connected'));
+          room.on(RoomEvent.Disconnected, () => log('LiveKit Disconnected'));
+          room.on(RoomEvent.ParticipantConnected, (p) => log('Participant joined: ' + p.identity));
+          room.on(RoomEvent.DataReceived, (payload, participant) => {
+            const text = new TextDecoder().decode(payload);
+            const who = participant ? participant.identity : 'server';
+            appendChat(who, text);
+            log('data from ' + who + ': ' + text);
+          });
+
+          await room.connect(body.url, body.token);
+          chatWrap.classList.remove('hidden');
+          $('btnLeave').classList.remove('hidden');
+          $('btnMic').classList.remove('hidden');
+          $('btnMic').textContent = 'Mic off';
+          micOn = false;
+          window.__pilotDataKind = DataPacket_Kind;
+          log('Joined room (start worker with python -m livekit_reservation_agent for agent tools)');
+        } catch (e) {
+          log('Join error: ' + e, 'error');
+          $('btnJoin').disabled = false;
+        }
+      }
+
+      async function leaveRoom() {
+        try {
+          if (localAudio) {
+            await room?.localParticipant?.unpublishTrack(localAudio);
+            localAudio.stop();
+            localAudio = null;
+          }
+          if (room) await room.disconnect();
+        } catch (e) {
+          log('Leave error: ' + e, 'error');
+        }
+        room = null;
+        micOn = false;
+        chatWrap.classList.add('hidden');
+        $('btnLeave').classList.add('hidden');
+        $('btnMic').classList.add('hidden');
+        $('btnJoin').disabled = !(lastStatus && lastStatus.enabled);
+        sessionMeta.textContent = '';
+        log('Left room');
+      }
+
+      async function toggleMic() {
+        if (!room) return;
+        const { createLocalAudioTrack } = window.LivekitClient;
+        try {
+          if (!micOn) {
+            localAudio = await createLocalAudioTrack();
+            await room.localParticipant.publishTrack(localAudio);
+            micOn = true;
+            $('btnMic').textContent = 'Mic on';
+            log('Microphone published');
+          } else if (localAudio) {
+            await room.localParticipant.unpublishTrack(localAudio);
+            localAudio.stop();
+            localAudio = null;
+            micOn = false;
+            $('btnMic').textContent = 'Mic off';
+            log('Microphone unpublished');
+          }
+        } catch (e) {
+          log('Mic error: ' + e, 'error');
+        }
+      }
+
+      async function sendChat() {
+        if (!room) return;
+        const text = (chatIn.value || '').trim();
+        if (!text) return;
+        const enc = new TextEncoder().encode(text);
+        const kind = window.__pilotDataKind != null ? window.__pilotDataKind.RELIABLE : 0;
+        await room.localParticipant.publishData(enc, { reliable: true, topic: 'chat' });
+        appendChat('you', text);
+        chatIn.value = '';
+        log('chat sent');
+      }
+
+      $('btnCheck').addEventListener('click', checkStatus);
+      $('btnJoin').addEventListener('click', joinRoom);
+      $('btnLeave').addEventListener('click', leaveRoom);
+      $('btnMic').addEventListener('click', toggleMic);
+      $('btnSend').addEventListener('click', sendChat);
+
+      checkStatus();
+    })();
+  </script>
+</body>
+</html>

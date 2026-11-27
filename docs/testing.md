@@ -105,7 +105,15 @@ node front/scripts/debug-reservations.mjs
 | `front/scripts/debug-reservations-public.mjs` | Public booking flow; no credentials. |
 | `front/scripts/debug-reservations.mjs` | Staff reservations flow; needs `LOGIN_EMAIL` / `LOGIN_PASSWORD`. |
 | `front/scripts/test-reservation-create.mjs` | Create one public reservation **with email** (for deploy/amvara9). Use after deploy to trigger confirmation email; check backend logs for "Reservation confirmation email sent" or "skipped". |
+| `front/scripts/test-reservation-agent-pilot.mjs` | LiveKit reservation-agent pilot (#457): status API + `/reservation-agent-pilot.html` screenshot. Gated off without `LIVEKIT_*`; set credentials for full join. |
 | `scripts/run-reservation-tests.sh` | Runs public (and optionally staff) reservation tests on each URL in `BASE_URLS`. |
+
+**LiveKit reservation agent pilot** (status API + join page; see `docs/0093-livekit-reservation-agents.md`):
+
+```bash
+BASE_URL=http://127.0.0.1:14202 npm run test:reservation-agent-pilot --prefix front
+# Full pilot only (fail if disabled): REQUIRE_ENABLED=1 BASE_URL=… npm run test:reservation-agent-pilot --prefix front
+```
 
 **Create test reservation (e.g. after deploy to amvara9):**
 

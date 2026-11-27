@@ -203,8 +203,8 @@ Key variables in `config.env` (see `config.env.example` for the full list):
 | `SAAS_PAYWALL_ENABLED` | When `true`, new restaurant signups hit `/paywall` after guided signup. Default `false` for local/demo. | Optional (default `false`) |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM` | Optional; when set, reservation reminders can be sent via WhatsApp (in addition to email) | Optional |
 | `DEFAULT_PHONE_COUNTRY` | ISO country code (e.g. `ES`, `DE`) for normalizing reservation phone numbers to E.164 | Optional (default `ES`) |
-| `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, `LIVEKIT_RESERVATION_AGENT_TENANT_IDS` | Optional LiveKit reservation agent pilot; empty allowlist keeps public session mint off. See [docs/0093-livekit-reservation-agents.md](docs/0093-livekit-reservation-agents.md). | Optional |
-| `POS_API_BASE_URL` | Base URL the optional LiveKit worker uses to call public reservation APIs (e.g. `http://127.0.0.1:4202/api`) | Optional (agent worker only) |
+| `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, `LIVEKIT_RESERVATION_AGENT_TENANT_IDS` | Optional LiveKit reservation agent pilot; empty allowlist keeps public session mint off. Guest join: `/reservation-agent-pilot.html`. See [docs/0093-livekit-reservation-agents.md](docs/0093-livekit-reservation-agents.md). | Optional |
+| `POS_API_BASE_URL`, `LIVEKIT_AGENT_TENANT_ID` | Worker-only: API base for public book/cancel calls, and tenant id for tools (default `1`) | Optional (agent worker only) |
 
 Settings also include business profile, contact (phone, email, address, **Tax ID**, **CIF**), and opening hours.
 

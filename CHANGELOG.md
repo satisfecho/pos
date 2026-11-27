@@ -10,6 +10,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- **LiveKit reservation agent pilot UI (#457):** Human-testable guest join page at `/reservation-agent-pilot.html` (session mint + LiveKit CDN client), Puppeteer harness `npm run test:reservation-agent-pilot`, and step-by-step docs including gated checks without Cloud credentials. See `docs/0093-livekit-reservation-agents.md`.
+
 ### Changed
 
 ### Fixed
